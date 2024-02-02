@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $indigo;
 $dropdown-theme: dropdown-theme.$indigo;
@@ -13,7 +13,7 @@ $input-theme: input-theme.$indigo;
     --dropdown-size: var(--component-size);
 
     ::slotted([slot='helper-text']) {
-        color: $indigo-helper-text;
+        color: var-get($theme, 'helper-text-color');
     }
 
     igc-input::part(input) {
@@ -70,24 +70,24 @@ $input-theme: input-theme.$indigo;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: $indigo-error-text;
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host([invalid]:focus-within) {
     igc-input::part(label) {
-        color: $indigo-error-text;
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: $indigo-disabled-text;
+        color: var-get($theme, 'disabled-text-color');
     }
 
     ::slotted([slot='helper-text']) {
-        color: $indigo-disabled-text;
+        color: var-get($theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {

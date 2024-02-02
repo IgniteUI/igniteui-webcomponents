@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../input/themes/light/themes' as input-theme;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
 
 $theme: $material;
 $input-theme: input-theme.$material;
@@ -19,7 +19,7 @@ $dropdown-theme: dropdown-theme.$material;
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
 
-        color: $material-helper-text;
+        color: var-get($theme, 'helper-text-color');
         line-height: 1;
     }
 
@@ -122,7 +122,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: $material-error-text;
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
@@ -133,12 +133,12 @@ $dropdown-theme: dropdown-theme.$material;
     igc-input::part(label),
     igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
-        color: $material-disabled-text;
+        color: var-get($theme, 'disabled-text-color');
     }
 
     [part~='clear-icon'] {
         background: inherit;
-        color: $material-disabled-text;
+        color: var-get($theme, 'disabled-text-color');
 
         igc-icon {
             color: inherit;
