@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $material;
 $dropdown-theme: dropdown-theme.$material;
@@ -156,14 +156,14 @@ $active-border-width: rem(2px) !default;
 
 
 [part='helper-text'] {
-    color: var-get($input-theme, 'helper-text-color');
+    color: var-get($theme, 'helper-text-color');
     margin-top: rem(5px);
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
 }
 
 :host([invalid]) {
     [part='helper-text'] {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
@@ -183,7 +183,7 @@ $active-border-width: rem(2px) !default;
     }
 
     [part='helper-text'] {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: var-get($theme, 'disabled-text-color');
     }
 }
 
