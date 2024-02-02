@@ -1,19 +1,24 @@
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
+import { range } from 'lit/directives/range.js';
 
 import { themes } from '../../../theming/theming-decorator.js';
+import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
-import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
 import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { partNameMap } from '../../common/util.js';
+import {
+  asNumber,
+  getElementsFromEventPath,
+  partNameMap,
+} from '../../common/util.js';
 import {
   IgcCalendarBaseEventMap,
   YEARS_PER_ROW,
 } from '../common/calendar-base.js';
-import { calculateYearsRangeStart, setDateSafe } from '../common/utils.js';
+import { CalendarDay, chunk } from '../common/day.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
 
@@ -41,109 +46,98 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     registerComponent(this);
   }
 
-  private years!: Date[][];
+  @state()
+  private _value = CalendarDay.today;
 
-  @query('[tabindex="0"]')
+  @query(`[tabindex='0']`)
   private activeYear!: HTMLElement;
 
   /** Тhe current value of the calendar. */
   @property({ attribute: false })
-  public value = new Date();
+  public set value(value: Date) {
+    this._value = CalendarDay.from(value);
+  }
 
-  /** Sets how many years are displayed on a single page. */
+  public get value() {
+    return this._value.native;
+  }
+
+  /**
+   * Sets how many years are displayed on a single page.
+   * @attr years-per-page
+   */
   @property({ type: Number, attribute: 'years-per-page' })
   public yearsPerPage = 15;
 
-  @watch('value')
-  @watch('yearsPerPage')
-  protected datesChange() {
-    this.years = this.generateYears();
-  }
-
   constructor() {
     super();
-    this.setAttribute('role', 'grid');
+
+    addKeybindings(this, {
+      bindingDefaults: { preventDefault: true },
+    }).setActivateHandler(this.handleInteraction);
+
+    this.addEventListener('click', this.handleInteraction);
   }
 
-  /** Focuses the active date. */
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.role = 'grid';
+  }
+
   public focusActiveDate() {
     this.activeYear.focus();
   }
 
-  private formattedYear(value: Date) {
-    return `${value.getFullYear()}`;
-  }
+  protected handleInteraction(event: Event) {
+    const source = getElementsFromEventPath(event).find((item) =>
+      item.matches('[data-year]')
+    );
 
-  private generateYears() {
-    const startYear = calculateYearsRangeStart(this.value, this.yearsPerPage);
-    const month = this.value.getMonth();
-    const result = [];
-
-    const rows = this.yearsPerPage / YEARS_PER_ROW;
-
-    for (let i = 0; i < rows; i++) {
-      const row: Date[] = [];
-      for (let j = 0; j < YEARS_PER_ROW; j++) {
-        const year = startYear + i * YEARS_PER_ROW + j;
-        const date = new Date(year, month, 1);
-        // fix year since values between 0 and 100 results in 1900s
-        date.setFullYear(year);
-        row.push(date);
-      }
-      result.push(row);
+    if (source) {
+      this._value = this._value.replace({
+        year: asNumber(source.dataset.year),
+      });
+      this.emitEvent('igcChange', { detail: this.value });
     }
-
-    return result;
   }
 
-  private resolveYearPartName(date: Date) {
-    const today = new Date();
-    return {
+  protected renderYear(year: number, now: CalendarDay) {
+    const selected = this._value.year === year;
+    const parts = partNameMap({
       year: true,
-      selected: date.getFullYear() === this.value.getFullYear(),
-      current: date.getFullYear() === today.getFullYear(),
-    };
-  }
+      selected,
+      current: year === now.year,
+    });
+    const partsInner = parts.replace('year', 'year-inner');
 
-  private selectYear(year: Date) {
-    const value = new Date(year);
-    setDateSafe(value, this.value.getDate());
-    this.value = value;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  private yearKeyDown(event: KeyboardEvent, year: Date) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.selectYear(year);
-    }
+    return html`
+      <span part=${parts}>
+        <span
+          role="gridcell"
+          data-year=${year}
+          part=${partsInner}
+          aria-selected=${selected}
+          tabindex=${selected ? 0 : -1}
+        >
+          ${year}
+        </span>
+      </span>
+    `;
   }
 
   protected override render() {
-    return html`${this.years.map((row) => {
-      return html`<div part="years-row" role="row">
-        ${row.map((year) => {
-          const yearPartName = partNameMap(this.resolveYearPartName(year));
-          const yearInnerPartName = yearPartName.replace('year', 'year-inner');
+    const now = CalendarDay.today;
+    const start =
+      Math.floor(this._value.year / this.yearsPerPage) * this.yearsPerPage;
+    const years = Array.from(range(start, start + this.yearsPerPage));
 
-          return html`<span part=${yearPartName}>
-            <span
-              part=${yearInnerPartName}
-              role="gridcell"
-              aria-selected=${year.getFullYear() === this.value.getFullYear()}
-              tabindex="${year.getFullYear() === this.value.getFullYear()
-                ? 0
-                : -1}"
-              @click=${() => this.selectYear(year)}
-              @keydown=${(event: KeyboardEvent) =>
-                this.yearKeyDown(event, year)}
-            >
-              ${this.formattedYear(year)}
-            </span>
-          </span>`;
-        })}
-      </div>`;
-    })}`;
+    return Array.from(chunk(years, YEARS_PER_ROW)).map(
+      (row) => html`
+        <div part="years-row" role="row">
+          ${row.map((year) => this.renderYear(year, now))}
+        </div>
+      `
+    );
   }
 }
 

@@ -150,6 +150,12 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
+export function getElementsFromEventPath(event: Event) {
+  return event
+    .composedPath()
+    .filter((item) => isElement(item)) as HTMLElement[];
+}
+
 export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   const result: Record<string, T[]> = {};
   const _get = typeof key === 'function' ? key : (item: T) => item[key];

@@ -146,11 +146,27 @@ function datesFromISOStrings(value: string | null) {
 }
 
 export class BaseCalendarModel extends LitElement {
+  protected get _hasValues() {
+    return this._values.length > 0;
+  }
+
+  protected get _isSingle() {
+    return this.selection === 'single';
+  }
+
+  protected get _isMultiple() {
+    return this.selection === 'multiple';
+  }
+
+  protected get _isRange() {
+    return this.selection === 'range';
+  }
+
   @state()
   protected _firstDayOfWeek = 0;
 
   @state()
-  protected _activeDate = CalendarDay.today();
+  protected _activeDate = CalendarDay.today;
 
   @state()
   protected _value?: CalendarDay;
@@ -182,7 +198,7 @@ export class BaseCalendarModel extends LitElement {
 
   @property({ attribute: 'active-date', converter: dateFromISOString })
   public set activeDate(value) {
-    this._activeDate = value ? CalendarDay.from(value) : CalendarDay.today();
+    this._activeDate = value ? CalendarDay.from(value) : CalendarDay.today;
   }
 
   /**

@@ -36,7 +36,9 @@ export function modulo(n: number, d: number) {
   return ((n % d) + d) % d;
 }
 
-function toCalendarDay(date: CalendarDay | Date) {
+type DayParameter = CalendarDay | Date;
+
+function toCalendarDay(date: DayParameter) {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
@@ -44,7 +46,7 @@ export class CalendarDay {
   private _date!: Date;
 
   /** Constructs and returns the current day. */
-  public static today() {
+  public static get today() {
     return CalendarDay.from(new Date());
   }
 
@@ -64,6 +66,17 @@ export class CalendarDay {
   /** Returns a copy of this instance. */
   public clone() {
     return CalendarDay.from(this._date);
+  }
+
+  /**
+   * Returns a new instance with values replaced.
+   */
+  public replace(args: Partial<CalendarDayParams>) {
+    return new CalendarDay({
+      year: args.year ?? this.year,
+      month: args.month ?? this.month,
+      date: args.date ?? this.date,
+    });
   }
 
   public add(unit: DayInterval, value: number) {
@@ -127,19 +140,30 @@ export class CalendarDay {
     return new Date(this._date);
   }
 
-  public get isWeekend() {
+  /**
+   * Whether the current date is a weekend day.
+   *
+   * @remarks
+   * This is naive, since it does not account for locale specifics.
+   */
+  public get weekend() {
     return this.day < 1 || this.day > 5;
   }
 
-  public equalTo(value: CalendarDay | Date) {
+  /** Whether the date is today. */
+  public get today() {
+    return this.equalTo(CalendarDay.today);
+  }
+
+  public equalTo(value: DayParameter) {
     return this.timestamp === toCalendarDay(value).timestamp;
   }
 
-  public greaterThan(value: CalendarDay | Date) {
+  public greaterThan(value: DayParameter) {
     return this.timestamp > toCalendarDay(value).timestamp;
   }
 
-  public lessThan(value: CalendarDay | Date) {
+  public lessThan(value: DayParameter) {
     return this.timestamp < toCalendarDay(value).timestamp;
   }
 
@@ -148,17 +172,15 @@ export class CalendarDay {
   }
 }
 
-/**
- * Returns whether the passed `date` is today.
- */
-export function isToday(date: CalendarDay | Date) {
-  return toCalendarDay(date).equalTo(CalendarDay.today());
+export function areSameMonth(first: DayParameter, second: DayParameter) {
+  const [a, b] = [toCalendarDay(first), toCalendarDay(second)];
+  return a.year === b.year && a.month === b.month;
 }
 
 /**
  * Given a `date` returns the number of days for the current month.
  */
-export function daysInMonth(date: CalendarDay | Date) {
+export function daysInMonth(date: DayParameter) {
   const { year, month } = toCalendarDay(date);
   return new CalendarDay({ year, month: month + 1, date: 0 }).date;
 }
@@ -167,7 +189,7 @@ export function daysInMonth(date: CalendarDay | Date) {
  * Given a `date` returns the day of the week for the first day of the
  * current month.
  */
-export function firstDayOfWeek(date: CalendarDay | Date) {
+export function firstDayOfWeek(date: DayParameter) {
   const { year, month } = toCalendarDay(date);
   return new CalendarDay({ year, month, date: 1 }).day;
 }
@@ -176,7 +198,7 @@ export function firstDayOfWeek(date: CalendarDay | Date) {
  * Given a `date` returns the day of the week for the first day of the
  * current month and the total numbers of days for the current month.
  */
-export function getDatesFor(date: CalendarDay | Date) {
+export function getDatesFor(date: DayParameter) {
   const value = toCalendarDay(date);
   return {
     firstDay: firstDayOfWeek(value),
@@ -187,26 +209,21 @@ export function getDatesFor(date: CalendarDay | Date) {
 /**
  * Returns a generator yielding days between `start` and `end` (non-inclusive).
  */
-export function* dayRange(
-  start: CalendarDay | Date,
-  end: CalendarDay | Date | number
-) {
+export function* dayRange(start: DayParameter, end: DayParameter | number) {
   let low = toCalendarDay(start);
   const high =
     typeof end === 'number' ? low.add('day', end) : toCalendarDay(end);
 
   const reverse = high.lessThan(low);
+  const step = reverse ? -1 : 1;
 
   while (!reverse ? low.lessThan(high) : low.greaterThan(high)) {
     yield low;
-    low = low.add('day', reverse ? -1 : 1);
+    low = low.add('day', step);
   }
 }
 
-export function* generateFullMonth(
-  value: CalendarDay | Date,
-  firstWeekDay: number
-) {
+export function* generateFullMonth(value: DayParameter, firstWeekDay: number) {
   const { year, month } = toCalendarDay(value);
 
   let start = new CalendarDay({ year, month });
@@ -220,10 +237,7 @@ export function* generateFullMonth(
   }
 }
 
-export function* getCalendarFor(
-  value: CalendarDay | Date,
-  firstWeekDay: number
-) {
+export function* getCalendarFor(value: DayParameter, firstWeekDay: number) {
   const dates = Array.from(generateFullMonth(value, firstWeekDay));
 
   for (let i = 0; i < dates.length; i += daysInWeek) {
@@ -231,14 +245,32 @@ export function* getCalendarFor(
   }
 }
 
+/**
+ * Splits an array into chunks of length `size` and returns a generator
+ * yielding each chunk.
+ * The last chunk may contain less than `size` elements.
+ *
+ * @example
+ * ```typescript
+ * const arr = [0,1,2,3,4,5,6,7,8,9];
+ *
+ * Array.from(chunk(arr, 2)) // [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
+ * Array.from(chunk(arr, 3)) // [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
+ * Array.from(chunk([], 3)) // []
+ * Array.from(chunk(arr, -3)) // Error
+ * ```
+ */
 export function* chunk<T>(arr: T[], size: number) {
+  if (size < 1) {
+    throw new Error('size must be an integer >= 1');
+  }
   for (let i = 0; i < arr.length; i += size) {
     yield arr.slice(i, i + size);
   }
 }
 
 export function isDateInRanges(
-  date: CalendarDay | Date,
+  date: DayParameter,
   ranges: DateRangeDescriptor[]
 ) {
   const value = toCalendarDay(date);
@@ -263,10 +295,10 @@ export function isDateInRanges(
         return days.some((day) => day.equalTo(value));
 
       case DateRangeType.Weekdays:
-        return !value.isWeekend;
+        return !value.weekend;
 
       case DateRangeType.Weekends:
-        return value.isWeekend;
+        return value.weekend;
 
       default:
         return false;
