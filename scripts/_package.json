@@ -60,7 +60,7 @@
   ],
   "customElements": "custom-elements.json",
   "dependencies": {
-    "@floating-ui/dom": "^1.5.3",
+    "@floating-ui/dom": "^1.6.0",
     "@lit-labs/virtualizer": "^2.0.10",
     "lit": "^3.1.0"
   }

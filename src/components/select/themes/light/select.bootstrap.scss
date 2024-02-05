@@ -1,6 +1,6 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
 
 $dropdown-theme: dropdown-theme.$bootstrap;
 $theme: $bootstrap;
@@ -13,6 +13,3 @@ $theme: $bootstrap;
     --dd-border-radius: #{var-get($dropdown-theme, 'border-radius')};
     --dd-border-color: #{var-get($dropdown-theme, 'border-color')};
 }
-
-
-

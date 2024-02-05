@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $fluent;
 $dropdown-theme: dropdown-theme.$fluent;
@@ -24,7 +24,7 @@ $focused-border-width: rem(2px);
     margin-top: rem(5px);
 
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: var-get($theme, 'helper-text-color');
     }
 }
 
@@ -67,10 +67,16 @@ $focused-border-width: rem(2px);
     }
 }
 
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: var-get($fluent, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {
