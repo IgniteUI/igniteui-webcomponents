@@ -145,6 +145,7 @@ export const Default: Story = {
 
     <igc-input class="sticky" label="Search" @igcInput=${onInputSearch}>
       <igc-icon-button
+        aria-label="Go to previous match"
         variant="flat"
         name="navigate_before"
         collection="internal"
@@ -152,6 +153,7 @@ export const Default: Story = {
         slot="suffix"
       ></igc-icon-button>
       <igc-icon-button
+        aria-label="Go to next match"
         variant="flat"
         @click=${next}
         slot="suffix"
