@@ -60,6 +60,11 @@ $outlined-theme: $material-outlined;
     &:focus-visible {
         color: var-get($flat-theme, 'focus-visible-foreground');
         background: var-get($flat-theme, 'focus-visible-background');
+
+        &:hover {
+            color: var-get($flat-theme, 'focus-hover-foreground');
+            background: var-get($flat-theme, 'focus-hover-background');
+        }
     }
 }
 

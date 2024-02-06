@@ -63,7 +63,18 @@ $outline-btn-indent: rem(2px);
     }
 
     &:focus-visible {
-        border-color: var-get($flat-theme, 'focus-visible-border-color');
+        border-color: transparent;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset-block-start: $outline-btn-indent;
+            inset-inline-start: $outline-btn-indent;
+            pointer-events: none;
+            width: calc(100% - (#{$outline-btn-indent} * 2));
+            height: calc(100% - (#{$outline-btn-indent} * 2));
+            box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
+        }
     }
 }
 
@@ -84,7 +95,7 @@ $outline-btn-indent: rem(2px);
     }
 
     &:focus-visible {
-        border-color: var-get($outlined-theme, 'focus-visible-border-color');
+        border-color: var-get($outlined-theme, 'focus-border-color');
 
         &::after {
             content: '';
@@ -94,17 +105,13 @@ $outline-btn-indent: rem(2px);
             pointer-events: none;
             width: calc(100% - (#{$outline-btn-indent} * 2));
             height: calc(100% - (#{$outline-btn-indent} * 2));
-            box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-foreground');
+            box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
         }
 
         &:hover {
             color: var-get($outlined-theme, 'hover-foreground');
             background: var-get($outlined-theme, 'hover-background');
             border-color: var-get($outlined-theme, 'hover-border-color');
-
-            &::after {
-                box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'hover-foreground');
-            }
         }
 
         &:active {
