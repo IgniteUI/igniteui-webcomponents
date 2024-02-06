@@ -84,6 +84,7 @@ $transition-duration: .25s;
 
     [part~='input'] {
         @include type-style('body-2');
+
         color: var-get($theme, 'idle-text-color');
         font-size: rem(16px);
         background: initial;
@@ -146,6 +147,7 @@ $transition-duration: .25s;
 
     [part^='container'] {
         caret-color: var-get($theme, 'focused-bottom-line-color');
+
         &::after {
             transform: scaleY(1);
         }
