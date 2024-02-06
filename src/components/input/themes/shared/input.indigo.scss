@@ -53,9 +53,9 @@ $transition-duration: .25s;
 
     [part~='label'] {
         color: var-get($theme, 'idle-secondary-color');
-        font-size: rem(14px);
-        font-weight: 600;
-        line-height: 1;
+        font-size: rem(11px);
+        font-weight: 400;
+        line-height: rem(15px);
     }
 
     [part^='container'] {
@@ -71,7 +71,7 @@ $transition-duration: .25s;
             position: absolute;
             content: '';
             width: 100%;
-            height: rem(2px);
+            height: rem(1px);
             left: 0;
             right: 0;
             bottom: -1px;
@@ -83,6 +83,7 @@ $transition-duration: .25s;
     }
 
     [part~='input'] {
+        @include type-style('body-2');
         color: var-get($theme, 'idle-text-color');
         font-size: rem(16px);
         background: initial;
@@ -91,6 +92,10 @@ $transition-duration: .25s;
         border: none;
         grid-area: 1 / 2;
         height: 100%;
+    }
+
+    [part~='input']::placeholder {
+        font-style: italic;
     }
 
     [part~='prefixed'] {
@@ -140,6 +145,7 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
+        caret-color: var-get($theme, 'focused-bottom-line-color');
         &::after {
             transform: scaleY(1);
         }
@@ -162,6 +168,7 @@ $transition-duration: .25s;
 
 :host([invalid]) {
     [part^='container'] {
+        caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');
 
         &::after {
