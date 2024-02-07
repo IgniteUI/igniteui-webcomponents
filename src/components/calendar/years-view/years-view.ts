@@ -103,19 +103,15 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 
   protected renderYear(year: number, now: CalendarDay) {
     const selected = this._value.year === year;
-    const parts = partNameMap({
-      year: true,
-      selected,
-      current: year === now.year,
-    });
-    const partsInner = parts.replace('year', 'year-inner');
+    const current = year === now.year;
+    const parts = { selected, current };
 
     return html`
-      <span part=${parts}>
+      <span part=${partNameMap({ year: true, ...parts })}>
         <span
           role="gridcell"
           data-year=${year}
-          part=${partsInner}
+          part=${partNameMap({ 'year-inner': true, ...parts })}
           aria-selected=${selected}
           tabindex=${selected ? 0 : -1}
         >

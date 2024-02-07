@@ -1,15 +1,17 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
+import { choose } from 'lit/directives/choose.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import {
-  IgcCalendarBaseComponent,
+  BaseCalendarModel,
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
 } from './common/calendar-base.js';
-import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
-import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import { CalendarDay, areSameMonth, first, last } from './common/day.js';
+import { createDateTimeFormatters } from './common/intl-formatters.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
@@ -18,16 +20,29 @@ import { styles as shared } from './themes/shared/material/calendar.common.css.j
 import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+  shiftKey,
+} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources.js';
+import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { partNameMap } from '../common/util.js';
+import {
+  format,
+  getElementsFromEventPath,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 
 /**
@@ -60,10 +75,9 @@ import IgcIconComponent from '../icon/icon.js';
  */
 @themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
-  EventEmitterMixin<
-    IgcCalendarBaseEventMap,
-    Constructor<IgcCalendarBaseComponent>
-  >(IgcCalendarBaseComponent)
+  EventEmitterMixin<IgcCalendarBaseEventMap, Constructor<BaseCalendarModel>>(
+    BaseCalendarModel
+  )
 ) {
   public static readonly tagName = 'igc-calendar';
   public static styles = [styles, shared];
@@ -79,72 +93,12 @@ export default class IgcCalendarComponent extends SizableMixin(
     );
   }
 
-  private formatterMonth!: Intl.DateTimeFormat;
-  private formatterWeekday!: Intl.DateTimeFormat;
-  private formatterMonthDay!: Intl.DateTimeFormat;
   private declare readonly [themeSymbol]: Theme;
 
-  @state()
-  private rangePreviewDate?: Date;
-
-  @state()
-  private activeDaysViewIndex = 0;
-
-  @queryAll('igc-days-view')
-  private daysViews!: NodeList;
-
-  @query('igc-months-view')
-  private monthsView!: IgcMonthsViewComponent;
-
-  @query('igc-years-view')
-  private yearsView!: IgcYearsViewComponent;
-
-  /** Controls the visibility of the dates that do not belong to the current month. */
-  @property({ type: Boolean, attribute: 'hide-outside-days' })
-  public hideOutsideDays = false;
-
-  /** Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection. */
-  @property({ type: Boolean, attribute: 'hide-header' })
-  public hideHeader = false;
-
-  /** The orientation of the header. */
-  @property({ attribute: 'header-orientation', reflect: true })
-  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
-
-  /** The orientation of the multiple months displayed in days view. */
-  @property()
-  public orientation: 'vertical' | 'horizontal' = 'horizontal';
-
-  /** The number of months displayed in days view. */
-  @property({ type: Number, attribute: 'visible-months' })
-  public visibleMonths = 1;
-
-  /** The active view. */
-  @property({ attribute: 'active-view' })
-  public activeView: 'days' | 'months' | 'years' = 'days';
-
-  /** The options used to format the months and the weekdays in the calendar views. */
-  @property({ attribute: false })
-  public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
-    {
-      month: 'long',
-      weekday: 'narrow',
-    };
-
-  /** The resource strings. */
-  @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings =
-    IgcCalendarResourceStringEN;
-
-  @watch('formatOptions')
-  @watch('locale')
-  protected formattersChange() {
-    this.initFormatters();
-  }
-
-  constructor() {
-    super();
-    this.initFormatters();
+  private get yearRangeStart() {
+    return (
+      Math.floor(this._activeDate.year / this.yearPerPage) * this.yearPerPage
+    );
   }
 
   private get yearPerPage() {
@@ -152,675 +106,703 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private get previousButtonLabel() {
-    return this.activeView === 'days'
-      ? this.resourceStrings.previousMonth
-      : this.activeView === 'months'
-        ? this.resourceStrings.previousYear
-        : this.activeView === 'years'
-          ? this.resourceStrings.previousYears.replace(
-              '{0}',
-              this.yearPerPage.toString()
-            )
-          : '';
+    switch (this.activeView) {
+      case 'days':
+        return this.resourceStrings.previousMonth;
+      case 'months':
+        return this.resourceStrings.previousYear;
+      case 'years':
+        return format(
+          this.resourceStrings.previousYears,
+          `${this.yearPerPage}`
+        );
+      default:
+        return '';
+    }
   }
 
   private get nextButtonLabel() {
-    return this.activeView === 'days'
-      ? this.resourceStrings.nextMonth
-      : this.activeView === 'months'
-        ? this.resourceStrings.nextYear
-        : this.activeView === 'years'
-          ? this.resourceStrings.nextYears.replace(
-              '{0}',
-              this.yearPerPage.toString()
-            )
-          : '';
-  }
-
-  private monthSelectLabel(activeDate: Date) {
-    return (
-      activeDate.toLocaleString(this.locale, {
-        month: 'long',
-      }) +
-      ', ' +
-      this.resourceStrings.selectMonth
-    );
-  }
-
-  private yearSelectLabel(activeDate: Date) {
-    return activeDate.getFullYear() + ', ' + this.resourceStrings.selectYear;
-  }
-
-  private handleKeyDown = (event: KeyboardEvent) => {
-    const tagName = (event.target as HTMLElement).tagName.toLowerCase();
-
-    if (
-      tagName !== 'igc-days-view' &&
-      tagName !== 'igc-months-view' &&
-      tagName !== 'igc-years-view'
-    ) {
-      return;
+    switch (this.activeView) {
+      case 'days':
+        return this.resourceStrings.nextMonth;
+      case 'months':
+        return this.resourceStrings.nextYear;
+      case 'years':
+        return format(this.resourceStrings.nextYears, `${this.yearPerPage}`);
+      default:
+        return '';
     }
+  }
 
-    switch (event.key) {
-      case 'PageDown':
-        event.preventDefault();
+  private contentRef: Ref<HTMLDivElement> = createRef();
 
-        if (event.shiftKey && this.activeView === 'days') {
-          this.nextYear();
-        } else {
-          this.navigateNext();
-        }
+  // TODO: Move to base class
+  @state()
+  private rangePreviewDate?: CalendarDay;
 
-        if (this.activeView === 'days') {
-          this.focusActiveDate();
-        }
-        break;
-      case 'PageUp':
-        event.preventDefault();
+  @state()
+  private activeDaysViewIndex = 0;
 
-        if (event.shiftKey && this.activeView === 'days') {
-          this.previousYear();
-        } else {
-          this.navigatePrevious();
-        }
+  @queryAll(IgcDaysViewComponent.tagName)
+  private daysViews!: NodeListOf<IgcDaysViewComponent>;
 
-        if (this.activeView === 'days') {
-          this.focusActiveDate();
-        }
-        break;
-      case 'Home':
-        event.preventDefault();
+  @query(IgcMonthsViewComponent.tagName)
+  private monthsView!: IgcMonthsViewComponent;
 
-        if (this.activeView === 'days') {
-          const firstDaysView = this.daysViews[0] as IgcDaysViewComponent;
-          const activeDate = firstDaysView.activeDate;
-          const date = new Date(activeDate);
-          date.setDate(1);
-          this.activeDate = date;
-          this.activeDaysViewIndex = 0;
-        } else if (this.activeView === 'months') {
-          const date = new Date(this.activeDate);
-          date.setMonth(0);
-          this.activeDate = date;
-        } else if (this.activeView === 'years') {
-          const startYear = calculateYearsRangeStart(
-            this.activeDate,
-            this.yearPerPage
-          );
-          const date = new Date(this.activeDate);
-          date.setDate(1);
-          date.setFullYear(startYear);
-          setDateSafe(date, this.activeDate.getDate());
-          this.activeDate = date;
-        }
+  @query(IgcYearsViewComponent.tagName)
+  private yearsView!: IgcYearsViewComponent;
 
-        this.focusActiveDate();
-        break;
-      case 'End':
-        event.preventDefault();
+  /**
+   * Whether to show the dates that do not belong to the current active month.
+   * @attr hide-outside-days
+   */
+  @property({ type: Boolean, attribute: 'hide-outside-days', reflect: true })
+  public hideOutsideDays = false;
 
-        if (this.activeView === 'days') {
-          const index = this.daysViews.length - 1;
-          const lastDaysView = this.daysViews[index] as IgcDaysViewComponent;
-          const activeDate = lastDaysView.activeDate;
-          const date = new Date(activeDate);
-          date.setDate(1);
-          date.setMonth(date.getMonth() + 1);
-          date.setDate(0);
-          this.activeDate = date;
-          this.activeDaysViewIndex = index;
-        } else if (this.activeView === 'months') {
-          const date = new Date(this.activeDate);
-          date.setMonth(11);
-          this.activeDate = date;
-        } else if (this.activeView === 'years') {
-          const startYear = calculateYearsRangeStart(
-            this.activeDate,
-            this.yearPerPage
-          );
-          const date = new Date(this.activeDate);
-          date.setDate(1);
-          date.setFullYear(startYear + this.yearPerPage - 1);
-          setDateSafe(date, this.activeDate.getDate());
-          this.activeDate = date;
-        }
+  /**
+   * Whether to render the calendar header part.
+   * When the calendar selection is set to `multiple` the header is always hidden.
+   *
+   * @attr hide-header
+   */
+  @property({ type: Boolean, attribute: 'hide-header', reflect: true })
+  public hideHeader = false;
 
-        this.focusActiveDate();
-        break;
-      case 'ArrowLeft':
-        event.preventDefault();
+  /**
+   * The orientation of the calendar header.
+   * @attr header-orientation
+   */
+  @property({ reflect: true, attribute: 'header-orientation' })
+  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
-        if (this.activeView === 'days') {
-          const date = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Day,
-            -1
-          );
+  /**
+   * The orientation of the calendar months when more than one month
+   * is being shown.
+   * @attr orientation
+   */
+  @property()
+  public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
-          if (this.visibleMonths > 1) {
-            const activeDayView = this.daysViews[
-              this.activeDaysViewIndex
-            ] as IgcDaysViewComponent;
-            const activeMonthDate = activeDayView.activeDate;
+  /**
+   * The number of months displayed in the days view.
+   * @attr visible-months
+   */
+  @property({ type: Number, attribute: 'visible-months' })
+  public visibleMonths = 1;
 
-            if (activeMonthDate.getMonth() !== date.getMonth()) {
-              this.activeDaysViewIndex =
-                this.activeDaysViewIndex > 0 ? this.activeDaysViewIndex - 1 : 0;
-            }
-          }
-          this.activeDate = date;
-        } else if (this.activeView === 'months') {
-          this.previousMonth();
-        } else if (this.activeView === 'years') {
-          this.previousYear();
-        }
+  /**
+   * The current active view of the component.
+   * @attr active-view
+   */
+  @property({ attribute: 'active-view' })
+  public activeView: 'days' | 'months' | 'years' = 'days';
 
-        this.focusActiveDate();
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
+  /**
+   * The
+   */
+  @property({ attribute: false })
+  public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
+    { month: 'long', weekday: 'narrow' };
 
-        if (this.activeView === 'days') {
-          const date = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Day,
-            1
-          );
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public resourceStrings = IgcCalendarResourceStringEN;
 
-          if (this.visibleMonths > 1) {
-            const activeDayView = this.daysViews[
-              this.activeDaysViewIndex
-            ] as IgcDaysViewComponent;
-            const activeMonthDate = activeDayView.activeDate;
+  private _intl = createDateTimeFormatters(this.locale, {
+    month: {
+      month: this.formatOptions.month,
+    },
+    monthLabel: { month: 'long' },
+    weekday: { weekday: 'short' },
+    monthDay: { month: 'short', day: 'numeric' },
+    yearLabel: { month: 'long', year: 'numeric' },
+  });
 
-            if (activeMonthDate.getMonth() !== date.getMonth()) {
-              this.activeDaysViewIndex =
-                this.activeDaysViewIndex === this.visibleMonths - 1
-                  ? this.activeDaysViewIndex
-                  : this.activeDaysViewIndex + 1;
-            }
-          }
-          this.activeDate = date;
-        } else if (this.activeView === 'months') {
-          this.nextMonth();
-        } else if (this.activeView === 'years') {
-          this.nextYear();
-        }
+  @watch('locale')
+  protected localeChange() {
+    this._intl.locale = this.locale;
+  }
 
-        this.focusActiveDate();
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-
-        if (this.activeView === 'days') {
-          const date = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Week,
-            -1
-          );
-
-          if (this.visibleMonths > 1) {
-            const activeDayView = this.daysViews[
-              this.activeDaysViewIndex
-            ] as IgcDaysViewComponent;
-            const activeMonthDate = activeDayView.activeDate;
-
-            if (activeMonthDate.getMonth() !== date.getMonth()) {
-              this.activeDaysViewIndex =
-                this.activeDaysViewIndex > 0 ? this.activeDaysViewIndex - 1 : 0;
-            }
-          }
-          this.activeDate = date;
-        } else if (this.activeView === 'months') {
-          this.activeDate = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Month,
-            -MONTHS_PER_ROW
-          );
-        } else if (this.activeView === 'years') {
-          this.activeDate = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Year,
-            -YEARS_PER_ROW
-          );
-        }
-
-        this.focusActiveDate();
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-
-        if (this.activeView === 'days') {
-          const date = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Week,
-            1
-          );
-
-          if (this.visibleMonths > 1) {
-            const activeDayView = this.daysViews[
-              this.activeDaysViewIndex
-            ] as IgcDaysViewComponent;
-            const activeMonthDate = activeDayView.activeDate;
-
-            if (activeMonthDate.getMonth() !== date.getMonth()) {
-              this.activeDaysViewIndex =
-                this.activeDaysViewIndex === this.visibleMonths - 1
-                  ? this.activeDaysViewIndex
-                  : this.activeDaysViewIndex + 1;
-            }
-          }
-          this.activeDate = date;
-        } else if (this.activeView === 'months') {
-          this.activeDate = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Month,
-            MONTHS_PER_ROW
-          );
-        } else if (this.activeView === 'years') {
-          this.activeDate = this.calendarModel.timedelta(
-            this.activeDate,
-            TimeDeltaInterval.Year,
-            YEARS_PER_ROW
-          );
-        }
-
-        this.focusActiveDate();
-        break;
-    }
-  };
+  @watch('formatOptions')
+  protected formatOptionsChange() {
+    this._intl.update({
+      month: {
+        month: this.formatOptions.month,
+      },
+    });
+  }
 
   private async focusActiveDate() {
     await this.updateComplete;
 
+    switch (this.activeView) {
+      case 'days':
+        return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
+      case 'months':
+        return this.monthsView.focusActiveDate();
+      case 'years':
+        return this.yearsView.focusActiveDate();
+    }
+  }
+
+  private updateViewIndex(date: CalendarDay, newIndex: number) {
+    if (this.visibleMonths === 1) return;
+
+    const index = this.activeDaysViewIndex;
+    const other = CalendarDay.from(this.daysViews.item(index).activeDate);
+
+    if (date.month !== other.month) {
+      this.activeDaysViewIndex = newIndex;
+    }
+  }
+
+  private onArrowLeft() {
+    const index = this.activeDaysViewIndex;
+
+    switch (this.activeView) {
+      case 'days':
+        {
+          const date = this._activeDate.add('day', -1);
+
+          this.updateViewIndex(date, Math.max(index - 1, 0));
+          this._activeDate = date;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('month', -1);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', -1);
+        break;
+    }
+
+    this.focusActiveDate();
+  }
+
+  private onArrowRight() {
+    const index = this.activeDaysViewIndex;
+
+    switch (this.activeView) {
+      case 'days':
+        {
+          const date = this._activeDate.add('day', 1);
+
+          this.updateViewIndex(
+            date,
+            index === this.visibleMonths - 1 ? index : index + 1
+          );
+          this._activeDate = date;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('month', 1);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', 1);
+        break;
+    }
+
+    this.focusActiveDate();
+  }
+
+  private onArrowUp() {
+    const index = this.activeDaysViewIndex;
+
+    switch (this.activeView) {
+      case 'days':
+        {
+          const date = this._activeDate.add('week', -1);
+
+          this.updateViewIndex(date, Math.max(index - 1, 0));
+          this._activeDate = date;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('month', -MONTHS_PER_ROW);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', -YEARS_PER_ROW);
+        break;
+    }
+
+    this.focusActiveDate();
+  }
+
+  private onArrowDown() {
+    const index = this.activeDaysViewIndex;
+
+    switch (this.activeView) {
+      case 'days':
+        {
+          const date = this._activeDate.add('week', 1);
+
+          this.updateViewIndex(
+            date,
+            index === this.visibleMonths - 1 ? index : index + 1
+          );
+          this._activeDate = date;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('month', MONTHS_PER_ROW);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', YEARS_PER_ROW);
+        break;
+    }
+
+    this.focusActiveDate();
+  }
+
+  private onShiftPageDown() {
     if (this.activeView === 'days') {
-      const daysView = this.daysViews[
-        this.activeDaysViewIndex
-      ] as IgcDaysViewComponent;
-      daysView.focusActiveDate();
-    } else if (this.activeView === 'months') {
-      this.monthsView.focusActiveDate();
-    } else if (this.activeView === 'years') {
-      this.yearsView.focusActiveDate();
+      this._activeDate = this._activeDate.add('year', 1);
+      this.focusActiveDate();
     }
   }
 
-  private initFormatters() {
-    this.formatterMonth = new Intl.DateTimeFormat(this.locale, {
-      month: this.formatOptions.month,
-    });
-    this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
-      weekday: 'short',
-    });
-    this.formatterMonthDay = new Intl.DateTimeFormat(this.locale, {
-      month: 'short',
-      day: 'numeric',
-    });
+  private onShiftPageUp() {
+    if (this.activeView === 'days') {
+      this._activeDate = this._activeDate.add('year', -1);
+      this.focusActiveDate();
+    }
   }
 
-  private formattedMonth(value: Date) {
-    return this.formatterMonth.format(value);
-  }
-
-  private changeValue(event: CustomEvent<void>) {
-    event.stopPropagation();
-
-    const daysView = event.target as IgcDaysViewComponent;
-    let newValue;
-
-    if (this.selection === 'single') {
-      this.value = daysView.value;
-      newValue = this.value;
-    } else {
-      this.values = daysView.values;
-      newValue = this.values;
+  private onHomeKey() {
+    switch (this.activeView) {
+      case 'days':
+        {
+          const first = CalendarDay.from(this.daysViews.item(0).activeDate);
+          this._activeDate = first.replace({ date: 1 });
+          this.activeDaysViewIndex = 0;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.replace({ month: 0 });
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.replace({
+          year: this.yearRangeStart,
+          date: 1,
+        });
+        break;
     }
 
-    this.emitEvent('igcChange', { detail: newValue });
+    this.focusActiveDate();
   }
 
-  private changeMonth(event: CustomEvent<void>) {
+  private onEndKey() {
+    const index = this.daysViews.length - 1;
+
+    switch (this.activeView) {
+      case 'days':
+        {
+          const last = CalendarDay.from(this.daysViews.item(index).activeDate);
+          this._activeDate = last.replace({ month: last.month + 1, date: 0 });
+          this.activeDaysViewIndex = index;
+        }
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.replace({ month: 11 });
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.replace({
+          year: this.yearRangeStart + this.yearPerPage - 1,
+          date: 1,
+        });
+        break;
+    }
+
+    this.focusActiveDate();
+  }
+
+  private isNotFromView(_: Element, event: KeyboardEvent) {
+    return !getElementsFromEventPath(event).some((element) =>
+      element.matches(
+        `${IgcDaysViewComponent.tagName}, ${IgcMonthsViewComponent.tagName}, ${IgcYearsViewComponent.tagName}`
+      )
+    );
+  }
+
+  constructor() {
+    super();
+
+    addKeybindings(this, {
+      skip: this.isNotFromView,
+      ref: this.contentRef,
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
+    })
+      .set(arrowLeft, this.onArrowLeft)
+      .set(arrowRight, this.onArrowRight)
+      .set(arrowUp, this.onArrowUp)
+      .set(arrowDown, this.onArrowDown)
+      .set(pageUpKey, this.navigatePrevious)
+      .set(pageDownKey, this.navigateNext)
+      .set([shiftKey, pageUpKey], this.onShiftPageUp)
+      .set([shiftKey, pageDownKey], this.onShiftPageDown)
+      .set(homeKey, this.onHomeKey)
+      .set(endKey, this.onEndKey);
+  }
+
+  protected renderNavigationButtons() {
+    const isFluent = this[themeSymbol] === 'fluent';
+    const prevIcon = isFluent ? 'arrow_upward' : 'navigate_before';
+    const nextIcon = isFluent ? 'arrow_downward' : 'navigate_next';
+    const parts = partNameMap({
+      'navigation-button': true,
+      vertical: this.orientation === 'vertical',
+    });
+
+    return html`
+      <div part="navigation-buttons">
+        <button
+          part=${parts}
+          aria-label=${this.previousButtonLabel}
+          @click=${this.navigatePrevious}
+        >
+          <igc-icon
+            aria-hidden="true"
+            name=${prevIcon}
+            collection="internal"
+          ></igc-icon>
+        </button>
+
+        <button
+          part=${parts}
+          aria-label=${this.nextButtonLabel}
+          @click=${this.navigateNext}
+        >
+          <igc-icon
+            aria-hidden="true"
+            name=${nextIcon}
+            collection="internal"
+          ></igc-icon>
+        </button>
+      </div>
+    `;
+  }
+
+  protected renderMonthButtonNavigation(
+    active: CalendarDay,
+    viewIndex: number
+  ) {
+    const labelFmt = this._intl.getFormatter('monthLabel').format;
+    const valueFmt = this._intl.getFormatter('month').format;
+    const ariaLabel = `${labelFmt(active.native)}, ${this.resourceStrings.selectMonth}`;
+
+    return html`
+      <button
+        part="months-navigation"
+        aria-label=${ariaLabel}
+        @click=${() => this.switchToMonths(viewIndex)}
+      >
+        ${valueFmt(active.native)}
+      </button>
+    `;
+  }
+
+  protected renderYearButtonNavigation(active: CalendarDay, viewIndex: number) {
+    const isDay = this.activeView === 'days';
+    const fmt = this._intl.getFormatter('yearLabel').format;
+    const ariaLabel = `${active.year}, ${this.resourceStrings.selectYear}`;
+    const ariaSkip = isDay ? fmt(active.native) : active.year;
+
+    return html`
+      <span class="aria-off-screen" aria-live="polite">${ariaSkip}</span>
+      <button
+        part="years-navigation"
+        aria-label=${ariaLabel}
+        @click=${() => this.switchToYears(viewIndex)}
+      >
+        ${active.year}
+      </button>
+    `;
+  }
+
+  protected renderYearRangeNavigation(active: CalendarDay) {
+    const start = Math.floor(active.year / this.yearPerPage) * this.yearPerPage;
+    const end = start + this.yearPerPage - 1;
+
+    return html`<span part="years-range" aria-live="polite">
+      ${start} - ${end}
+    </span>`;
+  }
+
+  protected renderNavigation(
+    date?: CalendarDay,
+    showButtons = true,
+    viewIndex = 0
+  ) {
+    const activeDate = date ?? this._activeDate;
+    const isDay = this.activeView === 'days';
+    const isMonth = this.activeView === 'months';
+    const isYear = this.activeView === 'years';
+
+    return html`
+      <div part="navigation">
+        <div>
+          ${isDay
+            ? this.renderMonthButtonNavigation(activeDate, viewIndex)
+            : nothing}
+          ${isDay || isMonth
+            ? this.renderYearButtonNavigation(activeDate, viewIndex)
+            : nothing}
+          ${isYear ? this.renderYearRangeNavigation(activeDate) : nothing}
+        </div>
+        ${showButtons ? this.renderNavigationButtons() : nothing}
+      </div>
+    `;
+  }
+
+  protected renderHeader() {
+    if (this.hideHeader || this._isMultiple) {
+      return nothing;
+    }
+
+    const title = this._isSingle
+      ? this.resourceStrings.selectDate
+      : this.resourceStrings.selectRange;
+
+    return html`
+      <div part="header">
+        <h5 part="header-title">
+          <slot name="title">${title}</slot>
+        </h5>
+        <h2 part="header-date">${this.renderHeaderDate()}</h2>
+      </div>
+    `;
+  }
+
+  protected renderHeaderDateSingle() {
+    const date = this.value;
+    const weekday = this._intl.getFormatter('weekday');
+    const monthDay = this._intl.getFormatter('monthDay');
+    const separator =
+      this.headerOrientation === 'vertical' ? html`<br />` : ' ';
+
+    return date
+      ? html`${weekday.format(date)},${separator}${monthDay.format(date)}`
+      : this.resourceStrings.selectedDate;
+  }
+
+  protected renderHeaderDateRange() {
+    const values = this.values;
+    const fmt = this._intl.getFormatter('monthDay');
+    const { startDate, endDate } = this.resourceStrings;
+
+    const start = this._hasValues ? fmt.format(first(values)) : startDate;
+    const end =
+      this._hasValues && values.length > 1 ? fmt.format(last(values)) : endDate;
+
+    return html`
+      <span>${start}</span>
+      <span> - </span>
+      <span>${end}</span>
+    `;
+  }
+
+  protected renderHeaderDate() {
+    return this._isSingle
+      ? this.renderHeaderDateSingle()
+      : this.renderHeaderDateRange();
+  }
+
+  protected renderDaysView() {
+    const activeDates = this.getActiveDates();
+    const horizontal = this.orientation === 'horizontal';
+    const length = activeDates.length - 1;
+    const format = this.formatOptions
+      .weekday as Intl.DateTimeFormatOptions['weekday'];
+
+    return html`${activeDates.map(
+      (date, idx) => html`
+        <div part="days-view-container">
+          ${this.renderNavigation(
+            date,
+            horizontal ? idx === length : idx === 0,
+            idx
+          )}
+          <igc-days-view
+            @igcChange=${this.changeValue}
+            @igcActiveDateChange=${this.activeDateChanged}
+            @igcRangePreviewDateChange=${this.rangePreviewDateChanged}
+            part="days-view"
+            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
+            .active=${this.activeDaysViewIndex === idx}
+            .activeDate=${date.native}
+            .disabledDates=${this.disabledDates}
+            .hideLeadingDays=${this.hideOutsideDays || idx !== 0}
+            .hideTrailingDays=${this.hideHeader || idx !== length}
+            .locale=${this.locale}
+            .rangePreviewDate=${this.rangePreviewDate?.native}
+            .resourceStrings=${this.resourceStrings}
+            .selection=${this.selection}
+            .showWeekNumbers=${this.showWeekNumbers}
+            .specialDates=${this.specialDates}
+            .value=${this.value}
+            .values=${this.values}
+            .weekDayFormat=${format!}
+            .weekStart=${this.weekStart}
+          ></igc-days-view>
+        </div>
+      `
+    )}`;
+  }
+
+  protected renderMonthView() {
+    const format = this.formatOptions
+      .month as Intl.DateTimeFormatOptions['month'];
+
+    return html`${this.renderNavigation()}
+      <igc-months-view
+        part="months-view"
+        exportparts="month, selected, month-inner, current"
+        @igcChange=${this.changeMonth}
+        .value=${this.activeDate}
+        .locale=${this.locale}
+        .monthFormat=${format!}
+      ></igc-months-view>`;
+  }
+
+  protected renderYearView() {
+    return html`
+      ${this.renderNavigation()}
+      <igc-years-view
+        part="years-view"
+        exportparts="year, selected, year-inner, current"
+        @igcChange=${this.changeYear}
+        .value=${this.activeDate}
+        .yearsPerPage=${this.yearPerPage}
+      ></igc-years-view>
+    `;
+  }
+
+  protected override render() {
+    const direction =
+      this.activeView === 'days' && this.orientation === 'horizontal';
+
+    const styles = {
+      display: 'flex',
+      flexGrow: 1,
+      flexDirection: direction ? 'row' : 'column',
+    };
+
+    return html`
+      ${this.renderHeader()}
+      <div ${ref(this.contentRef)} part="content" style=${styleMap(styles)}>
+        ${choose(this.activeView, [
+          ['days', () => this.renderDaysView()],
+          ['months', () => this.renderMonthView()],
+          ['years', () => this.renderYearView()],
+        ])}
+      </div>
+    `;
+  }
+
+  protected changeMonth(event: CustomEvent<Date>) {
     event.stopPropagation();
-    this.activeDate = (event.target as IgcMonthsViewComponent).value;
+    this.activeDate = event.detail;
     this.activeView = 'days';
 
     this.focusActiveDate();
   }
 
-  private changeYear(event: CustomEvent<void>) {
+  protected changeYear(event: CustomEvent<Date>) {
     event.stopPropagation();
-    this.activeDate = (event.target as IgcYearsViewComponent).value;
+    this.activeDate = event.detail;
     this.activeView = 'months';
 
     this.focusActiveDate();
   }
 
-  private async switchToMonths(daysViewIndex: number) {
-    this.activateDaysView(daysViewIndex);
-    this.activeView = 'months';
+  protected changeValue(event: CustomEvent<Date>) {
+    event.stopPropagation();
 
-    await this.updateComplete;
-    this.focusActiveDate();
+    const view = event.target as IgcDaysViewComponent;
+    this._isSingle ? (this.value = view.value) : (this.values = view.values);
+
+    this.emitEvent('igcChange', {
+      detail: this._isSingle ? this.value : this.values,
+    });
   }
 
-  private async switchToYears(daysViewIndex: number) {
-    if (this.activeView === 'days') {
-      this.activateDaysView(daysViewIndex);
-    }
-    this.activeView = 'years';
+  protected activeDateChanged(event: CustomEvent<Date>) {
+    const view = event.target as IgcDaysViewComponent;
+    const views = Array.from(this.daysViews);
 
-    await this.updateComplete;
-    this.focusActiveDate();
-  }
+    this.activeDaysViewIndex = views.indexOf(view);
+    this.activeDate = event.detail;
 
-  private activateDaysView(daysViewIndex: number) {
-    const activeDaysView = this.daysViews[
-      daysViewIndex
-    ] as IgcDaysViewComponent;
-    this.activeDate = activeDaysView.activeDate;
-    this.activeDaysViewIndex = daysViewIndex;
-  }
-
-  private activeDateChanged(event: CustomEvent<ICalendarDate>) {
-    const day = event.detail;
-    const daysViews = Array.from(this.daysViews);
-
-    this.activeDaysViewIndex = daysViews.indexOf(event.target as Node);
-    this.activeDate = day.date;
-
-    if (!day.isCurrentMonth) {
+    if (!areSameMonth(this.activeDate, view.activeDate)) {
       this.focusActiveDate();
     }
   }
 
-  private rangePreviewDateChange(event: CustomEvent<Date>) {
-    this.rangePreviewDate = event.detail;
+  protected rangePreviewDateChanged(event: CustomEvent<Date>) {
+    this.rangePreviewDate = event.detail
+      ? CalendarDay.from(event.detail)
+      : undefined;
   }
 
-  private nextMonth() {
-    this.activeDate = this.calendarModel.getNextMonth(this.activeDate);
-  }
+  private getActiveDates() {
+    const current = this.activeDaysViewIndex;
+    const length = Math.max(this.visibleMonths, 1);
 
-  private previousMonth() {
-    this.activeDate = this.calendarModel.getPrevMonth(this.activeDate);
-  }
-
-  private nextYear() {
-    this.activeDate = this.calendarModel.getNextYear(this.activeDate);
-  }
-
-  private previousYear() {
-    this.activeDate = this.calendarModel.getPrevYear(this.activeDate);
-  }
-
-  private nextYearsPage() {
-    this.activeDate = this.calendarModel.timedelta(
-      this.activeDate,
-      TimeDeltaInterval.Year,
-      this.yearPerPage
+    return Array.from({ length }, (_, i) =>
+      this._activeDate.add('month', i - current)
     );
   }
 
-  private previousYearsPage() {
-    this.activeDate = this.calendarModel.timedelta(
-      this.activeDate,
-      TimeDeltaInterval.Year,
-      -this.yearPerPage
-    );
+  private activateDaysView(index: number) {
+    const view = this.daysViews.item(index);
+    this.activeDate = view.activeDate;
+    this.activeDaysViewIndex = index;
+  }
+
+  // XXX: Navigation
+
+  private navigatePrevious() {
+    switch (this.activeView) {
+      case 'days':
+        this._activeDate = this._activeDate.add('month', -1);
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('year', -1);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', -this.yearPerPage);
+    }
   }
 
   private navigateNext() {
+    switch (this.activeView) {
+      case 'days':
+        this._activeDate = this._activeDate.add('month', 1);
+        break;
+      case 'months':
+        this._activeDate = this._activeDate.add('year', 1);
+        break;
+      case 'years':
+        this._activeDate = this._activeDate.add('year', this.yearPerPage);
+    }
+  }
+
+  private switchToMonths(viewIndex: number) {
+    this.activateDaysView(viewIndex);
+    this.activeView = 'months';
+
+    this.focusActiveDate();
+  }
+
+  private switchToYears(viewIndex: number) {
     if (this.activeView === 'days') {
-      this.nextMonth();
-    } else if (this.activeView === 'months') {
-      this.nextYear();
-    } else if (this.activeView === 'years') {
-      this.nextYearsPage();
+      this.activateDaysView(viewIndex);
     }
-  }
+    this.activeView = 'years';
 
-  private navigatePrevious() {
-    if (this.activeView === 'days') {
-      this.previousMonth();
-    } else if (this.activeView === 'months') {
-      this.previousYear();
-    } else if (this.activeView === 'years') {
-      this.previousYearsPage();
-    }
-  }
-
-  private renderNavigation(
-    activeDate?: Date,
-    renderButtons = true,
-    daysViewIndex = 0
-  ) {
-    activeDate = activeDate ?? this.activeDate;
-
-    let startYear = undefined;
-    let endYear = undefined;
-    const prev_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_upward' : 'navigate_before';
-    const next_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_downward' : 'navigate_next';
-
-    if (this.activeView === 'years') {
-      startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
-      endYear = startYear + this.yearPerPage - 1;
-    }
-
-    return html`<div part="navigation">
-      <div>
-        ${this.activeView === 'days'
-          ? html`<button
-              part="months-navigation"
-              aria-label=${this.monthSelectLabel(activeDate)}
-              @click=${() => this.switchToMonths(daysViewIndex)}
-            >
-              ${this.formattedMonth(activeDate)}
-            </button>`
-          : ''}
-        ${this.activeView === 'days' || this.activeView === 'months'
-          ? html`<span class="aria-off-screen" aria-live="polite">
-                ${this.activeView === 'days'
-                  ? activeDate.toLocaleString(this.locale, {
-                      month: 'long',
-                      year: 'numeric',
-                    })
-                  : activeDate.getFullYear()}
-              </span>
-              <button
-                part="years-navigation"
-                aria-label=${this.yearSelectLabel(activeDate)}
-                @click=${() => this.switchToYears(daysViewIndex)}
-              >
-                ${activeDate.getFullYear()}
-              </button>`
-          : ''}
-        ${this.activeView === 'years'
-          ? html`<span part="years-range" aria-live="polite"
-              >${`${startYear} - ${endYear}`}</span
-            >`
-          : ''}
-      </div>
-      ${renderButtons
-        ? html`<div part="navigation-buttons">
-            <button
-              part=${partNameMap({
-                'navigation-button': true,
-                vertical: this.orientation === 'vertical',
-              })}
-              aria-label=${this.previousButtonLabel}
-              @click=${this.navigatePrevious}
-            >
-              <igc-icon
-                aria-hidden="true"
-                name=${prev_icon}
-                collection="internal"
-              ></igc-icon>
-            </button>
-            <button
-              part=${partNameMap({
-                'navigation-button': true,
-                vertical: this.orientation === 'vertical',
-              })}
-              aria-label=${this.nextButtonLabel}
-              @click=${this.navigateNext}
-            >
-              <igc-icon
-                aria-hidden="true"
-                name=${next_icon}
-                collection="internal"
-              ></igc-icon>
-            </button>
-          </div>`
-        : ''}
-    </div>`;
-  }
-
-  private renderHeader() {
-    if (this.hideHeader || this.selection === 'multiple') {
-      return '';
-    }
-
-    return html`<div part="header">
-      <h5 part="header-title">
-        <slot name="title"
-          >${this.selection === 'single'
-            ? this.resourceStrings.selectDate
-            : this.resourceStrings.selectRange}</slot
-        >
-      </h5>
-      <h2 part="header-date">${this.renderHeaderDate()}</h2>
-    </div>`;
-  }
-
-  private renderHeaderDate() {
-    if (this.selection === 'single') {
-      const date = this.value;
-      return html`${date
-        ? html`${this.formatterWeekday.format(date)},${this
-            .headerOrientation === 'vertical'
-            ? html`<br />`
-            : ' '}${this.formatterMonthDay.format(date)}`
-        : this.resourceStrings.selectedDate}`;
-    }
-
-    const dates = this.values;
-
-    return html`<span
-        >${dates && dates.length
-          ? this.formatterMonthDay.format(dates[0])
-          : this.resourceStrings.startDate}</span
-      >
-      <span> - </span>
-      <span
-        >${dates && dates.length > 1
-          ? this.formatterMonthDay.format(dates[dates.length - 1])
-          : this.resourceStrings.endDate}</span
-      >`;
-  }
-
-  protected override render() {
-    const activeDates: Date[] = [];
-    const monthsCount = this.visibleMonths > 1 ? this.visibleMonths : 1;
-
-    for (let i = 0; i < monthsCount; i++) {
-      activeDates.push(
-        this.calendarModel.timedelta(
-          this.activeDate,
-          TimeDeltaInterval.Month,
-          i - this.activeDaysViewIndex
-        )
-      );
-    }
-
-    return html`
-      ${this.renderHeader()}
-      <div
-        part="content"
-        style=${styleMap({
-          display: 'flex',
-          flexGrow: '1',
-          flexDirection:
-            this.activeView === 'days'
-              ? this.orientation === 'horizontal'
-                ? 'row'
-                : 'column'
-              : 'column',
-        })}
-        @keydown=${this.handleKeyDown}
-      >
-        ${this.activeView === 'days'
-          ? activeDates.map(
-              (activeDate, i) =>
-                html`<div part="days-view-container">
-                  ${this.renderNavigation(
-                    activeDate,
-                    this.orientation === 'horizontal'
-                      ? i === activeDates.length - 1
-                      : i === 0,
-                    i
-                  )}
-                  <igc-days-view
-                    part="days-view"
-                    .active=${this.activeDaysViewIndex === i}
-                    .activeDate=${activeDate}
-                    .weekStart=${this.weekStart}
-                    .weekDayFormat=${this.formatOptions.weekday as
-                      | 'long'
-                      | 'short'
-                      | 'narrow'
-                      | undefined}
-                    .locale=${this.locale}
-                    .selection=${this.selection}
-                    .value=${this.value}
-                    .values=${this.values}
-                    .hideLeadingDays=${this.hideOutsideDays || i !== 0}
-                    .hideTrailingDays=${this.hideOutsideDays ||
-                    i !== activeDates.length - 1}
-                    .showWeekNumbers=${this.showWeekNumbers}
-                    .disabledDates=${this.disabledDates}
-                    .specialDates=${this.specialDates}
-                    .rangePreviewDate=${this.rangePreviewDate}
-                    .resourceStrings=${this.resourceStrings}
-                    exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
-                    @igcChange=${this.changeValue}
-                    @igcActiveDateChange=${this.activeDateChanged}
-                    @igcRangePreviewDateChange=${this.rangePreviewDateChange}
-                  ></igc-days-view>
-                </div>`
-            )
-          : ''}
-        ${this.activeView === 'months'
-          ? html` ${this.renderNavigation()}
-              <igc-months-view
-                part="months-view"
-                .value=${this.activeDate}
-                .locale=${this.locale}
-                .monthFormat=${this.formatOptions.month as
-                  | 'long'
-                  | 'numeric'
-                  | 'short'
-                  | 'narrow'
-                  | '2-digit'
-                  | undefined}
-                exportparts="month, selected, month-inner, current"
-                @igcChange=${this.changeMonth}
-              ></igc-months-view>`
-          : ''}
-        ${this.activeView === 'years'
-          ? html`${this.renderNavigation()}
-              <igc-years-view
-                part="years-view"
-                .value=${this.activeDate}
-                .yearsPerPage=${this.yearPerPage}
-                exportparts="year, selected, year-inner, current"
-                @igcChange=${this.changeYear}
-              ></igc-years-view>`
-          : ''}
-      </div>
-    `;
+    this.focusActiveDate();
   }
 }
 

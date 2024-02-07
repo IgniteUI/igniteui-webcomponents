@@ -36,6 +36,14 @@ export function modulo(n: number, d: number) {
   return ((n % d) + d) % d;
 }
 
+export function first<T>(arr: T[]) {
+  return arr.at(0) as T;
+}
+
+export function last<T>(arr: T[]) {
+  return arr.at(-1) as T;
+}
+
 type DayParameter = CalendarDay | Date;
 
 function toCalendarDay(date: DayParameter) {
@@ -129,10 +137,10 @@ export class CalendarDay {
 
   /** Returns the current week number. */
   public get week() {
-    const startOfYear = new CalendarDay({ year: this.year, month: 0 })
-      .timestamp;
-    const dayOfYear = (this.timestamp - startOfYear) / millisecondsInDay;
-    return Math.ceil(dayOfYear / daysInWeek);
+    const firstDay = new CalendarDay({ year: this.year, month: 0 }).timestamp;
+    const currentDay =
+      (this.timestamp - firstDay + millisecondsInDay) / millisecondsInDay;
+    return Math.ceil(currentDay / daysInWeek);
   }
 
   /** Returns the underlying native date instance. */
@@ -175,6 +183,16 @@ export class CalendarDay {
 export function areSameMonth(first: DayParameter, second: DayParameter) {
   const [a, b] = [toCalendarDay(first), toCalendarDay(second)];
   return a.year === b.year && a.month === b.month;
+}
+
+export function isNextMonth(target: DayParameter, origin: DayParameter) {
+  const [a, b] = [toCalendarDay(target), toCalendarDay(origin)];
+  return a.year === b.year ? a.month > b.month : a.year > b.year;
+}
+
+export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
+  const [a, b] = [toCalendarDay(target), toCalendarDay(origin)];
+  return a.year === b.year ? a.month < b.month : a.year < b.year;
 }
 
 /**
@@ -223,26 +241,36 @@ export function* dayRange(start: DayParameter, end: DayParameter | number) {
   }
 }
 
-export function* generateFullMonth(value: DayParameter, firstWeekDay: number) {
+export function* genMonth(value: DayParameter, firstWeekDay: number) {
   const { year, month } = toCalendarDay(value);
 
   let start = new CalendarDay({ year, month });
   const offset = modulo(start.day - firstWeekDay, daysInWeek);
 
   start = start.add('day', -offset);
-
-  for (let i = 0; i < 42; i++) {
-    yield start;
-    start = start.add('day', 1);
-  }
+  yield* dayRange(start, 42);
 }
 
 export function* getCalendarFor(value: DayParameter, firstWeekDay: number) {
-  const dates = Array.from(generateFullMonth(value, firstWeekDay));
+  const dates = Array.from(genMonth(value, firstWeekDay));
 
   for (let i = 0; i < dates.length; i += daysInWeek) {
     yield dates.slice(i, i + daysInWeek);
   }
+}
+
+export function take<T>(iterable: IterableIterator<T>, amount: number) {
+  const result: T[] = [];
+  let i = 0;
+  let current = iterable.next();
+
+  while (i < amount && !current.done) {
+    result.push(current.value);
+    current = iterable.next();
+    i++;
+  }
+
+  return result;
 }
 
 /**
@@ -280,14 +308,14 @@ export function isDateInRanges(
 
     switch (range.type) {
       case DateRangeType.After:
-        return value.greaterThan(days[0]);
+        return value.greaterThan(first(days));
 
       case DateRangeType.Before:
-        return value.lessThan(days[0]);
+        return value.lessThan(first(days));
 
       case DateRangeType.Between: {
-        const min = Math.min(days[0].timestamp, days[1].timestamp);
-        const max = Math.max(days[0].timestamp, days[1].timestamp);
+        const min = Math.min(first(days).timestamp, last(days).timestamp);
+        const max = Math.max(first(days).timestamp, last(days).timestamp);
         return value.timestamp >= min && value.timestamp <= max;
       }
 

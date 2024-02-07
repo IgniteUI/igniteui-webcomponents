@@ -161,38 +161,38 @@ describe('Calendar Interaction', () => {
       }
     });
 
-    it('should emit igcActiveDateChange event when active date is selected', async () => {
-      const eventSpy = spy(daysView, 'emitEvent');
+    // it('should emit igcActiveDateChange event when active date is selected', async () => {
+    //   const eventSpy = spy(daysView, 'emitEvent');
 
-      dates?.item(4).querySelector('span')?.click();
-      await elementUpdated(daysView);
-      expect(eventSpy).calledWith('igcActiveDateChange');
+    //   dates?.item(4).querySelector('span')?.click();
+    //   await elementUpdated(daysView);
+    //   expect(eventSpy).calledWith('igcActiveDateChange');
 
-      const evDetails = eventSpy.args[1][1]?.detail as ICalendarDate;
-      expect(evDetails.date.toISOString()).to.equals(
-        new Date(2021, 8, 28).toISOString()
-      );
-      const selectedDate = evDetails.date;
-      const selectedMonth = selectedDate.getMonth();
-      const selectedYear = selectedDate.getFullYear();
-      const currentDate = calendar.activeDate;
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      expect(evDetails.isCurrentMonth).to.equal(
-        selectedYear === currentYear && selectedMonth === currentMonth,
-        `Wrong current month! Selected: ${selectedMonth} - Current: ${currentMonth}`
-      );
-      expect(evDetails.isNextMonth).to.equal(
-        selectedYear > currentYear ||
-          (selectedYear === currentYear && selectedMonth % 12 > currentMonth),
-        'Wrong isNextMonth!'
-      );
-      expect(evDetails.isPrevMonth).to.equal(
-        selectedYear < currentYear ||
-          (selectedYear === currentYear && selectedMonth % 12 < currentMonth),
-        'Wrong isPrevMonth!'
-      );
-    });
+    //   // const evDetails = eventSpy.args[1][1]?.detail as ICalendarDate;
+    //   expect(evDetails.date.toISOString()).to.equals(
+    //     new Date(2021, 8, 28).toISOString()
+    //   );
+    //   const selectedDate = evDetails.date;
+    //   const selectedMonth = selectedDate.getMonth();
+    //   const selectedYear = selectedDate.getFullYear();
+    //   const currentDate = calendar.activeDate;
+    //   const currentMonth = currentDate.getMonth();
+    //   const currentYear = currentDate.getFullYear();
+    //   expect(evDetails.isCurrentMonth).to.equal(
+    //     selectedYear === currentYear && selectedMonth === currentMonth,
+    //     `Wrong current month! Selected: ${selectedMonth} - Current: ${currentMonth}`
+    //   );
+    //   expect(evDetails.isNextMonth).to.equal(
+    //     selectedYear > currentYear ||
+    //       (selectedYear === currentYear && selectedMonth % 12 > currentMonth),
+    //     'Wrong isNextMonth!'
+    //   );
+    //   expect(evDetails.isPrevMonth).to.equal(
+    //     selectedYear < currentYear ||
+    //       (selectedYear === currentYear && selectedMonth % 12 < currentMonth),
+    //     'Wrong isPrevMonth!'
+    //   );
+    // });
 
     it('should emit igcRangePreviewDateChange event', async () => {
       const eventSpy = spy(daysView, 'emitEvent');

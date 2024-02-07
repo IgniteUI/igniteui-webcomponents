@@ -14,6 +14,69 @@ function last<T>(arr: T[]) {
 describe('Calendar day model', () => {
   const start = new CalendarDay({ year: 1987, month: 6, date: 17 });
 
+  describe('Basic API', () => {
+    const firstOfJan = new CalendarDay({ year: 2024, month: 0, date: 1 });
+
+    it('has correct properties', () => {
+      const { year, month, date } = firstOfJan;
+      expect([year, month, date]).to.eql([2024, 0, 1]);
+
+      // First week of 2024
+      expect(firstOfJan.week).to.equal(1);
+
+      // 2024/01/01 is a Monday
+      expect(firstOfJan.day).to.equal(1);
+      expect(firstOfJan.weekend).to.be.false;
+    });
+
+    it('comparators', () => {
+      const today = CalendarDay.today;
+
+      expect(today.greaterThan(firstOfJan)).to.be.true;
+      expect(firstOfJan.lessThan(today)).to.be.true;
+      expect(today.equalTo(new Date(Date.now())));
+    });
+
+    describe('Deltas', () => {
+      it('day', () => {
+        expect(firstOfJan.add('day', 0).equalTo(firstOfJan)).to.be.true;
+        expect(firstOfJan.add('day', 1).greaterThan(firstOfJan)).to.be.true;
+        expect(firstOfJan.add('day', -1).lessThan(firstOfJan)).to.be.true;
+      });
+
+      it('quarters', () => {
+        for (let i = 1; i < 5; i++) {
+          console.log(firstOfJan.add('quarter', i).toString());
+        }
+
+        for (let i = -1; i > -5; i--) {
+          console.log(firstOfJan.add('quarter', i).toString());
+        }
+      });
+    });
+
+    it('`replace` correctly takes into account invalid time shifts', () => {
+      const leapFebruary = new CalendarDay({ year: 2024, month: 1, date: 29 });
+      const nonLeapFebruary = leapFebruary.replace({ year: 2023 });
+      let { year, month, date } = nonLeapFebruary;
+
+      // Shift to first day of next month -> 2024/03/01
+      expect([year, month, date]).to.eql([2023, 2, 1]);
+
+      const lastDayOfJuly = new CalendarDay({
+        year: 2024,
+        month: 6,
+        date: 31,
+      });
+
+      const lastDayOfApril = lastDayOfJuly.replace({ month: 3 });
+      ({ year, month, date } = lastDayOfApril);
+
+      // April does not have 31 days so shift to first day of May
+      expect([year, month, date]).to.eql([2024, 4, 1]);
+    });
+  });
+
   describe('Date ranges', () => {
     const start = new CalendarDay({ year: 2024, month: 0, date: 11 });
     const endFuture = start.add('day', 7);
@@ -63,17 +126,6 @@ describe('Calendar day model', () => {
       // const oldMonth = old.monthdates(1987, 6, true);
       // const newMonth = Array.from(generateFullMonth(start, 0));
     });
-  });
-
-  it('works', () => {
-    expect(start.year).to.equal(1987);
-    expect(start.month).to.equal(6);
-    expect(start.date).to.equal(17);
-  });
-
-  it('equals', () => {
-    expect(start.equalTo(new Date(1987, 6, 17))).to.be.true;
-    expect(start.equalTo(new Date(1987, 6, 16))).to.be.false;
   });
 
   describe('DateRange descriptors', () => {

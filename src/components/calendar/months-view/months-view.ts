@@ -125,28 +125,21 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     const ariaLabel = this._intl.getFormatter('ariaMonth').format(entry.native);
     const value = this._intl.getFormatter('month').format(entry.native);
 
+    const active = areSameMonth(this._value, entry);
+    const current = areSameMonth(now, entry);
     const selected = this._value.month === entry.month;
 
-    const current = areSameMonth(now, entry);
-    const active = areSameMonth(this._value, entry) ? 0 : -1;
-
-    const parts = partNameMap({
-      month: true,
-      selected,
-      current,
-    });
-
-    const partsInner = parts.replace('month', 'month-inner');
+    const parts = { selected, current };
 
     return html`
-      <span part=${parts}>
+      <span part=${partNameMap({ month: true, ...parts })}>
         <span
           role="gridcell"
           data-month=${entry.month}
-          part=${partsInner}
+          part=${partNameMap({ 'month-inner': true, ...parts })}
           aria-selected=${selected}
           aria-label=${ariaLabel}
-          tabindex=${active}
+          tabindex=${active ? 0 : -1}
         >
           ${value}
         </span>
