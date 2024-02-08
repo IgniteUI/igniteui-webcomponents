@@ -99,7 +99,7 @@ $outlined-theme: $material-outlined;
     [part='base'] {
         color: var-get($outlined-theme, 'foreground');
         background: var-get($outlined-theme, 'background');
-        box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'border-color');
+        border: rem(1px) solid var-get($outlined-theme, 'border-color');
 
         &:hover {
             background: var-get($outlined-theme, 'hover-background');
@@ -161,6 +161,7 @@ $outlined-theme: $material-outlined;
     [part='base'] {
         background: var-get($outlined-theme, 'disabled-background');
         color: var-get($outlined-theme, 'disabled-foreground');
+        border: rem(1px) solid var-get($outlined-theme, 'disabled-border-color');
     }
 
     igc-icon {
