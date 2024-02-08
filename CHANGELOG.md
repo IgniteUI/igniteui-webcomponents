@@ -4,9 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.8.0]
+## [Unreleased]
 ### Added
  - Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data.
+
+### Deprecated
+ - Slider
+   - `aria-label-upper` and `aria-label-lower` are deprecated and will be removed in the next major release. Use `thumb-label-upper` and `thumb-label-lower` instead.
+
+### Fixed
+ - Slider
+   - clicks on the slider track now use the track element width as a basis for the calculation.
+   - input events are not longer emitted while continuously dragging the slider thumb and exceeding upper/lower bounds.
+   - when setting **upper-bound/lower-bound** *before* **min/max**, the slider will no longer overwrite the bound properties with the previous values of min/max.
+   - the **aria-label** bound to the slider thumb is no longer reset on consequent renders.
+
 
 ### Changed
  - Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
