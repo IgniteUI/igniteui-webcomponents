@@ -10,10 +10,6 @@ $week-number-radius: rem(4px);
 $border-radius: border-radius(rem(4px));
 $row-gap: rem(6px);
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-calendar');
-}
-
 :host([part='days-view']) {
     overflow: hidden;
     position: relative;

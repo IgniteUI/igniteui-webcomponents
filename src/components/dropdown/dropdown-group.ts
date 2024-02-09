@@ -4,6 +4,7 @@ import { queryAssignedElements } from 'lit/decorators.js';
 import type IgcDropdownItemComponent from './dropdown-item';
 import { styles } from './themes/dropdown-group.base.css.js';
 import { all } from './themes/group.js';
+import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -21,7 +22,7 @@ import { registerComponent } from '../common/definitions/register.js';
 @themes(all)
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {

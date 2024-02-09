@@ -4,37 +4,15 @@
 $theme: $fluent;
 
 :host {
-    border-radius: var-get($theme, 'item-border-radius');
-    color: var-get($theme, 'item-text-color');
     padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
-:host([active]),
-:host(:hover),
 :host([active]:hover) {
     background: var-get($theme, 'hover-item-background');
     color: var-get($theme, 'hover-item-text-color');
 }
 
 :host([active]) {
-    background: var-get($theme, 'focused-item-background');
-    color: var-get($theme, 'focused-item-text-color');
     outline: rem(1px) solid var-get($theme, 'border-color');
     outline-offset: rem(-1px);
-}
-
-:host([selected]) {
-    background: var-get($theme, 'selected-item-background');
-    color: var-get($theme, 'selected-item-text-color');
-}
-
-:host([selected]:hover),
-:host([selected][active]) {
-    background: var-get($theme, 'selected-hover-item-background');
-    color: var-get($theme, 'selected-hover-item-text-color');
-}
-
-:host([disabled]) {
-    background: var-get($theme, 'disabled-item-background');
-    color: var-get($theme, 'disabled-item-text-color');
 }
