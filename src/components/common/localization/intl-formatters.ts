@@ -1,3 +1,7 @@
+type DateTimeFormatterConfig = {
+  [name: string]: Intl.DateTimeFormatOptions;
+};
+
 const _cache = new Map<string, Intl.DateTimeFormat>();
 
 function stringifyOptions(options: Intl.DateTimeFormatOptions) {
@@ -16,36 +20,28 @@ function getFormatter(locale: string, options: Intl.DateTimeFormatOptions) {
   return _cache.get(key)!;
 }
 
-type DateTimeFormatterConfig = {
-  [name: string]: Intl.DateTimeFormatOptions;
-};
-
 class DateTimeFormatters<T extends DateTimeFormatterConfig> {
   private _formatters = new Map<keyof T, Intl.DateTimeFormat>();
 
-  private _update(config: T) {
-    for (const [key, value] of Object.entries(config)) {
+  private _update(configuration: T) {
+    for (const [key, value] of Object.entries(configuration)) {
       this._formatters.set(key, getFormatter(this._locale, value));
     }
   }
 
   constructor(
     private _locale: string,
-    private _config: T
+    private _configuration: T
   ) {
-    this._update(_config);
+    this._update(_configuration);
   }
 
-  public getFormatter(name: keyof T) {
+  public get(name: keyof T) {
     return this._formatters.get(name)!;
   }
 
-  public getConfig<U extends keyof T>(name: U) {
-    return this._config[name];
-  }
-
-  public get config() {
-    return { ...this._config };
+  public get configuration() {
+    return { ...this._configuration };
   }
 
   public get locale() {
@@ -54,18 +50,17 @@ class DateTimeFormatters<T extends DateTimeFormatterConfig> {
 
   public set locale(value: string) {
     this._locale = value;
-    this._update(this._config);
+    this._update(this._configuration);
   }
 
-  public update(config: Partial<T>) {
-    Object.assign(this._config, config);
-    this._update(this._config);
+  public update(configuration: Partial<T>) {
+    this._update(Object.assign(this._configuration, configuration));
   }
 }
 
 export function createDateTimeFormatters<T extends DateTimeFormatterConfig>(
   locale: string,
-  config: T
+  configuration: T
 ) {
-  return new DateTimeFormatters(locale, config);
+  return new DateTimeFormatters(locale, configuration);
 }

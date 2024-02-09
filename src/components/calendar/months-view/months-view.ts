@@ -8,21 +8,20 @@ import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRend
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import {
   asNumber,
+  chunk,
   getElementsFromEventPath,
   partNameMap,
 } from '../../common/util.js';
-import {
-  IgcCalendarBaseEventMap,
-  MONTHS_PER_ROW,
-} from '../common/calendar-base.js';
-import { CalendarDay, areSameMonth, chunk } from '../common/day.js';
-import { createDateTimeFormatters } from '../common/intl-formatters.js';
+import { MONTHS_PER_ROW, areSameMonth } from '../helpers.js';
+import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
+import type { IgcCalendarBaseEventMap } from '../types.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -114,7 +113,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     );
 
     if (source) {
-      this._value = this._value.replace({
+      this._value = this._value.set({
         month: asNumber(source.dataset.month),
       });
       this.emitEvent('igcChange', { detail: this.value });
@@ -122,8 +121,8 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   protected renderMonth(entry: CalendarDay, now: CalendarDay) {
-    const ariaLabel = this._intl.getFormatter('ariaMonth').format(entry.native);
-    const value = this._intl.getFormatter('month').format(entry.native);
+    const ariaLabel = this._intl.get('ariaMonth').format(entry.native);
+    const value = this._intl.get('month').format(entry.native);
 
     const active = areSameMonth(this._value, entry);
     const current = areSameMonth(now, entry);
@@ -155,7 +154,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
       (row) => html`
         <div part="months-row" role="row">
           ${row.map((month) =>
-            this.renderMonth(this._value.replace({ month }), now)
+            this.renderMonth(this._value.set({ month }), now)
           )}
         </div>
       `

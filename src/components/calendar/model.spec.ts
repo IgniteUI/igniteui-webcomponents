@@ -1,15 +1,9 @@
 import { expect } from '@open-wc/testing';
 
-import { DateRangeType } from './calendar.model.js';
-import { CalendarDay, dayRange, isDateInRanges } from './day.js';
-
-function first<T>(arr: T[]) {
-  return arr.at(0) as T;
-}
-
-function last<T>(arr: T[]) {
-  return arr.at(-1) as T;
-}
+import { calendarRange, isDateInRanges } from './helpers.js';
+import { CalendarDay } from './model.js';
+import { DateRangeType } from './types.js';
+import { first, last } from '../common/util.js';
 
 describe('Calendar day model', () => {
   const start = new CalendarDay({ year: 1987, month: 6, date: 17 });
@@ -57,7 +51,7 @@ describe('Calendar day model', () => {
 
     it('`replace` correctly takes into account invalid time shifts', () => {
       const leapFebruary = new CalendarDay({ year: 2024, month: 1, date: 29 });
-      const nonLeapFebruary = leapFebruary.replace({ year: 2023 });
+      const nonLeapFebruary = leapFebruary.set({ year: 2023 });
       let { year, month, date } = nonLeapFebruary;
 
       // Shift to first day of next month -> 2024/03/01
@@ -69,7 +63,7 @@ describe('Calendar day model', () => {
         date: 31,
       });
 
-      const lastDayOfApril = lastDayOfJuly.replace({ month: 3 });
+      const lastDayOfApril = lastDayOfJuly.set({ month: 3 });
       ({ year, month, date } = lastDayOfApril);
 
       // April does not have 31 days so shift to first day of May
@@ -81,39 +75,39 @@ describe('Calendar day model', () => {
     const start = new CalendarDay({ year: 2024, month: 0, date: 11 });
     const endFuture = start.add('day', 7);
     const endPast = start.add('day', -7);
-    const range = 7;
+    const end = 7;
 
     it('generating date ranges (positive number)', () => {
-      const weekFuture = Array.from(dayRange(start, range));
+      const weekFuture = Array.from(calendarRange({ start, end }));
 
-      expect(weekFuture.length).to.equal(range);
+      expect(weekFuture.length).to.equal(end);
 
       expect(first(weekFuture).date).to.equal(start.date);
       expect(last(weekFuture).date).to.equal(endFuture.date - 1);
     });
 
     it('generating date ranges (negative number)', () => {
-      const weekPast = Array.from(dayRange(start, -range));
+      const weekPast = Array.from(calendarRange({ start, end: -end }));
 
-      expect(weekPast.length).to.equal(range);
+      expect(weekPast.length).to.equal(end);
 
       expect(first(weekPast).date).to.equal(start.date);
       expect(last(weekPast).date).to.equal(endPast.date + 1);
     });
 
     it('generating date ranges (end > start)', () => {
-      const weekFuture = Array.from(dayRange(start, endFuture));
+      const weekFuture = Array.from(calendarRange({ start, end: endFuture }));
 
-      expect(weekFuture.length).to.equal(range);
+      expect(weekFuture.length).to.equal(end);
 
       expect(first(weekFuture).date).to.equal(start.date);
       expect(last(weekFuture).date).to.equal(endFuture.date - 1);
     });
 
     it('generating date ranges (end < start)', () => {
-      const weekPast = Array.from(dayRange(start, endPast));
+      const weekPast = Array.from(calendarRange({ start, end: endPast }));
 
-      expect(weekPast.length).to.equal(range);
+      expect(weekPast.length).to.equal(end);
 
       expect(first(weekPast).date).to.equal(start.date);
       expect(last(weekPast).date).to.equal(endPast.date + 1);

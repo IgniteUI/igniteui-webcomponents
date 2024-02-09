@@ -11,16 +11,15 @@ import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import {
   asNumber,
+  chunk,
   getElementsFromEventPath,
   partNameMap,
 } from '../../common/util.js';
-import {
-  IgcCalendarBaseEventMap,
-  YEARS_PER_ROW,
-} from '../common/calendar-base.js';
-import { CalendarDay, chunk } from '../common/day.js';
+import { YEARS_PER_ROW, getYearRange } from '../helpers.js';
+import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
+import type { IgcCalendarBaseEventMap } from '../types.js';
 
 /**
  * Instantiate a years view as a separate component in the calendar.
@@ -94,7 +93,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     );
 
     if (source) {
-      this._value = this._value.replace({
+      this._value = this._value.set({
         year: asNumber(source.dataset.year),
       });
       this.emitEvent('igcChange', { detail: this.value });
@@ -123,8 +122,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 
   protected override render() {
     const now = CalendarDay.today;
-    const start =
-      Math.floor(this._value.year / this.yearsPerPage) * this.yearsPerPage;
+    const { start } = getYearRange(this._value, this.yearsPerPage);
     const years = Array.from(range(start, start + this.yearsPerPage));
 
     return Array.from(chunk(years, YEARS_PER_ROW)).map(

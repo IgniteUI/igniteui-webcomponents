@@ -4,19 +4,20 @@ import { choose } from 'lit/directives/choose.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
+import { IgcCalendarBaseComponent } from './base.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
 import {
-  BaseCalendarModel,
-  IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
-} from './common/calendar-base.js';
-import { CalendarDay, areSameMonth, first, last } from './common/day.js';
-import { createDateTimeFormatters } from './common/intl-formatters.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
+  areSameMonth,
+  getYearRange,
+} from './helpers.js';
+import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
 import { styles as shared } from './themes/shared/material/calendar.common.css.js';
+import { IgcCalendarBaseEventMap } from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
@@ -35,12 +36,15 @@ import {
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
+import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import {
+  first,
   format,
   getElementsFromEventPath,
+  last,
   partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -75,9 +79,10 @@ import IgcIconComponent from '../icon/icon.js';
  */
 @themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
-  EventEmitterMixin<IgcCalendarBaseEventMap, Constructor<BaseCalendarModel>>(
-    BaseCalendarModel
-  )
+  EventEmitterMixin<
+    IgcCalendarBaseEventMap,
+    Constructor<IgcCalendarBaseComponent>
+  >(IgcCalendarBaseComponent)
 ) {
   public static readonly tagName = 'igc-calendar';
   public static styles = [styles, shared];
@@ -94,12 +99,6 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private declare readonly [themeSymbol]: Theme;
-
-  private get yearRangeStart() {
-    return (
-      Math.floor(this._activeDate.year / this.yearPerPage) * this.yearPerPage
-    );
-  }
 
   private get yearPerPage() {
     return this.size === 'small' ? 18 : 15;
@@ -135,10 +134,6 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private contentRef: Ref<HTMLDivElement> = createRef();
-
-  // TODO: Move to base class
-  @state()
-  private rangePreviewDate?: CalendarDay;
 
   @state()
   private activeDaysViewIndex = 0;
@@ -375,17 +370,16 @@ export default class IgcCalendarComponent extends SizableMixin(
       case 'days':
         {
           const first = CalendarDay.from(this.daysViews.item(0).activeDate);
-          this._activeDate = first.replace({ date: 1 });
+          this._activeDate = first.set({ date: 1 });
           this.activeDaysViewIndex = 0;
         }
         break;
       case 'months':
-        this._activeDate = this._activeDate.replace({ month: 0 });
+        this._activeDate = this._activeDate.set({ month: 0 });
         break;
       case 'years':
-        this._activeDate = this._activeDate.replace({
-          year: this.yearRangeStart,
-          date: 1,
+        this._activeDate = this._activeDate.set({
+          year: getYearRange(this._activeDate, this.yearPerPage).start,
         });
         break;
     }
@@ -400,17 +394,16 @@ export default class IgcCalendarComponent extends SizableMixin(
       case 'days':
         {
           const last = CalendarDay.from(this.daysViews.item(index).activeDate);
-          this._activeDate = last.replace({ month: last.month + 1, date: 0 });
+          this._activeDate = last.set({ month: last.month + 1, date: 0 });
           this.activeDaysViewIndex = index;
         }
         break;
       case 'months':
-        this._activeDate = this._activeDate.replace({ month: 11 });
+        this._activeDate = this._activeDate.set({ month: 11 });
         break;
       case 'years':
-        this._activeDate = this._activeDate.replace({
-          year: this.yearRangeStart + this.yearPerPage - 1,
-          date: 1,
+        this._activeDate = this._activeDate.set({
+          year: getYearRange(this._activeDate, this.yearPerPage).end,
         });
         break;
     }
@@ -418,7 +411,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.focusActiveDate();
   }
 
-  private isNotFromView(_: Element, event: KeyboardEvent) {
+  private isNotFromCalendarView(_: Element, event: KeyboardEvent) {
     return !getElementsFromEventPath(event).some((element) =>
       element.matches(
         `${IgcDaysViewComponent.tagName}, ${IgcMonthsViewComponent.tagName}, ${IgcYearsViewComponent.tagName}`
@@ -430,7 +423,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     super();
 
     addKeybindings(this, {
-      skip: this.isNotFromView,
+      skip: this.isNotFromCalendarView,
       ref: this.contentRef,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
@@ -438,10 +431,10 @@ export default class IgcCalendarComponent extends SizableMixin(
       .set(arrowRight, this.onArrowRight)
       .set(arrowUp, this.onArrowUp)
       .set(arrowDown, this.onArrowDown)
-      .set(pageUpKey, this.navigatePrevious)
-      .set(pageDownKey, this.navigateNext)
       .set([shiftKey, pageUpKey], this.onShiftPageUp)
       .set([shiftKey, pageDownKey], this.onShiftPageDown)
+      .set(pageUpKey, this.navigatePrevious)
+      .set(pageDownKey, this.navigateNext)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
   }
@@ -488,8 +481,8 @@ export default class IgcCalendarComponent extends SizableMixin(
     active: CalendarDay,
     viewIndex: number
   ) {
-    const labelFmt = this._intl.getFormatter('monthLabel').format;
-    const valueFmt = this._intl.getFormatter('month').format;
+    const labelFmt = this._intl.get('monthLabel').format;
+    const valueFmt = this._intl.get('month').format;
     const ariaLabel = `${labelFmt(active.native)}, ${this.resourceStrings.selectMonth}`;
 
     return html`
@@ -505,7 +498,7 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   protected renderYearButtonNavigation(active: CalendarDay, viewIndex: number) {
     const isDay = this.activeView === 'days';
-    const fmt = this._intl.getFormatter('yearLabel').format;
+    const fmt = this._intl.get('yearLabel').format;
     const ariaLabel = `${active.year}, ${this.resourceStrings.selectYear}`;
     const ariaSkip = isDay ? fmt(active.native) : active.year;
 
@@ -522,8 +515,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   protected renderYearRangeNavigation(active: CalendarDay) {
-    const start = Math.floor(active.year / this.yearPerPage) * this.yearPerPage;
-    const end = start + this.yearPerPage - 1;
+    const { start, end } = getYearRange(active, this.yearPerPage);
 
     return html`<span part="years-range" aria-live="polite">
       ${start} - ${end}
@@ -577,8 +569,8 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   protected renderHeaderDateSingle() {
     const date = this.value;
-    const weekday = this._intl.getFormatter('weekday');
-    const monthDay = this._intl.getFormatter('monthDay');
+    const weekday = this._intl.get('weekday');
+    const monthDay = this._intl.get('monthDay');
     const separator =
       this.headerOrientation === 'vertical' ? html`<br />` : ' ';
 
@@ -589,7 +581,7 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   protected renderHeaderDateRange() {
     const values = this.values;
-    const fmt = this._intl.getFormatter('monthDay');
+    const fmt = this._intl.get('monthDay');
     const { startDate, endDate } = this.resourceStrings;
 
     const start = this._hasValues ? fmt.format(first(values)) : startDate;
@@ -636,7 +628,7 @@ export default class IgcCalendarComponent extends SizableMixin(
             .hideLeadingDays=${this.hideOutsideDays || idx !== 0}
             .hideTrailingDays=${this.hideHeader || idx !== length}
             .locale=${this.locale}
-            .rangePreviewDate=${this.rangePreviewDate?.native}
+            .rangePreviewDate=${this._rangePreviewDate?.native}
             .resourceStrings=${this.resourceStrings}
             .selection=${this.selection}
             .showWeekNumbers=${this.showWeekNumbers}
@@ -741,7 +733,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   protected rangePreviewDateChanged(event: CustomEvent<Date>) {
-    this.rangePreviewDate = event.detail
+    this._rangePreviewDate = event.detail
       ? CalendarDay.from(event.detail)
       : undefined;
   }

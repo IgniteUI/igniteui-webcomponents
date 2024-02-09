@@ -8,35 +8,31 @@ import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressC
 import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
 import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resources.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import {
   asNumber,
-  getElementsFromEventPath,
-  partNameMap,
-} from '../../common/util.js';
-import {
-  BaseCalendarModel,
-  IgcCalendarBaseEventMap,
-} from '../common/calendar-base.js';
-import { DateRangeType } from '../common/calendar.model.js';
-import {
-  CalendarDay,
-  isDateInRanges as _isDateInRanges,
-  areSameMonth,
   chunk,
-  dayRange,
-  daysInWeek,
   first,
-  genMonth,
+  getElementsFromEventPath,
+  last,
+  partNameMap,
+  take,
+} from '../../common/util.js';
+import { IgcCalendarBaseComponent } from '../base.js';
+import {
+  areSameMonth,
+  calendarRange,
+  generateMonth,
+  isDateInRanges,
   isNextMonth,
   isPreviousMonth,
-  last,
-  take,
-} from '../common/day.js';
-import { createDateTimeFormatters } from '../common/intl-formatters.js';
+} from '../helpers.js';
+import { CalendarDay, daysInWeek } from '../model.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
+import { DateRangeType, IgcCalendarBaseEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<Date>;
@@ -62,8 +58,8 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
-  Constructor<BaseCalendarModel>
->(BaseCalendarModel) {
+  Constructor<IgcCalendarBaseComponent>
+>(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
 
@@ -71,9 +67,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(this);
   }
-
-  @state()
-  private _rangePreviewDate?: CalendarDay;
 
   @state()
   private dates!: CalendarDay[];
@@ -139,7 +132,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   @watch('weekStart')
   @watch('activeDate')
   protected datesChange() {
-    this.dates = Array.from(genMonth(this._activeDate, this._firstDayOfWeek));
+    this.dates = Array.from(
+      generateMonth(this._activeDate, this._firstDayOfWeek)
+    );
   }
 
   constructor() {
@@ -202,27 +197,25 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     if (values.length !== 1) {
       values = [day];
     } else {
-      const start = first(values);
+      const beginning = first(values);
 
-      if (start.equalTo(day)) {
+      if (beginning.equalTo(day)) {
         this._values = [];
         return;
       }
 
-      values = start.greaterThan(day)
-        ? Array.from(dayRange(day, start))
-        : Array.from(dayRange(start, day));
+      values = beginning.greaterThan(day)
+        ? Array.from(calendarRange({ start: day, end: beginning }))
+        : Array.from(calendarRange({ start: beginning, end: day }));
 
       values.push(last(values).add('day', 1));
     }
 
-    this._values = values.filter(
-      (v) => !_isDateInRanges(v, this.disabledDates)
-    );
+    this._values = values.filter((v) => !isDateInRanges(v, this.disabledDates));
   }
 
   private selectDate(value: CalendarDay) {
-    if (_isDateInRanges(value, this.disabledDates)) {
+    if (isDateInRanges(value, this.disabledDates)) {
       return false;
     }
 
@@ -245,7 +238,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isSelected(day: CalendarDay) {
-    if (_isDateInRanges(day, this.disabledDates)) {
+    if (isDateInRanges(day, this.disabledDates)) {
       return false;
     }
 
@@ -258,24 +251,20 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     }
 
     if (this._isMultiple) {
-      return _isDateInRanges(day, [
+      return isDateInRanges(day, [
         {
           type: DateRangeType.Specific,
           dateRange: this.values,
         },
       ]);
-    }
-
-    if (this._isRange) {
-      return _isDateInRanges(day, [
+    } else {
+      return isDateInRanges(day, [
         {
           type: DateRangeType.Between,
           dateRange: [first(this._values).native, last(this._values).native],
         },
       ]);
     }
-
-    return false;
   }
 
   // XXX: Range interaction
@@ -338,7 +327,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const min = first(this._values);
     const max = isSingleRange ? this._rangePreviewDate! : last(this._values);
 
-    return _isDateInRanges(day, [
+    return isDateInRanges(day, [
       {
         type: DateRangeType.Between,
         dateRange: [min.native, max.native],
@@ -351,7 +340,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       return false;
     }
 
-    return _isDateInRanges(day, [
+    return isDateInRanges(day, [
       {
         type: DateRangeType.Between,
         dateRange: [first(this._values).native, this._rangePreviewDate.native],
@@ -360,7 +349,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private intlFormatDay(day: CalendarDay) {
-    const fmt = this._intl.getFormatter('label');
+    const fmt = this._intl.get('label');
 
     // Range selection in progress
     if (this._rangePreviewDate && this._rangePreviewDate.equalTo(day)) {
@@ -394,7 +383,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private getDayProperties(day: CalendarDay, today: CalendarDay) {
     const isRange = this._isRange;
-    const disabled = _isDateInRanges(day, this.disabledDates);
+    const disabled = isDateInRanges(day, this.disabledDates);
 
     const hiddenLeading =
       this.hideLeadingDays && isPreviousMonth(day, this._activeDate);
@@ -416,7 +405,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       weekend: day.weekend,
       single: !isRange,
       selected: !disabled && this.isSelected(day),
-      special: _isDateInRanges(day, this.specialDates),
+      special: isDateInRanges(day, this.specialDates),
     };
   }
 
@@ -469,10 +458,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected renderHeaders() {
-    const label = this._intl.getFormatter('weekday');
-    const aria = this._intl.getFormatter('ariaWeekday');
+    const label = this._intl.get('weekday');
+    const aria = this._intl.get('ariaWeekday');
     const days = take(
-      genMonth(this._activeDate, this._firstDayOfWeek),
+      generateMonth(this._activeDate, this._firstDayOfWeek),
       daysInWeek
     );
 
@@ -503,7 +492,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const last = weeks.length - 1;
 
     for (const [i, week] of weeks.entries()) {
-      yield html` <div role="row" part="days-row">
+      yield html`<div role="row" part="days-row">
         ${this.showWeekNumbers
           ? this.renderWeekNumber(week[0], i === last)
           : nothing}
