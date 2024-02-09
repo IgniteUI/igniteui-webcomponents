@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $indigo;
 $dropdown-theme: dropdown-theme.$indigo;
@@ -11,6 +11,10 @@ $input-theme: input-theme.$indigo;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'helper-text-color');
+    }
 
     igc-input::part(input) {
         color: var-get($input-theme, 'filled-text-color');
@@ -46,19 +50,32 @@ $input-theme: input-theme.$indigo;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host([invalid]:focus-within) {
     igc-input::part(label) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }

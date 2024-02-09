@@ -1,5 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 
 $theme: $material;
 $idle-border-width: rem(1px) !default;
@@ -64,7 +65,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
-    line-height: 1;
+    line-height: normal;
     text-overflow: ellipsis;
     overflow: hidden;
     will-change: font-size, color, transform;
@@ -198,7 +199,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-106%);
+        transform: translateY(-73%);
     }
 }
 
@@ -226,7 +227,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part='notch'] [part='label'] {
-        transform: translateY(-106%);
+        transform: translateY(-73%);
     }
 }
 

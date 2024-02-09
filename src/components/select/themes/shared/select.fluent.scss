@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $fluent;
 $dropdown-theme: dropdown-theme.$fluent;
@@ -20,6 +20,19 @@ $focused-border-width: rem(2px);
 
 [part='helper-text'] {
     margin-top: rem(5px);
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'helper-text-color');
+    }
+}
+
+[part~='toggle-icon'] {
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
 }
 
 :host(:focus-within) {
@@ -40,5 +53,27 @@ $focused-border-width: rem(2px);
 
     igc-input[readonly]:not([disabled])::part(suffix) {
         margin-inline-end: rem(-1px);
+    }
+}
+
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    [part='helper-text'] ::slotted([slot='helper-text']) {
+        color: var-get($fluent, 'disabled-text-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }

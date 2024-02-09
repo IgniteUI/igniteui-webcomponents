@@ -291,7 +291,6 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private itemClick(event: MouseEvent): void {
-    event.stopPropagation();
     if (this.disabled) {
       return;
     }

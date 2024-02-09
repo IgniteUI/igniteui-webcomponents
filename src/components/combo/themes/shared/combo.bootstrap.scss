@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../input/themes/light/themes' as input-theme;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
 
 $theme: $bootstrap;
 $input-theme: input-theme.$bootstrap;
@@ -14,6 +14,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 
 [part='helper-text'] {
     margin-top: rem(4px);
+    color: var-get($theme, 'helper-text-color');
 }
 
 [part='list-wrapper'] {
@@ -52,9 +53,58 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     color: color(primary, 500);
 }
 
+:host(:focus-within) {
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus--border');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+
+    [part~='clear-icon'] {
+        background: var-get($theme, 'clear-button-background-focus');
+        color: var-get($theme, 'clear-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+}
+
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
+    ::slotted([slot='prefix']),
+    ::slotted([slot='suffix']),
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
     [part~='clear-icon'] {
         border-inline-end: rem(1px) solid var-get($input-theme, 'disabled-border-color');
+        background: inherit;
+        color: var-get($theme, 'disabled-text-color');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }
