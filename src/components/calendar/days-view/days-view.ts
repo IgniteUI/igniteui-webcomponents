@@ -11,20 +11,13 @@ import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resource
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  chunk,
-  first,
-  getElementsFromEventPath,
-  last,
-  partNameMap,
-  take,
-} from '../../common/util.js';
+import { chunk, first, last, partNameMap, take } from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
   calendarRange,
   generateMonth,
+  getViewElement,
   isDateInRanges,
   isNextMonth,
   isPreviousMonth,
@@ -158,26 +151,24 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected handleInteraction(event: Event) {
-    const source = getElementsFromEventPath(event).find((item) =>
-      item.matches('[data-value]')
-    );
+    const value = getViewElement(event);
 
-    if (source) {
-      const value = CalendarDay.from(new Date(asNumber(source.dataset.value)));
+    if (value > -1) {
+      const date = CalendarDay.from(new Date(value));
 
       if (this._rangePreviewDate) {
         this.setRangePreviewDate();
       }
 
-      if (this.selectDate(value)) {
-        this.emitEvent('igcChange', { detail: value.native });
+      if (this.selectDate(date)) {
+        this.emitEvent('igcChange', { detail: date.native });
       }
 
       if (event.type === 'click') {
         // XXX: Why ?
         event.stopPropagation();
-        this.emitEvent('igcActiveDateChange', { detail: value.native });
-        this._activeDate = value;
+        this.emitEvent('igcActiveDateChange', { detail: date.native });
+        this._activeDate = date;
       }
     }
   }

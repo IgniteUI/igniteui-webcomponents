@@ -9,13 +9,8 @@ import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressC
 import { registerComponent } from '../../common/definitions/register.js';
 import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  chunk,
-  getElementsFromEventPath,
-  partNameMap,
-} from '../../common/util.js';
-import { YEARS_PER_ROW, getYearRange } from '../helpers.js';
+import { chunk, partNameMap } from '../../common/util.js';
+import { YEARS_PER_ROW, getViewElement, getYearRange } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
@@ -88,13 +83,11 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   protected handleInteraction(event: Event) {
-    const source = getElementsFromEventPath(event).find((item) =>
-      item.matches('[data-year]')
-    );
+    const value = getViewElement(event);
 
-    if (source) {
+    if (value > -1) {
       this._value = this._value.set({
-        year: asNumber(source.dataset.year),
+        year: value,
       });
       this.emitEvent('igcChange', { detail: this.value });
     }
@@ -109,7 +102,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
       <span part=${partNameMap({ year: true, ...parts })}>
         <span
           role="gridcell"
-          data-year=${year}
+          data-value=${year}
           part=${partNameMap({ 'year-inner': true, ...parts })}
           aria-selected=${selected}
           tabindex=${selected ? 0 : -1}

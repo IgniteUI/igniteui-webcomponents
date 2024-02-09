@@ -11,13 +11,8 @@ import { registerComponent } from '../../common/definitions/register.js';
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  chunk,
-  getElementsFromEventPath,
-  partNameMap,
-} from '../../common/util.js';
-import { MONTHS_PER_ROW, areSameMonth } from '../helpers.js';
+import { chunk, partNameMap } from '../../common/util.js';
+import { MONTHS_PER_ROW, areSameMonth, getViewElement } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
@@ -108,14 +103,10 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   protected handleInteraction(event: Event) {
-    const source = getElementsFromEventPath(event).find((item) =>
-      item.matches('[data-month]')
-    );
+    const value = getViewElement(event);
 
-    if (source) {
-      this._value = this._value.set({
-        month: asNumber(source.dataset.month),
-      });
+    if (value > -1) {
+      this._value = this._value.set({ month: value });
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
@@ -134,7 +125,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
       <span part=${partNameMap({ month: true, ...parts })}>
         <span
           role="gridcell"
-          data-month=${entry.month}
+          data-value=${entry.month}
           part=${partNameMap({ 'month-inner': true, ...parts })}
           aria-selected=${selected}
           aria-label=${ariaLabel}

@@ -305,7 +305,7 @@ describe('Calendar keyboard interaction', () => {
     it('selects a month by pressing `Enter`', async () => {
       const month = first(getMonthViewDOM(monthsView).months.all);
       const value = CalendarDay.from(calendar.activeDate).set({
-        month: asNumber(month.dataset.month),
+        month: asNumber(month.dataset.value),
       });
 
       month.focus();
@@ -319,7 +319,7 @@ describe('Calendar keyboard interaction', () => {
     it('selects a month by pressing `Space`', async () => {
       const month = first(getMonthViewDOM(monthsView).months.all);
       const value = CalendarDay.from(calendar.activeDate).set({
-        month: asNumber(month.dataset.month),
+        month: asNumber(month.dataset.value),
       });
 
       month.focus();
@@ -429,7 +429,7 @@ describe('Calendar keyboard interaction', () => {
     it('selects an year by pressing `Enter`', async () => {
       const year = first(getYearViewDOM(yearsView).years.all);
       const value = CalendarDay.from(calendar.activeDate).set({
-        year: asNumber(year.dataset.year),
+        year: asNumber(year.dataset.value),
       });
 
       year.focus();
@@ -443,7 +443,7 @@ describe('Calendar keyboard interaction', () => {
     it('selects an year by pressing `Space`', async () => {
       const year = first(getYearViewDOM(yearsView).years.all);
       const value = CalendarDay.from(calendar.activeDate).set({
-        year: asNumber(year.dataset.year),
+        year: asNumber(year.dataset.value),
       });
 
       year.focus();

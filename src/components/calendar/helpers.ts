@@ -6,7 +6,13 @@ import {
   toCalendarDay,
 } from './model.js';
 import { DateRangeDescriptor, DateRangeType, WeekDays } from './types.js';
-import { first, last, modulo } from '../common/util.js';
+import {
+  asNumber,
+  first,
+  getElementsFromEventPath,
+  last,
+  modulo,
+} from '../common/util.js';
 
 /* Constants */
 
@@ -37,6 +43,17 @@ export function datesFromISOStrings(value: string | null) {
         .filter((v) => v)
         .map((v) => new Date(v))
     : null;
+}
+
+/**
+ * Returns the value of the selected/activated element in the calendar view.
+ *
+ */
+export function getViewElement(event: Event) {
+  const element = getElementsFromEventPath(event).find((element) =>
+    element.matches(`[data-value]`)
+  );
+  return element ? asNumber(element.dataset.value, -1) : -1;
 }
 
 export function getWeekDayNumber(value: WeekDays) {
