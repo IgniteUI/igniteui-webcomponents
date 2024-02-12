@@ -1,8 +1,7 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $bootstrap;
+$theme: $material;
 
 :host {
     background: var-get($theme, 'background');
@@ -32,7 +31,7 @@ $theme: $bootstrap;
 }
 
 :host(:not([disabled])[active]) {
-    background:var-get($theme, 'background-active');
+    background: var-get($theme, 'background-active');
     color: var-get($theme, 'foreground-active');
 }
 
@@ -49,7 +48,7 @@ $theme: $bootstrap;
 :host(:not([disabled])[selected]),
 :host(:not([disabled])[selected][active]) {
     [part~='focused'] {
-        background: var-get($theme, 'background-active-selected');
+        background:var-get($theme, 'background-active-selected');
         color: var-get($theme, 'foreground-active-selected');
     }
 }

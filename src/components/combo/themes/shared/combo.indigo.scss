@@ -33,10 +33,6 @@ $dropdown-theme: dropdown-theme.$indigo;
     color: color(gray, 900);
 }
 
-[part='empty'] {
-    color: var-get($theme, 'empty-list-placeholder-color');
-}
-
 :host(:not([single-select])) {
     > igc-input::part(input) {
         &::selection {
@@ -63,15 +59,6 @@ $dropdown-theme: dropdown-theme.$indigo;
 
     [part='case-icon active'] {
         color: color(primary, 500);
-    }
-}
-
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
     }
 }
 

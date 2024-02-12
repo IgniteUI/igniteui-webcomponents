@@ -1,7 +1,8 @@
 @use 'styles/utilities' as *;
 @use '../themes' as *;
+@use '../../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($bootstrap, 'ig-nav-drawer');
-    @include css-vars-from-theme($bootstrap-overlay, 'ig-nav-drawer');
+    @include css-vars-from-theme(diff($base, $bootstrap), 'ig-nav-drawer');
+    @include css-vars-from-theme(diff(light.$base-overlay, $bootstrap-overlay), 'ig-nav-drawer');
 }

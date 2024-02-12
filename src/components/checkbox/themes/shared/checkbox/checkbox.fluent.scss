@@ -32,12 +32,6 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-[part~='label'] {
-    @include type-style('body-2');
-
-    color: var-get($theme, 'label-color');
-}
-
 [part~='indicator'] {
     stroke: var-get($theme, 'tick-color');
     stroke-width: 1.5;
@@ -111,10 +105,6 @@ $disabled-color: var-get($theme, 'disabled-color');
 }
 
 :host([invalid]:not([disabled])) {
-    [part~='label'] {
-        color: $invalid-color;
-    }
-
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-color;
@@ -230,10 +220,6 @@ $disabled-color: var-get($theme, 'disabled-color');
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='label'] {
-        color: var-get($theme, 'disabled-color-label');
-    }
-
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $disabled-color;

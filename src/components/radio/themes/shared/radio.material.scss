@@ -16,10 +16,6 @@ $theme: $material;
     filter: opacity(1);
 }
 
-[part~='label'] {
-    color: var-get($theme, 'label-color');
-}
-
 [part~='base'] {
     gap: rem(2px);
 
@@ -74,10 +70,6 @@ $theme: $material;
 }
 
 :host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-color');
-    }
-
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -107,10 +99,6 @@ $theme: $material;
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='label'] {
-        color: var-get($theme, 'disabled-label-color');
-    }
-
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'disabled-color');

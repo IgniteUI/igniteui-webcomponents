@@ -2,6 +2,7 @@ import { LitElement, TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { styles } from './themes/input.base.css.js';
+import { styles as shared } from './themes/shared/input.common.css.js';
 import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
@@ -36,7 +37,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     delegatesFocus: true,
   };
 
-  public static styles = styles;
+  public static styles = [styles, shared];
   private static readonly increment = createCounter();
 
   protected inputId = `input-${IgcInputBaseComponent.increment()}`;

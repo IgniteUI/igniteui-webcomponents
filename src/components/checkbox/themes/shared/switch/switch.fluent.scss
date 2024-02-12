@@ -40,9 +40,6 @@ $theme: $fluent;
 
 [part~='label'] {
     @include type-style('body-2');
-
-    color: var-get($theme, 'label-color');
-    transition: all .2s ease-in-out;
 }
 
 [part~='focused'] {
@@ -102,36 +99,7 @@ $theme: $fluent;
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
     }
 
-
     [part~='thumb'][part~='checked'] {
         background: var-get($theme, 'thumb-on-error-color');
-    }
-
-    [part~='label'] {
-        color: var-get($theme, 'label-invalid-color');
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
-    [part~='label'] {
-        color: var-get($theme, 'label-disabled-color');
-    }
-
-    [part~='control'] {
-        background: var-get($theme, 'track-disabled-color');
-        border-color: var-get($theme, 'border-disabled-color');
-    }
-
-    [part~='control'][part~='checked'] {
-        background: var-get($theme, 'track-on-disabled-color');
-    }
-
-    [part~='thumb'] {
-        background: var-get($theme, 'thumb-disabled-color');
-    }
-
-    [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'thumb-on-disabled-color');
     }
 }

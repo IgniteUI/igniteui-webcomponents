@@ -7,7 +7,6 @@ $fill-color-hover: var-get($theme, 'fill-color-hover');
 $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
 $disabled-indeterminate-color: var-get($theme, 'disabled-indeterminate-color');
-$disabled-color-label: var-get($theme, 'disabled-color-label');
 $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
@@ -17,8 +16,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 [part~='label'] {
     @include type-style('body-1');
-
-    color: var-get($theme, 'label-color');
 }
 
 [part~='control'] {
@@ -100,10 +97,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part~='label'] {
-        color: $error-color;
-    }
-
     [part~='control'] {
         &::after {
             border-color: $error-color;
@@ -171,10 +164,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     [part='control checked']::after {
         background: $disabled-indeterminate-color;
         border-color: $disabled-indeterminate-color;
-    }
-
-    [part~='label'] {
-        color: $disabled-color-label;
     }
 }
 

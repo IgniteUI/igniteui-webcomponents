@@ -6,10 +6,10 @@ $dropdown-theme: dropdown-theme.$material;
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-select');
+    @include css-vars-from-theme(diff($base, $theme), 'ig-select');
     @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
 
     --dd-background-color: #{var-get($dropdown-theme, 'background-color')};
-    --dd-border-radius:#{var-get($dropdown-theme, 'border-radius')};
+    --dd-border-radius: #{var-get($dropdown-theme, 'border-radius')};
     --dd-border-color: #{var-get($dropdown-theme, 'border-color')};
 }

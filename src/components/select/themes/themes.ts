@@ -10,6 +10,7 @@ import { styles as bootstrapLight } from './light/select.bootstrap.css.js';
 import { styles as fluentLight } from './light/select.fluent.css.js';
 import { styles as indigoLight } from './light/select.indigo.css.js';
 import { styles as materialLight } from './light/select.material.css.js';
+import { styles as shared } from './light/select.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/select.bootstrap.css.js';
 import { styles as fluent } from './shared/select.fluent.css.js';
@@ -18,6 +19,9 @@ import { styles as material } from './shared/select.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -33,6 +37,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

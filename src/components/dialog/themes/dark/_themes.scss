@@ -1,7 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/dialog' as *;
 
-$material: digest-schema($dark-dialog);
+$base: digest-schema($base-dark-dialog);
+$material: digest-schema($dark-material-dialog);
 $bootstrap: digest-schema($dark-bootstrap-dialog);
 $fluent: digest-schema($dark-fluent-dialog);
 $indigo: digest-schema($dark-indigo-dialog);

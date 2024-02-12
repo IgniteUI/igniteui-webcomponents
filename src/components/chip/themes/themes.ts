@@ -10,6 +10,7 @@ import { styles as bootstrapLight } from './light/chip.bootstrap.css.js';
 import { styles as fluentLight } from './light/chip.fluent.css.js';
 import { styles as indigoLight } from './light/chip.indigo.css.js';
 import { styles as materialLight } from './light/chip.material.css.js';
+import { styles as shared } from './light/chip.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/chip.bootstrap.css.js';
 import { styles as fluent } from './shared/chip.fluent.css.js';
@@ -17,6 +18,9 @@ import { styles as indigo } from './shared/chip.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -32,6 +36,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

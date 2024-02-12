@@ -1,7 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/checkbox' as *;
 
-$material: digest-schema($light-checkbox);
+$base: digest-schema($light-checkbox);
+$material: digest-schema($material-checkbox);
 $bootstrap: digest-schema($bootstrap-checkbox);
 $fluent: digest-schema($fluent-checkbox);
 $indigo: digest-schema($indigo-checkbox);

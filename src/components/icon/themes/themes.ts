@@ -10,6 +10,7 @@ import { styles as bootstrapLight } from './light/icon.bootstrap.css.js';
 import { styles as fluentLight } from './light/icon.fluent.css.js';
 import { styles as indigoLight } from './light/icon.indigo.css.js';
 import { styles as materialLight } from './light/icon.material.css.js';
+import { styles as shared } from './light/icon.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/icon.bootstrap.css.js';
 import { styles as fluent } from './shared/icon.fluent.css.js';
@@ -17,6 +18,9 @@ import { styles as indigo } from './shared/icon.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -32,6 +36,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

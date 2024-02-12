@@ -1,7 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/switch' as *;
 
-$material: digest-schema($light-switch);
+$base: digest-schema($light-switch);
+$material: digest-schema($material-switch);
 $bootstrap: digest-schema($bootstrap-switch);
 $fluent: digest-schema($fluent-switch);
 $indigo: digest-schema($indigo-switch);

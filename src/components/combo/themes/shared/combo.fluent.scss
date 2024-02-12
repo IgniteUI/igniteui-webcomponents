@@ -19,24 +19,6 @@ $dropdown-theme: dropdown-theme.$fluent;
     }
 }
 
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
-}
-
-[part~='clear-icon'] {
-    background: var-get($theme, 'clear-button-background');
-    color: var-get($theme, 'clear-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
-}
-
 [part='filter-input'] {
     padding: pad(2px, 4px, 8px);
 }

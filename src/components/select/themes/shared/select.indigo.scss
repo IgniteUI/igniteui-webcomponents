@@ -31,18 +31,7 @@ $input-theme: input-theme.$indigo;
 }
 
 [part='base'] {
-    background: var(--dd-background-color);
-    border-radius: var(--dd-border-radius);
     box-shadow: var(--ig-elevation-3);
-}
-
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
 }
 
 :host(:focus-within) {
@@ -55,15 +44,6 @@ $input-theme: input-theme.$indigo;
 
         &::after {
             transform: scaleY(1);
-        }
-    }
-
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus--border');
-        color: var-get($theme, 'toggle-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
         }
     }
 }

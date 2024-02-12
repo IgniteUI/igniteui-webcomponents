@@ -29,10 +29,6 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-[part='empty'] {
-    color: var-get($theme, 'empty-list-placeholder-color');
-}
-
 :host(:not([single-select])) {
     > igc-input::part(input) {
         &::selection {
@@ -66,45 +62,13 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
-}
-
 [part='toggle-icon filled'] {
     color: var-get($theme, 'toggle-button-foreground-filled');
-}
-
-[part~='clear-icon'] {
-    background: var-get($theme, 'clear-button-background');
-    color: var-get($theme, 'clear-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
 }
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus');
-        color: var-get($theme, 'toggle-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
-        }
-    }
-
-    [part~='clear-icon'] {
-        background: var-get($theme, 'clear-button-background-focus');
-        color: var-get($theme, 'clear-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
-        }
     }
 }
 

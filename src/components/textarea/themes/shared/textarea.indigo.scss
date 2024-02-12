@@ -42,7 +42,6 @@ $theme: $indigo;
     margin-top: 0;
     height: auto;
     margin-block-end: rem(4px);
-    color: var-get($theme, 'idle-secondary-color');
 }
 
 [part~='container'] {
@@ -67,12 +66,6 @@ $theme: $indigo;
 textarea {
     padding-block: rem(8px);
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
-    background: transparent;
-    color: var-get($theme, 'filled-text-color');
-
-    &::placeholder {
-        color: var-get($theme, 'placeholder-color');
-    }
 }
 
 [part~='prefixed'] textarea {
@@ -86,23 +79,18 @@ textarea {
 [part~='helper-text'] {
     @include type-style('caption');
 
-    color: var-get($theme, 'helper-text-color');
     padding-block-start: rem(6px);
     padding-inline-start: rem(12px);
 }
 
 [part~='prefixed'] {
     [part~='prefix'] {
-        color: var-get($theme, 'input-prefix-color');
-        background: var-get($theme, 'input-prefix-background');
         border-start-start-radius: var-get($theme, 'border-border-radius');
     }
 }
 
 [part~='suffixed'] {
     [part~='suffix'] {
-        color: var-get($theme, 'input-suffix-color');
-        background: var-get($theme, 'input-suffix-background');
         border-start-end-radius: var-get($theme, 'border-border-radius');
     }
 }
@@ -112,22 +100,9 @@ textarea {
     height: calc(100% - #{rem(1px)});
 }
 
-[part~='filled'] {
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-        background: var-get($theme, 'input-prefix-background--filled');
-    }
-
-    [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-    }
-}
-
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
-    [part~='label'],
-    [part~='helper-text'] {
+    [part~='label'] {
         color: var-get($theme, 'error-secondary-color');
     }
 
@@ -149,35 +124,11 @@ textarea {
 
 :host(:disabled),
 :host([disabled]) {
-    color: var-get($theme, 'disabled-text-color');
-
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'disabled-text-color');
-        background: inherit;
-    }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
     [part~='container'] {
         background: transparent;
 
         &::after {
             border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
         }
-    }
-
-    textarea {
-        color: var-get($theme, 'disabled-text-color');
-
-        &::placeholder {
-            color: var-get($theme, 'disabled-placeholder-color');
-        }
-    }
-
-    [part~='label'] {
-        color: var-get($theme, 'disabled-text-color');
     }
 }

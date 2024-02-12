@@ -12,7 +12,6 @@ $theme: $bootstrap;
 [part~='label'] {
     position: static;
     display: block;
-    color: var-get($theme, 'idle-secondary-color');
     padding: 0;
     line-height: rem(24px);
     transform: translateY(0);
@@ -25,7 +24,6 @@ $theme: $bootstrap;
 [part~='helper-text'] {
     @include type-style('body-2');
 
-    color: var-get($theme, 'helper-text-color');
     padding-block-start: rem(4px);
     padding-inline-start: 0;
 }
@@ -37,8 +35,6 @@ $theme: $bootstrap;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
         border-inline-end-width: 0;
-        color: var-get($theme, 'input-prefix-color');
-        background: var-get($theme, 'input-prefix-background');
         border: {
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
@@ -68,8 +64,6 @@ $theme: $bootstrap;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
         border-inline-start-width: 0;
-        color: var-get($theme, 'input-suffix-color');
-        background: var-get($theme, 'input-suffix-background');
         border: {
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
@@ -92,18 +86,6 @@ $theme: $bootstrap;
     }
 }
 
-[part~='filled'] {
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-        background: var-get($theme, 'input-prefix-background--filled');
-    }
-
-    [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-    }
-}
-
 textarea {
     @include type-style('body-1');
 
@@ -113,13 +95,7 @@ textarea {
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
     font-size: pad(rem(14px), rem(16px), rem(20px));
-    background: transparent;
-    color: var-get($theme, 'filled-text-color');
     transition: box-shadow .15s ease-out, border .15s ease-out;
-
-    &::placeholder {
-        color: var-get($theme, 'placeholder-color');
-    }
 }
 
 :host(:focus-within) {
@@ -147,39 +123,19 @@ textarea {
         border: rem(1px) solid var-get($theme, 'error-secondary-color');
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
 }
 
 :host(:disabled),
 :host([disabled]) {
-    color: var-get($theme, 'disabled-text-color');
-
     [part='prefix'],
     [part='suffix'] {
         background: var-get($theme, 'border-disabled-background');
         border-color: var-get($theme, 'disabled-border-color');
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'disabled-text-color');
     }
 
     textarea {
-        color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'border-disabled-background');
         border: rem(1px) solid var-get($theme, 'disabled-border-color');
         box-shadow: none;
-
-        &::placeholder {
-            color: var-get($theme, 'disabled-placeholder-color');
-        }
-    }
-
-    [part~='label'] {
-        color: var-get($theme, 'disabled-text-color');
     }
 }
