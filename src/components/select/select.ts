@@ -11,6 +11,7 @@ import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
+import { styles as shared } from './themes/shared/select.common.css.js';
 import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
@@ -103,7 +104,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {

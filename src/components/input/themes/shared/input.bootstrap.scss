@@ -89,8 +89,6 @@ $theme: $bootstrap;
 [part='prefix'] {
     border-start-start-radius: inherit;
     border-end-start-radius: inherit;
-    color: var-get($theme, 'input-prefix-color');
-    background: var-get($theme, 'input-prefix-background');
     grid-area: 1 / 1;
     border: {
         style: solid;
@@ -109,8 +107,6 @@ $theme: $bootstrap;
 [part='suffix'] {
     border-start-end-radius: inherit;
     border-end-end-radius: inherit;
-    color: var-get($theme, 'input-suffix-color');
-    background: var-get($theme, 'input-suffix-background');
     grid-area: 1 / 3;
     border: {
         style: solid;
@@ -130,20 +126,9 @@ $theme: $bootstrap;
     @include type-style('body-2');
 
     margin-top: rem(4px);
-    color: var-get($theme, 'helper-text-color');
 }
 
 :host(:focus-within) {
-    [part='prefix'] {
-        color: var-get($theme, 'input-prefix-color--focused');
-        background: var-get($theme, 'input-prefix-background--focused');
-    }
-
-    [part='suffix'] {
-        color: var-get($theme, 'input-suffix-color--focused');
-        background: var-get($theme, 'input-suffix-background--focused');
-    }
-
     [part~='input'] {
         color: var-get($theme, 'input-prefix-color--focused');
         border-color: var-get($theme, 'focused-border-color');
@@ -152,20 +137,8 @@ $theme: $bootstrap;
 }
 
 [part~='filled'] {
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-        background: var-get($theme, 'input-prefix-background--filled');
-    }
-
     [part~='input'] {
         color: var-get($theme, 'input-prefix-color--filled');
-    }
-}
-
-:host([invalid]) {
-    [part='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
 
