@@ -24,7 +24,8 @@ $outlined-theme: $material-outlined;
 
 :host([variant='fab']) [part='base'] {
     border-radius: var-get($fab-theme, 'border-radius');
-    height: var-get($fab-theme, 'size');
+    min-height: var-get($fab-theme, 'size');
+    min-width: var-get($fab-theme, 'size');
 }
 /* stylelint-enable */
 
