@@ -22,34 +22,14 @@ $input-theme: input-theme.$bootstrap;
 }
 
 [part='base'] {
-    background: var(--dd-background-color);
-    border-radius: var(--dd-border-radius);
     border: rem(1px) solid var(--dd-border-color);
     padding: rem(8px) 0;
-}
-
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
 }
 
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
         box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'focused-secondary-color');
         border-color: var-get($input-theme, 'focused-border-color');
-    }
-
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus--border');
-        color: var-get($theme, 'toggle-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
-        }
     }
 }
 

@@ -1,0 +1,48 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $base;
+
+[part='helper-text'] {
+    color: var-get($theme, 'helper-text-color');
+}
+
+[part='prefix'] {
+    color: var-get($theme, 'input-prefix-color');
+    background: var-get($theme, 'input-prefix-background');
+}
+
+[part='suffix'] {
+    color: var-get($theme, 'input-suffix-color');
+    background: var-get($theme, 'input-suffix-background');
+}
+
+[part~='filled'] {
+    [part='prefix'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+        background: var-get($theme, 'input-prefix-background--filled');
+    }
+
+    [part='suffix'] {
+        color: var-get($theme, 'input-suffix-color--filled');
+        background: var-get($theme, 'input-suffix-background--filled');
+    }
+}
+
+:host(:focus-within) {
+    [part='prefix'] {
+        color: var-get($theme, 'input-prefix-color--focused');
+        background: var-get($theme, 'input-prefix-background--focused');
+    }
+
+    [part='suffix'] {
+        color: var-get($theme, 'input-suffix-color--focused');
+        background: var-get($theme, 'input-suffix-background--focused');
+    }
+}
+
+:host([invalid]) {
+    [part='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}

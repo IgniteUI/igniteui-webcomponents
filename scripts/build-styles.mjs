@@ -34,6 +34,7 @@ export async function buildThemes() {
   const paths = await globby([
     'src/components/**/*.base.scss',
     'src/components/**/*.common.scss',
+    'src/components/**/*.shared.scss',
     'src/components/**/*.material.scss',
     'src/components/**/*.bootstrap.scss',
     'src/components/**/*.indigo.scss',

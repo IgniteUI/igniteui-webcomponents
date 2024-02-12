@@ -2,11 +2,12 @@
 @use 'styles/utilities' as *;
 @use 'components/dropdown/themes/dark/themes' as dropdown;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $bootstrap;
 $dropdown: map.remove(dropdown.$bootstrap, 'default-size');
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-combo');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-combo');
     @include css-vars-from-theme($dropdown, 'ig-combo-list');
 }
