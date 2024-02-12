@@ -21,6 +21,10 @@ export function toCalendarDay(date: DayParameter) {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
+function checkRollover(original: CalendarDay, modified: CalendarDay) {
+  return original.date !== modified.date ? modified.set({ date: 0 }) : modified;
+}
+
 /* blazorSuppress */
 export class CalendarDay {
   private _date!: Date;
@@ -64,13 +68,13 @@ export class CalendarDay {
     switch (unit) {
       case 'year':
         result._date.setFullYear(result.year + value);
-        return result;
+        return checkRollover(this, result);
       case 'quarter':
         result._date.setMonth(result.month + 3 * value);
-        return result;
+        return checkRollover(this, result);
       case 'month':
         result._date.setMonth(result.month + value);
-        return result;
+        return checkRollover(this, result);
       case 'week':
         result._date.setDate(result.date + 7 * value);
         return result;
@@ -143,6 +147,6 @@ export class CalendarDay {
   }
 
   public toString() {
-    return this._date.toString();
+    return `${this.native}`;
   }
 }

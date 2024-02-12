@@ -100,36 +100,39 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private declare readonly [themeSymbol]: Theme;
 
+  private get _isDayView() {
+    return this.activeView === 'days';
+  }
+
+  private get _isMonthView() {
+    return this.activeView === 'months';
+  }
+
+  private get _isYearView() {
+    return this.activeView === 'years';
+  }
+
   private get yearPerPage() {
     return this.size === 'small' ? 18 : 15;
   }
 
   private get previousButtonLabel() {
-    switch (this.activeView) {
-      case 'days':
-        return this.resourceStrings.previousMonth;
-      case 'months':
-        return this.resourceStrings.previousYear;
-      case 'years':
-        return format(
-          this.resourceStrings.previousYears,
-          `${this.yearPerPage}`
-        );
-      default:
-        return '';
+    if (this._isDayView) {
+      return this.resourceStrings.previousMonth;
+    } else if (this._isMonthView) {
+      return this.resourceStrings.previousYear;
+    } else {
+      return format(this.resourceStrings.previousYears, `${this.yearPerPage}`);
     }
   }
 
   private get nextButtonLabel() {
-    switch (this.activeView) {
-      case 'days':
-        return this.resourceStrings.nextMonth;
-      case 'months':
-        return this.resourceStrings.nextYear;
-      case 'years':
-        return format(this.resourceStrings.nextYears, `${this.yearPerPage}`);
-      default:
-        return '';
+    if (this._isDayView) {
+      return this.resourceStrings.nextMonth;
+    } else if (this._isMonthView) {
+      return this.resourceStrings.nextYear;
+    } else {
+      return format(this.resourceStrings.nextYears, `${this.yearPerPage}`);
     }
   }
 
@@ -232,180 +235,148 @@ export default class IgcCalendarComponent extends SizableMixin(
   private async focusActiveDate() {
     await this.updateComplete;
 
-    switch (this.activeView) {
-      case 'days':
-        return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
-      case 'months':
-        return this.monthsView.focusActiveDate();
-      case 'years':
-        return this.yearsView.focusActiveDate();
+    if (this._isDayView) {
+      return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
+    }
+
+    if (this._isMonthView) {
+      return this.monthsView.focusActiveDate();
+    }
+
+    if (this._isYearView) {
+      return this.yearsView.focusActiveDate();
     }
   }
 
-  private updateViewIndex(date: CalendarDay, newIndex: number) {
+  private updateViewIndex(date: CalendarDay, delta: 'next' | 'previous') {
     if (this.visibleMonths === 1) return;
 
     const index = this.activeDaysViewIndex;
-    const other = CalendarDay.from(this.daysViews.item(index).activeDate);
+    const view = CalendarDay.from(this.daysViews.item(index).activeDate);
+    const newIndex =
+      delta === 'next'
+        ? index === this.visibleMonths - 1
+          ? index
+          : index + 1
+        : Math.max(index - 1, 0);
 
-    if (date.month !== other.month) {
+    if (date.month !== view.month) {
       this.activeDaysViewIndex = newIndex;
     }
   }
 
   private onArrowLeft() {
-    const index = this.activeDaysViewIndex;
-
-    switch (this.activeView) {
-      case 'days':
-        {
-          const date = this._activeDate.add('day', -1);
-
-          this.updateViewIndex(date, Math.max(index - 1, 0));
-          this._activeDate = date;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('month', -1);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', -1);
-        break;
+    if (this._isDayView) {
+      const date = this._activeDate.add('day', -1);
+      this.updateViewIndex(date, 'previous');
+      this._activeDate = date;
+    } else {
+      this._activeDate = this._activeDate.add(
+        this._isMonthView ? 'month' : 'year',
+        -1
+      );
     }
 
     this.focusActiveDate();
   }
 
   private onArrowRight() {
-    const index = this.activeDaysViewIndex;
-
-    switch (this.activeView) {
-      case 'days':
-        {
-          const date = this._activeDate.add('day', 1);
-
-          this.updateViewIndex(
-            date,
-            index === this.visibleMonths - 1 ? index : index + 1
-          );
-          this._activeDate = date;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('month', 1);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', 1);
-        break;
+    if (this._isDayView) {
+      const date = this._activeDate.add('day', 1);
+      this.updateViewIndex(date, 'next');
+      this._activeDate = date;
+    } else {
+      this._activeDate = this._activeDate.add(
+        this._isMonthView ? 'month' : 'year',
+        1
+      );
     }
 
     this.focusActiveDate();
   }
 
   private onArrowUp() {
-    const index = this.activeDaysViewIndex;
-
-    switch (this.activeView) {
-      case 'days':
-        {
-          const date = this._activeDate.add('week', -1);
-
-          this.updateViewIndex(date, Math.max(index - 1, 0));
-          this._activeDate = date;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('month', -MONTHS_PER_ROW);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', -YEARS_PER_ROW);
-        break;
+    if (this._isDayView) {
+      const date = this._activeDate.add('week', -1);
+      this.updateViewIndex(date, 'previous');
+      this._activeDate = date;
+    } else {
+      const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
+      this._activeDate = this._activeDate.add(
+        this._isMonthView ? 'month' : 'year',
+        -delta
+      );
     }
 
     this.focusActiveDate();
   }
 
   private onArrowDown() {
-    const index = this.activeDaysViewIndex;
-
-    switch (this.activeView) {
-      case 'days':
-        {
-          const date = this._activeDate.add('week', 1);
-
-          this.updateViewIndex(
-            date,
-            index === this.visibleMonths - 1 ? index : index + 1
-          );
-          this._activeDate = date;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('month', MONTHS_PER_ROW);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', YEARS_PER_ROW);
-        break;
+    if (this._isDayView) {
+      const date = this._activeDate.add('week', 1);
+      this.updateViewIndex(date, 'previous');
+      this._activeDate = date;
+    } else {
+      const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
+      this._activeDate = this._activeDate.add(
+        this._isMonthView ? 'month' : 'year',
+        delta
+      );
     }
 
     this.focusActiveDate();
   }
 
   private onShiftPageDown() {
-    if (this.activeView === 'days') {
+    if (this._isDayView) {
       this._activeDate = this._activeDate.add('year', 1);
       this.focusActiveDate();
     }
   }
 
   private onShiftPageUp() {
-    if (this.activeView === 'days') {
+    if (this._isDayView) {
       this._activeDate = this._activeDate.add('year', -1);
       this.focusActiveDate();
     }
   }
 
   private onHomeKey() {
-    switch (this.activeView) {
-      case 'days':
-        {
-          const first = CalendarDay.from(this.daysViews.item(0).activeDate);
-          this._activeDate = first.set({ date: 1 });
-          this.activeDaysViewIndex = 0;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.set({ month: 0 });
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.set({
-          year: getYearRange(this._activeDate, this.yearPerPage).start,
-        });
-        break;
+    if (this._isDayView) {
+      const first = CalendarDay.from(this.daysViews.item(0).activeDate);
+      this._activeDate = first.set({ date: 1 });
+      this.activeDaysViewIndex = 0;
+    }
+
+    if (this._isMonthView) {
+      this._activeDate = this._activeDate.set({ month: 0 });
+    }
+
+    if (this._isYearView) {
+      this._activeDate = this._activeDate.set({
+        year: getYearRange(this._activeDate, this.yearPerPage).start,
+      });
     }
 
     this.focusActiveDate();
   }
 
   private onEndKey() {
-    const index = this.daysViews.length - 1;
+    if (this._isDayView) {
+      const index = this.daysViews.length - 1;
+      const last = CalendarDay.from(this.daysViews.item(index).activeDate);
+      this._activeDate = last.set({ month: last.month + 1, date: 0 });
+      this.activeDaysViewIndex = index;
+    }
 
-    switch (this.activeView) {
-      case 'days':
-        {
-          const last = CalendarDay.from(this.daysViews.item(index).activeDate);
-          this._activeDate = last.set({ month: last.month + 1, date: 0 });
-          this.activeDaysViewIndex = index;
-        }
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.set({ month: 11 });
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.set({
-          year: getYearRange(this._activeDate, this.yearPerPage).end,
-        });
-        break;
+    if (this._isMonthView) {
+      this._activeDate = this._activeDate.set({ month: 11 });
+    }
+
+    if (this._isYearView) {
+      this._activeDate = this._activeDate.set({
+        year: getYearRange(this._activeDate, this.yearPerPage).end,
+      });
     }
 
     this.focusActiveDate();
@@ -497,10 +468,9 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   protected renderYearButtonNavigation(active: CalendarDay, viewIndex: number) {
-    const isDay = this.activeView === 'days';
     const fmt = this._intl.get('yearLabel').format;
     const ariaLabel = `${active.year}, ${this.resourceStrings.selectYear}`;
-    const ariaSkip = isDay ? fmt(active.native) : active.year;
+    const ariaSkip = this._isDayView ? fmt(active.native) : active.year;
 
     return html`
       <span class="aria-off-screen" aria-live="polite">${ariaSkip}</span>
@@ -528,20 +498,19 @@ export default class IgcCalendarComponent extends SizableMixin(
     viewIndex = 0
   ) {
     const activeDate = date ?? this._activeDate;
-    const isDay = this.activeView === 'days';
-    const isMonth = this.activeView === 'months';
-    const isYear = this.activeView === 'years';
 
     return html`
       <div part="navigation">
         <div>
-          ${isDay
+          ${this._isDayView
             ? this.renderMonthButtonNavigation(activeDate, viewIndex)
             : nothing}
-          ${isDay || isMonth
+          ${this._isDayView || this._isMonthView
             ? this.renderYearButtonNavigation(activeDate, viewIndex)
             : nothing}
-          ${isYear ? this.renderYearRangeNavigation(activeDate) : nothing}
+          ${this._isYearView
+            ? this.renderYearRangeNavigation(activeDate)
+            : nothing}
         </div>
         ${showButtons ? this.renderNavigationButtons() : nothing}
       </div>
@@ -569,24 +538,24 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   protected renderHeaderDateSingle() {
     const date = this.value;
-    const weekday = this._intl.get('weekday');
-    const monthDay = this._intl.get('monthDay');
+    const weekDayFmt = this._intl.get('weekday').format;
+    const monthDayFmt = this._intl.get('monthDay').format;
     const separator =
       this.headerOrientation === 'vertical' ? html`<br />` : ' ';
 
     return date
-      ? html`${weekday.format(date)},${separator}${monthDay.format(date)}`
+      ? html`${weekDayFmt(date)},${separator}${monthDayFmt(date)}`
       : this.resourceStrings.selectedDate;
   }
 
   protected renderHeaderDateRange() {
     const values = this.values;
-    const fmt = this._intl.get('monthDay');
+    const fmt = this._intl.get('monthDay').format;
     const { startDate, endDate } = this.resourceStrings;
 
-    const start = this._hasValues ? fmt.format(first(values)) : startDate;
+    const start = this._hasValues ? fmt(first(values)) : startDate;
     const end =
-      this._hasValues && values.length > 1 ? fmt.format(last(values)) : endDate;
+      this._hasValues && values.length > 1 ? fmt(last(values)) : endDate;
 
     return html`
       <span>${start}</span>
@@ -672,8 +641,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   protected override render() {
-    const direction =
-      this.activeView === 'days' && this.orientation === 'horizontal';
+    const direction = this._isDayView && this.orientation === 'horizontal';
 
     const styles = {
       display: 'flex',
@@ -756,29 +724,15 @@ export default class IgcCalendarComponent extends SizableMixin(
   // XXX: Navigation
 
   private navigatePrevious() {
-    switch (this.activeView) {
-      case 'days':
-        this._activeDate = this._activeDate.add('month', -1);
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('year', -1);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', -this.yearPerPage);
-    }
+    const unit = this._isDayView ? 'month' : 'year';
+    const delta = this._isYearView ? this.yearPerPage : 1;
+    this._activeDate = this._activeDate.add(unit, -delta);
   }
 
   private navigateNext() {
-    switch (this.activeView) {
-      case 'days':
-        this._activeDate = this._activeDate.add('month', 1);
-        break;
-      case 'months':
-        this._activeDate = this._activeDate.add('year', 1);
-        break;
-      case 'years':
-        this._activeDate = this._activeDate.add('year', this.yearPerPage);
-    }
+    const unit = this._isDayView ? 'month' : 'year';
+    const delta = this._isYearView ? this.yearPerPage : 1;
+    this._activeDate = this._activeDate.add(unit, delta);
   }
 
   private switchToMonths(viewIndex: number) {
@@ -789,7 +743,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private switchToYears(viewIndex: number) {
-    if (this.activeView === 'days') {
+    if (this._isDayView) {
       this.activateDaysView(viewIndex);
     }
     this.activeView = 'years';
