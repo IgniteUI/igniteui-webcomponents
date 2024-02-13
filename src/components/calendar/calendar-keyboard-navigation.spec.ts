@@ -5,6 +5,7 @@ import IgcDaysViewComponent from './days-view/days-view.js';
 import { MONTHS_PER_ROW, YEARS_PER_ROW, getYearRange } from './helpers.js';
 import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
+import { DateRangeType } from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 import {
   arrowDown,
@@ -204,6 +205,90 @@ describe('Calendar keyboard interaction', () => {
       await elementUpdated(calendar);
 
       expect(value.equalTo(calendar.value!)).to.be.true;
+    });
+
+    it('skips disabled dates with keyboard navigation - 1', async () => {
+      const lastOfJan = new CalendarDay({ year: 2024, month: 0, date: 31 });
+      const firstOfMarch = new CalendarDay({ year: 2024, month: 2, date: 1 });
+
+      const getActiveDOM = () =>
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
+
+      // Start on 1st of March
+      calendar.activeDate = firstOfMarch.native;
+      // Disabled the whole month of February
+      calendar.disabledDates = [
+        {
+          type: DateRangeType.Between,
+          dateRange: [
+            lastOfJan.add('day', 1).native,
+            firstOfMarch.add('day', -1).native,
+          ],
+        },
+      ];
+      await elementUpdated(calendar);
+
+      // Previous day -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), arrowLeft);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next day -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), arrowRight);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+
+      // Previous week -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), arrowUp);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next week -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), arrowDown);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+
+      // Previous month -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), pageUpKey);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next month -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), pageDownKey);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('skips disabled dates with keyboard navigation - 2', async () => {
+      const date = new CalendarDay({ year: 2024, month: 1, date: 14 });
+      const getActiveDOM = () =>
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
+
+      calendar.activeDate = date.native;
+      calendar.disabledDates = [
+        {
+          type: DateRangeType.Specific,
+          dateRange: [date.set({ date: 1 }).native],
+        },
+        {
+          type: DateRangeType.Between,
+          dateRange: [
+            date.set({ date: 25 }).native,
+            date.set({ date: 29 }).native,
+          ],
+        },
+      ];
+      await elementUpdated(calendar);
+
+      // Beginning of February is disabled -> fallback to 2nd day
+      simulateKeyboard(getActiveDOM(), homeKey);
+      await elementUpdated(calendar);
+      expect(date.set({ date: 2 }).equalTo(calendar.activeDate)).to.be.true;
+
+      // End of February -> [25-29] are disabled, fallback to 24th
+      simulateKeyboard(getActiveDOM(), endKey);
+      await elementUpdated(calendar);
+      expect(date.set({ date: 24 }).equalTo(calendar.activeDate)).to.be.true;
     });
   });
 
@@ -530,6 +615,22 @@ export function getCalendarDOM(element: IgcCalendarComponent) {
           `[part="years-navigation"]`
         ) as HTMLButtonElement;
       },
+      get previous() {
+        return Array.from(
+          root.querySelectorAll(`[part='navigation-button']`)
+        ).at(0)! as HTMLButtonElement;
+      },
+      get next() {
+        return Array.from(
+          root.querySelectorAll(`[part='navigation-button']`)
+        ).at(-1)! as HTMLButtonElement;
+      },
     },
   };
+}
+
+export function getDOMDate(date: CalendarDay, view: IgcDaysViewComponent) {
+  return getDayViewDOM(view).dates.all.find((day) =>
+    day.matches(`[data-value='${date.timestamp}']`)
+  )!;
 }

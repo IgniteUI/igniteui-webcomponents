@@ -10,6 +10,8 @@ import {
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
   areSameMonth,
+  getNextActiveDate,
+  getPreviousActiveDate,
   getYearRange,
 } from './helpers.js';
 import { CalendarDay } from './model.js';
@@ -267,13 +269,16 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onArrowLeft() {
     if (this._isDayView) {
-      const date = this._activeDate.add('day', -1);
+      const date = getPreviousActiveDate(
+        this._activeDate.add('day', -1),
+        this.disabledDates
+      );
       this.updateViewIndex(date, 'previous');
       this._activeDate = date;
     } else {
-      this._activeDate = this._activeDate.add(
-        this._isMonthView ? 'month' : 'year',
-        -1
+      this._activeDate = getPreviousActiveDate(
+        this._activeDate.add(this._isMonthView ? 'month' : 'year', -1),
+        this.disabledDates
       );
     }
 
@@ -282,13 +287,16 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onArrowRight() {
     if (this._isDayView) {
-      const date = this._activeDate.add('day', 1);
+      const date = getNextActiveDate(
+        this._activeDate.add('day', 1),
+        this.disabledDates
+      );
       this.updateViewIndex(date, 'next');
       this._activeDate = date;
     } else {
-      this._activeDate = this._activeDate.add(
-        this._isMonthView ? 'month' : 'year',
-        1
+      this._activeDate = getNextActiveDate(
+        this._activeDate.add(this._isMonthView ? 'month' : 'year', 1),
+        this.disabledDates
       );
     }
 
@@ -297,14 +305,17 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onArrowUp() {
     if (this._isDayView) {
-      const date = this._activeDate.add('week', -1);
+      const date = getPreviousActiveDate(
+        this._activeDate.add('week', -1),
+        this.disabledDates
+      );
       this.updateViewIndex(date, 'previous');
       this._activeDate = date;
     } else {
       const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
-      this._activeDate = this._activeDate.add(
-        this._isMonthView ? 'month' : 'year',
-        -delta
+      this._activeDate = getPreviousActiveDate(
+        this._activeDate.add(this._isMonthView ? 'month' : 'year', -delta),
+        this.disabledDates
       );
     }
 
@@ -313,30 +324,61 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onArrowDown() {
     if (this._isDayView) {
-      const date = this._activeDate.add('week', 1);
-      this.updateViewIndex(date, 'previous');
+      const date = getNextActiveDate(
+        this._activeDate.add('week', 1),
+        this.disabledDates
+      );
+      this.updateViewIndex(date, 'next');
       this._activeDate = date;
     } else {
       const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
-      this._activeDate = this._activeDate.add(
-        this._isMonthView ? 'month' : 'year',
-        delta
+      this._activeDate = getNextActiveDate(
+        this._activeDate.add(this._isMonthView ? 'month' : 'year', delta),
+        this.disabledDates
       );
     }
 
     this.focusActiveDate();
   }
 
+  private onPageDown() {
+    const unit = this._isDayView ? 'month' : 'year';
+    const delta = this._isYearView ? this.yearPerPage : 1;
+    this._activeDate = getNextActiveDate(
+      this._activeDate.add(unit, delta),
+      this.disabledDates
+    );
+
+    this.focusActiveDate();
+  }
+
+  private onPageUp() {
+    const unit = this._isDayView ? 'month' : 'year';
+    const delta = this._isYearView ? this.yearPerPage : 1;
+    this._activeDate = getPreviousActiveDate(
+      this._activeDate.add(unit, -delta),
+      this.disabledDates
+    );
+
+    this.focusActiveDate();
+  }
+
   private onShiftPageDown() {
     if (this._isDayView) {
-      this._activeDate = this._activeDate.add('year', 1);
+      this._activeDate = getNextActiveDate(
+        this._activeDate.add('year', 1),
+        this.disabledDates
+      );
       this.focusActiveDate();
     }
   }
 
   private onShiftPageUp() {
     if (this._isDayView) {
-      this._activeDate = this._activeDate.add('year', -1);
+      this._activeDate = getPreviousActiveDate(
+        this._activeDate.add('year', -1),
+        this.disabledDates
+      );
       this.focusActiveDate();
     }
   }
@@ -344,18 +386,28 @@ export default class IgcCalendarComponent extends SizableMixin(
   private onHomeKey() {
     if (this._isDayView) {
       const first = CalendarDay.from(this.daysViews.item(0).activeDate);
-      this._activeDate = first.set({ date: 1 });
+      this._activeDate = getNextActiveDate(
+        first.set({ date: 1 }),
+        this.disabledDates
+      );
+
       this.activeDaysViewIndex = 0;
     }
 
     if (this._isMonthView) {
-      this._activeDate = this._activeDate.set({ month: 0 });
+      this._activeDate = getNextActiveDate(
+        this._activeDate.set({ month: 0 }),
+        this.disabledDates
+      );
     }
 
     if (this._isYearView) {
-      this._activeDate = this._activeDate.set({
-        year: getYearRange(this._activeDate, this.yearPerPage).start,
-      });
+      this._activeDate = getNextActiveDate(
+        this._activeDate.set({
+          year: getYearRange(this._activeDate, this.yearPerPage).start,
+        }),
+        this.disabledDates
+      );
     }
 
     this.focusActiveDate();
@@ -365,18 +417,27 @@ export default class IgcCalendarComponent extends SizableMixin(
     if (this._isDayView) {
       const index = this.daysViews.length - 1;
       const last = CalendarDay.from(this.daysViews.item(index).activeDate);
-      this._activeDate = last.set({ month: last.month + 1, date: 0 });
+      this._activeDate = getPreviousActiveDate(
+        last.set({ month: last.month + 1, date: 0 }),
+        this.disabledDates
+      );
       this.activeDaysViewIndex = index;
     }
 
     if (this._isMonthView) {
-      this._activeDate = this._activeDate.set({ month: 11 });
+      this._activeDate = getPreviousActiveDate(
+        this._activeDate.set({ month: 11 }),
+        this.disabledDates
+      );
     }
 
     if (this._isYearView) {
-      this._activeDate = this._activeDate.set({
-        year: getYearRange(this._activeDate, this.yearPerPage).end,
-      });
+      this._activeDate = getPreviousActiveDate(
+        this._activeDate.set({
+          year: getYearRange(this._activeDate, this.yearPerPage).end,
+        }),
+        this.disabledDates
+      );
     }
 
     this.focusActiveDate();
@@ -404,8 +465,8 @@ export default class IgcCalendarComponent extends SizableMixin(
       .set(arrowDown, this.onArrowDown)
       .set([shiftKey, pageUpKey], this.onShiftPageUp)
       .set([shiftKey, pageDownKey], this.onShiftPageDown)
-      .set(pageUpKey, this.navigatePrevious)
-      .set(pageDownKey, this.navigateNext)
+      .set(pageUpKey, this.onPageUp)
+      .set(pageDownKey, this.onPageDown)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
   }
@@ -720,8 +781,6 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeDate = view.activeDate;
     this.activeDaysViewIndex = index;
   }
-
-  // XXX: Navigation
 
   private navigatePrevious() {
     const unit = this._isDayView ? 'month' : 'year';

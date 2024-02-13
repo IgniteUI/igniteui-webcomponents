@@ -3,6 +3,7 @@ import { spy } from 'sinon';
 
 import {
   getCalendarDOM,
+  getDOMDate,
   getDayViewDOM,
 } from './calendar-keyboard-navigation.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
@@ -17,12 +18,6 @@ import { DateRangeDescriptor, DateRangeType } from './types.js';
 import { IgcCalendarComponent, defineComponents } from '../../index.js';
 import { first, last } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
-
-function getDOMDate(date: CalendarDay, view: IgcDaysViewComponent) {
-  return getDayViewDOM(view).dates.all.find((day) =>
-    day.matches(`[data-value='${date.timestamp}']`)
-  )!;
-}
 
 describe('Calendar interactions', () => {
   let calendar: IgcCalendarComponent;
@@ -68,6 +63,57 @@ describe('Calendar interactions', () => {
     expect(calendar.values).lengthOf(2);
     expect(date_1.equalTo(first(calendar.values))).to.be.true;
     expect(date_2.equalTo(last(calendar.values))).to.be.true;
+  });
+
+  it('clicking previous/next buttons in days view', async () => {
+    const { previous, next } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('month', -1);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('month', 1);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('clicking previous/next buttons in months view', async () => {
+    const { previous, next, months } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('year', -1);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('year', 1);
+
+    simulateClick(months);
+    await elementUpdated(calendar);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('clicking previous/next buttons in years view', async () => {
+    const { previous, next, years } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('year', -15);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('year', 15);
+
+    simulateClick(years);
+    await elementUpdated(calendar);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
   });
 
   it('single selection', async () => {
