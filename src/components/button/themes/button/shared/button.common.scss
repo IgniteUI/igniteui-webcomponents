@@ -47,7 +47,14 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($flat-theme, 'focus-foreground');
         background: var-get($flat-theme, 'focus-background');
+    }
 
+    &:focus-visible {
+        color: var-get($flat-theme, 'focus-visible-foreground');
+        background: var-get($flat-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
         &:hover {
             color: var-get($flat-theme, 'focus-hover-foreground');
             background: var-get($flat-theme, 'focus-hover-background');
@@ -57,16 +64,6 @@ $outlined-theme: $material-outlined;
     &:active {
         color: var-get($flat-theme, 'active-foreground');
         background: var-get($flat-theme, 'active-background');
-    }
-
-    &:focus-visible {
-        color: var-get($flat-theme, 'focus-visible-foreground');
-        background: var-get($flat-theme, 'focus-visible-background');
-
-        &:hover {
-            color: var-get($flat-theme, 'focus-hover-foreground');
-            background: var-get($flat-theme, 'focus-hover-background');
-        }
     }
 }
 
@@ -83,7 +80,14 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($outlined-theme, 'focus-foreground');
         background: var-get($outlined-theme, 'focus-background');
+    }
 
+    &:focus-visible {
+        color: var-get($outlined-theme, 'focus-visible-foreground');
+        background: var-get($outlined-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
         &:hover {
             color: var-get($outlined-theme, 'focus-hover-foreground');
             background: var-get($outlined-theme, 'focus-hover-background');
@@ -93,11 +97,6 @@ $outlined-theme: $material-outlined;
     &:active {
         color: var-get($outlined-theme, 'active-foreground');
         background: var-get($outlined-theme, 'active-background');
-    }
-
-    &:focus-visible {
-        color: var-get($outlined-theme, 'focus-visible-foreground');
-        background: var-get($outlined-theme, 'focus-visible-background');
     }
 }
 
@@ -114,7 +113,14 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($contained-theme, 'focus-foreground');
         background: var-get($contained-theme, 'focus-background');
+    }
 
+    &:focus-visible {
+        color: var-get($contained-theme, 'focus-visible-foreground');
+        background: var-get($contained-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
         &:hover {
             color: var-get($contained-theme, 'focus-hover-foreground');
             background: var-get($contained-theme, 'focus-hover-background');
@@ -140,7 +146,14 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($fab-theme, 'focus-foreground');
         background: var-get($fab-theme, 'focus-background');
+    }
 
+    &:focus-visible {
+        color: var-get($fab-theme, 'focus-visible-foreground');
+        background: var-get($fab-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
         &:hover {
             color: var-get($fab-theme, 'focus-hover-foreground');
             background: var-get($fab-theme, 'focus-hover-background');

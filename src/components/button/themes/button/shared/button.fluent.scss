@@ -71,11 +71,6 @@ $outlined-btn-indent: rem(2px);
             box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
         }
 
-        &:hover {
-            color: var-get($outlined-theme, 'hover-foreground');
-            background: var-get($outlined-theme, 'hover-background');
-        }
-
         &:active {
             color: var-get($outlined-theme, 'active-foreground');
             background: var-get($outlined-theme, 'active-background');
@@ -99,11 +94,6 @@ $outlined-btn-indent: rem(2px);
             box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-foreground');
         }
 
-        &:hover {
-            color: var-get($contained-theme, 'hover-foreground');
-            background: var-get($contained-theme, 'hover-background');
-        }
-
         &:active {
             color: var-get($contained-theme, 'active-foreground');
             background: var-get($contained-theme, 'active-background');
@@ -120,11 +110,6 @@ $outlined-btn-indent: rem(2px);
 
         &::after {
             box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-foreground');
-        }
-
-        &:hover {
-            color: var-get($fab-theme, 'hover-foreground');
-            background: var-get($fab-theme, 'hover-background');
         }
 
         &:active {
