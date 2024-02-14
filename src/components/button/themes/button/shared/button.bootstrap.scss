@@ -15,6 +15,10 @@ $outlined-theme: $bootstrap-outlined;
 
     [part='base'] {
         border: rem(1px) solid var-get($outlined-theme, 'border-color');
+
+        &:focus {
+            border: rem(1px) solid var-get($outlined-theme, 'focus-border-color');
+        }
     }
 }
 
@@ -36,16 +40,6 @@ $outlined-theme: $bootstrap-outlined;
 
 :host(:not([disabled])[variant='outlined']) [part='base'],
 :host(:not(:disabled)[variant='outlined']) [part='base'] {
-    &:hover {
-        color: var-get($outlined-theme, 'hover-foreground');
-        background: var-get($outlined-theme, 'hover-background');
-    }
-
-    &:active {
-        color: var-get($outlined-theme, 'active-foreground');
-        background: var-get($outlined-theme, 'active-background');
-    }
-
     &:focus,
     &:active {
         box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'shadow-color');
@@ -58,11 +52,6 @@ $outlined-theme: $bootstrap-outlined;
     &:active {
         box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'shadow-color');
     }
-
-    &:focus-visible {
-        color: var-get($contained-theme, 'focus-visible-foreground');
-        background: var-get($contained-theme, 'focus-visible-background');
-    }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'],
@@ -71,16 +60,4 @@ $outlined-theme: $bootstrap-outlined;
     &:active {
         box-shadow: 0 0 0 rem(4px) var-get($fab-theme, 'shadow-color');
     }
-
-    &:focus-visible {
-        color: var-get($fab-theme, 'focus-visible-foreground');
-        background: var-get($fab-theme, 'focus-visible-background');
-    }
-}
-
-:host([disabled][variant='outlined']) [part='base'],
-:host(:disabled[variant='outlined']) [part='base'] {
-    color: var-get($contained-theme, 'disabled-foreground');
-    background: var-get($contained-theme, 'disabled-background');
-    border-color: var-get($contained-theme, 'disabled-border-color');
 }
