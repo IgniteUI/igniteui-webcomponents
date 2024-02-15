@@ -42,6 +42,10 @@ $outlined-theme: $indigo-outlined;
 
     &:focus {
         border-color: var-get($outlined-theme, 'focus-border-color');
+
+        &:hover {
+            border-color: var-get($fab-theme, 'hover-border-color');
+        }
     }
 
     &:active {
