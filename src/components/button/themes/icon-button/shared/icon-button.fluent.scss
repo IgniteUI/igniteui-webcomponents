@@ -4,22 +4,21 @@
 $flat-theme: $fluent-flat;
 $contained-theme: $fluent-contained;
 $outlined-theme: $fluent-outlined;
-$outline-btn-indent: rem(2px);
+$btn-indent: rem(3px);
 
 [part='base'] {
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
-    padding: pad(4px, 6px, 7px);
+    padding: pad(3px, 7px, 10px);
 
-    &::after {
+    &:focus-visible::after {
         position: absolute;
         content: '';
         pointer-events: none;
-        top: 2px;
-        left: 2px;
-        width: calc(100% - (#{$outline-btn-indent} * 2));
-        height: calc(100% - (#{$outline-btn-indent} * 2));
-        border-radius: calc(#{var-get($flat-theme, 'border-radius')} - #{$outline-btn-indent * 2});
+        inset-block-start: $btn-indent;
+        inset-inline-start: $btn-indent;
+        width: calc(100% - (#{$btn-indent} * 2));
+        height: calc(100% - (#{$btn-indent} * 2));
     }
 }
 
@@ -53,10 +52,6 @@ $outline-btn-indent: rem(2px);
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
-        &:focus {
-            border-color: var-get($outlined-theme, 'focus-border-color');
-        }
-
         &:hover,
         &:focus:hover,
         &:focus:active {
