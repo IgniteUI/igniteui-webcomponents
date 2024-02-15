@@ -1,4 +1,4 @@
-import { LitElement, TemplateResult, html } from 'lit';
+import { LitElement, TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -28,6 +28,7 @@ import type {
   Item,
   Keys,
 } from './types.js';
+import { requestRenderer } from '../../render-props.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
@@ -698,6 +699,10 @@ export default class IgcComboComponent<
     item: ComboRecord<T>,
     index: number
   ): TemplateResult => {
+    if (!item) {
+      return html`${nothing}`;
+    }
+
     const record = item;
     const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
@@ -715,6 +720,14 @@ export default class IgcComboComponent<
       this._activeDescendant = itemId;
     }
 
+    const content = html`${requestRenderer(
+      'item',
+      { item: record.value },
+      this.valueKey ? (record.value[this.valueKey] as string) : itemId,
+      this.itemTemplate as any,
+      this
+    )}`;
+
     const itemTemplate = html`<igc-combo-item
       id=${itemId}
       part=${partNameMap({ item: true, selected, active })}
@@ -726,7 +739,7 @@ export default class IgcComboComponent<
       ?active=${active}
       ?selected=${selected}
       ?hide-checkbox=${this.singleSelect}
-      >${this.itemTemplate({ item: record.value })}</igc-combo-item
+      >${content}</igc-combo-item
     >`;
 
     return html`${this.groupKey && record.header

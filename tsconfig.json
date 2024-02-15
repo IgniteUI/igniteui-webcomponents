@@ -21,15 +21,16 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
     "plugins": [
       {
         "name": "ts-lit-plugin",
-        "strict": true
-      }
+        "strict": true,
+      },
     ],
-    "types": ["mocha"]
+    "types": ["mocha"],
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/react-props.tsx"],
   "exclude": ["src/**/*.stories.ts"],
   "typedocOptions": {
     "out": "dist/docs/typescript",
@@ -39,6 +40,6 @@
     "excludeProtected": true,
     "excludeExternals": true,
     "name": "Ignite UI for Web Components",
-    "readme": "none"
-  }
+    "readme": "none",
+  },
 }
