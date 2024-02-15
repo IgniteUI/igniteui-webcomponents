@@ -10,11 +10,15 @@ import { styles as bootstrapLight } from './light/container/card.bootstrap.css.j
 import { styles as fluentLight } from './light/container/card.fluent.css.js';
 import { styles as indigoLight } from './light/container/card.indigo.css.js';
 import { styles as materialLight } from './light/container/card.material.css.js';
+import { styles as shared } from './light/container/card.shared.css.js';
 // Shared Styles
 import { styles as fluent } from './shared/container/card.fluent.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrapLight}
   `,
@@ -30,6 +34,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrapDark}
   `,

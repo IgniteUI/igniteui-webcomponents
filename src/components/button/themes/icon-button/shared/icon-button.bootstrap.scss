@@ -16,8 +16,29 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
     [part='base'] {
+        &:focus,
+        &:focus-within,
         &:active {
-            box-shadow: none;
+            box-shadow: 0 0 0 rem(4px) var-get($flat-theme, 'focus-border-color');
+        }
+
+        &:hover {    
+            igc-icon {
+                color: var-get($flat-theme, 'hover-foreground');
+            }
+        }
+
+        &:focus,
+        &:focus-within {
+            igc-icon {
+                color: var-get($flat-theme, 'focus-foreground');
+            }
+
+            &:hover {
+                igc-icon {
+                    color: var-get($flat-theme, 'focus-hover-foreground');
+                }
+            }
         }
     }
 }
@@ -57,6 +78,12 @@ $outlined-theme: $bootstrap-outlined;
 
             igc-icon {
                 color: var-get($outlined-theme, 'focus-foreground');
+            }
+
+            &:hover {
+                igc-icon {
+                    color: var-get($outlined-theme, 'focus-hover-foreground');
+                }
             }
         }
 

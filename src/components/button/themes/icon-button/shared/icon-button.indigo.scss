@@ -64,12 +64,6 @@ $outlined-theme: $indigo-outlined;
             border-radius: inherit;
         }
 
-        &:hover,
-        &:focus:hover {
-            background: var-get($outlined-theme, 'hover-background');
-            color: var-get($outlined-theme, 'hover-foreground');
-        }
-
         &:focus,
         &:focus-within {
             border-color: var-get($outlined-theme, 'focus-border-color');

@@ -57,7 +57,6 @@ $theme: $fluent;
     margin-top: 0;
     height: auto;
     margin-block-end: rem(4px);
-    color: var-get($theme, 'idle-secondary-color');
 }
 
 :host([invalid]) {
@@ -70,44 +69,11 @@ textarea {
     @include type-style('body-2');
 
     padding: rem(8px);
-    background: transparent;
-    color: var-get($theme, 'filled-text-color');
-
-    &::placeholder {
-        color: var-get($theme, 'placeholder-color');
-    }
-}
-
-[part~='prefixed'] {
-    [part~='prefix'] {
-        color: var-get($theme, 'input-prefix-color');
-        background: var-get($theme, 'input-prefix-background');
-    }
-}
-
-[part~='suffixed'] {
-    [part~='suffix'] {
-        color: var-get($theme, 'input-suffix-color');
-        background: var-get($theme, 'input-suffix-background');
-    }
-}
-
-[part~='filled'] {
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-        background: var-get($theme, 'input-prefix-background--filled');
-    }
-
-    [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-    }
 }
 
 [part~='helper-text'] {
     @include type-style('caption');
 
-    color: var-get($theme, 'helper-text-color');
     padding-block-start: rem(5px);
     padding-inline-start: 0;
 }
@@ -126,38 +92,10 @@ textarea {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
 }
 
 :host(:disabled),
 :host([disabled]) {
-    color: var-get($theme, 'disabled-text-color');
-
-    [part='prefix'],
-    [part='suffix'] {
-        color: var-get($theme, 'disabled-text-color');
-        background: inherit;
-    }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    textarea {
-        color: var-get($theme, 'disabled-text-color');
-
-        &::placeholder {
-            color: var-get($theme, 'disabled-placeholder-color');
-        }
-    }
-
-    [part~='label'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
     [part~='container'] {
         border-color: var-get($theme, 'disabled-border-color');
         background: var-get($theme, 'border-disabled-background');

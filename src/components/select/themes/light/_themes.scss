@@ -3,10 +3,11 @@
 @use 'igniteui-theming/sass/themes/schemas/components/light/select' as *;
 @use 'components/input/themes/light/themes' as input-theme;
 
-$material: map.merge(digest-schema($light-select), (
+$base: digest-schema($light-select);
+$material: map.merge(digest-schema($material-select), (
     helper-text-color: map.get(input-theme.$material, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$material, 'disabled-text-color'),
-    error-secondary-color: map.get(input-theme.$material, 'helper-text-color')
+    error-secondary-color: map.get(input-theme.$material, 'error-secondary-color')
 ));
 $bootstrap: map.merge(digest-schema($bootstrap-select), (
     helper-text-color: map.get(input-theme.$bootstrap, 'helper-text-color'),
