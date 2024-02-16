@@ -349,7 +349,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       skip: () => this.readOnly,
       bindingDefaults: { preventDefault: true },
     })
-      .set([ctrlKey, ';'], () => (this.value = new Date()))
+      .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
       .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
@@ -398,6 +398,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public clear(): void {
     this.maskedValue = '';
     this.value = null;
+  }
+
+  protected setToday() {
+    this.value = new Date();
+    this.handleInput();
   }
 
   protected updateMask() {
