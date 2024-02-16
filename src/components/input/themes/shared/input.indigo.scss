@@ -138,6 +138,10 @@ $transition-duration: .25s;
             color: var-get($theme, 'filled-text-hover-color');
         }
     }
+
+    [part^='container'] {
+        border-color: var-get($theme, 'hover-bottom-line-color');
+    }
 }
 
 :host(:focus-within) {
