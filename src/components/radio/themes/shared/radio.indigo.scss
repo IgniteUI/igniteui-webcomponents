@@ -3,32 +3,15 @@
 
 $theme: $indigo;
 
+:host {
+    font-weight: 600;
+}
+
 [part~='base'] {
     gap: rem(8px);
-
-    &:hover {
-        [part~='label'] {
-            color: var-get($theme, 'label-color-hover');
-        }
-    }
-}
-
-[part~='label'] {
-    @include type-style('body-2');
-
-    color: var-get($theme, 'label-color');
-}
-
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-color');
-    }
 }
 
 [part~='control'] {
-    --size: #{rem(16px)};
-
     border-radius: var(--size);
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
@@ -44,12 +27,6 @@ $theme: $indigo;
     &::after {
         border: rem(2px) solid var-get($theme, 'empty-color');
     }
-
-    &:hover {
-        &::after {
-            border: rem(2px) solid var-get($theme, 'hover-color');
-        }
-    }
 }
 
 [part='control checked'] {
@@ -58,19 +35,8 @@ $theme: $indigo;
     }
 
     &::before {
-        background: var-get($theme, 'fill-color');
-        border-color: var-get($theme, 'fill-color');
-    }
-
-    &:hover {
-        &::after {
-            border-color: var-get($theme, 'fill-hover-border-color');
-        }
-    
-        &::before {
-            background: var-get($theme, 'fill-color-hover');
-            border-color: var-get($theme, 'fill-hover-border-color');
-        }
+        background: var-get($theme, 'fill-color-hover');
+        border-color: var-get($theme, 'fill-hover-border-color');
     }
 }
 
@@ -80,33 +46,15 @@ $theme: $indigo;
     }
 
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-filled');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
 }
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part~='base'] {
-        &:hover {
-            [part~='label'] {
-                color: var-get($theme, 'label-color-hover');
-            }
-        }
-    }
-
-    [part='label'] {
-        color: var-get($theme, 'label-color');
-    }
-
     [part='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
-        }
-
-        &:hover {
-            &::after {
-                border-color: var-get($theme, 'error-color-hover');
-            }
         }
     }
 
@@ -118,22 +66,12 @@ $theme: $indigo;
         &::before {
             background: var-get($theme, 'error-color');
         }
-
-        &:hover {
-            &::after {
-                border-color: var-get($theme, 'error-color-hover');
-            }
-
-            &::before {
-                background: var-get($theme, 'error-color-hover');
-            }
-        }
     }
 
     [part~='focused'] {
         [part~='control'],
         [part='control checked'] {
-            box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
+            box-shadow: 0 0 0 rem(3px) var-get($theme, 'error-color-hover');
         }
     }
 }
