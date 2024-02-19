@@ -59,6 +59,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   private static readonly increment = createCounter();
   protected inputId = `datepicker-${IgcDatepickerComponent.increment()}`;
 
+  private predefinedDisplayFormatsMap = new Map([
+    ['short', 'shortDate'],
+    ['medium', 'mediumDate'],
+    ['long', 'longDate'],
+    ['full', 'fullDate'],
+  ]);
+
   public static register() {
     registerComponent(
       this,
@@ -75,6 +82,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @query(IgcDateTimeInputComponent.tagName, true)
   private _input!: IgcDateTimeInputComponent;
+
+  private _displayFormat!: string;
 
   /**
    * Whether the calendar dropdown should be kept open on clicking outside of it.
@@ -136,6 +145,54 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'show-week-numbers' })
   public showWeekNumbers = false;
+
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   * @attr display-format
+   */
+  @property({ attribute: 'display-format' })
+  public get displayFormat(): string {
+    return (
+      this._displayFormat ?? this._input?.displayFormat ?? this.inputFormat
+    );
+  }
+
+  public set displayFormat(value: string) {
+    if (!value) {
+      return;
+    }
+    this._displayFormat = value;
+    if (this.predefinedDisplayFormatsMap.has(value)) {
+      value = this.predefinedDisplayFormatsMap.get(value)!;
+    }
+    if (this._input) {
+      this._input.displayFormat = value;
+    }
+  }
+
+  /**
+   * The date format to apply on the input.
+   * Defaults to the current locale Intl.DateTimeFormat
+   * @attr input-format
+   */
+  @property({ attribute: 'input-format' })
+  public get inputFormat(): string {
+    return this._input?.inputFormat;
+  }
+
+  public set inputFormat(value: string) {
+    if (value && this._input) {
+      this._input.inputFormat = value;
+    }
+  }
+
+  /**
+   * The locale settings used to display the value.
+   * @attr
+   */
+  @property()
+  public locale = 'en';
 
   @watch('open')
   protected openChange() {
@@ -200,6 +257,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         label=${ifDefined(this.label)}
         aria-expanded=${this.open ? 'true' : 'false'}
         .value=${this.value}
+        .locale=${this.locale}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
       >
@@ -226,6 +284,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             ?hide-outside-days=${this.hideOutsideDays}
             .visibleMonths=${this.visibleMonths}
             .value=${this.value}
+            .locale=${this.locale}
             .activeDate=${this.value ?? nothing}
             @igcChange=${this.handleCalendarChangeEvent}
           >

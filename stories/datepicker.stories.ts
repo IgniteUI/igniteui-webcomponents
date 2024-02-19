@@ -72,6 +72,24 @@ const metadata: Meta<IgcDatepickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+      control: 'text',
+    },
+    inputFormat: {
+      type: 'string',
+      description:
+        'The date format to apply on the input.\nDefaults to the current locale Intl.DateTimeFormat',
+      control: 'text',
+    },
+    locale: {
+      type: 'string',
+      description: 'The locale settings used to display the value.',
+      control: 'text',
+      table: { defaultValue: { summary: 'en' } },
+    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -110,6 +128,7 @@ const metadata: Meta<IgcDatepickerComponent> = {
     hideOutsideDays: false,
     visibleMonths: 1,
     showWeekNumbers: false,
+    locale: 'en',
     required: false,
     disabled: false,
     invalid: false,
@@ -135,6 +154,18 @@ interface IgcDatepickerArgs {
   visibleMonths: number;
   /** Whether to show the number of the week in the calendar. */
   showWeekNumbers: boolean;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
+  displayFormat: string;
+  /**
+   * The date format to apply on the input.
+   * Defaults to the current locale Intl.DateTimeFormat
+   */
+  inputFormat: string;
+  /** The locale settings used to display the value. */
+  locale: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -156,21 +187,26 @@ export const Default: Story = {
     value: new Date(),
   },
   render: (args) => html`
-    <igc-datepicker
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
-      .value=${args.value}
-      ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-    </igc-datepicker>
+    <div style="height: 500px">
+      <igc-datepicker
+        .label=${args.label}
+        .visibleMonths=${args.visibleMonths}
+        .value=${args.value}
+        .displayFormat=${args.displayFormat}
+        .inputFormat=${args.inputFormat}
+        .locale=${args.locale}
+        ?disabled=${args.disabled}
+        ?invalid=${args.invalid}
+        ?readonly=${args.readOnly}
+        ?required=${args.required}
+        ?open=${args.open}
+        ?show-week-numbers=${args.showWeekNumbers}
+        ?hide-outside-days=${args.hideOutsideDays}
+        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+        ?keep-open-on-select=${args.keepOpenOnSelect}
+      >
+      </igc-datepicker>
+    </div>
   `,
 };
 
@@ -179,24 +215,26 @@ export const Slots: Story = {
     label: 'Pick a date',
   },
   render: (args) => html`
-    <igc-datepicker
-      .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
-      ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-      <span slot="prefix">$</span>
-      <span slot="suffix">🦀</span>
-      <p slot="helper-text">For example, select your birthday</p>
-      <p slot="title">🎉 Custom title 🎉</p>
-    </igc-datepicker>
+    <div style="height: 500px">
+      <igc-datepicker
+        .label=${args.label}
+        .visibleMonths=${args.visibleMonths}
+        ?disabled=${args.disabled}
+        ?invalid=${args.invalid}
+        ?readonly=${args.readOnly}
+        ?required=${args.required}
+        ?open=${args.open}
+        ?show-week-numbers=${args.showWeekNumbers}
+        ?hide-outside-days=${args.hideOutsideDays}
+        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+        ?keep-open-on-select=${args.keepOpenOnSelect}
+      >
+        <span slot="prefix">$</span>
+        <span slot="suffix">🦀</span>
+        <p slot="helper-text">For example, select your birthday</p>
+        <p slot="title">🎉 Custom title 🎉</p>
+      </igc-datepicker>
+    </div>
   `,
 };
 
