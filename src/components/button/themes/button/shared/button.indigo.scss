@@ -6,6 +6,10 @@ $contained-theme: $indigo-contained;
 $fab-theme: $indigo-fab;
 $outlined-theme: $indigo-outlined;
 
+:host [part='base']{
+    padding: 0 pad(10px, 16px, 24px);
+}
+
 :host([variant='flat']) {
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 }
@@ -20,6 +24,8 @@ $outlined-theme: $indigo-outlined;
 
 :host([variant='fab']) {
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
+
+    padding: 0 pad(6px, 8px, 10px);
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'],
