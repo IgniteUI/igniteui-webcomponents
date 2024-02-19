@@ -32,13 +32,13 @@ for (const component of components) {
   await fs.mkdir(componentSubpaths.dir, { recursive: true });
 
   const litReactImports = eventsMeta.hasEvents
-    ? `import { type EventName, createComponent  } from '@lit/react'`
-    : `import { createComponent } from '@lit/react'`;
+    ? `import {type EventName, createComponent } from '../../react-props.js'`
+    : `import { createComponent } from '../../react-props.js'`;
 
   const source = await format(
     `
-    ${litReactImports}
     import * as React from 'react';
+    ${litReactImports}
 
     import Component from '${importPath}';
     ${eventsMeta.imports}

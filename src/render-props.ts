@@ -66,19 +66,19 @@ class RequestRenderer<T> extends AsyncDirective {
     return html`${isReact ? nothing : this._fallback?.(this._data)}`;
   }
 
-  private __dispose() {
-    Object.assign(this, {
-      _part: null,
-      _name: null,
-      _data: null,
-      _target: null,
-      _key: null,
-      _host: null,
-      _fallback: null,
-      _$parent: null,
-      __part: null,
-    });
-  }
+  // private __dispose() {
+  //   Object.assign(this, {
+  //     _part: null,
+  //     _name: null,
+  //     _data: null,
+  //     _target: null,
+  //     _key: null,
+  //     _host: null,
+  //     _fallback: null,
+  //     _$parent: null,
+  //     __part: null,
+  //   });
+  // }
 
   public override render(
     _name: string,
@@ -109,7 +109,7 @@ class RequestRenderer<T> extends AsyncDirective {
   protected override disconnected() {
     this._eventTarget.dispatchEvent(this._makeRequestEvent(remove));
     // REVIEW:
-    this.__dispose();
+    // this.__dispose();
   }
 }
 

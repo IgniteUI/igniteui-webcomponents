@@ -90,5 +90,6 @@ export type {
 } from './components/stepper/stepper.js';
 export type {
   ComboItemTemplate,
+  ComboTemplateProps,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';

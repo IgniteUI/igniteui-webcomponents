@@ -1,5 +1,5 @@
 import type { RenderItemFunction } from '@lit-labs/virtualizer/virtualize.js';
-import { ReactiveControllerHost, TemplateResult } from 'lit';
+import { ReactiveControllerHost } from 'lit';
 
 import IgcComboComponent from './combo.js';
 
@@ -47,7 +47,7 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
 
 export type ComboItemTemplate<T extends object> = (
   props: ComboTemplateProps<T>
-) => TemplateResult;
+) => unknown;
 export interface ComboTemplateProps<T extends object> {
   item: T;
 }

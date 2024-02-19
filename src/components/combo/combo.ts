@@ -695,6 +695,14 @@ export default class IgcComboComponent<
     this._toggle(false);
   }
 
+  private getItemAriaProps(index: number) {
+    const position = index + 1;
+    return {
+      position,
+      id: this.id ? `${this.id}-item-${position}` : `item-${position}`,
+    };
+  }
+
   protected itemRenderer: ComboRenderFunction<T> = (
     item: ComboRecord<T>,
     index: number
@@ -707,44 +715,48 @@ export default class IgcComboComponent<
     const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
     const selected = this.selectionController.selected.has(dataItem!);
-    const headerTemplate = html`<igc-combo-header part="group-header"
-      >${this.groupHeaderTemplate({ item: record.value })}</igc-combo-header
-    >`;
 
-    const itemPosition = index + 1;
-    const itemId = this.id
-      ? `${this.id}-item-${itemPosition}`
-      : `item-${itemPosition}`;
+    // Group header
+    if (this.groupKey && record.header) {
+      return html`<igc-combo-header part="group-header"
+        >${requestRenderer(
+          'group-header',
+          { item: record.value },
+          record.value[this.groupKey] as string,
+          this.groupHeaderTemplate as any,
+          this
+        )}</igc-combo-header
+      >`;
+    } else {
+      // Combo item
+      const aria = this.getItemAriaProps(index);
 
-    if (active) {
-      this._activeDescendant = itemId;
+      if (active) {
+        this._activeDescendant = aria.id;
+      }
+
+      const content = html`${requestRenderer(
+        'item',
+        { item: record.value },
+        this.valueKey ? (record.value[this.valueKey] as string) : aria.id,
+        this.itemTemplate as any,
+        this
+      )}`;
+
+      return html`<igc-combo-item
+        id=${aria.id}
+        part=${partNameMap({ item: true, selected, active })}
+        aria-setsize=${this.dataState.length}
+        aria-posinset=${aria.position}
+        exportparts="checkbox, checkbox-indicator, checked"
+        @click=${this.itemClickHandler.bind(this)}
+        .index=${index}
+        ?active=${active}
+        ?selected=${selected}
+        ?hide-checkbox=${this.singleSelect}
+        >${content}</igc-combo-item
+      >`;
     }
-
-    const content = html`${requestRenderer(
-      'item',
-      { item: record.value },
-      this.valueKey ? (record.value[this.valueKey] as string) : itemId,
-      this.itemTemplate as any,
-      this
-    )}`;
-
-    const itemTemplate = html`<igc-combo-item
-      id=${itemId}
-      part=${partNameMap({ item: true, selected, active })}
-      aria-setsize=${this.dataState.length}
-      aria-posinset=${itemPosition}
-      exportparts="checkbox, checkbox-indicator, checked"
-      @click=${this.itemClickHandler.bind(this)}
-      .index=${index}
-      ?active=${active}
-      ?selected=${selected}
-      ?hide-checkbox=${this.singleSelect}
-      >${content}</igc-combo-item
-    >`;
-
-    return html`${this.groupKey && record.header
-      ? headerTemplate
-      : itemTemplate}`;
   };
 
   protected listKeydownHandler(event: KeyboardEvent) {
