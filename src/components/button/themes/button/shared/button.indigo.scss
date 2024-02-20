@@ -50,7 +50,7 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($outlined-theme, 'focus-border-color');
 
         &:hover {
-            border-color: var-get($fab-theme, 'hover-border-color');
+            border-color: var-get($outlined-theme, 'hover-border-color');
         }
     }
 
