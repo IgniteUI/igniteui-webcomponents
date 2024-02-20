@@ -16,14 +16,6 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-[part='fill'] {
-    background: var-get($theme, 'track-color');
-}
-
-[part='inactive'] {
-    background: var-get($theme, 'base-track-color');
-}
-
 [part='track'],
 [part='fill'],
 [part='inactive'] {
@@ -33,7 +25,6 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 [part='steps'] {
-    color: var-get($theme, 'track-step-color');
     height: rem(2px);
 
     line {
@@ -41,16 +32,11 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-[part='tick'] {
-    background: var-get($theme, 'tick-color');
-}
-
 [part='tick-label'] {
     color: var-get($theme, 'tick-label-color');
 }
 
 [part~='thumb'] {
-    background: var-get($theme, 'thumb-color');
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
@@ -65,28 +51,11 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-[part='thumb-label-inner'] {
-    background: var-get($theme, 'label-background-color');
-    color: var-get($theme, 'label-text-color');
-
-    &::after {
-        border-top: rem(10px) solid var-get($theme, 'label-background-color');
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
-    [part='inactive'] {
-        background: var-get($theme, 'disabled-base-track-color');
-    }
-
     [part='fill'],
     [part='tick'] {
         background: var-get($theme, 'disabled-fill-track-color');
-    }
-
-    [part~='thumb'] {
-        background: var-get($theme, 'disabled-thumb-color');
     }
 
     [part='tick-label'] {

@@ -8,7 +8,5 @@ $theme: $indigo;
 }
 
 [part='base'] {
-    background: var-get($theme, 'background-color');
-    border-radius: var-get($theme, 'border-radius');
     box-shadow: var(--ig-elevation-3);
 }

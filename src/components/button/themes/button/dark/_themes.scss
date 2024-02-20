@@ -3,10 +3,10 @@
 @use 'igniteui-theming/sass/themes/schemas/components/dark/button' as *;
 
 // Material Themes
-$material-flat: digest-schema(map.get($dark-button, 'flat'));
-$material-contained: digest-schema(map.get($dark-button, 'contained'));
-$material-outlined: digest-schema(map.get($dark-button, 'outlined'));
-$material-fab: digest-schema(map.get($dark-button, 'fab'));
+$material-flat: digest-schema(map.get($dark-material-button, 'flat'));
+$material-contained: digest-schema(map.get($dark-material-button, 'contained'));
+$material-outlined: digest-schema(map.get($dark-material-button, 'outlined'));
+$material-fab: digest-schema(map.get($dark-material-button, 'fab'));
 
 // Bootstrap Themes
 $bootstrap-flat: digest-schema(map.get($dark-bootstrap-button, 'flat'));

@@ -1,6 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $material;
+
 :host {
-    @include css-vars-from-theme($material, 'ig-button-group');
+    @include css-vars-from-theme(diff($base, $theme), 'ig-button-group');
 }

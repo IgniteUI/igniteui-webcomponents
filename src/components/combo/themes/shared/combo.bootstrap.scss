@@ -45,27 +45,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     }
 }
 
-[part='empty'] {
-    color: var-get($theme, 'empty-list-placeholder-color');
-}
-
-[part~='toggle-icon'] {
-    background: var-get($theme, 'toggle-button-background');
-    color: var-get($theme, 'toggle-button-foreground');
-
-    igc-icon {
-        color: inherit;
-    }
-}
-
 [part='clear-icon'] {
-    background: var-get($theme, 'clear-button-background');
-    color: var-get($theme, 'clear-button-foreground');
     border-inline-end: rem(1px) solid var-get($input-theme, 'border-color');
-
-    igc-icon {
-        color: inherit;
-    }
 }
 
 [part='case-icon active'] {

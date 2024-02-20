@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $fluent;
+
 :host {
-    @include css-vars-from-theme($fluent, 'ig-button-group');
+    @include css-vars-from-theme(diff($base, $theme), 'ig-button-group');
 }
 

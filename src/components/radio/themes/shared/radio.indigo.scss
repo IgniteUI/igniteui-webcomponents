@@ -11,10 +11,6 @@ $theme: $indigo;
     gap: rem(8px);
 }
 
-[part~='label'] {
-    color: var-get($theme, 'label-color');
-}
-
 [part~='control'] {
     border-radius: var(--size);
     width: var(--size, rem(20px));
@@ -56,10 +52,6 @@ $theme: $indigo;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-color');
-    }
-
     [part='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -86,10 +78,6 @@ $theme: $indigo;
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='label'] {
-        color: var-get($theme, 'disabled-label-color');
-    }
-
     [part='control'] {
         &::after {
             border-color: var-get($theme, 'disabled-color');

@@ -3,9 +3,9 @@
 @use 'igniteui-theming/sass/themes/schemas/components/dark/icon-button' as *;
 
 // Material Themes
-$material-flat: digest-schema(map.get($dark-icon-button, 'flat'));
-$material-contained: digest-schema(map.get($dark-icon-button, 'contained'));
-$material-outlined: digest-schema(map.get($dark-icon-button, 'outlined'));
+$material-flat: digest-schema(map.get($dark-material-icon-button, 'flat'));
+$material-contained: digest-schema(map.get($dark-material-icon-button, 'contained'));
+$material-outlined: digest-schema(map.get($dark-material-icon-button, 'outlined'));
 
 // Bootstrap Themes
 $bootstrap-flat: digest-schema(map.get($dark-bootstrap-icon-button, 'flat'));

@@ -24,7 +24,9 @@ $outlined-theme: $material-outlined;
 
 :host([variant='fab']) [part='base'] {
     border-radius: var-get($fab-theme, 'border-radius');
-    height: var-get($fab-theme, 'size');
+    min-height: var-get($fab-theme, 'size');
+    min-width: var-get($fab-theme, 'size');
+    padding: 0 pad(6px, 10px, 14px);
 }
 /* stylelint-enable */
 
@@ -47,14 +49,21 @@ $outlined-theme: $material-outlined;
         background: var-get($flat-theme, 'focus-background');
     }
 
-    &:active {
-        color: var-get($flat-theme, 'active-foreground');
-        background: var-get($flat-theme, 'active-background');
-    }
-
     &:focus-visible {
         color: var-get($flat-theme, 'focus-visible-foreground');
         background: var-get($flat-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
+        &:hover {
+            color: var-get($flat-theme, 'focus-hover-foreground');
+            background: var-get($flat-theme, 'focus-hover-background');
+        }
+    }
+
+    &:active {
+        color: var-get($flat-theme, 'active-foreground');
+        background: var-get($flat-theme, 'active-background');
     }
 }
 
@@ -73,14 +82,21 @@ $outlined-theme: $material-outlined;
         background: var-get($outlined-theme, 'focus-background');
     }
 
-    &:active {
-        color: var-get($outlined-theme, 'active-foreground');
-        background: var-get($outlined-theme, 'active-background');
-    }
-
     &:focus-visible {
         color: var-get($outlined-theme, 'focus-visible-foreground');
         background: var-get($outlined-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
+        &:hover {
+            color: var-get($outlined-theme, 'focus-hover-foreground');
+            background: var-get($outlined-theme, 'focus-hover-background');
+        }
+    }
+
+    &:active {
+        color: var-get($outlined-theme, 'active-foreground');
+        background: var-get($outlined-theme, 'active-background');
     }
 }
 
@@ -97,6 +113,18 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($contained-theme, 'focus-foreground');
         background: var-get($contained-theme, 'focus-background');
+    }
+
+    &:focus-visible {
+        color: var-get($contained-theme, 'focus-visible-foreground');
+        background: var-get($contained-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
+        &:hover {
+            color: var-get($contained-theme, 'focus-hover-foreground');
+            background: var-get($contained-theme, 'focus-hover-background');
+        }
     }
 
     &:active {
@@ -118,6 +146,18 @@ $outlined-theme: $material-outlined;
     &:focus {
         color: var-get($fab-theme, 'focus-foreground');
         background: var-get($fab-theme, 'focus-background');
+    }
+
+    &:focus-visible {
+        color: var-get($fab-theme, 'focus-visible-foreground');
+        background: var-get($fab-theme, 'focus-visible-background');
+    }
+
+    &:focus, &:focus-visible {
+        &:hover {
+            color: var-get($fab-theme, 'focus-hover-foreground');
+            background: var-get($fab-theme, 'focus-hover-background');
+        }
     }
 
     &:active {

@@ -3,7 +3,7 @@
 @use 'igniteui-theming/sass/themes/schemas/components/dark/select' as *;
 @use 'components/input/themes/dark/themes' as input-theme;
 
-$material: map.merge(digest-schema($dark-select), (
+$material: map.merge(digest-schema($dark-material-select), (
     helper-text-color: map.get(input-theme.$material, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$material, 'disabled-text-color'),
     error-secondary-color: map.get(input-theme.$material, 'error-secondary-color')

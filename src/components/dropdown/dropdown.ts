@@ -6,6 +6,7 @@ import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
+import { styles as shared } from './themes/shared/dropdown.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   KeyBindingObserverCleanup,
@@ -76,7 +77,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-dropdown';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {

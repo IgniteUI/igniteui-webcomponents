@@ -10,6 +10,7 @@ import { styles as bootstrapLight } from './light/checkbox/checkbox.bootstrap.cs
 import { styles as fluentLight } from './light/checkbox/checkbox.fluent.css.js';
 import { styles as indigoLight } from './light/checkbox/checkbox.indigo.css.js';
 import { styles as materialLight } from './light/checkbox/checkbox.material.css.js';
+import { styles as shared } from './light/checkbox/checkbox.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/checkbox/checkbox.bootstrap.css.js';
 import { styles as fluent } from './shared/checkbox/checkbox.fluent.css.js';
@@ -18,6 +19,9 @@ import { styles as material } from './shared/checkbox/checkbox.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -33,6 +37,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

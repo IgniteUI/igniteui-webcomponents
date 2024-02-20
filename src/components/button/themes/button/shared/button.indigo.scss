@@ -57,8 +57,6 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($outlined-theme, 'focus-visible-border-color');
 
         &:hover {
-            color: var-get($outlined-theme, 'hover-foreground');
-            background: var-get($outlined-theme, 'hover-background');
             border-color: var-get($outlined-theme, 'hover-border-color');
         }
 
@@ -95,8 +93,6 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($contained-theme, 'focus-visible-border-color');
 
         &:hover {
-            color: var-get($contained-theme, 'hover-foreground');
-            background: var-get($contained-theme, 'hover-background');
             border-color: var-get($contained-theme, 'hover-border-color');
         }
 
@@ -132,13 +128,9 @@ $outlined-theme: $indigo-outlined;
     }
 
     &:focus-visible {
-        background: var-get($fab-theme, 'focus-visible-background');
-        color: var-get($fab-theme, 'focus-visible-foreground');
         border-color: var-get($fab-theme, 'focus-visible-border-color');
 
         &:hover {
-            color: var-get($fab-theme, 'hover-foreground');
-            background: var-get($fab-theme, 'hover-background');
             border-color: var-get($fab-theme, 'hover-border-color');
         }
 

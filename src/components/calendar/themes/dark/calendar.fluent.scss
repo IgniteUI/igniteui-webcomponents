@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme($fluent, 'ig-calendar');
+    @include css-vars-from-theme(diff(light.$base, $fluent), 'ig-calendar');
 
     // TODO remove this variables after calendar consume its colors from the schema
     &::part(header) {
