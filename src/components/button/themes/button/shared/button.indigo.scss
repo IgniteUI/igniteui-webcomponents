@@ -34,6 +34,29 @@ $outlined-theme: $indigo-outlined;
     &:active {
         box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
     }
+
+    igc-icon {
+        color: var-get($flat-theme, 'icon-color');
+    }
+
+    &:hover {
+        igc-icon {
+            color: var-get($flat-theme, 'icon-color-hover');
+        }
+    }
+
+    &:focus,
+    &:focus-visible {
+        igc-icon {
+            color: var-get($flat-theme, 'icon-color');
+        }
+
+        &:hover {
+            igc-icon {
+                color: var-get($flat-theme, 'icon-color-hover');
+            }
+        }
+    }
 }
 
 :host(:not([disabled])[variant='outlined']) [part='base'],
@@ -42,15 +65,32 @@ $outlined-theme: $indigo-outlined;
     border-color: var-get($outlined-theme, 'border-color');
     border-width: rem(2px);
 
+    igc-icon {
+        color: var-get($outlined-theme, 'icon-color');
+    }
+    
+
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
+
+        igc-icon {
+            color: var-get($outlined-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         border-color: var-get($outlined-theme, 'focus-border-color');
 
+        igc-icon {
+            color: var-get($outlined-theme, 'icon-color');
+        }
+
         &:hover {
             border-color: var-get($outlined-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($outlined-theme, 'icon-color-hover');
+            }
         }
     }
 
@@ -66,8 +106,16 @@ $outlined-theme: $indigo-outlined;
     &:focus-visible {
         border-color: var-get($outlined-theme, 'focus-visible-border-color');
 
+        igc-icon {
+            color: var-get($outlined-theme, 'icon-color');
+        }
+
         &:hover {
             border-color: var-get($outlined-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($outlined-theme, 'icon-color-hover');
+            }
         }
 
         &:active {
@@ -80,12 +128,32 @@ $outlined-theme: $indigo-outlined;
 
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not(:disabled)[variant='contained']) [part='base'] {
+    igc-icon {
+        color: var-get($contained-theme, 'icon-color');
+    }
+
     &:hover {
         border-color: var-get($contained-theme, 'hover-border-color');
+
+        igc-icon {
+            color: var-get($contained-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         border-color: var-get($contained-theme, 'focus-border-color');
+
+        igc-icon {
+            color: var-get($contained-theme, 'icon-color');
+        }
+
+        &:hover {
+            border-color: var-get($contained-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($contained-theme, 'icon-color-hover');
+            }
+        }
     }
 
     &:active {
@@ -102,8 +170,16 @@ $outlined-theme: $indigo-outlined;
         color: var-get($contained-theme, 'focus-visible-foreground');
         border-color: var-get($contained-theme, 'focus-visible-border-color');
 
+        igc-icon {
+            color: var-get($contained-theme, 'icon-color');
+        }
+
         &:hover {
             border-color: var-get($contained-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($contained-theme, 'icon-color-hover');
+            }
         }
 
         &:active {
@@ -116,32 +192,60 @@ $outlined-theme: $indigo-outlined;
 
 :host(:not([disabled])[variant='fab']) [part='base'],
 :host(:not(:disabled)[variant='fab']) [part='base'] {
-    border-color: var-get($flat-theme, 'border-color');
+    border-color: var-get($fab-theme, 'border-color');
     min-width: var(--size);
     min-height: var(--size);
 
+    igc-icon {
+        color: var-get($fab-theme, 'icon-color');
+    }
+
     &:hover {
-        border-color: var-get($flat-theme, 'hover-border-color');
+        border-color: var-get($fab-theme, 'hover-border-color');
+
+        igc-icon {
+            color: var-get($fab-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
-        border-color: var-get($flat-theme, 'focus-border-color');
+        border-color: var-get($fab-theme, 'focus-border-color');
+
+        igc-icon {
+            color: var-get($fab-theme, 'icon-color');
+        }
+
+        &:hover {
+            border-color: var-get($fab-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($fab-theme, 'icon-color-hover');
+            }
+        }
     }
 
     &:active {
-        border-color: var-get($flat-theme, 'active-border-color');
+        border-color: var-get($fab-theme, 'active-border-color');
     }
 
     &:focus,
     &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
+        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
     }
 
     &:focus-visible {
         border-color: var-get($fab-theme, 'focus-visible-border-color');
 
+        igc-icon {
+            color: var-get($fab-theme, 'icon-color');
+        }
+
         &:hover {
             border-color: var-get($fab-theme, 'hover-border-color');
+
+            igc-icon {
+                color: var-get($fab-theme, 'icon-color-hover');
+            }
         }
 
         &:active {
