@@ -8,13 +8,19 @@ import { html } from 'lit';
 
 import {
   IgcAvatarComponent,
+  IgcButtonComponent,
   IgcCardComponent,
   IgcIconButtonComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
+defineComponents(
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCardComponent,
+  IgcIconButtonComponent
+);
 
 const icons = [facebook, instagram, twitter];
 

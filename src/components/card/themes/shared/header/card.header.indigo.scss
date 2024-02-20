@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+
+:host {
+    ::slotted(igc-avatar) {
+        --ig-size: 3;
+    }
+}
+
+::slotted([slot='subtitle']) {
+    @include type-style('body-2');
+}
+
+::slotted([slot='thumbnail']) {
+    margin-inline-end: rem(8px);
+}
