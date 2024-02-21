@@ -11,3 +11,9 @@
 [part='footer'] {
     padding: rem(16px) rem(24px) rem(24px) rem(24px);
 }
+
+slot[name='footer'] {
+    &::slotted(:not(:last-child)) {
+        margin-inline-end: rem(16px);
+    }
+}
