@@ -7,8 +7,12 @@ $fab-theme: $indigo-fab;
 $outlined-theme: $indigo-outlined;
 
 :host [part='base']{
-    padding: 0 pad(10px, 16px, 24px);
     min-width: rem(28px);
+    padding: 0 pad(10px, 16px, 24px);
+    
+    ::slotted(igc-icon) {
+        --component-size: var(--ig-size-medium) !important;
+    }
 }
 
 :host([variant='flat']) {
@@ -268,7 +272,7 @@ $outlined-theme: $indigo-outlined;
 :host([disabled][variant='outlined']) [part='base'],
 :host(:disabled[variant='outlined']) [part='base'] {
     border-color: var-get($outlined-theme, 'disabled-border-color');
-    
+
     ::slotted(igc-icon) {
         color: var-get($outlined-theme, 'disabled-icon-color');
     }
