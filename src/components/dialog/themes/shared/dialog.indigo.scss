@@ -1,5 +1,12 @@
 @use 'styles/utilities' as *;
 
+[part='title'],
+[part='footer'] {
+    @include type-style('h5') {
+        margin: 0;
+    }
+}
+
 [part='title'] {
     padding: rem(24px) rem(24px) 0 rem(24px);
 }
@@ -13,7 +20,7 @@
 }
 
 slot[name='footer'] {
-    &::slotted(:not(:last-child)) {
-        margin-inline-end: rem(16px);
+    &::slotted(:last-child) {
+        margin-inline-start: rem(16px);
     }
 }
