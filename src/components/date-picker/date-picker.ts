@@ -1,8 +1,9 @@
-import { LitElement, html, nothing } from 'lit';
+import { ComplexAttributeConverter, LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import IgcCalendarComponent from '../calendar/calendar.js';
+import { DateRangeDescriptor } from '../calendar/common/calendar.model.js';
 import {
   addKeybindings,
   escapeKey,
@@ -10,12 +11,19 @@ import {
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../common/i18n/calendar.resources.js';
+import messages from '../common/localization/validation-en.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, format } from '../common/util.js';
+import { Validator } from '../common/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import { DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcPopoverComponent from '../popover/popover.js';
 
@@ -27,6 +35,11 @@ export interface IgcDatepickerEventMap {
   igcChange: CustomEvent<Date>;
   igcInput: CustomEvent<Date>;
 }
+
+const converter: ComplexAttributeConverter<Date | undefined> = {
+  fromAttribute: (value: string) => (value ? new Date(value) : undefined),
+  toAttribute: (value: Date) => value.toISOString(),
+};
 
 /**
  * @element igc-datepicker
@@ -59,6 +72,41 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   private static readonly increment = createCounter();
   protected inputId = `datepicker-${IgcDatepickerComponent.increment()}`;
 
+  // TODO - can the date-time-input's validator's be reused and the picker's validity state be updated ?
+  public override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () => (this.required ? !!this.value : true),
+    },
+    {
+      key: 'rangeUnderflow',
+      message: () => format(messages.min, `${this.min}`),
+      isValid: () =>
+        this.min
+          ? !DateTimeUtil.lessThanMinValue(
+              this.value || new Date(),
+              this.min,
+              false,
+              true
+            )
+          : true,
+    },
+    {
+      key: 'rangeOverflow',
+      message: () => format(messages.max, `${this.max}`),
+      isValid: () =>
+        this.max
+          ? !DateTimeUtil.greaterThanMaxValue(
+              this.value || new Date(),
+              this.max,
+              false,
+              true
+            )
+          : true,
+    },
+  ];
+
   private predefinedDisplayFormatsMap = new Map([
     ['short', 'shortDate'],
     ['medium', 'mediumDate'],
@@ -82,6 +130,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @query(IgcDateTimeInputComponent.tagName, true)
   private _input!: IgcDateTimeInputComponent;
+
+  @query(IgcCalendarComponent.tagName, true)
+  private _calendar!: IgcCalendarComponent;
 
   private _displayFormat!: string;
 
@@ -111,19 +162,73 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   public label!: string;
 
   /**
+   * Determines whether the calendar is opened as a dropdown or as a dialog
+   * @attr mode
+   */
+  @property()
+  public mode: 'dropdown' | 'dialog' = 'dropdown';
+
+  /**
    * Makes the control a readonly field.
    * @attr readonly
    */
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /**
+   * The value of the picker
+   * @attr
+   */
   @property({
-    converter: {
-      fromAttribute: (value: string) => (value ? new Date(value) : undefined),
-      toAttribute: (value: Date) => value.toISOString(),
-    },
+    converter: converter,
   })
-  public value!: Date;
+  public value?: Date;
+
+  @property({
+    attribute: 'active-date',
+    converter: converter,
+  })
+  public get activeDate(): Date {
+    return this._calendar?.activeDate ?? new Date();
+  }
+
+  public set activeDate(value: Date) {
+    if (this._calendar) {
+      this._calendar.activeDate = value ?? undefined;
+    }
+  }
+
+  /**
+   * The minimum value required for the date picker to remain valid.
+   * @attr
+   */
+  @property({ converter: converter })
+  public min?: Date;
+
+  /**
+   * The maximum value required for the date picker to remain valid.
+   * @attr
+   */
+  @property({ converter: converter })
+  public max?: Date;
+
+  /** The orientation of the calendar header.
+   * @attr header-orientation
+   */
+  @property({ attribute: 'header-orientation', reflect: true })
+  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+
+  /** The orientation of the multiple months displayed in the calendar's days view.
+   *  @attr
+   */
+  @property()
+  public orientation: 'vertical' | 'horizontal' = 'horizontal';
+
+  /** Determines whether the calendar hides its header.
+   * @attr hide-header
+   */
+  @property({ attribute: 'hide-header' })
+  public hideHeader = false;
 
   /**
    * Controls the visibility of the dates that do not belong to the current month.
@@ -131,6 +236,28 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
+
+  /** Gets/sets disabled dates. */
+  @property({ attribute: false })
+  public disabledDates!: DateRangeDescriptor[];
+
+  /** Gets/sets special dates. */
+  @property({ attribute: false })
+  public specialDates!: DateRangeDescriptor[];
+
+  /**
+   * Whether the control will have outlined appearance.
+   * @attr
+   */
+  @property({ reflect: true, type: Boolean })
+  public outlined = false;
+
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
+  @property()
+  public placeholder!: string;
 
   /**
    * The number of months displayed in the calendar.
@@ -194,10 +321,32 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @property()
   public locale = 'en';
 
+  /** The prompt symbol to use for unfilled parts of the mask.
+   *  @attr
+   */
+  @property()
+  public prompt = '_';
+
+  /** The resource strings of the calendar. */
+  @property({ attribute: false })
+  public resourceStrings: IgcCalendarResourceStrings =
+    IgcCalendarResourceStringEN;
+
   @watch('open')
   protected openChange() {
     this._rootClickController.update();
   }
+
+  /** Sets the start day of the week for the calendar. */
+  @property({ attribute: 'week-start' })
+  public weekStart:
+    | 'sunday'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday' = 'sunday';
 
   constructor() {
     super();
@@ -206,6 +355,48 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
     }).set(escapeKey, this.onEscapeKey);
+  }
+
+  /** Clears the input part of the component of any user input */
+  public clear() {
+    this.value = undefined;
+    this._input?.clear();
+  }
+
+  /** Increments the passed in date part */
+  public stepUp(datePart?: DatePart, delta?: number): void {
+    this._input.stepUp(datePart, delta);
+  }
+
+  /** Decrements the passed in date part */
+  public stepDown(datePart?: DatePart, delta?: number): void {
+    this._input.stepDown(datePart, delta);
+  }
+
+  /** Selects the text in the input of the component */
+  public select(): void {
+    this._input.select();
+  }
+
+  /** Sets the text selection range in the input of the component */
+  public setSelectionRange(
+    start: number,
+    end: number,
+    direction?: 'none' | 'backward' | 'forward'
+  ): void {
+    this._input.setSelectionRange(start, end, direction);
+  }
+
+  /* Replaces the selected text in the input and re-applies the mask */
+  public setRangeText(
+    replacement: string,
+    start: number,
+    end: number,
+    mode?: 'select' | 'start' | 'end' | 'preserve'
+  ): void {
+    // currently does not work, would depend on the fix of this issue:
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/1075
+    this._input.setRangeText(replacement, start, end, mode);
   }
 
   protected async onEscapeKey() {
@@ -243,6 +434,21 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcInput', { detail: this.value });
   }
 
+  @watch('value')
+  protected valueChange() {
+    this.value
+      ? this.setFormValue(this.value.toISOString())
+      : this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  protected constraintChange() {
+    this.updateValidity();
+  }
+
   protected override render() {
     const id = this.id || this.inputId;
     const calendarDisabled = !this.open || this.disabled;
@@ -256,8 +462,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         ?required=${this.required}
         label=${ifDefined(this.label)}
         aria-expanded=${this.open ? 'true' : 'false'}
-        .value=${this.value}
+        .value=${this.value ?? null}
         .locale=${this.locale}
+        .prompt=${this.prompt}
+        .outlined=${this.outlined}
+        .placeholder=${this.placeholder}
+        .min=${this.min}
+        .max=${this.max}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
       >
@@ -278,14 +489,19 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         <igc-focus-trap ?disabled=${calendarDisabled}>
           <igc-calendar
             aria-labelledby=${id}
-            .inert=${calendarDisabled}
-            hide-header
+            role="dialog"
+            .inert=${!this.open || this.disabled}
+            .hideHeader=${this.hideHeader}
+            .headerOrientation=${this.headerOrientation}
+            .orientation=${this.orientation}
             ?show-week-numbers=${this.showWeekNumbers}
             ?hide-outside-days=${this.hideOutsideDays}
             .visibleMonths=${this.visibleMonths}
             .value=${this.value}
             .locale=${this.locale}
-            .activeDate=${this.value ?? nothing}
+            .disabledDates=${this.disabledDates}
+            .specialDates=${this.specialDates}
+            .weekStart=${this.weekStart}
             @igcChange=${this.handleCalendarChangeEvent}
           >
             <slot name="title" slot="title"></slot>

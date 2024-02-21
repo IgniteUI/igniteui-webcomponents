@@ -46,19 +46,76 @@ const metadata: Meta<IgcDatepickerComponent> = {
       description: 'The label of the datepicker.',
       control: 'text',
     },
+    mode: {
+      type: '"dropdown" | "dialog"',
+      description:
+        'Determines whether the calendar is opened as a dropdown or as a dialog',
+      options: ['dropdown', 'dialog'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'dropdown' } },
+    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    value: { type: 'Date', control: 'date' },
+    value: {
+      type: 'Date',
+      description: 'The value of the picker',
+      control: 'date',
+    },
+    activeDate: { type: 'Date', control: 'date' },
+    min: {
+      type: 'Date',
+      description:
+        'The minimum value required for the date picker to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'Date',
+      description:
+        'The maximum value required for the date picker to remain valid.',
+      control: 'date',
+    },
+    headerOrientation: {
+      type: '"vertical" | "horizontal"',
+      description: 'The orientation of the calendar header.',
+      options: ['vertical', 'horizontal'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'horizontal' } },
+    },
+    orientation: {
+      type: '"vertical" | "horizontal"',
+      description:
+        "The orientation of the multiple months displayed in the calendar's days view.",
+      options: ['vertical', 'horizontal'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'horizontal' } },
+    },
+    hideHeader: {
+      type: 'boolean',
+      description: 'Determines whether the calendar hides its header.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     hideOutsideDays: {
       type: 'boolean',
       description:
         'Controls the visibility of the dates that do not belong to the current month.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
+    },
+    outlined: {
+      type: 'boolean',
+      description: 'Whether the control will have outlined appearance.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
     },
     visibleMonths: {
       type: 'number',
@@ -89,6 +146,27 @@ const metadata: Meta<IgcDatepickerComponent> = {
       description: 'The locale settings used to display the value.',
       control: 'text',
       table: { defaultValue: { summary: 'en' } },
+    },
+    prompt: {
+      type: 'string',
+      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      control: 'text',
+      table: { defaultValue: { summary: '_' } },
+    },
+    weekStart: {
+      type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
+      description: 'Sets the start day of the week for the calendar.',
+      options: [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ],
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'sunday' } },
     },
     required: {
       type: 'boolean',
@@ -124,11 +202,18 @@ const metadata: Meta<IgcDatepickerComponent> = {
   args: {
     keepOpenOnOutsideClick: false,
     open: false,
+    mode: 'dropdown',
     readOnly: false,
+    headerOrientation: 'horizontal',
+    orientation: 'horizontal',
+    hideHeader: false,
     hideOutsideDays: false,
+    outlined: false,
     visibleMonths: 1,
     showWeekNumbers: false,
     locale: 'en',
+    prompt: '_',
+    weekStart: 'sunday',
     required: false,
     disabled: false,
     invalid: false,
@@ -145,11 +230,29 @@ interface IgcDatepickerArgs {
   open: boolean;
   /** The label of the datepicker. */
   label: string;
+  /** Determines whether the calendar is opened as a dropdown or as a dialog */
+  mode: 'dropdown' | 'dialog';
   /** Makes the control a readonly field. */
   readOnly: boolean;
+  /** The value of the picker */
   value: Date;
+  activeDate: Date;
+  /** The minimum value required for the date picker to remain valid. */
+  min: Date;
+  /** The maximum value required for the date picker to remain valid. */
+  max: Date;
+  /** The orientation of the calendar header. */
+  headerOrientation: 'vertical' | 'horizontal';
+  /** The orientation of the multiple months displayed in the calendar's days view. */
+  orientation: 'vertical' | 'horizontal';
+  /** Determines whether the calendar hides its header. */
+  hideHeader: boolean;
   /** Controls the visibility of the dates that do not belong to the current month. */
   hideOutsideDays: boolean;
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
   /** The number of months displayed in the calendar. */
   visibleMonths: number;
   /** Whether to show the number of the week in the calendar. */
@@ -166,6 +269,17 @@ interface IgcDatepickerArgs {
   inputFormat: string;
   /** The locale settings used to display the value. */
   locale: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
+  prompt: string;
+  /** Sets the start day of the week for the calendar. */
+  weekStart:
+    | 'sunday'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -191,10 +305,20 @@ export const Default: Story = {
       <igc-datepicker
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
-        .value=${args.value}
+        .value=${args.value ? new Date(args.value as Date) : undefined}
         .displayFormat=${args.displayFormat}
         .inputFormat=${args.inputFormat}
         .locale=${args.locale}
+        .prompt=${args.prompt}
+        .weekStart=${args.weekStart}
+        .hideHeader=${args.hideHeader}
+        .headerOrientation=${args.headerOrientation}
+        .orientation=${args.orientation}
+        .min=${args.min ? new Date(args.min as Date) : undefined}
+        .max=${args.max ? new Date(args.max as Date) : undefined}
+        .activeDate=${args.activeDate
+          ? new Date(args.activeDate as Date)
+          : undefined}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
