@@ -14,6 +14,7 @@ import { styles as materialLight } from './light/container/card.material.css.js'
 import { styles as sharedLight } from './light/container/card.shared.css.js';
 // Shared Styles
 import { styles as fluent } from './shared/container/card.fluent.css.js';
+import { styles as indigo } from './shared/container/card.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -30,7 +31,7 @@ const light = {
     ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -48,7 +49,7 @@ const dark = {
     ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

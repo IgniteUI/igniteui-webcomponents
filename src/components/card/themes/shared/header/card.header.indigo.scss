@@ -1,6 +1,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    padding-block-end: 0;
+
     ::slotted(igc-avatar) {
         --ig-size: 3;
     }
@@ -12,6 +14,7 @@
 
 ::slotted([slot='subtitle']) {
     @include type-style('body-2');
+    margin-block-end: rem(2px);
 }
 
 ::slotted([slot='thumbnail']) {
