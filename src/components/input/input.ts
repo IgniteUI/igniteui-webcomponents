@@ -12,6 +12,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import {
   Validator,
+  emailValidator,
   maxLengthValidator,
   maxValidator,
   minLengthValidator,
@@ -20,6 +21,7 @@ import {
   requiredNumberValidator,
   requiredValidator,
   stepValidator,
+  urlValidator,
 } from '../common/validators.js';
 
 /**
@@ -88,7 +90,26 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       isValid: () =>
         this.isStringType ? patternValidator.isValid(this) : true,
     },
+    {
+      key: 'typeMismatch',
+      isValid: () => {
+        switch (this.type) {
+          case 'email':
+            return emailValidator.isValid(this);
+          case 'url':
+            return urlValidator.isValid(this);
+          default:
+            return true;
+        }
+      },
+      message: () =>
+        (this.type === 'email'
+          ? emailValidator.message
+          : urlValidator.message) as string,
+    },
   ];
+
+  protected _value = '';
 
   /**
    * The value of the control.
@@ -96,7 +117,16 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
-  public value = '';
+  public set value(value: string) {
+    this._value = value;
+    this.setFormValue(value ? value : null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  public get value() {
+    return this._value;
+  }
 
   /**
    * The type attribute of the control.
@@ -233,12 +263,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.updateValidity();
   }
 
-  @watch('value')
-  protected valueChange() {
-    const value = this.value ? this.value : null;
-    this.setFormValue(value, value);
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.setFormValue(this._value ? this._value : null);
     this.updateValidity();
-    this.setInvalidState();
   }
 
   /** Replaces the selected text in the input. */
