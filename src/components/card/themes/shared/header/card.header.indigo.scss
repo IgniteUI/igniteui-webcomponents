@@ -4,6 +4,10 @@
     ::slotted(igc-avatar) {
         --ig-size: 3;
     }
+
+    [part='header'] {
+        gap: rem(2px);
+    }
 }
 
 ::slotted([slot='subtitle']) {
