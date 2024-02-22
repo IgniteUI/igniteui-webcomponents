@@ -14,7 +14,7 @@ configureActions({
 type ThemeImport = { default: string };
 
 const themes = import.meta.glob<ThemeImport>('../src/styles/themes/**/*.scss', {
-  as: 'inline',
+  query: '?inline',
 });
 
 const getTheme = async ({ theme, variant }) => {

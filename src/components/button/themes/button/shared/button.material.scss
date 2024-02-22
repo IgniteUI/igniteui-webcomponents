@@ -29,11 +29,6 @@ $outlined-theme: $material-outlined;
 :host(:not([disabled])[variant='flat']) [part='base'],
 :host(:not(:disabled)[variant='flat']) [part='base'] {
     &:focus-visible {
-        &:hover {
-            color: var-get($flat-theme, 'hover-foreground');
-            background: var-get($flat-theme, 'hover-background');
-        }
-
         &:active {
             color: var-get($flat-theme, 'active-foreground');
             background: var-get($flat-theme, 'active-background');
@@ -60,12 +55,6 @@ $outlined-theme: $material-outlined;
     &:focus-visible {
         border-color: var-get($outlined-theme, 'focus-visible-border-color');
 
-        &:hover {
-            color: var-get($outlined-theme, 'hover-foreground');
-            background: var-get($outlined-theme, 'hover-background');
-            border-color: var-get($outlined-theme, 'hover-border-color');
-        }
-
         &:active {
             color: var-get($outlined-theme, 'active-foreground');
             background: var-get($outlined-theme, 'active-background');
@@ -88,14 +77,6 @@ $outlined-theme: $material-outlined;
     }
 
     &:focus-visible {
-        color: var-get($contained-theme, 'focus-foreground');
-        background: var-get($contained-theme, 'focus-background');
-
-        &:hover {
-            color: var-get($contained-theme, 'hover-foreground');
-            background: var-get($contained-theme, 'hover-background');
-        }
-
         &:active {
             color: var-get($contained-theme, 'active-foreground');
             background: var-get($contained-theme, 'active-background');
@@ -117,14 +98,6 @@ $outlined-theme: $material-outlined;
     }
 
     &:focus-visible {
-        color: var-get($fab-theme, 'focus-foreground');
-        background: var-get($fab-theme, 'focus-background');
-
-        &:hover {
-            color: var-get($fab-theme, 'hover-foreground');
-            background: var-get($fab-theme, 'hover-background');
-        }
-
         &:active {
             color: var-get($fab-theme, 'active-foreground');
             background: var-get($fab-theme, 'active-background');
@@ -137,25 +110,4 @@ $outlined-theme: $material-outlined;
     &:active {
         box-shadow: var(--ig-elevation-12);
     }
-}
-
-:host([disabled][variant='flat']) [part='base'],
-:host(:disabled[variant='flat']) [part='base'] {
-    box-shadow: inset 0 0 0 rem(1px) var-get($flat-theme, 'disabled-border-color');
-}
-
-:host([disabled][variant='outlined']) [part='base'],
-:host(:disabled[variant='outlined']) [part='base'] {
-    box-shadow: inset 0 0 0 rem(1px) var-get($outlined-theme, 'disabled-border-color');
-    border: rem(1px) solid var-get($outlined-theme, 'disabled-border-color');
-}
-
-:host([disabled][variant='contained']) [part='base'],
-:host(:disabled[variant='contained']) [part='base'] {
-    box-shadow: inset 0 0 0 rem(1px) var-get($contained-theme, 'disabled-border-color');
-}
-
-:host([disabled][variant='fab']) [part='base'],
-:host(:disabled[variant='fab']) [part='base'] {
-    box-shadow: inset 0 0 0 rem(1px) var-get($fab-theme, 'disabled-border-color');
 }

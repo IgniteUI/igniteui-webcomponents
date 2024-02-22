@@ -10,11 +10,15 @@ import { styles as bootstrapLight } from './light/badge.bootstrap.css.js';
 import { styles as fluentLight } from './light/badge.fluent.css.js';
 import { styles as indigoLight } from './light/badge.indigo.css.js';
 import { styles as materialLight } from './light/badge.material.css.js';
+import { styles as shared } from './light/badge.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -30,6 +34,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

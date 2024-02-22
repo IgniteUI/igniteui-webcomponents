@@ -1,6 +1,12 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/button' as *;
 
+// Base Themes
+$base-flat: digest-schema($light-flat-button);
+$base-contained: digest-schema($light-contained-button);
+$base-outlined: digest-schema($light-outlined-button);
+$base-fab: digest-schema($light-fab-button);
+
 // Material Themes
 $material-flat: digest-schema($material-flat-button);
 $material-contained: digest-schema($material-contained-button);

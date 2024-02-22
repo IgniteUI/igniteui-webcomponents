@@ -10,6 +10,7 @@ import { styles as bootstrapLight } from './light/calendar.bootstrap.css.js';
 import { styles as fluentLight } from './light/calendar.fluent.css.js';
 import { styles as indigoLight } from './light/calendar.indigo.css.js';
 import { styles as materialLight } from './light/calendar.material.css.js';
+import { styles as shared } from './light/calendar.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/bootstrap/calendar.bootstrap.css.js';
 import { styles as fluent } from './shared/fluent/calendar.fluent.css.js';
@@ -18,6 +19,9 @@ import { styles as material } from './shared/material/calendar.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
@@ -33,6 +37,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,
