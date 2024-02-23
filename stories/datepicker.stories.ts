@@ -49,10 +49,16 @@ const metadata: Meta<IgcDatepickerComponent> = {
     mode: {
       type: '"dropdown" | "dialog"',
       description:
-        'Determines whether the calendar is opened as a dropdown or as a dialog',
+        'Determines whether the calendar is opened in a dropdown or a modal dialog',
       options: ['dropdown', 'dialog'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'dropdown' } },
+    },
+    nonEditable: {
+      type: 'boolean',
+      description: 'Whether to allow typing in the input.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
@@ -203,6 +209,7 @@ const metadata: Meta<IgcDatepickerComponent> = {
     keepOpenOnOutsideClick: false,
     open: false,
     mode: 'dropdown',
+    nonEditable: false,
     readOnly: false,
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
@@ -230,8 +237,10 @@ interface IgcDatepickerArgs {
   open: boolean;
   /** The label of the datepicker. */
   label: string;
-  /** Determines whether the calendar is opened as a dropdown or as a dialog */
+  /** Determines whether the calendar is opened in a dropdown or a modal dialog */
   mode: 'dropdown' | 'dialog';
+  /** Whether to allow typing in the input. */
+  nonEditable: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The value of the picker */
@@ -313,6 +322,7 @@ export const Default: Story = {
         .weekStart=${args.weekStart}
         .hideHeader=${args.hideHeader}
         .headerOrientation=${args.headerOrientation}
+        .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
         .min=${args.min ? new Date(args.min as Date) : undefined}
         .max=${args.max ? new Date(args.max as Date) : undefined}

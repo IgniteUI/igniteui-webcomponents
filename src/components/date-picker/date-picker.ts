@@ -162,11 +162,18 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   public label!: string;
 
   /**
-   * Determines whether the calendar is opened as a dropdown or as a dialog
+   * Determines whether the calendar is opened in a dropdown or a modal dialog
    * @attr mode
    */
   @property()
   public mode: 'dropdown' | 'dialog' = 'dropdown';
+
+  /**
+   * Whether to allow typing in the input.
+   * @attr non-editable
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'non-editable' })
+  public nonEditable = false;
 
   /**
    * Makes the control a readonly field.
@@ -421,6 +428,11 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   protected handleCalendarChangeEvent(event: CustomEvent<Date>) {
     event.stopPropagation();
 
+    if (this.readOnly) {
+      event.preventDefault();
+      return;
+    }
+
     this.value = (event.target as IgcCalendarComponent).value!;
     this.emitEvent('igcChange', { detail: this.value });
 
@@ -429,6 +441,11 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   protected handleInputEvent(event: CustomEvent<Date>) {
     event.stopPropagation();
+
+    if (this.nonEditable) {
+      event.preventDefault();
+      return;
+    }
 
     this.value = (event.target as IgcDateTimeInputComponent).value!;
     this.emitEvent('igcInput', { detail: this.value });
@@ -458,7 +475,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         id=${id}
         aria-haspopup="true"
         ?disabled=${this.disabled}
-        ?readonly=${this.readOnly}
+        ?readonly=${this.nonEditable || this.readOnly}
         ?required=${this.required}
         label=${ifDefined(this.label)}
         aria-expanded=${this.open ? 'true' : 'false'}
