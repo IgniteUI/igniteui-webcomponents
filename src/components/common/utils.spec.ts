@@ -150,6 +150,11 @@ export function simulateClick(node: Element, times = 1) {
   }
 }
 
+export function simulateInput(input: HTMLInputElement, value = '') {
+  input.value = value;
+  input.dispatchEvent(new InputEvent('input'));
+}
+
 /**
  * Simulates keyboard interaction on a given element node.
  *

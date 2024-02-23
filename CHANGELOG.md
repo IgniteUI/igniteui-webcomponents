@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    - when setting **upper-bound/lower-bound** *before* **min/max**, the slider will no longer overwrite the bound properties with the previous values of min/max.
    - the **aria-label** bound to the slider thumb is no longer reset on consequent renders.
 
+ - Input - default validators are run synchronously [#1066](https://github.com/IgniteUI/igniteui-webcomponents/issues/1066)
+
 
 ### Changed
  - Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
