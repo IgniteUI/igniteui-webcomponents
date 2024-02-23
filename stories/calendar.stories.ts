@@ -2,7 +2,10 @@ import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
+import {
+  DateRangeDescriptor,
+  DateRangeType,
+} from '../src/components/calendar/common/calendar.model.js';
 import { IgcCalendarComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcCalendarComponent);
@@ -236,11 +239,18 @@ const Template = ({
     // },
   ];
 
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+
   const specialDates: DateRangeDescriptor[] = [
-    // {
-    //   type: DateRangeType.Specific,
-    //   dateRange: [new Date(2021, 8, 22)],
-    // },
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 22)],
+    },
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 23)],
+    },
   ];
 
   return html`

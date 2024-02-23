@@ -38,6 +38,11 @@ $row-gap: rem(6px);
     outline: none;
     box-sizing: border-box;
     user-select: none;
+
+    &::before,
+    &::after {
+        box-sizing: border-box;
+    }
 }
 
 [part='label-inner'] {
