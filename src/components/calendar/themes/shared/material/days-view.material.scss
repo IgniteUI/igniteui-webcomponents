@@ -8,6 +8,7 @@ $border-radius: border-radius(rem(4px));
 $row-gap: rem(6px);
 
 [part~='label'] {
+    height: var-get($theme, 'size');
     color: var-get($theme, 'weekday-color');
 
     [part~='week-number-inner'] {
@@ -23,6 +24,16 @@ $row-gap: rem(6px);
     color: var-get($theme, 'inactive-color');
 }
 
+[part~='inactive'][part~='date-inner'][part~='current'] {
+    color: var-get($theme, 'inactive-color');
+    border-color: transparent;
+
+    &:hover,
+    &:focus {
+        border-color: transparent;
+    }
+}
+
 [part='week-number-inner first'] {
     border-top-left-radius: $week-number-radius;
     border-top-right-radius: $week-number-radius;
@@ -33,12 +44,17 @@ $row-gap: rem(6px);
     border-bottom-right-radius: $week-number-radius;
 }
 
+
 [part~='week-number-inner'] {
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     color: var-get($theme, 'week-number-foreground');
     background: var-get($theme, 'week-number-background');
 
     &::after {
         background: var-get($theme, 'week-number-background');
+
+        height: calc(var-get($theme, 'size') / 2);
         border-inline-start: rem(1px) solid var-get($theme, 'week-number-background');
         border-inline-end: rem(1px) solid var-get($theme, 'week-number-background');
     }
@@ -53,6 +69,7 @@ $row-gap: rem(6px);
     @include type-style('body-1');
 
     height: var-get($theme, 'size');
+    font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
     margin: 0;
     font-weight: 400;
 
@@ -174,8 +191,14 @@ $row-gap: rem(6px);
             color: var-get($theme, 'date-selected-foreground');
             background: var-get($theme, 'date-selected-background');
 
+            &:hover {
+                color: var-get($theme, 'date-selected-hover-foreground');
+                background: var-get($theme, 'date-selected-hover-background');
+            }
+
             &:focus {
-                color: var-get($theme, 'date-selected-foreground');
+                color: var-get($theme, 'date-selected-focus-foreground');
+                background: var-get($theme, 'date-selected-focus-background');
             }
 
             &::after {
@@ -232,6 +255,14 @@ $row-gap: rem(6px);
             color: var-get($theme, 'date-special-range-foreground');
             background: var-get($theme, 'date-special-range-background');
 
+            &:hover {
+                background: var-get($theme, 'date-hover-background');
+            }
+
+            &:focus {
+                background: var-get($theme, 'date-focus-background');
+            }
+
             &:hover,
             &:focus {
                 color: var-get($theme, 'date-special-range-foreground');
@@ -279,9 +310,9 @@ $row-gap: rem(6px);
     }
 
     &:focus {
-        color: var-get($theme, 'date-hover-foreground');
-        background: var-get($theme, 'date-hover-background');
-        border-color: var-get($theme, 'date-hover-border-color');
+        color: var-get($theme, 'date-focus-foreground');
+        background: var-get($theme, 'date-focus-background');
+        border-color: var-get($theme, 'date-focus-border-color');
     }
 
     &[part~='disabled'] {

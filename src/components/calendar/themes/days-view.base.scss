@@ -38,6 +38,7 @@ $row-gap: rem(6px);
     outline: none;
     box-sizing: border-box;
     user-select: none;
+    margin: 0;
 
     &::before,
     &::after {
@@ -110,7 +111,6 @@ $row-gap: rem(6px);
         content: '';
         position: absolute;
         bottom: 100%;
-        height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
         width: 100%;
     }
 }
