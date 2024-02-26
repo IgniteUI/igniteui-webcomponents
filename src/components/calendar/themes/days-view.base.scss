@@ -69,8 +69,7 @@ $row-gap: rem(6px);
     &::after {
         content: '';
         position: absolute;
-        height: 100%;
-        width: calc(50% + #{rem(1px)});
+        width: 50%;
         z-index: 1;
     }
 }
