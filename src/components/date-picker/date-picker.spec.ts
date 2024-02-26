@@ -3,7 +3,10 @@ import { spy } from 'sinon';
 
 import IgcDatepickerComponent from './date-picker.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import { DateRangeType } from '../calendar/common/calendar.model.js';
+import {
+  DateRangeDescriptor,
+  DateRangeType,
+} from '../calendar/common/calendar.model.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
@@ -39,8 +42,17 @@ describe('Date picker', () => {
       await expect(picker).lightDom.to.be.accessible();
     });
 
-    it('is accessible (open state)', async () => {
+    it('is accessible (open state) - default dropdown mode', async () => {
       picker.open = true;
+      await elementUpdated(picker);
+
+      await expect(picker).shadowDom.to.be.accessible();
+      await expect(picker).lightDom.to.be.accessible();
+    });
+
+    it('is accessible (open state) - dialog mode', async () => {
+      picker.open = true;
+      picker.mode = 'dialog';
       await elementUpdated(picker);
 
       await expect(picker).shadowDom.to.be.accessible();
@@ -53,6 +65,22 @@ describe('Date picker', () => {
     const tomorrowDate = new Date(
       new Date().setDate(currentDate.getDate() + 1)
     );
+
+    it('should show/hide the picker based on the value of the open attribute', async () => {
+      expect(picker.open).to.equal(false);
+      picker.open = true;
+      const eventSpy = spy(picker, 'emitEvent');
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(true);
+      expect(eventSpy).not.called;
+
+      picker.open = false;
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(false);
+      expect(eventSpy).not.called;
+    });
 
     it('should set prompt char correctly', async () => {
       picker.prompt = '*';
@@ -76,13 +104,8 @@ describe('Date picker', () => {
 
       expect(eventSpy).calledOnce;
 
-      expect((picker.value as Date).toLocaleDateString('en-US')).to.equal(
-        currentDate.toLocaleDateString('en-US')
-      );
-
-      expect((calendar.value as Date).toLocaleDateString('en-US')).to.equal(
-        currentDate.toLocaleDateString('en-US')
-      );
+      checkDatesEqual(picker.value as Date, currentDate);
+      checkDatesEqual(calendar.value as Date, currentDate);
 
       expect(picker.open).to.equal(true);
     });
@@ -117,18 +140,14 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).calledWith('igcChange');
-      expect((picker.value as Date).toLocaleDateString('en-US')).to.equal(
-        currentDate.toLocaleDateString('en-US')
-      );
+      checkDatesEqual(picker.value as Date, currentDate);
 
       eventSpy.resetHistory();
       dateTimeInput.dispatchEvent(new KeyboardEvent('keydown', { key: '1' }));
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
-      expect((picker.value as Date).toLocaleDateString('en-US')).to.equal(
-        currentDate.toLocaleDateString('en-US')
-      );
+      checkDatesEqual(picker.value as Date, currentDate);
     });
 
     it('should not modify value through selection or typing when readOnly is true', async () => {
@@ -147,18 +166,14 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).not.calledWith('igcChange');
-      expect((picker.value as Date).toLocaleDateString('en-US')).to.equal(
-        tomorrowDate.toLocaleDateString('en-US')
-      );
+      checkDatesEqual(picker.value as Date, tomorrowDate);
 
       eventSpy.resetHistory();
       dateTimeInput.dispatchEvent(new KeyboardEvent('keydown', { key: '1' }));
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
-      expect((picker.value as Date).toLocaleDateString('en-US')).to.equal(
-        tomorrowDate.toLocaleDateString('en-US')
-      );
+      checkDatesEqual(picker.value as Date, tomorrowDate);
     });
 
     it('should set properties of the calendar correctly', async () => {
@@ -207,6 +222,14 @@ describe('Date picker', () => {
       // TODO
     });
 
+    it('should be successfully initialized in open state in dropdown mode', async () => {
+      // TODO
+    });
+
+    it('should be successfully initialized in open state in dialog mode', async () => {
+      // TODO
+    });
+
     it('should set properties of the input correctly', async () => {
       const props = {
         required: true,
@@ -226,30 +249,20 @@ describe('Date picker', () => {
 
     describe('Active date', () => {
       const currentDate = new Date();
-      const currentDateString = currentDate.toLocaleDateString('en-US');
-
       const tomorrowDate = new Date(
         new Date().setDate(currentDate.getDate() + 1)
       );
-      const tomorrowDateString = tomorrowDate.toLocaleDateString('en-US');
-
       const after10DaysDate = new Date(
         new Date().setDate(currentDate.getDate() + 10)
       );
-      const after10DaysString = after10DaysDate.toLocaleDateString('en-US');
-
       const after20DaysDate = new Date(
         new Date().setDate(currentDate.getDate() + 20)
       );
 
       it('should initialize activeDate with current date, when not set', async () => {
-        expect(picker.activeDate.toLocaleDateString('en-US')).to.equal(
-          currentDateString
-        );
+        checkDatesEqual(picker.activeDate, currentDate);
         expect(picker.value).to.be.undefined;
-        expect(calendar.activeDate.toLocaleDateString('en-US')).to.equal(
-          currentDateString
-        );
+        checkDatesEqual(calendar.activeDate, currentDate);
         expect(calendar.value).to.be.undefined;
       });
 
@@ -261,32 +274,23 @@ describe('Date picker', () => {
         await elementUpdated(picker);
         await elementUpdated(picker);
 
-        expect(picker.value?.toLocaleDateString('en-US')).to.equal(
-          valueDate.toLocaleDateString('en-US')
-        );
+        checkDatesEqual(picker.value as Date, valueDate);
 
         calendar = picker.shadowRoot!.querySelector(
           IgcCalendarComponent.tagName
         ) as IgcCalendarComponent;
 
-        expect(picker.activeDate.toLocaleDateString('en-US')).to.equal(
-          after10DaysString
-        );
-        expect(calendar.activeDate.toLocaleDateString('en-US')).to.equal(
-          after10DaysString
-        );
-        expect(calendar.value!.toLocaleDateString('en-US')).to.equal(
-          after10DaysString
-        );
+        checkDatesEqual(picker.activeDate, after10DaysDate);
+        checkDatesEqual(calendar.activeDate, after10DaysDate);
+        checkDatesEqual(calendar.value as Date, after10DaysDate);
       });
 
       it('should set activeDate correctly', async () => {
         picker.activeDate = tomorrowDate;
 
         await elementUpdated(picker);
-        expect(calendar.activeDate.toLocaleDateString('en-US')).to.equal(
-          tomorrowDateString
-        );
+        checkDatesEqual(calendar.activeDate, tomorrowDate);
+
         // value is not defined
         expect(picker.value).to.be.undefined;
 
@@ -294,9 +298,7 @@ describe('Date picker', () => {
         picker.value = after20DaysDate;
         await elementUpdated(picker);
 
-        expect(calendar.activeDate.toLocaleDateString('en-US')).to.equal(
-          tomorrowDateString
-        );
+        checkDatesEqual(calendar.activeDate, tomorrowDate);
       });
     });
   });
@@ -395,240 +397,251 @@ describe('Date picker', () => {
     });
 
     it('should replace the selected text in the input and re-apply the mask with setRangeText()', async () => {
-      // TODO - fix of src/components/date-picker/date-picker.spec.ts
-      /*
-        const setRangeTextSpy = spy(dateTimeInput, 'setRangeText');
-        picker.value = new Date(2024, 2, 21);
-        const expectedValue = new Date(2023, 2, 21);
-        await elementUpdated(picker);
+      const setRangeTextSpy = spy(dateTimeInput, 'setRangeText');
+      picker.value = new Date(2024, 2, 21);
+      const expectedValue = new Date(2023, 2, 21);
+      await elementUpdated(picker);
 
-        dateTimeInput.focus();
-        picker.setRangeText('2023', 6, 10);
-        await elementUpdated(picker);
+      dateTimeInput.focus();
+      picker.setRangeText('2023', 6, 10);
+      await elementUpdated(picker);
 
-        expect(setRangeTextSpy).to.be.called;
+      expect(setRangeTextSpy).to.be.called;
 
-        expect(new Date(input.value).toISOString()).to.equal(
-          expectedValue.toISOString()
-        );
-        expect(picker.value).to.eq(expectedValue);
-        expect(dateTimeInput.value).to.eq(expectedValue);
-        */
+      checkDatesEqual(new Date(input.value), expectedValue);
+      expect(picker.value).to.eq(expectedValue);
+      expect(dateTimeInput.value).to.eq(expectedValue);
     });
   });
 
   describe('Interactions', () => {
     it('should close the picker when in open state on pressing Escape', async () => {
-      // TODO
-      // when focus in on any part of the date picker
-      // when focus is outside of the date picker parts
+      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.focus();
+      picker.dispatchEvent(escapeEvent);
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.called;
+
+      picker.show();
+      await elementUpdated(picker);
+
+      picker.dispatchEvent(escapeEvent);
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledTwice;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
+      eventSpy.resetHistory();
     });
 
-    describe('Slotted content', () => {
-      // TODO
+    it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp', async () => {
+      const altArrowDownEvent = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        altKey: true,
+      });
+      const eventSpy = spy(picker, 'emitEvent');
+      expect(picker.open).to.be.false;
+      picker.focus();
+      picker.dispatchEvent(altArrowDownEvent);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).calledWith('igcOpened');
+
+      eventSpy.resetHistory();
+      const altArrowUpEvent = new KeyboardEvent('keydown', {
+        key: 'ArrowUp',
+        altKey: true,
+      });
+
+      picker.dispatchEvent(altArrowUpEvent);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
+    });
+  });
+
+  describe('Slotted content', () => {
+    // TODO
+  });
+
+  describe('Localization', () => {
+    it('should set inputFormat correctly', async () => {
+      const testFormat = 'dd--MM--yyyy';
+      picker.inputFormat = testFormat;
+      await elementUpdated(picker);
+
+      expect(dateTimeInput.inputFormat).to.equal(testFormat);
     });
 
-    describe('Localization', () => {
-      it('should set inputFormat correctly', async () => {
-        const testFormat = 'dd--MM--yyyy';
-        picker.inputFormat = testFormat;
-        await elementUpdated(picker);
+    it('should set displayFormat correctly', async () => {
+      let testFormat = 'dd-MM-yyyy';
+      picker.displayFormat = testFormat;
+      await elementUpdated(picker);
 
-        expect(dateTimeInput.inputFormat).to.equal(testFormat);
-      });
+      expect(dateTimeInput.displayFormat).to.equal(testFormat);
 
-      it('should set displayFormat correctly', async () => {
-        let testFormat = 'dd-MM-yyyy';
-        picker.displayFormat = testFormat;
-        await elementUpdated(picker);
+      // set via attribute
+      testFormat = 'dd--MM--yyyy';
+      picker.setAttribute('display-format', testFormat);
+      await elementUpdated(picker);
 
-        expect(dateTimeInput.displayFormat).to.equal(testFormat);
-
-        // set via attribute
-        testFormat = 'dd--MM--yyyy';
-        picker.setAttribute('display-format', testFormat);
-        await elementUpdated(picker);
-
-        expect(dateTimeInput.displayFormat).to.equal(testFormat);
-        expect(picker.displayFormat).not.to.equal(picker.inputFormat);
-      });
-
-      it('should properly set displayFormat to the set of predefined formats', async () => {
-        const predefinedFormats = ['short', 'medium', 'long', 'full'];
-
-        for (let i = 0; i < predefinedFormats.length; i++) {
-          const format = predefinedFormats[i];
-          picker.displayFormat = format;
-          await elementUpdated(picker);
-
-          expect(dateTimeInput.displayFormat).to.equal(format + 'Date');
-        }
-      });
-
-      it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
-        const defaultFormat = 'MM/dd/yyyy';
-        expect(picker.locale).to.equal('en');
-        expect(picker.inputFormat).to.equal(defaultFormat);
-
-        picker.locale = 'fr';
-        await elementUpdated(picker);
-
-        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-      });
-
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
-        expect(picker.locale).to.equal('en');
-        expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
-
-        // updates inputFormat according to changed locale
-        picker.locale = 'fr';
-        await elementUpdated(picker);
-        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
-
-        // sets inputFormat as attribute
-        picker.setAttribute('input-format', 'dd-MM-yyyy');
-        await elementUpdated(picker);
-
-        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
-      });
+      expect(dateTimeInput.displayFormat).to.equal(testFormat);
+      expect(picker.displayFormat).not.to.equal(picker.inputFormat);
     });
 
-    describe('Validation', () => {
-      it('should set the min and max properties and update validity according to set value', async () => {
-        expect(picker.min).to.be.undefined;
-        expect(dateTimeInput.min).to.be.undefined;
-        expect(picker.max).to.be.undefined;
-        expect(dateTimeInput.max).to.be.undefined;
-        expect(picker.invalid).to.be.false;
+    it('should properly set displayFormat to the set of predefined formats', async () => {
+      const predefinedFormats = ['short', 'medium', 'long', 'full'];
 
-        picker.value = new Date(2024, 2, 18);
+      for (let i = 0; i < predefinedFormats.length; i++) {
+        const format = predefinedFormats[i];
+        picker.displayFormat = format;
         await elementUpdated(picker);
 
-        picker.min = new Date(2024, 2, 20);
-        await elementUpdated(picker);
-
-        // only changing the min/max property does not set invalid state - updating the value does ?
-        expect(picker.invalid).to.be.false;
-        picker.value = new Date(2024, 2, 19);
-        await elementUpdated(picker);
-
-        expect(picker.invalid).to.be.true;
-
-        picker.value = new Date(2024, 2, 24);
-        await elementUpdated(picker);
-
-        expect(picker.invalid).to.be.false;
-
-        picker.max = new Date(2024, 2, 22);
-        await elementUpdated(picker);
-
-        expect(picker.invalid).to.be.false;
-
-        picker.value = new Date(2024, 2, 23);
-        await elementUpdated(picker);
-
-        expect(picker.invalid).to.be.true;
-
-        picker.value = new Date(2024, 2, 21);
-        await elementUpdated(picker);
-
-        expect(picker.invalid).to.be.false;
-        // TODO check same on typing - untouched/dirty
-      });
+        expect(dateTimeInput.displayFormat).to.equal(format + 'Date');
+      }
     });
 
-    describe('Form integration', () => {
-      const spec = new FormAssociatedTestBed<IgcDatepickerComponent>(
-        html`<igc-datepicker name="datePicker"></igc-datepicker>`
+    it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
+      const defaultFormat = 'MM/dd/yyyy';
+      expect(picker.locale).to.equal('en');
+      expect(picker.inputFormat).to.equal(defaultFormat);
+
+      picker.locale = 'fr';
+      await elementUpdated(picker);
+
+      expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+    });
+
+    it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      expect(picker.locale).to.equal('en');
+      expect(picker.getAttribute('display-format')).to.be.null;
+      expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+      // updates inputFormat according to changed locale
+      picker.locale = 'fr';
+      await elementUpdated(picker);
+      expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+      expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+      // sets inputFormat as attribute
+      picker.setAttribute('input-format', 'dd-MM-yyyy');
+      await elementUpdated(picker);
+
+      expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+      expect(picker.displayFormat).to.equal(picker.inputFormat);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcDatepickerComponent>(
+      html`<igc-datepicker name="datePicker"></igc-datepicker>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcDatepickerComponent.tagName);
+    });
+
+    it('should be form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('should not participate in form submission if the value is empty/invalid', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('should participate in form submission if there is a value and the value adheres to the validation constraints', async () => {
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value.toISOString()
       );
+    });
 
-      beforeEach(async () => {
-        await spec.setup(IgcDatepickerComponent.tagName);
-      });
+    it('should reset to its default value state on form reset', async () => {
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
 
-      it('is form associated', async () => {
-        expect(spec.element.form).to.equal(spec.form);
-      });
+      spec.reset();
+      expect(spec.element.value).to.be.undefined;
+    });
 
-      it('is not associated on submit if no value', async () => {
-        expect(spec.submit()?.get(spec.element.name)).to.be.null;
-      });
+    it('should reflect disabled ancestor state (fieldset/form)', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
 
-      it('is associated on submit', async () => {
-        spec.element.value = new Date(Date.now());
-        await elementUpdated(spec.element);
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
 
-        expect(spec.submit()?.get(spec.element.name)).to.equal(
-          spec.element.value.toISOString()
-        );
-      });
+    it('should enforce required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
 
-      it('is correctly reset on form reset', async () => {
-        spec.element.value = new Date(Date.now());
-        await elementUpdated(spec.element);
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
 
-        spec.reset();
-        expect(spec.element.value).to.be.undefined;
-      });
+    it('should enforce min value constraint', async () => {
+      spec.element.min = new Date(2025, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitFails();
 
-      it('reflects disabled ancestor state', async () => {
-        spec.setAncestorDisabledState(true);
-        expect(spec.element.disabled).to.be.true;
+      spec.element.value = new Date(2022, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitFails();
 
-        spec.setAncestorDisabledState(false);
-        expect(spec.element.disabled).to.be.false;
-      });
+      spec.element.value = new Date(2025, 0, 2);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
 
-      it('fulfils required constraint', async () => {
-        spec.element.required = true;
-        await elementUpdated(spec.element);
-        spec.submitFails();
+    it('should enforce max value constraint', async () => {
+      spec.element.max = new Date(2020, 0, 1);
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+      spec.submitFails();
 
-        spec.element.value = new Date(Date.now());
-        await elementUpdated(spec.element);
-        spec.submitValidates();
-      });
+      spec.element.value = new Date(2020, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
 
-      it('fulfils min value constraint', async () => {
-        spec.element.min = new Date(2025, 0, 1);
-        await elementUpdated(spec.element);
-        spec.submitFails();
+    it('should invalidate the component if a disabled date is typed in the input', async () => {
+      const minDate = new Date(2024, 1, 1);
+      const maxDate = new Date(2024, 1, 28);
 
-        spec.element.value = new Date(2022, 0, 1);
-        await elementUpdated(spec.element);
-        spec.submitFails();
+      const disabledDates: DateRangeDescriptor[] = [
+        {
+          type: DateRangeType.Between,
+          dateRange: [minDate, maxDate],
+        },
+      ];
 
-        spec.element.value = new Date(2025, 0, 2);
-        await elementUpdated(spec.element);
-        spec.submitValidates();
-      });
+      spec.element.disabledDates = disabledDates;
+      await elementUpdated(spec.element);
 
-      it('fulfils max value constraint', async () => {
-        spec.element.max = new Date(2020, 0, 1);
-        spec.element.value = new Date(Date.now());
-        await elementUpdated(spec.element);
-        spec.submitFails();
+      spec.element.value = new Date(2024, 1, 26);
+      await elementUpdated(spec.element);
 
-        spec.element.value = new Date(2020, 0, 1);
-        await elementUpdated(spec.element);
-        spec.submitValidates();
-      });
+      expect(spec.element.invalid).to.be.true;
+      spec.submitFails();
+    });
 
-      it('fulfils custom constraint', async () => {
-        spec.element.setCustomValidity('invalid');
-        spec.submitFails();
+    it('should enforce custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
 
-        spec.element.setCustomValidity('');
-        spec.submitValidates();
-      });
-
-      it('should set a custom validation message with setCustomValidity()', async () => {
-        // TODO
-        //  As long as message is not empty, the component is considered invalid
-      });
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });
@@ -643,3 +656,8 @@ const selectCurrentDate = (calendar: IgcCalendarComponent) => {
   ) as HTMLElement;
   (currentDaySpan?.children[0] as HTMLElement).click();
 };
+
+const checkDatesEqual = (a: Date, b: Date) =>
+  expect(new Date(a.setHours(0, 0, 0, 0)).toISOString()).to.equal(
+    new Date(b.setHours(0, 0, 0, 0)).toISOString()
+  );

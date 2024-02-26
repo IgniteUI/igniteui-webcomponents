@@ -1,9 +1,13 @@
 import { ComplexAttributeConverter, LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 
 import IgcCalendarComponent from '../calendar/calendar.js';
-import { DateRangeDescriptor } from '../calendar/common/calendar.model.js';
+import {
+  DateRangeDescriptor,
+  isDateInRanges,
+} from '../calendar/common/calendar.model.js';
 import {
   addKeybindings,
   escapeKey,
@@ -103,6 +107,14 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
               false,
               true
             )
+          : true,
+    },
+    {
+      key: 'badInput',
+      message: () => format(messages.disabledDate, `${this.value}`),
+      isValid: () =>
+        this.value && this.disabledDates
+          ? !isDateInRanges(this.value, this.disabledDates)
           : true,
     },
   ];
@@ -462,10 +474,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @watch('min', { waitUntilFirstUpdate: true })
   @watch('max', { waitUntilFirstUpdate: true })
+  @watch('disabledDates', { waitUntilFirstUpdate: true })
   protected constraintChange() {
     this.updateValidity();
   }
 
+  // TODO clear-icon, calendar-icon, calendar-icon-open? slots
   protected override render() {
     const id = this.id || this.inputId;
     const calendarDisabled = !this.open || this.disabled;
@@ -486,6 +500,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         .placeholder=${this.placeholder}
         .min=${this.min}
         .max=${this.max}
+        .invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
       >
@@ -521,7 +536,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             .weekStart=${this.weekStart}
             @igcChange=${this.handleCalendarChangeEvent}
           >
-            <slot name="title" slot="title"></slot>
+            ${this.mode === 'dropdown'
+              ? html`<slot name="title" slot="title"></slot>`
+              : undefined}
           </igc-calendar>
         </igc-focus-trap>
       </igc-popover>

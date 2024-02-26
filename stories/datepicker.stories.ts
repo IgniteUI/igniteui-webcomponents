@@ -6,7 +6,12 @@ import {
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { IgcDatepickerComponent, defineComponents } from '../src/index.js';
+import {
+  DateRangeDescriptor,
+  DateRangeType,
+  IgcDatepickerComponent,
+  defineComponents,
+} from '../src/index.js';
 
 defineComponents(IgcDatepickerComponent);
 
@@ -324,6 +329,7 @@ export const Default: Story = {
         .headerOrientation=${args.headerOrientation}
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
+        .mode=${args.mode}
         .min=${args.min ? new Date(args.min as Date) : undefined}
         .max=${args.max ? new Date(args.max as Date) : undefined}
         .activeDate=${args.activeDate
@@ -372,6 +378,15 @@ export const Slots: Story = {
   `,
 };
 
+const minDate = new Date(2024, 1, 1);
+const maxDate = new Date(2024, 1, 28);
+const disabledDates: DateRangeDescriptor[] = [
+  {
+    type: DateRangeType.Between,
+    dateRange: [minDate, maxDate],
+  },
+];
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
@@ -381,6 +396,8 @@ export const Form: Story = {
         <igc-datepicker
           label="Initial value"
           name="picker-initial"
+          .min=${minDate}
+          .max=${maxDate}
         ></igc-datepicker>
         <igc-datepicker
           label="Readonly"
@@ -401,6 +418,14 @@ export const Form: Story = {
           label="Required"
           name="picker-required"
           required
+        ></igc-datepicker>
+      </fieldset>
+
+      <fieldset>
+        <igc-datepicker
+          label="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
+          name="picker-required"
+          .disabledDates=${disabledDates}
         ></igc-datepicker>
       </fieldset>
       ${formControls()}
