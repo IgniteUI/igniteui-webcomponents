@@ -16,6 +16,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcPopoverComponent from '../popover/popover.js';
 
 export interface IgcDatepickerEventMap {
@@ -63,6 +64,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       this,
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
+      IgcFocusTrapComponent,
       IgcPopoverComponent
     );
   }
@@ -186,6 +188,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   protected override render() {
     const id = this.id || this.inputId;
+    const calendarDisabled = !this.open || this.disabled;
 
     return html`
       <igc-date-time-input
@@ -214,19 +217,21 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         shift
         same-width
       >
-        <igc-calendar
-          aria-labelledby=${id}
-          .inert=${!this.open || this.disabled}
-          hide-header
-          ?show-week-numbers=${this.showWeekNumbers}
-          ?hide-outside-days=${this.hideOutsideDays}
-          .visibleMonths=${this.visibleMonths}
-          .value=${this.value}
-          .activeDate=${this.value ?? nothing}
-          @igcChange=${this.handleCalendarChangeEvent}
-        >
-          <slot name="title" slot="title"></slot>
-        </igc-calendar>
+        <igc-focus-trap ?disabled=${calendarDisabled}>
+          <igc-calendar
+            aria-labelledby=${id}
+            .inert=${calendarDisabled}
+            hide-header
+            ?show-week-numbers=${this.showWeekNumbers}
+            ?hide-outside-days=${this.hideOutsideDays}
+            .visibleMonths=${this.visibleMonths}
+            .value=${this.value}
+            .activeDate=${this.value ?? nothing}
+            @igcChange=${this.handleCalendarChangeEvent}
+          >
+            <slot name="title" slot="title"></slot>
+          </igc-calendar>
+        </igc-focus-trap>
       </igc-popover>
     `;
   }
