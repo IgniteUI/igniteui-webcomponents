@@ -70,7 +70,6 @@ $row-gap: rem(6px);
 
     height: var-get($theme, 'size');
     font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
-    margin: 0;
 
     &[part~='range'] {
         background: var-get($theme, 'date-selected-range-background');

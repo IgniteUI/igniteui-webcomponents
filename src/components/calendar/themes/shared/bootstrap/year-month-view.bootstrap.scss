@@ -7,27 +7,72 @@ $theme: $bootstrap;
     padding-block-start: rem(16px);
 }
 
-[part~='month-inner'],
-[part~='year-inner'] {
-    height: var-get($theme, 'size');
-    border-radius: var-get($theme, 'month-year-border-radius');
-
-    &:focus,
-    &:focus-visible,
-    &:focus-within {
-        outline-color: transparent;
-    }
-}
-
 [part~='month-inner'] {
     &:hover {
         color: var-get($theme, 'month-hover-foreground');
         background: var-get($theme, 'month-hover-background');
     }
 
-    &:focus {
+    &:focus,
+    &:focus-visible,
+    &:focus-within {
         color: var-get($theme, 'month-focus-foreground');
         background: var-get($theme, 'month-focus-background');
+    }
+
+    &[part~='current'] {
+        color: var-get($theme, 'month-current-foreground');
+        background: var-get($theme, 'month-current-background');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
+
+        &:hover {
+            color: var-get($theme, 'month-current-hover-foreground');
+            background: var-get($theme, 'month-current-hover-background');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
+        }
+
+        &:focus-visible,
+        &:focus-within,
+        &:focus {
+            color: var-get($theme, 'month-current-focus-foreground');
+            background: var-get($theme, 'month-current-focus-background');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-focus-color');
+        }
+    }
+
+    &[part~='selected'] {
+        color: var-get($theme, 'month-selected-foreground');
+        background: var-get($theme, 'month-selected-background');
+
+        &:hover {
+            color: var-get($theme, 'month-selected-hover-foreground');
+            background: var-get($theme, 'month-selected-hover-background');
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:focus-within {
+            color: var-get($theme, 'month-selected-focus-foreground');
+            background: var-get($theme, 'month-selected-focus-background');
+        }
+    }
+
+    &[part~='selected'][part~='current'] {
+        color: var-get($theme, 'month-selected-current-foreground');
+        background: var-get($theme, 'month-selected-current-background');
+
+
+        &:hover {
+            color: var-get($theme, 'month-selected-current-hover-foreground');
+            background: var-get($theme, 'month-selected-current-hover-background');
+        }
+
+        &:focus-visible,
+        &:focus-within,
+        &:focus {
+            color: var-get($theme, 'month-selected-current-focus-foreground');
+            background: var-get($theme, 'month-selected-current-focus-background');
+        }
     }
 }
 
@@ -37,98 +82,81 @@ $theme: $bootstrap;
         background: var-get($theme, 'year-hover-background');
     }
 
-    &:focus {
+    &:focus,
+    &:focus-visible,
+    &:focus-within {
         color: var-get($theme, 'year-focus-foreground');
         background: var-get($theme, 'year-focus-background');
     }
-}
 
-[part~='month-inner'][part~='current'] {
-    color: var-get($theme, 'month-current-foreground');
-    background: var-get($theme, 'month-current-background');
+    &[part~='current'] {
+        color: var-get($theme, 'year-current-foreground');
+        background: var-get($theme, 'year-current-background');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
 
-    &:hover {
-        color: var-get($theme, 'month-current-hover-foreground');
-        background: var-get($theme, 'month-current-hover-background');
+        &:focus-visible,
+        &:focus-within,
+        &:focus {
+            color: var-get($theme, 'year-current-hover-foreground');
+            background: var-get($theme, 'year-current-hover-background');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
+        }
+
+        &:focus {
+            color: var-get($theme, 'year-current-focus-foreground');
+            background: var-get($theme, 'year-current-focus-background');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-focus-color');
+        }
     }
 
-    &:focus {
-        color: var-get($theme, 'month-current-focus-foreground');
-        background: var-get($theme, 'month-current-focus-background');
-    }
-}
+    &[part~='selected'] {
+        color: var-get($theme, 'year-selected-foreground');
+        background: var-get($theme, 'year-selected-background');
 
-[part~='year-inner'][part~='current'] {
-    color: var-get($theme, 'year-current-foreground');
-    background: var-get($theme, 'year-current-background');
+        &:hover {
+            color: var-get($theme, 'year-selected-hover-foreground');
+            background: var-get($theme, 'year-selected-hover-background');
+        }
 
-    &:hover {
-        color: var-get($theme, 'year-current-hover-foreground');
-        background: var-get($theme, 'year-current-hover-background');
-    }
-
-    &:focus {
-        color: var-get($theme, 'year-current-focus-foreground');
-        background: var-get($theme, 'year-current-focus-background');
-    }
-}
-
-[part~='month-inner'][part~='selected'] {
-    color: var-get($theme, 'month-selected-foreground');
-    background: var-get($theme, 'month-selected-background');
-
-    &:hover {
-        color: var-get($theme, 'month-selected-hover-foreground');
-        background: var-get($theme, 'month-selected-hover-background');
+        &:focus,
+        &:focus-visible,
+        &:focus-within {
+            color: var-get($theme, 'year-selected-focus-foreground');
+            background: var-get($theme, 'year-selected-focus-background');
+        }
     }
 
-    &:focus {
-        color: var-get($theme, 'month-selected-focus-foreground');
-        background: var-get($theme, 'month-selected-focus-background');
-    }
-}
+    &[part~='selected'][part~='current'] {
+        color: var-get($theme, 'year-selected-current-foreground');
+        background: var-get($theme, 'year-selected-current-background');
 
-[part~='year-inner'][part~='selected'] {
-    color: var-get($theme, 'year-selected-foreground');
-    background: var-get($theme, 'year-selected-background');
+        &:hover {
+            color: var-get($theme, 'year-selected-current-hover-foreground');
+            background: var-get($theme, 'year-selected-current-hover-background');
+        }
 
-    &:hover {
-        color: var-get($theme, 'year-selected-hover-foreground');
-        background: var-get($theme, 'year-selected-hover-background');
-    }
-
-    &:focus {
-        color: var-get($theme, 'year-selected-focus-foreground');
-        background: var-get($theme, 'year-selected-focus-background');
+        &:focus-visible,
+        &:focus-within,
+        &:focus {
+            color: var-get($theme, 'year-selected-current-focus-foreground');
+            background: var-get($theme, 'year-selected-current-focus-background');
+        }
     }
 }
 
-[part~='month-inner'][part~='selected'][part~='current'] {
-    color: var-get($theme, 'month-selected-current-foreground');
-    background: var-get($theme, 'month-selected-current-background');
+[part~='month-inner'],
+[part~='year-inner'] {
+    @include type-style('body-1');
 
-    &:hover {
-        color: var-get($theme, 'month-selected-current-hover-foreground');
-        background: var-get($theme, 'month-selected-current-hover-background');
-    }
+    height: var-get($theme, 'size');
+    border-radius: var-get($theme, 'month-year-border-radius');
 
-    &:focus {
-        color: var-get($theme, 'month-selected-current-focus-foreground');
-        background: var-get($theme, 'month-selected-current-focus-background');
-    }
-}
-
-[part~='year-inner'][part~='selected'][part~='current'] {
-    color: var-get($theme, 'year-selected-current-foreground');
-    background: var-get($theme, 'year-selected-current-background');
-
-    &:hover {
-        color: var-get($theme, 'year-selected-current-hover-foreground');
-        background: var-get($theme, 'year-selected-current-hover-background');
-    }
-
-    &:focus {
-        color: var-get($theme, 'year-selected-current-focus-foreground');
-        background: var-get($theme, 'year-selected-current-focus-background');
+    &:focus,
+    &:focus-visible,
+    &:focus-within {
+        // Don't use outline color transparent here since :focus-visible will have transparent border around
+        // the element that will cover the outline of the box shadow.
+        outline: none;
     }
 }
+

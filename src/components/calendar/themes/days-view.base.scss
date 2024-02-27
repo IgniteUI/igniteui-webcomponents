@@ -27,6 +27,10 @@ $row-gap: rem(6px);
     z-index: 2;
 }
 
+[part~='date'] {
+    margin: 0 !important;
+}
+
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
@@ -118,6 +122,11 @@ $row-gap: rem(6px);
     pointer-events: none;
     user-select: none;
     cursor: not-allowed;
+    opacity: .5;
+}
+
+[part~='date-inner'][part~='inactive'][part~='disabled'] {
+    opacity: 1;
 }
 
 [part~='hidden'] {

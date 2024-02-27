@@ -366,9 +366,12 @@ $row-gap: rem(6px);
     &[part~='last'] {
         background: transparent;
 
+        &::before,
         &::after {
             height: var-get($theme, 'size');
+        }
 
+        &::after {
             background: var-get($theme, 'date-selected-range-background');
             border-block: $border-size solid var-get($theme, 'date-selected-range-background');
         }
@@ -376,8 +379,7 @@ $row-gap: rem(6px);
         &::before {
             content: '';
             position: absolute;
-            width: calc(var(--size) / 2 + #{$border-size});
-            height: var-get($theme, 'size');
+            width: calc(var-get($theme, 'size') / 2 + #{$border-size});
             border-block: $border-size solid var-get($theme, 'date-range-border-color');
             z-index: 3;
             pointer-events: none;
