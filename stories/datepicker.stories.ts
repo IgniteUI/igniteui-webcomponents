@@ -373,6 +373,9 @@ export const Slots: Story = {
         <span slot="suffix">🦀</span>
         <p slot="helper-text">For example, select your birthday</p>
         <p slot="title">🎉 Custom title 🎉</p>
+        <span slot="calendar-icon-open">👩‍💻</span>
+        <span slot="calendar-icon">👨‍💻</span>
+        <span slot="clear-icon">🗑️</span>
       </igc-datepicker>
     </div>
   `,

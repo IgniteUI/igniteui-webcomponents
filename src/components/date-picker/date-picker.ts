@@ -1,5 +1,5 @@
 import { ComplexAttributeConverter, LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
@@ -59,6 +59,9 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot title - Renders content in the calendar title.
+ * @slot clear-icon - Renders a clear icon template.
+ * @slot calendar-icon - Renders the icon/content for the calendar picker.
+ * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
  *
  * @fires igcOpening - Emitted just before the calendar dropdown is shown.
  * @fires igcOpened - Emitted after the calendar dropdown is shown.
@@ -120,6 +123,15 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @query(IgcCalendarComponent.tagName)
   private _calendar!: IgcCalendarComponent;
+
+  @queryAssignedElements({ slot: 'calendar-icon' })
+  protected calendarIcon!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'calendar-icon-open' })
+  protected calendarIconOpen!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'clear-icon' })
+  protected clearIcon!: Array<HTMLElement>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -423,7 +435,42 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.updateValidity();
   }
 
-  // TODO clear-icon, calendar-icon, calendar-icon-open? slots
+  private renderClearIcon() {
+    return (
+      this.value &&
+      html`<span
+        slot="suffix"
+        part="clear-icon"
+        @click=${this.clear}
+        ?hidden=${this.clearIcon.length === 0}
+      >
+        <slot name="clear-icon">
+          <igc-icon
+            name="clear"
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </span>`
+    );
+  }
+
+  private renderCalendarIcon() {
+    const defaultIcon = '📅';
+    return html`<span
+      slot="suffix"
+      part="${this.open ? 'calendar-icon-open' : 'calendar-icon'}"
+      @click=${this.handleAnchorClick}
+      ?hidden=${this.open
+        ? this.calendarIconOpen.length === 0
+        : this.calendarIcon.length === 0}
+    >
+      ${this.open
+        ? html`<slot name="calendar-icon-open">${defaultIcon}</slot>`
+        : html`<slot name="calendar-icon">${defaultIcon}</slot>`}
+    </span>`;
+  }
+
   protected override render() {
     const id = this.id || this.inputId;
     const calendarDisabled = !this.open || this.disabled;
@@ -454,7 +501,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         @igcInput=${this.handleInputEvent}
       >
         <slot name="prefix" slot="prefix"></slot>
-        <span slot="suffix" @click=${this.handleAnchorClick}>📅</span>
+        ${this.renderClearIcon()} ${this.renderCalendarIcon()}
         <slot name="suffix" slot="suffix"></slot>
         <slot name="helper-text" slot="helper-text"></slot>
       </igc-date-time-input>
