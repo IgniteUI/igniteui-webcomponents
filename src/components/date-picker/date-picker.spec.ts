@@ -58,9 +58,113 @@ describe('Date picker', () => {
       await expect(picker).shadowDom.to.be.accessible();
       await expect(picker).lightDom.to.be.accessible();
     });
+
+    it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title', async () => {
+      picker = await fixture<IgcDatepickerComponent>(
+        html`<igc-datepicker>
+          <span slot="prefix">$</span>
+          <span slot="suffix">~</span>
+          <p slot="helper-text">For example, select your birthday</p>
+          <p slot="title">Custom title</p>
+          <span slot="calendar-icon-open">v</span>
+          <span slot="calendar-icon">^</span>
+          <span slot="clear-icon">X</span>
+        </igc-datepicker>`
+      );
+      await elementUpdated(picker);
+
+      dateTimeInput = picker.shadowRoot!.querySelector(
+        IgcDateTimeInputComponent.tagName
+      ) as IgcDateTimeInputComponent;
+
+      const slotTests = [
+        {
+          slot: 'prefix',
+          tagName: 'span',
+          content: '$',
+          parent: dateTimeInput,
+          nestedIn: 'prefix',
+        },
+        {
+          slot: 'suffix',
+          tagName: 'span',
+          content: '~',
+          parent: dateTimeInput,
+          nestedIn: 'suffix',
+        },
+        {
+          slot: 'title',
+          tagName: 'p',
+          content: 'Custom title',
+          parent: picker,
+        },
+        {
+          slot: 'helper-text',
+          tagName: 'p',
+          content: 'For example, select your birthday',
+          parent: picker,
+        },
+        {
+          slot: 'calendar-icon',
+          tagName: 'span',
+          content: '^',
+          parent: picker,
+        },
+        {
+          slot: 'calendar-icon-open',
+          tagName: 'span',
+          content: 'v',
+          prerequisite: () => picker.show(),
+          parent: picker,
+        },
+        {
+          slot: 'clear-icon',
+          tagName: 'span',
+          content: 'X',
+          prerequisite: () => (picker.value = new Date()),
+          parent: picker,
+        },
+      ];
+
+      for (let i = 0; i < slotTests.length; i++) {
+        slotTests[i].prerequisite?.();
+        await elementUpdated(picker);
+
+        const slot = slotTests[i].parent.shadowRoot!.querySelector(
+          `slot[name="${slotTests[i].slot}"]`
+        ) as HTMLSlotElement;
+        let elements = slot.assignedElements();
+
+        if (slotTests[i].nestedIn) {
+          const targetElement = elements.find((el) =>
+            el.matches(`slot[name="${slotTests[i].nestedIn}"]`)
+          ) as HTMLSlotElement;
+          elements = targetElement.assignedElements();
+        }
+
+        expect((elements[0] as HTMLElement).innerText).to.equal(
+          slotTests[i].content
+        );
+        expect(elements[0].tagName.toLowerCase()).to.equal(
+          slotTests[i].tagName
+        );
+      }
+    });
+
+    it('should set the mode property correctly', async () => {
+      // TODO
+    });
+
+    it('should be successfully initialized in open state in dropdown mode', async () => {
+      // TODO
+    });
+
+    it('should be successfully initialized in open state in dialog mode', async () => {
+      // TODO
+    });
   });
 
-  describe('Basic', () => {
+  describe('Attributes and properties', () => {
     const currentDate = new Date(new Date().setHours(0, 0, 0));
     const tomorrowDate = new Date(
       new Date().setDate(currentDate.getDate() + 1)
@@ -218,18 +322,6 @@ describe('Date picker', () => {
       }
     });
 
-    it('should set the mode property correctly', async () => {
-      // TODO
-    });
-
-    it('should be successfully initialized in open state in dropdown mode', async () => {
-      // TODO
-    });
-
-    it('should be successfully initialized in open state in dialog mode', async () => {
-      // TODO
-    });
-
     it('should set properties of the input correctly', async () => {
       const props = {
         required: true,
@@ -248,7 +340,6 @@ describe('Date picker', () => {
     });
 
     describe('Active date', () => {
-      const currentDate = new Date();
       const tomorrowDate = new Date(
         new Date().setDate(currentDate.getDate() + 1)
       );
@@ -271,7 +362,6 @@ describe('Date picker', () => {
         picker = await fixture<IgcDatepickerComponent>(
           html`<igc-datepicker .value=${valueDate} />`
         );
-        await elementUpdated(picker);
         await elementUpdated(picker);
 
         checkDatesEqual(picker.value as Date, valueDate);
@@ -299,6 +389,74 @@ describe('Date picker', () => {
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, tomorrowDate);
+      });
+    });
+
+    describe('Localization', () => {
+      it('should set inputFormat correctly', async () => {
+        const testFormat = 'dd--MM--yyyy';
+        picker.inputFormat = testFormat;
+        await elementUpdated(picker);
+
+        expect(dateTimeInput.inputFormat).to.equal(testFormat);
+      });
+
+      it('should set displayFormat correctly', async () => {
+        let testFormat = 'dd-MM-yyyy';
+        picker.displayFormat = testFormat;
+        await elementUpdated(picker);
+
+        expect(dateTimeInput.displayFormat).to.equal(testFormat);
+
+        // set via attribute
+        testFormat = 'dd--MM--yyyy';
+        picker.setAttribute('display-format', testFormat);
+        await elementUpdated(picker);
+
+        expect(dateTimeInput.displayFormat).to.equal(testFormat);
+        expect(picker.displayFormat).not.to.equal(picker.inputFormat);
+      });
+
+      it('should properly set displayFormat to the set of predefined formats', async () => {
+        const predefinedFormats = ['short', 'medium', 'long', 'full'];
+
+        for (let i = 0; i < predefinedFormats.length; i++) {
+          const format = predefinedFormats[i];
+          picker.displayFormat = format;
+          await elementUpdated(picker);
+
+          expect(dateTimeInput.displayFormat).to.equal(format + 'Date');
+        }
+      });
+
+      it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
+        const defaultFormat = 'MM/dd/yyyy';
+        expect(picker.locale).to.equal('en');
+        expect(picker.inputFormat).to.equal(defaultFormat);
+
+        picker.locale = 'fr';
+        await elementUpdated(picker);
+
+        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+      });
+
+      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+        expect(picker.locale).to.equal('en');
+        expect(picker.getAttribute('display-format')).to.be.null;
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // updates inputFormat according to changed locale
+        picker.locale = 'fr';
+        await elementUpdated(picker);
+        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // sets inputFormat as attribute
+        picker.setAttribute('input-format', 'dd-MM-yyyy');
+        await elementUpdated(picker);
+
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
     });
   });
@@ -463,78 +621,6 @@ describe('Date picker', () => {
       expect(picker.open).to.be.false;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
-    });
-  });
-
-  describe('Slotted content', () => {
-    // TODO
-  });
-
-  describe('Localization', () => {
-    it('should set inputFormat correctly', async () => {
-      const testFormat = 'dd--MM--yyyy';
-      picker.inputFormat = testFormat;
-      await elementUpdated(picker);
-
-      expect(dateTimeInput.inputFormat).to.equal(testFormat);
-    });
-
-    it('should set displayFormat correctly', async () => {
-      let testFormat = 'dd-MM-yyyy';
-      picker.displayFormat = testFormat;
-      await elementUpdated(picker);
-
-      expect(dateTimeInput.displayFormat).to.equal(testFormat);
-
-      // set via attribute
-      testFormat = 'dd--MM--yyyy';
-      picker.setAttribute('display-format', testFormat);
-      await elementUpdated(picker);
-
-      expect(dateTimeInput.displayFormat).to.equal(testFormat);
-      expect(picker.displayFormat).not.to.equal(picker.inputFormat);
-    });
-
-    it('should properly set displayFormat to the set of predefined formats', async () => {
-      const predefinedFormats = ['short', 'medium', 'long', 'full'];
-
-      for (let i = 0; i < predefinedFormats.length; i++) {
-        const format = predefinedFormats[i];
-        picker.displayFormat = format;
-        await elementUpdated(picker);
-
-        expect(dateTimeInput.displayFormat).to.equal(format + 'Date');
-      }
-    });
-
-    it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
-      const defaultFormat = 'MM/dd/yyyy';
-      expect(picker.locale).to.equal('en');
-      expect(picker.inputFormat).to.equal(defaultFormat);
-
-      picker.locale = 'fr';
-      await elementUpdated(picker);
-
-      expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-    });
-
-    it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
-      expect(picker.locale).to.equal('en');
-      expect(picker.getAttribute('display-format')).to.be.null;
-      expect(picker.displayFormat).to.equal(picker.inputFormat);
-
-      // updates inputFormat according to changed locale
-      picker.locale = 'fr';
-      await elementUpdated(picker);
-      expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-      expect(picker.displayFormat).to.equal(picker.inputFormat);
-
-      // sets inputFormat as attribute
-      picker.setAttribute('input-format', 'dd-MM-yyyy');
-      await elementUpdated(picker);
-
-      expect(picker.inputFormat).to.equal('dd-MM-yyyy');
-      expect(picker.displayFormat).to.equal(picker.inputFormat);
     });
   });
 
