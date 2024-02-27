@@ -25,7 +25,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, format } from '../common/util.js';
-import { Validator } from '../common/validators.js';
+import { Validator, requiredValidator } from '../common/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
@@ -44,6 +44,8 @@ const converter: ComplexAttributeConverter<Date | undefined> = {
   fromAttribute: (value: string) => (value ? new Date(value) : undefined),
   toAttribute: (value: Date) => value.toISOString(),
 };
+
+const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
  * @element igc-datepicker
@@ -78,11 +80,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   // TODO - can the date-time-input's validator's be reused and the picker's validity state be updated ?
   public override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () => (this.required ? !!this.value : true),
-    },
+    requiredValidator,
     {
       key: 'rangeUnderflow',
       message: () => format(messages.min, `${this.min}`),
@@ -119,13 +117,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     },
   ];
 
-  private predefinedDisplayFormatsMap = new Map([
-    ['short', 'shortDate'],
-    ['medium', 'mediumDate'],
-    ['long', 'longDate'],
-    ['full', 'fullDate'],
-  ]);
-
   public static register() {
     registerComponent(
       this,
@@ -136,6 +127,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     );
   }
 
+  private _displayFormat?: string;
+  private _inputFormat?: string;
+
   private _rootClickController = addRootClickHandler(this, {
     hideCallback: () => this._hide(true),
   });
@@ -143,21 +137,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @query(IgcDateTimeInputComponent.tagName, true)
   private _input!: IgcDateTimeInputComponent;
 
-  @query(IgcCalendarComponent.tagName, true)
+  @query(IgcCalendarComponent.tagName)
   private _calendar!: IgcCalendarComponent;
-
-  private _displayFormat!: string;
-
-  /**
-   * Whether the calendar dropdown should be kept open on clicking outside of it.
-   * @attr keep-open-on-outside-click
-   */
-  @property({
-    type: Boolean,
-    reflect: true,
-    attribute: 'keep-open-on-outside-click',
-  })
-  public override keepOpenOnOutsideClick = false;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -198,15 +179,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * The value of the picker
    * @attr
    */
-  @property({
-    converter: converter,
-  })
+  @property({ converter: converter })
   public value?: Date;
 
-  @property({
-    attribute: 'active-date',
-    converter: converter,
-  })
+  @property({ attribute: 'active-date', converter: converter })
   public get activeDate(): Date {
     return this._calendar?.activeDate ?? new Date();
   }
@@ -222,14 +198,14 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: converter })
-  public min?: Date;
+  public min!: Date;
 
   /**
    * The maximum value required for the date picker to remain valid.
    * @attr
    */
   @property({ converter: converter })
-  public max?: Date;
+  public max!: Date;
 
   /** The orientation of the calendar header.
    * @attr header-orientation
@@ -246,7 +222,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   /** Determines whether the calendar hides its header.
    * @attr hide-header
    */
-  @property({ attribute: 'hide-header' })
+  @property({ type: Boolean, reflect: true, attribute: 'hide-header' })
   public hideHeader = false;
 
   /**
@@ -298,23 +274,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public get displayFormat(): string {
-    return (
-      this._displayFormat ?? this._input?.displayFormat ?? this.inputFormat
-    );
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
   }
 
-  public set displayFormat(value: string) {
-    if (!value) {
-      return;
-    }
-    this._displayFormat = value;
-    if (this.predefinedDisplayFormatsMap.has(value)) {
-      value = this.predefinedDisplayFormatsMap.get(value)!;
-    }
-    if (this._input) {
-      this._input.displayFormat = value;
-    }
+  public get displayFormat(): string {
+    return this._displayFormat ?? this.inputFormat;
   }
 
   /**
@@ -323,14 +288,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * @attr input-format
    */
   @property({ attribute: 'input-format' })
-  public get inputFormat(): string {
-    return this._input?.inputFormat;
+  public set inputFormat(value: string) {
+    this._inputFormat = value;
   }
 
-  public set inputFormat(value: string) {
-    if (value && this._input) {
-      this._input.inputFormat = value;
-    }
+  public get inputFormat(): string {
+    return this._inputFormat ?? this._input?.inputFormat;
   }
 
   /**
@@ -483,6 +446,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   protected override render() {
     const id = this.id || this.inputId;
     const calendarDisabled = !this.open || this.disabled;
+    const displayFormat = formats.has(this._displayFormat!)
+      ? `${this._displayFormat}Date`
+      : this._displayFormat;
 
     return html`
       <igc-date-time-input
@@ -493,6 +459,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         ?required=${this.required}
         label=${ifDefined(this.label)}
         aria-expanded=${this.open ? 'true' : 'false'}
+        input-format=${ifDefined(this._inputFormat)}
+        display-format=${ifDefined(displayFormat)}
         .value=${this.value ?? null}
         .locale=${this.locale}
         .prompt=${this.prompt}

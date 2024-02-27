@@ -25,7 +25,7 @@ import messages from '../common/localization/validation-en.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { format, partNameMap } from '../common/util.js';
-import { Validator } from '../common/validators.js';
+import { Validator, requiredValidator } from '../common/validators.js';
 import { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -77,11 +77,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () => (this.required ? !!this.value : true),
-    },
+    requiredValidator,
     {
       key: 'rangeUnderflow',
       message: () => format(messages.min, `${this.min}`),

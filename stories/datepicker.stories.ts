@@ -33,13 +33,6 @@ const metadata: Meta<IgcDatepickerComponent> = {
     },
   },
   argTypes: {
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the calendar dropdown should be kept open on clicking outside of it.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     open: {
       type: 'boolean',
       description: 'Sets the state of the datepicker dropdown.',
@@ -209,9 +202,15 @@ const metadata: Meta<IgcDatepickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on clicking outside of it.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
   },
   args: {
-    keepOpenOnOutsideClick: false,
     open: false,
     mode: 'dropdown',
     nonEditable: false,
@@ -230,14 +229,13 @@ const metadata: Meta<IgcDatepickerComponent> = {
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
+    keepOpenOnOutsideClick: false,
   },
 };
 
 export default metadata;
 
 interface IgcDatepickerArgs {
-  /** Whether the calendar dropdown should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
   /** Sets the state of the datepicker dropdown. */
   open: boolean;
   /** The label of the datepicker. */
@@ -304,6 +302,8 @@ interface IgcDatepickerArgs {
   invalid: boolean;
   /** Whether the component dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
+  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
 }
 type Story = StoryObj<IgcDatepickerArgs>;
 

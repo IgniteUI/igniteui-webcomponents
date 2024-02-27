@@ -10,9 +10,12 @@ export interface Validator<T = any> {
   isValid: ValidatorHandler<T>;
 }
 
+const emailRegex =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
 export const requiredValidator: Validator<{
   required: boolean;
-  value?: string;
+  value?: unknown;
 }> = {
   key: 'valueMissing',
   message: validatorMessages.required,
@@ -102,9 +105,6 @@ export const stepValidator: Validator<{
       ? (asNumber(value) - asNumber(min)) % asNumber(step, 1) === 0
       : true,
 };
-
-const emailRegex =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export const emailValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
