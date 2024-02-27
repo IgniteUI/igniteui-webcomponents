@@ -1,5 +1,6 @@
 import validatorMessages from './localization/validation-en.js';
 import { asNumber, format, isDefined } from './util.js';
+import { DateTimeUtil } from '../date-time-input/date-util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
 type ValidatorMessageFormat<T> = (host: T) => string;
@@ -116,4 +117,28 @@ export const urlValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
   message: validatorMessages.url,
   isValid: ({ value }) => URL.canParse(value),
+};
+
+export const minDateValidator: Validator<{
+  value?: Date | null;
+  min?: Date | null;
+}> = {
+  key: 'rangeUnderflow',
+  message: ({ min }) => format(validatorMessages.min, `${min}`),
+  isValid: ({ value, min }) =>
+    min
+      ? !DateTimeUtil.lessThanMinValue(value ?? new Date(), min, false, true)
+      : true,
+};
+
+export const maxDateValidator: Validator<{
+  value?: Date | null;
+  max?: Date | null;
+}> = {
+  key: 'rangeOverflow',
+  message: ({ max }) => format(validatorMessages.max, `${max}`),
+  isValid: ({ value, max }) =>
+    max
+      ? !DateTimeUtil.greaterThanMaxValue(value ?? new Date(), max, false, true)
+      : true,
 };

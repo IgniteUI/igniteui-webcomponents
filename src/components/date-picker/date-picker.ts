@@ -25,9 +25,14 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, format } from '../common/util.js';
-import { Validator, requiredValidator } from '../common/validators.js';
+import {
+  Validator,
+  maxDateValidator,
+  minDateValidator,
+  requiredValidator,
+} from '../common/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
+import { DatePart } from '../date-time-input/date-util.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcPopoverComponent from '../popover/popover.js';
 
@@ -81,38 +86,14 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   // TODO - can the date-time-input's validator's be reused and the picker's validity state be updated ?
   public override validators: Validator<this>[] = [
     requiredValidator,
-    {
-      key: 'rangeUnderflow',
-      message: () => format(messages.min, `${this.min}`),
-      isValid: () =>
-        this.min
-          ? !DateTimeUtil.lessThanMinValue(
-              this.value || new Date(),
-              this.min,
-              false,
-              true
-            )
-          : true,
-    },
-    {
-      key: 'rangeOverflow',
-      message: () => format(messages.max, `${this.max}`),
-      isValid: () =>
-        this.max
-          ? !DateTimeUtil.greaterThanMaxValue(
-              this.value || new Date(),
-              this.max,
-              false,
-              true
-            )
-          : true,
-    },
+    minDateValidator,
+    maxDateValidator,
     {
       key: 'badInput',
       message: () => format(messages.disabledDate, `${this.value}`),
       isValid: () =>
-        this.value && this.disabledDates
-          ? !isDateInRanges(this.value, this.disabledDates)
+        this.value
+          ? !isDateInRanges(this.value, this.disabledDates ?? [])
           : true,
     },
   ];

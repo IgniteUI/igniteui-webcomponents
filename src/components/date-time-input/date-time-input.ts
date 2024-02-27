@@ -21,11 +21,15 @@ import {
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { format, partNameMap } from '../common/util.js';
-import { Validator, requiredValidator } from '../common/validators.js';
+import { partNameMap } from '../common/util.js';
+import {
+  Validator,
+  maxDateValidator,
+  minDateValidator,
+  requiredValidator,
+} from '../common/validators.js';
 import { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -78,9 +82,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected override validators: Validator<this>[] = [
     requiredValidator,
+
     {
-      key: 'rangeUnderflow',
-      message: () => format(messages.min, `${this.min}`),
+      ...minDateValidator,
       isValid: () =>
         this.min
           ? !DateTimeUtil.lessThanMinValue(
@@ -92,8 +96,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
           : true,
     },
     {
-      key: 'rangeOverflow',
-      message: () => format(messages.max, `${this.max}`),
+      ...maxDateValidator,
       isValid: () =>
         this.max
           ? !DateTimeUtil.greaterThanMaxValue(
