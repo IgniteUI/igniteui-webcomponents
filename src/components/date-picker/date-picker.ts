@@ -133,6 +133,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @queryAssignedElements({ slot: 'clear-icon' })
   protected clearIcon!: Array<HTMLElement>;
 
+  @queryAssignedElements({ slot: 'title' })
+  protected titleSlot!: Array<HTMLElement>;
+
   /**
    * Sets the state of the datepicker dropdown.
    * @attr
@@ -519,7 +522,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             aria-labelledby=${id}
             role="dialog"
             .inert=${!this.open || this.disabled}
-            .hideHeader=${this.hideHeader}
+            .hideHeader=${(this.mode === 'dialog' && this.hideHeader) ||
+            (this.mode === 'dropdown' && this.titleSlot!.length === 0)}
             .headerOrientation=${this.headerOrientation}
             .orientation=${this.orientation}
             ?show-week-numbers=${this.showWeekNumbers}
@@ -532,9 +536,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             .weekStart=${this.weekStart}
             @igcChange=${this.handleCalendarChangeEvent}
           >
-            ${this.mode === 'dropdown'
-              ? html`<slot name="title" slot="title"></slot>`
-              : undefined}
+            ${this.mode === 'dropdown' &&
+            html`<slot name="title" slot="title"></slot>`}
           </igc-calendar>
         </igc-focus-trap>
       </igc-popover>
