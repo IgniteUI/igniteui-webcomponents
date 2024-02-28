@@ -33,6 +33,7 @@ import {
 } from '../common/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DatePart } from '../date-time-input/date-util.js';
+import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcPopoverComponent from '../popover/popover.js';
 
@@ -86,7 +87,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   private static readonly increment = createCounter();
   protected inputId = `datepicker-${IgcDatepickerComponent.increment()}`;
 
-  // TODO - can the date-time-input's validator's be reused and the picker's validity state be updated ?
   public override validators: Validator<this>[] = [
     requiredValidator,
     minDateValidator,
@@ -107,10 +107,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
       IgcFocusTrapComponent,
-      IgcPopoverComponent
+      IgcPopoverComponent,
+      IgcDialogComponent
     );
   }
 
+  private _value?: Date | null;
+  private _activeDate?: Date | null;
   private _displayFormat?: string;
   private _inputFormat?: string;
 
@@ -176,17 +179,26 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: converter })
-  public value?: Date;
-
-  @property({ attribute: 'active-date', converter: converter })
-  public get activeDate(): Date {
-    return this._calendar?.activeDate ?? new Date();
+  public set value(value: Date | null) {
+    this._value = value;
+    this.value
+      ? this.setFormValue(this.value.toISOString())
+      : this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
+  public get value(): Date | null {
+    return this._value ?? null;
+  }
+
+  @property({ attribute: 'active-date', converter: converter })
   public set activeDate(value: Date) {
-    if (this._calendar) {
-      this._calendar.activeDate = value ?? undefined;
-    }
+    this._activeDate = value;
+  }
+
+  public get activeDate(): Date {
+    return this._activeDate ?? this._calendar?.activeDate;
   }
 
   /**
@@ -337,7 +349,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   /** Clears the input part of the component of any user input */
   public clear() {
-    this.value = undefined;
+    this.value = null;
     this._input?.clear();
   }
 
@@ -401,6 +413,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
     if (this.readOnly) {
       event.preventDefault();
+      this._calendar.value = this.value ?? undefined;
       return;
     }
 
@@ -420,15 +433,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
     this.value = (event.target as IgcDateTimeInputComponent).value!;
     this.emitEvent('igcInput', { detail: this.value });
-  }
-
-  @watch('value')
-  protected valueChange() {
-    this.value
-      ? this.setFormValue(this.value.toISOString())
-      : this.setFormValue(null);
-    this.updateValidity();
-    this.setInvalidState();
   }
 
   @watch('min', { waitUntilFirstUpdate: true })
@@ -474,9 +478,63 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     </span>`;
   }
 
+  private renderCalendar(id: string) {
+    const calendarDisabled = !this.open || this.disabled;
+    const role = this.mode === 'dropdown' ? 'dialog' : '';
+    const hideHeader =
+      (this.mode === 'dialog' && this.hideHeader) ||
+      (this.mode === 'dropdown' && this.titleSlot!.length === 0);
+
+    const calendar = html`<igc-calendar
+      aria-labelledby=${id}
+      role=${role}
+      active-date=${ifDefined(this.activeDate)}
+      value=${ifDefined(this.value)}
+      .inert=${!this.open || this.disabled}
+      .hideHeader=${hideHeader}
+      .headerOrientation=${this.headerOrientation}
+      .orientation=${this.orientation}
+      ?show-week-numbers=${this.showWeekNumbers}
+      ?hide-outside-days=${this.hideOutsideDays}
+      .visibleMonths=${this.visibleMonths}
+      .locale=${this.locale}
+      .disabledDates=${this.disabledDates}
+      .specialDates=${this.specialDates}
+      .weekStart=${this.weekStart}
+      @igcChange=${this.handleCalendarChangeEvent}
+    >
+      ${this.mode === 'dropdown' &&
+      html`<slot name="title" slot="title"></slot>`}
+    </igc-calendar>`;
+
+    if (this.mode === 'dropdown') {
+      return html`<igc-popover
+        ?open=${this.open}
+        anchor=${id}
+        strategy="fixed"
+        flip
+        shift
+        same-width
+      >
+        <igc-focus-trap ?disabled=${calendarDisabled}>
+          ${calendar}
+        </igc-focus-trap>
+      </igc-popover>`;
+    } else {
+      return html` <igc-dialog
+        aria-label="Select date"
+        ?open=${this.open}
+        ?close-on-outside-click="${!this.keepOpenOnOutsideClick}"
+        hide-default-action
+        @igcClosing=${() => this._hide(true)}
+      >
+        ${calendar}
+      </igc-dialog>`;
+    }
+  }
+
   protected override render() {
     const id = this.id || this.inputId;
-    const calendarDisabled = !this.open || this.disabled;
     const displayFormat = formats.has(this._displayFormat!)
       ? `${this._displayFormat}Date`
       : this._displayFormat;
@@ -492,7 +550,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         aria-expanded=${this.open ? 'true' : 'false'}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(displayFormat)}
-        .value=${this.value ?? null}
+        .value=${this.value}
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
@@ -508,39 +566,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         <slot name="suffix" slot="suffix"></slot>
         <slot name="helper-text" slot="helper-text"></slot>
       </igc-date-time-input>
-
-      <igc-popover
-        ?open=${this.open}
-        anchor=${id}
-        strategy="fixed"
-        flip
-        shift
-        same-width
-      >
-        <igc-focus-trap ?disabled=${calendarDisabled}>
-          <igc-calendar
-            aria-labelledby=${id}
-            role="dialog"
-            .inert=${!this.open || this.disabled}
-            .hideHeader=${(this.mode === 'dialog' && this.hideHeader) ||
-            (this.mode === 'dropdown' && this.titleSlot!.length === 0)}
-            .headerOrientation=${this.headerOrientation}
-            .orientation=${this.orientation}
-            ?show-week-numbers=${this.showWeekNumbers}
-            ?hide-outside-days=${this.hideOutsideDays}
-            .visibleMonths=${this.visibleMonths}
-            .value=${this.value}
-            .locale=${this.locale}
-            .disabledDates=${this.disabledDates}
-            .specialDates=${this.specialDates}
-            .weekStart=${this.weekStart}
-            @igcChange=${this.handleCalendarChangeEvent}
-          >
-            ${this.mode === 'dropdown' &&
-            html`<slot name="title" slot="title"></slot>`}
-          </igc-calendar>
-        </igc-focus-trap>
-      </igc-popover>
+      ${this.renderCalendar(id)}
     `;
   }
 }
