@@ -480,16 +480,16 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private renderCalendar(id: string) {
     const calendarDisabled = !this.open || this.disabled;
-    const role = this.mode === 'dropdown' ? 'dialog' : '';
+    const role = this.mode === 'dropdown' ? 'dialog' : undefined;
     const hideHeader =
       (this.mode === 'dialog' && this.hideHeader) ||
       (this.mode === 'dropdown' && this.titleSlot!.length === 0);
 
     const calendar = html`<igc-calendar
       aria-labelledby=${id}
-      role=${role}
-      active-date=${ifDefined(this.activeDate)}
-      value=${ifDefined(this.value)}
+      role=${ifDefined(role)}
+      .activeDate=${this.activeDate ?? this.value ?? new Date()}
+      .value=${this.value ?? undefined}
       .inert=${!this.open || this.disabled}
       .hideHeader=${hideHeader}
       .headerOrientation=${this.headerOrientation}
@@ -550,7 +550,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         aria-expanded=${this.open ? 'true' : 'false'}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(displayFormat)}
-        .value=${this.value}
+        .value=${this.value ?? null}
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
