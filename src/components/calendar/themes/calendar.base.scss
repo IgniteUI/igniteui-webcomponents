@@ -6,20 +6,18 @@
     display: flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
+    min-width: fit-content;
 
     igc-days-view::part(date),
     igc-days-view::part(week-number),
     igc-days-view::part(label),
     igc-days-view::part(days-row) {
         box-sizing: border-box;
-        // height: var(--size);
     }
 
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         box-sizing: border-box;
-        // width: calc(var(--size) - #{rem(2px)});
-        // min-width: calc(var(--size) - #{rem(2px)});
     }
 
     igc-days-view::part(label) {
@@ -28,18 +26,10 @@
 
     igc-months-view {
         grid-template-rows: repeat(4, minmax(var(--size), 1fr));
-
-        &::part(month-inner) {
-            // height: var(--size);
-        }
     }
 
     igc-years-view {
         grid-template-rows: repeat(5, minmax(var(--size), 1fr));
-
-        &::part(year-inner) {
-            // height: var(--size);
-        }
     }
 
     igc-days-view,

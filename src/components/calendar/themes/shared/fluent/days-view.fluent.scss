@@ -33,12 +33,15 @@ $row-gap: rem(6px);
 }
 
 [part~='week-number-inner'] {
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     color: var-get($theme, 'week-number-foreground');
     background: var-get($theme, 'week-number-background');
     border-inline-end-color: var-get($theme, 'date-border-color');
     border-radius: var-get($theme, 'week-number-border-radius');
 
     &::after {
+        height: calc(var-get($theme, 'size') / 2);
         background: var-get($theme, 'week-number-background');
         border-inline-start: rem(1px) solid var-get($theme, 'week-number-background');
         border-inline-end: rem(1px) solid var-get($theme, 'week-number-background');
@@ -60,17 +63,8 @@ $row-gap: rem(6px);
     color: var-get($theme, 'weekend-color');
 }
 
-[part~='inactive'] {
+[part~='inactive']:not([part~='preview']) {
     color: var-get($theme, 'inactive-color');
-}
-
-[part~='week-number-inner'] {
-    width: var-get($theme, 'size');
-    height: var-get($theme, 'size');
-
-    &::after {
-        height: calc(var-get($theme, 'size') / 2);
-    }
 }
 
 [part~='date-inner'] {
@@ -215,10 +209,6 @@ $row-gap: rem(6px);
         overflow: hidden;
         color: var-get($theme, 'date-current-foreground');
 
-        &[part~='special'] {
-            color: var-get($theme, 'date-current-foreground');
-        }
-
         &::before {
             content: '';
             position: absolute;
@@ -275,10 +265,17 @@ $row-gap: rem(6px);
         }
     }
 
-    &[part~='special'][part~='inactive'],
-    &[part~='current'][part~='inactive'] {
+    &[part~='special'][part~='inactive']:not([part~='range']),
+    &[part~='current'][part~='inactive']:not([part~='range']) {
         color: var-get($theme, 'inactive-color');
 
+        &:hover {
+            color: var-get($theme, 'date-hover-foreground');
+        }
+    }
+
+    &[part~='special'][part~='inactive'],
+    &[part~='current'][part~='inactive'] {
         &::before {
             background: transparent;
         }
