@@ -8,8 +8,18 @@ import {
   DateRangeType,
 } from '../calendar/common/calendar.model.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 
 describe('Date picker', () => {
@@ -151,16 +161,40 @@ describe('Date picker', () => {
       }
     });
 
-    it('should set the mode property correctly', async () => {
-      // TODO
-    });
-
     it('should be successfully initialized in open state in dropdown mode', async () => {
-      // TODO
+      picker = await fixture<IgcDatepickerComponent>(
+        html`<igc-datepicker open></igc-datepicker>`
+      );
+      calendar = picker.shadowRoot!.querySelector(
+        IgcCalendarComponent.tagName
+      ) as IgcCalendarComponent;
+
+      expect(picker.mode).to.equal('dropdown');
+      picker.show();
+      await elementUpdated(picker);
+
+      const popover = picker.shadowRoot?.querySelector('igc-popover');
+      expect(popover).not.to.be.undefined;
+      expect(calendar).not.to.be.undefined;
+      expect(calendar.parentElement).to.have.tagName('igc-focus-trap');
     });
 
     it('should be successfully initialized in open state in dialog mode', async () => {
-      // TODO
+      picker = await fixture<IgcDatepickerComponent>(
+        html`<igc-datepicker open mode="dialog"></igc-datepicker>`
+      );
+      calendar = picker.shadowRoot!.querySelector(
+        IgcCalendarComponent.tagName
+      ) as IgcCalendarComponent;
+
+      expect(picker.mode).to.equal('dialog');
+      picker.show();
+      await elementUpdated(picker);
+
+      const dialog = picker.shadowRoot?.querySelector('igc-dialog');
+      expect(dialog).not.to.be.undefined;
+      expect(calendar).not.to.be.undefined;
+      expect(calendar.parentElement).to.equal(dialog);
     });
   });
 
@@ -222,7 +256,7 @@ describe('Date picker', () => {
       picker.show();
       await elementUpdated(picker);
 
-      document.body.click();
+      simulateClick(document.body);
       await elementUpdated(picker);
 
       expect(picker.open).to.equal(true);
@@ -247,7 +281,7 @@ describe('Date picker', () => {
       checkDatesEqual(picker.value as Date, currentDate);
 
       eventSpy.resetHistory();
-      dateTimeInput.dispatchEvent(new KeyboardEvent('keydown', { key: '1' }));
+      simulateKeyboard(dateTimeInput, '1');
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
@@ -265,15 +299,18 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       const eventSpy = spy(picker, 'emitEvent');
+      const calendarEventSpy = spy(calendar, 'emitEvent');
 
       selectCurrentDate(calendar);
       await elementUpdated(picker);
 
       expect(eventSpy).not.calledWith('igcChange');
+      expect(calendarEventSpy).calledWith('igcChange');
       checkDatesEqual(picker.value as Date, tomorrowDate);
+      checkDatesEqual(calendar.value as Date, tomorrowDate);
 
       eventSpy.resetHistory();
-      dateTimeInput.dispatchEvent(new KeyboardEvent('keydown', { key: '1' }));
+      simulateKeyboard(dateTimeInput, '1');
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
@@ -304,6 +341,7 @@ describe('Date picker', () => {
       };
 
       //test defaults
+      expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
       expect(picker.hideHeader).to.equal(false);
@@ -352,7 +390,7 @@ describe('Date picker', () => {
 
       it('should initialize activeDate with current date, when not set', async () => {
         checkDatesEqual(picker.activeDate, currentDate);
-        expect(picker.value).to.be.undefined;
+        expect(picker.value).to.be.null;
         checkDatesEqual(calendar.activeDate, currentDate);
         expect(calendar.value).to.be.undefined;
       });
@@ -381,8 +419,8 @@ describe('Date picker', () => {
         await elementUpdated(picker);
         checkDatesEqual(calendar.activeDate, tomorrowDate);
 
-        // value is not defined
-        expect(picker.value).to.be.undefined;
+        // value is null
+        expect(picker.value).to.be.null;
 
         // setting the value does not affect the activeDate, when it is explicitly set
         picker.value = after20DaysDate;
@@ -507,7 +545,7 @@ describe('Date picker', () => {
       picker.clear();
       await elementUpdated(picker);
 
-      expect(picker.value).to.be.undefined;
+      expect(picker.value).to.be.null;
       expect(dateTimeInput.value).to.be.null;
     });
 
@@ -574,10 +612,9 @@ describe('Date picker', () => {
 
   describe('Interactions', () => {
     it('should close the picker when in open state on pressing Escape', async () => {
-      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
       const eventSpy = spy(picker, 'emitEvent');
       picker.focus();
-      picker.dispatchEvent(escapeEvent);
+      simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
@@ -585,37 +622,70 @@ describe('Date picker', () => {
       picker.show();
       await elementUpdated(picker);
 
-      picker.dispatchEvent(escapeEvent);
+      simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
 
       expect(eventSpy).calledTwice;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
       eventSpy.resetHistory();
+
+      // dialog mode
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+      picker.show();
+      await elementUpdated(picker);
+
+      simulateKeyboard(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledTwice;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
     });
 
-    it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp', async () => {
-      const altArrowDownEvent = new KeyboardEvent('keydown', {
-        key: 'ArrowDown',
-        altKey: true,
-      });
+    it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {
       const eventSpy = spy(picker, 'emitEvent');
       expect(picker.open).to.be.false;
       picker.focus();
-      picker.dispatchEvent(altArrowDownEvent);
+      simulateKeyboard(picker, [altKey, arrowDown]);
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
+
       expect(eventSpy).calledWith('igcOpening');
       expect(eventSpy).calledWith('igcOpened');
 
       eventSpy.resetHistory();
-      const altArrowUpEvent = new KeyboardEvent('keydown', {
-        key: 'ArrowUp',
-        altKey: true,
-      });
 
-      picker.dispatchEvent(altArrowUpEvent);
+      simulateKeyboard(picker, [altKey, arrowUp]);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
+      eventSpy.resetHistory();
+    });
+
+    it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dialog mode', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      expect(picker.open).to.be.false;
+      picker.focus();
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+
+      const dialog = picker.shadowRoot!.querySelector('igc-dialog');
+      expect(picker.open).to.be.true;
+      expect(dialog).not.to.be.undefined;
+      expect(dialog?.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).calledWith('igcOpened');
+      eventSpy.resetHistory();
+
+      simulateKeyboard(picker, [altKey, arrowUp]);
       await elementUpdated(picker);
 
       expect(picker.open).to.be.false;
@@ -655,7 +725,7 @@ describe('Date picker', () => {
       await elementUpdated(spec.element);
 
       spec.reset();
-      expect(spec.element.value).to.be.undefined;
+      expect(spec.element.value).to.be.null;
     });
 
     it('should reflect disabled ancestor state (fieldset/form)', async () => {
@@ -740,7 +810,7 @@ const selectCurrentDate = (calendar: IgcCalendarComponent) => {
   const currentDaySpan = daysView.shadowRoot?.querySelector(
     'span[part~="current"]'
   ) as HTMLElement;
-  (currentDaySpan?.children[0] as HTMLElement).click();
+  simulateClick(currentDaySpan?.children[0]);
 };
 
 const checkDatesEqual = (a: Date, b: Date) =>
