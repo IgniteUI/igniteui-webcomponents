@@ -392,15 +392,17 @@ const disabledDates: DateRangeDescriptor[] = [
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
+  args: {
+    value: new Date(2024, 1, 29),
+  },
+  render: (args) => html`
     <form action="" @submit=${formSubmitHandler}>
       <fieldset>
         <igc-datepicker label="Default" name="picker-default"></igc-datepicker>
         <igc-datepicker
           label="Initial value"
           name="picker-initial"
-          .min=${minDate}
-          .max=${maxDate}
+          .value=${args.value}
         ></igc-datepicker>
         <igc-datepicker
           label="Readonly"
@@ -425,9 +427,23 @@ export const Form: Story = {
       </fieldset>
 
       <fieldset>
+        <igc-datepicker label="Minimum date" name="picker-min" .min=${minDate}>
+          <p slot="helper-text">
+            Choose a date after ${minDate.toLocaleDateString()}
+          </p>
+        </igc-datepicker>
+
+        <igc-datepicker label="Maximum date" name="picker-max" .max=${maxDate}>
+          <p slot="helper-text">
+            Choose a date before ${maxDate.toLocaleDateString()}
+          </p>
+        </igc-datepicker>
+      </fieldset>
+
+      <fieldset>
         <igc-datepicker
           label="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
-          name="picker-required"
+          name="picker-disabled-ranges"
           .disabledDates=${disabledDates}
         ></igc-datepicker>
       </fieldset>

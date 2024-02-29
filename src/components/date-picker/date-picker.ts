@@ -353,6 +353,11 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       .set(escapeKey, this.onEscapeKey);
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.updateValidity();
+  }
+
   /** Clears the input part of the component of any user input */
   public clear() {
     this.value = null;
