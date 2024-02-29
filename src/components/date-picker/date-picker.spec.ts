@@ -162,14 +162,14 @@ describe('Date picker', () => {
     });
 
     it('should be successfully initialized with value', async () => {
+      const expectedValue = new Date(2024, 1, 29);
       picker = await fixture<IgcDatepickerComponent>(
-        html`<igc-datepicker value="02/29/2024"></igc-datepicker>`
+        html`<igc-datepicker .value="${expectedValue}"></igc-datepicker>`
       );
       dateTimeInput = picker.shadowRoot!.querySelector(
         IgcDateTimeInputComponent.tagName
       ) as IgcDateTimeInputComponent;
 
-      const expectedValue = new Date(2024, 1, 29);
       expect(picker.value).not.to.be.null;
       checkDatesEqual(picker.value!, expectedValue);
       expect(dateTimeInput.value).not.to.be.null;
