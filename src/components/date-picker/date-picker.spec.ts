@@ -161,6 +161,21 @@ describe('Date picker', () => {
       }
     });
 
+    it('should be successfully initialized with value', async () => {
+      picker = await fixture<IgcDatepickerComponent>(
+        html`<igc-datepicker value="02/29/2024"></igc-datepicker>`
+      );
+      dateTimeInput = picker.shadowRoot!.querySelector(
+        IgcDateTimeInputComponent.tagName
+      ) as IgcDateTimeInputComponent;
+
+      const expectedValue = new Date(2024, 1, 29);
+      expect(picker.value).not.to.be.null;
+      checkDatesEqual(picker.value!, expectedValue);
+      expect(dateTimeInput.value).not.to.be.null;
+      checkDatesEqual(dateTimeInput.value!, expectedValue);
+    });
+
     it('should be successfully initialized in open state in dropdown mode', async () => {
       picker = await fixture<IgcDatepickerComponent>(
         html`<igc-datepicker open></igc-datepicker>`
@@ -605,8 +620,8 @@ describe('Date picker', () => {
       expect(setRangeTextSpy).to.be.called;
 
       checkDatesEqual(new Date(input.value), expectedValue);
-      expect(picker.value).to.eq(expectedValue);
-      expect(dateTimeInput.value).to.eq(expectedValue);
+      checkDatesEqual(picker.value!, expectedValue);
+      checkDatesEqual(dateTimeInput.value!, expectedValue);
     });
   });
 

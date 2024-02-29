@@ -395,9 +395,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     end: number,
     mode?: 'select' | 'start' | 'end' | 'preserve'
   ): void {
-    // currently does not work, would depend on the fix of this issue:
-    // https://github.com/IgniteUI/igniteui-webcomponents/issues/1075
     this._input.setRangeText(replacement, start, end, mode);
+    this.value = this._input.value;
   }
 
   protected async onEscapeKey() {
