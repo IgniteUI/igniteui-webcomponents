@@ -689,7 +689,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.updateMask();
     }
 
-    if (this._oldValue !== this.value) {
+    if (!this.readOnly && this._oldValue !== this.value) {
       this.handleChange();
     }
     this.checkValidity();
