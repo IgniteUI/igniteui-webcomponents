@@ -10,6 +10,9 @@ import {
 } from '../calendar/common/calendar.model.js';
 import {
   addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
@@ -344,7 +347,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
-    }).set(escapeKey, this.onEscapeKey);
+    })
+      .set([altKey, arrowDown], this._show.bind(this, true))
+      .set([altKey, arrowUp], this.onEscapeKey)
+      .set(escapeKey, this.onEscapeKey);
   }
 
   /** Clears the input part of the component of any user input */

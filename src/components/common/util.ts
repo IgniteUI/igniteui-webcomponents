@@ -8,6 +8,8 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .join(' ');
 };
 
+export function noop() {}
+
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
 export const clamp = (number: number, min: number, max: number) =>
@@ -152,8 +154,6 @@ export function* iterNodesShadow<T = Node>(
     NodeFilter[whatToShow ?? 'SHOW_ALL']
   );
   let node = iter.nextNode() as T;
-
-  // XXX: What about slotted content hmm?
 
   while (node) {
     if (isElement(node) && node.shadowRoot) {

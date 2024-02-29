@@ -12,6 +12,7 @@ import {
 } from './date-util.js';
 import {
   addKeybindings,
+  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -23,7 +24,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util.js';
+import { noop, partNameMap } from '../common/util.js';
 import {
   Validator,
   maxDateValidator,
@@ -346,8 +347,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       skip: () => this.readOnly,
-      bindingDefaults: { preventDefault: true },
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
+      // Skip default spin when in the context of a date picker
+      .set([altKey, arrowUp], noop)
+      .set([altKey, arrowDown], noop)
+
       .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
