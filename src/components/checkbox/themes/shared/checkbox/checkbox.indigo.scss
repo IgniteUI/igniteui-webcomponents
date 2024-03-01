@@ -19,10 +19,12 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='control'] {
+    --size: #{rem(16px)};
+
     border-radius: var-get($theme, 'border-radius-ripple');
-    width: var(--size, rem(20px));
-    height: var(--size, rem(20px));
-    min-width: var(--size, rem(20px));
+    width: var(--size, rem(16px));
+    height: var(--size, rem(16px));
+    min-width: var(--size, rem(16px));
     transition: background .15s ease-in;
 
     &::after {
@@ -47,6 +49,16 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 :host(:hover) {
+    [part~='label'] {
+        color: var-get($theme, 'label-color-hover');
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'empty-color-hover');
+        }
+    }
+
     [part='control checked'] {
         &::after {
             background: $fill-color-hover;
@@ -163,7 +175,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
     [part='control checked']::after {
         background: $disabled-indeterminate-color;
-        border-color: $disabled-indeterminate-color;
+        border-color: transparent;
     }
 }
 
