@@ -50,6 +50,15 @@ textarea {
     }
 }
 
+:host(:hover),
+:host(:focus) {
+    textarea {
+        &::placeholder {
+            color: var-get($theme, 'hover-placeholder-color');
+        }
+    }
+}
+
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
     [part~='helper-text'] {
