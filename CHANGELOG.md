@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    - the **aria-label** bound to the slider thumb is no longer reset on consequent renders.
 
  - Input - default validators are run synchronously [#1066](https://github.com/IgniteUI/igniteui-webcomponents/issues/1066)
+ - Date-time input - setRangeText() updates underlying value [[#1075](https://github.com/IgniteUI/igniteui-webcomponents/issues/1075)]
 
 
 ### Changed

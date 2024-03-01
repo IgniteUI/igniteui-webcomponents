@@ -322,6 +322,51 @@ describe('Date Time Input component', () => {
       expect(el.value!.getSeconds()).to.equal(value.getSeconds() - 1);
     });
 
+    it('setRangeText()', async () => {
+      const checkSelectionRange = (start: number, end: number) =>
+        expect([start, end]).to.eql([input.selectionStart, input.selectionEnd]);
+      const checkDates = (a: Date, b: Date) =>
+        expect(a.toISOString()).to.equal(b.toISOString());
+
+      const startDate = new Date(2024, 1, 15);
+
+      el.value = startDate;
+      el.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(el);
+
+      // No boundaries, from current user selection
+      el.setSelectionRange(2, 2);
+      el.setRangeText('03');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 1, 3));
+      checkSelectionRange(2, 2);
+
+      // Keep passed selection range
+      el.value = startDate;
+      el.setRangeText('03', 0, 2, 'select');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 2, 15));
+      checkSelectionRange(0, 2);
+
+      // Collapse range to start
+      el.value = startDate;
+      el.setRangeText('0303', 0, 4, 'start');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 2, 3));
+      checkSelectionRange(0, 0);
+
+      // Collapse range to end
+      el.value = startDate;
+      el.setRangeText('1999', 5, 10, 'end');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(1999, 1, 15));
+      checkSelectionRange(10, 10);
+    });
+
     it('should respect spinDelta', async () => {
       const spinDelta: DatePartDeltas = {
         date: 2,
