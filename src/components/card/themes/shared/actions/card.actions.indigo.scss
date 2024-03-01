@@ -1,0 +1,6 @@
+@use 'styles/utilities' as *;
+
+:host {
+    padding-inline: rem(16px);
+    padding-block: rem(8px) rem(16px);
+}
