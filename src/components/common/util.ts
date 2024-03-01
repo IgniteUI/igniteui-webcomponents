@@ -144,34 +144,6 @@ export function* iterNodes<T = Node>(
   }
 }
 
-export function* iterNodesShadow<T = Node>(
-  root: Node | ShadowRoot,
-  whatToShow?: keyof typeof NodeFilter,
-  filter?: (node: T) => boolean
-): Generator<T> {
-  const iter = document.createTreeWalker(
-    root,
-    NodeFilter[whatToShow ?? 'SHOW_ALL']
-  );
-  let node = iter.nextNode() as T;
-
-  while (node) {
-    if (isElement(node) && node.shadowRoot) {
-      yield* iterNodesShadow(node.shadowRoot, whatToShow, filter);
-    } else {
-      if (filter) {
-        if (filter(node)) {
-          yield node;
-        }
-      } else {
-        yield node;
-      }
-    }
-
-    node = iter.nextNode() as T;
-  }
-}
-
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
   return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
 }
@@ -192,41 +164,4 @@ export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   }
 
   return result;
-}
-
-const _baseSelectors = [
-  '[tabindex]',
-  'a[href]',
-  'button',
-  'input',
-  'select',
-  'textarea',
-];
-
-function isHidden(node: HTMLElement) {
-  return (
-    node.hasAttribute('hidden') ||
-    node.hasAttribute('inert') ||
-    (node.hasAttribute('aria-hidden') &&
-      node.getAttribute('aria-hidden') !== 'false')
-  );
-}
-
-function isDisabled(node: HTMLElement) {
-  return node.hasAttribute('disabled') || node.hasAttribute('inert');
-}
-
-/**
- * Whether the passed in `node` is a focusable element.
- */
-export function isFocusable(node: HTMLElement) {
-  if (
-    node.getAttribute('tabindex') === '-1' ||
-    isHidden(node) ||
-    isDisabled(node)
-  ) {
-    return false;
-  }
-
-  return _baseSelectors.some((qs) => node.matches(qs));
 }

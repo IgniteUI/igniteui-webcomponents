@@ -312,14 +312,13 @@ type Story = StoryObj<IgcDatepickerArgs>;
 export const Default: Story = {
   args: {
     label: 'Pick a date',
-    value: new Date(),
   },
   render: (args) => html`
     <div style="height: 500px">
       <igc-datepicker
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
-        .value=${args.value ? new Date(args.value as Date) : undefined}
+        .value=${args.value}
         .displayFormat=${args.displayFormat}
         .inputFormat=${args.inputFormat}
         .locale=${args.locale}
@@ -330,11 +329,9 @@ export const Default: Story = {
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
         .mode=${args.mode}
-        .min=${args.min ? new Date(args.min as Date) : undefined}
-        .max=${args.max ? new Date(args.max as Date) : undefined}
-        .activeDate=${args.activeDate
-          ? new Date(args.activeDate as Date)
-          : undefined}
+        .min=${args.min}
+        .max=${args.max}
+        .activeDate=${args.activeDate}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
