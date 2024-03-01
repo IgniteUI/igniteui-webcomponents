@@ -1,10 +1,11 @@
 import { html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
-import { AnimationPlayer } from '../../animations/player.js';
+import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -45,8 +46,10 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     registerComponent(this, IgcButtonComponent);
   }
 
-  @query('[part~="base"]', true)
-  protected content!: HTMLElement;
+  protected contentRef: Ref<HTMLElement> = createRef();
+  protected override _animationPlayer: ReturnType<
+    typeof addAnimationController
+  > = addAnimationController(this, this.contentRef);
 
   /**
    * The snackbar action button.
@@ -55,17 +58,13 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   @property({ attribute: 'action-text' })
   public actionText!: string;
 
-  protected override firstUpdated() {
-    this._animationPlayer = new AnimationPlayer(this.content);
-  }
-
   private handleClick() {
     this.emitEvent('igcAction');
   }
 
   protected override render() {
     return html`
-      <div part="base" .inert=${!this.open}>
+      <div ${ref(this.contentRef)} part="base" .inert=${!this.open}>
         <span part="message">
           <slot></slot>
         </span>

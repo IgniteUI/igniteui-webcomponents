@@ -208,35 +208,54 @@ describe('Masked input', () => {
     });
 
     it('setRangeText() method', async () => {
+      const checkSelectionRange = (start: number, end: number) =>
+        expect([start, end]).to.eql([
+          input().selectionStart,
+          input().selectionEnd,
+        ]);
+
       masked.mask = '(CC) (CC)';
       masked.value = '1111';
 
       await elementUpdated(masked);
       syncParser();
 
-      masked.setRangeText('22', 0, 2); // (22) (11)
+      // No boundaries, from current user selection
+      masked.setSelectionRange(2, 2);
+      await elementUpdated(masked);
+      masked.setRangeText('22'); // (12) (21)
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(masked.value).to.equal('1221');
+      checkSelectionRange(2, 2);
+
+      // Keep passed selection range
+      masked.value = '1111';
+      masked.setRangeText('22', 0, 2, 'select'); // (22) (11)
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('2211');
+      checkSelectionRange(0, 2);
 
+      // Collapse range to start
       masked.value = '';
-      await elementUpdated(masked);
-
-      masked.setRangeText('xx', 0, 4);
+      masked.setRangeText('xx', 0, 4, 'start');
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('xx');
+      checkSelectionRange(0, 0);
 
+      // Collapse range to end
       masked.value = 'xx';
-      await elementUpdated(masked);
-
-      masked.setRangeText('yy', 2, 5);
+      masked.setRangeText('yy', 2, 5, 'end');
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('xyy');
+      checkSelectionRange(5, 5);
     });
 
     it('igcChange event', async () => {
