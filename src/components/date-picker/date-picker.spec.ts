@@ -219,6 +219,15 @@ describe('Date picker', () => {
       new Date().setDate(currentDate.getDate() + 1)
     );
 
+    it('should set the value trough attribute correctly', async () => {
+      expect(picker.value).to.be.null;
+      const expectedValue = new Date(2024, 2, 1);
+      picker.setAttribute('value', expectedValue.toDateString());
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, expectedValue);
+    });
+
     it('should show/hide the picker based on the value of the open attribute', async () => {
       expect(picker.open).to.equal(false);
       picker.open = true;
@@ -706,6 +715,38 @@ describe('Date picker', () => {
       expect(picker.open).to.be.false;
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('should emit or not igcInput according to nonEditable property', async () => {
+      const expectedValue = new Date();
+      const eventSpy = spy(picker, 'emitEvent');
+
+      dateTimeInput.focus();
+      simulateKeyboard(dateTimeInput, arrowUp);
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledOnceWith('igcInput');
+      eventSpy.resetHistory();
+      checkDatesEqual(picker.value as Date, expectedValue);
+
+      picker.value = null;
+      picker.nonEditable = true;
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      simulateKeyboard(dateTimeInput, arrowUp);
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.called;
+      expect(picker.value).to.be.null;
+
+      dateTimeInput.dispatchEvent(
+        new CustomEvent('igcInput', { detail: expectedValue })
+      );
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.called;
+      expect(picker.value).to.be.null;
     });
   });
 
