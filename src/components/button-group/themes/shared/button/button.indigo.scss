@@ -5,11 +5,18 @@ $theme: $indigo;
 $group-item-border-thickness: rem(1px);
 
 :host {
+    --button-icon: #{rem(16px)};
+
     [part~='toggle'] {
+        @include type-style(body-2);
+
         min-height: $indigo-flat-btn-size;
         border-width: $group-item-border-thickness;
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
-        padding-block: pad-block(rem(1px), rem(2px), rem(3px));
+        padding-inline: rem(8px);
+    }
+
+    ::slotted(igc-icon) {
+        --size: var(--button-icon) !important;
     }
 }
 
@@ -24,5 +31,22 @@ $group-item-border-thickness: rem(1px);
 :host([selected]:focus) {
     [part~='toggle'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
+    }
+}
+
+:host([selected]:disabled),
+:host([selected][disabled]) {
+    [part~='toggle'] {
+        color: var-get($theme, 'disabled-selected-text-color');
+        background: var-get($theme, 'disabled-selected-background');
+        border: none;
+
+        &::before {
+            display: none;
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'disabled-selected-icon-color');
     }
 }
