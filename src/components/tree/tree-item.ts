@@ -5,6 +5,7 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
@@ -12,7 +13,7 @@ import { styles as shared } from './themes/shared/item.common.css.js';
 import type IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-import { AnimationPlayer } from '../../animations/player.js';
+import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
@@ -60,7 +61,10 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;
-  private animationPlayer!: AnimationPlayer;
+
+  private groupRef: Ref<HTMLElement> = createRef();
+
+  private animationPlayer = addAnimationController(this, this.groupRef);
 
   /** A reference to the tree the item is a part of. */
   @blazorSuppress()
@@ -79,10 +83,6 @@ export default class IgcTreeItemComponent extends LitElement {
   @query('#wrapper')
   @blazorSuppress()
   public wrapper!: HTMLElement;
-
-  /** @private */
-  @query('[role="group"]', true)
-  private group!: HTMLElement;
 
   @state()
   private isFocused = false;
@@ -150,10 +150,6 @@ export default class IgcTreeItemComponent extends LitElement {
    */
   @property({ attribute: true })
   public value: any = undefined;
-
-  public override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.group);
-  }
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
@@ -576,7 +572,7 @@ export default class IgcTreeItemComponent extends LitElement {
           </slot>
         </div>
       </div>
-      <div role="group" aria-hidden=${!this.expanded}>
+      <div ${ref(this.groupRef)} role="group" aria-hidden=${!this.expanded}>
         <slot @slotchange=${this.handleChange}></slot>
       </div>
     `;

@@ -1,8 +1,14 @@
-import { expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import {
+  defineCE,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
+} from '@open-wc/testing';
+import { LitElement, css } from 'lit';
 
 import { EaseOut } from './easings.js';
-import { AnimationPlayer } from './player.js';
+import { addAnimationController } from './player.js';
 import { AnimationReferenceMetadata, animation } from './types.js';
 
 const keyframes = [
@@ -18,14 +24,29 @@ const animationOptions = {
 const fade: AnimationReferenceMetadata = animation(keyframes, animationOptions);
 
 describe('Animations Player', () => {
-  let el: HTMLElement;
-  let animationPlayer: AnimationPlayer;
+  let tag: string;
+  let el: HTMLElement & { player: ReturnType<typeof addAnimationController> };
+
+  before(() => {
+    tag = defineCE(
+      class extends LitElement {
+        public static override styles = css`
+          :host {
+            display: block;
+            height: 300px;
+            width: 300px;
+            background-color: red;
+          }
+        `;
+
+        public player = addAnimationController(this);
+      }
+    );
+  });
 
   beforeEach(async () => {
-    el = await fixture<HTMLElement>(
-      html`<div style="width: 300px; height: 300px; background: red;"></div>`
-    );
-    animationPlayer = new AnimationPlayer(el);
+    const tagName = unsafeStatic(tag);
+    el = await fixture(html`<${tagName}></${tagName}>`);
   });
 
   it('should construct animation reference metadata', () => {
@@ -34,19 +55,28 @@ describe('Animations Player', () => {
   });
 
   it('animate an element to completion', async () => {
-    const animation = (await animationPlayer.play(
-      fade
-    )) as AnimationPlaybackEvent;
+    const animation = (await el.player.play(fade)) as AnimationPlaybackEvent;
 
     expect(animation.type).to.equal('finish');
   });
 
   it('should cancel running animations', async () => {
     const [playbackEvent] = (await Promise.all([
-      animationPlayer.play(fade),
-      animationPlayer.stopAll(),
+      el.player.play(fade),
+      el.player.stopAll(),
     ])) as AnimationPlaybackEvent[];
 
     expect(playbackEvent.type).to.equal('cancel');
+  });
+
+  it('should error on infinite animations', async () => {
+    el.player
+      .play(animation(keyframes, { duration: Infinity }))
+      .then(() => {})
+      .catch((err) => {
+        expect(err.message).to.equal(
+          'Promise-based animations must be finite.'
+        );
+      });
   });
 });
