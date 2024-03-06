@@ -1,373 +1,267 @@
 import {
-  aTimeout,
   elementUpdated,
   expect,
   fixture,
   html,
+  nextFrame,
 } from '@open-wc/testing';
 
-import { IgcLinearProgressComponent, defineComponents } from '../../index.js';
+import IgcLinearProgressComponent from './linear-progress.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { getAnimationsFor } from '../common/utils.spec.js';
+
+function createBasicProgress() {
+  return html`<igc-linear-progress></igc-linear-progress>`;
+}
+
+function createNonAnimatingProgress() {
+  return html`<igc-linear-progress
+    animation-duration="0"
+  ></igc-linear-progress>`;
+}
+
+function createSlottedNonAnimatingProgress() {
+  return html`
+    <igc-linear-progress animation-duration="0">
+      Custom Label
+    </igc-linear-progress>
+  `;
+}
 
 describe('Linear progress component', () => {
-  before(() => defineComponents(IgcLinearProgressComponent));
-
   let progress: IgcLinearProgressComponent;
 
-  describe('', () => {
-    beforeEach(async () => {
-      progress = await fixture<IgcLinearProgressComponent>(
-        html`<igc-linear-progress></igc-linear-progress>`
-      );
+  const queryShadowRoot = (qs: string) =>
+    progress.shadowRoot!.querySelector(qs);
+
+  const getLabelPart = () => queryShadowRoot(`[part~='value']`);
+  const getIndeterminatePart = () => queryShadowRoot(`[part~='indeterminate']`);
+  const getFillPart = () => queryShadowRoot(`[part~='fill']`);
+  const getLabelSlotNodes = () =>
+    (queryShadowRoot(`slot[part='label']`) as HTMLSlotElement).assignedNodes({
+      flatten: true,
+    });
+
+  const updateProgress = async <T extends keyof IgcLinearProgressComponent>(
+    prop: T,
+    value: IgcLinearProgressComponent[T]
+  ) => {
+    Object.assign(progress, { [prop]: value });
+    await elementUpdated(progress);
+    await nextFrame();
+    await nextFrame();
+  };
+
+  before(() => defineComponents(IgcLinearProgressComponent));
+
+  describe('DOM', () => {
+    beforeEach(
+      async () =>
+        (progress = await fixture<IgcLinearProgressComponent>(
+          createBasicProgress()
+        ))
+    );
+
+    it('is accessible', async () => {
+      await expect(progress).to.be.accessible();
+      await expect(progress).shadowDom.to.be.accessible();
     });
 
     it('is initialized with sensible defaults', async () => {
-      expect(progress.max).to.equal(100);
+      const defaultProps: Partial<
+        Record<keyof IgcLinearProgressComponent, any>
+      > = {
+        max: 100,
+        value: 0,
+        animationDuration: 500,
+        striped: false,
+        indeterminate: false,
+        hideLabel: false,
+        variant: 'primary',
+        labelFormat: undefined,
+        labelAlign: 'top-start',
+      };
+
+      for (const [prop, value] of Object.entries(defaultProps)) {
+        expect(progress[prop as keyof IgcLinearProgressComponent]).to.equal(
+          value
+        );
+      }
+    });
+  });
+
+  describe('Attributes and Properties', () => {
+    beforeEach(
+      async () =>
+        (progress = await fixture<IgcLinearProgressComponent>(
+          createNonAnimatingProgress()
+        ))
+    );
+
+    it('show/hides the default label based on hideLabel', async () => {
+      await updateProgress('hideLabel', true);
+      expect(getLabelPart()).to.be.null;
+
+      await updateProgress('hideLabel', false);
+      expect(getLabelPart()).not.to.be.null;
+    });
+
+    it('reflects striped attribute', async () => {
+      await updateProgress('striped', true);
+      expect(queryShadowRoot(`[part~='striped']`)).not.to.be.null;
+    });
+
+    it('reflects variant attribute', async () => {
+      const variants: IgcLinearProgressComponent['variant'][] = [
+        'primary',
+        'success',
+        'info',
+        'danger',
+        'warning',
+      ];
+
+      for (const variant of variants) {
+        await updateProgress('variant', variant);
+        expect(queryShadowRoot(`[part~='${variant}']`)).not.to.be.null;
+      }
+    });
+
+    it('value is correctly reflected', async () => {
+      await updateProgress('value', 50);
+
+      expect(getLabelPart()?.textContent).to.equal('50%');
+    });
+
+    it('clamps negative values', async () => {
+      await updateProgress('value', -100);
+
       expect(progress.value).to.equal(0);
-      expect(progress.animationDuration).to.equal(500);
-      expect(progress.striped).to.equal(false);
-      expect(progress.indeterminate).to.equal(false);
-      expect(progress.hideLabel).to.equal(false);
-      expect(progress.variant).to.equal('primary');
-      expect(progress.labelFormat).to.equal(undefined);
-      expect(progress.labelAlign).to.equal('top-start');
+      expect(getLabelPart()?.textContent).to.equal('0%');
     });
 
-    it('is accessible', async () => {
-      await expect(progress).to.be.accessible({
-        ignoredRules: ['aria-progressbar-name'],
-      });
-    });
+    it('clamps value larger than max', async () => {
+      await updateProgress('value', 200);
 
-    it('updates its value correctly', async () => {
-      progress.value = 50;
-
-      await elementUpdated(progress);
-      expect(progress.value).to.equal(50);
-    });
-
-    it('correctly handles negative values', async () => {
-      progress.value = -10;
-
-      await elementUpdated(progress);
-      expect(progress.value).to.equal(0);
-    });
-
-    it('correctly handles values > max', async () => {
-      progress.value = 200;
-
-      await elementUpdated(progress);
       expect(progress.value).to.equal(100);
+      expect(getLabelPart()?.textContent).to.equal('100%');
     });
 
-    it('correctly clamps its value when max is changed and new max < value', async () => {
-      progress.value = 50;
-      progress.max = 25;
+    it('clamps value to new max when new max is less than current value', async () => {
+      await updateProgress('value', 50);
+      await updateProgress('max', 25);
 
-      await elementUpdated(progress);
       expect(progress.value).to.equal(25);
+      expect(getLabelPart()?.textContent).to.equal('100%');
     });
 
-    it('does not change its value when max is changed and new max > value', async () => {
-      progress.value = 95;
-      progress.max = 150;
+    it('does not change value when max is changed and new max is greater than value', async () => {
+      await updateProgress('value', 100);
+      await updateProgress('max', 200);
 
-      await elementUpdated(progress);
-      expect(progress.value).to.equal(95);
+      expect(progress.value).to.equal(100);
+      expect(getLabelPart()?.textContent).to.equal('50%');
     });
 
-    it('updates the value when it is increased/decreased', async () => {
-      progress.value++;
+    it('correctly reflects indeterminate attribute', async () => {
+      await updateProgress('indeterminate', true);
+      expect(getIndeterminatePart()).not.to.be.null;
 
-      await elementUpdated(progress);
-      expect(progress.value).to.equal(1);
-
-      progress.value--;
-
-      await elementUpdated(progress);
-      expect(progress.value).to.equal(0);
-    });
-
-    it('correctly reflects indeterminate modifier', async () => {
-      progress.indeterminate = true;
-
-      await elementUpdated(progress);
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
-        .to.be.null;
-    });
-
-    it('correctly sets properties through attribute values', async () => {
-      progress = await fixture<IgcLinearProgressComponent>(
-        html`<igc-linear-progress
-          value="50"
-          max="150"
-          label-format="{0} val"
-          animation-duration="2100"
-          variant="warning"
-          label-align="bottom"
-        ></igc-linear-progress>`
-      );
-
-      await aTimeout(0);
-
-      expect(progress.value).to.equal(50);
-      expect(progress.max).to.equal(150);
-      expect(progress.labelFormat).to.equal('{0} val');
-      expect(progress.animationDuration).to.equal(2100);
-      expect(progress.variant).to.equal('warning');
-      expect(progress.labelAlign).to.equal('bottom');
-
-      progress.setAttribute('indeterminate', '');
-      progress.labelAlign = 'top-start';
-      await elementUpdated(progress);
-
-      expect(progress.indeterminate).to.equal(true);
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
-        .to.be.null;
-      let defaultLabel =
-        progress.shadowRoot!.querySelector(`span[part~="label"]`);
-      expect(defaultLabel).to.be.null;
-      expect(progress.labelAlign).to.equal('top-start');
-
-      progress.removeAttribute('indeterminate');
-      await elementUpdated(progress);
-
-      expect(progress.indeterminate).to.equal(false);
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
-        .be.null;
-      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
-      expect(defaultLabel).not.to.be.null;
-
-      progress.max = 20;
-      await elementUpdated(progress);
-
-      expect(progress.value).to.equal(20);
-    });
-
-    it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
-        .to.be.null;
-
-      progress.value = 50;
-      progress.indeterminate = false;
-      await elementUpdated(progress);
-
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
-        .be.null;
-      expect(progress.value).to.equal(50);
-    });
-
-    it('correctly reflects updated max in indeterminate mode when switched to determinate', async () => {
-      progress.indeterminate = true;
-      progress.value = 100;
-      await elementUpdated(progress);
-
-      progress.max = 80;
-      await elementUpdated(progress);
-
-      progress.indeterminate = false;
-      await elementUpdated(progress);
-
-      expect(progress.value).to.equal(80);
-      expect((progress as any).percentage).to.equal(100);
-
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      progress.max = 100;
-      await elementUpdated(progress);
-
-      progress.indeterminate = false;
-      await elementUpdated(progress);
-
-      expect(progress.value).to.equal(80);
-      expect((progress as any).percentage).to.equal(80);
-    });
-
-    it('handles animations correctly when toggling indeterminate', async () => {
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      let animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
-        ?.getAnimations() as Animation[];
-
-      expect(animations.length).to.equal(1);
-      expect(animations[0]).to.be.instanceOf(CSSAnimation);
-      expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-primary'
-      );
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
-        .to.be.null;
-
-      progress.indeterminate = false;
-      await elementUpdated(progress);
-
-      animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
-        ?.getAnimations() as CSSTransition[];
-
-      animations.forEach((anim) => {
-        expect(anim).to.be.instanceOf(CSSTransition);
-        expect(anim).not.to.be.instanceOf(CSSAnimation);
-      });
-
-      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
-        .be.null;
-
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      animations = progress
-        .shadowRoot!.querySelector(
-          '[part~="indeterminate"]:not([part~="secondary"])'
-        )
-        ?.getAnimations() as Animation[];
-
-      expect(animations.length).to.equal(1);
-      expect(animations[0]).to.be.instanceOf(CSSAnimation);
-      expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-primary'
-      );
+      await updateProgress('indeterminate', false);
+      expect(getIndeterminatePart()).to.be.null;
     });
 
     it('hides the default label when in indeterminate mode', async () => {
-      let defaultLabel =
-        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      await updateProgress('indeterminate', true);
+      expect(getLabelPart()).to.be.null;
 
-      expect(defaultLabel).not.to.be.null;
-
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
-      expect(defaultLabel).to.be.null;
+      await updateProgress('indeterminate', false);
+      expect(getLabelPart()).not.to.be.null;
     });
 
-    it('shows/hides the default label depending on the hideLabel property', async () => {
-      let defaultLabel =
-        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+    it('reflects updates to value in indeterminate mode and then switching to determinate', async () => {
+      await updateProgress('indeterminate', true);
+      await updateProgress('value', 50);
+      await updateProgress('indeterminate', false);
 
-      expect(defaultLabel).not.to.be.null;
-
-      progress.hideLabel = true;
-      await elementUpdated(progress);
-
-      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
-      expect(defaultLabel).to.be.null;
+      expect(progress.value).to.equal(50);
+      expect(getLabelPart()?.textContent).to.equal('50%');
     });
 
-    it('indeterminate and hideLabel properties should not affect the slotted label', async () => {
-      progress = await fixture<IgcLinearProgressComponent>(
-        html`<igc-linear-progress>
-          <div>Label</div>
-        </igc-linear-progress>`
+    it('reflects updates to max in indeterminate mode and then switching to determinate', async () => {
+      await updateProgress('indeterminate', true);
+      await updateProgress('value', 100);
+      await updateProgress('max', 80);
+      await updateProgress('max', 100);
+
+      await updateProgress('indeterminate', false);
+
+      expect(progress.value).to.equal(80);
+      expect(getLabelPart()?.textContent).to.equal('80%');
+    });
+
+    it('switches animations when indeterminate <-> determinate', async () => {
+      await updateProgress('indeterminate', true);
+
+      let animations = getAnimationsFor(getFillPart()!);
+
+      expect(animations).not.to.be.empty;
+      expect((animations[0] as CSSAnimation).animationName).to.equal(
+        'indeterminate-primary'
       );
 
-      let defaultLabel =
-        progress.shadowRoot!.querySelector(`slot[part="label"]`);
+      await updateProgress('indeterminate', false);
 
-      expect(defaultLabel).not.to.be.null;
-
-      progress.hideLabel = true;
-      await elementUpdated(progress);
-
-      defaultLabel = progress.shadowRoot!.querySelector(`slot[part="label"]`);
-      expect(defaultLabel).not.to.be.null;
-
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      defaultLabel = progress.shadowRoot!.querySelector(`slot[part="label"]`);
-      expect(defaultLabel).not.to.be.null;
+      animations = getAnimationsFor(getFillPart()!);
+      expect(animations).to.be.empty;
     });
 
-    it('correctly reflects striped modifier', async () => {
-      progress.striped = true;
+    it('applies custom label format', async () => {
+      expect(getLabelPart()?.textContent?.trim()).to.equal('0%');
 
-      await elementUpdated(progress);
-      expect(progress.shadowRoot!.querySelector('[part~="striped"]')).not.to.be
-        .null;
-    });
+      await updateProgress('labelFormat', 'Task {0} of {1} completed');
+      await updateProgress('value', 8);
+      await updateProgress('max', 10);
 
-    it('correctly reflects its variant', async () => {
-      const variants = ['primary', 'success', 'info', 'danger', 'warning'];
-
-      for (const variant of variants) {
-        progress.variant = variant as any;
-        await elementUpdated(progress);
-        expect(progress.shadowRoot!.querySelector(`[part~="${variant}"]`)).not
-          .to.be.null;
-      }
-    });
-
-    it('correctly applies a custom label format', async () => {
-      let label = progress
-        .shadowRoot!.querySelector('span[part~="label"]')
-        ?.textContent?.trim();
-      expect(label).to.equal('0%');
-
-      progress.labelFormat = 'Task {0} of {1} completed';
-      progress.value = 8;
-      progress.max = 10;
-
-      await elementUpdated(progress);
-
-      label = progress
-        .shadowRoot!.querySelector('span[part~="label"]')
-        ?.textContent?.trim();
-
-      expect(label).to.equal('Task 8 of 10 completed');
-    });
-
-    it('positions the text correctly based on the label-align value', async () => {
-      const alignments = [
-        'top-start',
-        'top',
-        'top-end',
-        'bottom-start',
-        'bottom',
-        'bottom-end',
-      ];
-
-      for (let index = 0; index < alignments.length; index++) {
-        const val = alignments[index];
-
-        progress.labelAlign = val as typeof progress.labelAlign;
-        await elementUpdated(progress);
-
-        expect(progress).to.have.attribute('label-align', val.toString());
-      }
-    });
-
-    it('renders proper aria attributes', async () => {
-      let divElement = progress.shadowRoot!.querySelector('div[part="track"]');
-      expect(divElement).to.have.attribute('role', 'progressbar');
-      expect(divElement).to.have.attribute('aria-valuemin', '0');
-      expect(divElement).to.have.attribute(
-        'aria-valuemax',
-        progress.max.toString()
+      expect(getLabelPart()?.textContent?.trim()).to.equal(
+        'Task 8 of 10 completed'
       );
-      expect(divElement).to.have.attribute(
-        'aria-valuenow',
-        progress.value.toString()
-      );
+    });
+  });
 
-      progress.max = 150;
-      progress.value = 50;
+  describe('Slots', () => {
+    beforeEach(
+      async () =>
+        (progress = await fixture<IgcLinearProgressComponent>(
+          createSlottedNonAnimatingProgress()
+        ))
+    );
+
+    it('default slot projection', async () => {
+      expect(getLabelSlotNodes()).not.to.be.empty;
+    });
+
+    it('hideLabel attribute does not affect slotted label', async () => {
+      await updateProgress('hideLabel', true);
+      expect(getLabelSlotNodes()).not.to.be.empty;
+    });
+
+    it('indeterminate attribute does not affect slotted label', async () => {
+      await updateProgress('indeterminate', true);
+      expect(getLabelSlotNodes()).not.to.be.empty;
+    });
+  });
+
+  describe('issue 1083', () => {
+    it('setting value on initializing should not reset it', async () => {
+      progress = document.createElement(IgcLinearProgressComponent.tagName);
+      progress.value = 88;
+
+      document.body.appendChild(progress);
       await elementUpdated(progress);
 
-      divElement = progress.shadowRoot!.querySelector('div[part="track"]');
-      expect(divElement).to.have.attribute('aria-valuemax', '150');
-      expect(divElement).to.have.attribute('aria-valuenow', '50');
+      expect(progress.value).to.equal(88);
 
-      progress.indeterminate = true;
-      await elementUpdated(progress);
-
-      divElement = progress.shadowRoot!.querySelector('div[part="track"]');
-      expect(divElement).not.to.have.attribute('aria-valuenow');
+      progress.remove();
     });
   });
 });

@@ -1,11 +1,12 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
-import { AnimationPlayer } from '../../animations/player.js';
+import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
@@ -54,10 +55,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private titleId = `title-${IgcDialogComponent.increment()}`;
-  private animationPlayer!: AnimationPlayer;
 
-  @query('dialog', true)
-  private dialog!: HTMLDialogElement;
+  private dialogRef: Ref<HTMLDialogElement> = createRef();
+  private animationPlayer = addAnimationController(this, this.dialogRef);
+
+  private get dialog() {
+    return this.dialogRef.value!;
+  }
 
   /* blazorSuppress */
   /**
@@ -128,7 +132,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected override async firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.dialog);
     await this.updateComplete;
     if (this.open) {
       this.dialog.showModal();
@@ -249,6 +252,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return html`
       <div part=${backdropParts} aria-hidden=${!this.open}></div>
       <dialog
+        ${ref(this.dialogRef)}
         part="base"
         role="dialog"
         @click=${this.handleClick}
