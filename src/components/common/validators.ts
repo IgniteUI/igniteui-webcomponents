@@ -102,3 +102,18 @@ export const stepValidator: Validator<{
       ? (asNumber(value) - asNumber(min)) % asNumber(step, 1) === 0
       : true,
 };
+
+const emailRegex =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+export const emailValidator: Validator<{ value: string }> = {
+  key: 'typeMismatch',
+  message: validatorMessages.email,
+  isValid: ({ value }) => emailRegex.test(value),
+};
+
+export const urlValidator: Validator<{ value: string }> = {
+  key: 'typeMismatch',
+  message: validatorMessages.url,
+  isValid: ({ value }) => URL.canParse(value),
+};

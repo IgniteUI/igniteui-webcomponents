@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import { when } from 'lit/directives/when.js';
 
 import { Animation, animations } from './animations.js';
@@ -7,7 +8,7 @@ import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
 import { EaseInOut } from '../../animations/easings.js';
-import { AnimationPlayer } from '../../animations/player.js';
+import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -53,7 +54,9 @@ export default class IgcStepComponent extends LitElement {
     registerComponent(this);
   }
 
-  private animationPlayer!: AnimationPlayer;
+  private bodyRef: Ref<HTMLElement> = createRef();
+
+  private animationPlayer = addAnimationController(this, this.bodyRef);
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -68,10 +71,6 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
-
-  /* blazorSuppress */
-  @query('[part~="body"]')
-  public body!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -142,10 +141,6 @@ export default class IgcStepComponent extends LitElement {
   /** @hidden @internal @private */
   @property({ attribute: false })
   public animationDuration = 350;
-
-  public override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.body);
-  }
 
   public async toggleAnimation(
     type: 'in' | 'out',
@@ -276,6 +271,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderContent() {
     return html`<div
+      ${ref(this.bodyRef)}
       id="igc-step-content-${this.index}"
       part="body"
       role="tabpanel"

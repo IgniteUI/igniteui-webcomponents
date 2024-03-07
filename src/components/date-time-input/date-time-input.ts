@@ -629,6 +629,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
+  protected override _updateSetRangeTextValue() {
+    this.updateValue();
+  }
+
   private getNewPosition(value: string, direction = 0): number {
     const literals = this._inputDateParts.filter(
       (p) => p.type === DateParts.Literal

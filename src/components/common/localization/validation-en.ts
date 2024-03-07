@@ -6,4 +6,6 @@ export default {
   mask: 'All required positions should be filled',
   min: 'A value of at least {0} should be entered',
   max: 'A value no more than {0} should be entered',
+  email: 'A valid email address should be entered',
+  url: 'A valid url address should be entered',
 } as const;

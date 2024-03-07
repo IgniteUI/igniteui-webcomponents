@@ -31,7 +31,6 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The value of the control.',
       options: ['string', 'Date'],
       control: 'text',
-      table: { defaultValue: { summary: '' } },
     },
     type: {
       type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
@@ -145,7 +144,6 @@ const metadata: Meta<IgcInputComponent> = {
     },
   },
   args: {
-    value: '',
     type: 'text',
     autofocus: false,
     required: false,
@@ -300,6 +298,18 @@ export const Form: Story = {
           name="input-pattern"
           pattern="[0-9]{3}"
           label="Pattern [0-9]{3}"
+        ></igc-input>
+        <igc-input
+          name="input-email"
+          type="email"
+          label="Email type"
+          value="john.doe@example.com"
+        ></igc-input>
+        <igc-input
+          name="input-url"
+          type="url"
+          label="URL type"
+          value="https://igniteui.github.io/igniteui-webcomponents/"
         ></igc-input>
       </fieldset>
       ${formControls()}

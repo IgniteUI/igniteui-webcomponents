@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import type { AnimationPlayer } from '../../../animations/player';
+import { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import { watch } from '../decorators/watch.js';
 
@@ -11,7 +11,10 @@ import { watch } from '../decorators/watch.js';
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private _internals: ElementInternals;
   protected _autoHideTimeout?: number;
-  protected _animationPlayer!: AnimationPlayer;
+
+  protected declare abstract _animationPlayer: ReturnType<
+    typeof addAnimationController
+  >;
 
   /**
    * Whether the component is in shown state.
