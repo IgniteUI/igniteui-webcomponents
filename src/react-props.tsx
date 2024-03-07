@@ -4,10 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import { html } from 'lit';
+import hashObject from 'object-hash';
 import React, { type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-import { SlotRequestEvent, remove } from './render-props.js';
+import {
+  type SlotRequestEvent,
+  remove,
+  requestRenderer,
+} from './render-props.js';
 
 const NODE_MODE = false;
 const DEV_MODE = true;
@@ -355,49 +361,73 @@ export const createComponent = <
     return ReactComponent;
   }
 
-  return React.forwardRef<I, Props>((props, _ref) => {
+  return React.forwardRef<I, Props>((props, ref) => {
     let hasRenderers = false;
+    const elementRef = React.useRef<I | null>(null);
     const [renderers, setRenderers] = React.useState(new Map());
     const outProps: Record<string, unknown> = {};
     const portals: Record<string, unknown> = {};
+    const handlers: string[] = [];
 
     for (const prop in props) {
       if (renderProps[prop] === undefined) {
         outProps[prop] = props[prop];
       } else {
         portals[renderProps[prop]] = props[prop];
+        handlers.push(prop);
         hasRenderers = true;
       }
     }
 
-    outProps.onSlotRequest = (event: SlotRequestEvent) => {
-      if (!hasRenderers) return;
-
-      if (event.data === remove) {
-        renderers.delete(event.slotName);
-      } else {
-        event.isReact = hasRenderers;
-        renderers.set(
-          event.slotName,
-          createPortal(
-            (portals[event.name] as any)?.(event.data),
-            event.node,
-            event.slotName
-          )
-        );
+    if (hasRenderers) {
+      for (const handler of handlers) {
+        outProps[handler] = (ctx: unknown) =>
+          html`${requestRenderer(
+            renderProps[handler],
+            ctx,
+            hashObject(ctx as any),
+            undefined,
+            elementRef.current as HTMLElement
+          )}`;
       }
 
-      setRenderers(new Map(renderers));
-    };
+      outProps.onSlotRequest = (event: SlotRequestEvent) => {
+        if (event.data === remove) {
+          renderers.delete(event.slotName);
+        } else {
+          event.isReact = hasRenderers;
+          renderers.set(
+            event.slotName,
+            createPortal(
+              (portals[event.name] as any)?.(event.data),
+              event.node,
+              event.slotName
+            )
+          );
+        }
 
-    outProps.children = [
-      ...React.Children.toArray(props.children as unknown as ReactNode[]),
-      ...renderers.values(),
-    ];
+        setRenderers(new Map(renderers));
+      };
 
-    return React.createElement(
-      ReactComponent,
-      outProps as PropsWithoutRef<ComponentProps<I, E>>
-    );
+      outProps.children = [
+        ...React.Children.toArray(props.children as unknown as ReactNode[]),
+        ...renderers.values(),
+      ];
+    }
+
+    return React.createElement(ReactComponent, {
+      ...outProps,
+      ref: React.useCallback(
+        (node: I) => {
+          elementRef.current = node;
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref !== null) {
+            ref.current = node;
+          }
+        },
+        [ref]
+      ),
+    } as PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>);
   });
 };

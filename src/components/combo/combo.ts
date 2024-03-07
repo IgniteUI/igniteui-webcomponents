@@ -28,7 +28,6 @@ import type {
   Item,
   Keys,
 } from './types.js';
-import { requestRenderer } from '../../render-props.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
@@ -695,68 +694,46 @@ export default class IgcComboComponent<
     this._toggle(false);
   }
 
-  private getItemAriaProps(index: number) {
-    const position = index + 1;
-    return {
-      position,
-      id: this.id ? `${this.id}-item-${position}` : `item-${position}`,
-    };
-  }
-
   protected itemRenderer: ComboRenderFunction<T> = (
     item: ComboRecord<T>,
     index: number
   ): TemplateResult => {
-    if (!item) {
-      return html`${nothing}`;
-    }
+    if (!item) return html`${nothing}`;
 
     const record = item;
     const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
     const selected = this.selectionController.selected.has(dataItem!);
+    const headerTemplate = html`<igc-combo-header part="group-header"
+      >${this.groupHeaderTemplate({ item: record.value })}</igc-combo-header
+    >`;
 
-    // Group header
-    if (this.groupKey && record.header) {
-      return html`<igc-combo-header part="group-header"
-        >${requestRenderer(
-          'group-header',
-          { item: record.value },
-          record.value[this.groupKey] as string,
-          this.groupHeaderTemplate as any,
-          this
-        )}</igc-combo-header
-      >`;
-    } else {
-      // Combo item
-      const aria = this.getItemAriaProps(index);
+    const itemPosition = index + 1;
+    const itemId = this.id
+      ? `${this.id}-item-${itemPosition}`
+      : `item-${itemPosition}`;
 
-      if (active) {
-        this._activeDescendant = aria.id;
-      }
-
-      const content = html`${requestRenderer(
-        'item',
-        { item: record.value },
-        this.valueKey ? (record.value[this.valueKey] as string) : aria.id,
-        this.itemTemplate as any,
-        this
-      )}`;
-
-      return html`<igc-combo-item
-        id=${aria.id}
-        part=${partNameMap({ item: true, selected, active })}
-        aria-setsize=${this.dataState.length}
-        aria-posinset=${aria.position}
-        exportparts="checkbox, checkbox-indicator, checked"
-        @click=${this.itemClickHandler.bind(this)}
-        .index=${index}
-        ?active=${active}
-        ?selected=${selected}
-        ?hide-checkbox=${this.singleSelect}
-        >${content}</igc-combo-item
-      >`;
+    if (active) {
+      this._activeDescendant = itemId;
     }
+
+    const itemTemplate = html`<igc-combo-item
+      id=${itemId}
+      part=${partNameMap({ item: true, selected, active })}
+      aria-setsize=${this.dataState.length}
+      aria-posinset=${itemPosition}
+      exportparts="checkbox, checkbox-indicator, checked"
+      @click=${this.itemClickHandler.bind(this)}
+      .index=${index}
+      ?active=${active}
+      ?selected=${selected}
+      ?hide-checkbox=${this.singleSelect}
+      >${this.itemTemplate({ item: record.value })}</igc-combo-item
+    >`;
+
+    return html`${this.groupKey && record.header
+      ? headerTemplate
+      : itemTemplate}`;
   };
 
   protected listKeydownHandler(event: KeyboardEvent) {

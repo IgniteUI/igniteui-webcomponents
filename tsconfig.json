@@ -28,7 +28,7 @@
         "strict": true
       }
     ],
-    "types": ["mocha"]
+    "types": ["mocha", "node"]
   },
   "include": ["src/**/*.ts", "src/react-props.tsx"],
   "exclude": ["src/**/*.stories.ts"],
