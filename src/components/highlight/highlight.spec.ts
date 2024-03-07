@@ -82,5 +82,29 @@ describe('Highlight', () => {
 
       expect(highlight.size).to.equal(1);
     });
+
+    it('moves to the next match when `next()` is invoked', async () => {
+      highlight.search = 'e';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).greaterThan(0);
+      expect(highlight.current).to.equal(0);
+
+      highlight.next();
+      expect(highlight.current).to.equal(1);
+    });
+
+    it('moves to the previous when `previous()` is invoked', async () => {
+      highlight.search = 'e';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).greaterThan(0);
+      expect(highlight.current).to.equal(0);
+
+      highlight.next();
+      highlight.previous();
+
+      expect(highlight.current).to.equal(0);
+    });
   });
 });
