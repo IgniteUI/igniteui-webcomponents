@@ -38,6 +38,7 @@ export type IgcPlacement =
   | 'left-start'
   | 'left-end';
 
+/* blazorSuppress */
 /**
  * @element igc-popover
  *
