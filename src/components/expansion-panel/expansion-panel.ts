@@ -1,11 +1,11 @@
 import { LitElement, html } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
 import { all } from './themes/themes.js';
-import { AnimationPlayer } from '../../animations/player.js';
+import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
@@ -66,7 +66,11 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   private static readonly increment = createCounter();
-  private animationPlayer!: AnimationPlayer;
+
+  private headerRef: Ref<HTMLDivElement> = createRef();
+  private contentRef: Ref<HTMLDivElement> = createRef();
+
+  private animationPlayer = addAnimationController(this, this.contentRef);
 
   @queryAssignedElements({ slot: 'indicator-expanded' })
   private _indicatorExpandedElements!: HTMLElement[];
@@ -92,12 +96,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' | 'none' = 'start';
 
-  @query('[part~="content"]', true)
-  protected panelContent!: HTMLElement;
-
   private panelId!: string;
-
-  private headerRef: Ref<HTMLDivElement> = createRef();
 
   constructor() {
     super();
@@ -116,10 +115,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.panelId =
       this.getAttribute('id') ||
       `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
-  }
-
-  protected override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.panelContent);
   }
 
   private handleClicked() {
@@ -253,6 +248,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private contentTemplate() {
     return html`
       <div
+        ${ref(this.contentRef)}
         part="content"
         role="region"
         id="${this.panelId!}-content"

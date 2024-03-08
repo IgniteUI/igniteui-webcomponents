@@ -194,21 +194,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  /* blazorSuppress */
-  /** Replaces the selected text in the control and re-applies the mask */
-  public override setRangeText(
-    replacement: string,
-    start: number,
-    end: number,
-    _selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
-  ) {
-    const { value } = this.parser.replace(
-      this.maskedValue || this.emptyMask,
-      replacement,
-      start,
-      end
-    );
-    this.maskedValue = this.parser.apply(this.parser.parse(value));
+  protected override _updateSetRangeTextValue() {
     this.value = this.parser.parse(this.maskedValue);
   }
 
