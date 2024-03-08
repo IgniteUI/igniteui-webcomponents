@@ -68,7 +68,7 @@ export interface IgcDropdownEventMap {
  */
 @themes(all)
 @blazorAdditionalDependencies(
-  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent, IgcPopoverComponent'
+  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
 export default class IgcDropdownComponent extends SizableMixin(
   EventEmitterMixin<

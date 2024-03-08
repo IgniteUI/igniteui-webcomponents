@@ -306,6 +306,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public override scrollTo(options?: ScrollToOptions | undefined): void;
+  /* blazorSuppress */
   public override scrollTo(x: number, y: number): void;
   public override scrollTo(x?: unknown, y?: unknown): void {
     x !== undefined && y !== undefined
