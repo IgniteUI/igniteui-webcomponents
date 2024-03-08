@@ -31,7 +31,7 @@ const getElementCSSVariables = (
   element: HTMLElement = document.body,
   pseudo: string | undefined = ''
 ) => {
-  const elStyles = window.getComputedStyle(element, pseudo);
+  const elStyles = globalThis?.getComputedStyle(element, pseudo);
   const cssVars = {};
 
   allCSSVars.forEach((key) => {

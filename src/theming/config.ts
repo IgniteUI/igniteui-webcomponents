@@ -9,7 +9,7 @@ let themeVariant: ThemeVariant;
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
  */
 function dispatchThemingEvent(detail: ChangeThemeEventDetail) {
-  window.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
+  globalThis?.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
 }
 
 function isOfTypeTheme(theme: string): theme is Theme {
