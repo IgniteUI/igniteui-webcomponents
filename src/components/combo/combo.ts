@@ -105,9 +105,7 @@ export interface IgcComboComponentEventMap {
  * @csspart empty - The container holding the empty content.
  */
 @themes(all)
-@blazorAdditionalDependencies(
-  'IgcIconComponent, IgcInputComponent, IgcPopoverComponent'
-)
+@blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<
   T extends object = any,

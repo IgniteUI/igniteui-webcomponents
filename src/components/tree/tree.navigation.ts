@@ -19,6 +19,7 @@ export const NAVIGATION_KEYS = new Set([
   ' ',
 ]);
 
+/* blazorSuppress */
 export class IgcTreeNavigationService {
   private tree!: IgcTreeComponent;
   private selectionService!: IgcTreeSelectionService;
