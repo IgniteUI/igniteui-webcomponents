@@ -2,6 +2,7 @@ import IgcTreeItemComponent from './tree-item.js';
 import { IgcSelectionEventArgs } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 
+/* blazorSuppress */
 export class IgcTreeSelectionService {
   private tree!: IgcTreeComponent;
   private itemSelection: Set<IgcTreeItemComponent> =
