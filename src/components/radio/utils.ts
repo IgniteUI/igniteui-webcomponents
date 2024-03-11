@@ -1,5 +1,5 @@
 import type IgcRadioComponent from './radio';
-import { iterNodes } from '../common/util.js';
+import { isDefined, iterNodes } from '../common/util.js';
 
 type RadioQueryResult = {
   /** Radio components under the same group name */
@@ -13,18 +13,22 @@ type RadioQueryResult = {
 };
 
 export function getGroup(member: IgcRadioComponent) {
-  const iterator = iterNodes<IgcRadioComponent>(
-    document.body,
-    'SHOW_ELEMENT',
-    (radio) => radio.matches(`${member.tagName}[name='${member.name}']`)
-  );
-
   const result: RadioQueryResult = {
     active: [],
     checked: [],
     radios: [],
     siblings: [],
   };
+
+  if (!isDefined(globalThis.document)) {
+    return result;
+  }
+
+  const iterator = iterNodes<IgcRadioComponent>(
+    globalThis.document.documentElement,
+    'SHOW_ELEMENT',
+    (radio) => radio.matches(`${member.tagName}[name='${member.name}']`)
+  );
 
   for (const each of iterator) {
     result.radios.push(each);
