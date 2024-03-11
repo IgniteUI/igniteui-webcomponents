@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { getElementByIdFromRoot } from '../common/util.js';
 
 function roundByDPR(value: number) {
-  const dpr = globalThis?.devicePixelRatio || 1;
+  const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
 }
 

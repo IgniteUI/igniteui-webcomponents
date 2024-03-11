@@ -1,6 +1,7 @@
 import { CHANGE_THEME_EVENT, ChangeThemeEventDetail } from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
 import { getAllCSSVariables } from './utils.js';
+import { isDefined } from '../components/common/util.js';
 
 let theme: Theme;
 let themeVariant: ThemeVariant;
@@ -9,7 +10,9 @@ let themeVariant: ThemeVariant;
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
  */
 function dispatchThemingEvent(detail: ChangeThemeEventDetail) {
-  globalThis?.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
+  if (isDefined(globalThis.dispatchEvent)) {
+    globalThis.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
+  }
 }
 
 function isOfTypeTheme(theme: string): theme is Theme {
