@@ -263,6 +263,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.updateValidity();
   }
 
+  /** @hidden */
   public override connectedCallback() {
     super.connectedCallback();
     this.setFormValue(this._value ? this._value : null);

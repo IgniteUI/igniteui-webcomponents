@@ -1,51 +1,68 @@
-/*eslint no-empty: ['error', {allowEmptyCatch: true}]*/
-const CssKeyToJsKey = (key: string) =>
-  key.replace('--', '').replace(/-./g, (x) => x.toUpperCase()[1]);
+import { isServer } from 'lit';
 
-const getAllCSSVariableNames = (
-  styleSheets: StyleSheetList = document.styleSheets
-) => {
-  const cssVars: string[] = [];
+import { isDefined } from '../components/common/util.js';
 
-  Array.from(styleSheets).forEach((styleSheet) => {
-    try {
-      Array.from(styleSheet.cssRules).forEach((rule: any) => {
-        if (!rule || !rule['style']) {
-          return;
+function isAStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return !!rule && 'style' in rule;
+}
+
+function cssKeyToJsKey(key: string): string {
+  return key.replace('--', '').replace(/-./g, (x) => x.toUpperCase()[1]);
+}
+
+function getAllCSSVariableNames(): Set<string> {
+  const cssVars = new Set<string>();
+
+  if (isServer || !isDefined(globalThis.document)) {
+    return cssVars;
+  }
+
+  const styleSheets = Array.from(globalThis.document.styleSheets);
+
+  for (const sheet of styleSheets) {
+    const rules = Array.from(sheet.cssRules).filter(isAStyleRule);
+
+    for (const rule of rules) {
+      Array.from(rule.style).forEach((style) => {
+        if (style.startsWith('--')) {
+          cssVars.add(style);
         }
-
-        Array.from(rule['style']).forEach((style: any) => {
-          if (style.startsWith('--') && cssVars.indexOf(style) == -1) {
-            cssVars.push(style);
-          }
-        });
       });
-    } catch (e) {}
-  });
+    }
+  }
 
   return cssVars;
-};
+}
 
-const getElementCSSVariables = (
-  allCSSVars: Array<string>,
-  element: HTMLElement = document.body,
-  pseudo: string | undefined = ''
-) => {
-  const elStyles = window.getComputedStyle(element, pseudo);
-  const cssVars = {};
+function getElementCSSVariables(
+  allCSSVars: Set<string>,
+  element: HTMLElement,
+  pseudo?: string
+): Record<string, string> {
+  const cssVars: Record<string, string> = {};
 
-  allCSSVars.forEach((key) => {
-    const value = elStyles.getPropertyValue(key);
+  if (!isDefined(globalThis.getComputedStyle)) {
+    return cssVars;
+  }
+
+  const styles = globalThis.getComputedStyle(element, pseudo);
+
+  for (const key of allCSSVars) {
+    const value = styles.getPropertyValue(key);
 
     if (value) {
-      (cssVars as any)[CssKeyToJsKey(key)] = value.trim();
+      cssVars[cssKeyToJsKey(key)] = value.trim();
     }
-  });
+  }
 
   return cssVars;
-};
+}
 
-export const getAllCSSVariables = (): Record<string, string> => {
-  const cssVars = getAllCSSVariableNames();
-  return getElementCSSVariables(cssVars, document.documentElement);
-};
+export function getAllCSSVariables(): Record<string, string> {
+  return isServer || !isDefined(globalThis.document)
+    ? {}
+    : getElementCSSVariables(
+        getAllCSSVariableNames(),
+        globalThis.document.documentElement
+      );
+}

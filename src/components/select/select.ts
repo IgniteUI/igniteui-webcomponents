@@ -95,7 +95,7 @@ export interface IgcSelectEventMap {
  */
 @themes(all, true)
 @blazorAdditionalDependencies(
-  'IgcIconComponent, IgcInputComponent, IgcPopoverComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
+  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<

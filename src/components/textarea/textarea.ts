@@ -219,6 +219,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({ type: Number })
   public rows = 2;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the component
    *
@@ -306,6 +307,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public override scrollTo(options?: ScrollToOptions | undefined): void;
+  /* blazorSuppress */
   public override scrollTo(x: number, y: number): void;
   public override scrollTo(x?: unknown, y?: unknown): void {
     x !== undefined && y !== undefined
