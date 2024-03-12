@@ -72,6 +72,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /* blazorCSSuppress */
   /**
    * Makes the control a readonly field.
    * @prop
@@ -80,12 +81,12 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    * Use the `readOnly` property instead.
    */
   @property({ attribute: false })
-  public get readonly() {
-    return this.readOnly;
-  }
-
   public set readonly(value: boolean) {
     this.readOnly = value;
+  }
+
+  public get readonly() {
+    return this.readOnly;
   }
 
   /**

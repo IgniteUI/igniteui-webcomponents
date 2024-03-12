@@ -166,6 +166,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /* blazorCSSuppress */
   /**
    * Sets the readonly state of the component
    * @prop
@@ -174,12 +175,12 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * Use the `readOnly` property instead.
    */
   @property({ attribute: false })
-  public get readonly() {
-    return this.readOnly;
-  }
-
   public set readonly(value: boolean) {
     this.readOnly = value;
+  }
+
+  public get readonly() {
+    return this.readOnly;
   }
 
   /**
