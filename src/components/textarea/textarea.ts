@@ -219,6 +219,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({ type: Number })
   public rows = 2;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the component
    *
