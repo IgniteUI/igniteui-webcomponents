@@ -19,13 +19,6 @@ $theme: $indigo;
     color: var-get($theme, 'label-color');
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-color');
-    }
-}
-
 [part~='control'] {
     --size: #{rem(16px)};
 

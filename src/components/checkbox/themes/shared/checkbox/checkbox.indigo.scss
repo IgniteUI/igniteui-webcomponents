@@ -135,13 +135,13 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
     [part~='control'],
     [part='control checked'] {
-        &:after {
+        &::after {
             border-color: $error-color-hover;
         }
     }
 
     [part='control checked'] {
-        &:after {
+        &::after {
             background: $error-color-hover;
         }
     }

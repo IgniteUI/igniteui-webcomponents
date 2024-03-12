@@ -10,7 +10,8 @@ $theme: $indigo;
 
     ::slotted(igc-icon) {
         $icon-size: rem(12px);
-        --size: #{$icon-size}!important;
+
+        --size: #{$icon-size} !important;
         --ig-icon-size: #{$icon-size};
         --igx-icon-size: #{$icon-size};
     }
