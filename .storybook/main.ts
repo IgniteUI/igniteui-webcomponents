@@ -12,9 +12,6 @@ const config: StorybookConfig = {
     name: '@storybook/web-components-vite',
     options: {},
   },
-  features: {
-    storyStoreV7: true,
-  },
   docs: {
     autodocs: true,
   },
