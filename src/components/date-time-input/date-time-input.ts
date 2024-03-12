@@ -188,8 +188,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The minimum value required for the input to remain valid.
    * @attr min-value
    *
-   * @deprecated - since v4.4.0
-   * Use the `min` property instead.
+   * @deprecated since v4.4.0. Use the `min` property instead.
    */
   @property({ attribute: 'min-value', converter: converter })
   public get minValue() {
@@ -204,8 +203,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The maximum value required for the input to remain valid.
    * @attr max-value
    *
-   * @deprecated - since v4.4.0
-   * Use the `max` property instead.
+   * @deprecated since v4.4.0. Use the `max` property instead.
    */
   @property({ attribute: 'max-value', converter: converter })
   public get maxValue() {

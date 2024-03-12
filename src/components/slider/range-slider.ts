@@ -114,7 +114,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    * The aria label of the lower thumb.
    * @attr aria-label-lower
    *
-   * @deprecated - since v4.8.0. Use the `thumb-label-lower` attribute instead.
+   * @deprecated since v4.8.0. Use the `thumbLabelLower` property instead.
    */
   @property({ attribute: 'aria-label-lower' })
   public set ariaLabelLower(value: string) {
@@ -129,7 +129,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    * The aria label of the upper thumb.
    * @attr aria-label-upper
    *
-   * @deprecated - since v4.8.0. Use the `thumb-label-upper` attribute instead.
+   * @deprecated since v4.8.0. Use the `thumbLabelUpper` property instead.
    */
   @property({ attribute: 'aria-label-upper' })
   public set ariaLabelUpper(value: string) {

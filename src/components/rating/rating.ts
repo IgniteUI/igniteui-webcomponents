@@ -171,8 +171,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * Sets the readonly state of the component
    * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `readOnly` property instead.
+   * @deprecated since v4.4.0. Use the `readOnly` property instead.
    */
   @property({ attribute: false })
   public set readonly(value: boolean) {

@@ -178,8 +178,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * The minlength attribute of the control.
    * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `minLength` property instead.
+   * @deprecated since v4.4.0. Use the `minLength` property instead.
    */
   @property({ attribute: false })
   public set minlength(value: number) {
@@ -202,8 +201,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * The maxlength attribute of the control.
    * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `maxLength` property instead.
+   * @deprecated since v4.4.0. Use the `maxLength` property instead.
    */
   @property({ attribute: false })
   public set maxlength(value: number) {
