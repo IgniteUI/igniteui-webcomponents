@@ -123,13 +123,18 @@ export function* iterNodes<T = Node>(
   whatToShow?: keyof typeof NodeFilter,
   filter?: (node: T) => boolean
 ): Generator<T> {
-  const iter = document.createTreeWalker(
+  if (!isDefined(globalThis.document)) {
+    return;
+  }
+
+  const iter = globalThis.document.createTreeWalker(
     root,
     NodeFilter[whatToShow ?? 'SHOW_ALL']
   );
-  let node = iter.nextNode() as T;
 
-  while (node) {
+  let node: T;
+
+  while ((node = iter.nextNode() as T)) {
     if (filter) {
       if (filter(node)) {
         yield node;
@@ -137,8 +142,6 @@ export function* iterNodes<T = Node>(
     } else {
       yield node;
     }
-
-    node = iter.nextNode() as T;
   }
 }
 

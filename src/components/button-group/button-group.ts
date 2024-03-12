@@ -20,6 +20,7 @@ export interface IgcButtonGroupComponentEventMap {
   igcDeselect: CustomEvent<string | undefined>;
 }
 
+/* blazorAdditionalDependency: IgcToggleButtonComponent */
 /**
  * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
  *
