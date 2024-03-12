@@ -1,0 +1,17 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+[part='base'] {
+    font-size: rem(11px);
+    line-height: rem(15px);
+    font-weight: 700;
+
+    ::slotted(igc-icon) {
+        $icon-size: rem(12px);
+        --size: #{$icon-size}!important;
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+    }
+}

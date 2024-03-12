@@ -19,6 +19,12 @@
     padding: rem(16px) rem(24px) rem(24px) rem(24px);
 }
 
+[part='base'] {
+    ::slotted(igc-button) {
+        --ig-size: 2;
+    }
+}
+
 slot[name='footer'] {
     &::slotted(:last-child) {
         margin-inline-start: rem(16px);

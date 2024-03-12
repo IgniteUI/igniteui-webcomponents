@@ -14,10 +14,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     font-weight: 600;
 }
 
-[part~='label'] {
-    @include type-style('body-1');
-}
-
 [part~='control'] {
     --size: #{rem(16px)};
 
@@ -103,12 +99,16 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]:focus-within) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) color(secondary, 200, .87);
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
 }
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'label-color');
+    }
+
     [part~='control'] {
         &::after {
             border-color: $error-color;
@@ -126,10 +126,24 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 :host(:hover:not([disabled])[invalid]),
-:host(:hover:not(:disabled)[invalid]) {
+:host(:hover:not(:disabled)[invalid]),
+:host(:hover:not([disabled])[invalid][indeterminate]),
+:host(:hover:not(:disabled)[invalid][indeterminate]) {
+    [part~='label'] {
+        color: var-get($theme, 'label-color-hover');
+    }
+
     [part~='control'],
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+        &:after {
+            border-color: $error-color-hover;
+        }
+    }
+
+    [part='control checked'] {
+        &:after {
+            background: $error-color-hover;
+        }
     }
 }
 
@@ -137,7 +151,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 :host(:focus-within:not(:disabled)[invalid]) {
     [part~='control'],
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
     }
 }
 
@@ -146,13 +160,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     [part~='control'] {
         box-shadow: inset 0 0 0 rem(4px) $error-color;
         background: $error-color;
-    }
-}
-
-:host(:hover:not([disabled])[invalid][indeterminate]),
-:host(:hover:not(:disabled)[invalid][indeterminate]) {
-    [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-hover;
     }
 }
 

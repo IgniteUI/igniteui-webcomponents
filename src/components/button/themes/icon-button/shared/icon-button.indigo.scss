@@ -5,6 +5,16 @@ $flat-theme: $indigo-flat;
 $contained-theme: $indigo-contained;
 $outlined-theme: $indigo-outlined;
 
+$icon-size: rem(16px);
+
+:host {
+    --icon-size: #{$icon-size};
+}
+
+[part='icon'] {
+    --size: #{$icon-size};
+}
+
 [part='base'] {
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
     padding: pad(6px);

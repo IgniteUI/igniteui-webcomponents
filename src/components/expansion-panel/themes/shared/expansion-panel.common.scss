@@ -34,6 +34,6 @@ $theme: $material;
     [part='title'],
     [part='subtitle'],
     [part~='indicator'] {
-        color: var-get($theme, 'disabled-color');
+        color: var-get($theme, 'disabled-text-color');
     }
 }

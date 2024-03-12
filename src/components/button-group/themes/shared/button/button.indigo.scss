@@ -20,11 +20,40 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
+:host(:hover) {
+    [part~='toggle'] {
+        z-index: 1;
+    }
+}
+
+:host(:active) {
+    [part~='toggle'] {
+        color: var-get($theme, 'item-hover-text-color');
+        background: var-get($theme, 'item-hover-background');
+        border-color: var-get($theme, 'item-hover-border-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
+        z-index: 2;
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+
+        &:focus {
+            border-color: var-get($theme, 'item-hover-border-color');
+        }
+    }
+}
+
 :host(:focus) {
     z-index: 2;
 
     [part~='toggle'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
+        border-color: var-get($theme, 'item-border-color');
+
+        &:hover {
+            border-color: var-get($theme, 'item-hover-border-color');
+        }
     }
 }
 

@@ -148,11 +148,11 @@ $theme: $indigo;
 
     [part='control checked'] {
         &::after {
-            border-color: var-get($theme, 'disabled-color');
+            border-color: var-get($theme, 'disabled-fill-color');
         }
 
         &::before {
-            background: var-get($theme, 'disabled-color');
+            background: var-get($theme, 'disabled-fill-color');
         }
     }
 }
