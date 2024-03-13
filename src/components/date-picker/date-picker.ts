@@ -454,13 +454,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     return !this.value
       ? nothing
       : html`
-          <span
-            slot="suffix"
-            part="clear-icon"
-            @click=${this.clear}
-            @slotchange=${this.onSlotChange}
-          >
-            <slot name="clear-icon">
+          <span slot="suffix" part="clear-icon" @click=${this.clear}>
+            <slot name="clear-icon" @slotchange=${this.onSlotChange}>
               <igc-icon
                 name="clear"
                 collection="internal"
@@ -519,7 +514,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
               name="title"
               slot="title"
               @slotchange=${this.onSlotChange}
-            ></slot>`
+            >
+              Select date
+            </slot> `
           : nothing}
       </igc-calendar>
     `;
