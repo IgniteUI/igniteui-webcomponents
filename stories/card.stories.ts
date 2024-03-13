@@ -91,12 +91,13 @@ const Template = ({ elevated = false }: IgcCardArgs) => {
             </p>
           </igc-card-content>
           <igc-card-actions>
-            <igc-button slot="start">Like</igc-button>
-            <igc-button slot="start">Learn More</igc-button>
+            <igc-button slot="start" variant="flat">Like</igc-button>
+            <igc-button slot="start" variant="flat">Learn More</igc-button>
             <igc-icon-button
               slot="end"
               name="star_border"
               collection="internal"
+              variant="flat"
             ></igc-icon-button>
           </igc-card-actions>
         </igc-card>

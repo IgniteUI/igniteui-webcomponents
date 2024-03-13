@@ -113,3 +113,14 @@ $icon-size: rem(16px);
         box-shadow: none;
     }
 }
+
+:host([disabled][variant='outlined']),
+:host(:disabled[variant='outlined']) {
+    [part='base'] {
+        border-width: rem(2px);
+
+        &::after {
+            box-shadow: none;
+        }
+    }
+}
