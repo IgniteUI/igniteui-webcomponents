@@ -280,6 +280,8 @@ export const Form: Story = {
         <igc-input name="input-search" label="Search" type="search">
           <igc-icon name="search" slot="prefix"></igc-icon>
         </igc-input>
+      </fieldset>
+      <fieldset>
         <igc-input name="input-required" label="Required" required></igc-input>
         <igc-input
           name="input-minlength"
