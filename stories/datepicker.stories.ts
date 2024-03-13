@@ -9,11 +9,12 @@ import {
 import {
   DateRangeDescriptor,
   DateRangeType,
+  IgcButtonComponent,
   IgcDatepickerComponent,
   defineComponents,
 } from '../src/index.js';
 
-defineComponents(IgcDatepickerComponent);
+defineComponents(IgcDatepickerComponent, IgcButtonComponent);
 
 // region default
 const metadata: Meta<IgcDatepickerComponent> = {
@@ -347,6 +348,22 @@ export const Default: Story = {
   `,
 };
 
+function showTrimester() {
+  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  picker.visibleMonths = 3;
+}
+
+function showSingleMonth() {
+  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  picker.visibleMonths = 1;
+}
+
+function selectToday() {
+  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  picker.value = new Date();
+  picker.hide();
+}
+
 export const Slots: Story = {
   args: {
     label: 'Pick a date',
@@ -354,8 +371,23 @@ export const Slots: Story = {
   render: (args) => html`
     <div style="height: 500px">
       <igc-datepicker
+        id="picker"
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
+        .value=${args.value}
+        .displayFormat=${args.displayFormat}
+        .inputFormat=${args.inputFormat}
+        .locale=${args.locale}
+        .prompt=${args.prompt}
+        .weekStart=${args.weekStart}
+        .hideHeader=${args.hideHeader}
+        .headerOrientation=${args.headerOrientation}
+        .nonEditable=${args.nonEditable}
+        .orientation=${args.orientation}
+        .mode=${args.mode}
+        .min=${args.min}
+        .max=${args.max}
+        .activeDate=${args.activeDate}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
@@ -373,6 +405,18 @@ export const Slots: Story = {
         <span slot="calendar-icon-open">👩‍💻</span>
         <span slot="calendar-icon">👨‍💻</span>
         <span slot="clear-icon">🗑️</span>
+
+        <div slot="actions">
+          <igc-button variant="flat" @click=${selectToday}
+            >Select today</igc-button
+          >
+          <igc-button variant="flat" @click=${showTrimester}
+            >Trimester view</igc-button
+          >
+          <igc-button variant="flat" @click=${showSingleMonth}
+            >Single month view</igc-button
+          >
+        </div>
       </igc-datepicker>
     </div>
   `,

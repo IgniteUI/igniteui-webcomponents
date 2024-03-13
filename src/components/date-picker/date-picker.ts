@@ -67,6 +67,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @slot clear-icon - Renders a clear icon template.
  * @slot calendar-icon - Renders the icon/content for the calendar picker.
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
+ * @slot actions - Renders content in the action part of the picker in open state.
  *
  * @fires igcOpening - Emitted just before the calendar dropdown is shown.
  * @fires igcOpened - Emitted after the calendar dropdown is shown.
@@ -522,6 +523,18 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     `;
   }
 
+  protected renderActions() {
+    // If in dialog mode use the dialog footer slot
+    return html`
+      <div
+        part="actions"
+        slot=${ifDefined(this.isDropDown ? undefined : 'footer')}
+      >
+        <slot name="actions"></slot>
+      </div>
+    `;
+  }
+
   protected renderPicker(id: string) {
     return this.isDropDown
       ? html`
@@ -534,19 +547,20 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             same-width
           >
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)}
+              ${this.renderCalendar(id)}${this.renderActions()}
             </igc-focus-trap>
           </igc-popover>
         `
       : html`
           <igc-dialog
             aria-label="Select date"
+            role="dialog"
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
             @igcClosing=${() => this._hide(true)}
           >
-            ${this.renderCalendar(id)}
+            ${this.renderCalendar(id)}${this.renderActions()}
           </igc-dialog>
         `;
   }
@@ -559,7 +573,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     return html`
       <igc-date-time-input
         id=${id}
-        aria-haspopup="true"
+        aria-haspopup="dialog"
         aria-expanded=${this.open}
         label=${ifDefined(this.label)}
         input-format=${ifDefined(this._inputFormat)}
