@@ -106,6 +106,7 @@ describe('Date picker', () => {
           slot: 'title',
           tagName: 'p',
           content: 'Custom title',
+          prerequisite: () => (picker.mode = 'dialog'),
           parent: picker,
         },
         {
@@ -159,6 +160,20 @@ describe('Date picker', () => {
           slotTests[i].tagName
         );
       }
+    });
+
+    it('should not render title slot elements in dropdown mode', async () => {
+      picker = await fixture<IgcDatepickerComponent>(
+        html`<igc-datepicker mode="dropdown">
+          <p slot="title">Custom title</p>
+        </igc-datepicker>`
+      );
+      await elementUpdated(picker);
+
+      const slot = picker.shadowRoot!.querySelector(
+        `slot[name="title"]`
+      ) as HTMLSlotElement;
+      expect(slot).to.be.null;
     });
 
     it('should be successfully initialized with value', async () => {
