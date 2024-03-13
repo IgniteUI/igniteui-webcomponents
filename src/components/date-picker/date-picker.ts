@@ -1,5 +1,5 @@
-import { ComplexAttributeConverter, LitElement, html } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { ComplexAttributeConverter, LitElement, html, nothing } from 'lit';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
@@ -38,6 +38,7 @@ import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DatePart } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
 
 export interface IgcDatepickerEventMap {
@@ -110,6 +111,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
       IgcFocusTrapComponent,
+      IgcIconComponent,
       IgcPopoverComponent,
       IgcDialogComponent
     );
@@ -124,23 +126,15 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     hideCallback: () => this._hide(true),
   });
 
-  @query(IgcDateTimeInputComponent.tagName, true)
+  private get isDropDown() {
+    return this.mode === 'dropdown';
+  }
+
+  @query(IgcDateTimeInputComponent.tagName)
   private _input!: IgcDateTimeInputComponent;
 
   @query(IgcCalendarComponent.tagName)
   private _calendar!: IgcCalendarComponent;
-
-  @queryAssignedElements({ slot: 'calendar-icon' })
-  protected calendarIcon!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'calendar-icon-open' })
-  protected calendarIconOpen!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'clear-icon' })
-  protected clearIcon!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'title' })
-  protected titleSlot!: Array<HTMLElement>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -341,6 +335,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     | 'friday'
     | 'saturday' = 'sunday';
 
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('disabledDates', { waitUntilFirstUpdate: true })
+  protected constraintChange() {
+    this.updateValidity();
+  }
+
   constructor() {
     super();
 
@@ -445,107 +446,116 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('disabledDates', { waitUntilFirstUpdate: true })
-  protected constraintChange() {
-    this.updateValidity();
+  protected onSlotChange() {
+    this.requestUpdate();
   }
 
   private renderClearIcon() {
-    return (
-      this.value &&
-      html`<span
-        slot="suffix"
-        part="clear-icon"
-        @click=${this.clear}
-        ?hidden=${this.clearIcon.length === 0}
-      >
-        <slot name="clear-icon">
-          <igc-icon
-            name="clear"
-            collection="internal"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
-      </span>`
-    );
+    return !this.value
+      ? nothing
+      : html`
+          <span
+            slot="suffix"
+            part="clear-icon"
+            @click=${this.clear}
+            @slotchange=${this.onSlotChange}
+          >
+            <slot name="clear-icon">
+              <igc-icon
+                name="clear"
+                collection="internal"
+                aria-hidden="true"
+              ></igc-icon>
+            </slot>
+          </span>
+        `;
   }
 
   private renderCalendarIcon() {
-    const defaultIcon = '📅';
-    return html`<span
-      slot="suffix"
-      part="${this.open ? 'calendar-icon-open' : 'calendar-icon'}"
-      @click=${this.handleAnchorClick}
-      ?hidden=${this.open
-        ? this.calendarIconOpen.length === 0
-        : this.calendarIcon.length === 0}
-    >
-      ${this.open
-        ? html`<slot name="calendar-icon-open">${defaultIcon}</slot>`
-        : html`<slot name="calendar-icon">${defaultIcon}</slot>`}
-    </span>`;
+    const defaultIcon = html`
+      <igc-icon
+        name="calendar"
+        collection="internal"
+        aria-hidden="true"
+      ></igc-icon>
+    `;
+
+    const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
+
+    return html`
+      <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
+        <slot name=${state} @slotchange=${this.onSlotChange}>
+          ${defaultIcon}
+        </slot>
+      </span>
+    `;
   }
 
   private renderCalendar(id: string) {
-    const calendarDisabled = !this.open || this.disabled;
-    const role = this.mode === 'dropdown' ? 'dialog' : undefined;
-    const hideHeader =
-      (this.mode === 'dialog' && this.hideHeader) ||
-      (this.mode === 'dropdown' && this.titleSlot!.length === 0);
+    const role = this.isDropDown ? 'dialog' : undefined;
+    const hideHeader = this.isDropDown ? true : this.hideHeader;
 
-    const calendar = html`<igc-calendar
-      aria-labelledby=${id}
-      role=${ifDefined(role)}
-      .activeDate=${this.activeDate ?? this.value ?? new Date()}
-      .value=${this.value ?? undefined}
-      .inert=${!this.open || this.disabled}
-      .hideHeader=${hideHeader}
-      .headerOrientation=${this.headerOrientation}
-      .orientation=${this.orientation}
-      ?show-week-numbers=${this.showWeekNumbers}
-      ?hide-outside-days=${this.hideOutsideDays}
-      .visibleMonths=${this.visibleMonths}
-      .locale=${this.locale}
-      .disabledDates=${this.disabledDates}
-      .specialDates=${this.specialDates}
-      .weekStart=${this.weekStart}
-      @igcChange=${this.handleCalendarChangeEvent}
-    >
-      ${this.mode === 'dropdown' &&
-      html`<slot name="title" slot="title"></slot>`}
-    </igc-calendar>`;
-
-    if (this.mode === 'dropdown') {
-      return html`<igc-popover
-        ?open=${this.open}
-        anchor=${id}
-        strategy="fixed"
-        flip
-        shift
-        same-width
+    return html`
+      <igc-calendar
+        aria-labelledby=${id}
+        role=${ifDefined(role)}
+        .inert=${!this.open || this.disabled}
+        ?show-week-numbers=${this.showWeekNumbers}
+        ?hide-outside-days=${this.hideOutsideDays}
+        ?hide-header=${hideHeader}
+        .activeDate=${this.activeDate ?? this.value ?? new Date()}
+        .value=${this.value ?? undefined}
+        .headerOrientation=${this.headerOrientation}
+        .orientation=${this.orientation}
+        .visibleMonths=${this.visibleMonths}
+        .locale=${this.locale}
+        .disabledDates=${this.disabledDates}
+        .specialDates=${this.specialDates}
+        .weekStart=${this.weekStart}
+        @igcChange=${this.handleCalendarChangeEvent}
       >
-        <igc-focus-trap ?disabled=${calendarDisabled}>
-          ${calendar}
-        </igc-focus-trap>
-      </igc-popover>`;
-    } else {
-      return html` <igc-dialog
-        aria-label="Select date"
-        ?open=${this.open}
-        ?close-on-outside-click="${!this.keepOpenOnOutsideClick}"
-        hide-default-action
-        @igcClosing=${() => this._hide(true)}
-      >
-        ${calendar}
-      </igc-dialog>`;
-    }
+        ${!this.isDropDown
+          ? html`<slot
+              name="title"
+              slot="title"
+              @slotchange=${this.onSlotChange}
+            ></slot>`
+          : nothing}
+      </igc-calendar>
+    `;
   }
 
-  protected override render() {
-    const id = this.id || this.inputId;
-    const displayFormat = formats.has(this._displayFormat!)
+  protected renderPicker(id: string) {
+    return this.isDropDown
+      ? html`
+          <igc-popover
+            ?open=${this.open}
+            anchor=${id}
+            strategy="fixed"
+            flip
+            shift
+            same-width
+          >
+            <igc-focus-trap ?disabled=${!this.open || this.disabled}>
+              ${this.renderCalendar(id)}
+            </igc-focus-trap>
+          </igc-popover>
+        `
+      : html`
+          <igc-dialog
+            aria-label="Select date"
+            ?open=${this.open}
+            ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
+            hide-default-action
+            @igcClosing=${() => this._hide(true)}
+          >
+            ${this.renderCalendar(id)}
+          </igc-dialog>
+        `;
+  }
+
+  protected renderInput(id: string) {
+    const format = formats.has(this._displayFormat!)
       ? `${this._displayFormat}Date`
       : this._displayFormat;
 
@@ -553,13 +563,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       <igc-date-time-input
         id=${id}
         aria-haspopup="true"
+        aria-expanded=${this.open}
+        label=${ifDefined(this.label)}
+        input-format=${ifDefined(this._inputFormat)}
+        display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
         ?readonly=${this.nonEditable || this.readOnly}
         ?required=${this.required}
-        label=${ifDefined(this.label)}
-        aria-expanded=${this.open ? 'true' : 'false'}
-        input-format=${ifDefined(this._inputFormat)}
-        display-format=${ifDefined(displayFormat)}
         .value=${this.value ?? null}
         .locale=${this.locale}
         .prompt=${this.prompt}
@@ -571,13 +581,30 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
       >
-        <slot name="prefix" slot="prefix"></slot>
-        ${this.renderClearIcon()} ${this.renderCalendarIcon()}
-        <slot name="suffix" slot="suffix"></slot>
-        <slot name="helper-text" slot="helper-text"></slot>
+        <slot
+          name="prefix"
+          slot="prefix"
+          @slotchange=${this.onSlotChange}
+        ></slot>
+        ${this.renderClearIcon()}${this.renderCalendarIcon()}
+        <slot
+          name="suffix"
+          slot="suffix"
+          @slotchange=${this.onSlotChange}
+        ></slot>
+        <slot
+          name="helper-text"
+          slot="helper-text"
+          @slotchange=${this.onSlotChange}
+        ></slot>
       </igc-date-time-input>
-      ${this.renderCalendar(id)}
     `;
+  }
+
+  protected override render() {
+    const id = this.id || this.inputId;
+
+    return html`${this.renderInput(id)}${this.renderPicker(id)}`;
   }
 }
 
