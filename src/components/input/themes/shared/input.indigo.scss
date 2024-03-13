@@ -95,7 +95,7 @@ $transition-duration: .25s;
         padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
         border: none;
         grid-area: 1 / 2;
-        height: calc(var-get($theme, 'size') - 2px);
+        height: calc(var-get($theme, 'size') - 1px);
     }
 
     [part~='input']::placeholder {
@@ -183,6 +183,24 @@ $transition-duration: .25s;
 
     [part='helper-text'] {
         color: var-get($theme, 'helper-text-color');
+    }
+}
+
+:host([type='search']) {
+    %suffix-preffix {
+        padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
+    }
+
+    [part~='input'] {
+        padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
+    }
+
+    [part~='prefixed'] {
+        padding-inline-start: 0;
+    }
+
+    [part~='suffixed'] {
+        padding-inline-end: 0;
     }
 }
 
