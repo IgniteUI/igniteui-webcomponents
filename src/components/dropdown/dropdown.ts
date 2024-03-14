@@ -347,6 +347,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     this._rootClickController.update({ target });
   }
 
+  /* blazorSuppress */
   /** Shows the component. */
   public override show(target?: HTMLElement | string) {
     if (target) {
@@ -355,6 +356,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     super.show();
   }
 
+  /* blazorSuppress */
   /** Toggles the open state of the component. */
   public override toggle(target?: HTMLElement | string) {
     this.open ? this.hide() : this.show(target);
