@@ -8,3 +8,7 @@
         --ig-size: 2;
     }
 }
+
+:host([orientation='vertical']) {
+    gap: rem(8px);
+}

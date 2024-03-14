@@ -3,6 +3,13 @@
 
 $theme: $indigo;
 
+:host([variant='info']),
+:host([variant='success']),
+:host([variant='warning']),
+:host([variant='danger']) {
+    color: var-get($theme, 'text-color');
+}
+
 [part='base'] {
     font-size: rem(11px);
     line-height: rem(15px);
