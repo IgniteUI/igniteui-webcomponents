@@ -24,7 +24,7 @@ import {
 } from '../common/i18n/calendar.resources.js';
 import messages from '../common/localization/validation-en.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
-import type { Constructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, format } from '../common/util.js';
@@ -79,7 +79,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatepickerEventMap,
-    Constructor<IgcBaseComboBoxLikeComponent>
+    AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-datepicker';
