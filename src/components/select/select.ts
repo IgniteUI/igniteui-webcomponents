@@ -44,7 +44,7 @@ import {
   getPreviousActiveItem,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
-import type { Constructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { partNameMap } from '../common/util.js';
@@ -100,7 +100,7 @@ export interface IgcSelectEventMap {
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcSelectEventMap,
-    Constructor<IgcBaseComboBoxLikeComponent>
+    AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';

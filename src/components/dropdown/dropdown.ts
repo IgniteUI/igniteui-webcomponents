@@ -35,7 +35,7 @@ import {
   getPreviousActiveItem,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
-import type { Constructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { getElementByIdFromRoot } from '../common/util.js';
@@ -73,7 +73,7 @@ export interface IgcDropdownEventMap {
 export default class IgcDropdownComponent extends SizableMixin(
   EventEmitterMixin<
     IgcDropdownEventMap,
-    Constructor<IgcBaseComboBoxLikeComponent>
+    AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-dropdown';
