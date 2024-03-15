@@ -11,7 +11,7 @@ interface IgcBaseComboBoxEventMap {
   igcClosed: CustomEvent<void>;
 }
 
-export class IgcBaseComboBoxLikeComponent extends LitElement {
+export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
   public declare emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
     D extends UnpackCustomEvent<IgcBaseComboBoxEventMap[K]>,
