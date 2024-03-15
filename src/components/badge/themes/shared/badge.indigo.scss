@@ -11,9 +11,7 @@ $theme: $indigo;
 }
 
 [part='base'] {
-    font-size: rem(11px);
-    line-height: rem(15px);
-    font-weight: 700;
+    @include type-style('button');
 
     ::slotted(igc-icon) {
         $icon-size: rem(12px);
