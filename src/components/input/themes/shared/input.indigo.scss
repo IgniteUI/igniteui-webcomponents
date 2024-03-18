@@ -119,10 +119,6 @@ $transition-duration: .25s;
     [part^='container'] {
         background: var-get($theme, 'box-background-hover');
     }
-
-    [part~='input']::placeholder {
-        color: var-get($theme, 'hover-placeholder-color');
-    }
 }
 
 [part~='filled'] {
@@ -213,8 +209,7 @@ $transition-duration: .25s;
     [part='suffix'],
     [part='label'],
     [part~='input'],
-    [part='helper-text'],
-    [part~='input']::placeholder {
+    [part='helper-text'] {
         color: var-get($theme, 'disabled-text-color');
     }
 }

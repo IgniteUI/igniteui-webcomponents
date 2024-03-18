@@ -29,6 +29,17 @@ $theme: $base;
     }
 }
 
+[part~='input']::placeholder {
+    color: var-get($theme, 'placeholder-color');
+}
+
+:host(:focus-within),
+:host(:hover) {
+    [part~='input']::placeholder {
+        color: var-get($theme, 'hover-placeholder-color');
+    }
+}
+
 :host(:focus-within) {
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
@@ -55,3 +66,10 @@ $theme: $base;
     }
 }
 /* stylelint-enable */
+
+:host(:disabled),
+:host([disabled]) {
+    [part~='input']::placeholder {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}

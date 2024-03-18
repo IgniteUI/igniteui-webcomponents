@@ -140,8 +140,7 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     [part='label'],
     [part='label']::after,
     [part='helper-text'],
-    [part~='input'],
-    [part~='input']::placeholder {
+    [part~='input'] {
         color: var-get($theme, 'disabled-text-color');
     }
 }

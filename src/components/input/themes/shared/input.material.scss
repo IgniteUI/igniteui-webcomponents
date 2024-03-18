@@ -33,10 +33,6 @@ $fs: rem(16px) !default;
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
     }
-
-    input::placeholder {
-        color: var-get($theme, 'placeholder-color');
-    }
 }
 
 [part='prefix'],
@@ -508,10 +504,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='filler'],
     [part='notch'],
     [part='end'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    input::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 
