@@ -20,6 +20,7 @@ $group-item-border-thickness: rem(1px);
     }
 
     [part~='toggle']:focus-visible {
+        outline: none;
         z-index: 2;
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
         border-color: var-get($theme, 'item-border-color');
@@ -29,6 +30,10 @@ $group-item-border-thickness: rem(1px);
 :host(:hover) {
     [part~='toggle'] {
         z-index: 1;
+    }
+
+    [part~='toggle']:focus-visible {
+        border-color: var-get($theme, 'item-hover-border-color');
     }
 }
 
