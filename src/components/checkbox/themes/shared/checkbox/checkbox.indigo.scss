@@ -128,7 +128,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     [part~='control'] {
         border-color: $error-color;
 
-        &:after {
+        &::after {
             background: $error-color;
         }
     }
@@ -196,7 +196,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part~='indicator'] {
-        stroke-opacity: 40%;
+        stroke-opacity: 0.4;
     }
 }
 

@@ -45,6 +45,12 @@ $icon-size: rem(16px);
         &:active {
             box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'focus-border-color');
         }
+
+        &:hover {
+            igc-icon {
+                color: var-get($contained-theme, 'hover-foreground');
+            }
+        }
     }
 }
 
