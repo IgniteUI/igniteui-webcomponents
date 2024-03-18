@@ -54,10 +54,9 @@ $transition-duration: .25s;
     }
 
     [part~='label'] {
+        @include type-style('caption');
+
         color: var-get($theme, 'idle-secondary-color');
-        font-size: rem(11px);
-        font-weight: 400;
-        line-height: rem(15px);
     }
 
     [part^='container'] {

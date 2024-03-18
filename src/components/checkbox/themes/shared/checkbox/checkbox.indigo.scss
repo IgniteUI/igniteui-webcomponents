@@ -79,9 +79,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part~='control'] {
-        background: $fill-color;
-
         &::after {
+            background: $fill-color;
             border-color: $fill-color;
         }
     }
@@ -89,9 +88,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]:hover) {
     [part~='control'] {
-        background: $fill-color-hover;
-
         &::after {
+            background: $fill-color-hover;
             border-color: $fill-color-hover;
         }
     }
@@ -116,10 +114,21 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part='control checked'] {
-        box-shadow: inset 0 0 0 rem(4px) $error-color;
+        border-color: $error-color;
         background: $error-color;
 
         &::after {
+            background: $error-color;
+        }
+    }
+}
+
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
+    [part~='control'] {
+        border-color: $error-color;
+
+        &:after {
             background: $error-color;
         }
     }
@@ -147,6 +156,15 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
+:host(:hover:not([disabled])[invalid][indeterminate]),
+:host(:hover:not(:disabled)[invalid][indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: $error-color-hover;
+        }
+    }
+}
+
 :host(:focus-within:not([disabled])[invalid]),
 :host(:focus-within:not(:disabled)[invalid]) {
     [part~='control'],
@@ -155,18 +173,10 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]),
-:host(:not(:disabled)[invalid][indeterminate]) {
-    [part~='control'] {
-        box-shadow: inset 0 0 0 rem(4px) $error-color;
-        background: $error-color;
-    }
-}
-
 :host(:focus-within:not([disabled])[invalid][indeterminate]),
 :host(:focus-within:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
     }
 }
 
@@ -184,12 +194,16 @@ $error-color-hover: var-get($theme, 'error-color-hover');
         background: $disabled-indeterminate-color;
         border-color: transparent;
     }
+
+    [part~='indicator'] {
+        stroke-opacity: 40%;
+    }
 }
 
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
     [part~='control']::after {
         background: $disabled-indeterminate-color;
-        border-color: $disabled-indeterminate-color;
+        border-color: transparent;
     }
 }
