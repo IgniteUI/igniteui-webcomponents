@@ -23,8 +23,7 @@ export interface IgcFormEventMap {
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
  *
- * @deprecated - since version 4.4.0
- * Use the native `<form>` element instead.
+ * @deprecated since version 4.4.0. Use the native `<form>` element instead.
  */
 export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
