@@ -6,13 +6,13 @@ export type CalendarRangeParams = {
   unit?: DayInterval;
 };
 
+export type DayInterval = 'year' | 'quarter' | 'month' | 'week' | 'day';
+
 type CalendarDayParams = {
   year: number;
   month: number;
   date?: number;
 };
-
-type DayInterval = 'year' | 'quarter' | 'month' | 'week' | 'day';
 
 export const daysInWeek = 7;
 const millisecondsInDay = 86400000;

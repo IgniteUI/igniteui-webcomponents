@@ -14,7 +14,7 @@ import {
   getPreviousActiveDate,
   getYearRange,
 } from './helpers.js';
-import { CalendarDay } from './model.js';
+import { CalendarDay, DayInterval } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
@@ -250,13 +250,13 @@ export default class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private updateViewIndex(date: CalendarDay, delta: 'next' | 'previous') {
+  private updateViewIndex(date: CalendarDay, delta: -1 | 1) {
     if (this.visibleMonths === 1) return;
 
     const index = this.activeDaysViewIndex;
     const view = CalendarDay.from(this.daysViews.item(index).activeDate);
     const newIndex =
-      delta === 'next'
+      delta === 1
         ? index === this.visibleMonths - 1
           ? index
           : index + 1
@@ -267,73 +267,30 @@ export default class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private onArrowLeft() {
+  // TODO: Clean up this a bit
+  private handleArrowKey(
+    period: Extract<DayInterval, 'day' | 'week'>,
+    delta: -1 | 1
+  ) {
+    const getActiveDate = delta < 1 ? getPreviousActiveDate : getNextActiveDate;
+
     if (this._isDayView) {
-      const date = getPreviousActiveDate(
-        this._activeDate.add('day', -1),
+      const date = getActiveDate(
+        this._activeDate.add(period, delta),
         this.disabledDates
       );
-      this.updateViewIndex(date, 'previous');
+      this.updateViewIndex(date, delta);
       this._activeDate = date;
     } else {
-      this._activeDate = getPreviousActiveDate(
-        this._activeDate.add(this._isMonthView ? 'month' : 'year', -1),
-        this.disabledDates
-      );
-    }
+      const monthOrYear = this._isMonthView ? 'month' : 'year';
+      const monthOrYearDelta =
+        (this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW) * delta;
 
-    this.focusActiveDate();
-  }
-
-  private onArrowRight() {
-    if (this._isDayView) {
-      const date = getNextActiveDate(
-        this._activeDate.add('day', 1),
-        this.disabledDates
-      );
-      this.updateViewIndex(date, 'next');
-      this._activeDate = date;
-    } else {
-      this._activeDate = getNextActiveDate(
-        this._activeDate.add(this._isMonthView ? 'month' : 'year', 1),
-        this.disabledDates
-      );
-    }
-
-    this.focusActiveDate();
-  }
-
-  private onArrowUp() {
-    if (this._isDayView) {
-      const date = getPreviousActiveDate(
-        this._activeDate.add('week', -1),
-        this.disabledDates
-      );
-      this.updateViewIndex(date, 'previous');
-      this._activeDate = date;
-    } else {
-      const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
-      this._activeDate = getPreviousActiveDate(
-        this._activeDate.add(this._isMonthView ? 'month' : 'year', -delta),
-        this.disabledDates
-      );
-    }
-
-    this.focusActiveDate();
-  }
-
-  private onArrowDown() {
-    if (this._isDayView) {
-      const date = getNextActiveDate(
-        this._activeDate.add('week', 1),
-        this.disabledDates
-      );
-      this.updateViewIndex(date, 'next');
-      this._activeDate = date;
-    } else {
-      const delta = this._isMonthView ? MONTHS_PER_ROW : YEARS_PER_ROW;
-      this._activeDate = getNextActiveDate(
-        this._activeDate.add(this._isMonthView ? 'month' : 'year', delta),
+      this._activeDate = getActiveDate(
+        this._activeDate.add(
+          monthOrYear,
+          period === 'week' ? monthOrYearDelta : delta
+        ),
         this.disabledDates
       );
     }
@@ -459,10 +416,10 @@ export default class IgcCalendarComponent extends SizableMixin(
       ref: this.contentRef,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      .set(arrowLeft, this.onArrowLeft)
-      .set(arrowRight, this.onArrowRight)
-      .set(arrowUp, this.onArrowUp)
-      .set(arrowDown, this.onArrowDown)
+      .set(arrowLeft, this.handleArrowKey.bind(this, 'day', -1))
+      .set(arrowRight, this.handleArrowKey.bind(this, 'day', 1))
+      .set(arrowUp, this.handleArrowKey.bind(this, 'week', -1))
+      .set(arrowDown, this.handleArrowKey.bind(this, 'week', 1))
       .set([shiftKey, pageUpKey], this.onShiftPageUp)
       .set([shiftKey, pageDownKey], this.onShiftPageDown)
       .set(pageUpKey, this.onPageUp)
