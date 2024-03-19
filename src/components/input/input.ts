@@ -173,20 +173,20 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
+  /* blazorCSSuppress */
   /**
    * The minlength attribute of the control.
    * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `minLength` property instead.
+   * @deprecated since v4.4.0. Use the `minLength` property instead.
    */
   @property({ attribute: false })
-  public get minlength() {
-    return this.minLength;
-  }
-
   public set minlength(value: number) {
     this.minLength = value;
+  }
+
+  public get minlength() {
+    return this.minLength;
   }
 
   /**
@@ -196,20 +196,20 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Number, attribute: 'maxlength' })
   public maxLength!: number;
 
+  /* blazorCSSuppress */
   /**
    * The maxlength attribute of the control.
    * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `maxLength` property instead.
+   * @deprecated since v4.4.0. Use the `maxLength` property instead.
    */
   @property({ attribute: false })
-  public get maxlength() {
-    return this.maxLength;
-  }
-
   public set maxlength(value: number) {
     this.maxLength = value;
+  }
+
+  public get maxlength() {
+    return this.maxLength;
   }
 
   /**

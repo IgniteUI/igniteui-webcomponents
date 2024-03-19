@@ -17,7 +17,16 @@ function getAllCSSVariableNames(): Set<string> {
     return cssVars;
   }
 
-  const styleSheets = Array.from(globalThis.document.styleSheets);
+  // Filter out any external stylesheets which throw CORS errors
+  const styleSheets = Array.from(globalThis.document.styleSheets).filter(
+    (sheet) => {
+      try {
+        return sheet.cssRules;
+      } catch (e) {
+        return false;
+      }
+    }
+  );
 
   for (const sheet of styleSheets) {
     const rules = Array.from(sheet.cssRules).filter(isAStyleRule);

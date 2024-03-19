@@ -35,7 +35,7 @@ import {
   getPreviousActiveItem,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
-import type { Constructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { getElementByIdFromRoot } from '../common/util.js';
@@ -73,7 +73,7 @@ export interface IgcDropdownEventMap {
 export default class IgcDropdownComponent extends SizableMixin(
   EventEmitterMixin<
     IgcDropdownEventMap,
-    Constructor<IgcBaseComboBoxLikeComponent>
+    AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-dropdown';
@@ -347,6 +347,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     this._rootClickController.update({ target });
   }
 
+  /* blazorSuppress */
   /** Shows the component. */
   public override show(target?: HTMLElement | string) {
     if (target) {
@@ -355,6 +356,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     super.show();
   }
 
+  /* blazorSuppress */
   /** Toggles the open state of the component. */
   public override toggle(target?: HTMLElement | string) {
     this.open ? this.hide() : this.show(target);
