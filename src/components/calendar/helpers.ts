@@ -75,30 +75,6 @@ export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
   return a.year === b.year ? a.month < b.month : a.year < b.year;
 }
 
-/** Returns the next date starting from `start` that does not match the `disabled` descriptors */
-export function getNextActiveDate(
-  start: CalendarDay,
-  disabled: DateRangeDescriptor[] = []
-) {
-  while (isDateInRanges(start, disabled)) {
-    start = start.add('day', 1);
-  }
-
-  return start;
-}
-
-/** Returns the previous date starting from `start` that does not match the `disabled` descriptors */
-export function getPreviousActiveDate(
-  start: CalendarDay,
-  disabled: DateRangeDescriptor[] = []
-) {
-  while (isDateInRanges(start, disabled)) {
-    start = start.add('day', -1);
-  }
-
-  return start;
-}
-
 /**
  * Returns a generator yielding day values between `start` and `end` (non-inclusive)
  * by a given `unit` as a step.

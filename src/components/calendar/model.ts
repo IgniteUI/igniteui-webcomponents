@@ -6,7 +6,7 @@ export type CalendarRangeParams = {
   unit?: DayInterval;
 };
 
-export type DayInterval = 'year' | 'quarter' | 'month' | 'week' | 'day';
+type DayInterval = 'year' | 'quarter' | 'month' | 'week' | 'day';
 
 type CalendarDayParams = {
   year: number;
