@@ -458,7 +458,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined][invalid]:focus-within),
 :host([readonly][outlined][invalid]:focus-within) {
     input:not(:placeholder-shown) + [part='notch'] {
         border: {
