@@ -32,7 +32,7 @@ const light = {
     ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${material} ${indigo} ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -50,7 +50,7 @@ const dark = {
     ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${material} ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

@@ -7,8 +7,11 @@ $border-size: rem(1px);
 :host([part='days-view']) {
     overflow: hidden;
     position: relative;
-    padding: 0 0 rem(4px) 0;
-    gap: rem(6px);
+    padding: 0 0 rem(8px) 0;
+}
+
+[part~='days-row'] {
+    padding: 0 rem(12px);
 }
 
 :host([part='days-view']) + :host([part='days-view']) {
@@ -21,6 +24,8 @@ $border-size: rem(1px);
 }
 
 [part~='week-number-inner'] {
+    @include type-style('body-2');
+
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
     color: var-get($theme, 'week-number-foreground');
@@ -165,20 +170,17 @@ $border-size: rem(1px);
         color: var-get($theme, 'date-current-foreground');
         background: var-get($theme, 'date-current-background');
         border-color: var-get($theme, 'date-current-border-color');
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'date-current-outline');
 
         &:hover {
             color: var-get($theme, 'date-current-hover-foreground');
             background: var-get($theme, 'date-current-hover-background');
             border-color: var-get($theme, 'date-current-hover-border-color');
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'date-current-hover-outline');
         }
 
         &:focus {
             color: var-get($theme, 'date-current-focus-foreground');
             background: var-get($theme, 'date-current-focus-background');
             border-color: var-get($theme, 'date-current-focus-border-color');
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'date-current-focus-outline');
         }
     }
 
@@ -348,7 +350,7 @@ $border-size: rem(1px);
         }
 
         &::after {
-            border-color: var-get($theme, 'date-special-outline');
+            border-color: var-get($theme, 'date-special-border-color');
         }
     }
 

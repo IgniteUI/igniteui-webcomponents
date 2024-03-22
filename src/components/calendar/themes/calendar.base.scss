@@ -2,11 +2,17 @@
 @use 'styles/utilities' as *;
 
 :host(igc-calendar) {
-    // --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
     display: flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
-    min-width: fit-content;
+    min-width: max-content;
+
+    [part='days-view-container'] {
+        [part='navigation'],
+        igc-days-view {
+            min-width: sizable(rem(272px), rem(314px), rem(360px));
+        }
+    }
 
     igc-days-view::part(date),
     igc-days-view::part(week-number),
@@ -24,12 +30,12 @@
         // min-width: var(--size);
     }
 
+    igc-years-view,
     igc-months-view {
-        grid-template-rows: repeat(4, minmax(var(--size), 1fr));
-    }
-
-    igc-years-view {
-        grid-template-rows: repeat(5, minmax(var(--size), 1fr));
+        display: grid;
+        row-gap: rem(4px);
+        width: 100%;
+        grid-template-rows: repeat(3, minmax(max-content, 1fr));
     }
 
     igc-days-view,
@@ -40,12 +46,12 @@
     }
 }
 
+
 [part='navigation'] {
     position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: rem(50px);
     padding: 0rem(16px);
     user-select: none;
 }
@@ -79,7 +85,7 @@
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
-    gap: rem(24px);
+
 }
 
 :host-context([dir='rtl']),
@@ -97,8 +103,8 @@
     flex-direction: row;
 
     [part='header'] {
+        min-width: rem(168px);
         justify-content: flex-start;
-        width: rem(140px);
         border-radius: inherit;
         border-start-end-radius: 0;
         border-end-end-radius: 0;

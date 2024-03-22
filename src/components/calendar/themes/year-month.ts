@@ -14,6 +14,7 @@ import { styles as shared } from './light/calendar.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/bootstrap/year-month-view.bootstrap.css.js';
 import { styles as fluent } from './shared/fluent/year-month-view.fluent.css.js';
+import { styles as indigo } from './shared/indigo/year-month-view.indigo.css.js';
 import { styles as material } from './shared/material/year-month-view.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
@@ -31,7 +32,7 @@ const light = {
     ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${material} ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -49,7 +50,7 @@ const dark = {
     ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${material} ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

@@ -46,7 +46,7 @@ $theme: $indigo;
     }
 
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
+        // box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
 }
 
