@@ -41,10 +41,6 @@ $theme: $bootstrap;
     background: var-get($theme, 'picker-background');
 }
 
-:host(igc-calendar[orientation='horizontal']) {
-
-}
-
 :host([hide-header]) {
     [part~='navigation'] {
         border-start-start-radius: var-get($theme, 'border-radius');
