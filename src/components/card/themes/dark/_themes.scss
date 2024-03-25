@@ -1,6 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/card' as *;
 
+$base: digest-schema($dark-base-card);
 $material: digest-schema($dark-material-card);
 $bootstrap: digest-schema($dark-bootstrap-card);
 $fluent: digest-schema($dark-fluent-card);
