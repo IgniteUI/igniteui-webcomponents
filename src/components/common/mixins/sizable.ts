@@ -10,7 +10,7 @@ export declare class SizableInterface {
    * @attr
    * @type {"small" | "medium" | "large"}
    *
-   * @deprecated - since v4.5.0. Use the `--ig-size` CSS custom property instead.
+   * @deprecated since v4.5.0. Use the `--ig-size` CSS custom property instead.
    */
   public size: 'small' | 'medium' | 'large';
 }
@@ -24,7 +24,7 @@ export const SizableMixin = <T extends Constructor<LitElement>>(
      * @attr
      * @type {"small" | "medium" | "large"}
      *
-     * @deprecated - since v4.5.0. Use the `--ig-size` CSS custom property instead.
+     * @deprecated since v4.5.0. Use the `--ig-size` CSS custom property instead.
      */
     @property({ reflect: true })
     public size: 'small' | 'medium' | 'large' = 'large';

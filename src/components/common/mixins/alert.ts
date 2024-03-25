@@ -76,10 +76,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private setAutoHideTimer() {
     clearTimeout(this._autoHideTimeout);
     if (this.open && this.displayTime > 0 && !this.keepOpen) {
-      this._autoHideTimeout = window.setTimeout(
-        () => this.hide(),
-        this.displayTime
-      );
+      this._autoHideTimeout = setTimeout(() => this.hide(), this.displayTime);
     }
   }
 

@@ -15,14 +15,14 @@ class ThemeEventListeners {
   private readonly listeners = new Set<Function>();
 
   public add(listener: Function) {
-    window.addEventListener(CHANGE_THEME_EVENT, this);
+    globalThis.addEventListener(CHANGE_THEME_EVENT, this);
     this.listeners.add(listener);
   }
 
   public remove(listener: Function) {
     this.listeners.delete(listener);
     if (this.listeners.size < 1) {
-      window.removeEventListener(CHANGE_THEME_EVENT, this);
+      globalThis.removeEventListener(CHANGE_THEME_EVENT, this);
     }
   }
 

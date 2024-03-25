@@ -4,29 +4,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.8.0] - 2024-03-20
 ### Added
- - Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data.
+- Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data. [#1026](https://github.com/IgniteUI/igniteui-webcomponents/pull/1026)
+- Button/Icon button - updated visual looks across themes, new states. [#1050](https://github.com/IgniteUI/igniteui-webcomponents/pull/1050)
+- Navigation bar - added border in Bootstrap theme. [#1060](https://github.com/IgniteUI/igniteui-webcomponents/pull/1060)
+
+### Changed
+- Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
+  **Behavioral change**
+  In previous release the sorting directions of the groups sorted the items as well. If you want to achieve this behavior you can pass already sorted data to the Combo component.
 
 ### Deprecated
- - Slider
+- Slider
    - `aria-label-upper` and `aria-label-lower` are deprecated and will be removed in the next major release. Use `thumb-label-upper` and `thumb-label-lower` instead.
 
 ### Fixed
- - Slider
-   - clicks on the slider track now use the track element width as a basis for the calculation.
-   - input events are not longer emitted while continuously dragging the slider thumb and exceeding upper/lower bounds.
-   - when setting **upper-bound/lower-bound** *before* **min/max**, the slider will no longer overwrite the bound properties with the previous values of min/max.
-   - the **aria-label** bound to the slider thumb is no longer reset on consequent renders.
-
- - Input - default validators are run synchronously [#1066](https://github.com/IgniteUI/igniteui-webcomponents/issues/1066)
- - Date-time input - setRangeText() updates underlying value [[#1075](https://github.com/IgniteUI/igniteui-webcomponents/issues/1075)]
-
-
-### Changed
- - Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
-  **Behavioral change**
-  In previous release the sorting directions of the groups sorted the items as well. If you want to achieve this behavior you can pass already sorted data to the Combo component.
+- Button
+   - slotted icon size. [#1054](https://github.com/IgniteUI/igniteui-webcomponents/pull/1054)
+- Button group
+   - updated Fluent theme look. [#1044](https://github.com/IgniteUI/igniteui-webcomponents/pull/1044)
+   - disabled state in Safari. [#1047](https://github.com/IgniteUI/igniteui-webcomponents/pull/1047)
+- Combo/Select
+   - style issues. [#1038](https://github.com/IgniteUI/igniteui-webcomponents/pull/1038) [#1059](https://github.com/IgniteUI/igniteui-webcomponents/pull/1059)
+- Slider
+   - clicks on the slider track now use the track element width as a basis for the calculation. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - input events are not longer emitted while continuously dragging the slider thumb and exceeding upper/lower bounds. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - when setting **upper-bound/lower-bound** *before* **min/max**, the slider will no longer overwrite the bound properties with the previous values of min/max. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - the **aria-label** bound to the slider thumb is no longer reset on consequent renders. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+- Input
+   - default validators are run synchronously. [#1066](https://github.com/IgniteUI/igniteui-webcomponents/issues/1066)
+   - style issues. [#1038](https://github.com/IgniteUI/igniteui-webcomponents/pull/1038) [#1104](https://github.com/IgniteUI/igniteui-webcomponents/pull/1104)
+- Date-time input
+   - setRangeText() updates underlying value. [#1075](https://github.com/IgniteUI/igniteui-webcomponents/issues/1075)
 
 ## [4.7.0] - 2024-01-05
 ### Added
@@ -423,6 +433,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
 [4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
 [4.6.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0
 [4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.4.0...4.5.0

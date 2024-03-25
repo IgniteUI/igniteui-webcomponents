@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -36,6 +36,9 @@ export default class IgcNavDrawerComponent extends LitElement {
       IgcNavDrawerItemComponent
     );
   }
+
+  @queryAssignedElements({ slot: 'mini' })
+  private _miniSlotElements!: Array<HTMLElement>;
 
   /**
    * The position of the drawer.
@@ -79,12 +82,9 @@ export default class IgcNavDrawerComponent extends LitElement {
   }
 
   private resolvePartNames(base: string) {
-    const mini = document.querySelector('div[slot="mini"]');
-    const hasChildren = mini !== null && mini.children.length > 0;
-
     return {
       [base]: true,
-      hidden: !hasChildren,
+      hidden: this._miniSlotElements.length < 1,
     };
   }
 
