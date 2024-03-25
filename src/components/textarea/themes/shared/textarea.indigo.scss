@@ -5,14 +5,27 @@
 $theme: $indigo;
 
 :host {
-    @include type-style('body-1');
+    @include type-style('body-2');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
+    }
 }
 
 :host(:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-hover');
+
+        &::after {
+            border-color: var-get($theme, 'hover-bottom-line-color');
+        }
+    }
+
+    textarea {
+        color: var-get($theme, 'filled-text-hover-color');
     }
 }
 
@@ -23,19 +36,23 @@ $theme: $indigo;
 
     [part~='container'] {
         background: var-get($theme, 'box-background-hover');
+        caret-color: var-get($theme, 'focused-bottom-line-color');
 
         &::after {
-            border-block-end-width: rem(2px);
             border-block-end-color: var-get($theme, 'focused-bottom-line-color');
             transition: all .25s $out-cubic;
         }
     }
+
+    textarea {
+        color: var-get($theme, 'focused-text-color');
+    }
 }
 
 [part~='label'] {
+    @include type-style('caption');
+
     display: block;
-    font-size: rem(14px);
-    font-weight: 600;
     position: static;
     transform: translateY(0);
     transform-origin: top left;
@@ -64,23 +81,35 @@ $theme: $indigo;
 }
 
 textarea {
-    padding-block: rem(8px);
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    @include type-style('body-2');
+
+    padding-block: rem(6px);
+    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
+}
+
+[part~='filled'] {
+    [part~='input'] {
+        color: var-get($theme, 'filled-text-color');
+    }
+}
+
+[part~='prefixed'] [part='prefix'],
+[part~='suffixed'] [part='suffix'] {
+    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
 }
 
 [part~='prefixed'] textarea {
-    padding-inline-start: rem(4px);
+    padding-inline-start: 0;
 }
 
 [part~='suffixed'] textarea {
-    padding-inline-end: rem(4px);
+    padding-inline-end: 0;
 }
 
 [part~='helper-text'] {
     @include type-style('caption');
 
-    padding-block-start: rem(6px);
-    padding-inline-start: rem(12px);
+    padding-block-start: rem(4px);
 }
 
 [part~='prefixed'] {
@@ -102,22 +131,11 @@ textarea {
 
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
-    [part~='label'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-
     [part~='container'] {
+        caret-color: initial;
+
         &::after {
             border-block-end: rem(1px) solid var-get($theme, 'error-secondary-color');
-        }
-    }
-}
-
-:host([invalid]:not(:disabled):focus-within),
-:host([invalid]:not([disabled]):focus-within) {
-    [part~='container'] {
-        &::after {
-            border-block-end-width: rem(2px);
         }
     }
 }

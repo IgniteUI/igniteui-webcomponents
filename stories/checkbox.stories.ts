@@ -112,6 +112,8 @@ const Template = ({
   checked,
   indeterminate,
   disabled,
+  invalid,
+  required,
 }: IgcCheckboxArgs) => {
   return html`
     <igc-checkbox
@@ -119,6 +121,8 @@ const Template = ({
       .checked=${checked}
       .indeterminate=${indeterminate}
       .disabled=${disabled}
+      .required=${required}
+      .invalid=${invalid}
     >
       Label
     </igc-checkbox>

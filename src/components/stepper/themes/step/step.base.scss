@@ -231,7 +231,7 @@
 
 ::slotted([slot='indicator']) {
     --diameter: calc(var(--indicator-size) - #{rem(2px)});
-    --ig-icon-size: #{rem(18px)}
+    --ig-icon-size: #{rem(18px)};
 }
 
 [part~='text'] {

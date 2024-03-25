@@ -132,14 +132,18 @@ const Template = ({
       >
         <h4 slot="title">Danger</h4>
         <p>Doing this action is irrevocable?</p>
-        <div slot="footer">
-          <igc-button @click=${() => closeDialog('projected')} variant="flat"
-            >Cancel</igc-button
-          >
-          <igc-button @click=${() => closeDialog('projected')} variant="flat"
-            >OK</igc-button
-          >
-        </div>
+        <igc-button
+          slot="footer"
+          @click=${() => closeDialog('projected')}
+          variant="flat"
+          >Cancel</igc-button
+        >
+        <igc-button
+          slot="footer"
+          @click=${() => closeDialog('projected')}
+          variant="contained"
+          >OK</igc-button
+        >
       </igc-dialog>
 
       <igc-dialog

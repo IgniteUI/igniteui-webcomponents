@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { styles } from './radio-group.base.css.js';
 import { styles as fluent } from './radio-group.fluent.css.js';
+import { styles as indigo } from './radio-group.indigo.css.js';
 import { styles as material } from './radio-group.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -15,7 +16,10 @@ import IgcRadioComponent from '../radio/radio.js';
  *
  * @slot - Default slot
  */
-@themes({ light: { material, fluent }, dark: { material, fluent } })
+@themes({
+  light: { material, fluent, indigo },
+  dark: { material, fluent, indigo },
+})
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
   public static override styles = styles;

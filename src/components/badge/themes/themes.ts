@@ -13,6 +13,7 @@ import { styles as materialLight } from './light/badge.material.css.js';
 import { styles as shared } from './light/badge.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
+import { styles as indigo } from './shared/badge.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -29,7 +30,7 @@ const light = {
     ${fluentLight}
   `,
   indigo: css`
-    ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -47,7 +48,7 @@ const dark = {
     ${fluentDark}
   `,
   indigo: css`
-    ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

@@ -37,7 +37,6 @@
 
 [part~='message'] {
     @include type-style('body-2');
-    @include line-clamp(2, true, true);
 
     flex: 1 1 50%;
 }
