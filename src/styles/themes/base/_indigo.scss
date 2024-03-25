@@ -9,5 +9,5 @@
         --ig-scrollbar-track-background: #{color($color: gray, $variant: 200)};
     }
 
-    @include theme($palette, $material-elevations, $typeface, $type-scale, $variant);
+    @include theme($palette, $indigo-elevations, $typeface, $type-scale, $variant);
 }

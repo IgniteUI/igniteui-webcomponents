@@ -32,6 +32,11 @@ $outlined-theme: $material-outlined;
 
 [part='base'] {
     transition: all .15s ease-in-out;
+
+    ::slotted(igc-icon) {
+        color: var-get($flat-theme, 'icon-color');
+        transition: all .15s ease-in-out;
+    }
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'],
@@ -39,25 +44,45 @@ $outlined-theme: $material-outlined;
     color: var-get($flat-theme, 'foreground');
     background: var-get($flat-theme, 'background');
 
+    ::slotted(igc-icon) {
+        color: var-get($flat-theme, 'icon-color');
+    }
+
     &:hover {
         color: var-get($flat-theme, 'hover-foreground');
         background: var-get($flat-theme, 'hover-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($flat-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         color: var-get($flat-theme, 'focus-foreground');
         background: var-get($flat-theme, 'focus-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($flat-theme, 'icon-color');
+        }
     }
 
     &:focus-visible {
         color: var-get($flat-theme, 'focus-visible-foreground');
         background: var-get($flat-theme, 'focus-visible-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($flat-theme, 'icon-color');
+        }
     }
 
     &:focus, &:focus-visible {
         &:hover {
             color: var-get($flat-theme, 'focus-hover-foreground');
             background: var-get($flat-theme, 'focus-hover-background');
+
+            ::slotted(igc-icon) {
+                color: var-get($flat-theme, 'icon-color-hover');
+            }
         }
     }
 
@@ -72,25 +97,45 @@ $outlined-theme: $material-outlined;
     color: var-get($outlined-theme, 'foreground');
     background: var-get($outlined-theme, 'background');
 
+    ::slotted(igc-icon) {
+        color: var-get($outlined-theme, 'icon-color');
+    }
+
     &:hover {
         color: var-get($outlined-theme, 'hover-foreground');
         background: var-get($outlined-theme, 'hover-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($outlined-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         color: var-get($outlined-theme, 'focus-foreground');
         background: var-get($outlined-theme, 'focus-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($outlined-theme, 'icon-color');
+        }
     }
 
     &:focus-visible {
         color: var-get($outlined-theme, 'focus-visible-foreground');
         background: var-get($outlined-theme, 'focus-visible-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($outlined-theme, 'icon-color');
+        }
     }
 
     &:focus, &:focus-visible {
         &:hover {
             color: var-get($outlined-theme, 'focus-hover-foreground');
             background: var-get($outlined-theme, 'focus-hover-background');
+
+            ::slotted(igc-icon) {
+                color: var-get($outlined-theme, 'icon-color-hover');
+            }
         }
     }
 
@@ -105,25 +150,45 @@ $outlined-theme: $material-outlined;
     color: var-get($contained-theme, 'foreground');
     background: var-get($contained-theme, 'background');
 
+    ::slotted(igc-icon) {
+        color: var-get($contained-theme, 'icon-color');
+    }
+
     &:hover {
         color: var-get($contained-theme, 'hover-foreground');
         background: var-get($contained-theme, 'hover-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($contained-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         color: var-get($contained-theme, 'focus-foreground');
         background: var-get($contained-theme, 'focus-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($contained-theme, 'icon-color');
+        }
     }
 
     &:focus-visible {
         color: var-get($contained-theme, 'focus-visible-foreground');
         background: var-get($contained-theme, 'focus-visible-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($contained-theme, 'icon-color');
+        }
     }
 
     &:focus, &:focus-visible {
         &:hover {
             color: var-get($contained-theme, 'focus-hover-foreground');
             background: var-get($contained-theme, 'focus-hover-background');
+
+            ::slotted(igc-icon) {
+                color: var-get($contained-theme, 'icon-color-hover');
+            }
         }
     }
 
@@ -138,25 +203,45 @@ $outlined-theme: $material-outlined;
     color: var-get($fab-theme, 'foreground');
     background: var-get($fab-theme, 'background');
 
+    ::slotted(igc-icon) {
+        color: var-get($fab-theme, 'icon-color');
+    }
+
     &:hover {
         color: var-get($fab-theme, 'hover-foreground');
         background: var-get($fab-theme, 'hover-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($fab-theme, 'icon-color-hover');
+        }
     }
 
     &:focus {
         color: var-get($fab-theme, 'focus-foreground');
         background: var-get($fab-theme, 'focus-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($fab-theme, 'icon-color');
+        }
     }
 
     &:focus-visible {
         color: var-get($fab-theme, 'focus-visible-foreground');
         background: var-get($fab-theme, 'focus-visible-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($fab-theme, 'icon-color');
+        }
     }
 
     &:focus, &:focus-visible {
         &:hover {
             color: var-get($fab-theme, 'focus-hover-foreground');
             background: var-get($fab-theme, 'focus-hover-background');
+
+            ::slotted(igc-icon) {
+                color: var-get($fab-theme, 'icon-color-hover');
+            }
         }
     }
 
@@ -170,6 +255,10 @@ $outlined-theme: $material-outlined;
 :host(:disabled[variant='flat']) [part='base'] {
     color: var-get($flat-theme, 'disabled-foreground');
     background: var-get($flat-theme, 'disabled-background');
+
+    ::slotted(igc-icon) {
+        color: var-get($flat-theme, 'disabled-icon-color');
+    }
 }
 
 :host([disabled][variant='outlined']) [part='base'],
@@ -177,16 +266,28 @@ $outlined-theme: $material-outlined;
     color: var-get($outlined-theme, 'disabled-foreground');
     background: var-get($outlined-theme, 'disabled-background');
     border: rem(1px) solid var-get($outlined-theme, 'disabled-border-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($outlined-theme, 'disabled-icon-color');
+    }
 }
 
 :host([disabled][variant='contained']) [part='base'],
 :host(:disabled[variant='contained']) [part='base'] {
     color: var-get($contained-theme, 'disabled-foreground');
     background: var-get($contained-theme, 'disabled-background');
+
+    ::slotted(igc-icon) {
+        color: var-get($contained-theme, 'disabled-icon-color');
+    }
 }
 
 :host([disabled][variant='fab']) [part='base'],
 :host(:disabled[variant='fab']) [part='base'] {
     color: var-get($fab-theme, 'disabled-foreground');
     background: var-get($fab-theme, 'disabled-background');
+
+    ::slotted(igc-icon) {
+        color: var-get($fab-theme, 'disabled-icon-color');
+    }
 }
