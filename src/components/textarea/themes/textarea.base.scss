@@ -142,6 +142,7 @@ textarea {
 :host(:disabled),
 :host([disabled]) {
     user-select: none;
+    pointer-events: none;
 
     [part='prefix'],
     [part='suffix'] {

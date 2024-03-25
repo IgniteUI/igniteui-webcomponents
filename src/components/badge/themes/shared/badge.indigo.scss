@@ -1,0 +1,23 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host([variant='info']),
+:host([variant='success']),
+:host([variant='warning']),
+:host([variant='danger']) {
+    color: var-get($theme, 'text-color');
+}
+
+[part='base'] {
+    @include type-style('button');
+
+    ::slotted(igc-icon) {
+        $icon-size: rem(12px);
+
+        --size: #{$icon-size} !important;
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+    }
+}
