@@ -47,8 +47,8 @@
 
 slot[name='title'],
 slot[name='footer'] {
-    &::slotted(:not(:last-child)) {
-        margin-inline-end: rem(8px);
+    &::slotted(:last-child) {
+        margin-inline-start: rem(8px);
     }
 }
 

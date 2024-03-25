@@ -6,20 +6,36 @@ $contained-theme: $indigo-contained;
 $fab-theme: $indigo-fab;
 $outlined-theme: $indigo-outlined;
 
+:host [part='base']{
+    min-width: rem(28px);
+    padding: 0 pad(10px, 16px, 24px);
+    
+    ::slotted(igc-icon) {
+        --component-size: var(--ig-size-medium) !important;
+    }
+}
+
 :host([variant='flat']) {
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
+    --gap: #{sizable(rem(4px), rem(8px), rem(8px))};
 }
 
 :host([variant='outlined']) {
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
+    --gap: #{sizable(rem(4px), rem(8px), rem(8px))};
 }
 
 :host([variant='contained']) {
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
+    --gap: #{sizable(rem(4px), rem(8px), rem(8px))};
 }
 
 :host([variant='fab']) {
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
+
+    [part='base'] {
+        padding: 0 pad(rem(6px), rem(8px), rem(10px));
+    }
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'],
@@ -42,6 +58,10 @@ $outlined-theme: $indigo-outlined;
 
     &:focus {
         border-color: var-get($outlined-theme, 'focus-border-color');
+
+        &:hover {
+            border-color: var-get($outlined-theme, 'hover-border-color');
+        }
     }
 
     &:active {
@@ -76,6 +96,10 @@ $outlined-theme: $indigo-outlined;
 
     &:focus {
         border-color: var-get($contained-theme, 'focus-border-color');
+
+        &:hover {
+            border-color: var-get($contained-theme, 'hover-border-color');
+        }
     }
 
     &:active {
@@ -106,25 +130,29 @@ $outlined-theme: $indigo-outlined;
 
 :host(:not([disabled])[variant='fab']) [part='base'],
 :host(:not(:disabled)[variant='fab']) [part='base'] {
-    border-color: var-get($flat-theme, 'border-color');
+    border-color: var-get($fab-theme, 'border-color');
     min-width: var(--size);
     min-height: var(--size);
 
     &:hover {
-        border-color: var-get($flat-theme, 'hover-border-color');
+        border-color: var-get($fab-theme, 'hover-border-color');
     }
 
     &:focus {
-        border-color: var-get($flat-theme, 'focus-border-color');
+        border-color: var-get($fab-theme, 'focus-border-color');
+
+        &:hover {
+            border-color: var-get($fab-theme, 'hover-border-color');
+        }
     }
 
     &:active {
-        border-color: var-get($flat-theme, 'active-border-color');
+        border-color: var-get($fab-theme, 'active-border-color');
     }
 
     &:focus,
     &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
+        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
     }
 
     &:focus-visible {
@@ -143,4 +171,5 @@ $outlined-theme: $indigo-outlined;
 :host([disabled][variant='outlined']) [part='base'],
 :host(:disabled[variant='outlined']) [part='base'] {
     border-color: var-get($outlined-theme, 'disabled-border-color');
+    border-width: rem(2px);
 }
