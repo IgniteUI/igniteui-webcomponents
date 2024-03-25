@@ -183,8 +183,4 @@ $theme: $bootstrap;
     [part='label'] {
         color: var-get($theme, 'disabled-text-color')
     }
-
-    [part~='input']::placeholder {
-        color: var-get($theme, 'disabled-placeholder-color');
-    }
 }

@@ -3,11 +3,13 @@ import { html } from 'lit';
 
 import {
   IgcBadgeComponent,
+  IgcIconComponent,
   IgcTabsComponent,
   defineComponents,
+  registerIcon,
 } from '../src/index.js';
 
-defineComponents(IgcBadgeComponent, IgcTabsComponent);
+defineComponents(IgcBadgeComponent, IgcIconComponent, IgcTabsComponent);
 
 // region default
 const metadata: Meta<IgcBadgeComponent> = {
@@ -60,6 +62,11 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
 function renderTabs(args: IgcBadgeArgs) {
   return ['primary', 'info', 'success', 'warning', 'danger'].map(
     (variant, idx) => html`
@@ -81,7 +88,7 @@ function renderTabs(args: IgcBadgeArgs) {
 export const Basic: Story = {
   render: ({ outlined, shape, variant }) => html`
     <igc-badge ?outlined=${outlined} shape=${shape} variant=${variant}>
-      1
+      <igc-icon name="home"></igc-icon>
     </igc-badge>
   `,
 };
