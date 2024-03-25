@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- Date-time input - `inputFormat` is not applied to an already set value [#1114](https://github.com/IgniteUI/igniteui-webcomponents/issues/1114)
+
 ## [4.8.0] - 2024-03-20
 ### Added
 - Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data. [#1026](https://github.com/IgniteUI/igniteui-webcomponents/pull/1026)
