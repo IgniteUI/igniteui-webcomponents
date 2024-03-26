@@ -5,7 +5,6 @@
  */
 
 import { html } from 'lit';
-import hashObject from 'object-hash';
 import React, { type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -235,16 +234,15 @@ export const createComponent = <
   displayName,
   renderProps,
 }: Options<I, E>): ReactWebComponent<I, E> => {
+  events ??= {} as E;
+
   if (renderProps) {
-    events =
-      events !== undefined
-        ? Object.assign(events, {
-            onSlotRequest: 'slot-request' as EventName<SlotRequestEvent>,
-          })
-        : ({} as E);
+    Object.assign(events, {
+      onSlotRequest: 'slot-request' as EventName<SlotRequestEvent>,
+    });
   }
 
-  const eventProps = new Set(Object.keys(events ?? {}));
+  const eventProps = new Set(Object.keys(events));
 
   if (DEV_MODE) {
     for (const p of reservedReactProperties) {
@@ -364,11 +362,13 @@ export const createComponent = <
   }
 
   return React.forwardRef<I, Props>((props, ref) => {
-    let hasRenderers = false;
     const elementRef = React.useRef<I | null>(null);
     const [renderers, setRenderers] = React.useState(new Map());
+
     const outProps: Record<string, unknown> = {};
     const portals: Record<string, unknown> = {};
+
+    let hasRenderers = false;
     const handlers: string[] = [];
 
     for (const prop in props) {
@@ -387,8 +387,6 @@ export const createComponent = <
           html`${requestRenderer(
             renderProps[handler],
             ctx,
-            hashObject(ctx as any),
-            undefined,
             elementRef.current as HTMLElement
           )}`;
       }
@@ -397,7 +395,6 @@ export const createComponent = <
         if (event.data === remove) {
           renderers.delete(event.slotName);
         } else {
-          event.isReact = hasRenderers;
           renderers.set(
             event.slotName,
             createPortal(

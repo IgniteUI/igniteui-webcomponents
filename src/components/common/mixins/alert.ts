@@ -10,7 +10,7 @@ import { watch } from '../decorators/watch.js';
 
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private _internals: ElementInternals;
-  protected _autoHideTimeout?: number;
+  protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
 
   protected declare abstract _animationPlayer: ReturnType<
     typeof addAnimationController

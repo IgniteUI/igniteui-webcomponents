@@ -55,8 +55,7 @@
     "@floating-ui/dom": "^1.6.3",
     "@lit-labs/virtualizer": "^2.0.12",
     "@lit/react": "^1.0.3",
-    "lit": "^3.1.2",
-    "object-hash": "^3.0.0"
+    "lit": "^3.1.2"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.9.4",
@@ -71,9 +70,7 @@
     "@storybook/web-components": "^8.0.4",
     "@storybook/web-components-vite": "^8.0.4",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.24",
-    "@types/object-hash": "^3.0.6",
-    "@types/react-dom": "^18.2.19",
+    "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
     "@web/test-runner": "^0.18.1",

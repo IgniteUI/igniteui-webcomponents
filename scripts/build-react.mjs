@@ -38,8 +38,8 @@ for (const component of components) {
   const source = await format(
     `
     import * as React from 'react';
-    ${litReactImports}
 
+    ${litReactImports}
     import Component from '${importPath}';
     ${eventsMeta.imports}
     ${eventsMeta.exports}
