@@ -138,6 +138,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     if (val) {
       this.setMask(val);
       this._inputFormat = val;
+      if (this.value) {
+        this.updateMask();
+      }
     }
   }
 
@@ -257,15 +260,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
-    if (this.displayFormat) {
-      if (this.value) {
-        this.maskedValue = DateTimeUtil.formatDate(
-          this.value!,
-          this.locale,
-          this.displayFormat,
-          true
-        );
-      }
+    if (this.value) {
+      this.updateMask();
     }
   }
 
