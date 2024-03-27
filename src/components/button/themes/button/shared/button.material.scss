@@ -38,8 +38,6 @@ $outlined-theme: $material-outlined;
 
 :host(:not([disabled])[variant='outlined']) [part='base'],
 :host(:not(:disabled)[variant='outlined']) [part='base'] {
-    border: rem(1px) solid var-get($outlined-theme, 'border-color');
-
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
@@ -65,18 +63,20 @@ $outlined-theme: $material-outlined;
 
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not(:disabled)[variant='contained']) [part='base'] {
-    box-shadow: var(--ig-elevation-2);
+    box-shadow: var-get($contained-theme, 'resting-elevation');
 
     &:hover {
-        box-shadow: var(--ig-elevation-4);
+        box-shadow: var-get($contained-theme, 'hover-elevation');
     }
 
-    &:focus,
     &:active {
-        box-shadow: var(--ig-elevation-8);
+        color: var-get($contained-theme, 'active-foreground');
+        background: var-get($contained-theme, 'active-background');
     }
 
     &:focus-visible {
+        box-shadow: var-get($contained-theme, 'focus-elevation');
+
         &:active {
             color: var-get($contained-theme, 'active-foreground');
             background: var-get($contained-theme, 'active-background');
@@ -86,28 +86,23 @@ $outlined-theme: $material-outlined;
 
 :host(:not([disabled])[variant='fab']) [part='base'],
 :host(:not(:disabled)[variant='fab']) [part='base'] {
-    box-shadow: var(--ig-elevation-6);
+    box-shadow: var-get($fab-theme, 'resting-elevation');
 
     &:hover {
-        box-shadow: var(--ig-elevation-4);
+        box-shadow: var-get($fab-theme, 'hover-elevation');
     }
 
-    &:focus,
     &:active {
-        box-shadow: var(--ig-elevation-8);
+        color: var-get($fab-theme, 'active-foreground');
+        background: var-get($fab-theme, 'active-background');
     }
 
     &:focus-visible {
+        box-shadow: var-get($fab-theme, 'focus-elevation');
+
         &:active {
             color: var-get($fab-theme, 'active-foreground');
             background: var-get($fab-theme, 'active-background');
         }
-    }
-
-    &:hover,
-    &:focus,
-    &:focus-visible,
-    &:active {
-        box-shadow: var(--ig-elevation-12);
     }
 }

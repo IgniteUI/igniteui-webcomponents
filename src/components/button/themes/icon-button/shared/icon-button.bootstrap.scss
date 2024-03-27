@@ -16,10 +16,8 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
     [part='base'] {
-        &:focus,
-        &:focus-within,
-        &:active {
-            box-shadow: 0 0 0 rem(4px) var-get($flat-theme, 'focus-border-color');
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(4px) var-get($flat-theme, 'shadow-color');
         }
 
         &:hover {    
@@ -49,13 +47,8 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
-        &:focus,
-        &:focus-within {
-            box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'focus-border-color');
-        }
-
-        &:active {
-            box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'focus-border-color');
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'shadow-color');
         }
     }
 }
@@ -74,8 +67,6 @@ $outlined-theme: $bootstrap-outlined;
 
         &:focus,
         &:focus-within {
-            box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'focus-border-color');
-
             igc-icon {
                 color: var-get($outlined-theme, 'focus-foreground');
             }
@@ -87,8 +78,8 @@ $outlined-theme: $bootstrap-outlined;
             }
         }
 
-        &:active {
-            box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'focus-border-color');
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'shadow-color');
         }
     }
 }
