@@ -158,6 +158,7 @@ export default class IgcPopoverComponent extends LitElement {
 
   protected show() {
     if (!this.target) return;
+    this._showPopover();
 
     this.dispose = autoUpdate(
       this.target,
@@ -167,6 +168,8 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   protected async hide(): Promise<void> {
+    this._hidePopover();
+
     return new Promise((resolve) => {
       if (this.dispose) {
         this.dispose();
@@ -176,6 +179,14 @@ export default class IgcPopoverComponent extends LitElement {
         resolve();
       }
     });
+  }
+
+  private _showPopover() {
+    this._container?.showPopover();
+  }
+
+  private _hidePopover() {
+    this._container?.hidePopover();
   }
 
   private _createMiddleware(): Middleware[] {
@@ -248,7 +259,7 @@ export default class IgcPopoverComponent extends LitElement {
   protected override render() {
     return html`
       <slot name="anchor" @slotchange=${this._anchorSlotChange}></slot>
-      <div id="container" part=${this.strategy}>
+      <div id="container" popover="manual" part=${this.strategy}>
         <slot></slot>
       </div>
     `;
