@@ -1,18 +1,15 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $indigo;
+$border-size: rem(2px);
+$inner-width: calc(#{$border-size} * 4);
 
 [part~='month-inner'] {
     &:hover {
         color: var-get($theme, 'month-hover-foreground');
         background: var-get($theme, 'month-hover-background');
     }
-
-    // &:focus {
-    //     color: var-get($theme, 'month-focus-foreground');
-    //     background: var-get($theme, 'month-focus-background');
-    // }
 
     &[part~='current'] {
         color: var-get($theme, 'month-current-foreground');
@@ -22,11 +19,6 @@ $theme: $material;
             color: var-get($theme, 'month-current-hover-foreground');
             background: var-get($theme, 'month-current-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'month-current-focus-foreground');
-        //     background: var-get($theme, 'month-current-focus-background');
-        // }
     }
 
     &[part~='selected'] {
@@ -37,11 +29,6 @@ $theme: $material;
             color: var-get($theme, 'month-selected-hover-foreground');
             background: var-get($theme, 'month-selected-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'month-selected-focus-foreground');
-        //     background: var-get($theme, 'month-selected-focus-background');
-        // }
     }
 
     &[part~='selected'][part~='current'] {
@@ -52,11 +39,6 @@ $theme: $material;
             color: var-get($theme, 'month-selected-current-hover-foreground');
             background: var-get($theme, 'month-selected-current-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'month-selected-current-focus-foreground');
-        //     background: var-get($theme, 'month-selected-current-focus-background');
-        // }
     }
 }
 
@@ -66,11 +48,6 @@ $theme: $material;
         background: var-get($theme, 'year-hover-background');
     }
 
-    // &:focus {
-    //     color: var-get($theme, 'year-focus-foreground');
-    //     background: var-get($theme, 'year-focus-background');
-    // }
-
     &[part~='current'] {
         color: var-get($theme, 'year-current-foreground');
         background: var-get($theme, 'year-current-background');
@@ -79,11 +56,6 @@ $theme: $material;
             color: var-get($theme, 'year-current-hover-foreground');
             background: var-get($theme, 'year-current-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'year-current-focus-foreground');
-        //     background: var-get($theme, 'year-current-focus-background');
-        // }
     }
 
 
@@ -95,11 +67,6 @@ $theme: $material;
             color: var-get($theme, 'year-selected-hover-foreground');
             background: var-get($theme, 'year-selected-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'year-selected-focus-foreground');
-        //     background: var-get($theme, 'year-selected-focus-background');
-        // }
     }
 
 
@@ -111,11 +78,6 @@ $theme: $material;
             color: var-get($theme, 'year-selected-current-hover-foreground');
             background: var-get($theme, 'year-selected-current-hover-background');
         }
-
-        // &:focus {
-        //     color: var-get($theme, 'year-selected-current-focus-foreground');
-        //     background: var-get($theme, 'year-selected-current-focus-background');
-        // }
     }
 }
 
@@ -126,6 +88,7 @@ $theme: $material;
     height: var-get($theme, 'size');
     font-weight: 400;
     border-radius: var-get($theme, 'month-year-border-radius');
+    position: relative;
 
     &:focus,
     &:focus-visible,
@@ -133,27 +96,46 @@ $theme: $material;
         outline: none;
     }
 
+    &::after {
+        content: '';
+        position: absolute;
+        width: calc(100% - #{$inner-width});
+        height: calc(100% - #{$inner-width});
+        inset-inline-start: calc(#{$border-size});
+        inset-block-start: calc(#{$border-size});
+        z-index: 0;
+        border-radius: inherit;
+        border: $border-size solid transparent;
+        pointer-events: none;
+    }
+
+
     &[part~='current'] {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'current-outline-color');
+        box-shadow: inset 0 0 0 $border-size var-get($theme, 'current-outline-color');
+
 
         &:hover {
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'current-outline-hover-color');
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'current-outline-hover-color');
         }
     }
 
     &[part~='selected'] {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'selected-outline-color');
+        box-shadow: inset 0 0 0 $border-size var-get($theme, 'selected-outline-color');
 
         &:hover {
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'selected-hover-outline-color');
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'selected-hover-outline-color');
         }
     }
 
     &[part~='selected'][part~='current'] {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
+        &::after {
+            border-color: var-get($theme, 'selected-current-outline-color');
+        }
 
         &:hover {
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
+            &::after {
+                border-color: var-get($theme, 'selected-current-outline-color');
+            }
         }
     }
 }

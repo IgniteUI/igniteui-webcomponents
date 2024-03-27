@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $indigo;
+$theme: $material;
 
 :host(igc-calendar) {
     // TODO see from where is the inline style coming that overrides this one
@@ -36,45 +36,26 @@ $theme: $indigo;
     [part~='header'] {
         background: var-get($theme, 'header-background');
         color: var-get($theme, 'header-foreground');
-        position: relative;
-
-        &::after {
-            content: '';
-            position: absolute;
-            background: var-get($theme, 'border-color');
-            inset-block-start: calc(100% - #{rem(1px)});
-            inset-inline-start: 0;
-            height: rem(1px);
-            width: 100%;
-        }
     }
 }
 
-:host(igc-calendar[header-orientation='vertical']) {
-    [part~='header'] {
-        min-width: rem(136px);
-
-        &::after {
-            inset-inline-start: calc(100% - #{rem(1px)});
-            inset-block-start: 0;
-            height: 100%;
-            width: rem(1px);
-        }
-    }
+[part='content'] {
+    width: 100%;
 }
 
 [part='header'] {
-    gap: rem(2px);
+    padding: rem(16px) rem(24px);
+    gap: rem(24px);
 }
 
 [part='navigation'] {
-    height: rem(50px);
+    height: rem(56px);
     color: var-get($theme, 'picker-foreground');
     background: var-get($theme, 'picker-background');
 }
 
 [part='navigation-buttons'] {
-    gap: rem(8px);
+    gap: rem(24px);
 }
 
 [part~='navigation-button'] {
@@ -105,15 +86,15 @@ $theme: $indigo;
 [part='months-navigation'],
 [part='years-navigation'],
 [part='years-range'] {
-    @include type-style('subtitle-2');
+    @include type-style('subtitle-1');
 }
 
 [part='header-title'] {
-    @include type-style('body-2');
+    @include type-style('overline');
 }
 
 [part='header-date'] {
-    @include type-style('h5');
+    @include type-style('h4');
 
-    font-weight: 600;
+    margin: 0;
 }
