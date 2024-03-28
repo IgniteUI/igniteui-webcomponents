@@ -68,6 +68,34 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('03.03.2020');
     });
 
+    it('should use inputFormat if no displayFormat is defined - issue 1114', async () => {
+      el.inputFormat = 'yyyy#MM#dd';
+      await elementUpdated(el);
+
+      expect(el.displayFormat).to.be.undefined;
+      expect(input.placeholder).to.equal('yyyy#MM#dd');
+
+      el.value = new Date(2020, 2, 3);
+      await elementUpdated(el);
+
+      el.inputFormat = 'yyyy@MM@dd';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2020@03@03');
+
+      // displayFormats overwrites
+      el.displayFormat = '-- yyyy -- MM -- dd --';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('-- 2020 -- 03 -- 03 --');
+
+      // Reset
+      el.displayFormat = undefined as any;
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2020@03@03');
+    });
+
     it('should use displayFormat when defined', async () => {
       expect(el.displayFormat).to.be.undefined;
 
