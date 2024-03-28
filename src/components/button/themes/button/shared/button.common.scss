@@ -10,16 +10,19 @@ $outlined-theme: $material-outlined;
 :host([variant='flat']) [part='base'] {
     border-radius: var-get($flat-theme, 'border-radius');
     height: var-get($flat-theme, 'size');
+    border: rem(1px) solid var-get($flat-theme, 'border-color');
 }
 
 :host([variant='outlined']) [part='base'] {
     border-radius: var-get($outlined-theme, 'border-radius');
     height: var-get($outlined-theme, 'size');
+    border: rem(1px) solid var-get($outlined-theme, 'border-color');
 }
 
 :host([variant='contained']) [part='base'] {
     border-radius: var-get($contained-theme, 'border-radius');
     height: var-get($contained-theme, 'size');
+    border: rem(1px) solid var-get($contained-theme, 'border-color');
 }
 
 :host([variant='fab']) [part='base'] {
@@ -213,15 +216,6 @@ $outlined-theme: $material-outlined;
 
         ::slotted(igc-icon) {
             color: var-get($fab-theme, 'icon-color-hover');
-        }
-    }
-
-    &:focus {
-        color: var-get($fab-theme, 'focus-foreground');
-        background: var-get($fab-theme, 'focus-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($fab-theme, 'icon-color');
         }
     }
 

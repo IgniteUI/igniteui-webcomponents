@@ -5,18 +5,6 @@ $theme: $fluent;
 $group-item-border-thickness: rem(1px);
 $outline-btn-indent: rem(2px);
 
-:host(:focus) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-background');
-    }
-}
-
-:host(:active) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-focused-background');
-    }
-}
-
 :host {
     [part~='toggle'] {
         min-height: $fluent-flat-btn-size;
@@ -35,39 +23,50 @@ $outline-btn-indent: rem(2px);
                 height: calc(100% - (#{$outline-btn-indent} * 2));
                 box-shadow: 0 0 0 rem(1px) var-get($theme, 'item-focused-border-color');
             }
-
-            &:hover {
-                background: var-get($theme, 'item-hover-background');
-            }
-
-            &:active {
-                background: var-get($theme, 'item-focused-background');
-            }
         }
     }
 }
 
-:host([selected]:hover),
-:host([selected]:focus) {
+:host(:hover) {
+    [part~='toggle']:focus-visible {
+        background: var-get($theme, 'item-hover-background');
+    }
+}
+
+:host(:active) {
     [part~='toggle'] {
+        background: var-get($theme, 'item-focused-background');
+
+        &:focus-visible {
+            background: var-get($theme, 'item-focused-background');
+        }
+    }
+}
+
+:host([selected]:hover) {
+    [part~='toggle'] {
+        background: var-get($theme, 'item-selected-background');
+
+        &::before {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var-get($theme, 'item-selected-hover-background');
+        }
+    }
+}
+
+:host([selected]) {
+    [part~='toggle']:focus-visible {
         background: var-get($theme, 'item-selected-background');
     }
 }
 
 :host([selected]:active) {
     [part~='toggle'] {
-        background: var-get($theme, 'item-selected-hover-background');
-    }
-}
-
-:host([selected]) {
-    [part~='toggle'] {
-        &:focus-visible {
-            background: var-get($theme, 'item-selected-background');
-
-            &:active {
-                background: var-get($theme, 'item-selected-hover-background');
-            }
-        }
+        background: var-get($theme, 'item-selected-focus-background');
     }
 }

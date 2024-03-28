@@ -4,6 +4,7 @@ import { css } from 'lit';
 import { styles as bootstrap } from './shared/button/button.bootstrap.css.js';
 import { styles as fluent } from './shared/button/button.fluent.css.js';
 import { styles as indigo } from './shared/button/button.indigo.css.js';
+import { styles as material } from './shared/button/button.material.css.js';
 import type { Themes } from '../../../theming/types';
 
 const light = {
@@ -16,6 +17,9 @@ const light = {
   indigo: css`
     ${indigo}
   `,
+  material: css`
+    ${material}
+  `,
 };
 
 const dark = {
@@ -27,6 +31,9 @@ const dark = {
   `,
   indigo: css`
     ${indigo}
+  `,
+  material: css`
+    ${material}
   `,
 };
 

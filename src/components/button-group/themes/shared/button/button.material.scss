@@ -1,0 +1,115 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    [part~='toggle']::before {
+        position: absolute;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+    [part~='toggle']:focus-visible {
+        color: var-get($theme, 'item-hover-text-color');
+        border-color: var-get($theme, 'item-hover-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+
+        &::before {
+            content: '';
+            background: var-get($theme, 'item-hover-background');
+        }
+    }
+}
+
+:host(:hover) {
+    [part~='toggle'] {
+        background: var-get($theme, 'item-background');
+
+        &::before {
+            content: '';
+            background: var-get($theme, 'item-hover-background');
+        }
+
+        &:focus-visible {
+            &::before {
+                background: var-get($theme, 'item-focused-hover-background');
+            }
+        }
+    }
+}
+
+:host(:active) {
+    [part~='toggle'] {
+        color: var-get($theme, 'item-hover-text-color');
+        border-color: var-get($theme, 'item-hover-border-color');
+
+        &::before {
+            content: '';
+            background: var-get($theme, 'item-focused-background');
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-hover-icon-color');
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:active) {
+    [part~='toggle'] {
+        background: var-get($theme, 'item-selected-background');
+    }
+}
+
+:host([selected]:hover) {
+    [part~='toggle'] {
+        background: var-get($theme, 'item-selected-background');
+
+        &::before {
+            background: var-get($theme, 'item-selected-hover-background');
+        }
+    }
+
+    [part~='toggle']:focus-visible {
+        &::before {
+            background: var-get($theme, 'item-selected-focus-hover-background');
+        }
+    }
+}
+
+:host([selected]) {
+    [part~='toggle']:focus-visible {
+        color: var-get($theme, 'item-selected-hover-text-color');
+        border-color: var-get($theme, 'item-selected-hover-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-selected-hover-icon-color');
+        }
+
+        &::before {
+            background: var-get($theme, 'item-selected-hover-background');
+        }
+    }
+}
+
+:host([selected]:active) {
+    [part~='toggle'] {
+        background: var-get($theme, 'item-selected-background');
+        color: var-get($theme, 'item-selected-text-color');
+        border-color: var-get($theme, 'item-selected-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-selected-icon-color');
+        }
+        
+        &::before {
+            background: var-get($theme, 'item-selected-focus-background');
+        }
+    }
+}

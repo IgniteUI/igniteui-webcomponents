@@ -14,8 +14,6 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
-        border: rem(1px) solid var-get($outlined-theme, 'border-color');
-
         &:focus {
             border: rem(1px) solid var-get($outlined-theme, 'focus-border-color');
         }
@@ -32,32 +30,28 @@ $outlined-theme: $bootstrap-outlined;
 
 :host(:not([disabled])[variant='flat']) [part='base'],
 :host(:not(:disabled)[variant='flat']) [part='base'] {
-    &:focus,
-    &:active {
+    &:focus-visible {
         box-shadow: 0 0 0 rem(4px) var-get($flat-theme, 'shadow-color');
     }
 }
 
 :host(:not([disabled])[variant='outlined']) [part='base'],
 :host(:not(:disabled)[variant='outlined']) [part='base'] {
-    &:focus,
-    &:active {
+    &:focus-visible {
         box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'shadow-color');
     }
 }
 
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not(:disabled)[variant='contained']) [part='base'] {
-    &:focus,
-    &:active {
+    &:focus-visible {
         box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'shadow-color');
     }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'],
 :host(:not(:disabled)[variant='fab']) [part='base'] {
-    &:focus,
-    &:active {
+    &:focus-visible {
         box-shadow: 0 0 0 rem(4px) var-get($fab-theme, 'shadow-color');
     }
 }

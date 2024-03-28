@@ -38,20 +38,23 @@ $outlined-theme: $indigo-outlined;
     }
 }
 
+:host([variant='flat']),
+:host([variant='contained']),
+:host([variant='outlined']) {
+    [part='base'] {
+        border-width: rem(2px);
+    }
+}
+
 :host(:not([disabled])[variant='flat']) [part='base'],
 :host(:not(:disabled)[variant='flat']) [part='base'] {
-    &:focus,
-    &:active {
+    &:focus-visible {
         box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
     }
 }
 
 :host(:not([disabled])[variant='outlined']) [part='base'],
 :host(:not(:disabled)[variant='outlined']) [part='base'] {
-    border-style: solid;
-    border-color: var-get($outlined-theme, 'border-color');
-    border-width: rem(2px);
-
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
@@ -68,13 +71,9 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($outlined-theme, 'active-border-color');
     }
 
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
-    }
-
     &:focus-visible {
         border-color: var-get($outlined-theme, 'focus-visible-border-color');
+        box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
 
         &:hover {
             border-color: var-get($outlined-theme, 'hover-border-color');
@@ -106,12 +105,8 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($contained-theme, 'active-border-color');
     }
 
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
-    }
-
     &:focus-visible {
+        box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
         background: var-get($contained-theme, 'focus-visible-background');
         color: var-get($contained-theme, 'focus-visible-foreground');
         border-color: var-get($contained-theme, 'focus-visible-border-color');
@@ -150,13 +145,9 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($fab-theme, 'active-border-color');
     }
 
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
-    }
-
     &:focus-visible {
         border-color: var-get($fab-theme, 'focus-visible-border-color');
+        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
 
         &:hover {
             border-color: var-get($fab-theme, 'hover-border-color');

@@ -13,18 +13,50 @@ $group-item-border-thickness: rem(1px);
         padding-inline: pad-inline(rem(8px), rem(10px), rem(12px));
         padding-block: pad-block(rem(2px), rem(4px), rem(7px));
         min-width: var(--button-min-width);
+
+        &::before {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    }
+
+    [part~='toggle']:focus-visible {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'idle-shadow-color');
     }
 }
 
-:host(:hover),
-:host(:focus) {
+:host(:active) {
     [part~='toggle'] {
-        border-color: var-get($theme, 'item-border-color');
+        background: var-get($theme, 'item-hover-background');
+        color: var-get($theme, 'item-hover-text-color');
+        border-color: var-get($theme, 'item-hover-border-color');
+
+        &::before {
+            content: '';
+            background: var-get($theme, 'item-focused-background');
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-hover-icon-color');
     }
 }
 
-:host(:focus) {
+:host([selected]:active) {
     [part~='toggle'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
+        background: var-get($theme, 'item-selected-hover-background');
+        color: var-get($theme, 'item-selected-hover-text-color');
+        border-color: var-get($theme, 'item-selected-hover-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-selected-hover-icon-color');
+        }
+        
+        &::before {
+            background: var-get($theme, 'item-selected-focus-background');
+        }
     }
 }
