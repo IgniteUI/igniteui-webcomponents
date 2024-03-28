@@ -47,24 +47,6 @@ $theme: $material;
     }
 }
 
-:host(:focus) {
-    [part~='toggle'] {
-        color: var-get($theme, 'item-focused-text-color');
-        background: var-get($theme, 'item-focused-background');
-        border-color: var-get($theme, 'item-focused-border-color');
-
-        &:hover {
-            color: var-get($theme, 'item-hover-text-color');
-            background: var-get($theme, 'item-hover-background');
-            border-color: var-get($theme, 'item-hover-border-color');
-
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-hover-icon-color');
-            }
-        }
-    }
-}
-
 :host([selected]) {
     [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
@@ -89,16 +71,6 @@ $theme: $material;
     }
 }
 
-:host([selected]:focus) {
-    [part~='toggle'] {
-        &:hover {
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-selected-hover-icon-color');
-            }
-        }
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
     @include disabled();
@@ -107,4 +79,17 @@ $theme: $material;
 :host-context([disabled]),
 :host-context(:disabled) {
     @include disabled();
+}
+
+:host([selected]:disabled),
+:host([selected][disabled]) {
+    [part~='toggle'] {
+        &::before {
+            position: absolute;
+            content: '';
+            inset: 0;
+            z-index: 3;
+            background: var-get($theme, 'disabled-selected-background');
+        }
+    }
 }

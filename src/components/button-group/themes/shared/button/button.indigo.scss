@@ -20,10 +20,10 @@ $group-item-border-thickness: rem(1px);
     }
 
     [part~='toggle']:focus-visible {
-        outline: none;
         z-index: 2;
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
         border-color: var-get($theme, 'item-border-color');
+        color: var-get($theme, 'item-focused-text-color');
     }
 }
 
@@ -34,6 +34,7 @@ $group-item-border-thickness: rem(1px);
 
     [part~='toggle']:focus-visible {
         border-color: var-get($theme, 'item-hover-border-color');
+        color: var-get($theme, 'item-hover-text-color');
     }
 }
 
@@ -50,14 +51,17 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
+:host([selected]:hover) {
+    [part~='toggle']:focus-visible {
+        border-color: var-get($theme, 'item-selected-hover-border-color');
+    }
+}
+
 :host([selected]) {
     [part~='toggle']:focus-visible {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
         border-color: var-get($theme, 'item-selected-border-color');
-
-        &:hover {
-            border-color: var-get($theme, 'item-selected-hover-border-color');
-        }
+        color: var-get($theme, 'item-selected-hover-text-color');
     }
 }
 
