@@ -12,6 +12,13 @@ $theme: $material;
     box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     border-radius: var-get($theme, 'border-radius');
 
+    [part~='header'] {
+        background: var-get($theme, 'header-background');
+        color: var-get($theme, 'header-foreground');
+    }
+}
+
+:host(igc-calendar:not([orientation='vertical'])) {
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
@@ -32,15 +39,16 @@ $theme: $material;
             padding-inline-end: rem(22px);
         }
     }
-
-    [part~='header'] {
-        background: var-get($theme, 'header-background');
-        color: var-get($theme, 'header-foreground');
-    }
 }
 
 [part='content'] {
     width: 100%;
+}
+
+:host(igc-calendar[header-orientation='vertical']) {
+    [part~='header'] {
+        width: rem(168px);
+    }
 }
 
 [part='header'] {
@@ -49,9 +57,12 @@ $theme: $material;
 }
 
 [part='navigation'] {
+    --ig-icon-size: #{rem(24px)};
+
     height: rem(56px);
     color: var-get($theme, 'picker-foreground');
     background: var-get($theme, 'picker-background');
+    padding: 0 rem(24px);
 }
 
 [part='navigation-buttons'] {

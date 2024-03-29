@@ -11,7 +11,9 @@ $theme: $bootstrap;
     background: var-get($theme, 'content-background');
     box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     border-radius: var-get($theme, 'border-radius');
+}
 
+:host(igc-calendar:not([orientation='vertical'])) {
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view::part(days-row) {
@@ -34,8 +36,9 @@ $theme: $bootstrap;
     }
 }
 
-
 [part='navigation'] {
+    --ig-icon-size: #{rem(24px)};
+
     height: rem(56px);
     color: var-get($theme, 'picker-foreground');
     background: var-get($theme, 'picker-background');
@@ -48,6 +51,12 @@ $theme: $bootstrap;
     }
 }
 
+:host(igc-calendar[header-orientation='vertical']) {
+    [part~='header'] {
+        width: rem(168px);
+    }
+}
+
 [part~='header'] {
     background: var-get($theme, 'header-background');
     color: var-get($theme, 'header-foreground');
@@ -57,7 +66,6 @@ $theme: $bootstrap;
     gap: rem(24px);
 }
 
-
 [part='months-navigation'],
 [part='years-navigation'],
 [part='years-range'] {
@@ -65,7 +73,7 @@ $theme: $bootstrap;
 }
 
 [part='header-title'] {
-    @include type-style('subtitle-1');
+    @include type-style('body-2');
 }
 
 [part='header-date'] {

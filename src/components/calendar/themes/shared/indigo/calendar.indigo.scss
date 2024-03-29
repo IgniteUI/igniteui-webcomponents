@@ -12,6 +12,24 @@ $theme: $indigo;
     box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     border-radius: var-get($theme, 'border-radius');
 
+    [part~='header'] {
+        background: var-get($theme, 'header-background');
+        color: var-get($theme, 'header-foreground');
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            background: var-get($theme, 'border-color');
+            inset-block-start: calc(100% - #{rem(1px)});
+            inset-inline-start: 0;
+            height: rem(1px);
+            width: 100%;
+        }
+    }
+}
+
+:host(igc-calendar:not([orientation='vertical'])) {
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
@@ -32,27 +50,11 @@ $theme: $indigo;
             padding-inline-end: rem(22px);
         }
     }
-
-    [part~='header'] {
-        background: var-get($theme, 'header-background');
-        color: var-get($theme, 'header-foreground');
-        position: relative;
-
-        &::after {
-            content: '';
-            position: absolute;
-            background: var-get($theme, 'border-color');
-            inset-block-start: calc(100% - #{rem(1px)});
-            inset-inline-start: 0;
-            height: rem(1px);
-            width: 100%;
-        }
-    }
 }
 
 :host(igc-calendar[header-orientation='vertical']) {
     [part~='header'] {
-        min-width: rem(136px);
+        width: rem(136px);
 
         &::after {
             inset-inline-start: calc(100% - #{rem(1px)});
@@ -68,6 +70,8 @@ $theme: $indigo;
 }
 
 [part='navigation'] {
+    --ig-icon-size: #{rem(14px)};
+
     height: rem(50px);
     color: var-get($theme, 'picker-foreground');
     background: var-get($theme, 'picker-background');
@@ -79,6 +83,7 @@ $theme: $indigo;
 
 [part~='navigation-button'] {
     color: var-get($theme, 'navigation-color');
+    padding: rem(5px);
 
     &:hover {
         color: var-get($theme, 'navigation-hover-color');

@@ -83,10 +83,9 @@ $inner-width: calc(#{$border-size} * 4);
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    @include type-style('subtitle-1');
+    @include type-style('body-2');
 
     height: var-get($theme, 'size');
-    font-weight: 400;
     border-radius: var-get($theme, 'month-year-border-radius');
     position: relative;
 

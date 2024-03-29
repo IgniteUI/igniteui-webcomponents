@@ -32,6 +32,10 @@ $row-gap: rem(6px);
     border: $border-size solid transparent;
 }
 
+[part~='week-number'] {
+    width: var-get($theme, 'size');
+}
+
 [part~='week-number-inner'] {
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
@@ -41,6 +45,7 @@ $row-gap: rem(6px);
     border-radius: var-get($theme, 'week-number-border-radius');
 
     &::after {
+        width: var-get($theme, 'size');
         height: calc(var-get($theme, 'size') / 2);
         background: var-get($theme, 'week-number-background');
         border-inline-start: rem(1px) solid var-get($theme, 'week-number-background');

@@ -7,7 +7,7 @@ $border-size: rem(1px);
 :host([part='days-view']) {
     overflow: hidden;
     position: relative;
-    padding: 0 0 rem(8px) 0;
+    padding: 0 0 rem(16px) 0;
 }
 
 [part~='days-row'] {
@@ -23,9 +23,11 @@ $border-size: rem(1px);
     border-bottom: rem(1px) solid var-get($theme, 'border-color');
 }
 
-[part~='week-number-inner'] {
-    @include type-style('body-2');
+[part~='week-number'] {
+    width: var-get($theme, 'size');
+}
 
+[part~='week-number-inner'] {
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
     color: var-get($theme, 'week-number-foreground');
@@ -34,7 +36,9 @@ $border-size: rem(1px);
     font-style: italic;
 
     &::after {
+        width: var-get($theme, 'size');
         height: calc(var-get($theme, 'size') / 2);
+        inset-block-end: 100%;
         background: var-get($theme, 'week-number-background');
     }
 }
@@ -68,10 +72,7 @@ $border-size: rem(1px);
 }
 
 [part~='date'] {
-    @include type-style('body-2');
-
     height: var-get($theme, 'size');
-    font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
 
     &[part~='range'],
     &[part~='range'][part~='preview'] {

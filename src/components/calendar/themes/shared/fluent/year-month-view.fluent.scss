@@ -9,13 +9,6 @@ $theme: $fluent;
         background: var-get($theme, 'month-hover-background');
     }
 
-    // &:focus-visible,
-    // &:focus-within,
-    // &:focus {
-    //     color: var-get($theme, 'month-focus-foreground');
-    //     background: var-get($theme, 'month-focus-background');
-    // }
-
     &[part~='current'] {
         color: var-get($theme, 'month-current-foreground');
         background: var-get($theme, 'month-current-background');
@@ -24,13 +17,6 @@ $theme: $fluent;
             color: var-get($theme, 'month-current-hover-foreground');
             background: var-get($theme, 'month-current-hover-background');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'month-current-focus-foreground');
-        //     background: var-get($theme, 'month-current-focus-background');
-        // }
     }
 
     &[part~='selected'] {
@@ -41,13 +27,6 @@ $theme: $fluent;
             color: var-get($theme, 'month-selected-hover-foreground');
             background: var-get($theme, 'month-selected-hover-background');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'month-selected-focus-foreground');
-        //     background: var-get($theme, 'month-selected-focus-background');
-        // }
     }
 
     &[part~='selected'][part~='current'] {
@@ -60,14 +39,6 @@ $theme: $fluent;
             background: var-get($theme, 'month-selected-current-hover-background');
             box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'month-selected-current-focus-foreground');
-        //     background: var-get($theme, 'month-selected-current-focus-background');
-        //     box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-focus-color');
-        // }
     }
 
 }
@@ -78,13 +49,6 @@ $theme: $fluent;
         background: var-get($theme, 'year-hover-background');
     }
 
-    // &:focus-visible,
-    // &:focus-within,
-    // &:focus {
-    //     color: var-get($theme, 'year-focus-foreground');
-    //     background: var-get($theme, 'year-focus-background');
-    // }
-
     &[part~='current'] {
         color: var-get($theme, 'year-current-foreground');
         background: var-get($theme, 'year-current-background');
@@ -93,13 +57,6 @@ $theme: $fluent;
             color: var-get($theme, 'year-current-hover-foreground');
             background: var-get($theme, 'year-current-hover-background');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'year-current-focus-foreground');
-        //     background: var-get($theme, 'year-current-focus-background');
-        // }
     }
 
     &[part~='selected'] {
@@ -110,13 +67,6 @@ $theme: $fluent;
             color: var-get($theme, 'year-selected-hover-foreground');
             background: var-get($theme, 'year-selected-hover-background');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'year-selected-focus-foreground');
-        //     background: var-get($theme, 'year-selected-focus-background');
-        // }
     }
 
     &[part~='selected'][part~='current'] {
@@ -129,21 +79,11 @@ $theme: $fluent;
             background: var-get($theme, 'year-selected-current-hover-background');
             box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
         }
-
-        // &:focus-visible,
-        // &:focus-within,
-        // &:focus {
-        //     color: var-get($theme, 'year-selected-current-focus-foreground');
-        //     background: var-get($theme, 'year-selected-current-focus-background');
-        //     box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-focus-color');
-        // }
     }
 }
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    @include type-style('body-1');
-
     height: var-get($theme, 'size');
     border-radius: var-get($theme, 'month-year-border-radius');
 

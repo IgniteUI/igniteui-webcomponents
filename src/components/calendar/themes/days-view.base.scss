@@ -117,7 +117,6 @@ $row-gap: rem(4px);
 
         // rem(1px) is needed because of the border around the week-number-inner element
         bottom: calc(100% + #{rem(1px)});
-        width: 100%;
         box-sizing: border-box;
     }
 }

@@ -121,8 +121,6 @@ $theme: $material;
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    @include type-style('subtitle-1');
-
     height: var-get($theme, 'size');
     font-weight: 400;
     border-radius: var-get($theme, 'month-year-border-radius');

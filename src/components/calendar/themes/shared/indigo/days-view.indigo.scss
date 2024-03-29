@@ -32,6 +32,10 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     border-bottom-right-radius: $week-number-radius;
 }
 
+[part~='week-number'] {
+    width: var-get($theme, 'size');
+}
+
 [part~='week-number-inner'] {
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
@@ -44,20 +48,12 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     }
 }
 
-[part~='label'],
-[part~='week-number-inner'],
-[part~='date'] {
-    @include type-style('body-2');
-}
-
 [part~='date-inner'],
 [part~='week-number-inner'] {
     border: $border-width solid transparent;
 }
 
 [part~='date'] {
-    @include type-style('body-2');
-
     height: var-get($theme, 'size');
     font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
 
