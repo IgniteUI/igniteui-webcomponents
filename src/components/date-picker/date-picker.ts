@@ -1,5 +1,5 @@
 import { ComplexAttributeConverter, LitElement, html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
@@ -136,6 +136,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @query(IgcCalendarComponent.tagName)
   private _calendar!: IgcCalendarComponent;
+
+  @queryAssignedElements({ slot: 'prefix' })
+  private prefixes!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'suffix' })
+  private suffixes!: Array<HTMLElement>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -594,13 +600,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       >
         <slot
           name="prefix"
-          slot="prefix"
+          slot="${this.prefixes.length !== 0 ? 'prefix' : ''}"
           @slotchange=${this.onSlotChange}
         ></slot>
         ${this.renderClearIcon()}${this.renderCalendarIcon()}
         <slot
           name="suffix"
-          slot="suffix"
+          slot="${this.suffixes.length !== 0 ? 'suffix' : ''}"
           @slotchange=${this.onSlotChange}
         ></slot>
         <slot
