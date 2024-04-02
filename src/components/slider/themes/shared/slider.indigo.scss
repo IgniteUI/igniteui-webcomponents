@@ -5,6 +5,7 @@
 $theme: $indigo;
 $thumb-size: rem(12px);
 $thumb-radius: math.div($thumb-size, 2);
+$thumb-scale-hover: calc(16 / 12);
 
 [part='base']:hover {
     [part='inactive'] {
@@ -45,7 +46,7 @@ $thumb-radius: math.div($thumb-size, 2);
     margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
     &:hover, &:active {
-        transform: scale(1.33);
+        transform: scale($thumb-scale-hover);
         border-color: var-get($theme, 'thumb-border-hover-color');
     }
 
