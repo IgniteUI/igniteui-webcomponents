@@ -3,6 +3,10 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
+import { styles } from './themes/date-picker.base.css.js';
+import { styles as shared } from './themes/shared/date-picker.common.css.js';
+import { all } from './themes/themes.js';
+import { themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   DateRangeDescriptor,
@@ -76,6 +80,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  */
+@themes(all)
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatepickerEventMap,
@@ -83,6 +88,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-datepicker';
+  public static styles = [styles, shared];
 
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,

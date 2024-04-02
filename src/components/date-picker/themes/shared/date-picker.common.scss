@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $base;
+
+:host {
+    igc-focus-trap {
+        border-radius: var-get($theme, 'border-radius');
+        background: var-get($theme, 'content-background');
+    }
+}
+
+[part='actions'] {
+    border-block-start: rem(1px) solid var-get($theme, 'border-color');
+}

@@ -1,0 +1,27 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    igc-focus-trap {
+        @include sizable();
+        --dropdown-width: #{sizable(rem(290px), rem(314px), rem(360px))};
+        display: flex;
+        flex: 1 0 0;
+        flex-direction: column;
+        max-width: var(--dropdown-width);
+        overflow: hidden;
+        box-shadow: var(--ig-elevation-3);
+
+        igc-calendar {
+            border: none;
+        }
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
+    display: flex;
+    justify-content: flex-end;
+    padding: rem(8px);
+    gap: rem(8px);
+}
