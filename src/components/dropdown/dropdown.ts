@@ -38,7 +38,10 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { getElementByIdFromRoot } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  getElementByIdFromRoot,
+} from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 
 export interface IgcDropdownEventMap {
@@ -241,8 +244,11 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   private handleListBoxClick(event: MouseEvent) {
-    const item = event.target as IgcDropdownItemComponent;
-    if (this._activeItems.includes(item)) {
+    const item = findElementFromEventPath<IgcDropdownItemComponent>(
+      IgcDropdownItemComponent.tagName,
+      event
+    );
+    if (item && this._activeItems.includes(item)) {
       this._selectItem(item);
     }
   }
