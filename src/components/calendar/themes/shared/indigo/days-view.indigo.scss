@@ -290,6 +290,18 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             &::after {
                 border-color: var-get($theme, 'date-selected-current-border-color');
             }
+
+            &:hover {
+                color: var-get($theme, 'date-selected-hover-foreground');
+                background: var-get($theme, 'date-selected-hover-background');
+                border-color: var-get($theme, 'date-current-hover-border-color');
+            }
+
+            &:focus {
+                color: var-get($theme, 'date-selected-focus-foreground');
+                background: var-get($theme, 'date-selected-focus-background');
+                border-color: var-get($theme, 'date-current-focus-border-color');
+            }
         }
 
         &[part~='current'][part~='range'][part~='special'][part~='first'],

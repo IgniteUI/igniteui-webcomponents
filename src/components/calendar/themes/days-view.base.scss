@@ -25,6 +25,10 @@ $row-gap: rem(4px);
     cursor: pointer;
     user-select: none;
     z-index: 2;
+
+    &::after {
+        box-sizing: border-box;
+    }
 }
 
 [part~='date'] {
