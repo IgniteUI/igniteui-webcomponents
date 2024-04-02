@@ -10,8 +10,11 @@ import { styles as bootstrapLight } from './light/date-picker.bootstrap.css.js';
 import { styles as fluentLight } from './light/date-picker.fluent.css.js';
 import { styles as indigoLight } from './light/date-picker.indigo.css.js';
 import { styles as materialLight } from './light/date-picker.material.css.js';
-// Shared Styles
 import { styles as shared } from './light/date-picker.shared.css.js';
+// Shared Styles
+import { styles as bootstrap } from './shared/date-picker.bootstrap.css.js';
+import { styles as fluent } from './shared/date-picker.fluent.css.js';
+import { styles as indigo } from './shared/date-picker.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -19,16 +22,16 @@ const light = {
     ${shared}
   `,
   bootstrap: css`
-    ${bootstrapLight}
+    ${bootstrap} ${bootstrapLight}
   `,
   material: css`
     ${materialLight}
   `,
   fluent: css`
-    ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -37,16 +40,16 @@ const dark = {
     ${shared}
   `,
   bootstrap: css`
-    ${bootstrapDark}
+    ${bootstrap} ${bootstrapDark}
   `,
   material: css`
     ${materialDark}
   `,
   fluent: css`
-    ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

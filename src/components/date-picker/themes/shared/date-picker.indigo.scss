@@ -1,0 +1,6 @@
+@use 'styles/utilities' as *;
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
+    padding: rem(8px) rem(16px);
+}

@@ -5,11 +5,16 @@ $theme: $base;
 
 :host {
     igc-focus-trap {
+        @include sizable();
+
+        --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
         border-radius: var-get($theme, 'border-radius');
         background: var-get($theme, 'content-background');
     }
 }
 
 [part='actions'] {
+    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
     border-block-start: rem(1px) solid var-get($theme, 'border-color');
 }
