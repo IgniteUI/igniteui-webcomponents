@@ -362,35 +362,41 @@ export const createComponent = <
   }
 
   return React.forwardRef<I, Props>((props, ref) => {
+    const listeners = React.useRef(new Map());
     const elementRef = React.useRef<I | null>(null);
     const [renderers, setRenderers] = React.useState(new Map());
 
     const outProps: Record<string, unknown> = {};
     const portals: Record<string, unknown> = {};
 
-    let hasRenderers = false;
-    const handlers: string[] = [];
+    for (const key of listeners.current.keys()) {
+      if (props[key] === undefined) {
+        listeners.current.delete(key);
+      }
+    }
 
     for (const prop in props) {
       if (renderProps[prop] === undefined) {
         outProps[prop] = props[prop];
       } else {
         portals[renderProps[prop]] = props[prop];
-        handlers.push(prop);
-        hasRenderers = true;
+
+        if (elementRef.current && listeners.current.has(prop)) {
+          outProps[prop] = listeners.current.get(prop);
+        } else {
+          const patched = (ctx: unknown) =>
+            html`${requestRenderer(
+              renderProps[prop],
+              ctx,
+              elementRef.current as HTMLElement
+            )}`;
+          outProps[prop] = patched;
+          listeners.current.set(prop, patched);
+        }
       }
     }
 
-    if (hasRenderers) {
-      for (const handler of handlers) {
-        outProps[handler] = (ctx: unknown) =>
-          html`${requestRenderer(
-            renderProps[handler],
-            ctx,
-            elementRef.current as HTMLElement
-          )}`;
-      }
-
+    if (listeners.current.size) {
       outProps.onSlotRequest = (event: SlotRequestEvent) => {
         if (event.data === remove) {
           renderers.delete(event.slotName);
@@ -405,7 +411,7 @@ export const createComponent = <
           );
         }
 
-        setRenderers(new Map(renderers));
+        setRenderers(() => new Map(renderers));
       };
 
       outProps.children = [

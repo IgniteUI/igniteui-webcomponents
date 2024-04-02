@@ -1,4 +1,4 @@
-import { ChildPart, html } from 'lit';
+import { ChildPart, html, noChange } from 'lit';
 import {
   AsyncDirective,
   DirectiveParameters,
@@ -25,6 +25,7 @@ export const remove = Symbol('remove-slot-request');
 class RequestRenderer<T> extends AsyncDirective {
   private readonly _key = crypto.randomUUID();
   private _part!: ChildPart;
+  private _previousData!: T;
   private _data!: T;
   private _name!: string;
   private _host!: HTMLElement;
@@ -43,11 +44,27 @@ class RequestRenderer<T> extends AsyncDirective {
     return new SlotRequestEvent(this._name, data, this._renderNode, this._key);
   }
 
-  private _renderer() {
-    return html``;
+  private _shouldUpdate() {
+    const data: T & { $implicit: unknown } = this._data as T & {
+      $implicit: unknown;
+    };
+    const isNgContext = Object.hasOwn(data, '$implicit');
+
+    if (isNgContext && data.$implicit === this._previousData) {
+      return false;
+    } else if (isNgContext) {
+      this._previousData = data.$implicit as T;
+    } else if (data === this._previousData) {
+      return false;
+    } else {
+      this._previousData = data;
+    }
+    return true;
   }
 
-  public override render(_name: string, _data: T, _target?: HTMLElement) {}
+  public override render(_name: string, _data: T, _target?: HTMLElement) {
+    return noChange;
+  }
 
   public override update(
     part: ChildPart,
@@ -59,10 +76,12 @@ class RequestRenderer<T> extends AsyncDirective {
     this._target = target;
     this._host = part.options!.host as HTMLElement;
 
-    const event = this._makeRequestEvent(this._data);
-
-    this._eventTarget.dispatchEvent(event);
-    return this._renderer();
+    if (this._shouldUpdate() && this._eventTarget) {
+      this._eventTarget.dispatchEvent(this._makeRequestEvent(this._data));
+      return html``;
+    } else {
+      return noChange;
+    }
   }
 
   protected override disconnected() {
