@@ -19,6 +19,12 @@ $row-gap: rem(4px);
     display: flex;
     align-items: center;
     justify-content: center;
+
+    &:last-of-type {
+        [part~='hidden'] {
+            display: none;
+        }
+    }
 }
 
 [part~='date-inner'] {
