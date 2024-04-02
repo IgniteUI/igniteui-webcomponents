@@ -4,7 +4,9 @@
 :host {
     igc-focus-trap {
         @include sizable();
+
         --dropdown-width: #{sizable(rem(290px), rem(314px), rem(360px))};
+
         display: flex;
         flex: 1 0 0;
         flex-direction: column;
