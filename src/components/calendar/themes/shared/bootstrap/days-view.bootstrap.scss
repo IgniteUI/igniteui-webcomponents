@@ -99,6 +99,13 @@ $border-size: rem(1px);
         border-top-color: transparent;
         border-bottom-color: transparent;
 
+        &::before {
+            height: var-get($theme, 'size');
+            width: var-get($theme, 'size');
+            background: var-get($theme, 'content-background');
+            border-radius: var-get($theme, 'date-border-radius');
+        }
+
         &::after {
             height: var-get($theme, 'size');
             border-block-width: $border-size;
@@ -374,7 +381,7 @@ $border-size: rem(1px);
         }
     }
 
-    &[part~='disabled'][part~='single'] {
+    &[part~='disabled'] {
         color: var-get($theme, 'date-disabled-foreground');
     }
 

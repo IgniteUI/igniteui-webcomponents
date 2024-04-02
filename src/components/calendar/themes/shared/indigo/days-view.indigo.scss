@@ -65,6 +65,13 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     &[part~='range'][part~='last'] {
         background: transparent;
 
+        &::before {
+            height: var-get($theme, 'size');
+            width: var-get($theme, 'size');
+            background: var-get($theme, 'content-background');
+            border-radius: var-get($theme, 'date-border-radius');
+        }
+
         &::after {
             height: var-get($theme, 'size');
             background: var-get($theme, 'date-selected-range-background');
@@ -380,9 +387,9 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     }
 
     &[part~='disabled'] {
-        &[part~='single'] {
-            color: var-get($theme, 'date-disabled-foreground');
+        color: var-get($theme, 'date-disabled-foreground');
 
+        &[part~='single'] {
             &[part~='special'] {
                 color: var-get($theme, 'date-special-foreground');
                 background: var-get($theme, 'date-special-background');

@@ -232,15 +232,15 @@ const Template = ({
     weekday: weekDayFormat,
   };
 
-  const disabledDates: DateRangeDescriptor[] = [
-    // {
-    //   type: DateRangeType.Before,
-    //   dateRange: [new Date()],
-    // },
-  ];
-
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
+
+  const disabledDates: DateRangeDescriptor[] = [
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 7)],
+    },
+  ];
 
   const specialDates: DateRangeDescriptor[] = [
     {
