@@ -376,27 +376,18 @@ $border-size: rem(1px);
 
     &[part~='disabled'][part~='single'] {
         color: var-get($theme, 'date-disabled-foreground');
-        background: var-get($theme, 'date-disabled-background')
     }
 
     &[part~='disabled'][part~='inactive'] {
         color: var-get($theme, 'inactive-color');
-        background: var-get($theme, 'date-disabled-background')
     }
 
     &[part~='disabled'][part~='current'] {
-        color: var-get($theme, 'date-disabled-current-foreground');
         background: var-get($theme, 'date-current-background')
     }
 
     &[part~='disabled'][part~='range'] {
         color: var-get($theme, 'date-disabled-range-foreground');
-        background: var-get($theme, 'date-disabled-range-background')
-    }
-
-    &[part~='disabled'][part~='range'][part~='current'] {
-        color: var-get($theme, 'date-disabled-current-range-foreground');
-        background: var-get($theme, 'date-disabled-current-range-background')
     }
 
     &[part~='inactive'] {

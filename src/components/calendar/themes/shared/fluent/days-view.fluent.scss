@@ -345,22 +345,10 @@ $row-gap: rem(6px);
 [part~='date-inner'][part~='disabled'] {
     &[part~='single'] {
         color: var-get($theme, 'date-disabled-foreground');
-        background: var-get($theme, 'date-disabled-background')
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'date-disabled-current-foreground');
-        background: var-get($theme, 'date-disabled-current-background')
     }
 
     &[part~='range'] {
         color: var-get($theme, 'date-disabled-range-foreground');
-        background: var-get($theme, 'date-disabled-range-background')
-    }
-
-    &[part~='range'][part~='current'] {
-        color: var-get($theme, 'date-disabled-current-range-foreground');
-        background: var-get($theme, 'date-disabled-current-range-background')
     }
 }
 

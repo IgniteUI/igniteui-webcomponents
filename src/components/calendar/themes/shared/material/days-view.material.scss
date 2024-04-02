@@ -300,7 +300,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     &[part~='disabled'] {
         &[part~='single'] {
             color: var-get($theme, 'date-disabled-foreground');
-            background: var-get($theme, 'date-disabled-background');
 
             &[part~='special'] {
                 color: var-get($theme, 'date-disabled-foreground');
@@ -308,9 +307,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &[part~='current'] {
-            color: var-get($theme, 'date-disabled-current-foreground');
-            background: var-get($theme, 'date-disabled-current-background');
-
             &[part~='special'] {
                 color: var-get($theme, 'date-disabled-foreground');
                 background: var-get($theme, 'date-special-background');
@@ -319,12 +315,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
         &[part~='range'] {
             color: var-get($theme, 'date-disabled-range-foreground');
-            background: var-get($theme, 'date-disabled-range-background')
-        }
-
-        &[part~='range'][part~='curent'] {
-            color: var-get($theme, 'date-disabled-current-range-foreground');
-            background: var-get($theme, 'date-disabled-current-range-background')
         }
     }
 
