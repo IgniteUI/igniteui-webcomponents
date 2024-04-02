@@ -149,6 +149,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @queryAssignedElements({ slot: 'suffix' })
   private suffixes!: Array<HTMLElement>;
 
+  @queryAssignedElements({ slot: 'actions' })
+  private actions!: Array<HTMLElement>;
+
   /**
    * Sets the state of the datepicker dropdown.
    * @attr
@@ -540,7 +543,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     return html`
       <div
         part="actions"
-        slot=${ifDefined(this.isDropDown ? undefined : 'footer')}
+        slot=${ifDefined(
+          this.isDropDown || !this.actions.length ? undefined : 'footer'
+        )}
       >
         <slot name="actions"></slot>
       </div>
@@ -606,13 +611,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       >
         <slot
           name="prefix"
-          slot="${this.prefixes.length !== 0 ? 'prefix' : ''}"
+          slot="${ifDefined(!this.prefixes.length ? undefined : 'prefix')}"
           @slotchange=${this.onSlotChange}
         ></slot>
         ${this.renderClearIcon()}${this.renderCalendarIcon()}
         <slot
           name="suffix"
-          slot="${this.suffixes.length !== 0 ? 'suffix' : ''}"
+          slot="${ifDefined(!this.suffixes.length ? undefined : 'suffix')}"
           @slotchange=${this.onSlotChange}
         ></slot>
         <slot
