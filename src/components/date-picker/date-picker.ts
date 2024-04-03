@@ -31,7 +31,7 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, format } from '../common/util.js';
+import { createCounter, format, partNameMap } from '../common/util.js';
 import {
   Validator,
   maxDateValidator,
@@ -542,7 +542,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     // If in dialog mode use the dialog footer slot
     return html`
       <div
-        part="actions"
+        part="${partNameMap({ actions: true, hidden: !this.actions.length })}"
         slot=${ifDefined(
           this.isDropDown || !this.actions.length ? undefined : 'footer'
         )}
