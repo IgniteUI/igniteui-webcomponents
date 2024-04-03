@@ -56,7 +56,7 @@
     "@lit-labs/virtualizer": "^2.0.12",
     "install": "^0.13.0",
     "lit": "^3.1.2",
-    "npm": "^10.5.0"
+    "npm": "^10.5.1"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.9.4",
@@ -87,7 +87,7 @@
     "globby": "^14.0.1",
     "husky": "^9.0.11",
     "ig-typedoc-theme": "^5.0.3",
-    "igniteui-theming": "^6.0.0-beta.16",
+    "igniteui-theming": "^6.0.0-beta.17",
     "keep-a-changelog": "^2.5.3",
     "lint-staged": "^15.2.2",
     "lit-analyzer": "^2.0.3",
