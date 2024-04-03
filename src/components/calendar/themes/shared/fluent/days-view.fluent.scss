@@ -104,6 +104,15 @@ $row-gap: rem(6px);
         border-color: var-get($theme, 'date-range-preview-border-color');
     }
 
+
+    &[part~='disabled'] {
+        color: var-get($theme, 'date-disabled-foreground');
+    }
+
+    &[part~='disabled'][part~='range'] {
+        color: var-get($theme, 'date-disabled-range-foreground');
+    }
+
     &[part~='range'] {
         height: 100%;
 
@@ -338,25 +347,6 @@ $row-gap: rem(6px);
 
         &:hover {
             color: var-get($theme, 'date-selected-current-hover-foreground');
-        }
-    }
-}
-
-[part~='date-inner'][part~='disabled'] {
-    color: var-get($theme, 'date-disabled-foreground');
-
-    &[part~='range'] {
-        color: var-get($theme, 'date-disabled-range-foreground');
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'date-current-foreground');
-    }
-
-    &[part~='first'],
-    &[part~='last'] {
-        ::before {
-            background: var-get($theme, 'date-selected-range-background');
         }
     }
 }

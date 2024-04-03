@@ -192,6 +192,15 @@ $border-size: rem(1px);
         }
     }
 
+
+    &[part~='disabled'] {
+        color: var-get($theme, 'date-disabled-foreground');
+    }
+
+    &[part~='disabled'][part~='range'] {
+        color: var-get($theme, 'date-disabled-range-foreground');
+    }
+
     &[part~='selected'] {
         color: var-get($theme, 'date-selected-foreground');
         background: var-get($theme, 'date-selected-background');
@@ -379,22 +388,6 @@ $border-size: rem(1px);
         &::after {
             border-color: var-get($theme, 'date-selected-foreground');
         }
-    }
-
-    &[part~='disabled'] {
-        color: var-get($theme, 'date-disabled-foreground');
-    }
-
-    &[part~='disabled'][part~='inactive'] {
-        color: var-get($theme, 'inactive-color');
-    }
-
-    &[part~='disabled'][part~='current'] {
-        background: var-get($theme, 'date-current-background')
-    }
-
-    &[part~='disabled'][part~='range'] {
-        color: var-get($theme, 'date-disabled-range-foreground');
     }
 
     &[part~='inactive'] {

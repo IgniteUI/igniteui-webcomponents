@@ -197,6 +197,21 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
+    &[part~='disabled'] {
+        color: var-get($theme, 'date-disabled-foreground');
+    }
+
+    &[part~='disabled'][part~='range'] {
+        color: var-get($theme, 'date-disabled-range-foreground');
+    }
+
+    &[part~='disabled'] {
+        &[part~='first'],
+        &[part~='last'] {
+            color: var-get($theme, 'date-selected-foreground');
+        }
+    }
+
     &[part~='current'] {
         color: var-get($theme, 'date-current-foreground');
         background: var-get($theme, 'date-current-background');
@@ -300,32 +315,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         color: var-get($theme, 'date-focus-foreground');
         background: var-get($theme, 'date-focus-background');
         border-color: var-get($theme, 'date-focus-border-color');
-    }
-
-    &[part~='disabled'] {
-        color: var-get($theme, 'date-disabled-foreground');
-
-        &[part~='single'] {
-            &[part~='special'] {
-                color: var-get($theme, 'date-disabled-foreground');
-            }
-        }
-
-        &[part~='current'] {
-            &[part~='special'] {
-                color: var-get($theme, 'date-disabled-foreground');
-                background: var-get($theme, 'date-special-background');
-            }
-        }
-
-        &[part~='range'] {
-            color: var-get($theme, 'date-disabled-range-foreground');
-        }
-
-        &[part~='first'],
-        &[part~='last'] {
-            color: var-get($theme, 'date-selected-foreground');
-        }
     }
 
     &[part~='inactive'] {

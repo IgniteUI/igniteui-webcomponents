@@ -14,7 +14,6 @@
     letter-spacing: sizable(var(--ig-body-2-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
     text-transform: sizable(var(--ig-body-2-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
 
-
     [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
@@ -49,7 +48,6 @@
         overflow: visible;
     }
 }
-
 
 [part='navigation'] {
     position: relative;
