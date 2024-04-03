@@ -266,6 +266,14 @@ describe('Checkbox', () => {
       expect(spec.submit()?.get(spec.element.name)).to.equal('on');
     });
 
+    it('is associated on submit with value (setting `checked` first)', async () => {
+      spec.element.checked = true;
+      spec.element.value = 'late-binding';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('late-binding');
+    });
+
     it('is associated on submit with passed value', async () => {
       spec.element.checked = true;
       spec.element.value = 'accepted';
@@ -311,6 +319,29 @@ describe('Checkbox', () => {
       spec.submitFails();
 
       spec.element.setCustomValidity('');
+      spec.submitValidates();
+    });
+  });
+
+  describe('Synchronous validation', () => {
+    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+      html`<igc-checkbox required name="checkbox"
+        >I have reviewed ToC and I agree</igc-checkbox
+      >`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcCheckboxComponent.tagName);
+    });
+
+    it('', async () => {
+      expect(spec.form.checkValidity()).to.be.false;
+      spec.submitFails();
+
+      spec.reset();
+
+      spec.element.click();
+      expect(spec.form.checkValidity()).to.be.true;
       spec.submitValidates();
     });
   });
