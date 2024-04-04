@@ -1,4 +1,13 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    igc-dialog[open]::part(base) {
+        border-radius: 0;
+    }
+}
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(48px), rem(54px))};

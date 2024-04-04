@@ -4,6 +4,31 @@
 $theme: $base;
 
 :host {
+    igc-dialog {
+        box-shadow: none;
+        border: none;
+
+        [part='actions'] {
+            border: none;
+        }
+    }
+
+    igc-dialog[open]::part(base) {
+        box-shadow: var(--ig-elevation-24);
+    }
+
+    igc-dialog::part(content),
+    igc-dialog::part(footer) {
+        padding: 0;
+    }
+
+    igc-dialog::part(footer) {
+        background: var-get($theme, 'content-background');
+        // Should be fixed
+        // border-block-start: rem(1px) solid var-get($theme, 'border-color');
+        border-block-start: rem(1px) solid color(gray, 200);
+    }
+
     igc-focus-trap {
         @include sizable();
 

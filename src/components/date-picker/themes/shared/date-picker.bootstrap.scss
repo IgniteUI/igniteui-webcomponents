@@ -1,4 +1,23 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    igc-dialog {
+        igc-calendar {
+            border: none;
+        }
+    }
+    
+    igc-dialog::part(base) {
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
+    igc-focus-trap {
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+}
 
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};

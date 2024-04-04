@@ -1,4 +1,27 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host {
+    igc-dialog[open]::part(base) {
+        border-radius: rem(6px);
+        box-shadow: var(--ig-elevation-5);
+        // Should be fixed
+        // border: rem(1px) solid var-get($theme, 'border-color');
+        border: rem(1px) solid color(gray, 400);
+    }
+
+    igc-dialog::part(footer) {
+        // Should be fixed
+        // border-block-start: rem(1px) solid var-get($theme, 'border-color');
+        border-block-start: rem(1px) solid color(gray, 400);
+    }
+
+    igc-focus-trap {
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+}
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(44px), rem(48px))};

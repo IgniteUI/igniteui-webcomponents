@@ -12,7 +12,13 @@
 
         igc-calendar {
             border: none;
+            box-shadow: none;
         }
+    }
+
+    igc-calendar[header-orientation='vertical'] {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
     }
 }
 
@@ -21,4 +27,9 @@
     justify-content: flex-end;
     padding: rem(8px);
     gap: rem(8px);
+
+    ::slotted(*) {
+        display: flex;
+        gap: rem(8px);
+    }
 }
