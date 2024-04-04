@@ -410,7 +410,6 @@ describe('Date picker', () => {
     it('should set properties of the input correctly', async () => {
       const props = {
         required: true,
-        label: 'Sample Label',
         disabled: true,
         placeholder: 'Sample placeholder',
         outlined: true,

@@ -31,7 +31,7 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, format, partNameMap } from '../common/util.js';
+import { createCounter, format } from '../common/util.js';
 import {
   Validator,
   maxDateValidator,
@@ -151,6 +151,9 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'actions' })
   private actions!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'helper-text' })
+  private helperText!: Array<HTMLElement>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -542,7 +545,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     // If in dialog mode use the dialog footer slot
     return html`
       <div
-        part="${partNameMap({ actions: true, hidden: !this.actions.length })}"
+        part="actions"
+        ?hidden=${!this.actions.length}
         slot=${ifDefined(
           this.isDropDown || !this.actions.length ? undefined : 'footer'
         )}
@@ -582,6 +586,18 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         `;
   }
 
+  private renderLabel(id: string) {
+    return this.label
+      ? html`<label part="label" for="${id}">${this.label}</label>`
+      : nothing;
+  }
+
+  private renderHelperText() {
+    return html`<div part="helper-text" ?hidden="${!this.helperText.length}">
+      <slot name="helper-text" @slotchange=${this.onSlotChange}></slot>
+    </div>`;
+  }
+
   protected renderInput(id: string) {
     const format = formats.has(this._displayFormat!)
       ? `${this._displayFormat}Date`
@@ -592,7 +608,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         id=${id}
         aria-haspopup="dialog"
         aria-expanded=${this.open}
-        label=${ifDefined(this.label)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -620,11 +635,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
           slot="${ifDefined(!this.suffixes.length ? undefined : 'suffix')}"
           @slotchange=${this.onSlotChange}
         ></slot>
-        <slot
-          name="helper-text"
-          slot="helper-text"
-          @slotchange=${this.onSlotChange}
-        ></slot>
       </igc-date-time-input>
     `;
   }
@@ -632,7 +642,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   protected override render() {
     const id = this.id || this.inputId;
 
-    return html`${this.renderInput(id)}${this.renderPicker(id)}`;
+    return html`${this.renderLabel(id)}${this.renderInput(id)}
+    ${this.renderPicker(id)} ${this.renderHelperText()}`;
   }
 }
 
