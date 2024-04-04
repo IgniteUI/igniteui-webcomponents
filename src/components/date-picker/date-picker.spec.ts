@@ -423,6 +423,17 @@ describe('Date picker', () => {
       }
     });
 
+    it('should render the label correctly', async () => {
+      picker.label = 'Test label';
+      await elementUpdated(picker);
+
+      const label = picker.shadowRoot?.querySelector(
+        'label[part="label"]'
+      ) as HTMLLabelElement;
+      expect(label).not.to.be.undefined;
+      expect(label.innerText).to.equal('Test label');
+    });
+
     describe('Active date', () => {
       const tomorrowDate = new Date(
         new Date().setDate(currentDate.getDate() + 1)
