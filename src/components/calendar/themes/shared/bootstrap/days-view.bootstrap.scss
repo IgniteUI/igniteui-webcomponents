@@ -173,6 +173,10 @@ $border-size: rem(1px);
         color: var-get($theme, 'date-selected-range-foreground');
     }
 
+    &[part~='disabled'] {
+        color: var-get($theme, 'date-disabled-foreground');
+    }
+
     &[part~='current'] {
         position: relative;
         color: var-get($theme, 'date-current-foreground');
@@ -192,10 +196,6 @@ $border-size: rem(1px);
         }
     }
 
-
-    &[part~='disabled'] {
-        color: var-get($theme, 'date-disabled-foreground');
-    }
 
     &[part~='disabled'][part~='range'] {
         color: var-get($theme, 'date-disabled-range-foreground');
