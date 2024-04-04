@@ -7,7 +7,6 @@ $row-gap: rem(4px);
 :host([part='days-view']) {
     display: flex;
     flex-direction: column;
-    min-width: rem(290px);
     outline: none;
     padding: rem(16px) rem(12px);
     overflow: hidden;

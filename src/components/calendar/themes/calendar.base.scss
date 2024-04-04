@@ -38,6 +38,7 @@
         display: grid;
         row-gap: rem(4px);
         width: 100%;
+        min-width: sizable(rem(290px), rem(314px), rem(360px));
         grid-template-rows: repeat(3, minmax(max-content, 1fr));
     }
 
