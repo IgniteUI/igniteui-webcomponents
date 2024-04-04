@@ -14,7 +14,6 @@ $theme: $indigo;
     }
 
     igc-dialog::part(footer) {
-
         // Should be fixed
         // border-block-start: rem(1px) solid var-get($theme, 'border-color');
         border-block-start: rem(1px) solid color(gray, 400);
