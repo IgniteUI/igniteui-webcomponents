@@ -7,12 +7,14 @@ $theme: $indigo;
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
         box-shadow: var(--ig-elevation-5);
+
         // Should be fixed
         // border: rem(1px) solid var-get($theme, 'border-color');
         border: rem(1px) solid color(gray, 400);
     }
 
     igc-dialog::part(footer) {
+
         // Should be fixed
         // border-block-start: rem(1px) solid var-get($theme, 'border-color');
         border-block-start: rem(1px) solid color(gray, 400);
@@ -20,6 +22,10 @@ $theme: $indigo;
 
     igc-focus-trap {
         border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
+    [part='helper-text'] {
+        padding: 0;
     }
 }
 

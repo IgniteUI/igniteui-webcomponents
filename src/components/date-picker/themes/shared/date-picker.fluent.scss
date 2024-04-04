@@ -7,6 +7,11 @@ $theme: $fluent;
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }
+
+    [part='helper-text'] {
+        margin-top: rem(5px);
+        padding-inline: 0;
+    }
 }
 
 [part='actions'] {

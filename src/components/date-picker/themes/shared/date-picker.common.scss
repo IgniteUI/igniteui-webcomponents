@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $base;
+$input-theme: input-theme.$material;
 
 :host {
     igc-dialog {
@@ -24,6 +26,7 @@ $theme: $base;
 
     igc-dialog::part(footer) {
         background: var-get($theme, 'content-background');
+
         // Should be fixed
         // border-block-start: rem(1px) solid var-get($theme, 'border-color');
         border-block-start: rem(1px) solid color(gray, 200);
@@ -37,9 +40,31 @@ $theme: $base;
         border-radius: var-get($theme, 'border-radius');
         background: var-get($theme, 'content-background');
     }
+
+    [part='helper-text'] {
+        margin-top: rem(4px);
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+    }
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
 }
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
     border-block-start: rem(1px) solid var-get($theme, 'border-color');
+}
+
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'disabled-text-color');
+    }
 }
