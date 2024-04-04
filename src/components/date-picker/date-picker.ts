@@ -6,7 +6,8 @@ import { live } from 'lit/directives/live.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
+import { Theme } from '../../theming/types.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   DateRangeDescriptor,
@@ -80,7 +81,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  */
-@themes(all)
+@themes(all, true)
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatepickerEventMap,
@@ -97,6 +98,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private static readonly increment = createCounter();
   protected inputId = `datepicker-${IgcDatepickerComponent.increment()}`;
+
+  private declare readonly [themeSymbol]: Theme;
 
   public override validators: Validator<this>[] = [
     requiredValidator,
@@ -135,6 +138,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private get isDropDown() {
     return this.mode === 'dropdown';
+  }
+
+  private get isMaterialTheme() {
+    return this[themeSymbol] === 'material';
   }
 
   @query(IgcDateTimeInputComponent.tagName)
@@ -608,6 +615,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         id=${id}
         aria-haspopup="dialog"
         aria-expanded=${this.open}
+        label=${ifDefined(this.isMaterialTheme ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -642,8 +650,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   protected override render() {
     const id = this.id || this.inputId;
 
-    return html`${this.renderLabel(id)}${this.renderInput(id)}
-    ${this.renderPicker(id)} ${this.renderHelperText()}`;
+    return html`
+      ${!this.isMaterialTheme ? this.renderLabel(id) : nothing}
+      ${this.renderInput(id)}${this.renderPicker(id)}${this.renderHelperText()}
+    `;
   }
 }
 

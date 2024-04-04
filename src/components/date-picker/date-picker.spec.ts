@@ -423,7 +423,7 @@ describe('Date picker', () => {
       }
     });
 
-    it('should render the label correctly', async () => {
+    it('should render the label correctly (valid for theme !== material)', async () => {
       picker.label = 'Test label';
       await elementUpdated(picker);
 
