@@ -19,8 +19,8 @@ $row-gap: rem(4px);
     align-items: center;
     justify-content: center;
 
-    // TODO hide the 7 row anly of all the children have hidden part on them,
-    //  I need a wat to know if the calendar is in multi view to achieve this
+    // TODO hide the 7 row only if all the children have hidden part on them,
+    //  I need to know if the calendar is in multi view to achieve this
     // &:nth-child(7) {
     //     > [part~='date']:has(:not([part~='hidden'])) {
     //         display: none;
