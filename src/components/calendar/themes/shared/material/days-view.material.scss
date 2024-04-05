@@ -282,7 +282,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             &:hover {
                 color: var-get($theme, 'date-special-hover-foreground');
                 background: var-get($theme, 'date-hover-background');
-                border-color: transparent;
 
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
@@ -292,7 +291,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             &:focus {
                 color: var-get($theme, 'date-special-focus-foreground');
                 background: var-get($theme, 'date-focus-background');
-                border-color: transparent;
 
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
