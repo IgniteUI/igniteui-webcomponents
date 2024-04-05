@@ -5,13 +5,12 @@ $theme: $indigo;
 $border-width: rem(1px);
 $week-number-radius: var-get($theme, 'week-number-border-radius');
 
+[part~='label-inner'] {
+    color: var-get($theme, 'weekday-color');
+}
+
 [part~='label'] {
     height: var-get($theme, 'size');
-    color: var-get($theme, 'weekday-color');
-
-    [part~='week-number-inner'] {
-        color: var-get($theme, 'weekday-color');
-    }
 }
 
 [part~='weekend'] {
