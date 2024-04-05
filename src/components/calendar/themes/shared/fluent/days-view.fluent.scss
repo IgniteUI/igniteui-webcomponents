@@ -10,10 +10,7 @@ $row-gap: rem(6px);
 }
 
 [part~='date'] {
-    @include type-style('body-1');
-
     height: var-get($theme, 'size');
-    font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
 }
 
 [part~='date'],
