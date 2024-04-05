@@ -6,7 +6,7 @@
     padding: unset;
 }
 
-[part='base'] {
+[part~='base'] {
     background: inherit;
     color: inherit;
     border-style: inherit;
@@ -24,7 +24,7 @@
 
 [part='title'],
 [part='footer'] {
-    display: flex;
+    display: none;
     align-items: center;
 
     @include type-style('h6') {
@@ -35,6 +35,18 @@
 [part='footer'] {
     flex-wrap: nowrap;
     justify-content: flex-end;
+}
+
+[part~='titled'] {
+    [part='title'] {
+        display: flex;
+    }
+}
+
+[part~='footed'] {
+    [part='footer'] {
+        display: flex;
+    }
 }
 
 ::slotted(*) {

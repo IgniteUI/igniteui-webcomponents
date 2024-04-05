@@ -47,7 +47,7 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { partNameMap } from '../common/util.js';
+import { findElementFromEventPath, partNameMap } from '../common/util.js';
 import { Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -368,8 +368,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private handleClick(event: MouseEvent) {
-    const item = event.target as IgcSelectItemComponent;
-    if (this._activeItems.includes(item)) {
+    const item = findElementFromEventPath<IgcSelectItemComponent>(
+      IgcSelectItemComponent.tagName,
+      event
+    );
+    if (item && this._activeItems.includes(item)) {
       this._selectItem(item);
     }
   }
