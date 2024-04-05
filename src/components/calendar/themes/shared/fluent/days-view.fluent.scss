@@ -67,7 +67,6 @@ $row-gap: rem(6px);
 
 [part~='inactive']:not([part~='range']) {
     color: var-get($theme, 'inactive-color') !important;
-    background: transparent !important;
     border-color: transparent !important;
 
     &:hover {
@@ -306,6 +305,10 @@ $row-gap: rem(6px);
         &::after {
             border-color: transparent;
         }
+    }
+
+    &[part~='inactive'][part~='selected']:not([part~='range']) {
+        background: transparent;
     }
 }
 
