@@ -8,8 +8,8 @@ import {
 import { DateRangeDescriptor, DateRangeType, WeekDays } from './types.js';
 import {
   asNumber,
+  findElementFromEventPath,
   first,
-  getElementsFromEventPath,
   last,
   modulo,
 } from '../common/util.js';
@@ -50,9 +50,7 @@ export function datesFromISOStrings(value: string | null) {
  *
  */
 export function getViewElement(event: Event) {
-  const element = getElementsFromEventPath(event).find((element) =>
-    element.matches(`[data-value]`)
-  );
+  const element = findElementFromEventPath<HTMLElement>(`[data-value]`, event);
   return element ? asNumber(element.dataset.value, -1) : -1;
 }
 

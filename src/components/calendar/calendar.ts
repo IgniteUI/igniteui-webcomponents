@@ -42,9 +42,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import {
+  findElementFromEventPath,
   first,
   format,
-  getElementsFromEventPath,
   last,
   partNameMap,
 } from '../common/util.js';
@@ -382,10 +382,9 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private isNotFromCalendarView(_: Element, event: KeyboardEvent) {
-    return !getElementsFromEventPath(event).some((element) =>
-      element.matches(
-        `${IgcDaysViewComponent.tagName}, ${IgcMonthsViewComponent.tagName}, ${IgcYearsViewComponent.tagName}`
-      )
+    return !findElementFromEventPath(
+      `${IgcDaysViewComponent.tagName}, ${IgcMonthsViewComponent.tagName}, ${IgcYearsViewComponent.tagName}`,
+      event
     );
   }
 
