@@ -1,14 +1,32 @@
 @use 'styles/utilities' as *;
 
+[part='title'],
+[part='footer'] {
+    @include type-style('h5') {
+        margin: 0;
+    }
+}
+
 [part='title'] {
-    padding: rem(16px) rem(24px);
+    padding: rem(24px) rem(24px) 0 rem(24px);
 }
 
 [part='content'] {
-    padding-inline: rem(24px);
-    padding-block-end: rem(8px);
+    padding: rem(16px) rem(24px);
 }
 
 [part='footer'] {
-    padding: rem(8px);
+    padding: rem(16px) rem(24px) rem(24px) rem(24px);
+}
+
+[part='base'] {
+    ::slotted(igc-button) {
+        --ig-size: 2;
+    }
+}
+
+slot[name='footer'] {
+    &::slotted(:last-child) {
+        margin-inline-start: rem(16px);
+    }
 }

@@ -1,9 +1,14 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcButtonComponent, defineComponents } from '../src/index.js';
+import {
+  IgcButtonComponent,
+  IgcIconComponent,
+  defineComponents,
+  registerIcon,
+} from '../src/index.js';
 
-defineComponents(IgcButtonComponent);
+defineComponents(IgcButtonComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcButtonComponent> = {
@@ -92,6 +97,11 @@ type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
 export const BasicButton: Story = {
   render: ({ disabled, variant, type }) => html`
     <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
@@ -141,8 +151,8 @@ export const LinkButtonWithSlots: Story = {
       target=${target}
       variant=${variant}
     >
-      <span slot="prefix">+</span>
+      <igc-icon name="home" slot="prefix"></igc-icon>
       Open in new tab
-      <span slot="suffix">-</span>
+      <igc-icon name="home" slot="suffix"></igc-icon>
     </igc-button>`,
 };

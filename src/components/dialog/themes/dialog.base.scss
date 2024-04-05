@@ -6,7 +6,7 @@
     padding: unset;
 }
 
-[part='base'] {
+[part~='base'] {
     background: inherit;
     color: inherit;
     border-style: inherit;
@@ -24,7 +24,7 @@
 
 [part='title'],
 [part='footer'] {
-    display: flex;
+    display: none;
     align-items: center;
 
     @include type-style('h6') {
@@ -37,6 +37,18 @@
     justify-content: flex-end;
 }
 
+[part~='titled'] {
+    [part='title'] {
+        display: flex;
+    }
+}
+
+[part~='footed'] {
+    [part='footer'] {
+        display: flex;
+    }
+}
+
 ::slotted(*) {
     font: inherit;
     letter-spacing: inherit;
@@ -47,8 +59,8 @@
 
 slot[name='title'],
 slot[name='footer'] {
-    &::slotted(:not(:last-child)) {
-        margin-inline-end: rem(8px);
+    &::slotted(:last-child) {
+        margin-inline-start: rem(8px);
     }
 }
 

@@ -15,7 +15,8 @@
     align-items: center;
 
     ::slotted(igc-icon-button:not(:first-of-type)),
-    ::slotted(igc-button:not(:first-of-type)) {
+    ::slotted(igc-button:not(:first-of-type)),
+    ::slotted(igc-icon:not(:first-of-type)) {
         margin-inline-start: rem(8px);
     }
 }

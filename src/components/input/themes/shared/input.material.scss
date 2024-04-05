@@ -33,10 +33,6 @@ $fs: rem(16px) !default;
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
     }
-
-    input::placeholder {
-        color: var-get($theme, 'placeholder-color');
-    }
 }
 
 [part='prefix'],
@@ -248,6 +244,41 @@ input:placeholder-shown + [part='notch'] [part='label'],
         background: var-get($theme, 'box-disabled-background');
         border-color: var-get($theme, 'disabled-border-color');
         border-bottom-style: dashed;
+    }
+}
+
+:host([type='search']) {
+    [part^='container'] {
+        background: var-get($theme, 'search-background');
+        border-bottom: none;
+        box-shadow: var-get($theme, 'search-resting-elevation');
+        border-radius: var-get($theme, 'search-border-radius');
+        overflow: hidden;
+
+        &:focus-within {
+            background: var-get($theme, 'search-background');
+
+            &::after {
+                display: none;
+            }
+        }
+    }
+}
+
+:host([type='search']:hover),
+:host([type='search']:focus-within) {
+    [part^='container'] {
+        box-shadow: var-get($theme, 'search-hover-elevation');
+        background: var-get($theme, 'search-background');
+    }
+}
+
+:host(:disabled[type='search']),
+:host([disabled][type='search']) {
+    [part^='container'] {
+        background: var-get($theme, 'search-disabled-background');
+        box-shadow: var-get($theme, 'search-disabled-elevation');
+        border: none;
     }
 }
 
@@ -472,10 +503,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='filler'],
     [part='notch'],
     [part='end'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    input::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 

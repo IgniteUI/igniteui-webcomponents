@@ -9,13 +9,19 @@ import {
   formSubmitHandler,
 } from './story.js';
 import {
+  IgcIconComponent,
   IgcInputComponent,
   defineComponents,
+  registerIcon,
   registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcInputComponent);
+defineComponents(IgcInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
+registerIcon(
+  'search',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
 
 // region default
 const metadata: Meta<IgcInputComponent> = {
@@ -269,6 +275,11 @@ export const Form: Story = {
           label="Username"
           value="John Doe"
         ></igc-input>
+      </fieldset>
+      <fieldset>
+        <igc-input name="input-search" label="Search" type="search">
+          <igc-icon name="search" slot="prefix"></igc-icon>
+        </igc-input>
       </fieldset>
       <fieldset>
         <igc-input name="input-required" label="Required" required></igc-input>

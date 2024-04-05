@@ -5,16 +5,22 @@ $theme: $indigo;
 $transition-duration: .25s;
 
 %suffix-preffix {
+    position: relative;
     display: inline-flex;
-    align-items: center;
     width: max-content;
-    height: calc(100% - #{rem(2px)});
-    padding-inline: pad-inline(8px, 12px, 16px);
+    align-items: center;
+    height: calc(100% - #{rem(1px)});
+    padding-inline: pad-inline(2px, 4px, 6px);
 }
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
+    }
 
     [part='prefix'],
     [part='suffix'] {
@@ -48,10 +54,9 @@ $transition-duration: .25s;
     }
 
     [part~='label'] {
+        @include type-style('caption');
+
         color: var-get($theme, 'idle-secondary-color');
-        font-size: rem(14px);
-        font-weight: 600;
-        line-height: 1;
     }
 
     [part^='container'] {
@@ -67,7 +72,7 @@ $transition-duration: .25s;
             position: absolute;
             content: '';
             width: 100%;
-            height: rem(2px);
+            height: rem(1px);
             left: 0;
             right: 0;
             bottom: -1px;
@@ -79,27 +84,33 @@ $transition-duration: .25s;
     }
 
     [part~='input'] {
+        @include type-style('body-2');
+
         color: var-get($theme, 'idle-text-color');
-        font-size: rem(16px);
+        font-size: rem(12px);
+        line-height: rem(16px);
         background: initial;
-        padding-block: rem(8px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+        padding-block: rem(6px);
+        padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
         border: none;
         grid-area: 1 / 2;
-        height: 100%;
+        height: calc(var-get($theme, 'size') - 1px);
+    }
+
+    [part~='input']::placeholder {
+        font-style: italic;
     }
 
     [part~='prefixed'] {
-        padding-inline-start: rem(4px);
+        padding-inline-start: 0;
     }
 
     [part~='suffixed'] {
-        padding-inline-end: rem(4px);
+        padding-inline-end: 0;
     }
 
     [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+        margin-top: rem(4px);
     }
 }
 
@@ -116,6 +127,18 @@ $transition-duration: .25s;
     }
 }
 
+:host(:hover) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'filled-text-hover-color');
+        }
+    }
+
+    [part^='container'] {
+        border-color: var-get($theme, 'hover-bottom-line-color');
+    }
+}
+
 :host(:focus-within) {
     [part='prefix'],
     [part='suffix'] {
@@ -125,6 +148,8 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
+        caret-color: var-get($theme, 'focused-bottom-line-color');
+
         &::after {
             transform: scaleY(1);
         }
@@ -133,10 +158,17 @@ $transition-duration: .25s;
     [part='label'] {
         color: var-get($theme, 'focused-secondary-color');
     }
+
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'focused-text-color');
+        }
+    }
 }
 
 :host([invalid]) {
     [part^='container'] {
+        caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');
 
         &::after {
@@ -144,8 +176,26 @@ $transition-duration: .25s;
         }
     }
 
-    [part='label'] {
-        color: var-get($theme, 'error-secondary-color');
+    [part='helper-text'] {
+        color: var-get($theme, 'helper-text-color');
+    }
+}
+
+:host([type='search']) {
+    %suffix-preffix {
+        padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
+    }
+
+    [part~='input'] {
+        padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
+    }
+
+    [part~='prefixed'] {
+        padding-inline-start: 0;
+    }
+
+    [part~='suffixed'] {
+        padding-inline-end: 0;
     }
 }
 
@@ -159,8 +209,7 @@ $transition-duration: .25s;
     [part='suffix'],
     [part='label'],
     [part~='input'],
-    [part='helper-text'],
-    [part~='input']::placeholder {
+    [part='helper-text'] {
         color: var-get($theme, 'disabled-text-color');
     }
 }

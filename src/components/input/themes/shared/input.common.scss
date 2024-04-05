@@ -29,6 +29,17 @@ $theme: $base;
     }
 }
 
+[part~='input']::placeholder {
+    color: var-get($theme, 'placeholder-color');
+}
+
+:host(:focus-within),
+:host(:hover) {
+    [part~='input']::placeholder {
+        color: var-get($theme, 'hover-placeholder-color');
+    }
+}
+
 :host(:focus-within) {
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
@@ -44,5 +55,21 @@ $theme: $base;
 :host([invalid]) {
     [part='helper-text'] {
         color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+/* stylelint-disable */
+:host([type='search']) {
+    input[type='search']::-webkit-search-cancel-button,
+    input[type='search']::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+}
+/* stylelint-enable */
+
+:host(:disabled),
+:host([disabled]) {
+    [part~='input']::placeholder {
+        color: var-get($theme, 'disabled-text-color');
     }
 }
