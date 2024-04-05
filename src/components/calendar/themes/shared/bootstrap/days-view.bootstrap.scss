@@ -394,13 +394,15 @@ $border-size: rem(1px);
         &::after {
             display: none;
         }
+
+        &:hover {
+            color: var-get($theme, 'inactive-color');
+        }
     }
 
     &[part~='inactive'][part~='special']:not([part~='range']) {
-        color: var-get($theme, 'inactive-color');
-
         &:hover {
-            color: var-get($theme, 'date-hover-foreground');
+            color: var-get($theme, 'inactive-color');
         }
     }
 
@@ -410,7 +412,6 @@ $border-size: rem(1px);
         background: transparent;
 
         &:hover {
-            color: var-get($theme, 'date-hover-foreground');
             background: var-get($theme, 'date-hover-background');
             border-color: var-get($theme, 'date-hover-border-color');
         }

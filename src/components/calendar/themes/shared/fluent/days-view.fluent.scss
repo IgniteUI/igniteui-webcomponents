@@ -68,8 +68,22 @@ $row-gap: rem(6px);
     color: var-get($theme, 'weekend-color');
 }
 
+[part~='inactive']:not([part~='range']) {
+    color: var-get($theme, 'inactive-color') !important;
+    background: transparent !important;
+    border-color: transparent !important;
+
+    &:hover {
+        color: var-get($theme, 'inactive-color');
+    }
+}
+
 [part~='inactive']:not([part~='preview']) {
     color: var-get($theme, 'inactive-color');
+
+    &:hover {
+        color: var-get($theme, 'inactive-color');
+    }
 }
 
 [part~='date-inner'] {
@@ -103,7 +117,6 @@ $row-gap: rem(6px);
         background: transparent;
         border-color: var-get($theme, 'date-range-preview-border-color');
     }
-
 
     &[part~='disabled'] {
         color: var-get($theme, 'date-disabled-foreground');
@@ -285,10 +298,6 @@ $row-gap: rem(6px);
     &[part~='special'][part~='inactive']:not([part~='range']),
     &[part~='current'][part~='inactive']:not([part~='range']) {
         color: var-get($theme, 'inactive-color');
-
-        &:hover {
-            color: var-get($theme, 'date-hover-foreground');
-        }
     }
 
     &[part~='special'][part~='inactive'],
@@ -304,8 +313,7 @@ $row-gap: rem(6px);
 }
 
 [part~='date-inner'][part~='single'] {
-    &[part~='weekend'],
-    &[part~='inactive'] {
+    &[part~='weekend']:not([part~='inactive']) {
         &:hover {
             color: var-get($theme, 'date-hover-foreground');
         }
