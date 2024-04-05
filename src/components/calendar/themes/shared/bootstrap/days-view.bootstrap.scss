@@ -196,7 +196,6 @@ $border-size: rem(1px);
         }
     }
 
-
     &[part~='disabled'][part~='range'] {
         color: var-get($theme, 'date-disabled-range-foreground');
     }
