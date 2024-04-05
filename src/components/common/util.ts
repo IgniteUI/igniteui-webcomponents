@@ -153,10 +153,20 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
-export function getElementsFromEventPath(event: Event) {
-  return event
-    .composedPath()
-    .filter((item) => isElement(item)) as HTMLElement[];
+export function getElementsFromEventPath<T extends Element>(event: Event) {
+  return event.composedPath().filter((item) => isElement(item)) as T[];
+}
+
+export function findElementFromEventPath<T extends Element>(
+  predicate: string | ((element: Element) => boolean),
+  event: Event
+) {
+  const func =
+    typeof predicate === 'string'
+      ? (e: Element) => e.matches(predicate)
+      : (e: Element) => predicate(e);
+
+  return getElementsFromEventPath(event).find(func) as T | undefined;
 }
 
 export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
