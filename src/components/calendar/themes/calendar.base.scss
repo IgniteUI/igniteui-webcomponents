@@ -117,6 +117,12 @@
     }
 }
 
+[part~='picker-dates'] {
+    display: flex;
+    align-items: center;
+    gap: rem(4px);
+}
+
 [part='days-view-container'] {
     flex-grow: 1;
 }
