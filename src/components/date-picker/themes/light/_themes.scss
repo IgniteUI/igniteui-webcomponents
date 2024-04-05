@@ -5,21 +5,26 @@
 
 $base: digest-schema($light-calendar);
 $material: map.merge(digest-schema($material-calendar), (
+    idle-secondary-color: map.get(input-theme.$material, 'idle-secondary-color'),
     helper-text-color: map.get(input-theme.$material, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$material, 'disabled-text-color'),
     error-secondary-color: map.get(input-theme.$material, 'error-secondary-color')
 ));
 $bootstrap: map.merge(digest-schema($bootstrap-calendar), (
+    idle-secondary-color: map.get(input-theme.$bootstrap, 'idle-secondary-color'),
     helper-text-color: map.get(input-theme.$bootstrap, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$bootstrap, 'disabled-text-color'),
     error-secondary-color: map.get(input-theme.$bootstrap, 'error-secondary-color')
 ));
 $fluent: map.merge(digest-schema($fluent-calendar), (
+    idle-secondary-color: map.get(input-theme.$fluent, 'idle-secondary-color'),
     helper-text-color: map.get(input-theme.$fluent, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$fluent, 'disabled-text-color'),
     error-secondary-color: map.get(input-theme.$fluent, 'error-secondary-color')
 ));
 $indigo: map.merge(digest-schema($indigo-calendar), (
+    idle-secondary-color: map.get(input-theme.$indigo, 'idle-secondary-color'),
+    focused-secondary-color: map.get(input-theme.$indigo, 'focused-secondary-color'),
     helper-text-color: map.get(input-theme.$indigo, 'helper-text-color'),
     disabled-text-color: map.get(input-theme.$indigo, 'disabled-text-color'),
     error-secondary-color: map.get(input-theme.$indigo, 'error-secondary-color')

@@ -22,6 +22,12 @@
     }
 }
 
+:host([required]) {
+    [part='label']::after {
+        content: '*';
+    }
+}
+
 [part='helper-text'] {
     line-height: 1;
 
@@ -30,6 +36,13 @@
 
         line-height: inherit;
     }
+}
+
+[part='label'] {
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 [part='actions'] {

@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $indigo;
+$input-theme: input-theme.$indigo;
 
 :host {
     igc-dialog[open]::part(base) {
@@ -23,6 +25,10 @@ $theme: $indigo;
         border: rem(1px) solid var-get($theme, 'border-color');
     }
 
+    [part~='label'] {
+        @include type-style('caption');
+    }
+
     [part='helper-text'] {
         padding: 0;
     }
@@ -31,4 +37,10 @@ $theme: $indigo;
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
     padding: rem(8px) rem(16px);
+}
+
+:host(:focus-within) {
+    [part='label'] {
+        color: var-get($input-theme, 'focused-secondary-color');
+    }
 }

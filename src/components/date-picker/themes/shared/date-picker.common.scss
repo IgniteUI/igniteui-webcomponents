@@ -41,6 +41,10 @@ $input-theme: input-theme.$material;
         background: var-get($theme, 'content-background');
     }
 
+    [part~='label'] {
+        color: var-get($input-theme, 'idle-secondary-color');
+    }
+
     [part='helper-text'] {
         margin-top: rem(4px);
         padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
@@ -64,6 +68,7 @@ $input-theme: input-theme.$material;
 
 :host(:disabled),
 :host([disabled]) {
+    [part='label'],
     ::slotted([slot='helper-text']) {
         color: var-get($input-theme, 'disabled-text-color');
     }
