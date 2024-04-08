@@ -83,7 +83,7 @@ $theme: $bootstrap;
 }
 
 [part='years-range'] {
-    color: var-get($theme, 'navigation-color');
+    color: var-get($theme, 'picker-foreground');
 }
 
 [part~='navigation'] {
