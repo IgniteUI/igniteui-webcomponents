@@ -145,6 +145,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &[part~='current'][part~='range'] {
+            color: var-get($theme, 'date-selected-current-foreground');
+
             &:focus {
                 border-color: var-get($theme, 'date-current-focus-border-color');
             }
@@ -283,6 +285,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
                 color: var-get($theme, 'date-special-hover-foreground');
                 background: var-get($theme, 'date-hover-background');
 
+                // stylelint-disable-next-line
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
                 }
@@ -292,6 +295,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
                 color: var-get($theme, 'date-special-focus-foreground');
                 background: var-get($theme, 'date-focus-background');
 
+                // stylelint-disable-next-line
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
                 }
