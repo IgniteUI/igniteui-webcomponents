@@ -221,7 +221,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private handleClick({ clientX, clientY, target }: MouseEvent) {
-    if (this.closeOnOutsideClick && this.dialog.isSameNode(target as Node)) {
+    if (this.closeOnOutsideClick && this.dialog === target) {
       const { left, top, right, bottom } = this.dialog.getBoundingClientRect();
       const between = (x: number, low: number, high: number) =>
         x >= low && x <= high;

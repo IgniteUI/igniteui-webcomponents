@@ -250,6 +250,14 @@ describe('Radio Component', () => {
       expect(spec.submit()?.get(spec.element.name)).to.equal('on');
     });
 
+    it('is associated on submit with default value "on" (setting `checked` first)', async () => {
+      radios.at(0)!.checked = true;
+      radios.forEach((r) => (r.value = ''));
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+    });
+
     it('is associated on submit with passed value', async () => {
       radios.at(0)!.checked = true;
       await elementUpdated(spec.element);
@@ -311,6 +319,29 @@ describe('Radio Component', () => {
       for (const radio of radios) {
         expect(radio.invalid).to.be.false;
       }
+    });
+  });
+
+  describe('issue-1122', () => {
+    const spec = new FormAssociatedTestBed<IgcRadioComponent>(
+      html`<igc-radio name="selection" value="1" required></igc-radio>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcRadioComponent.tagName);
+    });
+
+    it('synchronously validates component', async () => {
+      // Invalid state
+      expect(spec.form.checkValidity()).to.be.false;
+      spec.submitFails();
+
+      spec.reset();
+
+      // Passes
+      spec.element.click();
+      expect(spec.form.checkValidity()).to.be.true;
+      spec.submitValidates();
     });
   });
 });

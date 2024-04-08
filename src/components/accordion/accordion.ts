@@ -83,7 +83,7 @@ export default class IgcAccordionComponent extends LitElement {
     const current = event.target as IgcExpansionPanelComponent;
     const next = this.getNextPanel(current, -1);
 
-    if (event.altKey || next.isSameNode(current)) {
+    if (event.altKey || next === current) {
       return;
     }
 
@@ -94,7 +94,7 @@ export default class IgcAccordionComponent extends LitElement {
     const current = event.target as IgcExpansionPanelComponent;
     const next = this.getNextPanel(current, 1);
 
-    if (event.altKey || next.isSameNode(current)) {
+    if (event.altKey || next === current) {
       return;
     }
 
@@ -114,9 +114,7 @@ export default class IgcAccordionComponent extends LitElement {
 
     if (this.singleExpand) {
       for (const panel of panels) {
-        current.isSameNode(panel)
-          ? this.openPanel(panel)
-          : this.closePanel(panel);
+        current === panel ? this.openPanel(panel) : this.closePanel(panel);
       }
     } else {
       for (const panel of panels) {
