@@ -8,6 +8,7 @@ $theme: $bootstrap;
 }
 
 [part~='month-inner'] {
+    &:focus,
     &:hover {
         color: var-get($theme, 'month-hover-foreground');
         background: var-get($theme, 'month-hover-background');
@@ -18,10 +19,14 @@ $theme: $bootstrap;
         background: var-get($theme, 'month-current-background');
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
 
+        &:focus,
         &:hover {
             color: var-get($theme, 'month-current-hover-foreground');
             background: var-get($theme, 'month-current-hover-background');
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
+        }
+
+        &:hover {
+           box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-hover-color');
         }
     }
 
@@ -29,6 +34,7 @@ $theme: $bootstrap;
         color: var-get($theme, 'month-selected-foreground');
         background: var-get($theme, 'month-selected-background');
 
+        &:focus,
         &:hover {
             color: var-get($theme, 'month-selected-hover-foreground');
             background: var-get($theme, 'month-selected-hover-background');
@@ -39,7 +45,7 @@ $theme: $bootstrap;
         color: var-get($theme, 'month-selected-current-foreground');
         background: var-get($theme, 'month-selected-current-background');
 
-
+        &:focus,
         &:hover {
             color: var-get($theme, 'month-selected-current-hover-foreground');
             background: var-get($theme, 'month-selected-current-hover-background');
@@ -48,6 +54,7 @@ $theme: $bootstrap;
 }
 
 [part~='year-inner'] {
+    &:focus,
     &:hover {
         color: var-get($theme, 'year-hover-foreground');
         background: var-get($theme, 'year-hover-background');
@@ -58,6 +65,7 @@ $theme: $bootstrap;
         background: var-get($theme, 'year-current-background');
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
 
+        &:focus,
         &:hover {
             color: var-get($theme, 'year-current-hover-foreground');
             background: var-get($theme, 'year-current-hover-background');
@@ -68,6 +76,7 @@ $theme: $bootstrap;
         color: var-get($theme, 'year-selected-foreground');
         background: var-get($theme, 'year-selected-background');
 
+        &:focus,
         &:hover {
             color: var-get($theme, 'year-selected-hover-foreground');
             background: var-get($theme, 'year-selected-hover-background');
@@ -78,6 +87,7 @@ $theme: $bootstrap;
         color: var-get($theme, 'year-selected-current-foreground');
         background: var-get($theme, 'year-selected-current-background');
 
+        &:focus,
         &:hover {
             color: var-get($theme, 'year-selected-current-hover-foreground');
             background: var-get($theme, 'year-selected-current-hover-background');
