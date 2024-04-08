@@ -329,6 +329,7 @@ export const Default: Story = {
         .headerOrientation=${args.headerOrientation}
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
+        .outlined=${args.outlined}
         .mode=${args.mode}
         .min=${args.min}
         .max=${args.max}
