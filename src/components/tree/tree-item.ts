@@ -276,8 +276,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter((x) =>
-      (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(this)
+    return this.allChildren.filter(
+      (x) => (x.parent ?? x.parentElement?.closest('igc-tree-item')) === this
     ) as IgcTreeItemComponent[];
   }
 
@@ -293,7 +293,7 @@ export default class IgcTreeItemComponent extends LitElement {
   private itemClick(event: MouseEvent): void {
     if (
       this.disabled ||
-      !this.isSameNode(findElementFromEventPath(this.tagName, event)!)
+      this !== findElementFromEventPath(this.tagName, event)
     ) {
       return;
     }
