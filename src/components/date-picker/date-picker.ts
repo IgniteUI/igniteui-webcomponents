@@ -579,7 +579,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             strategy="fixed"
             flip
             shift
-            same-width
           >
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
               ${this.renderCalendar(id)}${this.renderActions()}

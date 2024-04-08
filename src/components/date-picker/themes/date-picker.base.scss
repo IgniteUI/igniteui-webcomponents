@@ -6,7 +6,7 @@
         display: flex;
         flex: 1 0 0;
         flex-direction: column;
-        max-width: #{sizable(rem(290px), rem(314px), rem(360px))};
+        min-width: #{sizable(rem(290px), rem(314px), rem(360px))};
         overflow: hidden;
         box-shadow: var(--ig-elevation-3);
 
