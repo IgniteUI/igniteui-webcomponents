@@ -20,7 +20,11 @@ import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { isLTR, partNameMap } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  isLTR,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 
@@ -272,8 +276,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter((x) =>
-      (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(this)
+    return this.allChildren.filter(
+      (x) => (x.parent ?? x.parentElement?.closest('igc-tree-item')) === this
     ) as IgcTreeItemComponent[];
   }
 
@@ -287,7 +291,10 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private itemClick(event: MouseEvent): void {
-    if (this.disabled) {
+    if (
+      this.disabled ||
+      this !== findElementFromEventPath(this.tagName, event)
+    ) {
       return;
     }
     this.tabIndex = 0;
@@ -298,7 +305,7 @@ export default class IgcTreeItemComponent extends LitElement {
         this.expandWithEvent();
       }
     }
-    this.navService?.setFocusedAndActiveItem(this, true, false);
+    this.navService?.setFocusedAndActiveItem(this, true, true);
   }
 
   private expandIndicatorClick(): void {
