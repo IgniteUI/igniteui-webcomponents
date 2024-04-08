@@ -54,9 +54,7 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.3",
     "@lit-labs/virtualizer": "^2.0.12",
-    "install": "^0.13.0",
-    "lit": "^3.1.2",
-    "npm": "^10.5.1"
+    "lit": "^3.1.2"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.9.4",
