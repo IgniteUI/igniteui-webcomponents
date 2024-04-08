@@ -98,7 +98,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override setDefaultValue(): void {
-    this._defaultValue = this.isSameNode(this.group.checked[0]);
+    this._defaultValue = this === this.group.checked[0];
   }
 
   /**
@@ -159,7 +159,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   public override connectedCallback() {
     super.connectedCallback();
 
-    this._checked = this.isSameNode(this.group.checked[0]);
+    this._checked = this === this.group.checked[0];
     this.updateValidity();
   }
 

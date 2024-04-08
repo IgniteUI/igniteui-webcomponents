@@ -334,7 +334,7 @@ describe('Checkbox', () => {
       await spec.setup(IgcCheckboxComponent.tagName);
     });
 
-    it('', async () => {
+    it('synchronously validates component', async () => {
       expect(spec.form.checkValidity()).to.be.false;
       spec.submitFails();
 
