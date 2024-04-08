@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
@@ -63,6 +63,12 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this.dialogRef.value!;
   }
 
+  @queryAssignedElements({ slot: 'title' })
+  private titleElements!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'footer' })
+  private footerElements!: Array<HTMLElement>;
+
   /* blazorSuppress */
   /**
    * Whether the dialog should be closed when pressing the 'ESCAPE' button.
@@ -125,6 +131,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /** Sets the return value for the dialog. */
   @property({ attribute: false })
   public returnValue!: string;
+
+  protected resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      titled: this.titleElements.length > 0 || this.title,
+      footed: this.footerElements.length > 0 || !this.hideDefaultAction,
+    };
+  }
 
   @watch('open', { waitUntilFirstUpdate: true })
   protected handleOpenState() {
@@ -207,7 +221,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private handleClick({ clientX, clientY, target }: MouseEvent) {
-    if (this.closeOnOutsideClick && this.dialog.isSameNode(target as Node)) {
+    if (this.closeOnOutsideClick && this.dialog === target) {
       const { left, top, right, bottom } = this.dialog.getBoundingClientRect();
       const between = (x: number, low: number, high: number) =>
         x >= low && x <= high;
@@ -253,7 +267,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       <div part=${backdropParts} aria-hidden=${!this.open}></div>
       <dialog
         ${ref(this.dialogRef)}
-        part="base"
+        part="${partNameMap(this.resolvePartNames('base'))}"
         role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}

@@ -75,6 +75,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
 
+  protected _checked = false;
+  protected _value!: string;
+
   @query('input[type="radio"]')
   protected input!: HTMLInputElement;
 
@@ -95,12 +98,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override setDefaultValue(): void {
-    const firstChecked = this.group.checked[0];
-    if (firstChecked && firstChecked.isSameNode(this)) {
-      this._defaultValue = true;
-    } else {
-      this._defaultValue = false;
-    }
+    this._defaultValue = this === this.group.checked[0];
   }
 
   /**
@@ -108,7 +106,16 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public value!: string;
+  public set value(value: string) {
+    this._value = value;
+    if (this._checked) {
+      this.setFormValue(this._value || 'on');
+    }
+  }
+
+  public get value(): string {
+    return this._value;
+  }
 
   /**
    * The checked state of the control.
@@ -116,7 +123,17 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
-  public checked = false;
+  public set checked(value: boolean) {
+    this._checked = Boolean(value);
+
+    if (this.hasUpdated) {
+      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    }
+  }
+
+  public get checked(): boolean {
+    return this._checked;
+  }
 
   /**
    * The label position of the radio control.
@@ -137,6 +154,13 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this.navigate(-1))
       .set(arrowDown, () => this.navigate(1));
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this._checked = this === this.group.checked[0];
+    this.updateValidity();
   }
 
   /** Simulates a click on the radio control. */
@@ -211,11 +235,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     for (const radio of siblings) {
       radio.updateValidity();
     }
-  }
-
-  @watch('checked')
-  protected checkedChanged() {
-    this.checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   protected handleMouseDown(event: PointerEvent) {
