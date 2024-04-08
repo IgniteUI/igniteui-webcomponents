@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.8.1] - 2024-04-08
 ### Fixed
 - Date-time input - `inputFormat` is not applied to an already set value [#1114](https://github.com/IgniteUI/igniteui-webcomponents/issues/1114)
 - Checkbox, Radio, Switch - apply form validation synchronously [#1122](https://github.com/IgniteUI/igniteui-webcomponents/issues/1122)
@@ -440,6 +440,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
 [4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
 [4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
 [4.6.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0
