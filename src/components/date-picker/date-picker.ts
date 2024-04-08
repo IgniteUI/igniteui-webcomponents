@@ -80,6 +80,13 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @fires igcClosed - Emitted after the calendar dropdown is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
+ *
+ * @csspart calendar-icon - The calendar icon wrapper for closed state.
+ * @csspart calendar-icon-open - The calendar icon wrapper for opened state.
+ * @csspart clear-icon - The clear icon wrapper.
+ * @csspart actions - The actions wrapper.
+ * @csspart label - The label element.
+ * @csspart helper-text - The helper text wrapper.
  */
 @themes(all, true)
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
