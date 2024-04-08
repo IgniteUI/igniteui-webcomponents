@@ -160,7 +160,7 @@ export function setInitialSelectionState<
   const lastSelected = items.filter((item) => item.selected).at(-1) ?? null;
 
   for (const item of items) {
-    if (!item.isSameNode(lastSelected)) {
+    if (item !== lastSelected) {
       item.selected = false;
     }
   }

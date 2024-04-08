@@ -9,6 +9,10 @@ $theme: $bootstrap;
     }
 }
 
+[part~='label'] {
+    @include type-style('body-1');
+}
+
 [part~='base'] {
     gap: rem(8px);
 }

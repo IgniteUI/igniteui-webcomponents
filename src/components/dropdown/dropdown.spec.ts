@@ -825,4 +825,31 @@ describe('Dropdown', () => {
       expect(eventSpy.secondCall).to.be.null;
     });
   });
+
+  describe('issue-1123', () => {
+    beforeEach(async () => {
+      dropDown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <igc-dropdown-item value="Orange"
+            ><span id="click-target">Orange</span></igc-dropdown-item
+          >
+          <igc-dropdown-item value="Apple"
+            ><span>Apple</span></igc-dropdown-item
+          >
+          <igc-dropdown-item value="Banana">Banana</igc-dropdown-item>
+          <igc-dropdown-item value="Mango">Mango</igc-dropdown-item>
+        </igc-dropdown>
+      `);
+    });
+
+    it('', async () => {
+      await openDropdown();
+
+      const inner = document.getElementById('click-target')!;
+      simulateClick(inner);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem?.value).to.equal('Orange');
+    });
+  });
 });
