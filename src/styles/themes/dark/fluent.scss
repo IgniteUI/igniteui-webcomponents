@@ -1,5 +1,0 @@
-@use 'igniteui-theming/sass/color/presets/dark/fluent' as *;
-@use '../base/fluent' as base;
-@use '../base/scrollbars';
-@use '../third-party/grid/fluent.dark' as grid;
-@include base.root-styles($palette, 'dark');

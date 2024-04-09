@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/dark/list' as *;
-
-$base: digest-schema($base-dark-list);
-$material: digest-schema($dark-material-list);
-$bootstrap: digest-schema($dark-bootstrap-list);
-$fluent: digest-schema($dark-fluent-list);
-$indigo: digest-schema($dark-indigo-list);

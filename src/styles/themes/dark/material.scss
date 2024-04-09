@@ -1,5 +1,0 @@
-@use 'igniteui-theming/sass/color/presets/dark/material' as *;
-@use '../base/material' as base;
-@use '../base/scrollbars';
-@use '../third-party/grid/material.dark' as grid;
-@include base.root-styles($palette, 'dark');

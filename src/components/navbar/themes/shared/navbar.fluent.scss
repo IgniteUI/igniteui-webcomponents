@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-
-::slotted(*) {
-    @include type-style('subtitle-2') {
-        line-height: normal;
-        margin: 0;
-    }
-}

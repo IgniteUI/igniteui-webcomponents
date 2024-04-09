@@ -1,8 +1,0 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-
-// STEPPER
-:host {
-    --indicator-box-shadow-size: #{rem(2px)};
-    --separator-size: #{rem(2px)};
-}

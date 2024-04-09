@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $material;
-
-:host {
-    color: var-get($theme, 'content-text-color');
-}

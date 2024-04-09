@@ -1,9 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../themes' as *;
-
-$theme: $bootstrap;
-
-:host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-nav-drawer');
-    @include css-vars-from-theme(diff($base, $overlay-bootstrap), 'ig-nav-drawer');
-}

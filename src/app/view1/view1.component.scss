@@ -1,0 +1,38 @@
+:host {
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: flex-start;
+}
+.column-layout {
+  display: flex;
+  flex-direction: column;
+}
+.group {
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: flex-start;
+  position: relative;
+  padding: 32px;
+  min-width: 50px;
+  min-height: 50px;
+  flex-grow: 1;
+  flex-basis: 0;
+}
+.h5 {
+  margin: 0 0 16px;
+  height: max-content;
+  min-width: min-content;
+}
+.select {
+  height: max-content;
+  min-width: min-content;
+}
+.user-input {
+  width: max-content;
+  height: max-content;
+}
+.radio {
+  padding: 8px;
+}

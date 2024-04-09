@@ -1,13 +1,16 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+# Using Ignite UI for Angular licensed packages via an access token:
+# https://www.infragistics.com/products/ignite-ui-angular/angular/components/general/ignite-ui-licensing#github-actions-configuration
 
 name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ $(yamlDefaultBranch) ]
   pull_request:
-    branches: [ master ]
+    branches: [ $(yamlDefaultBranch) ]
 
 jobs:
   build:
@@ -16,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [16.x, 18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -25,13 +28,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npx playwright install --with-deps chromium
+        # cache: 'npm' # enable after committing lock file from first install
+    - run: echo "@infragistics:registry=https://packages.infragistics.com/npm/js-licensed/" >> ~/.npmrc
+    - run: echo "//packages.infragistics.com/npm/js-licensed/:_auth=${{ secrets.NPM_AUTH_TOKEN }}" >> ~/.npmrc
+    - run: echo "//packages.infragistics.com/npm/js-licensed/:always-auth=true" >> ~/.npmrc
+    - run: npm i # replace with 'npm ci' after committing lock file from first install
     - run: npm run lint
-    - run: npm run test
-    - run: npm run check
-    - name: Publish to coveralls.io
-      if: matrix.node-version == '18.x'
-      uses: coverallsapp/github-action@v1.1.2
-      with:
-          github-token: ${{ github.token }}
+    - run: npm run build
+    - run: npm run test -- --watch=false --browsers ChromeHeadless

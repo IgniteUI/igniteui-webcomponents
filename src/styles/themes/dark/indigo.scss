@@ -1,5 +1,0 @@
-@use 'igniteui-theming/sass/color/presets/dark/indigo' as *;
-@use '../base/indigo' as base;
-@use '../base/scrollbars';
-@use '../third-party/grid/indigo.dark' as grid;
-@include base.root-styles($palette, 'dark');

@@ -1,9 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../light/themes' as *;
-
-$theme: $base;
-
-[part='base'] {
-    background: var-get($theme, 'background-color');
-    border-radius: var-get($theme, 'border-radius');
-}

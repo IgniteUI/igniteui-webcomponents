@@ -1,5 +1,0 @@
-@function direction($rtl: false) {
-    $dir: if($rtl == true, -1, 1);
-
-    @return calc(var(--ig-dir, 1) * #{$dir});
-}

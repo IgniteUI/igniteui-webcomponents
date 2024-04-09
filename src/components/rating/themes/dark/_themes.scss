@@ -1,7 +1,0 @@
-@use 'styles/utilities' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/dark/rating' as *;
-
-$material: digest-schema($dark-material-rating);
-$bootstrap: digest-schema($dark-bootstrap-rating);
-$fluent: digest-schema($dark-fluent-rating);
-$indigo: digest-schema($dark-indigo-rating);

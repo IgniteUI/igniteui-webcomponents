@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/dark/tabs' as *;
-
-$base: digest-schema($base-dark-tabs);
-$material: digest-schema($dark-material-tabs);
-$bootstrap: digest-schema($dark-bootstrap-tabs);
-$fluent: digest-schema($dark-fluent-tabs);
-$indigo: digest-schema($dark-indigo-tabs);

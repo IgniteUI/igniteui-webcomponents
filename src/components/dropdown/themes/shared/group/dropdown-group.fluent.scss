@@ -1,7 +1,0 @@
-@use 'styles/utilities' as *;
-
-:host {
-    ::slotted([slot='label']) {
-        padding: pad(rem(2px), rem(4px), (8px));
-    }
-}

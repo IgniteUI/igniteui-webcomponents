@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/light/rating' as *;
-
-$base: digest-schema($light-rating);
-$material: digest-schema($material-rating);
-$bootstrap: digest-schema($bootstrap-rating);
-$fluent: digest-schema($fluent-rating);
-$indigo: digest-schema($indigo-rating);

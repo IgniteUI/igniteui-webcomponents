@@ -1,5 +1,0 @@
-@use 'styles/utilities' as *;
-
-:host([alignment='horizontal']) {
-    gap: rem(16px);
-}

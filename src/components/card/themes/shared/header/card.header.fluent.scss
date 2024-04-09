@@ -1,9 +1,0 @@
-@use 'styles/utilities' as *;
-
-::slotted([slot='title']) {
-    @include type-style('subtitle-1');
-}
-
-::slotted([slot='subtitle']) {
-    @include type-style('body-2');
-}

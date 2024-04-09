@@ -1,9 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../../dropdown/themes/dropdown-header.base' as *;
-
-:host {
-    // Overwrite dropdown-header default size.
-    // Needed due to how styles are imported in combo-header.ts.
-    --component-size: var(--ig-size, var(--default-size));
-    --default-size: var(--combo-size) !important;
-}

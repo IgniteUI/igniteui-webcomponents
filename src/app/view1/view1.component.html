@@ -1,0 +1,25 @@
+<div class="column-layout group">
+  <h5 class="h5">
+    View 1
+  </h5>
+  <igx-select type="border" class="select">
+    <igx-select-item [value]="item.Franchise" *ngFor="let item of financialBoxOfficeRevenue">
+      {{ item.TotalWorldBoxOfficeRevenue }}
+    </igx-select-item>
+    <label igxLabel>Label/Placeholder</label>
+  </igx-select>
+  <igx-switch [checked]="boolVar" class="user-input">
+    Label
+  </igx-switch>
+  <igx-radio-group value="1" class="user-input">
+    <igx-radio [value]="item.Franchise" *ngFor="let item of financialBoxOfficeRevenue" class="radio">
+      {{ item.Franchise }}
+    </igx-radio>
+    <igx-radio value="2" class="radio">
+      Label
+    </igx-radio>
+    <igx-radio value="3" class="radio">
+      Label
+    </igx-radio>
+  </igx-radio-group>
+</div>

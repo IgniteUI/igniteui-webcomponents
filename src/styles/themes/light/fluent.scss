@@ -1,4 +1,0 @@
-@use 'igniteui-theming/sass/color/presets/light/fluent' as *;
-@use '../base/fluent' as base;
-@use '../base/scrollbars';
-@include base.root-styles($palette, 'light');
