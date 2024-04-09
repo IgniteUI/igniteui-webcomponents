@@ -551,6 +551,11 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}
         @igcChange=${this.handleCalendarChangeEvent}
+        exportparts="header, header-title, header-date, content: calendar-content, navigation, months-navigation,
+        years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
+        days-view, months-view, years-view, days-row, label: calendar-label, week-number, week-number-inner, date,
+        date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
+        month, month-inner, year, year-inner, selected, current"
       >
         ${!this.isDropDown
           ? html`<slot
@@ -603,6 +608,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
             @igcClosing=${this.handleClosing}
+            exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)}${this.renderActions()}
           </igc-dialog>
@@ -646,6 +652,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         .invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
+        exportparts="input, label, prefix, suffix"
       >
         <slot
           name="prefix"
