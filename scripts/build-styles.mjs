@@ -1,5 +1,5 @@
 import { globby } from 'globby';
-import report from './report.js';
+import report from './report.mjs';
 import { fromTemplate, compileSass } from './sass.mjs';
 import path from 'node:path';
 import { mkdirSync as makeDir } from 'node:fs';

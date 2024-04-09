@@ -16,7 +16,7 @@
   "scripts": {
     "start": "npm run storybook",
     "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run cem && npm run build:meta",
-    "build:publish": "node scripts/build.mjs",
+    "build:publish": "npm run cem && node scripts/build.mjs",
     "build:typescript": "tsc",
     "cem": "cem analyze --config cem.config.mjs",
     "cem:watch": "cem analyze --config cem.config.mjs --watch",
@@ -76,6 +76,8 @@
     "autoprefixer": "^10.4.19",
     "browser-sync": "^3.0.2",
     "concurrently": "^8.2.2",
+    "custom-element-jet-brains-integration": "^1.4.4",
+    "custom-element-vs-code-integration": "^1.2.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
