@@ -5,6 +5,26 @@
     display: contents;
 }
 
+/* Browsers without Popover API */
+
+:host(:not([open])) [part~='container-no-popover'] {
+    display: none;
+}
+
+[part~='absolute-no-popover'] {
+    position: absolute;
+    isolation: isolate;
+    z-index: 10005;
+}
+
+[part~='fixed-no-popover'] {
+    position: fixed;
+    isolation: isolate;
+    z-index: 10005;
+}
+
+/* End of browsers without Popover API workarounds */
+
 :popover-open {
     isolation: isolate;
     z-index: 10005;
