@@ -21,7 +21,12 @@ const metadata: Meta<IgcDatepickerComponent> = {
   title: 'Datepicker',
   component: 'igc-datepicker',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'igc-datepicker is a feature rich component used for entering a date through manual text input or\nchoosing date values from a calendar dialog that pops up.',
+      },
+    },
     actions: {
       handles: [
         'igcOpening',
@@ -70,7 +75,12 @@ const metadata: Meta<IgcDatepickerComponent> = {
       description: 'The value of the picker',
       control: 'date',
     },
-    activeDate: { type: 'Date', control: 'date' },
+    activeDate: {
+      type: 'Date',
+      description:
+        'Gets/Sets the date which is shown in the calendar picker and is highlighted.\nBy default it is the current date.',
+      control: 'date',
+    },
     min: {
       type: 'Date',
       description:
@@ -249,6 +259,10 @@ interface IgcDatepickerArgs {
   readOnly: boolean;
   /** The value of the picker */
   value: Date;
+  /**
+   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
+   * By default it is the current date.
+   */
   activeDate: Date;
   /** The minimum value required for the date picker to remain valid. */
   min: Date;
@@ -316,7 +330,7 @@ export const Default: Story = {
   },
   render: (args) => html`
     <div style="height: 500px">
-      <igc-datepicker
+      <igc-date-picker
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
         .value=${args.value}
@@ -344,7 +358,7 @@ export const Default: Story = {
         ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
         ?keep-open-on-select=${args.keepOpenOnSelect}
       >
-      </igc-datepicker>
+      </igc-date-picker>
     </div>
   `,
 };
@@ -371,7 +385,7 @@ export const Slots: Story = {
   },
   render: (args) => html`
     <div style="height: 500px">
-      <igc-datepicker
+      <igc-datep-icker
         id="picker"
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
@@ -418,7 +432,7 @@ export const Slots: Story = {
             >Single month view</igc-button
           >
         </div>
-      </igc-datepicker>
+      </igc-date-picker>
     </div>
   `,
 };
@@ -440,54 +454,57 @@ export const Form: Story = {
   render: (args) => html`
     <form action="" @submit=${formSubmitHandler}>
       <fieldset>
-        <igc-datepicker label="Default" name="picker-default"></igc-datepicker>
-        <igc-datepicker
+        <igc-date-picker
+          label="Default"
+          name="picker-default"
+        ></igc-date-picker>
+        <igc-date-picker
           label="Initial value"
           name="picker-initial"
           .value=${args.value}
-        ></igc-datepicker>
-        <igc-datepicker
+        ></igc-date-picker>
+        <igc-date-picker
           label="Readonly"
           name="picker-readonly"
           readonly
-        ></igc-datepicker>
+        ></igc-date-picker>
       </fieldset>
 
       <fieldset disabled>
-        <igc-datepicker
+        <igc-date-picker
           label="Disabled"
           name="picker-disabled"
-        ></igc-datepicker>
+        ></igc-date-picker>
       </fieldset>
 
       <fieldset>
-        <igc-datepicker
+        <igc-date-picker
           label="Required"
           name="picker-required"
           required
-        ></igc-datepicker>
+        ></igc-date-picker>
       </fieldset>
 
       <fieldset>
-        <igc-datepicker label="Minimum date" name="picker-min" .min=${minDate}>
+        <igc-date-picker label="Minimum date" name="picker-min" .min=${minDate}>
           <p slot="helper-text">
             Choose a date after ${minDate.toLocaleDateString()}
           </p>
-        </igc-datepicker>
+        </igc-date-picker>
 
-        <igc-datepicker label="Maximum date" name="picker-max" .max=${maxDate}>
+        <igc-date-picker label="Maximum date" name="picker-max" .max=${maxDate}>
           <p slot="helper-text">
             Choose a date before ${maxDate.toLocaleDateString()}
           </p>
-        </igc-datepicker>
+        </igc-date-picker>
       </fieldset>
 
       <fieldset>
-        <igc-datepicker
+        <igc-date-picker
           label="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
           name="picker-disabled-ranges"
           .disabledDates=${disabledDates}
-        ></igc-datepicker>
+        ></igc-date-picker>
       </fieldset>
       ${formControls()}
     </form>

@@ -63,7 +63,10 @@ const converter: ComplexAttributeConverter<Date | undefined> = {
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
- * @element igc-datepicker
+ * igc-datepicker is a feature rich component used for entering a date through manual text input or
+ * choosing date values from a calendar dialog that pops up.
+ *
+ * @element igc-date-picker
  *
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after the input.
@@ -95,7 +98,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
-  public static readonly tagName = 'igc-datepicker';
+  public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
 
   protected static shadowRootOptions = {
@@ -104,7 +107,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   };
 
   private static readonly increment = createCounter();
-  protected inputId = `datepicker-${IgcDatepickerComponent.increment()}`;
+  protected inputId = `date-picker-${IgcDatepickerComponent.increment()}`;
 
   private declare readonly [themeSymbol]: Theme;
 
@@ -140,7 +143,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   private _inputFormat?: string;
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private get isDropDown() {
@@ -222,6 +225,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     return this._value ?? null;
   }
 
+  /**
+   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
+   * By default it is the current date.
+   */
   @property({ attribute: 'active-date', converter: converter })
   public set activeDate(value: Date) {
     this._activeDate = value;
@@ -479,6 +486,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcInput', { detail: this.value });
   }
 
+  protected handleClosing() {
+    this._hide(true);
+  }
+
   protected onSlotChange() {
     this.requestUpdate();
   }
@@ -520,13 +531,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   }
 
   private renderCalendar(id: string) {
-    const role = this.isDropDown ? 'dialog' : undefined;
     const hideHeader = this.isDropDown ? true : this.hideHeader;
 
     return html`
       <igc-calendar
         aria-labelledby=${id}
-        role=${ifDefined(role)}
+        role="dialog"
         .inert=${!this.open || this.disabled}
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
@@ -592,7 +602,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
-            @igcClosing=${() => this._hide(true)}
+            @igcClosing=${this.handleClosing}
           >
             ${this.renderCalendar(id)}${this.renderActions()}
           </igc-dialog>
@@ -601,12 +611,12 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private renderLabel(id: string) {
     return this.label
-      ? html`<label part="label" for="${id}">${this.label}</label>`
+      ? html`<label part="label" for=${id}>${this.label}</label>`
       : nothing;
   }
 
   private renderHelperText() {
-    return html`<div part="helper-text" ?hidden="${!this.helperText.length}">
+    return html`<div part="helper-text" ?hidden=${!this.helperText.length}>
       <slot name="helper-text" @slotchange=${this.onSlotChange}></slot>
     </div>`;
   }
@@ -620,7 +630,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        aria-expanded=${this.open}
         label=${ifDefined(this.isMaterialTheme ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
@@ -640,13 +649,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
       >
         <slot
           name="prefix"
-          slot="${ifDefined(!this.prefixes.length ? undefined : 'prefix')}"
+          slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
           @slotchange=${this.onSlotChange}
         ></slot>
         ${this.renderClearIcon()}${this.renderCalendarIcon()}
         <slot
           name="suffix"
-          slot="${ifDefined(!this.suffixes.length ? undefined : 'suffix')}"
+          slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
           @slotchange=${this.onSlotChange}
         ></slot>
       </igc-date-time-input>
@@ -665,6 +674,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-datepicker': IgcDatepickerComponent;
+    'igc-date-picker': IgcDatepickerComponent;
   }
 }
