@@ -61,12 +61,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @blazorTwoWayBind('igcChange', 'detail')
   public set checked(value: boolean) {
     this._checked = Boolean(value);
+    this.setFormValue(this._checked ? this.value || 'on' : null);
+    this.updateValidity();
 
     if (this.hasUpdated) {
-      this._checked
-        ? this.setFormValue(this.value || 'on')
-        : this.setFormValue(null);
-      this.updateValidity();
       this.setInvalidState();
     }
   }
