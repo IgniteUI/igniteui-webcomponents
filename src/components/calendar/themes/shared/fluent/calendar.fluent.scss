@@ -2,18 +2,57 @@
 @use '../../light/themes' as *;
 
 $theme: $fluent;
-$header-bg: var(--header-bg, #{color(primary, 500)});
-$header-color: var(--header-color, #{contrast-color(primary, 600)});
 
 :host(igc-calendar) {
-    igc-days-view::part(date-inner) {
-        border-radius: 0;
+    // TODO see from where is the inline style coming that overrides this one
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')}) !important;
+
+    color: var-get($theme, 'content-foreground');
+    background: var-get($theme, 'content-background');
+    box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host(igc-calendar:not([orientation='vertical'])) {
+    [part='days-view-container'] + [part='days-view-container'] {
+        [part='navigation'],
+        igc-days-view {
+            padding-inline: rem(22px);
+        }
+    }
+
+    [part='days-view-container']:last-of-type:not(:only-child) {
+        [part='navigation'],
+        igc-days-view {
+            padding-inline-end: rem(12px);
+        }
+    }
+
+    [part='days-view-container']:first-of-type:not(:only-child) {
+        [part='navigation'],
+        igc-days-view {
+            padding-inline-end: rem(22px);
+        }
+    }
+}
+
+:host(igc-calendar[header-orientation='vertical']) {
+    [part~='header'] {
+        width: rem(168px);
     }
 }
 
 [part='header'] {
-    background: $header-bg;
-    color: $header-color;
+    color: var-get($theme, 'header-foreground');
+    background: var-get($theme, 'header-background');
+}
+
+[part='navigation'] {
+    --ig-icon-size: #{rem(24px)};
+
+    height: rem(56px);
+    color: var-get($theme, 'picker-foreground');
+    background: var-get($theme, 'picker-background');
 }
 
 [part~='navigation-buttons'] {
@@ -28,6 +67,42 @@ $header-color: var(--header-color, #{contrast-color(primary, 600)});
 [part='years-navigation'],
 [part='years-range'] {
     @include type-style('subtitle-2');
-
-    color: color(gray, 900);
 }
+
+[part='header-title'] {
+    @include type-style('overline');
+}
+
+[part='header-date'] {
+    @include type-style('h4');
+}
+
+[part='years-range'] {
+    color: var-get($theme, 'picker-foreground');
+}
+
+[part~='months-navigation'],
+[part~='years-navigation'] {
+    color: var-get($theme, 'picker-foreground');
+
+    &:hover {
+        color: var-get($theme, 'picker-hover-foreground');
+    }
+
+    &:focus {
+        color: var-get($theme, 'picker-focus-foreground');
+    }
+}
+
+[part~='navigation-button'] {
+    color: var-get($theme, 'navigation-color');
+
+    &:hover {
+        color: var-get($theme, 'navigation-hover-color');
+    }
+
+    &:focus {
+        color: var-get($theme, 'navigation-focus-color');
+    }
+}
+
