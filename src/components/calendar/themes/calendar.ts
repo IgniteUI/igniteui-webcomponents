@@ -15,6 +15,7 @@ import { styles as shared } from './light/calendar.shared.css.js';
 import { styles as bootstrap } from './shared/bootstrap/calendar.bootstrap.css.js';
 import { styles as fluent } from './shared/fluent/calendar.fluent.css.js';
 import { styles as indigo } from './shared/indigo/calendar.indigo.css.js';
+import { styles as material } from './shared/material/calendar.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -25,7 +26,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -43,7 +44,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

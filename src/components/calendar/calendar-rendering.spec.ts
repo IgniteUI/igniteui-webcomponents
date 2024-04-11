@@ -40,7 +40,7 @@ describe('Calendar Rendering', () => {
       <div part="content">
         <div part="days-view-container">
           <div part="navigation">
-            <div>
+            <div part="picker-dates">
               <button part="months-navigation"></button>
               <span class="aria-off-screen"></span>
               <button part="years-navigation"></button>
