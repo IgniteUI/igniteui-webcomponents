@@ -214,7 +214,7 @@ textarea {
     [part~='container']:not([part~='suffixed']) {
         textarea {
             grid-column: 2 / -1;
-            max-width: calc(100% - 2px);
+            max-width: calc(100% - #{rem(2px)});
         }
     }
 
