@@ -141,6 +141,12 @@ export const Form: Story = {
           <igc-checkbox name="checkbox">Checkbox 1</igc-checkbox>
         </fieldset>
         <fieldset>
+          <legend>Initial checked state</legend>
+          <igc-checkbox name="checkbox-initial" value="initial" checked
+            >Checked initial state</igc-checkbox
+          >
+        </fieldset>
+        <fieldset>
           <legend>Required section</legend>
           <igc-checkbox required name="required-checkbox"
             >Required checkbox</igc-checkbox
