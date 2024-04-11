@@ -206,10 +206,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     if (await this.toggleAnimation('close')) {
       this.open = false;
       this.animating = false;
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
     }
-
-    await this.updateComplete;
-    this.emitEvent('igcClosed');
   }
 
   private handleCancel(event: Event) {
