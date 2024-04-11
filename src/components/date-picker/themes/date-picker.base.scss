@@ -8,7 +8,6 @@
         flex-direction: column;
         min-width: #{sizable(rem(290px), rem(314px), rem(360px))};
         overflow: hidden;
-        box-shadow: var(--ig-elevation-3);
 
         igc-calendar {
             border: none;

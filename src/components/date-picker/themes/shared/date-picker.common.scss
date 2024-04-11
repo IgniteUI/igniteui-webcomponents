@@ -41,6 +41,11 @@ $input-theme: input-theme.$material;
         background: var-get($theme, 'content-background');
     }
 
+    igc-popover::part(fixed) {
+        box-shadow: var(--ig-elevation-3);
+        border-radius: var-get($theme, 'border-radius');
+    }
+
     [part~='label'] {
         color: var-get($input-theme, 'idle-secondary-color');
     }

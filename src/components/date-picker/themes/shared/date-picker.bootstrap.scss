@@ -15,7 +15,7 @@ $theme: $bootstrap;
     }
 
     igc-focus-trap {
-        border: rem(1px) solid var-get($theme, 'border-color');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     [part='helper-text'] {
