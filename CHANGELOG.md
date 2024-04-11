@@ -6,8 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Fixed
+- Tabs - error when dynamically creating and adding a tab group and tabs in a single call stack [#1140](https://github.com/IgniteUI/igniteui-webcomponents/issues/1140)
+
+
+## [4.8.1] - 2024-04-08
+### Fixed
 - Date-time input - `inputFormat` is not applied to an already set value [#1114](https://github.com/IgniteUI/igniteui-webcomponents/issues/1114)
+- Checkbox, Radio, Switch - apply form validation synchronously [#1122](https://github.com/IgniteUI/igniteui-webcomponents/issues/1122)
 - Select, Dropdown - Unable to select item when clicking on a wrapping element inside the dropdown/select item slot [#1123](https://github.com/IgniteUI/igniteui-webcomponents/issues/1123)
+- Tree - active state is correctly applied to the correct tree node on click [#1131](https://github.com/IgniteUI/igniteui-webcomponents/issues/1131)
 
 ## [4.8.0] - 2024-03-20
 ### Added
@@ -438,6 +445,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
 [4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
 [4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
 [4.6.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0
