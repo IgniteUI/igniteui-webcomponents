@@ -385,7 +385,7 @@ export const Slots: Story = {
   },
   render: (args) => html`
     <div style="height: 500px">
-      <igc-datep-icker
+      <igc-date-picker
         id="picker"
         .label=${args.label}
         .visibleMonths=${args.visibleMonths}
