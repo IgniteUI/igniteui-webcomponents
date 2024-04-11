@@ -1,11 +1,17 @@
 @use 'styles/utilities' as *;
 
 [part~='base'] {
-    gap: rem(24px);
-    padding: rem(4px);
-    margin: rem(15px) rem(8px);
+    gap: rem(16px);
+    padding: rem(8px) rem(16px);
+    margin: 0;
+    margin-block-end: rem(4px);
+    margin-inline: rem(8px);
+
+    ::slotted(igc-icon) {
+        --ig-size: 2;
+    }
 }
 
-[part='content'] {
-    padding-inline-start: rem(8px);
+[part='base mini'] {
+    padding: rem(8px);
 }
