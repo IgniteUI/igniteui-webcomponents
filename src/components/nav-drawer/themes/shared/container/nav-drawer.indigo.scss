@@ -4,24 +4,14 @@
 $theme: $indigo;
 
 :host {
+    --menu-full-width: #{rem(240px)};
+    --menu-mini-width: #{rem(48px)};
+
     [part='overlay'] {
         background: var-get($overlay-indigo, 'background-color');
     }
 
-    --menu-full-width: #{rem(240px)};
-    --menu-mini-width: #{rem(48px)};
-
-    ::slotted(igc-nav-drawer-item:first-of-type) {
-        display: block;
-        margin-block-start: rem(8px);
+    [part='mini'], [part="base"] {
+        padding: rem(8px);
     }
-
-    ::slotted(igc-nav-drawer-item:last-of-type) {
-        display: block;
-        margin-block-end: rem(8px);
-    }
-}
-
-[part='mini'] {
-    padding-block: rem(8px);
 }
