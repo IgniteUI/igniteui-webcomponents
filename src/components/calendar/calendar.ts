@@ -17,7 +17,6 @@ import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
-import { styles as shared } from './themes/shared/material/calendar.common.css.js';
 import { IgcCalendarBaseEventMap } from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
@@ -86,7 +85,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   >(IgcCalendarBaseComponent)
 ) {
   public static readonly tagName = 'igc-calendar';
-  public static styles = [styles, shared];
+  public static styles = styles;
 
   /* blazorSuppress */
   public static register() {
