@@ -498,7 +498,7 @@ export default class IgcCalendarComponent extends SizableMixin(
 
     return html`
       <div part="navigation">
-        <div>
+        <div part="picker-dates">
           ${this._isDayView
             ? this.renderMonthButtonNavigation(activeDate, viewIndex)
             : nothing}

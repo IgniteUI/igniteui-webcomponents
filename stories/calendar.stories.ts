@@ -5,8 +5,9 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DateRangeDescriptor,
   DateRangeType,
-} from '../src/components/calendar/common/calendar.model.js';
-import { IgcCalendarComponent, defineComponents } from '../src/index.js';
+  IgcCalendarComponent,
+  defineComponents,
+} from '../src/index.js';
 
 defineComponents(IgcCalendarComponent);
 
