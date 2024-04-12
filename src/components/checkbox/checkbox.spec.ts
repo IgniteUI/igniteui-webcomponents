@@ -345,4 +345,22 @@ describe('Checkbox', () => {
       spec.submitValidates();
     });
   });
+
+  describe('Initial checked state is submitted', () => {
+    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+      html`<igc-checkbox
+        name="checkbox"
+        value="checked"
+        checked
+      ></igc-checkbox>`
+    );
+
+    beforeEach(async () => await spec.setup(IgcCheckboxComponent.tagName));
+
+    it('initial state is submitted', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+  });
 });

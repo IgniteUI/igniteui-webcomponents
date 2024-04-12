@@ -660,4 +660,14 @@ describe('Tabs component', () => {
       expect(tabs.at(-1)?.panel).to.not.equal('');
     });
   });
+
+  describe('issue-1140', () => {
+    it('Tabs throw if a child tab is immediately appended', async () => {
+      const tabs = document.createElement(IgcTabsComponent.tagName);
+      const tab = document.createElement(IgcTabComponent.tagName);
+      document.body.appendChild(tabs);
+
+      expect(() => tabs.appendChild(tab)).not.to.throw();
+    });
+  });
 });

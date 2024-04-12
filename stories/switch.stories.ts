@@ -122,6 +122,12 @@ export const Form: Story = {
           <igc-switch name="switch">Switch 1</igc-switch>
         </fieldset>
         <fieldset>
+          <legend>Initial checked state</legend>
+          <igc-switch name="switch-initial" value="initial" checked
+            >Initial checked state</igc-switch
+          >
+        </fieldset>
+        <fieldset>
           <legend>Required section</legend>
           <igc-switch required name="required-switch"
             >Required switch</igc-switch

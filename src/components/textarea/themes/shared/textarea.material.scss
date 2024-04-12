@@ -30,15 +30,22 @@ textarea {
         border-start-start-radius: var-get($theme, 'box-border-radius');
         border-start-end-radius: var-get($theme, 'box-border-radius');
         background: var-get($theme, 'box-background');
+        padding-inline-end: rem(1px);
 
         &::after {
             content: '';
             position: absolute;
             bottom: 0%;
             width: 100%;
-            border-block-end: rem(1px) solid
-                var-get($theme, 'idle-bottom-line-color');
+            border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
             transition: all 0.25s $out-cubic;
+        }
+    }
+
+    [part~='container']:not([part~='suffixed']) {
+        textarea {
+            margin-block-end: rem(2px);
+            grid-area: 1 / 2 / span 1 / span 3;
         }
     }
 }
@@ -202,6 +209,13 @@ textarea {
     [part~='container'] {
         grid-template-columns: auto auto 1fr auto;
         display: grid;
+    }
+
+    [part~='container']:not([part~='suffixed']) {
+        textarea {
+            grid-column: 2 / -1;
+            max-width: calc(100% - #{rem(2px)});
+        }
     }
 
     [part='start'] {

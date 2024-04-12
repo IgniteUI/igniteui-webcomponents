@@ -1,52 +1,52 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-// TODO Remove theme and commented colors and radius
-
 :host(igc-calendar) {
-    --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
-
     display: flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
+    min-width: max-content;
+    overflow: hidden;
+    font-size: sizable(var(--ig-body-2-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
+    font-weight: sizable(var(--ig-body-2-font-weight), var(--ig-body-2-font-weight), var(--ig-body-1-font-weight));
+    font-style: sizable(var(--ig-body-2-font-style), var(--ig-body-2-font-style), var(--ig-body-1-font-style));
+    line-height: sizable(var(--ig-body-2-line-height), var(--ig-body-2-line-height), var(--ig-body-1-line-height));
+    letter-spacing: sizable(var(--ig-body-2-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
+    text-transform: sizable(var(--ig-body-2-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
 
-    > * {
-        font-family: var(--ig-font-family);
+    [part='days-view-container'] {
+        [part='navigation'],
+        igc-days-view {
+            min-width: sizable(rem(290px), rem(314px), rem(360px));
+        }
     }
 
     igc-days-view::part(date),
     igc-days-view::part(week-number),
     igc-days-view::part(label),
     igc-days-view::part(days-row) {
-        height: var(--size);
+        box-sizing: border-box;
     }
 
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
-        width: calc(var(--size) - #{rem(2px)});
-        min-width: calc(var(--size) - #{rem(2px)});
-        height: 100%;
+        box-sizing: border-box;
     }
 
-    igc-days-view::part(label) {
-        min-width: var(--size);
-        height: var(--size);
-    }
-
+    igc-years-view,
     igc-months-view {
-        grid-template-rows: repeat(4, minmax(var(--size), 1fr));
-
-        &::part(month-inner) {
-            height: var(--size);
-        }
+        display: grid;
+        row-gap: rem(4px);
+        width: 100%;
+        min-width: sizable(rem(290px), rem(314px), rem(360px));
+        grid-template-rows: repeat(3, minmax(max-content, 1fr));
     }
 
+    igc-days-view,
+    igc-months-view,
     igc-years-view {
-        grid-template-rows: repeat(5, minmax(var(--size), 1fr));
-
-        &::part(year-inner) {
-            height: var(--size);
-        }
+        font-family: var(--ig-font-family);
+        overflow: visible;
     }
 }
 
@@ -55,18 +55,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: rem(20px);
-    padding: rem(25px) rem(18px);
+    padding: 0rem(16px);
     user-select: none;
 }
 
 [part='months-navigation'],
 [part='years-navigation'],
 [part~='navigation-button'] {
+    background: transparent;
     display: inline-flex;
     user-select: none;
     border: none;
-    font-size: rem(16px);
     padding: 0;
     transition: color 150ms ease-in-out;
 
@@ -89,7 +88,7 @@
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
-    gap: rem(24px);
+
 }
 
 :host-context([dir='rtl']),
@@ -108,7 +107,6 @@
 
     [part='header'] {
         justify-content: flex-start;
-        width: rem(140px);
         border-radius: inherit;
         border-start-end-radius: 0;
         border-end-end-radius: 0;
@@ -117,6 +115,12 @@
     [part='header-date'] {
         flex-direction: column;
     }
+}
+
+[part~='picker-dates'] {
+    display: flex;
+    align-items: center;
+    gap: rem(4px);
 }
 
 [part='days-view-container'] {
@@ -145,14 +149,8 @@
 }
 
 [part='header-date'] {
-    @include type-style('h4');
-
     display: flex;
     white-space: pre-wrap;
-}
-
-[part='header-title'] {
-    @include type-style('overline');
 }
 
 .aria-off-screen {
