@@ -19,7 +19,6 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -144,16 +143,16 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * The value of the input.
-   * @attr
-   */
   public get value(): Date | null {
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /**
+   * The value of the input.
+   * @attr
+   */
   @property({ converter: converter })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set value(val: Date | null) {
     this._value = val
       ? DateTimeUtil.isValidDate(val)

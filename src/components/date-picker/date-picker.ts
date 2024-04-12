@@ -247,6 +247,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the picker
    * @attr
