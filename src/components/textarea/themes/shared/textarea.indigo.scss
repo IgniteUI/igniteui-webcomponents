@@ -85,6 +85,7 @@ textarea {
 
     padding-block: rem(6px);
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
+    margin-block-end: rem(1px);
 }
 
 [part~='filled'] {
