@@ -3,17 +3,17 @@
 :host {
     display: flex;
     flex-direction: column;
-    min-width: rem(290px);
     outline: none;
-    padding: 0 rem(12px) rem(16px) rem(12px);
+    padding-block: rem(16px);
+    padding-inline: pad-inline(rem(8px), rem(8px), rem(16px));
     overflow: hidden;
     box-sizing: border-box;
-    gap: rem(4px);
 }
 
 [part='months-row'],
 [part='years-row'] {
     display: flex;
+    gap: rem(8px);
 }
 
 [part~='month'],
@@ -32,8 +32,11 @@
 
 [part~='month-inner'],
 [part~='year-inner'] {
+    flex-grow: 1;
     user-select: none;
+    max-width: rem(240px);
     cursor: pointer;
     padding: 0 rem(12px);
+    margin: 0;
 }
 
