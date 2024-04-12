@@ -63,7 +63,7 @@ const converter: ComplexAttributeConverter<Date | undefined> = {
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
- * igc-datepicker is a feature rich component used for entering a date through manual text input or
+ * igc-date-picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
  *
  * @element igc-date-picker
@@ -490,6 +490,15 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this._hide(true);
   }
 
+  protected handleDialogClosing(event: Event) {
+    event.stopPropagation();
+    this._hide(true);
+  }
+
+  protected handleDialogClosed(event: Event) {
+    event.stopPropagation();
+  }
+
   protected onSlotChange() {
     this.requestUpdate();
   }
@@ -607,7 +616,8 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
-            @igcClosing=${this.handleClosing}
+            @igcClosing=${this.handleDialogClosing}
+            @igcClosed=${this.handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)}${this.renderActions()}
