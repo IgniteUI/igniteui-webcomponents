@@ -84,12 +84,52 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *
+ * @csspart label - The label wrapper that renders content above the target input.
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart input - The native input element.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
  * @csspart calendar-icon - The calendar icon wrapper for closed state.
  * @csspart calendar-icon-open - The calendar icon wrapper for opened state.
  * @csspart clear-icon - The clear icon wrapper.
  * @csspart actions - The actions wrapper.
- * @csspart label - The label element.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart helper-text - The helper-text wrapper that renders content below the target input.
+ * @csspart header - The calendar header element.
+ * @csspart header-title - The calendar header title element.
+ * @csspart header-date - The calendar header date element.
+ * @csspart calendar-content - The calendar content element which contains the views and navigation elements.
+ * @csspart navigation - The calendar navigation container element.
+ * @csspart months-navigation - The calendar months navigation button element.
+ * @csspart years-navigation - The calendar years navigation button element.
+ * @csspart years-range - The calendar years range element.
+ * @csspart navigation-buttons - The calendar navigation buttons container.
+ * @csspart navigation-button - The calendar previous/next navigation button.
+ * @csspart days-view-container - The calendar days view container element.
+ * @csspart days-view - The calendar days view element.
+ * @csspart months-view - The calendar months view element.
+ * @csspart years-view - The calendar years view element.
+ * @csspart days-row - The calendar days row element.
+ * @csspart calendar-label - The calendar week header label element.
+ * @csspart week-number - The calendar week number element.
+ * @csspart week-number-inner - The calendar week number inner element.
+ * @csspart date - The calendar date element.
+ * @csspart date-inner - The calendar date inner element.
+ * @csspart first - The calendar first selected date element in range selection.
+ * @csspart last - The calendar last selected date element in range selection.
+ * @csspart inactive - The calendar inactive date element.
+ * @csspart hidden - The calendar hidden date element.
+ * @csspart weekend - The calendar weekend date element.
+ * @csspart range - The calendar range selected element.
+ * @csspart special - The calendar special date element.
+ * @csspart disabled - The calendar disabled date element.
+ * @csspart single - The calendar single selected date element.
+ * @csspart preview - The calendar range selection preview date element.
+ * @csspart month - The calendar month element.
+ * @csspart month-inner - The calendar month inner element.
+ * @csspart year - The calendar year element.
+ * @csspart year-inner - The calendar year inner element.
+ * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
+ * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 @themes(all, true)
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
