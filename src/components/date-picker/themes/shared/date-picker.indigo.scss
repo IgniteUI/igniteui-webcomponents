@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../../input/themes/light/themes' as input-theme;
@@ -9,10 +10,7 @@ $input-theme: input-theme.$indigo;
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
         box-shadow: var(--ig-elevation-5);
-
-        // Should be fixed
-        // border: rem(1px) solid var-get($theme, 'border-color');
-        border: rem(1px) solid color(gray, 400);
+        border: rem(1px) solid var-get($theme, 'border-color');
     }
 
     igc-dialog::part(footer) {
