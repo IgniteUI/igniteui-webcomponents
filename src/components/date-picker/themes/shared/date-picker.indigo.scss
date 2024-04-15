@@ -13,12 +13,6 @@ $input-theme: input-theme.$indigo;
         border: rem(1px) solid var-get($theme, 'border-color');
     }
 
-    igc-dialog::part(footer) {
-        // Should be fixed
-        // border-block-start: rem(1px) solid var-get($theme, 'border-color');
-        border-block-start: rem(1px) solid color(gray, 400);
-    }
-
     igc-focus-trap {
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }

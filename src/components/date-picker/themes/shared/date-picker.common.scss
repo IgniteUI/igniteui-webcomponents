@@ -2,7 +2,7 @@
 @use '../light/themes' as *;
 @use '../../../input/themes/light/themes' as input-theme;
 
-$theme: $base;
+$theme: $material;
 $input-theme: input-theme.$material;
 
 :host {
@@ -12,6 +12,10 @@ $input-theme: input-theme.$material;
 
         [part='actions'] {
             border: none;
+        }
+
+        igc-calendar {
+            box-shadow: none;
         }
     }
 
@@ -26,10 +30,7 @@ $input-theme: input-theme.$material;
 
     igc-dialog::part(footer) {
         background: var-get($theme, 'content-background');
-
-        // Should be fixed
-        // border-block-start: rem(1px) solid var-get($theme, 'border-color');
-        border-block-start: rem(1px) solid color(gray, 200);
+        border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
     }
 
     igc-focus-trap {
@@ -62,7 +63,7 @@ $input-theme: input-theme.$material;
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
-    border-block-start: rem(1px) solid var-get($theme, 'border-color');
+    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
 }
 
 :host([invalid]) {

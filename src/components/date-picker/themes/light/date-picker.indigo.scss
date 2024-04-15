@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -6,8 +5,4 @@ $theme: $indigo;
 
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig-datepicker');
-
-    igc-dialog[open]::part(base) {
-        --border-color: var(--ig-dialog-border-color, #{map.get($theme, 'border-color')});
-    }
 }
