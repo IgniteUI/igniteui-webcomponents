@@ -145,6 +145,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ attribute: 'value-format' })
   public valueFormat!: string;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component
    * @attr
