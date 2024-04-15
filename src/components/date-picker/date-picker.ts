@@ -21,6 +21,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -132,6 +133,9 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 @themes(all, true)
+@blazorAdditionalDependencies(
+  'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
+)
 export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatepickerEventMap,
@@ -630,7 +634,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
           this.isDropDown || !this.actions.length ? undefined : 'footer'
         )}
       >
-        <slot name="actions"></slot>
+        <slot name="actions" @slotchange=${this.onSlotChange}></slot>
       </div>
     `;
   }
