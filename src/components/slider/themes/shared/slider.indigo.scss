@@ -7,6 +7,10 @@ $thumb-size: rem(12px);
 $thumb-radius: math.div($thumb-size, 2);
 $thumb-scale-hover: calc(16 / 12);
 
+[part='thumb-label-inner'] {
+    @include type-style('subtitle-2');
+}
+
 [part='base']:hover {
     [part='inactive'] {
         background: var-get($theme, 'base-track-hover-color');
@@ -35,6 +39,8 @@ $thumb-scale-hover: calc(16 / 12);
 }
 
 [part='tick-label'] {
+    @include type-style('body-2');
+
     color: var-get($theme, 'tick-label-color');
 }
 
