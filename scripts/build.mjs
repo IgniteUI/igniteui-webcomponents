@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { generateVsCodeCustomElementData } from 'custom-element-vs-code-integration';
 import { generateJetBrainsWebTypes } from 'custom-element-jet-brains-integration';
-import manifest from '../custom-elements.json' assert { type: 'json' };
+import customElements from '../custom-elements.json' assert { type: 'json' };
 import { buildThemes } from './build-styles.mjs';
 import report from './report.mjs';
 
@@ -15,12 +15,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 
 async function runTask(cmd, tag) {
-  report.info(`[ ${tag} ] Building...`);
+  report.info(`[${tag}] Building...`);
   try {
     await cmd();
-    report.success(`[ ${tag} ] Done\n`);
+    report.success(`[${tag}] Done`);
   } catch (e) {
-    report.error(`[ ${tag} ] Failed with: ${e}\n`);
+    report.error(`[${tag}] Failed with: ${e}`);
   }
 }
 
@@ -50,7 +50,7 @@ async function runTask(cmd, tag) {
   );
 
   await runTask(
-    generateVsCodeCustomElementData.bind(null, manifest, {
+    generateVsCodeCustomElementData.bind(null, customElements, {
       outdir: 'dist',
       cssFileName: 'igniteui-webcomponents.css-custom-data.json',
       htmlFileName: 'igniteui-webcomponents.html-custom-data.json',
@@ -59,7 +59,7 @@ async function runTask(cmd, tag) {
   );
 
   await runTask(
-    generateJetBrainsWebTypes.bind(null, manifest, { outdir: 'dist' }),
+    generateJetBrainsWebTypes.bind(null, customElements, { outdir: 'dist' }),
     'JetBrains web types'
   );
 
