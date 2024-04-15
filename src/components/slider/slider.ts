@@ -57,6 +57,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   private _value = 0;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component.
    * @attr

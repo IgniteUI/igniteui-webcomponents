@@ -193,6 +193,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   public set value(value: string) {
     this._updateValue(value);
     const item = this.getItem(this._value);

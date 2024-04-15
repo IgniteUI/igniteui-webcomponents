@@ -1,11 +1,15 @@
 import { css } from 'lit';
 
 // Shared Styles
+import { styles as bootstrap } from './shared/item/item.bootstrap.css.js';
 import { styles as fluent } from './shared/item/item.fluent.css.js';
 import { styles as indigo } from './shared/item/item.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
+  bootstrap: css`
+    ${bootstrap}
+  `,
   fluent: css`
     ${fluent}
   `,
@@ -15,6 +19,9 @@ const light = {
 };
 
 const dark = {
+  bootstrap: css`
+    ${bootstrap}
+  `,
   fluent: css`
     ${fluent}
   `,
