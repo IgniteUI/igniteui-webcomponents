@@ -206,10 +206,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     if (await this.toggleAnimation('close')) {
       this.open = false;
       this.animating = false;
+      await this.updateComplete;
       this.emitEvent('igcClosed');
     }
-
-    await this.updateComplete;
   }
 
   private handleCancel(event: Event) {
@@ -221,7 +220,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private handleClick({ clientX, clientY, target }: MouseEvent) {
-    if (this.closeOnOutsideClick && this.dialog.isSameNode(target as Node)) {
+    if (this.closeOnOutsideClick && this.dialog === target) {
       const { left, top, right, bottom } = this.dialog.getBoundingClientRect();
       const between = (x: number, low: number, high: number) =>
         x >= low && x <= high;

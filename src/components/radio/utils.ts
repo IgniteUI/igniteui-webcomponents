@@ -41,7 +41,7 @@ export function getGroup(member: IgcRadioComponent) {
       result.checked.push(each);
     }
 
-    if (!each.isSameNode(member)) {
+    if (each !== member) {
       result.siblings.push(each);
     }
   }

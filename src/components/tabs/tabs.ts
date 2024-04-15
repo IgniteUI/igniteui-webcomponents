@@ -125,14 +125,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (removed.length || added.length) {
       for (const tab of removed) {
-        this.resizeObserver.unobserve(tab);
+        this.resizeObserver?.unobserve(tab);
         if (tab.selected && tab === this.activeTab) {
           this.activeTab = undefined;
         }
       }
 
       for (const tab of added) {
-        this.resizeObserver.observe(tab);
+        this.resizeObserver?.observe(tab);
         if (tab.selected) {
           this.setSelectedTab(tab);
         }

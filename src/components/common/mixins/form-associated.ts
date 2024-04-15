@@ -180,34 +180,34 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     /**
      * The disabled state of the component
-     * @attr [disabled=false]
+     *
+     * @attr
+     * @default false
      */
     @property({ type: Boolean, reflect: true })
+    public set disabled(value: boolean) {
+      this._disabled = value;
+      this.toggleAttribute('disabled', Boolean(this._disabled));
+    }
+
     public get disabled(): boolean {
       return this._disabled;
     }
 
-    public set disabled(value: boolean) {
-      const prev = this._disabled;
-      this._disabled = value;
-      this.toggleAttribute('disabled', Boolean(this._disabled));
-      this.requestUpdate('disabled', prev);
-    }
-
     /**
      * Control the validity of the control.
-     * @attr [invalid=false]
+     *
+     * @attr
+     * @default false
      */
     @property({ type: Boolean, reflect: true })
-    public get invalid(): boolean {
-      return this._invalid;
-    }
-
     public set invalid(value: boolean) {
-      const prev = this._invalid;
       this._invalid = value;
       this.toggleAttribute('invalid', Boolean(this._invalid));
-      this.requestUpdate('invalid', prev);
+    }
+
+    public get invalid(): boolean {
+      return this._invalid;
     }
 
     constructor(...args: any[]) {

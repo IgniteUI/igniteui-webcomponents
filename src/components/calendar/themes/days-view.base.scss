@@ -1,18 +1,14 @@
 @use 'styles/utilities' as *;
 
 $border-width: rem(1px);
-$week-number-bg: color(gray, 200);
-$week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
-$border-radius: border-radius(rem(4px));
-$row-gap: rem(6px);
+$row-gap: rem(4px);
 
 :host([part='days-view']) {
     display: flex;
     flex-direction: column;
-    min-width: rem(290px);
     outline: none;
-    padding: 0 rem(12px) rem(16px) rem(12px);
+    padding: rem(16px) rem(12px);
     overflow: hidden;
     box-sizing: border-box;
     gap: $row-gap;
@@ -22,18 +18,35 @@ $row-gap: rem(6px);
     display: flex;
     align-items: center;
     justify-content: center;
+
+    // TODO hide the 7 row only if all the children have hidden part on them,
+    //  I need to know if the calendar is in multi view to achieve this
+    // &:nth-child(7) {
+    //     > [part~='date']:has(:not([part~='hidden'])) {
+    //         display: none;
+    //     }
+    // }
 }
+
 
 [part~='date-inner'] {
     cursor: pointer;
     user-select: none;
     z-index: 2;
+
+    &::after {
+        box-sizing: border-box;
+    }
+}
+
+[part~='date'] {
+    margin: 0 !important;
+    z-index: 0;
 }
 
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
-    font-size: var(--ig-subtitle-1-font-size);
     width: 100%;
     position: relative;
     display: flex;
@@ -42,12 +55,17 @@ $row-gap: rem(6px);
     outline: none;
     box-sizing: border-box;
     user-select: none;
+    margin: 0;
+
+    &::before,
+    &::after {
+        box-sizing: border-box;
+    }
 }
 
 [part='label-inner'] {
     text-overflow: ellipsis;
     overflow: hidden;
-    min-width: 4ch;
     text-align: center;
 }
 
@@ -67,9 +85,13 @@ $row-gap: rem(6px);
     &::after {
         content: '';
         position: absolute;
-        height: 100%;
-        width: calc(50% + #{rem(1px)});
-        z-index: 1;
+        width: 50%;
+        z-index: -1;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
     }
 }
 
@@ -91,15 +113,10 @@ $row-gap: rem(6px);
     }
 }
 
-[part~='date-inner'][part~='inactive'],
-[part~='date-inner'][part~='label'],
-[part~='date-inner'][part~='disabled'] {
-    color: $week-number-color;
-}
-
 [part~='week-number'] {
     order: 0;
     cursor: default;
+    margin-inline-end: $row-gap;
 }
 
 [part='week-number-inner first'] {
@@ -108,16 +125,17 @@ $row-gap: rem(6px);
     }
 }
 
-
 [part~='week-number-inner'] {
     position: relative;
 
     &::after {
         content: '';
         position: absolute;
-        bottom: 100%;
-        height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
-        width: 100%;
+        height: $row-gap;
+
+        // rem(1px) is needed because of the border around the week-number-inner element
+        bottom: calc(100% + #{rem(1px)});
+        box-sizing: border-box;
     }
 }
 
@@ -125,6 +143,18 @@ $row-gap: rem(6px);
     pointer-events: none;
     user-select: none;
     cursor: not-allowed;
+}
+
+[part~='date-inner'][part~='disabled'][part~='special'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='single'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='first'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='last'],
+[part~='date-inner'][part~='disabled'][part~='current'] {
+    opacity: .38;
+}
+
+[part~='date-inner'][part~='inactive'][part~='disabled'] {
+    opacity: 1;
 }
 
 [part~='hidden'] {
