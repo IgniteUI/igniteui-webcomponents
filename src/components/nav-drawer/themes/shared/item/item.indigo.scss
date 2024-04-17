@@ -7,7 +7,6 @@ $theme: $indigo;
     gap: rem(24px);
     padding: rem(4px);
     margin: rem(15px) rem(8px);
-
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
 
@@ -27,8 +26,9 @@ $theme: $indigo;
 }
 
 [part='content'] {
-    padding-inline-start: rem(8px);
     @include type-style('subtitle-2');
+
+    padding-inline-start: rem(8px);
 }
 
 :host([active]) {
