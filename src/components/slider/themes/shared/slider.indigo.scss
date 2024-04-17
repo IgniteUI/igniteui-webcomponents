@@ -6,9 +6,19 @@ $theme: $indigo;
 $thumb-size: rem(12px);
 $thumb-radius: math.div($thumb-size, 2);
 $thumb-scale-hover: calc(16 / 12);
+$thumb-label-width: rem(36px);
+$thumb-label-height: rem(22px);
 
 [part='thumb-label-inner'] {
     @include type-style('subtitle-2');
+    @include border-radius(rem(3px));
+
+    min-width: $thumb-label-width;
+}
+
+[part='thumb-label'] {
+    top: calc((#{$thumb-label-height} + rem(16px)) * -1);
+    height: $thumb-label-height;
 }
 
 [part='base']:hover {
@@ -42,6 +52,7 @@ $thumb-scale-hover: calc(16 / 12);
     @include type-style('body-2');
 
     color: var-get($theme, 'tick-label-color');
+    
 }
 
 [part~='thumb'] {
