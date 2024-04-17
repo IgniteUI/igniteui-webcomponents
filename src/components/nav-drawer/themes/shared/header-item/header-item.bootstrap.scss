@@ -2,4 +2,7 @@
 
 :host {
     @include type-style('caption');
+
+    padding: rem(16px) rem(8px);
 }
+

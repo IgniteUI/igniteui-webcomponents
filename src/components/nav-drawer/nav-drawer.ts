@@ -5,7 +5,6 @@ import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
-import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
@@ -26,7 +25,7 @@ import { partNameMap } from '../common/util.js';
 @themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
-  public static override styles = [styles, shared];
+  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register() {

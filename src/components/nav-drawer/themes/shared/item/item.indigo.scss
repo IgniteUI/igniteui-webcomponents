@@ -1,11 +1,43 @@
 @use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
 
 [part~='base'] {
     gap: rem(24px);
     padding: rem(4px);
     margin: rem(15px) rem(8px);
+
+    border-radius: var-get($theme, 'item-border-radius');
+    color: var-get($theme, 'item-text-color');
+
+    &:hover,
+    &:focus-within {
+        background: var-get($theme, 'item-hover-background');
+        color: var-get($theme, 'item-hover-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
+    }
 }
 
 [part='content'] {
     padding-inline-start: rem(8px);
+    @include type-style('subtitle-2');
+}
+
+:host([active]) {
+    [part~='base'] {
+        background: var-get($theme, 'item-active-background');
+        color: var-get($theme, 'item-active-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-active-icon-color');
+        }
+    }
 }

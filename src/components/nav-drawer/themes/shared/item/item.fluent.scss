@@ -1,5 +1,40 @@
 @use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $fluent;
+
+[part~='base'] {
+    border-radius: var-get($theme, 'item-border-radius');
+    color: var-get($theme, 'item-text-color');
+    padding: rem(8px);
+    gap: rem(8px);
+
+    &:hover,
+    &:focus-within {
+        background: var-get($theme, 'item-hover-background');
+        color: var-get($theme, 'item-hover-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
+    }
+}
 
 [part='content'] {
     @include type-style('body-2');
+}
+
+:host([active]) {
+    [part~='base'] {
+        background: var-get($theme, 'item-active-background');
+        color: var-get($theme, 'item-active-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-active-icon-color');
+        }
+    }
 }

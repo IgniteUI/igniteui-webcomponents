@@ -7,4 +7,5 @@ $theme: $material;
     @include type-style('subtitle-1');
 
     color: var-get($theme, 'item-header-text-color');
+    padding: rem(10px) rem(8px);
 }

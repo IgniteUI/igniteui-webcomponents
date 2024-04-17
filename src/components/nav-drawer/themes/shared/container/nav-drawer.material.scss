@@ -4,17 +4,14 @@
 $theme: $material;
 $background: var-get($theme, 'background') !default;
 
-:host {
-    [part='base'] {
-        border-radius: var-get($theme, 'border-radius');
-        background: $background;
-        border: none;
-        box-shadow: none;
-    }
+[part='overlay'] {
+    background: var-get($overlay-material, 'background-color');
+}
 
-    [part='overlay'] {
-        background: var-get($overlay-material, 'background-color');
-    }
+[part='base'] {
+    border-radius: var-get($theme, 'border-radius');
+    background: $background;
+    padding: rem(8px);
 }
 
 [part='mini'] {

@@ -4,6 +4,9 @@
 $theme: $material;
 
 [part~='base'] {
+    padding: rem(8px);
+    margin: rem(4px);
+    gap: rem(32px);
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
 
