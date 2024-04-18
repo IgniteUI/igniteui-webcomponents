@@ -484,7 +484,8 @@ export default class IgcComboComponent<
     const items = this._value;
 
     if (items.length < 1) {
-      return super.setFormValue(null);
+      super.setFormValue(null);
+      return;
     }
 
     const data = new FormData();

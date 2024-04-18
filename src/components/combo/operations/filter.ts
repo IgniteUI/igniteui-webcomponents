@@ -3,11 +3,13 @@ import type { ComboRecord, FilteringOptions } from '../types.js';
 
 export default class FilterDataOperation<T extends object> {
   protected normalize<T extends object>(
-    str: string,
+    string: string,
     { caseSensitive, matchDiacritics }: FilteringOptions<T>
   ) {
-    str = caseSensitive ? str : str.toLocaleLowerCase();
-    return matchDiacritics ? str : str.normalize('NFKD').replace(/\p{M}/gu, '');
+    const match = caseSensitive ? string : string.toLocaleLowerCase();
+    return matchDiacritics
+      ? match
+      : match.normalize('NFKD').replace(/\p{M}/gu, '');
   }
 
   public apply(data: ComboRecord<T>[], controller: DataController<T>) {

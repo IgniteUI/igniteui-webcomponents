@@ -1336,7 +1336,7 @@ const pressKey = (
   target: HTMLElement,
   key: string,
   times = 1,
-  options?: Object
+  options?: object
 ) => {
   for (let i = 0; i < times; i++) {
     target.dispatchEvent(

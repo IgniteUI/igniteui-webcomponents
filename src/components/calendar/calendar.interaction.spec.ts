@@ -1,8 +1,7 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { IgcCalendarComponent, defineComponents } from '../../index.js';
-import { createCalendarElement } from './calendar-rendering.spec.js';
 import {
   Calendar,
   type DateRangeDescriptor,
@@ -11,6 +10,10 @@ import {
   isDateInRanges,
 } from './common/calendar.model.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
+
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}
 
 describe('Calendar Interaction', () => {
   before(() => {

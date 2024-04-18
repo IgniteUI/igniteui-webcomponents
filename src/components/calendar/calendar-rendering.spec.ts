@@ -564,6 +564,6 @@ describe('Calendar Rendering', () => {
   });
 });
 
-export const createCalendarElement = () => {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-};
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}
