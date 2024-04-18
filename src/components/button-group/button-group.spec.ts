@@ -448,22 +448,32 @@ describe('Button Group', () => {
         expect(buttonGroup.selectedItems.length).to.equal(0);
       });
 
-      it('should clear the selection when passing an empty array to `selectedItems` property', async () => {
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="multiple">
-            <igc-toggle-button value="left">Left</igc-toggle-button>
-            <igc-toggle-button value="center">Center</igc-toggle-button>
-            <igc-toggle-button value="right" selected>Right</igc-toggle-button>
-            <igc-toggle-button value="top" selected>Top</igc-toggle-button>
-          </igc-button-group>`);
+      it('should clear the selection when passing an empty array to `selectedItems` property', () => {
+        buttons[0].selected = true;
 
-        expect(buttonGroup.selection).to.equal('multiple');
-        expect(buttonGroup.selectedItems.length).to.equal(2);
+        expect(buttonGroup.selectedItems.length).to.equal(1);
+        expect(buttonGroup.selectedItems).to.have.same.members([
+          buttons[0].value,
+        ]);
 
         buttonGroup.selectedItems = [];
-        await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(0);
+        expect(buttons[0].selected).to.be.false;
+      });
+
+      it('should clear the selection when passing falsy values to `selectedItems` property', () => {
+        buttons[0].selected = true;
+
+        expect(buttonGroup.selectedItems.length).to.equal(1);
+        expect(buttonGroup.selectedItems).to.have.same.members([
+          buttons[0].value,
+        ]);
+
+        buttonGroup.selectedItems = null as unknown as string[];
+
+        expect(buttonGroup.selectedItems.length).to.equal(0);
+        expect(buttons[0].selected).to.be.false;
       });
 
       it('initial selection through child selection attribute has higher priority', async () => {

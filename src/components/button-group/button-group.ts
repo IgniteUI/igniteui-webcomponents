@@ -109,10 +109,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   public set selectedItems(values: string[]) {
-    if (values) {
-      this._selectedItems = new Set(values);
-      this.setSelection(this._selectedItems);
-    }
+    this._selectedItems = new Set(Array.isArray(values) ? values : []);
+    this.setSelection(this._selectedItems);
   }
 
   @watch('disabled', { waitUntilFirstUpdate: true })
