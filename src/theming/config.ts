@@ -37,12 +37,12 @@ export const getTheme: () => {
       ) || [];
 
     theme =
-      _theme && _theme[1] && isOfTypeTheme(_theme[1])
+      _theme?.[1] && isOfTypeTheme(_theme[1])
         ? (_theme[1] as Theme)
         : 'bootstrap';
 
     themeVariant =
-      _variant && _variant[1] && isOfTypeThemeVariant(_variant[1])
+      _variant?.[1] && isOfTypeThemeVariant(_variant[1])
         ? (_variant[1] as ThemeVariant)
         : 'light';
   }
