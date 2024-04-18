@@ -12,7 +12,7 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 
 export async function buildThemes() {
   const compiler = await sass.initAsyncCompiler();
-  const paths = await globby(`src/styles/themes/{light,dark}/*.scss`);
+  const paths = await globby('src/styles/themes/{light,dark}/*.scss');
 
   for (const sassFile of paths) {
     const css = await compileSass(sassFile, compiler);

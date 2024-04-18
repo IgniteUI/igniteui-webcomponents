@@ -105,8 +105,8 @@ class StoriesBuilder {
     const isArray = (type) => type.includes('[]');
     const isGeneric = (type) => type.match(/<.*>/);
 
-    const t = type.split('|').map((part) => {
-      part = part.trim().replace(/'/g, '"');
+    const t = type.split('|').map((t) => {
+      const part = t.trim().replace(/'/g, '"');
       if (
         part &&
         !part.match(/undefined|null/) &&
@@ -126,8 +126,8 @@ class StoriesBuilder {
    */
   #resolveOptions(type) {
     return isUnion(type)
-      ? type.split('|').map((part) => {
-          part = part.trim();
+      ? type.split('|').map((t) => {
+          const part = t.trim();
           if (part && !part.match(/undefined|null/)) {
             return part.replace(/"|'/g, '');
           }
@@ -173,8 +173,6 @@ class StoriesBuilder {
         return valueDefined ? value === 'true' : false;
       case 'number':
         return valueDefined ? Number.parseFloat(value) : undefined;
-      case 'Date':
-        undefined;
       default:
         return valueDefined ? value.replace(/"|'/g, '') : undefined;
     }
@@ -240,7 +238,7 @@ class StoriesBuilder {
       const type = this.#resolveType(property);
 
       if (type) {
-        parsed['type'] = type;
+        parsed.type = type;
       } else {
         continue;
       }
@@ -251,17 +249,17 @@ class StoriesBuilder {
       const defaultValue = this.#resolveDefaultValue(type, property.default);
 
       if (property.description) {
-        parsed['description'] = property.description;
+        parsed.description = property.description;
       }
 
       if (options) {
-        parsed['options'] = options;
+        parsed.options = options;
       }
       if (control) {
-        parsed['control'] = control;
+        parsed.control = control;
       }
       if (isDefined(defaultValue)) {
-        parsed['table'] = { defaultValue: { summary: defaultValue } };
+        parsed.table = { defaultValue: { summary: defaultValue } };
       }
 
       argTypes[property.name] = parsed;
@@ -295,14 +293,14 @@ class StoriesBuilder {
       },
     };
 
-    if (actions && actions.length) {
-      result['parameters']['actions'] = { handles: actions };
+    if (actions?.length) {
+      result.parameters.actions = { handles: actions };
     }
     if (Object.keys(argTypes).length) {
-      result['argTypes'] = argTypes;
+      result.argTypes = argTypes;
     }
     if (Object.keys(args).length) {
-      result['args'] = args;
+      result.args = args;
     }
 
     return result;
@@ -378,7 +376,7 @@ function templateArgsInterface(definition) {
       ${buildInterface(types)}
     }
   type Story = StoryObj<${argsInterface}>`
-    : `type Story = StoryObj`;
+    : 'type Story = StoryObj';
 }
 
 function template(name, definition) {

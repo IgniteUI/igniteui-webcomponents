@@ -1,8 +1,9 @@
-const TypeDoc = require('typedoc');
-const path = require('path');
-const watch = require('node-watch');
-const browserSync = require('browser-sync').create();
+import path from 'node:path';
+import TypeDoc from 'typedoc';
+import watch from 'node-watch';
+import { create } from 'browser-sync';
 
+const browserSync = create();
 const ROOT = path.join.bind(null, path.resolve('./'));
 
 const TYPEDOC = {

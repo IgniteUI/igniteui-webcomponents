@@ -7,7 +7,7 @@ async function createChangelog() {
     report.error(
       '`version` argument is missing from the invocation.\nMake sure to pass it:'
     );
-    report.error(`\tnpm run release -- <target-version>`);
+    report.error('\tnpm run release -- <target-version>');
     process.exit(1);
   }
 
