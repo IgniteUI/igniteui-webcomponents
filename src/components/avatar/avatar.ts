@@ -87,6 +87,10 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.hasError = false;
   }
 
+  protected handleError() {
+    this.hasError = true;
+  }
+
   protected override render() {
     return html`
       <div part="base">
@@ -99,7 +103,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
                 part="image"
                 alt=${ifDefined(this.alt)}
                 src=${ifDefined(this.src)}
-                @error=${() => (this.hasError = true)}
+                @error=${this.handleError}
               />
             `
           : nothing}

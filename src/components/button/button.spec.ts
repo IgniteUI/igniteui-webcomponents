@@ -23,12 +23,11 @@ describe('Button tests', () => {
       ignoreAttributes: ['part'],
     };
 
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button>Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button>Click</igc-button>`
+      );
+    });
 
     it('is initialized with sensible default values', async () => {
       expect([button.disabled, button.variant]).to.eql([false, 'contained']);
@@ -96,12 +95,11 @@ describe('Button tests', () => {
       ignoreAttributes: ['part', 'aria-disabled'],
     };
 
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button href="/">Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button href="/">Click</igc-button>`
+      );
+    });
 
     it('is initialized with sensible default values', async () => {
       const { disabled, download, target, rel, variant } = button;
@@ -196,12 +194,11 @@ describe('Button tests', () => {
   });
 
   describe('Events', () => {
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button>Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button>Click</igc-button>`
+      );
+    });
 
     it('focus/blur events are emitted from corresponding methods', async () => {
       const eventSpy = spy(button, 'emitEvent');

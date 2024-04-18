@@ -117,13 +117,17 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   @watch('disabled', { waitUntilFirstUpdate: true })
   protected updateDisabledState() {
-    this.toggleButtons.forEach((b) => (b.disabled = this.disabled));
+    this.toggleButtons.forEach((b) => {
+      b.disabled = this.disabled;
+    });
   }
 
   @watch('selection', { waitUntilFirstUpdate: true })
   protected updateSelectionState() {
     if (this._selectedButtons.length) {
-      this.toggleButtons.forEach((b) => (b.selected = false));
+      this.toggleButtons.forEach((b) => {
+        b.selected = false;
+      });
     }
   }
 
