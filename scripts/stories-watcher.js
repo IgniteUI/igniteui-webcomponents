@@ -1,6 +1,8 @@
-const watch = require('node-watch');
-const { promisify } = require('util');
-const exec = promisify(require('child_process').exec);
+import { exec as _exec } from 'node:child_process';
+import { promisify } from 'node:util';
+import watch from 'node-watch';
+
+const exec = promisify(_exec);
 
 const watchOptions = {
   recursive: true,
@@ -9,7 +11,7 @@ const watchOptions = {
   },
 };
 
-watch(['src'], watchOptions, function (_event, fileName) {
+watch(['src'], watchOptions, (_, fileName) => {
   addToQueue(fileName);
 });
 
