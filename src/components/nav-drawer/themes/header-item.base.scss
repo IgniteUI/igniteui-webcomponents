@@ -2,6 +2,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: block;
+    display: flex;
+    align-items: center;
     white-space: nowrap;
 }

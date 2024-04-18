@@ -2,8 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --menu-full-width: #{rem(256px)};
-    --menu-mini-width: #{rem(60px)};
+    --menu-full-width: #{rem(240px)};
+    --menu-mini-width: #{rem(56px)};
 
     display: flex;
     flex-shrink: 0;
@@ -24,7 +24,7 @@
     }
 
     [part~='mini'] {
-        min-width: var(--menu-mini-width);
+        width: var(--menu-mini-width);
     }
 
     [part='main'] {

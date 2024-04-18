@@ -4,8 +4,5 @@
 $theme: $material;
 
 :host {
-    @include type-style('subtitle-1');
-
-    color: var-get($theme, 'item-header-text-color');
     padding: rem(8px) rem(16px);
 }

@@ -4,49 +4,12 @@
 $theme: $bootstrap;
 $background: var-get($theme, 'background') !default;
 
-[part='overlay'] {
-    background: var-get($overlay-bootstrap, 'background-color');
+:host {
+    --menu-full-width: #{rem(208px)};
+    --menu-mini-width: #{rem(88px)};
 }
 
-[part='base'] {
-    border-radius: var-get($theme, 'border-radius');
-    background: $background;
+[part='mini'],
+[part='main'] {
     padding: rem(16px);
-}
-
-[part='mini'] {
-    background: $background;
-}
-
-:host([position='start']) [part='mini'],
-:host([position='end']) [part='mini'] {
-    box-shadow: var-get($theme, 'elevation');
-}
-
-:host([position='start']) [part='mini'] {
-    border-inline-end-color: var-get($theme, 'border-color');
-}
-
-:host([position='end']) [part='mini'] {
-    border-inline-start-color: var-get($theme, 'border-color');
-}
-
-:host([open][position='end']) {
-    [part='base'] {
-        border-inline-start-color: var-get($theme, 'border-color');
-    }
-}
-
-:host([position='relative']) {
-    [part='base'],
-    [part~='mini'] {
-        border-inline-end-color: var-get($theme, 'border-color');
-    }
-}
-
-:host([open]:not([position='relative'])) {
-    [part='base'] {
-        border-inline-end-color: var-get($theme, 'border-color');
-        box-shadow: var-get($theme, 'elevation');
-    }
 }

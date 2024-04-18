@@ -37,6 +37,9 @@ const light = {
 };
 
 const dark = {
+  shared: css`
+    ${sharedLight}
+  `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,

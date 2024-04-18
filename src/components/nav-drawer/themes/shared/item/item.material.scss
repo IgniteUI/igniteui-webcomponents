@@ -4,38 +4,44 @@
 $theme: $material;
 
 [part~='base'] {
-    padding: rem(8px);
-    margin: rem(4px);
+    padding: rem(12px) rem(8px);
     gap: rem(32px);
-    border-radius: var-get($theme, 'item-border-radius');
-    color: var-get($theme, 'item-text-color');
+    background: transparent;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        inset-block-start: rem(4px);
+        inset-inline-start: 0;
+        height: calc(100% - #{rem(8px)});
+        border-radius: var-get($theme, 'item-border-radius');
+        z-index: -1;
+    }
 
     &:hover,
     &:focus-within {
-        background: var-get($theme, 'item-hover-background');
-        color: var-get($theme, 'item-hover-text-color');
+        background: transparent;
 
-        ::slotted(igc-icon) {
-            color: var-get($theme, 'item-hover-icon-color');
+        &::after {
+            background: var-get($theme, 'item-hover-background');
         }
     }
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-icon-color');
-    }
-}
-
-[part='content'] {
-    @include type-style('subtitle-2');
 }
 
 :host([active]) {
     [part~='base'] {
-        background: var-get($theme, 'item-active-background');
-        color: var-get($theme, 'item-active-text-color');
+        background: transparent;
 
-        ::slotted(igc-icon) {
-            color: var-get($theme, 'item-active-icon-color');
+        &::after {
+            background: var-get($theme, 'item-active-background');
         }
     }
 }
+
+[part~='base'][part~='mini'] {
+    margin-inline: 0;
+    min-width: rem(40px);
+}
+
+

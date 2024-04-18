@@ -2,7 +2,9 @@
 @use '../themes' as *;
 @use '../../light/themes' as light;
 
+$theme: $fluent;
+
 :host {
-    @include css-vars-from-theme(diff(light.$base, $fluent), 'ig-nav-drawer');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-nav-drawer');
     @include css-vars-from-theme(diff(light.$base-overlay, $fluent-overlay), 'ig-nav-drawer');
 }
