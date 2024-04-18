@@ -24,10 +24,13 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "complexity": {
+        "noForEach": "warn"
+      },
       "style": {
         "noNamespace": "error",
-        "noNonNullAssertion": "off",
-        "noUselessElse": "error"
+        "useCollapsedElseIf": "error",
+        "noNonNullAssertion": "off"
       },
       "suspicious": {
         "noExplicitAny": "off"

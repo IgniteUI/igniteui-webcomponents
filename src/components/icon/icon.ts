@@ -2,6 +2,11 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorInclude } from '../common/decorators/blazorInclude.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   getIconRegistry,
   registerIconFromText as registerIconFromText_impl,
@@ -10,11 +15,6 @@ import {
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
 import { all } from './themes/themes.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { blazorInclude } from '../common/decorators/blazorInclude.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 
 /**
  * The icon component allows visualizing collections of pre-registered SVG icons.

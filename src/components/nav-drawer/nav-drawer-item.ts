@@ -6,12 +6,12 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
-import { styles as shared } from './themes/shared/item/item.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item/item.common.css.js';
 
 /**
  * Represents a navigation drawer item.

@@ -1,4 +1,4 @@
-import { DataController } from '../controllers/data.js';
+import type { DataController } from '../controllers/data.js';
 import type { ComboRecord, FilteringOptions } from '../types.js';
 
 export default class FilterDataOperation<T extends object> {

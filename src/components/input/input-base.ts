@@ -1,18 +1,18 @@
-import { LitElement, TemplateResult, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { styles } from './themes/input.base.css.js';
-import { styles as shared } from './themes/shared/input.common.css.js';
-import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import { styles } from './themes/input.base.css.js';
+import { styles as shared } from './themes/shared/input.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */

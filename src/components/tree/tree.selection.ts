@@ -1,6 +1,6 @@
-import IgcTreeItemComponent from './tree-item.js';
-import { IgcSelectionEventArgs } from './tree.common.js';
-import IgcTreeComponent from './tree.js';
+import type IgcTreeItemComponent from './tree-item.js';
+import type { IgcSelectionEventArgs } from './tree.common.js';
+import type IgcTreeComponent from './tree.js';
 
 /* blazorSuppress */
 export class IgcTreeSelectionService {

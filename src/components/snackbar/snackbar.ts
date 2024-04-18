@@ -1,10 +1,7 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles as shared } from './themes/shared/snackbar.common.css.js';
-import { styles } from './themes/snackbar.base.css.js';
-import { all } from './themes/themes.js';
 import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
@@ -12,6 +9,9 @@ import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { styles as shared } from './themes/shared/snackbar.common.css.js';
+import { styles } from './themes/snackbar.base.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;

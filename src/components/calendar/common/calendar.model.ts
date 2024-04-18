@@ -5,26 +5,26 @@ export interface DateRangeDescriptor {
 }
 
 export enum DateRangeType {
-  After,
-  Before,
-  Between,
-  Specific,
-  Weekdays,
-  Weekends,
+  After = 0,
+  Before = 1,
+  Between = 2,
+  Specific = 3,
+  Weekdays = 4,
+  Weekends = 5,
 }
 
 /**
  * @hidden
  */
 export enum TimeDeltaInterval {
-  Second,
-  Minute,
-  Hour,
-  Day,
-  Week,
-  Month,
-  Quarter,
-  Year,
+  Second = 0,
+  Minute = 1,
+  Hour = 2,
+  Day = 3,
+  Week = 4,
+  Month = 5,
+  Quarter = 6,
+  Year = 7,
 }
 
 const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];

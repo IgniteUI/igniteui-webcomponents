@@ -1,5 +1,5 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { range } from 'lit/directives/range.js';
 

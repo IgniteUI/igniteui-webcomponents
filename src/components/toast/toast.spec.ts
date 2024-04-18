@@ -7,9 +7,9 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcToastComponent from './toast.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { finishAnimationsFor, getAnimationsFor } from '../common/utils.spec.js';
+import IgcToastComponent from './toast.js';
 
 describe('Toast', () => {
   before(() => defineComponents(IgcToastComponent));

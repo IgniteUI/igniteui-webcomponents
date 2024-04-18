@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './ripple.material.css.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './ripple.material.css.js';
 
 /**
  * A ripple can be applied to an element to represent

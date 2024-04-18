@@ -1,7 +1,7 @@
 import { isDate } from '../calendar/common/utils.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
-export const enum FormatDesc {
+export enum FormatDesc {
   Numeric = 'numeric',
   TwoDigits = '2-digit',
 }
@@ -59,7 +59,7 @@ export abstract class DateTimeUtil {
   ): Date | null {
     const parts: { [key in DateParts]: number } = {} as any;
     dateTimeParts.forEach((dp) => {
-      let value = parseInt(
+      let value = Number.parseInt(
         DateTimeUtil.getCleanVal(inputData, dp, promptChar),
         10
       );
@@ -281,7 +281,7 @@ export abstract class DateTimeUtil {
       case DateParts.Year:
         if (partLength === 2) {
           maskedValue = this.prependValue(
-            parseInt(_dateValue!.getFullYear().toString().slice(-2), 10),
+            Number.parseInt(_dateValue!.getFullYear().toString().slice(-2), 10),
             partLength,
             '0'
           );
@@ -840,7 +840,7 @@ export abstract class DateTimeUtil {
   }
 
   private static toTwelveHourFormat(value: string): number {
-    let hour = parseInt(
+    let hour = Number.parseInt(
       value.replace(
         new RegExp(this.escapeRegExp(this._parser.prompt), 'g'),
         '0'

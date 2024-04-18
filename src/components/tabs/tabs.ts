@@ -6,13 +6,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import IgcTabPanelComponent from './tab-panel.js';
-import IgcTabComponent from './tab.js';
-import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
-import { styles } from './themes/tabs.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
@@ -23,15 +18,20 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import {
-  MutationControllerParams,
+  type MutationControllerParams,
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, getOffset, isLTR, wrap } from '../common/util.js';
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcTabComponent from './tab.js';
+import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
+import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;

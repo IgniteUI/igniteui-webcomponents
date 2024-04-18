@@ -6,9 +6,9 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcLinearProgressComponent from './linear-progress.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { getAnimationsFor } from '../common/utils.spec.js';
+import IgcLinearProgressComponent from './linear-progress.js';
 
 function createBasicProgress() {
   return html`<igc-linear-progress></igc-linear-progress>`;

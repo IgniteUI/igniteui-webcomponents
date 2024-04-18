@@ -1,8 +1,8 @@
 import {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
-  ReactiveElement,
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
+  type ReactiveElement,
   adoptStyles,
   css,
 } from 'lit';

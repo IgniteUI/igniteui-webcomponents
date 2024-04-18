@@ -1,7 +1,10 @@
-import { CHANGE_THEME_EVENT, ChangeThemeEventDetail } from './theming-event.js';
+import { isDefined } from '../components/common/util.js';
+import {
+  CHANGE_THEME_EVENT,
+  type ChangeThemeEventDetail,
+} from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
 import { getAllCSSVariables } from './utils.js';
-import { isDefined } from '../components/common/util.js';
 
 let theme: Theme;
 let themeVariant: ThemeVariant;

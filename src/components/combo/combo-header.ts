@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/combo-header.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/header.js';
 import { styles as shared } from '../dropdown/themes/shared/header/dropdown-header.common.css.js';
+import { styles } from './themes/combo-header.base.css.js';
 
 /* blazorSuppress */
 @themes(all)

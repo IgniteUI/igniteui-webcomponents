@@ -120,7 +120,7 @@ describe('Date Util', () => {
       [DateParts.Seconds, currentDate.getSeconds()],
       [
         DateParts.Year,
-        parseInt(currentDate.getFullYear().toString().slice(-2)),
+        Number.parseInt(currentDate.getFullYear().toString().slice(-2)),
       ],
     ]);
 
@@ -139,7 +139,7 @@ describe('Date Util', () => {
         const amPm = currentDate.getHours() >= 12 ? 'PM' : 'AM';
         expect(amPm).to.equal(targetValue);
       } else {
-        expect(partsMap.get(part.type)).to.equal(parseInt(targetValue));
+        expect(partsMap.get(part.type)).to.equal(Number.parseInt(targetValue));
       }
     }
   });
@@ -187,7 +187,7 @@ describe('Date Util', () => {
     expect(DateTimeUtil.isValidDate('')).to.be.false;
     expect(DateTimeUtil.isValidDate(new Date())).to.be.true;
     expect(DateTimeUtil.isValidDate('10.10.2010')).to.be.false;
-    expect(DateTimeUtil.isValidDate(new Date(NaN))).to.be.false;
+    expect(DateTimeUtil.isValidDate(new Date(Number.NaN))).to.be.false;
     expect(DateTimeUtil.isValidDate(new Date().toISOString())).to.be.false;
   });
 

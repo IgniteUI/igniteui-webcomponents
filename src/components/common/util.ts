@@ -43,7 +43,7 @@ export function getOffset(element: HTMLElement, parent: HTMLElement) {
 
 export function createCounter() {
   let i = 0;
-  return function () {
+  return () => {
     i++;
     return i;
   };
@@ -62,7 +62,7 @@ export function isLTR(element: HTMLElement) {
  * ```
  */
 export function format(template: string, ...params: string[]): string {
-  return template.replace(/{(\d+)}/g, function (match: string, index: number) {
+  return template.replace(/{(\d+)}/g, (match: string, index: number) => {
     if (index >= params.length) {
       return match;
     }
@@ -87,7 +87,7 @@ export function format(template: string, ...params: string[]): string {
  * ```
  */
 export function asNumber(value: unknown, fallback = 0) {
-  const parsed = parseFloat(value as string);
+  const parsed = Number.parseFloat(value as string);
   return isNaN(parsed) ? fallback : parsed;
 }
 

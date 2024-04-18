@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/header.base.css.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/list-header.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * Header list item.

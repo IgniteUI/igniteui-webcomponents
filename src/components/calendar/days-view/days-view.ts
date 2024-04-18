@@ -8,18 +8,18 @@ import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../../common/i18n/calendar.resources.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
 } from '../common/calendar-base.js';
 import {
   DateRangeType,
-  ICalendarDate,
+  type ICalendarDate,
   TimeDeltaInterval,
   isDateInRanges,
 } from '../common/calendar.model.js';

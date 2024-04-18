@@ -2,32 +2,35 @@ import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import {
-  IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
-  MONTHS_PER_ROW,
-  YEARS_PER_ROW,
-} from './common/calendar-base.js';
-import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
-import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import { styles } from './themes/calendar.base.css.js';
-import { all } from './themes/calendar.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import {
+  IgcCalendarBaseComponent,
+  type IgcCalendarBaseEventMap,
+  MONTHS_PER_ROW,
+  YEARS_PER_ROW,
+} from './common/calendar-base.js';
+import {
+  type ICalendarDate,
+  TimeDeltaInterval,
+} from './common/calendar.model.js';
+import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import { styles } from './themes/calendar.base.css.js';
+import { all } from './themes/calendar.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
 
 /**
  * Represents a calendar that lets users

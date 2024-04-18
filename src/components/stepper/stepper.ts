@@ -1,18 +1,18 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isLTR } from '../common/util.js';
 import IgcStepComponent from './step.js';
-import { IgcStepperEventMap } from './stepper.common.js';
+import type { IgcStepperEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isLTR } from '../common/util.js';
 
 /**
  * IgxStepper provides a wizard-like workflow by dividing content into logical steps.

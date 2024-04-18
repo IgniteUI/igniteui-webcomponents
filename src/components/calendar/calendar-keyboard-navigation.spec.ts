@@ -1,11 +1,11 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { createCalendarElement } from './calendar-rendering.spec.js';
 import IgcCalendarComponent from './calendar.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 
 describe('Calendar Rendering', () => {
   before(() => {

@@ -1,12 +1,10 @@
-import { defineComponents } from './defineComponents.js';
-import type { IgniteComponent } from './register.js';
 import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcAvatarComponent from '../../avatar/avatar.js';
 import IgcBadgeComponent from '../../badge/badge.js';
-import IgcButtonComponent from '../../button/button.js';
-import IgcIconButtonComponent from '../../button/icon-button.js';
 import IgcButtonGroupComponent from '../../button-group/button-group.js';
 import IgcToggleButtonComponent from '../../button-group/toggle-button.js';
+import IgcButtonComponent from '../../button/button.js';
+import IgcIconButtonComponent from '../../button/icon-button.js';
 import IgcCalendarComponent from '../../calendar/calendar.js';
 import IgcCardActionsComponent from '../../card/card.actions.js';
 import IgcCardContentComponent from '../../card/card.content.js';
@@ -38,8 +36,8 @@ import IgcNavbarComponent from '../../navbar/navbar.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
 import IgcCircularProgressComponent from '../../progress/circular-progress.js';
 import IgcLinearProgressComponent from '../../progress/linear-progress.js';
-import IgcRadioComponent from '../../radio/radio.js';
 import IgcRadioGroupComponent from '../../radio-group/radio-group.js';
+import IgcRadioComponent from '../../radio/radio.js';
 import IgcRatingSymbolComponent from '../../rating/rating-symbol.js';
 import IgcRatingComponent from '../../rating/rating.js';
 import IgcRippleComponent from '../../ripple/ripple.js';
@@ -60,6 +58,8 @@ import IgcTextareaComponent from '../../textarea/textarea.js';
 import IgcToastComponent from '../../toast/toast.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
 import IgcTreeComponent from '../../tree/tree.js';
+import { defineComponents } from './defineComponents.js';
+import type { IgniteComponent } from './register.js';
 
 const allComponents: IgniteComponent[] = [
   IgcAvatarComponent,

@@ -1,15 +1,8 @@
-import { ComplexAttributeConverter, html } from 'lit';
+import { type ComplexAttributeConverter, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import {
-  DatePart,
-  DatePartDeltas,
-  DatePartInfo,
-  DateParts,
-  DateTimeUtil,
-} from './date-util.js';
 import {
   addKeybindings,
   arrowDown,
@@ -22,15 +15,22 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { AbstractConstructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { format, partNameMap } from '../common/util.js';
-import { Validator } from '../common/validators.js';
-import { IgcInputEventMap } from '../input/input-base.js';
+import type { Validator } from '../common/validators.js';
+import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
-  MaskRange,
+  type MaskRange,
 } from '../mask-input/mask-input-base.js';
+import {
+  DatePart,
+  type DatePartDeltas,
+  type DatePartInfo,
+  DateParts,
+  DateTimeUtil,
+} from './date-util.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -319,14 +319,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       if (partType) {
         result = partType;
       }
+    } else if (this._inputDateParts.some((p) => p.type === DateParts.Date)) {
+      result = DatePart.Date;
+    } else if (this._inputDateParts.some((p) => p.type === DateParts.Hours)) {
+      result = DatePart.Hours;
     } else {
-      if (this._inputDateParts.some((p) => p.type === DateParts.Date)) {
-        result = DatePart.Date;
-      } else if (this._inputDateParts.some((p) => p.type === DateParts.Hours)) {
-        result = DatePart.Hours;
-      } else {
-        result = this._inputDateParts[0].type as string as DatePart;
-      }
+      result = this._inputDateParts[0].type as string as DatePart;
     }
 
     return result;
@@ -554,9 +552,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     );
 
     this._mask =
-      newMask.indexOf('tt') !== -1
-        ? newMask.replace(new RegExp('tt', 'g'), 'LL')
-        : newMask;
+      newMask.indexOf('tt') !== -1 ? newMask.replace(/tt/g, 'LL') : newMask;
 
     this.parser.mask = this._mask;
     this.parser.prompt = this.prompt;

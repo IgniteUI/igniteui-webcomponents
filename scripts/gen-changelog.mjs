@@ -1,5 +1,5 @@
-import { parser } from 'keep-a-changelog';
 import { readFile, writeFile } from 'node:fs/promises';
+import { parser } from 'keep-a-changelog';
 import report from './report.js';
 
 async function createChangelog() {

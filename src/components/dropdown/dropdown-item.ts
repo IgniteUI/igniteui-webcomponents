@@ -1,9 +1,9 @@
-import { styles } from './themes/dropdown-item.base.css.js';
-import { all } from './themes/item.js';
-import { styles as shared } from './themes/shared/item/dropdown-item.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
+import { styles } from './themes/dropdown-item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item/dropdown-item.common.css.js';
 
 /**
  * Represents an item in a dropdown list.

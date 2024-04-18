@@ -1,6 +1,7 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import { defineComponents } from '../../index.js';
 import IgcStepComponent from './step.js';
 import {
   PARTS,
@@ -11,7 +12,6 @@ import {
   stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
 import IgcStepperComponent from './stepper.js';
-import { defineComponents } from '../../index.js';
 
 describe('Stepper', () => {
   before(() => {

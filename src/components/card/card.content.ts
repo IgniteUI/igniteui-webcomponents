@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/card.content.base.css.js';
 import { all } from './themes/content.js';
 import { styles as shared } from './themes/shared/content/card.content.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 /** A container for card's text content
  * @element igc-card-content

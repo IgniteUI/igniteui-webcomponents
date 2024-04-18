@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/rating-symbol.base.css.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/rating-symbol.base.css.js';
 
 /**
  *

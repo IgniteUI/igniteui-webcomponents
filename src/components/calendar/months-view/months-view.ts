@@ -6,11 +6,11 @@ import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRend
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';

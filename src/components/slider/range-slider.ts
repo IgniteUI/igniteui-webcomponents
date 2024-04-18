@@ -3,12 +3,12 @@ import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { IgcSliderBaseComponent } from './slider-base.js';
-import IgcSliderLabelComponent from './slider-label.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, asPercent } from '../common/util.js';
+import { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderLabelComponent from './slider-label.js';
 
 /* blazorSuppress */
 export interface IgcRangeSliderValue {

@@ -8,11 +8,11 @@ import {
 import { spy } from 'sinon';
 
 import {
-  IgcDateTimeInputComponent,
-  IgcFormComponent,
-  IgcMaskInputComponent,
-  IgcRadioComponent,
-  IgcRatingComponent,
+  type IgcDateTimeInputComponent,
+  type IgcFormComponent,
+  type IgcMaskInputComponent,
+  type IgcRadioComponent,
+  type IgcRatingComponent,
   defineAllComponents,
 } from '../../index.js';
 

@@ -10,7 +10,7 @@ import { spy } from 'sinon';
 
 import {
   IgcRatingComponent,
-  IgcRatingSymbolComponent,
+  type IgcRatingSymbolComponent,
   defineComponents,
 } from '../../index.js';
 import {

@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcInputComponent from './input.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed, simulateInput } from '../common/utils.spec.js';
+import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
   before(() => {

@@ -1,4 +1,4 @@
-import { LitElement, TemplateResult, html } from 'lit';
+import { LitElement, type TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -8,6 +8,22 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
+import type { Theme } from '../../theming/types.js';
+import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import messages from '../common/localization/validation-en.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { partNameMap } from '../common/util.js';
+import type { Validator } from '../common/validators.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcInputComponent from '../input/input.js';
+import IgcPopoverComponent from '../popover/popover.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboListComponent from './combo-list.js';
@@ -28,22 +44,6 @@ import type {
   Item,
   Keys,
 } from './types.js';
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
-import IgcIconComponent from '../icon/icon.js';
-import IgcInputComponent from '../input/input.js';
-import IgcPopoverComponent from '../popover/popover.js';
 
 /* blazorSupportsVisualChildren */
 /**

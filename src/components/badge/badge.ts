@@ -1,12 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { styles } from './themes/badge.base.css.js';
-import { styles as shared } from './themes/shared/badge.common.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/badge.base.css.js';
+import { styles as shared } from './themes/shared/badge.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * The badge is a component indicating a status on a related item or an area

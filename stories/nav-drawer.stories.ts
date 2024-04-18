@@ -1,10 +1,10 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
   IgcIconComponent,
   IgcNavDrawerComponent,
-  IgcNavDrawerItemComponent,
+  type IgcNavDrawerItemComponent,
   defineComponents,
   registerIcon,
 } from '../src/index.js';

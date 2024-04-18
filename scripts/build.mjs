@@ -1,8 +1,8 @@
-import path from 'path';
 import { exec as _exec } from 'child_process';
-import { copyFile } from 'fs/promises';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import { promisify } from 'util';
+import { copyFile } from 'fs/promises';
 import { buildThemes } from './build-styles.mjs';
 
 const exec = promisify(_exec);

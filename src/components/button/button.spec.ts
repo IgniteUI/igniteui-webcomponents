@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcButtonComponent from './button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
   'contained',

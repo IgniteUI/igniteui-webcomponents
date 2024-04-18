@@ -6,10 +6,10 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcCircularGradientComponent from './circular-gradient.js';
-import IgcCircularProgressComponent from './circular-progress.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { getAnimationsFor } from '../common/utils.spec.js';
+import IgcCircularGradientComponent from './circular-gradient.js';
+import IgcCircularProgressComponent from './circular-progress.js';
 
 function createBasicProgress() {
   return html`<igc-circular-progress></igc-circular-progress>`;

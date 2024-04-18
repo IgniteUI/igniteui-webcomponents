@@ -1,14 +1,14 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
 
 /**
  * Represents a side navigation container that provides

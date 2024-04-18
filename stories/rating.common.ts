@@ -51,7 +51,7 @@ export default {
         <div slot="empty">${each}</div>
       </igc-rating-symbol>`
   ),
-  hoverListener: function (e: CustomEvent) {
+  hoverListener: (e: CustomEvent) => {
     const labels = [
       'Select a value',
       'Terrible',
@@ -65,7 +65,6 @@ export default {
       labels[Math.ceil(e.detail)] ?? 'Unknown'
     }`;
   },
-  renderSymbols: function (items: number, renderer: Function) {
-    return Array.from({ length: items }, () => renderer());
-  },
+  renderSymbols: (items: number, renderer: Function) =>
+    Array.from({ length: items }, () => renderer()),
 };

@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/tab-panel.base.css.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
+import { styles } from './themes/tab-panel.base.css.js';
 
 /**
  * Represents the content of a tab

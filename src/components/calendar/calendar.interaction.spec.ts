@@ -1,16 +1,16 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec.js';
 import {
   Calendar,
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
-  ICalendarDate,
+  type ICalendarDate,
   isDateInRanges,
 } from './common/calendar.model.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
 
 describe('Calendar Interaction', () => {
   before(() => {

@@ -172,7 +172,7 @@ class StoriesBuilder {
       case 'boolean':
         return valueDefined ? value === 'true' : false;
       case 'number':
-        return valueDefined ? parseFloat(value) : undefined;
+        return valueDefined ? Number.parseFloat(value) : undefined;
       case 'Date':
         undefined;
       default:

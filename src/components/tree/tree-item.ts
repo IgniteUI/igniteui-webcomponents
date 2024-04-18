@@ -5,14 +5,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
-import { styles as shared } from './themes/shared/item.common.css.js';
-import type IgcTreeComponent from './tree.js';
-import { IgcTreeNavigationService } from './tree.navigation.js';
-import { IgcTreeSelectionService } from './tree.selection.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -27,6 +21,12 @@ import {
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item.common.css.js';
+import type IgcTreeComponent from './tree.js';
+import type { IgcTreeNavigationService } from './tree.navigation.js';
+import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.

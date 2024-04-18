@@ -1,11 +1,11 @@
-import { globby } from 'globby';
-import report from './report.js';
-import { fromTemplate, compileSass } from './sass.mjs';
-import path from 'node:path';
 import { mkdirSync as makeDir } from 'node:fs';
-import * as sass from 'sass-embedded';
-import { fileURLToPath } from 'node:url';
 import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { globby } from 'globby';
+import * as sass from 'sass-embedded';
+import report from './report.js';
+import { compileSass, fromTemplate } from './sass.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));

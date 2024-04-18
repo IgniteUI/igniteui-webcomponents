@@ -1,15 +1,9 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import IgcDropdownGroupComponent from './dropdown-group.js';
-import IgcDropdownHeaderComponent from './dropdown-header.js';
-import IgcDropdownItemComponent from './dropdown-item.js';
-import { all } from './themes/container.js';
-import { styles } from './themes/dropdown.base.css.js';
-import { styles as shared } from './themes/shared/dropdown.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
-  KeyBindingObserverCleanup,
+  type KeyBindingObserverCleanup,
   addKeybindings,
   arrowDown,
   arrowLeft,
@@ -43,6 +37,12 @@ import {
   getElementByIdFromRoot,
 } from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
+import { all } from './themes/container.js';
+import { styles } from './themes/dropdown.base.css.js';
+import { styles as shared } from './themes/shared/dropdown.common.css.js';
 
 export interface IgcDropdownEventMap {
   igcOpening: CustomEvent<void>;

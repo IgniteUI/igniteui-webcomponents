@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/list-item.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * The list-item component is a container

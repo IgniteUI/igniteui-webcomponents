@@ -10,10 +10,6 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import { styles } from './themes/rating.base.css.js';
-import { styles as shared } from './themes/shared/rating.common.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
@@ -26,12 +22,16 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, format, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import { styles } from './themes/rating.base.css.js';
+import { styles as shared } from './themes/shared/rating.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;

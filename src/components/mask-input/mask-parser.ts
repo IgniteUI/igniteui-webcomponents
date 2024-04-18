@@ -88,10 +88,8 @@ export class MaskParser {
         this._escapedMask = this.replaceCharAt(this._escapedMask, j, '');
         this.literals.set(j, next);
         i++;
-      } else {
-        if (!FLAGS.has(current)) {
-          this.literals.set(j, current);
-        }
+      } else if (!FLAGS.has(current)) {
+        this.literals.set(j, current);
       }
     }
   }

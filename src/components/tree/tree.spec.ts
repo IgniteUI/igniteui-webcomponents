@@ -1,6 +1,8 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
+import { defineComponents } from '../../index.js';
 import {
   DIFF_OPTIONS,
   PARTS,
@@ -16,8 +18,6 @@ import {
   wrappedItemsTree,
 } from './tree-utils.spec.js';
 import IgcTreeComponent from './tree.js';
-import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
-import { defineComponents } from '../../index.js';
 
 describe('Tree', () => {
   before(() => {

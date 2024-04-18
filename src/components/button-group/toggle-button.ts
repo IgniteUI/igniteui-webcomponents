@@ -1,11 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.

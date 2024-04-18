@@ -1,4 +1,4 @@
-import { WeekDays } from './calendar.model.js';
+import type { WeekDays } from './calendar.model.js';
 
 const weekDaysMap = {
   sunday: 0,

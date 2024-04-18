@@ -1,13 +1,13 @@
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { styles } from './themes/combo-item.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
+import { styles } from './themes/combo-item.base.css.js';
 
 /* blazorSuppress */
 @themes(all)

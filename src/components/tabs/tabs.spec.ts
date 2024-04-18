@@ -5,11 +5,11 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 
 import {
-  IgcIconButtonComponent,
+  type IgcIconButtonComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
   IgcTabsComponent,

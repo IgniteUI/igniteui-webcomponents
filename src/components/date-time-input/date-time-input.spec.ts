@@ -7,8 +7,6 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcDateTimeInputComponent from './date-time-input.js';
-import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
 import {
   arrowDown,
   arrowLeft,
@@ -22,6 +20,8 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
+import IgcDateTimeInputComponent from './date-time-input.js';
+import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));
