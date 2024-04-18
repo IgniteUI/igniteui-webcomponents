@@ -133,9 +133,9 @@ export function* iterNodes<T = Node>(
     NodeFilter[whatToShow ?? 'SHOW_ALL']
   );
 
-  let node: T;
+  let node = iter.nextNode() as T;
 
-  while ((node = iter.nextNode() as T)) {
+  while (node) {
     if (filter) {
       if (filter(node)) {
         yield node;
@@ -143,6 +143,8 @@ export function* iterNodes<T = Node>(
     } else {
       yield node;
     }
+
+    node = iter.nextNode() as T;
   }
 }
 
@@ -178,7 +180,11 @@ export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
     const category = _get(item);
     const group = result[category];
 
-    Array.isArray(group) ? group.push(item) : (result[category] = [item]);
+    if (Array.isArray(group)) {
+      group.push(item);
+    } else {
+      result[category] = [item];
+    }
   }
 
   return result;
