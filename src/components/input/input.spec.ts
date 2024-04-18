@@ -406,8 +406,8 @@ describe('Input component', () => {
   });
 
   describe('issue-1066', () => {
-    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
     const _expectedValidation = Symbol();
+    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
 
     function validateInput(event: CustomEvent<string>) {
       const element = event.target as TestBedInput;

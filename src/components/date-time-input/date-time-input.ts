@@ -306,7 +306,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private get targetDatePart(): DatePart | undefined {
-    let result;
+    let result: DatePart | undefined;
 
     if (this.focused) {
       const partType = this._inputDateParts.find(
@@ -341,7 +341,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       skip: () => this.readOnly,
       bindingDefaults: { preventDefault: true },
     })
-      .set([ctrlKey, ';'], () => (this.value = new Date()))
+      .set([ctrlKey, ';'], () => {
+        this.value = new Date();
+      })
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
       .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
@@ -482,8 +484,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     const newDate = new Date(this.value.getTime());
-    let formatPart;
-    let amPmFromMask;
+    let formatPart: DatePartInfo | undefined;
+    let amPmFromMask: string;
+
     switch (datePart) {
       case DatePart.Date:
         DateTimeUtil.spinDate(delta, newDate, this.spinLoop);

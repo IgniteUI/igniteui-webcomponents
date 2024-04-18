@@ -529,7 +529,8 @@ describe('Date Time Input component', () => {
 
       // Month part
       el.setSelectionRange(5, 6);
-      (start = input.selectionStart), (end = input.selectionEnd);
+      start = input.selectionStart;
+      end = input.selectionEnd;
 
       el.stepUp();
       expect(el.value.getMonth()).to.eq(6);
