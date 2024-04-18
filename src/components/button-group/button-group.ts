@@ -109,7 +109,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   public set selectedItems(values: string[]) {
-    if (values && values.length) {
+    if (values) {
       this._selectedItems = new Set(values);
       this.setSelection(this._selectedItems);
     }
@@ -205,6 +205,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private setSelection(values: Set<string>) {
+    if (!values.size) {
+      this.toggleButtons.forEach((b) => (b.selected = false));
+      return;
+    }
+
     for (const button of this.toggleButtons) {
       if (values.has(button.value)) {
         button.selected = true;
