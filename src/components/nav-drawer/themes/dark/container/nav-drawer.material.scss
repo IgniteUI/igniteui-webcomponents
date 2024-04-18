@@ -3,6 +3,6 @@
 @use '../../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff($base, $material), 'ig-nav-drawer');
+    @include css-vars-from-theme(diff(light.$base, $material), 'ig-nav-drawer');
     @include css-vars-from-theme(diff(light.$base-overlay, $material-overlay), 'ig-nav-drawer');
 }
