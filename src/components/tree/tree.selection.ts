@@ -302,7 +302,7 @@ export class IgcTreeSelectionService {
       });
 
       // add their direct parent to the set
-      if (item && item.parent) {
+      if (item?.parent) {
         parents.add(item.parent);
       }
     });
@@ -332,7 +332,7 @@ export class IgcTreeSelectionService {
    * Handle the selection state of a given item based the selection states of its direct children
    */
   private handleItemSelectionState(item: IgcTreeItemComponent): void {
-    const itemsArray = item && item.getChildren() ? item.getChildren() : [];
+    const itemsArray = item?.getChildren() ? item.getChildren() : [];
     if (itemsArray.length) {
       if (
         itemsArray.every((i: IgcTreeItemComponent) =>

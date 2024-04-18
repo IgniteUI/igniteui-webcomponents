@@ -24,7 +24,7 @@ export default class IgcCardComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcCardComponent,
       IgcCardActionsComponent,
       IgcCardContentComponent,
       IgcCardHeaderComponent,

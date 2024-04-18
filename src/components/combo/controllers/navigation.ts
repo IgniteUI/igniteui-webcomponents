@@ -210,9 +210,8 @@ export class NavigationController<T extends object>
 
     if (index >= 0 && index < items.length) {
       return index;
-    } else {
-      return -1;
     }
+    return -1;
   }
 
   public hostConnected() {}

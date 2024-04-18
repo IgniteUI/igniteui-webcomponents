@@ -41,7 +41,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcStepComponent);
+    registerComponent(IgcStepperComponent, IgcStepComponent);
   }
 
   private readonly keyDownHandlers: Map<string, Function> = new Map(

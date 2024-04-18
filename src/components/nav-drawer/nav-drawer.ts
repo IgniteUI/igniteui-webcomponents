@@ -31,7 +31,7 @@ export default class IgcNavDrawerComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcNavDrawerComponent,
       IgcNavDrawerHeaderItemComponent,
       IgcNavDrawerItemComponent
     );

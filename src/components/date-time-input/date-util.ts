@@ -190,7 +190,7 @@ export abstract class DateTimeUtil {
     const timeLiteral = 'T';
     if (regex.test(value)) {
       return new Date(
-        value + `${value.indexOf(timeLiteral) === -1 ? 'T00:00:00' : ''}`
+        `${value}${value.indexOf(timeLiteral) === -1 ? 'T00:00:00' : ''}`
       );
     }
 
@@ -206,7 +206,7 @@ export abstract class DateTimeUtil {
 
   public static isValidDate(value: any): value is Date {
     if (isDate(value)) {
-      return !isNaN(value.getTime());
+      return !Number.isNaN(value.getTime());
     }
 
     return false;
@@ -226,23 +226,23 @@ export abstract class DateTimeUtil {
       case 'long':
       case 'medium':
       case 'full':
-        options['dateStyle'] = format;
-        options['timeStyle'] = format;
+        options.dateStyle = format;
+        options.timeStyle = format;
         break;
       case 'shortDate':
       case 'longDate':
       case 'mediumDate':
       case 'fullDate':
-        options['dateStyle'] = format.toLowerCase().split('date')[0];
+        options.dateStyle = format.toLowerCase().split('date')[0];
         break;
       case 'shortTime':
       case 'longTime':
       case 'mediumTime':
       case 'fullTime':
-        options['timeStyle'] = format.toLowerCase().split('time')[0];
+        options.timeStyle = format.toLowerCase().split('time')[0];
         break;
       default:
-        return this.setDisplayFormatOptions(
+        return DateTimeUtil.setDisplayFormatOptions(
           value,
           format,
           locale,
@@ -254,7 +254,7 @@ export abstract class DateTimeUtil {
     try {
       formatter = new Intl.DateTimeFormat(locale, options);
     } catch {
-      formatter = new Intl.DateTimeFormat(this.DEFAULT_LOCALE, options);
+      formatter = new Intl.DateTimeFormat(DateTimeUtil.DEFAULT_LOCALE, options);
     }
 
     formattedDate = formatter.format(value);
@@ -280,7 +280,7 @@ export abstract class DateTimeUtil {
         break;
       case DateParts.Year:
         if (partLength === 2) {
-          maskedValue = this.prependValue(
+          maskedValue = DateTimeUtil.prependValue(
             Number.parseInt(_dateValue!.getFullYear().toString().slice(-2), 10),
             partLength,
             '0'
@@ -291,8 +291,8 @@ export abstract class DateTimeUtil {
         break;
       case DateParts.Hours:
         if (datePartInfo.format.indexOf('h') !== -1) {
-          maskedValue = this.prependValue(
-            this.toTwelveHourFormat(_dateValue!.getHours().toString()),
+          maskedValue = DateTimeUtil.prependValue(
+            DateTimeUtil.toTwelveHourFormat(_dateValue!.getHours().toString()),
             partLength,
             '0'
           );
@@ -312,7 +312,7 @@ export abstract class DateTimeUtil {
     }
 
     if (datePartInfo.type !== DateParts.AmPm) {
-      return this.prependValue(maskedValue, partLength, '0');
+      return DateTimeUtil.prependValue(maskedValue, partLength, '0');
     }
 
     return maskedValue;
@@ -551,7 +551,11 @@ export abstract class DateTimeUtil {
     noLeadingZero = false
   ) {
     const options: any = {};
-    const parts = this.parseDateTimeFormat(format, locale, noLeadingZero);
+    const parts = DateTimeUtil.parseDateTimeFormat(
+      format,
+      locale,
+      noLeadingZero
+    );
 
     const datePartFormatOptionMap = new Map([
       [DateParts.Date, 'day'],
@@ -600,15 +604,15 @@ export abstract class DateTimeUtil {
 
           if (part.type === DateParts.Hours) {
             part.format.charAt(0) === 'h'
-              ? (options['hourCycle'] = 'h12')
-              : (options['hourCycle'] = 'h23');
+              ? (options.hourCycle = 'h12')
+              : (options.hourCycle = 'h23');
           }
         }
 
         // Need to be set if we have 't' or 'tt'.
         if (part.type === DateParts.AmPm && part.format.length <= 2) {
-          options['hour'] = '2-digit';
-          options['hourCycle'] = 'h12';
+          options.hour = '2-digit';
+          options.hourCycle = 'h12';
         }
       }
     }
@@ -620,7 +624,7 @@ export abstract class DateTimeUtil {
         options as Intl.DateTimeFormatOptions
       );
     } catch {
-      formatter = new Intl.DateTimeFormat(this.DEFAULT_LOCALE, options);
+      formatter = new Intl.DateTimeFormat(DateTimeUtil.DEFAULT_LOCALE, options);
     }
 
     const formattedParts = formatter.formatToParts(value);
@@ -821,7 +825,7 @@ export abstract class DateTimeUtil {
 
   private static trimEmptyPlaceholders(value: string, prompt?: string): string {
     const result = value.replace(
-      new RegExp(this.escapeRegExp(prompt ?? '_'), 'g'),
+      new RegExp(DateTimeUtil.escapeRegExp(prompt ?? '_'), 'g'),
       ''
     );
     return result;
@@ -842,7 +846,7 @@ export abstract class DateTimeUtil {
   private static toTwelveHourFormat(value: string): number {
     let hour = Number.parseInt(
       value.replace(
-        new RegExp(this.escapeRegExp(this._parser.prompt), 'g'),
+        new RegExp(DateTimeUtil.escapeRegExp(DateTimeUtil._parser.prompt), 'g'),
         '0'
       ),
       10

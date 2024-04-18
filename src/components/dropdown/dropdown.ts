@@ -85,7 +85,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcDropdownComponent,
       IgcDropdownGroupComponent,
       IgcDropdownHeaderComponent,
       IgcDropdownItemComponent,

@@ -90,7 +90,7 @@ describe('Tree', () => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          item.level * indentationSize['large'] * 1 + 'px'
+          `${item.level * indentationSize.large * 1}px`
         );
       });
 
@@ -102,7 +102,7 @@ describe('Tree', () => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize['medium'] * 2) / 3 + 'px'
+          `${(item.level * indentationSize.medium * 2) / 3}px`
         );
       });
 
@@ -114,7 +114,7 @@ describe('Tree', () => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize['large'] * 1) / 2 + 'px'
+          `${(item.level * indentationSize.large * 1) / 2}px`
         );
       });
     });

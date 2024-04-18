@@ -26,7 +26,7 @@ export default class IgcDropdownGroupComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDropdownGroupComponent);
   }
 
   private _internals: ElementInternals;

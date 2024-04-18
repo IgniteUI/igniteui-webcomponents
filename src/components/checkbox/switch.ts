@@ -33,7 +33,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcSwitchComponent);
   }
 
   private static readonly increment = createCounter();

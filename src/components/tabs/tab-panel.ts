@@ -17,7 +17,7 @@ export default class IgcTabPanelComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcTabPanelComponent);
   }
 
   private static readonly increment = createCounter();

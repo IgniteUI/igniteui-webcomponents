@@ -139,13 +139,19 @@ export class MaskParser {
     return start;
   }
 
-  public replace(masked = '', value: string, start: number, end: number) {
+  public replace(
+    maskString: string,
+    value: string,
+    start: number,
+    end: number
+  ) {
+    let masked = maskString ?? '';
     const chars = Array.from(replaceIMENumbers(value));
     const positions = this.literalPositions;
-    end = Math.min(end, masked.length);
+    const final = Math.min(end, masked.length);
     let cursor = start;
 
-    for (let i = start; i < end || (chars.length && i < masked.length); i++) {
+    for (let i = start; i < final || (chars.length && i < masked.length); i++) {
       if (positions.includes(i)) {
         if (chars[0] === masked[i]) {
           cursor = i + 1;

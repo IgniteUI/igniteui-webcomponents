@@ -58,13 +58,13 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcSliderLabelComponent);
+    registerComponent(IgcRangeSliderComponent, IgcSliderLabelComponent);
   }
 
-  @query(`#thumbFrom`)
+  @query('#thumbFrom')
   private thumbFrom!: HTMLElement;
 
-  @query(`#thumbTo`)
+  @query('#thumbTo')
   private thumbTo!: HTMLElement;
 
   private _lower = 0;
@@ -172,13 +172,14 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
     if (fromOffset === toOffset && toOffset < xPointer) {
       return this.thumbTo;
-    } else if (fromOffset === toOffset && toOffset > xPointer) {
-      return this.thumbFrom;
-    } else if (match === fromOffset) {
-      return this.thumbFrom;
-    } else {
-      return this.thumbTo;
     }
+    if (fromOffset === toOffset && toOffset > xPointer) {
+      return this.thumbFrom;
+    }
+    if (match === fromOffset) {
+      return this.thumbFrom;
+    }
+    return this.thumbTo;
   }
 
   protected override updateValue(increment: number) {

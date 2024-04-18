@@ -51,7 +51,7 @@ export default class IgcPopoverComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcPopoverComponent);
   }
 
   private dispose?: ReturnType<typeof autoUpdate>;

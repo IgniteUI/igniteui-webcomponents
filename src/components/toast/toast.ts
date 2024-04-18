@@ -26,7 +26,7 @@ export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcToastComponent);
   }
 
   protected override render() {

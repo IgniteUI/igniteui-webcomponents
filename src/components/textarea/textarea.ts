@@ -67,7 +67,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcTextareaComponent);
   }
 
   private declare readonly [themeSymbol]: Theme;
@@ -236,7 +236,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({
     type: Boolean,
     converter: {
-      fromAttribute: (value) => (!value || value === 'false' ? false : true),
+      fromAttribute: (value) => !(!value || value === 'false'),
       toAttribute: (value) => (value ? 'true' : 'false'),
     },
   })

@@ -38,7 +38,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcYearsViewComponent);
   }
 
   private years!: Date[][];

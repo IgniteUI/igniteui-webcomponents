@@ -517,8 +517,8 @@ describe('Date Time Input component', () => {
       // Year part
       el.setSelectionRange(0, 1);
 
-      let start = input.selectionStart,
-        end = input.selectionEnd;
+      let start = input.selectionStart;
+      let end = input.selectionEnd;
 
       el.stepDown();
       await elementUpdated(el);
@@ -865,11 +865,11 @@ describe('Date Time Input component', () => {
     const options: Intl.DateTimeFormatOptions = {};
 
     if (includeDate) {
-      options['dateStyle'] = format;
+      options.dateStyle = format;
     }
 
     if (includeTime) {
-      options['timeStyle'] = format;
+      options.timeStyle = format;
     }
 
     const formatter = new Intl.DateTimeFormat('en', options);

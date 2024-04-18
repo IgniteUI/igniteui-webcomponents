@@ -567,13 +567,15 @@ describe('Calendar Interaction', () => {
     if (calendar.selection === 'single') {
       selectedDates = calendar.value as Date;
       return selectedDates.getTime() === date?.getTime();
-    } else if (calendar.selection === 'multiple') {
+    }
+    if (calendar.selection === 'multiple') {
       selectedDates = dates;
       const currentDate = selectedDates.find(
         (element) => element.getTime() === date.getTime()
       );
       return !!currentDate;
-    } else if (calendar.selection === 'range' && dates.length === 1) {
+    }
+    if (calendar.selection === 'range' && dates.length === 1) {
       selectedDates = dates;
       return selectedDates[0].getTime() === date.getTime();
     }

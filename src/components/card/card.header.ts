@@ -23,7 +23,7 @@ export default class IgcCardHeaderComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCardHeaderComponent);
   }
 
   protected override render() {

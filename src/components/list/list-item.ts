@@ -32,7 +32,7 @@ export default class IgcListItemComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcListItemComponent);
   }
 
   private _internals: ElementInternals;

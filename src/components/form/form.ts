@@ -39,7 +39,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcFormComponent);
   }
 
   private _controlsWithChecked = [
@@ -100,7 +100,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
         }
       } else if (
         (tagName === 'input' &&
-          (element.type === 'checkbox' || element.type == 'radio')) ||
+          (element.type === 'checkbox' || element.type === 'radio')) ||
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');

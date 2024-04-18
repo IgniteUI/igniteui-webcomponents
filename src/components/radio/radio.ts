@@ -54,7 +54,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcRadioComponent);
   }
 
   private static readonly increment = createCounter();

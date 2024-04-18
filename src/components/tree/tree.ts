@@ -41,7 +41,7 @@ export default class IgcTreeComponent extends SizableMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcTreeItemComponent);
+    registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
 
   /** @private */
@@ -143,7 +143,7 @@ export default class IgcTreeComponent extends SizableMixin(
   /** Returns all of the tree's items. */
   @blazorSuppress()
   public get items(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
+    return Array.from(this.querySelectorAll('igc-tree-item'));
   }
 
   private handleKeydown(event: KeyboardEvent) {
@@ -152,7 +152,7 @@ export default class IgcTreeComponent extends SizableMixin(
 
   /** @private */
   public expandToItem(item: IgcTreeItemComponent): void {
-    if (item && item.parent) {
+    if (item?.parent) {
       item.path.forEach((i) => {
         if (i !== item && !i.expanded) {
           i.expanded = true;

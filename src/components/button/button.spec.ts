@@ -162,10 +162,10 @@ describe('Button tests', () => {
     });
 
     it('reflects link properties', async () => {
-      const rel = 'dns-prefetch',
-        href = '/downloads/entity',
-        download = 'file.txt',
-        target = '_blank';
+      const rel = 'dns-prefetch';
+      const href = '/downloads/entity';
+      const download = 'file.txt';
+      const target = '_blank';
 
       Object.assign(button, { rel, download, target, href });
       await elementUpdated(button);

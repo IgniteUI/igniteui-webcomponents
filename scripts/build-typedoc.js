@@ -1,7 +1,7 @@
 import path from 'node:path';
-import TypeDoc from 'typedoc';
-import watch from 'node-watch';
 import { create } from 'browser-sync';
+import watch from 'node-watch';
+import TypeDoc from 'typedoc';
 
 const browserSync = create();
 const ROOT = path.join.bind(null, path.resolve('./'));

@@ -51,7 +51,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcSliderLabelComponent);
+    registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
   }
 
   private _value = 0;

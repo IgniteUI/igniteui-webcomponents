@@ -48,7 +48,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcInputComponent);
   }
 
   private get isStringType() {

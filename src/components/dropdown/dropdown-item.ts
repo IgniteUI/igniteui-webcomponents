@@ -25,7 +25,7 @@ export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDropdownItemComponent);
   }
 }
 

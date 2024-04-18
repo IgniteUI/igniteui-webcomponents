@@ -108,7 +108,7 @@ export default class IgcComboComponent<
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcComboComponent,
       IgcIconComponent,
       IgcComboListComponent,
       IgcComboItemComponent,

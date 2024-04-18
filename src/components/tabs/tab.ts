@@ -29,7 +29,7 @@ export default class IgcTabComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcTabComponent);
   }
 
   private static readonly increment = createCounter();

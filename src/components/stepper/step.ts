@@ -51,7 +51,7 @@ export default class IgcStepComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcStepComponent);
   }
 
   private bodyRef: Ref<HTMLElement> = createRef();
@@ -251,9 +251,8 @@ export default class IgcStepComponent extends LitElement {
           </slot>
         </div>
       `;
-    } else {
-      return nothing;
     }
+    return nothing;
   }
 
   protected renderTitleAndSubtitle() {

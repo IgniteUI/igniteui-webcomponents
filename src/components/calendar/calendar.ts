@@ -73,7 +73,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcCalendarComponent,
       IgcIconComponent,
       IgcDaysViewComponent,
       IgcMonthsViewComponent,
@@ -180,17 +180,13 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private monthSelectLabel(activeDate: Date) {
-    return (
-      activeDate.toLocaleString(this.locale, {
-        month: 'long',
-      }) +
-      ', ' +
-      this.resourceStrings.selectMonth
-    );
+    return `${activeDate.toLocaleString(this.locale, {
+      month: 'long',
+    })}, ${this.resourceStrings.selectMonth}`;
   }
 
   private yearSelectLabel(activeDate: Date) {
-    return activeDate.getFullYear() + ', ' + this.resourceStrings.selectYear;
+    return `${activeDate.getFullYear()}, ${this.resourceStrings.selectYear}`;
   }
 
   private handleKeyDown = (event: KeyboardEvent) => {
@@ -711,7 +707,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     const dates = this.values;
 
     return html`<span
-        >${dates && dates.length
+        >${dates?.length
           ? this.formatterMonthDay.format(dates[0])
           : this.resourceStrings.startDate}</span
       >

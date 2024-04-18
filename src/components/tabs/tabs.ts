@@ -68,7 +68,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcTabsComponent,
       IgcTabComponent,
       IgcTabPanelComponent,
       IgcIconButtonComponent
@@ -249,8 +249,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected updateScrollButtons() {
-    const { scrollLeft, offsetWidth } = this.container,
-      { scrollWidth } = this.wrapper;
+    const { scrollLeft, offsetWidth } = this.container;
+    const { scrollWidth } = this.wrapper;
 
     this.disableEndScrollButton =
       scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
@@ -304,8 +304,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const { scrollLeft, offsetWidth } = this.container;
-    const LTR = isLTR(this),
-      next = direction === 'end';
+    const LTR = isLTR(this);
+    const next = direction === 'end';
 
     const pivot = Math.abs(next ? offsetWidth + scrollLeft : scrollLeft);
 

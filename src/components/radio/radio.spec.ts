@@ -166,13 +166,13 @@ describe('Radio Component', () => {
       radio.required = true;
       expect(radio.required).to.be.true;
       await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input required />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input required />', DIFF_OPTIONS);
 
       radio.required = false;
       expect(radio.required).to.be.false;
       await elementUpdated(radio);
 
-      expect(input).dom.to.equal(`<input />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
     it('should emit focus/blur events when methods are called', () => {

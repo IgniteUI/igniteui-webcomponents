@@ -41,7 +41,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcMaskInputComponent);
   }
 
   protected override validators: Validator<this>[] = [

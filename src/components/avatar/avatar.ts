@@ -30,7 +30,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcAvatarComponent);
   }
 
   private __internals: ElementInternals;

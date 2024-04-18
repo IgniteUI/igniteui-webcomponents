@@ -39,7 +39,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcMonthsViewComponent);
   }
 
   private calendarModel = new Calendar();

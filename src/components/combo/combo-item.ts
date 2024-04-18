@@ -17,7 +17,7 @@ export default class IgcComboItemComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcCheckboxComponent);
+    registerComponent(IgcComboItemComponent, IgcCheckboxComponent);
   }
 
   private _internals: ElementInternals;

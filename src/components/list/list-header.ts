@@ -20,7 +20,7 @@ export default class IgcListHeaderComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcListHeaderComponent);
   }
 
   private _internals: ElementInternals;

@@ -26,7 +26,7 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcRadioComponent);
+    registerComponent(IgcRadioGroupComponent, IgcRadioComponent);
   }
 
   /**

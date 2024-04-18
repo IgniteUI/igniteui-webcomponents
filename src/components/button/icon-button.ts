@@ -29,7 +29,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent);
+    registerComponent(IgcIconButtonComponent, IgcIconComponent);
   }
 
   /**

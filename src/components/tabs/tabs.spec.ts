@@ -256,7 +256,7 @@ describe('Tabs component', () => {
 
       expect(indicator.style.transform).to.eq('translate(90px)');
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
 
       element.alignment = 'justify';
@@ -265,10 +265,10 @@ describe('Tabs component', () => {
       element.select('forth');
       await elementUpdated(element);
 
-      const offsetLeft = getSelectedTab(element).offsetLeft + 'px';
+      const offsetLeft = `${getSelectedTab(element).offsetLeft}px`;
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
     });
 
@@ -282,7 +282,7 @@ describe('Tabs component', () => {
 
       expect(indicator.style.transform).to.eq('translate(90px)');
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
 
       element.alignment = 'justify';
@@ -291,14 +291,14 @@ describe('Tabs component', () => {
       element.select('forth');
       await elementUpdated(element);
 
-      const offsetLeft =
+      const offsetLeft = `${
         getSelectedTab(element).offsetLeft +
         getSelectedTab(element).offsetWidth -
-        element.clientWidth +
-        'px';
+        element.clientWidth
+      }px`;
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
     });
 

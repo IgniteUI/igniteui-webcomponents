@@ -56,7 +56,7 @@ export default class IgcTreeItemComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcTreeItemComponent,
       IgcIconComponent,
       IgcCheckboxComponent,
       IgcCircularProgressComponent
@@ -282,7 +282,7 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get allChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
+    return Array.from(this.querySelectorAll('igc-tree-item'));
   }
 
   /** The full path to the tree item, starting from the top-most ancestor. */
@@ -347,7 +347,7 @@ export default class IgcTreeItemComponent extends LitElement {
         inline: 'nearest',
       });
     }
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       // set tabIndex = 0 to all tabbable elements
       // focus the first one
       this.tabbableEl.forEach((element: HTMLElement) => {
@@ -404,7 +404,7 @@ export default class IgcTreeItemComponent extends LitElement {
       this.tabbableEl.splice(0, 0, firstElement);
     }
 
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       this.setAttribute('role', 'none');
       this.tabbableEl[0].setAttribute('role', 'treeitem');
 
@@ -433,9 +433,8 @@ export default class IgcTreeItemComponent extends LitElement {
   ): IgcTreeItemComponent[] {
     if (options.flatten) {
       return this.allChildren;
-    } else {
-      return this.directChildren;
     }
+    return this.directChildren;
   }
 
   /**

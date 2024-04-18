@@ -22,7 +22,11 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);
+    registerComponent(
+      IgcListComponent,
+      IgcListItemComponent,
+      IgcListHeaderComponent
+    );
   }
 
   private _internals: ElementInternals;

@@ -88,7 +88,7 @@ export function format(template: string, ...params: string[]): string {
  */
 export function asNumber(value: unknown, fallback = 0) {
   const parsed = Number.parseFloat(value as string);
-  return isNaN(parsed) ? fallback : parsed;
+  return Number.isNaN(parsed) ? fallback : parsed;
 }
 
 /**
@@ -107,7 +107,8 @@ export function asNumber(value: unknown, fallback = 0) {
 export function wrap(min: number, max: number, value: number) {
   if (value < min) {
     return max;
-  } else if (value > max) {
+  }
+  if (value > max) {
     return min;
   }
 

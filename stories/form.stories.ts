@@ -312,7 +312,7 @@ document.addEventListener('igcSubmit', (event) => {
   const formData = customEvent.detail;
   console.log('Form data:');
   for (const pair of formData.entries()) {
-    console.log(pair[0] + ', ' + pair[1]);
+    console.log(`${pair[0]}, ${pair[1]}`);
   }
   console.log('');
 });

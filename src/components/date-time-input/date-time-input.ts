@@ -73,7 +73,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDateTimeInputComponent);
   }
 
   protected override validators: Validator<this>[] = [
@@ -482,7 +482,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     const newDate = new Date(this.value.getTime());
-    let formatPart, amPmFromMask;
+    let formatPart;
+    let amPmFromMask;
     switch (datePart) {
       case DatePart.Date:
         DateTimeUtil.spinDate(delta, newDate, this.spinLoop);
@@ -634,15 +635,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         cursorPos = cursorPos > 0 ? --cursorPos : cursorPos;
       } while (!literals.some((l) => l.end === cursorPos) && cursorPos > 0);
       return cursorPos;
-    } else {
-      do {
-        cursorPos++;
-      } while (
-        !literals.some((l) => l.start === cursorPos) &&
-        cursorPos < value.length
-      );
-      return cursorPos;
     }
+    do {
+      cursorPos++;
+    } while (
+      !literals.some((l) => l.start === cursorPos) &&
+      cursorPos < value.length
+    );
+    return cursorPos;
   }
 
   protected override async handleFocus() {

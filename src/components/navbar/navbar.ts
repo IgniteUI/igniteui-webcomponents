@@ -28,7 +28,7 @@ export default class IgcNavbarComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcNavbarComponent);
   }
 
   protected override render() {

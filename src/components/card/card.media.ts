@@ -14,7 +14,7 @@ export default class IgcCardMediaComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCardMediaComponent);
   }
 
   protected override render() {

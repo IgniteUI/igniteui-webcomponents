@@ -25,10 +25,10 @@ describe('Toast', () => {
   const checkOpenState = (state = false) => {
     if (state) {
       expect(toast).dom.to.have.attribute('open');
-      expect(toast).shadowDom.to.equal(`<slot></slot>`);
+      expect(toast).shadowDom.to.equal('<slot></slot>');
     } else {
       expect(toast).dom.not.to.have.attribute('open');
-      expect(toast).shadowDom.to.equal(`<slot inert></slot>`);
+      expect(toast).shadowDom.to.equal('<slot inert></slot>');
     }
   };
 

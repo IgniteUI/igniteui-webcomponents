@@ -30,10 +30,11 @@ export enum TimeDeltaInterval {
 const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const FEBRUARY = 1;
 
-export const range = (start = 0, stop: number, step = 1) => {
+export const range = (start: number, stop: number, step = 1) => {
   const res = [];
-  const cur = stop === undefined ? 0 : start;
-  const max = stop === undefined ? start : stop;
+  const beginning = start ?? 0;
+  const cur = stop === undefined ? 0 : beginning;
+  const max = stop === undefined ? beginning : stop;
   for (let i = cur; step < 0 ? i > max : i < max; i += step) {
     res.push(i);
   }

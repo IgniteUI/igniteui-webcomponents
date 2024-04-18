@@ -22,7 +22,7 @@ export default class IgcRatingSymbolComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcRatingSymbolComponent);
   }
 
   public override connectedCallback() {

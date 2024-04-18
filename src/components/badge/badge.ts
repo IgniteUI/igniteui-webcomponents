@@ -25,7 +25,7 @@ export default class IgcBadgeComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcBadgeComponent);
   }
 
   private __internals: ElementInternals;

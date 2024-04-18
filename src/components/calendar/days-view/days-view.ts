@@ -58,7 +58,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDaysViewComponent);
   }
 
   private labelFormatter!: Intl.DateTimeFormat;
@@ -297,16 +297,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           (element) => element.getTime() === date.date.getTime()
         );
         return !!currentDate;
-      } else {
-        return false;
       }
-    } else {
-      return this.isWithinRange(
-        date.date,
-        this.values[0],
-        this.values[this.values.length - 1]
-      );
+      return false;
     }
+    return this.isWithinRange(
+      date.date,
+      this.values[0],
+      this.values[this.values.length - 1]
+    );
   }
 
   private isToday(day: ICalendarDate): boolean {

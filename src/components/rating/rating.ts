@@ -72,7 +72,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
+    registerComponent(
+      IgcRatingComponent,
+      IgcIconComponent,
+      IgcRatingSymbolComponent
+    );
   }
 
   @queryAssignedElements({
@@ -209,7 +213,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @watch('value')
   protected handleValueChange() {
-    this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
+    this.value = clamp(Number.isNaN(this.value) ? 0 : this.value, 0, this.max);
     this.setFormValue(`${this.value}`, `${this.value}`);
     this.updateValidity();
     this.setInvalidState();

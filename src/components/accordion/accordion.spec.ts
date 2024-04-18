@@ -345,7 +345,7 @@ describe('Accordion', () => {
   });
 
   const createAccordionComponent = (
-    template = `<igc-accordion></igc-accordion>`
+    template = '<igc-accordion></igc-accordion>'
   ) => {
     return fixture<IgcAccordionComponent>(html`${unsafeStatic(template)}`);
   };

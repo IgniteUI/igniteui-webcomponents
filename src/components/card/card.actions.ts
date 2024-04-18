@@ -20,7 +20,7 @@ export default class IgcCardActionsComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCardActionsComponent);
   }
 
   /**

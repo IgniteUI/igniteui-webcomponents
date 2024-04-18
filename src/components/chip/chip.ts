@@ -43,7 +43,7 @@ export default class IgcChipComponent extends SizableMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent);
+    registerComponent(IgcChipComponent, IgcIconComponent);
   }
 
   private _removePartRef: Ref<HTMLSlotElement> = createRef();

@@ -43,7 +43,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcButtonComponent);
+    registerComponent(IgcSnackbarComponent, IgcButtonComponent);
   }
 
   protected contentRef: Ref<HTMLElement> = createRef();

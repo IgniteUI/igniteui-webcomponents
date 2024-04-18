@@ -43,7 +43,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcToggleButtonComponent);
+    registerComponent(IgcButtonGroupComponent, IgcToggleButtonComponent);
   }
 
   private get isMultiple() {
@@ -109,7 +109,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   public set selectedItems(values: string[]) {
-    if (values && values.length) {
+    if (values?.length) {
       this._selectedItems = new Set(values);
       this.setSelection(this._selectedItems);
     }

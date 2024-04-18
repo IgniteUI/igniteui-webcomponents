@@ -29,7 +29,7 @@ export default class IgcToggleButtonComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcToggleButtonComponent);
   }
 
   @query('[part="toggle"]', true)

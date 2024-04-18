@@ -46,7 +46,7 @@ export const isEqual = (obj1: any, obj2: any): boolean => {
 
 export const isValidDate = (value: any): value is Date => {
   if (isDate(value)) {
-    return !isNaN(value.getTime());
+    return !Number.isNaN(value.getTime());
   }
 
   return false;

@@ -14,7 +14,7 @@ export default class IgcComboHeaderComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcComboHeaderComponent);
   }
 
   protected override render() {

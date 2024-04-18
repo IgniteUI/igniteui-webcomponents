@@ -62,7 +62,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent);
+    registerComponent(IgcExpansionPanelComponent, IgcIconComponent);
   }
 
   private static readonly increment = createCounter();

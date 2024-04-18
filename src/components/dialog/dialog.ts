@@ -50,7 +50,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcButtonComponent);
+    registerComponent(IgcDialogComponent, IgcButtonComponent);
   }
 
   private static readonly increment = createCounter();

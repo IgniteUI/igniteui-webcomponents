@@ -109,7 +109,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcSelectComponent,
       IgcIconComponent,
       IgcInputComponent,
       IgcPopoverComponent,

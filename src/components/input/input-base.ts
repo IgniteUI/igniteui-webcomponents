@@ -200,7 +200,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+      <div part="helper-text" .hidden="${this.helperText.length === 0}">
         <slot name="helper-text"></slot>
       </div>
     `;
@@ -211,7 +211,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+      <div part="helper-text" .hidden="${this.helperText.length === 0}">
         <slot name="helper-text"></slot>
       </div>`;
   }

@@ -30,7 +30,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcIconComponent);
   }
 
   private __internals: ElementInternals;

@@ -461,9 +461,8 @@ export class IgcSliderBaseComponent extends LitElement {
       }
 
       return Math.round(change / stepDistance) * this.step;
-    } else {
-      return change / scale;
     }
+    return change / scale;
   }
 
   private updateSlider(mouseX: number) {

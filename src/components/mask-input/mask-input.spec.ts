@@ -478,7 +478,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       masked.setSelectionRange(4, 4);
-      input().value = masked.value + 'zz';
+      input().value = `${masked.value}zz`;
       fireInputEvent(input(), 'insertText');
       await elementUpdated(masked);
 
@@ -560,7 +560,7 @@ describe('Masked input', () => {
       syncParser();
 
       input().value = 'xx-basic-yy';
-      input().setSelectionRange(3, 3 + `basic`.length);
+      input().setSelectionRange(3, 3 + 'basic'.length);
       fireInputEvent(input(), 'insertFromDrop');
       await elementUpdated(masked);
 

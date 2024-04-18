@@ -37,7 +37,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcLinearProgressComponent);
   }
 
   /**

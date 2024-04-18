@@ -19,7 +19,7 @@ export default class IgcNavDrawerHeaderItemComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcNavDrawerHeaderItemComponent);
   }
 
   protected override render() {

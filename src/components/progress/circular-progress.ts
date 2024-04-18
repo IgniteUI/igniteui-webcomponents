@@ -43,7 +43,10 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcCircularGradientComponent);
+    registerComponent(
+      IgcCircularProgressComponent,
+      IgcCircularGradientComponent
+    );
   }
 
   private _gradientId = `circular-progress-${IgcCircularProgressComponent.increment()}`;

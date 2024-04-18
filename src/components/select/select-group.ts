@@ -28,7 +28,7 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcSelectGroupComponent);
   }
 
   private _internals: ElementInternals;

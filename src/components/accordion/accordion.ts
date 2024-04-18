@@ -29,7 +29,7 @@ export default class IgcAccordionComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcExpansionPanelComponent);
+    registerComponent(IgcAccordionComponent, IgcExpansionPanelComponent);
   }
 
   @queryAssignedElements({ selector: 'igc-expansion-panel:not([disabled])' })
