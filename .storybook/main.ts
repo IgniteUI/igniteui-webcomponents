@@ -1,5 +1,4 @@
 import type { StorybookConfig } from '@storybook/web-components-vite';
-import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
   stories: ['../stories/**/*.stories.@(js|jsx|ts|tsx)'],
@@ -15,7 +14,8 @@ const config: StorybookConfig = {
   docs: {
     autodocs: true,
   },
-  viteFinal: (config, options) => {
+  viteFinal: async (config, options) => {
+    const { mergeConfig } = await import('vite');
     if (options.configType === 'PRODUCTION') {
       return mergeConfig(config, {
         build: {
