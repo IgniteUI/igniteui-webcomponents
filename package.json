@@ -32,8 +32,8 @@
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",
     "clean:docs": "rimraf ./docs",
-    "lint": "npm run lint:eslint && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
-    "lint:eslint": "biome lint ./",
+    "lint": "npm run lint:biome && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
+    "lint:biome": "biome lint ./",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
@@ -103,7 +103,8 @@
     "vite": "^5.2.9"
   },
   "lint-staged": {
-    "*.ts": [
+    "*.{js,ts,cjs,mjs,jsx,tsx}": [
+      "biome check --apply --no-errors-on-unmatched",
       "prettier --write",
       "git add"
     ]

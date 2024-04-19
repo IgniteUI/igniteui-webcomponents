@@ -352,13 +352,11 @@ export class IgcTreeSelectionService {
       } else {
         this.selectDeselectItem(item, false);
       }
-    } else {
+    } else if (this.isItemSelected(item)) {
       // if the children of the item has been deleted and the item was selected do not change its state
-      if (this.isItemSelected(item)) {
-        this.selectDeselectItem(item, true);
-      } else {
-        this.selectDeselectItem(item, false);
-      }
+      this.selectDeselectItem(item, true);
+    } else {
+      this.selectDeselectItem(item, false);
     }
   }
 

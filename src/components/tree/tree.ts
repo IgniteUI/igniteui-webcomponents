@@ -168,12 +168,14 @@ export default class IgcTreeComponent extends SizableMixin(
     items?: IgcTreeItemComponent[]
   ): void {
     if (!items) {
-      items =
+      this.selectionService.selectItemsWithNoEvent(
         this.selection === 'cascade'
-          ? this.items.filter((item: IgcTreeItemComponent) => item.level === 0)
-          : this.items;
+          ? this.items.filter((item) => item.level === 0)
+          : this.items
+      );
+    } else {
+      this.selectionService.selectItemsWithNoEvent(items);
     }
-    this.selectionService.selectItemsWithNoEvent(items);
   }
 
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
@@ -194,8 +196,8 @@ export default class IgcTreeComponent extends SizableMixin(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    items = items || this.items;
-    items.forEach((item) => {
+    const _items = items || this.items;
+    _items.forEach((item) => {
       item.expanded = true;
     });
   }
@@ -209,8 +211,8 @@ export default class IgcTreeComponent extends SizableMixin(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    items = items || this.items;
-    items.forEach((item) => {
+    const _items = items || this.items;
+    _items.forEach((item) => {
       item.expanded = false;
     });
   }
