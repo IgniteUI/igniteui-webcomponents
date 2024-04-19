@@ -195,7 +195,9 @@ export default class IgcTreeComponent extends SizableMixin(
     items?: IgcTreeItemComponent[]
   ): void {
     items = items || this.items;
-    items.forEach((item) => (item.expanded = true));
+    items.forEach((item) => {
+      item.expanded = true;
+    });
   }
 
   /**
@@ -208,7 +210,9 @@ export default class IgcTreeComponent extends SizableMixin(
     items?: IgcTreeItemComponent[]
   ): void {
     items = items || this.items;
-    items.forEach((item) => (item.expanded = false));
+    items.forEach((item) => {
+      item.expanded = false;
+    });
   }
 
   protected override render() {

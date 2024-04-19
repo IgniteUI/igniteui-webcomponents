@@ -230,7 +230,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     const dates = this.values;
     const min = dates[0];
-    let max;
+    let max: Date;
 
     if (dates.length === 1) {
       if (!this.rangePreviewDate) {
@@ -381,11 +381,16 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private generateDateRange(start: Date, end: Date): Date[] {
     const result = [];
-    start = getDateOnly(start);
-    end = getDateOnly(end);
-    while (start.getTime() < end.getTime()) {
-      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Day, 1);
-      result.push(start);
+    let startDate = getDateOnly(start);
+    const endDate = getDateOnly(end);
+
+    while (startDate.getTime() < endDate.getTime()) {
+      startDate = this.calendarModel.timedelta(
+        startDate,
+        TimeDeltaInterval.Day,
+        1
+      );
+      result.push(startDate);
     }
 
     return result;

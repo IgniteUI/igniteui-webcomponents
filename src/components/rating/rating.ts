@@ -203,9 +203,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @watch('max')
   protected handleMaxChange() {
-    this.hasProjectedSymbols
-      ? (this.max = this.ratingSymbols.length)
-      : (this.max = Math.max(0, this.max));
+    this.max = this.hasProjectedSymbols
+      ? this.ratingSymbols.length
+      : Math.max(0, this.max);
+
     if (this.max < this.value) {
       this.value = this.max;
     }
@@ -290,6 +291,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
+  protected handleHoverEnabled() {
+    this.hoverState = true;
+  }
+
+  protected handleHoverDisabled() {
+    this.hoverState = false;
+  }
+
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
@@ -304,8 +313,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected round(value: number) {
-    value = Math.round(value / this.step) * this.step;
-    return Number(value.toFixed(this.getPrecision(this.step)));
+    return Number(
+      (Math.round(value / this.step) * this.step).toFixed(
+        this.getPrecision(this.step)
+      )
+    );
   }
 
   protected clipSymbol(index: number, isLTR = true) {
@@ -419,8 +431,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
           aria-hidden="true"
           part="symbols"
           @click=${this.isInteractive ? this.handleClick : nothing}
-          @mouseenter=${hoverActive ? () => (this.hoverState = true) : nothing}
-          @mouseleave=${hoverActive ? () => (this.hoverState = false) : nothing}
+          @mouseenter=${hoverActive ? () => this.handleHoverEnabled : nothing}
+          @mouseleave=${hoverActive ? () => this.handleHoverDisabled : nothing}
           @mousemove=${hoverActive ? this.handleMouseMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>

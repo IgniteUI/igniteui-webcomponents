@@ -60,10 +60,12 @@ export class IgcTreeSelectionService {
     const oldIndeterminate = this.getIndeterminateItems();
     this.itemSelection.clear();
     this.indeterminateItems.clear();
-    oldSelection.forEach((i: IgcTreeItemComponent) => (i.selected = false));
-    oldIndeterminate.forEach(
-      (i: IgcTreeItemComponent) => (i.indeterminate = false)
-    );
+    oldSelection.forEach((i: IgcTreeItemComponent) => {
+      i.selected = false;
+    });
+    oldIndeterminate.forEach((i: IgcTreeItemComponent) => {
+      i.indeterminate = false;
+    });
   }
 
   public isItemSelected(item: IgcTreeItemComponent): boolean {

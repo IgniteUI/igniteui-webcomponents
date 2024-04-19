@@ -184,16 +184,19 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   protected override updateValue(increment: number) {
     const oldValue = this.activeValue;
-    const isThumbFromActive = this.activeThumb === this.thumbFrom;
     let [lower, upper] = [this.lower, this.upper];
 
-    isThumbFromActive ? (lower += increment) : (upper += increment);
+    if (this.activeThumb === this.thumbFrom) {
+      lower += increment;
+    } else {
+      upper += increment;
+    }
 
     if (lower >= upper) {
       [this.lower, this.upper] = [upper, lower];
       this.toggleActiveThumb();
     } else {
-      isThumbFromActive ? (this.lower = lower) : (this.upper = upper);
+      [this.lower, this.upper] = [lower, upper];
     }
 
     if (oldValue === this.activeValue) {

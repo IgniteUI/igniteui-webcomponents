@@ -243,7 +243,9 @@ describe('Radio Component', () => {
     });
 
     it('is associated on submit with default value "on"', async () => {
-      radios.forEach((r) => (r.value = ''));
+      radios.forEach((r) => {
+        r.value = '';
+      });
       radios.at(0)!.checked = true;
       await elementUpdated(spec.element);
 
@@ -252,7 +254,9 @@ describe('Radio Component', () => {
 
     it('is associated on submit with default value "on" (setting `checked` first)', async () => {
       radios.at(0)!.checked = true;
-      radios.forEach((r) => (r.value = ''));
+      radios.forEach((r) => {
+        r.value = '';
+      });
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal('on');

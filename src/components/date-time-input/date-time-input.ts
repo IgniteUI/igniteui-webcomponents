@@ -469,12 +469,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     delta?: number,
     negative = false
   ): Date {
-    if (!delta) {
-      // default to 1 if a delta is set to 0 or any other falsy value
-      delta = this.datePartDeltas[datePart as keyof DatePartDeltas] || 1;
-    }
+    // default to 1 if a delta is set to 0 or any other falsy value
+    const _delta =
+      delta || this.datePartDeltas[datePart as keyof DatePartDeltas] || 1;
 
-    const spinValue = negative ? -Math.abs(delta) : Math.abs(delta);
+    const spinValue = negative ? -Math.abs(_delta) : Math.abs(_delta);
     return this.spinValue(datePart, spinValue);
   }
 
@@ -543,14 +542,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
   }
 
-  private setMask(val: string): void {
+  private setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
-    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(val);
-    val = this._inputDateParts.map((p) => p.format).join('');
+    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
+    const value = this._inputDateParts.map((p) => p.format).join('');
 
-    this._defaultMask = val;
+    this._defaultMask = value;
 
-    const newMask = (val || DateTimeUtil.DEFAULT_INPUT_FORMAT).replace(
+    const newMask = (value || DateTimeUtil.DEFAULT_INPUT_FORMAT).replace(
       new RegExp(/(?=[^t])[\w]/, 'g'),
       '0'
     );
@@ -562,7 +561,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.parser.prompt = this.prompt;
 
     if (!this.placeholder || oldFormat === this.placeholder) {
-      this.placeholder = val;
+      this.placeholder = value;
     }
   }
 

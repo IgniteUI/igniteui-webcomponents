@@ -44,6 +44,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     registerComponent(IgcStepperComponent, IgcStepComponent);
   }
 
+  // biome-ignore lint/complexity/noBannedTypes: No easy fix as the callback shapes are wildly different
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
       Enter: this.activateStep,
@@ -142,9 +143,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   @watch('stepType', { waitUntilFirstUpdate: true })
   protected stepTypeChange(): void {
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.stepType = this.stepType)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.stepType = this.stepType;
+    });
   }
 
   @watch('titlePosition', { waitUntilFirstUpdate: true })
@@ -165,9 +166,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   @watch('contentTop', { waitUntilFirstUpdate: true })
   protected contentTopChange(): void {
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.contentTop = this.contentTop)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.contentTop = this.contentTop;
+    });
   }
 
   @watch('linear', { waitUntilFirstUpdate: true })
@@ -403,7 +404,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         .pop();
     }
 
-    let prevStep;
+    let prevStep: IgcStepComponent | undefined;
     for (let i = focusedStep.index - 1; i >= 0; i--) {
       const step = this.steps[i];
       if (step.isAccessible) {
@@ -430,9 +431,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         }
       });
     } else {
-      this.steps.forEach(
-        (step: IgcStepComponent) => (step.linearDisabled = false)
-      );
+      this.steps.forEach((step: IgcStepComponent) => {
+        step.linearDisabled = false;
+      });
     }
   }
 
@@ -512,7 +513,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * The steps' content will not be automatically reset.
    */
   public reset(): void {
-    this.steps.forEach((step) => (step.visited = false));
+    this.steps.forEach((step) => {
+      step.visited = false;
+    });
     this.activateFirstStep();
   }
 

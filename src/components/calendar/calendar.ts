@@ -465,7 +465,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     event.stopPropagation();
 
     const daysView = event.target as IgcDaysViewComponent;
-    let newValue;
+    let newValue: Date | Date[] | undefined;
 
     if (this.selection === 'single') {
       this.value = daysView.value;

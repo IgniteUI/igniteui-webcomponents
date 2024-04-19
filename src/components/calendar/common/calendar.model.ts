@@ -78,8 +78,12 @@ export const isDateInRanges = (
   date: Date,
   ranges: DateRangeDescriptor[]
 ): boolean => {
-  date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const dateInMs = date.getTime();
+  const searchedDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const searchedDateInMs = searchedDate.getTime();
 
   if (!ranges) {
     return false;
@@ -93,13 +97,13 @@ export const isDateInRanges = (
       : [];
     switch (descriptor.type) {
       case DateRangeType.After:
-        if (dateInMs > dRanges[0].getTime()) {
+        if (searchedDateInMs > dRanges[0].getTime()) {
           return true;
         }
 
         break;
       case DateRangeType.Before:
-        if (dateInMs < dRanges[0].getTime()) {
+        if (searchedDateInMs < dRanges[0].getTime()) {
           return true;
         }
 
@@ -108,7 +112,7 @@ export const isDateInRanges = (
         const dRange = dRanges.map((d) => d.getTime());
         const min = Math.min(dRange[0], dRange[1]);
         const max = Math.max(dRange[0], dRange[1]);
-        if (dateInMs >= min && dateInMs <= max) {
+        if (searchedDateInMs >= min && searchedDateInMs <= max) {
           return true;
         }
 
@@ -117,7 +121,7 @@ export const isDateInRanges = (
       case DateRangeType.Specific: {
         const datesInMs = dRanges.map((d) => d.getTime());
         for (const specificDateInMs of datesInMs) {
-          if (dateInMs === specificDateInMs) {
+          if (searchedDateInMs === specificDateInMs) {
             return true;
           }
         }
@@ -125,7 +129,7 @@ export const isDateInRanges = (
         break;
       }
       case DateRangeType.Weekdays: {
-        const day = date.getDay();
+        const day = searchedDate.getDay();
         if (day % 6 !== 0) {
           return true;
         }
@@ -133,7 +137,7 @@ export const isDateInRanges = (
         break;
       }
       case DateRangeType.Weekends: {
-        const weekday = date.getDay();
+        const weekday = searchedDate.getDay();
         if (weekday % 6 === 0) {
           return true;
         }

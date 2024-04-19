@@ -119,8 +119,9 @@ export abstract class DateTimeUtil {
   }
 
   public static getDefaultMask(locale: string): string {
-    locale = locale || DateTimeUtil.DEFAULT_LOCALE;
-    const parts = DateTimeUtil.getDefaultLocaleMask(locale);
+    const parts = DateTimeUtil.getDefaultLocaleMask(
+      locale || DateTimeUtil.DEFAULT_LOCALE
+    );
 
     if (parts !== undefined) {
       parts.forEach((p: any) => {
@@ -250,7 +251,7 @@ export abstract class DateTimeUtil {
         );
     }
 
-    let formatter;
+    let formatter: Intl.DateTimeFormat;
     try {
       formatter = new Intl.DateTimeFormat(locale, options);
     } catch {
@@ -432,19 +433,21 @@ export abstract class DateTimeUtil {
     currentDate: Date,
     amPmFromMask: string
   ): Date {
+    let date = new Date(newDate);
+
     switch (amPmFromMask) {
       case 'AM':
-        newDate = new Date(newDate.setHours(newDate.getHours() + 12));
+        date = new Date(newDate.setHours(newDate.getHours() + 12));
         break;
       case 'PM':
-        newDate = new Date(newDate.setHours(newDate.getHours() - 12));
+        date = new Date(newDate.setHours(newDate.getHours() - 12));
         break;
     }
-    if (newDate.getDate() !== currentDate.getDate()) {
+    if (date.getDate() !== currentDate.getDate()) {
       return currentDate;
     }
 
-    return newDate;
+    return date;
   }
 
   public static greaterThanMaxValue(
@@ -603,9 +606,11 @@ export abstract class DateTimeUtil {
           options[option] = format;
 
           if (part.type === DateParts.Hours) {
-            part.format.charAt(0) === 'h'
-              ? (options.hourCycle = 'h12')
-              : (options.hourCycle = 'h23');
+            if (part.format.charAt(0) === 'h') {
+              options.hourCycle = 'h12';
+            } else {
+              options.hourCycle = 'h23';
+            }
           }
         }
 
@@ -617,7 +622,7 @@ export abstract class DateTimeUtil {
       }
     }
 
-    let formatter;
+    let formatter: Intl.DateTimeFormat;
     try {
       formatter = new Intl.DateTimeFormat(
         locale,
@@ -730,7 +735,7 @@ export abstract class DateTimeUtil {
 
   private static getDefaultLocaleMask(locale: string) {
     const dateStruct: any = [];
-    let formatter;
+    let formatter: Intl.DateTimeFormat;
     try {
       formatter = new Intl.DateTimeFormat(locale);
     } catch {

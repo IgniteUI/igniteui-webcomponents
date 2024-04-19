@@ -99,7 +99,9 @@ describe('Stepper', () => {
 
     it('Should do nothing when all steps are not accessible and next/prev methods are called', async () => {
       stepper.steps[1].active = true;
-      stepper.steps.forEach((step) => (step.disabled = true));
+      stepper.steps.forEach((step) => {
+        step.disabled = true;
+      });
       await elementUpdated(stepper);
 
       stepper.next();
