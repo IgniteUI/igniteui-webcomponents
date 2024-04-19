@@ -5,9 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Fixed
-- Tabs - error when dynamically creating and adding a tab group and tabs in a single call stack [#1140](https://github.com/IgniteUI/igniteui-webcomponents/issues/1140)
+### Added
+- Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)
 
+## [4.8.2] - 2024-04-15
+### Fixed
+- Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)
+- Tabs - error when dynamically creating and adding a tab group and tabs in a single call stack [#1140](https://github.com/IgniteUI/igniteui-webcomponents/issues/1140)
+- Checkbox/Switch - participate in form submission when initially checked [#1144](https://github.com/IgniteUI/igniteui-webcomponents/issues/1144)
+- Dialog - `igcClosed` fired before the component was actually closed/hidden.
 
 ## [4.8.1] - 2024-04-08
 ### Fixed
@@ -445,6 +451,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
 [4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
 [4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
 [4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
