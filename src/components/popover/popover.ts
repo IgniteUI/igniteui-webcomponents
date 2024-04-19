@@ -10,12 +10,11 @@ import {
 } from '@floating-ui/dom';
 import { LitElement, html } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { styles } from './themes/light/popover.base.css.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { getElementByIdFromRoot, partNameMap } from '../common/util.js';
+import { getElementByIdFromRoot } from '../common/util.js';
 
 function roundByDPR(value: number) {
   const dpr = globalThis.devicePixelRatio || 1;
@@ -54,8 +53,6 @@ export default class IgcPopoverComponent extends LitElement {
   public static register() {
     registerComponent(this);
   }
-
-  private _hasPopoverAPI = false;
 
   private dispose?: ReturnType<typeof autoUpdate>;
   private target?: Element;
@@ -145,11 +142,6 @@ export default class IgcPopoverComponent extends LitElement {
     this._updateState();
   }
 
-  constructor() {
-    super();
-    this._hasPopoverAPI = 'showPopover' in this;
-  }
-
   public override async connectedCallback() {
     super.connectedCallback();
 
@@ -190,12 +182,10 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _showPopover() {
-    if (!this._hasPopoverAPI) return;
     this._container?.showPopover();
   }
 
   private _hidePopover() {
-    if (!this._hasPopoverAPI) return;
     this._container?.hidePopover();
   }
 
@@ -267,17 +257,9 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   protected override render() {
-    const parts = partNameMap({
-      [`container-no-popover`]: !this._hasPopoverAPI,
-      [this.strategy]: this._hasPopoverAPI,
-      [`${this.strategy}-no-popover`]: !this._hasPopoverAPI,
-    });
-
-    const popover = this._hasPopoverAPI ? 'manual' : undefined;
-
     return html`
       <slot name="anchor" @slotchange=${this._anchorSlotChange}></slot>
-      <div id="container" popover=${ifDefined(popover)} part=${parts}>
+      <div id="container" popover="manual" part=${this.strategy}>
         <slot></slot>
       </div>
     `;
