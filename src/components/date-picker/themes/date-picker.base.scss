@@ -2,14 +2,15 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --min-width: #{sizable(rem(290px), rem(314px), rem(360px))};
 
     igc-focus-trap {
+        --min-width: #{sizable(rem(290px), rem(314px), rem(360px))};
+
         display: flex;
         flex: 1 0 0;
         flex-direction: column;
         min-width: var(--min-width);
-        max-width: calc(var(--min-width)*2);
+        max-width: calc(var(--min-width) * 2);
         overflow: auto hidden;
 
         igc-calendar {
