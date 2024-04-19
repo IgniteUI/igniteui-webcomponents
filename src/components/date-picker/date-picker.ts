@@ -567,7 +567,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   private renderCalendarIcon() {
     const defaultIcon = html`
       <igc-icon
-        name="calendar"
+        name="calendar_today"
         collection="internal"
         aria-hidden="true"
       ></igc-icon>
