@@ -6,10 +6,8 @@ export default class FilterDataOperation<T extends object> {
     string: string,
     { caseSensitive, matchDiacritics }: FilteringOptions<T>
   ) {
-    const match = caseSensitive ? string : string.toLocaleLowerCase();
-    return matchDiacritics
-      ? match
-      : match.normalize('NFKD').replace(/\p{M}/gu, '');
+    const str = caseSensitive ? string : string.toLocaleLowerCase();
+    return matchDiacritics ? str : str.normalize('NFKD').replace(/\p{M}/gu, '');
   }
 
   public apply(data: ComboRecord<T>[], controller: DataController<T>) {

@@ -589,12 +589,10 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private renderNavigation(
-    activeDate?: Date,
+    activeDate = this.activeDate,
     renderButtons = true,
     daysViewIndex = 0
   ) {
-    activeDate = activeDate ?? this.activeDate;
-
     let startYear = undefined;
     let endYear = undefined;
     const prev_icon =

@@ -65,6 +65,6 @@ export default {
       labels[Math.ceil(e.detail)] ?? 'Unknown'
     }`;
   },
-  renderSymbols: (items: number, renderer: Function) =>
+  renderSymbols: (items: number, renderer: () => unknown) =>
     Array.from({ length: items }, () => renderer()),
 };
