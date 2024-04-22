@@ -6,7 +6,7 @@
 }
 
 :popover-open {
-    position: absolute;
+    position: fixed;
     overflow: visible;
     isolation: isolate;
     height: fit-content;

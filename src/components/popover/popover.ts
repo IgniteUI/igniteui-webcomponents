@@ -228,7 +228,7 @@ export default class IgcPopoverComponent extends LitElement {
     const { x, y } = await computePosition(this.target, this._container, {
       placement: this.placement ?? 'bottom-start',
       middleware: this._createMiddleware(),
-      strategy: 'absolute',
+      strategy: 'fixed',
     });
 
     Object.assign(this._container.style, {
