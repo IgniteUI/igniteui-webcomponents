@@ -329,37 +329,35 @@ export const Default: Story = {
     label: 'Pick a date',
   },
   render: (args) => html`
-    <div style="height: 500px">
-      <igc-date-picker
-        .label=${args.label}
-        .visibleMonths=${args.visibleMonths}
-        .value=${args.value}
-        .displayFormat=${args.displayFormat}
-        .inputFormat=${args.inputFormat}
-        .locale=${args.locale}
-        .prompt=${args.prompt}
-        .weekStart=${args.weekStart}
-        .hideHeader=${args.hideHeader}
-        .headerOrientation=${args.headerOrientation}
-        .nonEditable=${args.nonEditable}
-        .orientation=${args.orientation}
-        .outlined=${args.outlined}
-        .mode=${args.mode}
-        .min=${args.min}
-        .max=${args.max}
-        .activeDate=${args.activeDate}
-        ?disabled=${args.disabled}
-        ?invalid=${args.invalid}
-        ?readonly=${args.readOnly}
-        ?required=${args.required}
-        ?open=${args.open}
-        ?show-week-numbers=${args.showWeekNumbers}
-        ?hide-outside-days=${args.hideOutsideDays}
-        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-        ?keep-open-on-select=${args.keepOpenOnSelect}
-      >
-      </igc-date-picker>
-    </div>
+    <igc-date-picker
+      .label=${args.label}
+      .visibleMonths=${args.visibleMonths}
+      .value=${args.value}
+      .displayFormat=${args.displayFormat}
+      .inputFormat=${args.inputFormat}
+      .locale=${args.locale}
+      .prompt=${args.prompt}
+      .weekStart=${args.weekStart}
+      .hideHeader=${args.hideHeader}
+      .headerOrientation=${args.headerOrientation}
+      .nonEditable=${args.nonEditable}
+      .orientation=${args.orientation}
+      .outlined=${args.outlined}
+      .mode=${args.mode}
+      .min=${args.min}
+      .max=${args.max}
+      .activeDate=${args.activeDate}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?open=${args.open}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?keep-open-on-select=${args.keepOpenOnSelect}
+    >
+    </igc-date-picker>
   `,
 };
 
@@ -384,56 +382,54 @@ export const Slots: Story = {
     label: 'Pick a date',
   },
   render: (args) => html`
-    <div style="height: 500px">
-      <igc-date-picker
-        id="picker"
-        .label=${args.label}
-        .visibleMonths=${args.visibleMonths}
-        .value=${args.value}
-        .displayFormat=${args.displayFormat}
-        .inputFormat=${args.inputFormat}
-        .locale=${args.locale}
-        .prompt=${args.prompt}
-        .weekStart=${args.weekStart}
-        .hideHeader=${args.hideHeader}
-        .headerOrientation=${args.headerOrientation}
-        .nonEditable=${args.nonEditable}
-        .orientation=${args.orientation}
-        .mode=${args.mode}
-        .min=${args.min}
-        .max=${args.max}
-        .activeDate=${args.activeDate}
-        ?disabled=${args.disabled}
-        ?invalid=${args.invalid}
-        ?readonly=${args.readOnly}
-        ?required=${args.required}
-        ?open=${args.open}
-        ?show-week-numbers=${args.showWeekNumbers}
-        ?hide-outside-days=${args.hideOutsideDays}
-        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-        ?keep-open-on-select=${args.keepOpenOnSelect}
-      >
-        <span slot="prefix">$</span>
-        <span slot="suffix">🦀</span>
-        <p slot="helper-text">For example, select your birthday</p>
-        <p slot="title">🎉 Custom title 🎉</p>
-        <span slot="calendar-icon-open">👩‍💻</span>
-        <span slot="calendar-icon">👨‍💻</span>
-        <span slot="clear-icon">🗑️</span>
+    <igc-date-picker
+      id="picker"
+      .label=${args.label}
+      .visibleMonths=${args.visibleMonths}
+      .value=${args.value}
+      .displayFormat=${args.displayFormat}
+      .inputFormat=${args.inputFormat}
+      .locale=${args.locale}
+      .prompt=${args.prompt}
+      .weekStart=${args.weekStart}
+      .hideHeader=${args.hideHeader}
+      .headerOrientation=${args.headerOrientation}
+      .nonEditable=${args.nonEditable}
+      .orientation=${args.orientation}
+      .mode=${args.mode}
+      .min=${args.min}
+      .max=${args.max}
+      .activeDate=${args.activeDate}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?open=${args.open}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?keep-open-on-select=${args.keepOpenOnSelect}
+    >
+      <span slot="prefix">$</span>
+      <span slot="suffix">🦀</span>
+      <p slot="helper-text">For example, select your birthday</p>
+      <p slot="title">🎉 Custom title 🎉</p>
+      <span slot="calendar-icon-open">👩‍💻</span>
+      <span slot="calendar-icon">👨‍💻</span>
+      <span slot="clear-icon">🗑️</span>
 
-        <div slot="actions">
-          <igc-button variant="flat" @click=${selectToday}
-            >Select today</igc-button
-          >
-          <igc-button variant="flat" @click=${showTrimester}
-            >Trimester view</igc-button
-          >
-          <igc-button variant="flat" @click=${showSingleMonth}
-            >Single month view</igc-button
-          >
-        </div>
-      </igc-date-picker>
-    </div>
+      <div slot="actions">
+        <igc-button variant="flat" @click=${selectToday}
+          >Select today</igc-button
+        >
+        <igc-button variant="flat" @click=${showTrimester}
+          >Trimester view</igc-button
+        >
+        <igc-button variant="flat" @click=${showSingleMonth}
+          >Single month view</igc-button
+        >
+      </div>
+    </igc-date-picker>
   `,
 };
 
