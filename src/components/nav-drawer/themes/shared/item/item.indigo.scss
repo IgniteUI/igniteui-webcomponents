@@ -1,7 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $indigo;
 
 [part~='base'] {
     gap: rem(24px);

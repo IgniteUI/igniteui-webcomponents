@@ -1,7 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $material;
 
 :host {
     padding: rem(8px) rem(16px);
