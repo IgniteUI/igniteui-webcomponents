@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)
+
+### Changed
+- Combo, Select and Dropdown components now use the native Popover API [#1082](https://github.com/IgniteUI/igniteui-webcomponents/pull/1082)
+
 ## [4.8.2] - 2024-04-15
 ### Fixed
 - Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)
