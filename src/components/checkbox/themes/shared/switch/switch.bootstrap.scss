@@ -11,6 +11,10 @@ $theme: $bootstrap;
     --label-gap: #{rem(8px)};
 }
 
+[part~='label'] {
+    @include type-style('body-1');
+}
+
 [part~='focused'] {
     [part~='thumb']:not([part~='checked']) {
         background: var-get($theme, 'focus-fill-color');

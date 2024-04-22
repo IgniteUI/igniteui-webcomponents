@@ -79,19 +79,19 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected headerRef: Ref<HTMLDivElement> = createRef();
 
-  @queryAssignedElements({ selector: 'igc-tab' })
+  @queryAssignedElements({ selector: IgcTabComponent.tagName })
   protected tabs!: Array<IgcTabComponent>;
 
   @queryAssignedElements({ slot: 'panel' })
   protected panels!: Array<IgcTabPanelComponent>;
 
-  @query('[part="headers-wrapper"]', true)
+  @query('[part="headers-wrapper"]')
   protected wrapper!: HTMLElement;
 
-  @query('[part="headers-content"]', true)
+  @query('[part="headers-content"]')
   protected container!: HTMLElement;
 
-  @query('[part="selected-indicator"]', true)
+  @query('[part="selected-indicator"]')
   protected selectedIndicator!: HTMLElement;
 
   @state()
@@ -125,14 +125,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (removed.length || added.length) {
       for (const tab of removed) {
-        this.resizeObserver.unobserve(tab);
+        this.resizeObserver?.unobserve(tab);
         if (tab.selected && tab === this.activeTab) {
           this.activeTab = undefined;
         }
       }
 
       for (const tab of added) {
-        this.resizeObserver.observe(tab);
+        this.resizeObserver?.observe(tab);
         if (tab.selected) {
           this.setSelectedTab(tab);
         }
@@ -179,18 +179,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       transitionDuration: '0.3s',
     };
 
-    if (this.activeTab) {
+    if (this.activeTab && this.wrapper) {
       Object.assign(styles, {
-        width: `${this.activeTab!.offsetWidth}px`,
+        width: `${this.activeTab.offsetWidth}px`,
         transform: `translate(${
           isLTR(this)
-            ? getOffset(this.activeTab!, this.wrapper).left
-            : getOffset(this.activeTab!, this.wrapper).right
+            ? getOffset(this.activeTab, this.wrapper).left
+            : getOffset(this.activeTab, this.wrapper).right
         }px)`,
       });
     }
 
-    Object.assign(this.selectedIndicator.style, styles);
+    Object.assign(this.selectedIndicator?.style ?? {}, styles);
   }
 
   constructor() {
