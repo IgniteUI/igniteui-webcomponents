@@ -13,8 +13,6 @@ import { styles as materialLight } from './light/container/nav-drawer.material.c
 import { styles as shared } from './light/container/nav-drawer.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
-import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
-import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
 import { styles as material } from './shared/container/nav-drawer.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
@@ -29,10 +27,10 @@ const light = {
     ${material} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${indigoLight}
   `,
 };
 
@@ -47,10 +45,10 @@ const dark = {
     ${material} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${indigoDark}
   `,
 };
 

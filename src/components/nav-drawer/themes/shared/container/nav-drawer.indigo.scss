@@ -1,5 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $indigo;
-$background: var-get($theme, 'background') !default;

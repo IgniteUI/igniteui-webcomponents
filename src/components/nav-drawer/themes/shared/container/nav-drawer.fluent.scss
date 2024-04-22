@@ -1,5 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $fluent;
-$background: var-get($theme, 'background') !default;

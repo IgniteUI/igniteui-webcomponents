@@ -1,7 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $material;
 
 [part='mini'],
 [part='main'] {

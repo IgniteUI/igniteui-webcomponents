@@ -1,8 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $bootstrap;
-$background: var-get($theme, 'background') !default;
 
 :host {
     --menu-full-width: #{rem(208px)};
