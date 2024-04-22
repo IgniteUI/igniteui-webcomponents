@@ -10,7 +10,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     --size: #{rem(36px)};
     --thumb-size: #{rem(20px)};
     --thumb-offset: #{rem(-1px)};
-    --label-gap: #{rem(8px)};
+    --label-gap: #{rem(12px)};
 }
 
 [part~='base'] {
@@ -87,6 +87,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
+        z-index: -1;
     }
 
     &:hover {

@@ -19,15 +19,11 @@ $theme: $bootstrap;
     [part~='thumb']:not([part~='checked']) {
         background: var-get($theme, 'focus-fill-color');
     }
-}
 
-[part~='focused'][part~='control'] {
-    box-shadow: 0 0 0 rem(2px) color(primary, 100);
-    border-color: var-get($theme, 'focus-fill-color')
-}
-
-[part~='focused'][part~='control'][part~='checked'] {
-    box-shadow: 0 0 0 rem(2px) color(primary, 200);
+    &[part~='control'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
+        border-color: var-get($theme, 'focus-fill-color')
+    }
 }
 
 [part~='control'] {
@@ -56,6 +52,37 @@ $theme: $bootstrap;
 [part~='thumb'][part~='checked'] {
     background: var-get($theme, 'thumb-on-color');
     margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset) - (var(--border-size) * 2));
+}
+
+:host(:not([disabled]):hover),
+:host(:not(:disabled):hover)  {
+    [part~='control'] {
+        border-color: var-get($theme, 'border-hover-color');
+    }
+
+    [part~='control'][part~='checked'] {
+        background: var-get($theme, 'track-on-hover-color');
+        border-color: var-get($theme, 'border-on-hover-color');
+    }
+
+    [part~='thumb'] {
+        background: var-get($theme, 'border-hover-color');
+    }
+
+    [part~='thumb'][part~='checked'] {
+        background: var-get($theme, 'thumb-on-color');
+    }
+
+    [part~='focused']:not([part~='checked']) {
+        [part~='thumb'] {
+            background: var-get($theme, 'focus-fill-hover-color');
+        }
+
+        &[part~='control'] {
+            box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
+            border-color: var-get($theme, 'focus-fill-hover-color');
+        }
+    }
 }
 
 :host(:not([disabled])[invalid]),

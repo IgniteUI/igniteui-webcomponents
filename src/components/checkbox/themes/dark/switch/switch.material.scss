@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../../light/switch/themes' as light;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-switch');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-switch');
 }
