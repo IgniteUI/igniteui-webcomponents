@@ -11,6 +11,7 @@ import { Theme } from '../../theming/types.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   DateRangeDescriptor,
+  DateRangeType,
   isDateInRanges,
 } from '../calendar/common/calendar.model.js';
 import {
@@ -155,7 +156,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private declare readonly [themeSymbol]: Theme;
 
-  public override validators: Validator<this>[] = [
+  protected override validators: Validator<this>[] = [
     requiredValidator,
     minDateValidator,
     maxDateValidator,
@@ -171,7 +172,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   public static register() {
     registerComponent(
-      this,
+      IgcDatepickerComponent,
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
       IgcFocusTrapComponent,
@@ -183,6 +184,10 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   private _value?: Date | null;
   private _activeDate?: Date | null;
+  private _min?: Date;
+  private _max?: Date;
+  private _disabledDates?: DateRangeDescriptor[];
+  private _dateConstraints?: DateRangeDescriptor[];
   private _displayFormat?: string;
   private _inputFormat?: string;
 
@@ -288,14 +293,30 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: converter })
-  public min!: Date;
+  public set min(value: Date) {
+    this._min = value;
+    this.setDateConstraints();
+    this.updateValidity();
+  }
+
+  public get min(): Date {
+    return this._min as Date;
+  }
 
   /**
    * The maximum value required for the date picker to remain valid.
    * @attr
    */
   @property({ converter: converter })
-  public max!: Date;
+  public set max(value: Date) {
+    this._max = value;
+    this.setDateConstraints();
+    this.updateValidity();
+  }
+
+  public get max(): Date {
+    return this._max as Date;
+  }
 
   /** The orientation of the calendar header.
    * @attr header-orientation
@@ -324,7 +345,15 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   /** Gets/sets disabled dates. */
   @property({ attribute: false })
-  public disabledDates!: DateRangeDescriptor[];
+  public set disabledDates(dates: DateRangeDescriptor[]) {
+    this._disabledDates = dates;
+    this.setDateConstraints();
+    this.updateValidity();
+  }
+
+  public get disabledDates() {
+    return this._disabledDates as DateRangeDescriptor[];
+  }
 
   /** Gets/sets special dates. */
   @property({ attribute: false })
@@ -419,13 +448,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     | 'thursday'
     | 'friday'
     | 'saturday' = 'sunday';
-
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('disabledDates', { waitUntilFirstUpdate: true })
-  protected constraintChange() {
-    this.updateValidity();
-  }
 
   constructor() {
     super();
@@ -548,6 +570,21 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.requestUpdate();
   }
 
+  private setDateConstraints() {
+    const dates: DateRangeDescriptor[] = [];
+    if (this._min) {
+      dates.push({ type: DateRangeType.Before, dateRange: [this._min] });
+    }
+    if (this._max) {
+      dates.push({ type: DateRangeType.After, dateRange: [this._max] });
+    }
+    if (this._disabledDates?.length) {
+      dates.push(...this.disabledDates);
+    }
+
+    this._dateConstraints = dates.length ? dates : undefined;
+  }
+
   private renderClearIcon() {
     return !this.value
       ? nothing
@@ -601,7 +638,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
         .orientation=${this.orientation}
         .visibleMonths=${this.visibleMonths}
         .locale=${this.locale}
-        .disabledDates=${this.disabledDates}
+        .disabledDates=${this._dateConstraints!}
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}
         @igcChange=${this.handleCalendarChangeEvent}
@@ -625,14 +662,14 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderActions() {
+    const slot = this.isDropDown || !this.actions.length ? undefined : 'footer';
+
     // If in dialog mode use the dialog footer slot
     return html`
       <div
         part="actions"
         ?hidden=${!this.actions.length}
-        slot=${ifDefined(
-          this.isDropDown || !this.actions.length ? undefined : 'footer'
-        )}
+        slot=${ifDefined(slot)}
       >
         <slot name="actions" @slotchange=${this.onSlotChange}></slot>
       </div>

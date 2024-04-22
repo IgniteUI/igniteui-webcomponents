@@ -401,7 +401,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       for (const [prop, value] of Object.entries(props)) {
-        expect((calendar as any)[prop]).to.equal(value);
+        expect((calendar as any)[prop]).to.eql(value);
       }
     });
 
