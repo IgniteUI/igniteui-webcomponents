@@ -108,12 +108,6 @@ export default class IgcPopoverComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public shift = false;
 
-  /**
-   * The type of CSS position property to use.
-   */
-  @property()
-  public strategy: 'absolute' | 'fixed' = 'absolute';
-
   @watch('anchor')
   protected async anchorChange() {
     const newTarget =
@@ -137,7 +131,6 @@ export default class IgcPopoverComponent extends LitElement {
   @watch('placement', { waitUntilFirstUpdate: true })
   @watch('sameWidth', { waitUntilFirstUpdate: true })
   @watch('shift', { waitUntilFirstUpdate: true })
-  @watch('strategy', { waitUntilFirstUpdate: true })
   protected floatingPropChange() {
     this._updateState();
   }
@@ -171,13 +164,9 @@ export default class IgcPopoverComponent extends LitElement {
     this._hidePopover();
 
     return new Promise((resolve) => {
-      if (this.dispose) {
-        this.dispose();
-        this.dispose = undefined;
-        resolve();
-      } else {
-        resolve();
-      }
+      this.dispose?.();
+      this.dispose = undefined;
+      resolve();
     });
   }
 
@@ -239,7 +228,7 @@ export default class IgcPopoverComponent extends LitElement {
     const { x, y } = await computePosition(this.target, this._container, {
       placement: this.placement ?? 'bottom-start',
       middleware: this._createMiddleware(),
-      strategy: this.strategy ?? 'absolute',
+      strategy: 'absolute',
     });
 
     Object.assign(this._container.style, {
@@ -259,7 +248,7 @@ export default class IgcPopoverComponent extends LitElement {
   protected override render() {
     return html`
       <slot name="anchor" @slotchange=${this._anchorSlotChange}></slot>
-      <div id="container" popover="manual" part=${this.strategy}>
+      <div id="container" popover="manual">
         <slot></slot>
       </div>
     `;

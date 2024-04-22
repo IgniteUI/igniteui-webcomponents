@@ -6,18 +6,11 @@
 }
 
 :popover-open {
+    position: absolute;
     overflow: visible;
     isolation: isolate;
     height: fit-content;
     inset: unset;
     border: none;
     padding: 0;
-}
-
-[part='absolute']:popover-open {
-    position: absolute;
-}
-
-[part='fixed']:popover-open {
-    position: fixed;
 }
