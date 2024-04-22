@@ -22,30 +22,13 @@ $background: var-get($theme, 'background') !default;
     box-shadow: var-get($theme, 'elevation');
 }
 
-:host([position='start']) [part='mini'] {
-    border-inline-end-color: var-get($theme, 'border-color');
-}
-
-:host([position='end']) [part='mini'] {
-    border-inline-start-color: var-get($theme, 'border-color');
-}
-
-:host([open][position='end']) {
-    [part='base'] {
-        border-inline-start-color: var-get($theme, 'border-color');
-    }
-}
-
-:host([position='relative']) {
-    [part='base'],
-    [part~='mini'] {
-        border-inline-end-color: var-get($theme, 'border-color');
-    }
+[part='base'],
+[part~='mini'] {
+    border: rem(1px) solid var-get($theme, 'border-color');
 }
 
 :host([open]:not([position='relative'])) {
     [part='base'] {
-        border-inline-end-color: var-get($theme, 'border-color');
         box-shadow: var-get($theme, 'elevation');
     }
 }
