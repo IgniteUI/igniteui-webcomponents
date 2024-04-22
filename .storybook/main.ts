@@ -12,7 +12,7 @@ const config: StorybookConfig = {
     options: {},
   },
   docs: {
-    autodocs: true,
+    autodocs: false,
   },
   viteFinal: async (config, options) => {
     const { mergeConfig } = await import('vite');
