@@ -143,21 +143,28 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
-  // TODO: Deprecate
   /**
    * The input mode attribute of the control.
    * @attr
+   *
+   * @deprecated since v4.9.0 - Use `inputMode` property instead.
    */
   @property()
-  public inputmode!:
-    | 'none'
-    | 'txt'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  public set inputmode(value: string) {
+    this.inputMode = value;
+  }
+
+  public get inputmode(): string {
+    return this.inputMode;
+  }
+
+  /**
+   * The input mode attribute of the control.
+   * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
+   * @attr inputmode
+   */
+  @property({ attribute: 'inputmode' })
+  public override inputMode!: string;
 
   /**
    * The pattern attribute of the control.
@@ -335,7 +342,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?autofocus=${this.autofocus}
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
-        inputmode=${ifDefined(this.inputmode)}
+        inputmode=${ifDefined(this.inputMode)}
         min=${ifDefined(this.min)}
         max=${ifDefined(this.max)}
         minlength=${ifDefined(this.minLength)}

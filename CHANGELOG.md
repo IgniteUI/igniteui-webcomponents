@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
   making the property obsolete.
+- Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
 
 ## [4.8.2] - 2024-04-15
 ### Fixed

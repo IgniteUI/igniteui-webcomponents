@@ -45,20 +45,11 @@ const metadata: Meta<IgcInputComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
     },
-    inputmode: {
-      type: '"none" | "txt" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"',
-      description: 'The input mode attribute of the control.',
-      options: [
-        'none',
-        'txt',
-        'decimal',
-        'numeric',
-        'tel',
-        'search',
-        'email',
-        'url',
-      ],
-      control: { type: 'select' },
+    inputMode: {
+      type: 'string',
+      description:
+        'The input mode attribute of the control.\nSee [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
+      control: 'text',
     },
     pattern: {
       type: 'string',
@@ -167,16 +158,11 @@ interface IgcInputArgs {
   value: string | Date;
   /** The type attribute of the control. */
   type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
-  /** The input mode attribute of the control. */
-  inputmode:
-    | 'none'
-    | 'txt'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  /**
+   * The input mode attribute of the control.
+   * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
+   */
+  inputMode: string;
   /** The pattern attribute of the control. */
   pattern: string;
   /** The minimum string length required by the control. */
