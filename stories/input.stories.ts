@@ -348,7 +348,7 @@ export const Form: Story = {
           name="input-maximum-soft"
           label="Maximum length (3 characters) validate-only"
           maxlength="3"
-          soft-validate
+          validate-only
         >
           <p slot="helper-text">
             With maximum length validator and validate-only applied. Typing in
@@ -377,7 +377,7 @@ export const Form: Story = {
           name="input-min-soft"
           label="Minimum number (3) validate-only"
           min="3"
-          soft-validate
+          validate-only
         >
           <p slot="helper-text">
             With minimum value validator and validate-only applied. Using the
@@ -404,7 +404,7 @@ export const Form: Story = {
           name="input-max-soft"
           label="Maximum number (17) validate-only"
           max="17"
-          soft-validate
+          validate-only
         >
           <p slot="helper-text">
             With maximum value validator and validate-only applied. Using the

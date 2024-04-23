@@ -383,7 +383,7 @@ export const Form: Story = {
             name="textarea-max-length-soft"
             label="Maximum length (8) validate-only"
             maxlength="8"
-            soft-validate
+            validate-only
           >
             <p slot="helper-text">
               With maximum length validator and validate-only applied. Typing in
