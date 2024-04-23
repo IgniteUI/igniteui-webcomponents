@@ -26,24 +26,10 @@ $outlined-theme: $material-outlined;
     transition: all .1s ease-in-out;
 }
 
-:host(:not([disabled])[variant='flat']) [part='base'],
-:host(:not(:disabled)[variant='flat']) [part='base'] {
-    &:focus-visible {
-        &:active {
-            color: var-get($flat-theme, 'active-foreground');
-            background: var-get($flat-theme, 'active-background');
-        }
-    }
-}
-
 :host(:not([disabled])[variant='outlined']) [part='base'],
 :host(:not(:disabled)[variant='outlined']) [part='base'] {
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
-    }
-
-    &:focus {
-        border-color: var-get($outlined-theme, 'focus-border-color');
     }
 
     &:active {
@@ -52,12 +38,6 @@ $outlined-theme: $material-outlined;
 
     &:focus-visible {
         border-color: var-get($outlined-theme, 'focus-visible-border-color');
-
-        &:active {
-            color: var-get($outlined-theme, 'active-foreground');
-            background: var-get($outlined-theme, 'active-background');
-            border-color: var-get($outlined-theme, 'active-border-color');
-        }
     }
 }
 
@@ -70,16 +50,14 @@ $outlined-theme: $material-outlined;
     }
 
     &:active {
-        color: var-get($contained-theme, 'active-foreground');
-        background: var-get($contained-theme, 'active-background');
+        box-shadow: var-get($contained-theme, 'hover-elevation');
     }
 
     &:focus-visible {
         box-shadow: var-get($contained-theme, 'focus-elevation');
 
         &:active {
-            color: var-get($contained-theme, 'active-foreground');
-            background: var-get($contained-theme, 'active-background');
+            box-shadow: var-get($fab-theme, 'active-elevation');
         }
     }
 }
@@ -93,16 +71,10 @@ $outlined-theme: $material-outlined;
     }
 
     &:active {
-        color: var-get($fab-theme, 'active-foreground');
-        background: var-get($fab-theme, 'active-background');
+        box-shadow: var-get($contained-theme, 'active-elevation');
     }
 
     &:focus-visible {
         box-shadow: var-get($fab-theme, 'focus-elevation');
-
-        &:active {
-            color: var-get($fab-theme, 'active-foreground');
-            background: var-get($fab-theme, 'active-background');
-        }
     }
 }

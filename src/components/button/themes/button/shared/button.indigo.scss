@@ -49,7 +49,13 @@ $outlined-theme: $indigo-outlined;
 :host(:not([disabled])[variant='flat']) [part='base'],
 :host(:not(:disabled)[variant='flat']) [part='base'] {
     &:focus-visible {
-        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
+        box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
+    }
+
+    &:active {
+        ::slotted(igc-icon) {
+            color: var-get($flat-theme, 'icon-color-hover');
+        }
     }
 }
 
@@ -59,16 +65,12 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($outlined-theme, 'focus-border-color');
-
-        &:hover {
-            border-color: var-get($outlined-theme, 'hover-border-color');
-        }
-    }
-
     &:active {
         border-color: var-get($outlined-theme, 'active-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($outlined-theme, 'icon-color-hover');
+        }
     }
 
     &:focus-visible {
@@ -80,8 +82,6 @@ $outlined-theme: $indigo-outlined;
         }
 
         &:active {
-            color: var-get($outlined-theme, 'active-foreground');
-            background: var-get($outlined-theme, 'active-background');
             border-color: var-get($outlined-theme, 'active-border-color');
         }
     }
@@ -93,22 +93,16 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($contained-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($contained-theme, 'focus-border-color');
-
-        &:hover {
-            border-color: var-get($contained-theme, 'hover-border-color');
-        }
-    }
-
     &:active {
         border-color: var-get($contained-theme, 'active-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($contained-theme, 'icon-color-hover');
+        }
     }
 
     &:focus-visible {
         box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
-        background: var-get($contained-theme, 'focus-visible-background');
-        color: var-get($contained-theme, 'focus-visible-foreground');
         border-color: var-get($contained-theme, 'focus-visible-border-color');
 
         &:hover {
@@ -116,8 +110,6 @@ $outlined-theme: $indigo-outlined;
         }
 
         &:active {
-            color: var-get($contained-theme, 'active-foreground');
-            background: var-get($contained-theme, 'active-background');
             border-color: var-get($contained-theme, 'active-border-color');
         }
     }
@@ -133,16 +125,12 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($fab-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($fab-theme, 'focus-border-color');
-
-        &:hover {
-            border-color: var-get($fab-theme, 'hover-border-color');
-        }
-    }
-
     &:active {
         border-color: var-get($fab-theme, 'active-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($fab-theme, 'icon-color-hover');
+        }
     }
 
     &:focus-visible {

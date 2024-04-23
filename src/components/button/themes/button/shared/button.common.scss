@@ -26,6 +26,7 @@ $outlined-theme: $material-outlined;
 }
 
 :host([variant='fab']) [part='base'] {
+    border: rem(1px) solid var-get($fab-theme, 'border-color');
     border-radius: var-get($fab-theme, 'border-radius');
     min-height: var-get($fab-theme, 'size');
     min-width: var-get($fab-theme, 'size');
@@ -60,15 +61,6 @@ $outlined-theme: $material-outlined;
         }
     }
 
-    &:focus {
-        color: var-get($flat-theme, 'focus-foreground');
-        background: var-get($flat-theme, 'focus-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($flat-theme, 'icon-color');
-        }
-    }
-
     &:focus-visible {
         color: var-get($flat-theme, 'focus-visible-foreground');
         background: var-get($flat-theme, 'focus-visible-background');
@@ -76,9 +68,7 @@ $outlined-theme: $material-outlined;
         ::slotted(igc-icon) {
             color: var-get($flat-theme, 'icon-color');
         }
-    }
 
-    &:focus, &:focus-visible {
         &:hover {
             color: var-get($flat-theme, 'focus-hover-foreground');
             background: var-get($flat-theme, 'focus-hover-background');
@@ -86,6 +76,11 @@ $outlined-theme: $material-outlined;
             ::slotted(igc-icon) {
                 color: var-get($flat-theme, 'icon-color-hover');
             }
+        }
+
+        &:active {
+            color: var-get($flat-theme, 'focus-foreground');
+            background: var-get($flat-theme, 'focus-background');
         }
     }
 
@@ -113,15 +108,6 @@ $outlined-theme: $material-outlined;
         }
     }
 
-    &:focus {
-        color: var-get($outlined-theme, 'focus-foreground');
-        background: var-get($outlined-theme, 'focus-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($outlined-theme, 'icon-color');
-        }
-    }
-
     &:focus-visible {
         color: var-get($outlined-theme, 'focus-visible-foreground');
         background: var-get($outlined-theme, 'focus-visible-background');
@@ -129,9 +115,7 @@ $outlined-theme: $material-outlined;
         ::slotted(igc-icon) {
             color: var-get($outlined-theme, 'icon-color');
         }
-    }
 
-    &:focus, &:focus-visible {
         &:hover {
             color: var-get($outlined-theme, 'focus-hover-foreground');
             background: var-get($outlined-theme, 'focus-hover-background');
@@ -139,6 +123,12 @@ $outlined-theme: $material-outlined;
             ::slotted(igc-icon) {
                 color: var-get($outlined-theme, 'icon-color-hover');
             }
+        }
+
+        &:active {
+            color: var-get($outlined-theme, 'focus-foreground');
+            background: var-get($outlined-theme, 'focus-background');
+            border-color: var-get($outlined-theme, 'focus-border-color');
         }
     }
 
@@ -166,15 +156,6 @@ $outlined-theme: $material-outlined;
         }
     }
 
-    &:focus {
-        color: var-get($contained-theme, 'focus-foreground');
-        background: var-get($contained-theme, 'focus-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($contained-theme, 'icon-color');
-        }
-    }
-
     &:focus-visible {
         color: var-get($contained-theme, 'focus-visible-foreground');
         background: var-get($contained-theme, 'focus-visible-background');
@@ -182,9 +163,7 @@ $outlined-theme: $material-outlined;
         ::slotted(igc-icon) {
             color: var-get($contained-theme, 'icon-color');
         }
-    }
 
-    &:focus, &:focus-visible {
         &:hover {
             color: var-get($contained-theme, 'focus-hover-foreground');
             background: var-get($contained-theme, 'focus-hover-background');
@@ -192,6 +171,11 @@ $outlined-theme: $material-outlined;
             ::slotted(igc-icon) {
                 color: var-get($contained-theme, 'icon-color-hover');
             }
+        }
+
+        &:active {
+            color: var-get($contained-theme, 'focus-foreground');
+            background: var-get($contained-theme, 'focus-background');
         }
     }
 
@@ -226,9 +210,7 @@ $outlined-theme: $material-outlined;
         ::slotted(igc-icon) {
             color: var-get($fab-theme, 'icon-color');
         }
-    }
 
-    &:focus, &:focus-visible {
         &:hover {
             color: var-get($fab-theme, 'focus-hover-foreground');
             background: var-get($fab-theme, 'focus-hover-background');
@@ -236,6 +218,11 @@ $outlined-theme: $material-outlined;
             ::slotted(igc-icon) {
                 color: var-get($fab-theme, 'icon-color-hover');
             }
+        }
+
+        &:active {
+            color: var-get($fab-theme, 'focus-foreground');
+            background: var-get($fab-theme, 'focus-background');
         }
     }
 

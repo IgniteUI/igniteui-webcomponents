@@ -5,7 +5,7 @@ $flat-theme: $fluent-flat;
 $contained-theme: $fluent-contained;
 $fab-theme: $fluent-fab;
 $outlined-theme: $fluent-outlined;
-$btn-indent: rem(3px);
+$btn-indent: rem(2px);
 $outlined-btn-indent: rem(2px);
 
 :host([variant='flat']) {
@@ -70,16 +70,6 @@ $outlined-btn-indent: rem(2px);
             height: calc(100% - (#{$outlined-btn-indent} * 2));
             box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
         }
-
-        &:active {
-            color: var-get($outlined-theme, 'active-foreground');
-            background: var-get($outlined-theme, 'active-background');
-            border-color: var-get($outlined-theme, 'active-border-color');
-
-            &::after {
-                box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'active-foreground');
-            }
-        }
     }
 }
 
@@ -91,12 +81,7 @@ $outlined-btn-indent: rem(2px);
         position: relative;
 
         &::after {
-            box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-foreground');
-        }
-
-        &:active {
-            color: var-get($contained-theme, 'active-foreground');
-            background: var-get($contained-theme, 'active-background');
+            box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-border-color');
         }
     }
 }
@@ -109,12 +94,7 @@ $outlined-btn-indent: rem(2px);
         position: relative;
 
         &::after {
-            box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-foreground');
-        }
-
-        &:active {
-            color: var-get($fab-theme, 'active-foreground');
-            background: var-get($fab-theme, 'active-background');
+            box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-border-color');
         }
     }
 }
