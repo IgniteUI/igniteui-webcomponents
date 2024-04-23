@@ -63,13 +63,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bottom-start' } },
     },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the component's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'absolute' } },
-    },
     scrollStrategy: {
       type: '"scroll" | "block" | "close"',
       description:
@@ -121,7 +114,6 @@ const metadata: Meta<IgcDropdownComponent> = {
   },
   args: {
     placement: 'bottom-start',
-    positionStrategy: 'absolute',
     scrollStrategy: 'scroll',
     flip: false,
     distance: 0,
@@ -149,8 +141,6 @@ interface IgcDropdownArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** Sets the component's positioning strategy. */
-  positionStrategy: 'absolute' | 'fixed';
   /** Determines the behavior of the component during scrolling of the parent container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
   /**
@@ -197,7 +187,6 @@ export const Basic: Story = {
     keepOpenOnSelect,
     sameWidth,
     placement,
-    positionStrategy,
     distance,
     scrollStrategy,
   }) => html`
@@ -209,7 +198,6 @@ export const Basic: Story = {
       ?keep-open-on-select=${keepOpenOnSelect}
       ?same-width=${sameWidth}
       .placement=${placement}
-      .positionStrategy=${positionStrategy}
       .distance=${distance}
       .scrollStrategy=${scrollStrategy}
     >
@@ -231,7 +219,6 @@ export const Overflow: Story = {
     keepOpenOnOutsideClick,
     keepOpenOnSelect,
     placement,
-    positionStrategy,
     sameWidth,
     scrollStrategy,
   }) => html`
@@ -255,7 +242,6 @@ export const Overflow: Story = {
         ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
         ?keep-open-on-select=${keepOpenOnSelect}
         .placement=${placement}
-        .positionStrategy=${positionStrategy}
         .distance=${distance}
         .scrollStrategy=${scrollStrategy}
       >
@@ -326,7 +312,6 @@ export const GroupsAndHeaders: Story = {
     distance,
     flip,
     placement,
-    positionStrategy,
     sameWidth,
   }) => html`
     <style>
@@ -349,7 +334,6 @@ export const GroupsAndHeaders: Story = {
       ?keep-open-on-select=${keepOpenOnSelect}
       ?same-width=${sameWidth}
       .placement=${placement}
-      .positionStrategy=${positionStrategy}
       .distance=${distance}
     >
       <igc-button slot="target"
@@ -383,7 +367,6 @@ export const WithNonSlottedTarget: Story = {
     keepOpenOnOutsideClick,
     keepOpenOnSelect,
     placement,
-    positionStrategy,
     sameWidth,
   }) => html`
     <style>
@@ -421,7 +404,6 @@ export const WithNonSlottedTarget: Story = {
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
       ?keep-open-on-select=${keepOpenOnSelect}
       .placement=${placement}
-      .positionStrategy=${positionStrategy}
       ?same-width=${sameWidth}
     >
       <igc-dropdown-item>1</igc-dropdown-item>

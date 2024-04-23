@@ -716,7 +716,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       flip
       shift
       same-width
-      strategy="fixed"
       .offset=${this.distance}
       .placement=${this.placement}
       >${this.renderInputAnchor()} ${this.renderDropdown()}

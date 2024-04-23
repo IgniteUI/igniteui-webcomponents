@@ -14,6 +14,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { findElementFromEventPath } from '../common/util.js';
 
 export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
@@ -33,7 +34,7 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>
@@ -64,11 +65,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       added.length ? added.at(-1)! : attributes.at(-1)!
     );
 
-    buttons.forEach((button, i) => {
+    for (const [i, button] of buttons.entries()) {
       if (button.selected && i !== idx) {
         button.selected = false;
       }
-    });
+    }
   }
 
   private get _selectedButtons(): Array<IgcToggleButtonComponent> {
@@ -109,10 +110,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   public set selectedItems(values: string[]) {
-    if (values && values.length) {
-      this._selectedItems = new Set(values);
-      this.setSelection(this._selectedItems);
-    }
+    this._selectedItems = new Set(Array.isArray(values) ? values : []);
+    this.setSelection(this._selectedItems);
   }
 
   @watch('disabled', { waitUntilFirstUpdate: true })
@@ -162,11 +161,10 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
-    const button = event
-      .composedPath()
-      .find(
-        (element) => element instanceof IgcToggleButtonComponent
-      ) as IgcToggleButtonComponent;
+    const button = findElementFromEventPath<IgcToggleButtonComponent>(
+      IgcToggleButtonComponent.tagName,
+      event
+    );
 
     if (button) {
       this.isMultiple
@@ -205,6 +203,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private setSelection(values: Set<string>) {
+    if (!values.size) {
+      this.toggleButtons.forEach((b) => (b.selected = false));
+      return;
+    }
+
     for (const button of this.toggleButtons) {
       if (values.has(button.value)) {
         button.selected = true;

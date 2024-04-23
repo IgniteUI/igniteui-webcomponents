@@ -285,7 +285,6 @@ const Template = ({
   singleSelect = false,
   autofocusList,
   groupSorting = 'asc',
-  positionStrategy = 'absolute',
   sameWidth = false,
 }: IgcComboComponent<City>) => html`
   <igc-combo
@@ -301,7 +300,6 @@ const Template = ({
     value='["BG01", "BG02"]'
     group-key="country"
     group-sorting=${ifDefined(groupSorting)}
-    position-strategy=${positionStrategy}
     ?same-width=${sameWidth}
     ?case-sensitive-icon=${caseSensitiveIcon}
     ?disable-filtering=${disableFiltering}
