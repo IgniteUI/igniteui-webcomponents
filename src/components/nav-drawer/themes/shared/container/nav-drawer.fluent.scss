@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part='base'],
+[part~='mini'] {
+    border: rem(1px) solid var-get($theme, 'border-color');
+}
