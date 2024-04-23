@@ -252,6 +252,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public wrap: 'hard' | 'soft' | 'off' = 'soft';
 
+  /**
+   * Consider whether to permit user input to exceed the `maxLength` when it is specified.
+   *
+   * @attr soft-validate
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'soft-validate' })
+  public softValidate = false;
+
   constructor() {
     super();
     this.addEventListener('focus', () => {
@@ -467,6 +475,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         autocapitalize=${ifDefined(this.autocapitalize)}
         inputmode=${ifDefined(this.inputMode)}
         spellcheck=${ifDefined(this.spellcheck)}
+        minlength=${ifDefined(this.minLength)}
+        maxlength=${ifDefined(this.softValidate ? undefined : this.maxLength)}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}

@@ -130,6 +130,13 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'soft' } },
     },
+    softValidate: {
+      type: 'boolean',
+      description:
+        'Consider whether to permit user input to exceed the `maxLength` when it is specified.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -162,6 +169,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     value: '',
     spellcheck: true,
     wrap: 'soft',
+    softValidate: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -233,6 +241,8 @@ interface IgcTextareaArgs {
    * for explanation of the available values.
    */
   wrap: 'hard' | 'soft' | 'off';
+  /** Consider whether to permit user input to exceed the `maxLength` when it is specified. */
+  softValidate: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -286,52 +296,102 @@ export const Form: Story = {
     return html`
       <form action="" @submit=${formSubmitHandler}>
         <fieldset>
-          <igc-textarea name="textarea-default" label="Default"></igc-textarea>
+          <igc-textarea name="textarea-default" label="Default">
+            <p slot="helper-text">
+              Default state. No initial value and no validation.
+            </p>
+          </igc-textarea>
         </fieldset>
+
         <fieldset>
           <igc-textarea
             name="textarea-initial-value"
             label="Initial value (binding)"
             value="Hello world!"
-          ></igc-textarea>
+          >
+            <p slot="helper-text">
+              Initial value bound through property and no validation.Resetting
+              the form will restore the initial value.
+            </p>
+          </igc-textarea>
+
           <igc-textarea
             name="textarea-initial-projected"
             label="Initial value (slot)"
           >
             Hello world!
+            <p slot="helper-text">
+              Initial value bound through text projection and no
+              validation.Resetting the form will restore the initial value.
+            </p>
           </igc-textarea>
         </fieldset>
+
         <fieldset disabled>
           <igc-textarea
             name="textarea-disabled"
             value="I'm disabled"
             label="Disabled"
-          ></igc-textarea>
+          >
+            <p slot="helper-text">
+              Disabled state. <strong>Does not </strong> participate in form
+              submission.
+            </p>
+          </igc-textarea>
         </fieldset>
+
         <fieldset>
           <igc-textarea
             name="textarea-readonly"
             value="Can't edit me..."
             readonly
             label="Readonly"
-          ></igc-textarea>
+          >
+            <p slot="helper-text">
+              Read-only state. <strong>Does </strong> participate in form
+              submission.
+            </p>
+          </igc-textarea>
         </fieldset>
+
         <fieldset>
-          <igc-textarea
-            name="textarea-required"
-            label="Required"
-            required
-          ></igc-textarea>
+          <igc-textarea name="textarea-required" label="Required" required>
+            <p slot="helper-text">With required validator.</p>
+          </igc-textarea>
+
           <igc-textarea
             name="textarea-min-length"
             label="Minimum length (3)"
             minlength="3"
-          ></igc-textarea>
+            ><p slot="helper-text">
+              With minimum length validator.
+            </p></igc-textarea
+          >
+
           <igc-textarea
             name="textarea-max-length"
             label="Maximum length (8)"
             maxlength="8"
-          ></igc-textarea>
+          >
+            <p slot="helper-text">
+              With maximum length validator. Since soft validation is not
+              applied, typing in the input beyond the maximum length is not
+              possible.
+            </p>
+          </igc-textarea>
+
+          <igc-textarea
+            name="textarea-max-length-soft"
+            label="Maximum length (8) soft validation"
+            maxlength="8"
+            soft-validate
+          >
+            <p slot="helper-text">
+              With maximum length validator and soft validation applied. Typing
+              in the input beyond the maximum length is possible and will
+              invalidate the input.
+            </p>
+          </igc-textarea>
         </fieldset>
         ${formControls()}
       </form>
