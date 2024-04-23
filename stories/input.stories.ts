@@ -103,6 +103,13 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
+    softValidate: {
+      type: 'boolean',
+      description:
+        'Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,\nor to allow spin buttons to surpass the established `min`/`max` limits for a number type input.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -152,6 +159,7 @@ const metadata: Meta<IgcInputComponent> = {
   args: {
     type: 'text',
     autofocus: false,
+    softValidate: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -193,6 +201,11 @@ interface IgcInputArgs {
   autofocus: boolean;
   /** The autocomplete attribute of the control. */
   autocomplete: string;
+  /**
+   * Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,
+   * or to allow spin buttons to surpass the established `min`/`max` limits for a number type input.
+   */
+  softValidate: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -262,66 +275,171 @@ export const Form: Story = {
   render: () => {
     return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>
-        <igc-input name="input" label="Default" label="Username"></igc-input>
-        <igc-input
-          name="input-default"
-          label="Initial value"
-          value="Jane Doe"
-        ></igc-input>
+        <igc-input name="input" label="Default" label="Username">
+          <p slot="helper-text">
+            Default state with no initial value and no validation.
+          </p>
+        </igc-input>
+
+        <igc-input name="input-default" label="Initial value" value="Jane Doe">
+          <p slot="helper-text">
+            With initial value and no validation. Resetting the form will
+            restore the initial value.
+          </p>
+        </igc-input>
       </fieldset>
-      <fieldset disabled>
+
+      <fieldset>
         <igc-input
-          name="input-disabled"
+          name="input-readonly"
           label="Username"
           value="John Doe"
-        ></igc-input>
+          readonly
+        >
+          <p slot="helper-text">
+            Read-only state. <strong>Does</strong> participate in form
+            submission.
+          </p>
+        </igc-input>
       </fieldset>
+
+      <fieldset disabled>
+        <igc-input name="input-disabled" label="Username" value="John Doe">
+          <p slot="helper-text">
+            Disabled state. <strong>Does not</strong> participate in form
+            submission.
+          </p>
+        </igc-input>
+      </fieldset>
+
       <fieldset>
         <igc-input name="input-search" label="Search" type="search">
           <igc-icon name="search" slot="prefix"></igc-icon>
         </igc-input>
       </fieldset>
+
       <fieldset>
-        <igc-input name="input-required" label="Required" required></igc-input>
+        <igc-input name="input-required" label="Required" required>
+          <p slot="helper-text">With required validator.</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           name="input-minlength"
           label="Minimum length (3 characters)"
           minlength="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">With minimum length validator.</p>
+        </igc-input>
+
         <igc-input
           name="input-maximum"
           label="Maximum length (3 characters)"
           maxlength="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With maximum length validator. Since soft validation is not applied,
+            typing in the input beyond the maximum length is not possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          name="input-maximum-soft"
+          label="Maximum length (3 characters) soft validation"
+          maxlength="3"
+          soft-validate
+        >
+          <p slot="helper-text">
+            With maximum length validator and soft validation applied. Typing in
+            the input beyond the maximum length is possible and will invalidate
+            the input.
+          </p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           type="number"
           name="input-min"
           label="Minimum number (3)"
           min="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With minimum value validator. Since soft validation is not applied,
+            using the spin buttons to go below the minimum value is not
+            possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          type="number"
+          name="input-min-soft"
+          label="Minimum number (3) soft validation"
+          min="3"
+          soft-validate
+        >
+          <p slot="helper-text">
+            With minimum value validator and soft validation applied. Using the
+            spin buttons to go below the minimum value is possible and will
+            invalidate the input.
+          </p>
+        </igc-input>
+
         <igc-input
           type="number"
           name="input-max"
           label="Maximum number (17)"
           max="17"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With maximum value validator. Since soft validation is not applied,
+            using the spin buttons to go above the maximum value is not
+            possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          type="number"
+          name="input-max-soft"
+          label="Maximum number (17) soft validation"
+          max="17"
+          soft-validate
+        >
+          <p slot="helper-text">
+            With maximum value validator and soft validation applied. Using the
+            spin buttons to go above the maximum value is possible and will
+            invalidate the input.
+          </p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           name="input-pattern"
           pattern="[0-9]{3}"
           label="Pattern [0-9]{3}"
-        ></igc-input>
+        >
+          <p slot="helper-text">With pattern validator.</p>
+        </igc-input>
+
         <igc-input
           name="input-email"
           type="email"
           label="Email type"
           value="john.doe@example.com"
-        ></igc-input>
+        >
+          <p slot="helper-text">With email validator.</p></igc-input
+        >
+
         <igc-input
           name="input-url"
           type="url"
           label="URL type"
           value="https://igniteui.github.io/igniteui-webcomponents/"
-        ></igc-input>
+        >
+          <p slot="helper-text">With URL validator.</p>
+        </igc-input>
       </fieldset>
       ${formControls()}
     </form> `;
