@@ -251,10 +251,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,
    * or to allow spin buttons to surpass the established `min`/`max` limits for a number type input.
    *
-   * @attr soft-validate
+   * @attr validate-only
    */
-  @property({ type: Boolean, reflect: true, attribute: 'soft-validate' })
-  public softValidate = false;
+  @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
+  public validateOnly = false;
 
   /**
    * @internal
@@ -345,10 +345,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputmode)}
-        min=${ifDefined(this.softValidate ? undefined : this.min)}
-        max=${ifDefined(this.softValidate ? undefined : this.max)}
+        min=${ifDefined(this.validateOnly ? undefined : this.min)}
+        max=${ifDefined(this.validateOnly ? undefined : this.max)}
         minlength=${ifDefined(this.minLength)}
-        maxlength=${ifDefined(this.softValidate ? undefined : this.maxLength)}
+        maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         step=${ifDefined(this.step)}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         @change=${this.handleChange}

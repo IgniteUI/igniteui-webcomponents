@@ -103,7 +103,7 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
-    softValidate: {
+    validateOnly: {
       type: 'boolean',
       description:
         'Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,\nor to allow spin buttons to surpass the established `min`/`max` limits for a number type input.',
@@ -159,7 +159,7 @@ const metadata: Meta<IgcInputComponent> = {
   args: {
     type: 'text',
     autofocus: false,
-    softValidate: false,
+    validateOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -205,7 +205,7 @@ interface IgcInputArgs {
    * Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,
    * or to allow spin buttons to surpass the established `min`/`max` limits for a number type input.
    */
-  softValidate: boolean;
+  validateOnly: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -339,19 +339,19 @@ export const Form: Story = {
           maxlength="3"
         >
           <p slot="helper-text">
-            With maximum length validator. Since soft validation is not applied,
+            With maximum length validator. Since validate-only is not applied,
             typing in the input beyond the maximum length is not possible.
           </p>
         </igc-input>
 
         <igc-input
           name="input-maximum-soft"
-          label="Maximum length (3 characters) soft validation"
+          label="Maximum length (3 characters) validate-only"
           maxlength="3"
           soft-validate
         >
           <p slot="helper-text">
-            With maximum length validator and soft validation applied. Typing in
+            With maximum length validator and validate-only applied. Typing in
             the input beyond the maximum length is possible and will invalidate
             the input.
           </p>
@@ -366,7 +366,7 @@ export const Form: Story = {
           min="3"
         >
           <p slot="helper-text">
-            With minimum value validator. Since soft validation is not applied,
+            With minimum value validator. Since validate-only is not applied,
             using the spin buttons to go below the minimum value is not
             possible.
           </p>
@@ -375,12 +375,12 @@ export const Form: Story = {
         <igc-input
           type="number"
           name="input-min-soft"
-          label="Minimum number (3) soft validation"
+          label="Minimum number (3) validate-only"
           min="3"
           soft-validate
         >
           <p slot="helper-text">
-            With minimum value validator and soft validation applied. Using the
+            With minimum value validator and validate-only applied. Using the
             spin buttons to go below the minimum value is possible and will
             invalidate the input.
           </p>
@@ -393,7 +393,7 @@ export const Form: Story = {
           max="17"
         >
           <p slot="helper-text">
-            With maximum value validator. Since soft validation is not applied,
+            With maximum value validator. Since validate-only is not applied,
             using the spin buttons to go above the maximum value is not
             possible.
           </p>
@@ -402,12 +402,12 @@ export const Form: Story = {
         <igc-input
           type="number"
           name="input-max-soft"
-          label="Maximum number (17) soft validation"
+          label="Maximum number (17) validate-only"
           max="17"
           soft-validate
         >
           <p slot="helper-text">
-            With maximum value validator and soft validation applied. Using the
+            With maximum value validator and validate-only applied. Using the
             spin buttons to go above the maximum value is possible and will
             invalidate the input.
           </p>

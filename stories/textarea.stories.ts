@@ -130,7 +130,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'soft' } },
     },
-    softValidate: {
+    validateOnly: {
       type: 'boolean',
       description:
         'Consider whether to permit user input to exceed the `maxLength` when it is specified.',
@@ -169,7 +169,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     value: '',
     spellcheck: true,
     wrap: 'soft',
-    softValidate: false,
+    validateOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -242,7 +242,7 @@ interface IgcTextareaArgs {
    */
   wrap: 'hard' | 'soft' | 'off';
   /** Consider whether to permit user input to exceed the `maxLength` when it is specified. */
-  softValidate: boolean;
+  validateOnly: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -374,21 +374,20 @@ export const Form: Story = {
             maxlength="8"
           >
             <p slot="helper-text">
-              With maximum length validator. Since soft validation is not
-              applied, typing in the input beyond the maximum length is not
-              possible.
+              With maximum length validator. Since validate-only is not applied,
+              typing in the input beyond the maximum length is not possible.
             </p>
           </igc-textarea>
 
           <igc-textarea
             name="textarea-max-length-soft"
-            label="Maximum length (8) soft validation"
+            label="Maximum length (8) validate-only"
             maxlength="8"
             soft-validate
           >
             <p slot="helper-text">
-              With maximum length validator and soft validation applied. Typing
-              in the input beyond the maximum length is possible and will
+              With maximum length validator and validate-only applied. Typing in
+              the input beyond the maximum length is possible and will
               invalidate the input.
             </p>
           </igc-textarea>
