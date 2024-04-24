@@ -1,6 +1,6 @@
+import { DateTimeUtil } from '../date-time-input/date-util.js';
 import validatorMessages from './localization/validation-en.js';
 import { asNumber, format, isDefined } from './util.js';
-import { DateTimeUtil } from '../date-time-input/date-util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
 type ValidatorMessageFormat<T> = (host: T) => string;

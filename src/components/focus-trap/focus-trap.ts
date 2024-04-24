@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { isDefined } from '../common/util.js';
 
+/* blazorSuppress */
 /**
  *
  * @element igc-focus-trap
@@ -20,7 +21,7 @@ export default class IgcFocusTrapComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcFocusTrapComponent);
   }
 
   @state()
@@ -60,11 +61,11 @@ export default class IgcFocusTrapComponent extends LitElement {
     this._focused = false;
   }
 
-  protected focusFirstElement() {
+  public focusFirstElement() {
     this.focusableElements.at(0)?.focus();
   }
 
-  protected focusLastElement() {
+  public focusLastElement() {
     this.focusableElements.at(-1)?.focus();
   }
 
@@ -159,21 +160,22 @@ function* getFocusableElements<T extends HTMLElement>(
   }
 
   let node: T;
-  cache = cache ?? new WeakSet<HTMLElement>();
+  const _cache = cache ?? new WeakSet<HTMLElement>();
 
   const visitor = document.createTreeWalker(
     root,
     NodeFilter.SHOW_ELEMENT,
-    (node) => shouldSkipElements(node, cache)
+    (node) => shouldSkipElements(node, _cache)
   );
 
+  // biome-ignore lint/suspicious/noAssignInExpressions: short-form
   while ((node = visitor.nextNode() as T)) {
-    if (cache.has(node)) {
+    if (_cache.has(node)) {
       continue;
     }
 
     if (node.shadowRoot) {
-      yield* getFocusableElements(node.shadowRoot, cache);
+      yield* getFocusableElements(node.shadowRoot, _cache);
       continue;
     }
 
@@ -182,8 +184,8 @@ function* getFocusableElements<T extends HTMLElement>(
 
       if (elements.length > 0) {
         for (const element of elements) {
-          yield* getFocusableElements(parent!, cache);
-          cache.add(element);
+          yield* getFocusableElements(parent!, _cache);
+          _cache.add(element);
         }
       }
       continue;

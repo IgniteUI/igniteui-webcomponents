@@ -1,16 +1,13 @@
-import { ComplexAttributeConverter, LitElement, html, nothing } from 'lit';
+import { type ComplexAttributeConverter, LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { styles } from './themes/date-picker.base.css.js';
-import { styles as shared } from './themes/shared/date-picker.common.css.js';
-import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import { Theme } from '../../theming/types.js';
+import type { Theme } from '../../theming/types.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
   isDateInRanges,
 } from '../calendar/common/calendar.model.js';
@@ -27,7 +24,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
 import messages from '../common/localization/validation-en.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
@@ -36,17 +33,20 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, format } from '../common/util.js';
 import {
-  Validator,
+  type Validator,
   maxDateValidator,
   minDateValidator,
   requiredValidator,
 } from '../common/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { DatePart } from '../date-time-input/date-util.js';
+import type { DatePart } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import { styles } from './themes/date-picker.base.css.js';
+import { styles as shared } from './themes/shared/date-picker.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcDatepickerEventMap {
   igcOpening: CustomEvent<void>;
@@ -679,13 +679,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   protected renderPicker(id: string) {
     return this.isDropDown
       ? html`
-          <igc-popover
-            ?open=${this.open}
-            anchor=${id}
-            strategy="fixed"
-            flip
-            shift
-          >
+          <igc-popover ?open=${this.open} anchor=${id} flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
               ${this.renderCalendar(id)}${this.renderActions()}
             </igc-focus-trap>

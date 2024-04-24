@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/date-picker.bootstrap.css.js';
 import { styles as fluentDark } from './dark/date-picker.fluent.css.js';
@@ -15,7 +16,6 @@ import { styles as shared } from './light/date-picker.shared.css.js';
 import { styles as bootstrap } from './shared/date-picker.bootstrap.css.js';
 import { styles as fluent } from './shared/date-picker.fluent.css.js';
 import { styles as indigo } from './shared/date-picker.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

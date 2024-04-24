@@ -2,17 +2,17 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
-import {
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
   IgcButtonComponent,
   IgcDatepickerComponent,
   defineComponents,
 } from '../src/index.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcDatepickerComponent, IgcButtonComponent);
 

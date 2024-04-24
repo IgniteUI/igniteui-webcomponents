@@ -1,9 +1,9 @@
 import { expect, fixture, html } from '@open-wc/testing';
 
-import IgcFocusTrapComponent from './focus-trap.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcFocusTrapComponent from './focus-trap.js';
 
 describe('Focus trap', () => {
   before(() => defineComponents(IgcFocusTrapComponent, IgcCalendarComponent));
@@ -47,10 +47,10 @@ describe('Focus trap', () => {
     it('correctly focuses first/last focusable element', () => {
       expect(document.activeElement).to.equal(document.body);
 
-      trap['focusFirstElement']();
+      trap.focusFirstElement();
       expect(document.activeElement).instanceOf(HTMLButtonElement);
 
-      trap['focusLastElement']();
+      trap.focusLastElement();
       expect(document.activeElement).instanceOf(HTMLInputElement);
     });
   });
@@ -95,16 +95,16 @@ describe('Focus trap', () => {
     });
 
     it('correctly focuses first/last focusable element', () => {
-      const daysView = trap.querySelector(IgcCalendarComponent.tagName)![
-        'daysViews'
-      ][0] as IgcDaysViewComponent;
+      const calendar = trap.querySelector(IgcCalendarComponent.tagName)!;
+      // @ts-expect-error private access
+      const daysView = calendar.daysViews[0] as IgcDaysViewComponent;
 
       expect(document.activeElement).to.equal(document.body);
 
-      trap['focusFirstElement']();
+      trap.focusFirstElement();
       expect(document.activeElement).instanceOf(HTMLInputElement);
 
-      trap['focusLastElement']();
+      trap.focusLastElement();
       expect(document.activeElement).instanceOf(IgcCalendarComponent);
       expect(daysView.shadowRoot?.activeElement).instanceOf(HTMLSpanElement);
     });

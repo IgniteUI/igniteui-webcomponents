@@ -1,10 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcDatepickerComponent from './date-picker.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
 } from '../calendar/common/calendar.model.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
@@ -21,6 +20,7 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcDatepickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatepickerComponent));
@@ -105,7 +105,9 @@ describe('Date picker', () => {
           slot: 'title',
           tagName: 'p',
           content: 'Custom title',
-          prerequisite: () => (picker.mode = 'dialog'),
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
           parent: picker,
         },
         {
@@ -131,7 +133,9 @@ describe('Date picker', () => {
           slot: 'clear-icon',
           tagName: 'span',
           content: 'X',
-          prerequisite: () => (picker.value = new Date()),
+          prerequisite: () => {
+            picker.value = new Date();
+          },
           parent: picker,
         },
         {
@@ -518,7 +522,7 @@ describe('Date picker', () => {
           picker.displayFormat = format;
           await elementUpdated(picker);
 
-          expect(dateTimeInput.displayFormat).to.equal(format + 'Date');
+          expect(dateTimeInput.displayFormat).to.equal(`${format}Date`);
         }
       });
 
