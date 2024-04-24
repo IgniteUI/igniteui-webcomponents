@@ -45,7 +45,7 @@ export function getOffset(element: HTMLElement, parent: HTMLElement) {
 
 export function createCounter() {
   let i = 0;
-  return function () {
+  return () => {
     i++;
     return i;
   };
@@ -64,7 +64,7 @@ export function isLTR(element: HTMLElement) {
  * ```
  */
 export function format(template: string, ...params: string[]): string {
-  return template.replace(/{(\d+)}/g, function (match: string, index: number) {
+  return template.replace(/{(\d+)}/g, (match: string, index: number) => {
     if (index >= params.length) {
       return match;
     }
@@ -89,8 +89,8 @@ export function format(template: string, ...params: string[]): string {
  * ```
  */
 export function asNumber(value: unknown, fallback = 0) {
-  const parsed = parseFloat(value as string);
-  return isNaN(parsed) ? fallback : parsed;
+  const parsed = Number.parseFloat(value as string);
+  return Number.isNaN(parsed) ? fallback : parsed;
 }
 
 /**
@@ -109,7 +109,8 @@ export function asNumber(value: unknown, fallback = 0) {
 export function wrap(min: number, max: number, value: number) {
   if (value < min) {
     return max;
-  } else if (value > max) {
+  }
+  if (value > max) {
     return min;
   }
 
@@ -134,9 +135,9 @@ export function* iterNodes<T = Node>(
     NodeFilter[whatToShow ?? 'SHOW_ALL']
   );
 
-  let node: T;
+  let node = iter.nextNode() as T;
 
-  while ((node = iter.nextNode() as T)) {
+  while (node) {
     if (filter) {
       if (filter(node)) {
         yield node;
@@ -144,6 +145,8 @@ export function* iterNodes<T = Node>(
     } else {
       yield node;
     }
+
+    node = iter.nextNode() as T;
   }
 }
 
@@ -179,7 +182,11 @@ export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
     const category = _get(item);
     const group = result[category];
 
-    Array.isArray(group) ? group.push(item) : (result[category] = [item]);
+    if (Array.isArray(group)) {
+      group.push(item);
+    } else {
+      result[category] = [item];
+    }
   }
 
   return result;
