@@ -985,7 +985,7 @@ export default class IgcComboComponent<
 
   protected override render() {
     return html`
-      <igc-popover ?open=${this.open} flip shift same-width strategy="fixed">
+      <igc-popover ?open=${this.open} flip shift same-width>
         ${this.renderMainInput()} ${this.renderList()}
       </igc-popover>
       ${this.renderHelperText()}

@@ -10,6 +10,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { findElementFromEventPath } from '../common/util.js';
 import { styles } from './themes/group.base.css.js';
 import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
@@ -33,7 +34,7 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>
@@ -64,11 +65,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       added.length ? added.at(-1)! : attributes.at(-1)!
     );
 
-    buttons.forEach((button, i) => {
+    for (const [i, button] of buttons.entries()) {
       if (button.selected && i !== idx) {
         button.selected = false;
       }
-    });
+    }
   }
 
   private get _selectedButtons(): Array<IgcToggleButtonComponent> {
@@ -164,11 +165,10 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
-    const button = event
-      .composedPath()
-      .find(
-        (element) => element instanceof IgcToggleButtonComponent
-      ) as IgcToggleButtonComponent;
+    const button = findElementFromEventPath<IgcToggleButtonComponent>(
+      IgcToggleButtonComponent.tagName,
+      event
+    );
 
     if (button) {
       this.isMultiple
