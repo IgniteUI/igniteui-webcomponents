@@ -2,13 +2,13 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
 
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboListComponent from './combo-list.js';
-import IgcComboComponent from './combo.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
-import IgcInputComponent from '../input/input.js';
+import type IgcInputComponent from '../input/input.js';
+import type IgcComboHeaderComponent from './combo-header.js';
+import type IgcComboItemComponent from './combo-item.js';
+import type IgcComboListComponent from './combo-list.js';
+import IgcComboComponent from './combo.js';
 
 describe('Combo', () => {
   interface City {
@@ -127,7 +127,7 @@ describe('Combo', () => {
     { a: 1, b: 2 },
     -1,
     true,
-    NaN,
+    Number.NaN,
     0,
   ];
 
@@ -1336,7 +1336,7 @@ const pressKey = (
   target: HTMLElement,
   key: string,
   times = 1,
-  options?: Object
+  options?: object
 ) => {
   for (let i = 0; i < times; i++) {
     target.dispatchEvent(

@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { all } from './themes/actions.js';
-import { styles } from './themes/card.actions.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { all } from './themes/actions.js';
+import { styles } from './themes/card.actions.base.css.js';
 
 /** A container for card action items like buttons
  * @element igc-card-actions
@@ -20,7 +20,7 @@ export default class IgcCardActionsComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCardActionsComponent);
   }
 
   /**

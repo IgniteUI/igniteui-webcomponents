@@ -1,4 +1,4 @@
-import { CSSResult } from 'lit';
+import type { CSSResult } from 'lit';
 
 export type Theme = 'material' | 'bootstrap' | 'indigo' | 'fluent';
 export type ThemeVariant = 'light' | 'dark';

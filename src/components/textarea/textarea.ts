@@ -7,11 +7,8 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { styles as shared } from './themes/shared/textarea.common.css.js';
-import { styles } from './themes/textarea.base.css.js';
-import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
@@ -21,11 +18,14 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import {
-  Validator,
+  type Validator,
   maxLengthValidator,
   minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
+import { styles as shared } from './themes/shared/textarea.common.css.js';
+import { styles } from './themes/textarea.base.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -67,7 +67,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcTextareaComponent);
   }
 
   private declare readonly [themeSymbol]: Theme;
@@ -236,7 +236,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({
     type: Boolean,
     converter: {
-      fromAttribute: (value) => (!value || value === 'false' ? false : true),
+      fromAttribute: (value) => !(!value || value === 'false'),
       toAttribute: (value) => (value ? 'true' : 'false'),
     },
   })

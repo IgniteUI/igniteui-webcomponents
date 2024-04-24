@@ -3,13 +3,16 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
 import { partNameMap } from '../common/util.js';
-import { Validator, requiredValidator } from '../common/validators.js';
+import { type Validator, requiredValidator } from '../common/validators.js';
+import {
+  IgcMaskInputBaseComponent,
+  type MaskRange,
+} from './mask-input-base.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -38,7 +41,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcMaskInputComponent);
   }
 
   protected override validators: Validator<this>[] = [

@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/dropdown.bootstrap.css.js';
 import { styles as fluentDark } from './dark/dropdown.fluent.css.js';
@@ -17,7 +18,6 @@ import { styles as bootstrap } from './shared/dropdown.bootstrap.css.js';
 import { styles as fluent } from './shared/dropdown.fluent.css.js';
 import { styles as indigo } from './shared/dropdown.indigo.css.js';
 import { styles as material } from './shared/dropdown.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

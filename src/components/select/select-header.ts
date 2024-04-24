@@ -20,7 +20,7 @@ export default class IgcSelectHeaderComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcSelectHeaderComponent);
   }
 
   protected override render() {

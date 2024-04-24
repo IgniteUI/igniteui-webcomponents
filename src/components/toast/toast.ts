@@ -1,12 +1,12 @@
 import { html } from 'lit';
 
-import { styles as shared } from './themes/shared/toast.common.css.js';
-import { all } from './themes/themes.js';
-import { styles } from './themes/toast.base.css.js';
 import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
+import { styles as shared } from './themes/shared/toast.common.css.js';
+import { all } from './themes/themes.js';
+import { styles } from './themes/toast.base.css.js';
 
 /**
  * A toast component is used to show a notification
@@ -26,7 +26,7 @@ export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcToastComponent);
   }
 
   protected override render() {

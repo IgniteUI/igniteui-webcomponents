@@ -1,16 +1,19 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { createCalendarElement } from './calendar-rendering.spec.js';
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
 import {
   Calendar,
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
-  ICalendarDate,
+  type ICalendarDate,
   isDateInRanges,
 } from './common/calendar.model.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
+
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}
 
 describe('Calendar Interaction', () => {
   before(() => {
@@ -567,13 +570,15 @@ describe('Calendar Interaction', () => {
     if (calendar.selection === 'single') {
       selectedDates = calendar.value as Date;
       return selectedDates.getTime() === date?.getTime();
-    } else if (calendar.selection === 'multiple') {
+    }
+    if (calendar.selection === 'multiple') {
       selectedDates = dates;
       const currentDate = selectedDates.find(
         (element) => element.getTime() === date.getTime()
       );
       return !!currentDate;
-    } else if (calendar.selection === 'range' && dates.length === 1) {
+    }
+    if (calendar.selection === 'range' && dates.length === 1) {
       selectedDates = dates;
       return selectedDates[0].getTime() === date.getTime();
     }

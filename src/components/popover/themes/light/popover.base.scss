@@ -5,18 +5,12 @@
     display: contents;
 }
 
-:host(:not([open])) #container {
-    display: none;
-}
-
-[part='absolute'] {
-    position: absolute;
-    isolation: isolate;
-    z-index: 10005;
-}
-
-[part='fixed'] {
+:popover-open {
     position: fixed;
+    overflow: visible;
     isolation: isolate;
-    z-index: 10005;
+    height: fit-content;
+    inset: unset;
+    border: none;
+    padding: 0;
 }

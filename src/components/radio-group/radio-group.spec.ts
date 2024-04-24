@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import {
-  IgcRadioComponent,
+  type IgcRadioComponent,
   IgcRadioGroupComponent,
   defineComponents,
 } from '../../index.js';

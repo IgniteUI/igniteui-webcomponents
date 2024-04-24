@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/button-group.bootstrap.css.js';
 import { styles as fluentDark } from './dark/button-group.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as sharedLight } from './light/button-group.shared.css.js';
 import { styles as bootstrap } from './shared/group/group.bootstrap.css.js';
 import { styles as fluent } from './shared/group/group.fluent.css.js';
 import { styles as indigo } from './shared/group/group.indigo.css.js';
-import type { Themes } from '../../../theming/types';
 
 const light = {
   shared: css`

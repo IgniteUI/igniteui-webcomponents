@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -158,12 +158,7 @@ const Template = ({
             <div style="display: flex; flex-flow: column; gap: 1rem">
               <igc-input outlined label="Username"></igc-input>
               <igc-input outlined label="Password" type="password"></igc-input>
-              <igc-dropdown
-                flip
-                same-width
-                position-strategy="fixed"
-                @igcChange=${authSelected}
-              >
+              <igc-dropdown flip same-width @igcChange=${authSelected}>
                 <igc-input
                   style="width: 100%"
                   outlined

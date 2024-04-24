@@ -3,14 +3,9 @@ import {
   arrowUpLeft,
   github,
 } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 import { groupBy } from '../src/components/common/util.js';
 import {
   IgcIconComponent,
@@ -18,6 +13,11 @@ import {
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
 

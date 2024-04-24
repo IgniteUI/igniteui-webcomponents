@@ -1,7 +1,7 @@
 import { expect, fixture, html } from '@open-wc/testing';
 
-import IgcListComponent from './list.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcListComponent from './list.js';
 
 describe('List', () => {
   before(() => {

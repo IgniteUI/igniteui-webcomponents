@@ -1,5 +1,5 @@
 import { groupBy } from '../../common/util.js';
-import { DataController } from '../controllers/data.js';
+import type { DataController } from '../controllers/data.js';
 import type { ComboRecord, Keys } from '../types.js';
 
 export default class GroupDataOperation<T extends object> {

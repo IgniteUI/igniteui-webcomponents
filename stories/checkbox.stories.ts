@@ -1,13 +1,13 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
+import { IgcCheckboxComponent, defineComponents } from '../src/index.js';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { IgcCheckboxComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcCheckboxComponent);
 

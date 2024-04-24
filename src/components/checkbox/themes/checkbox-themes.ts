@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/checkbox/checkbox.bootstrap.css.js';
 import { styles as fluentDark } from './dark/checkbox/checkbox.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as bootstrap } from './shared/checkbox/checkbox.bootstrap.css.js
 import { styles as fluent } from './shared/checkbox/checkbox.fluent.css.js';
 import { styles as indigo } from './shared/checkbox/checkbox.indigo.css.js';
 import { styles as material } from './shared/checkbox/checkbox.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

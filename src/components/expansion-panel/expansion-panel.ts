@@ -1,10 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/expansion-panel.base.css.js';
-import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
-import { all } from './themes/themes.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -19,6 +16,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import { styles } from './themes/expansion-panel.base.css.js';
+import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
@@ -62,7 +62,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent);
+    registerComponent(IgcExpansionPanelComponent, IgcIconComponent);
   }
 
   private static readonly increment = createCounter();

@@ -1,12 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { all } from './themes/tab-themes.js';
-import { styles } from './themes/tab.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
+import { styles as shared } from './themes/shared/tab/tab.common.css.js';
+import { all } from './themes/tab-themes.js';
+import { styles } from './themes/tab.base.css.js';
 
 /**
  * Represents the tab header.
@@ -29,7 +29,7 @@ export default class IgcTabComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcTabComponent);
   }
 
   private static readonly increment = createCounter();

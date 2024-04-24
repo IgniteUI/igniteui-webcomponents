@@ -47,13 +47,11 @@
 [part='list-wrapper'] {
     @include border-radius(rem(4px));
 
-    position: absolute;
     width: 100%;
     background: color(surface);
     box-shadow: elevation(8);
     overflow: hidden;
     outline-style: none;
-    z-index: 999999;
 
     igc-input {
         --ig-size: var(--ig-size-small);

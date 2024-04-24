@@ -3,10 +3,6 @@ import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { styles } from './themes/radio.base.css.js';
-import { styles as shared } from './themes/shared/radio.common.css.js';
-import { all } from './themes/themes.js';
-import { getGroup } from './utils.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
@@ -20,11 +16,15 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
-import { Validator } from '../common/validators.js';
+import type { Validator } from '../common/validators.js';
+import { styles } from './themes/radio.base.css.js';
+import { styles as shared } from './themes/shared/radio.common.css.js';
+import { all } from './themes/themes.js';
+import { getGroup } from './utils.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
@@ -54,7 +54,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcRadioComponent);
   }
 
   private static readonly increment = createCounter();

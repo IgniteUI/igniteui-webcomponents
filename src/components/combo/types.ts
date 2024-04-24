@@ -1,7 +1,7 @@
 import type { RenderItemFunction } from '@lit-labs/virtualizer/virtualize.js';
-import { ReactiveControllerHost, TemplateResult } from 'lit';
+import type { ReactiveControllerHost, TemplateResult } from 'lit';
 
-import IgcComboComponent from './combo.js';
+import type IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];

@@ -4,7 +4,7 @@ import { property } from 'lit/decorators.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
 export interface IgcFormEventMap {
@@ -39,7 +39,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcFormComponent);
   }
 
   private _controlsWithChecked = [
@@ -100,7 +100,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
         }
       } else if (
         (tagName === 'input' &&
-          (element.type === 'checkbox' || element.type == 'radio')) ||
+          (element.type === 'checkbox' || element.type === 'radio')) ||
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');

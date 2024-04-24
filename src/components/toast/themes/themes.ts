@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/toast.bootstrap.css.js';
 import { styles as fluentDark } from './dark/toast.fluent.css.js';
@@ -15,7 +16,6 @@ import { styles as sharedLight } from './light/toast.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/toast.bootstrap.css.js';
 import { styles as fluent } from './shared/toast.fluent.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

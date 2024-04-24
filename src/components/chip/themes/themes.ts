@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/chip.bootstrap.css.js';
 import { styles as fluentDark } from './dark/chip.fluent.css.js';
@@ -15,7 +16,6 @@ import { styles as shared } from './light/chip.shared.css.js';
 import { styles as bootstrap } from './shared/chip.bootstrap.css.js';
 import { styles as fluent } from './shared/chip.fluent.css.js';
 import { styles as indigo } from './shared/chip.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

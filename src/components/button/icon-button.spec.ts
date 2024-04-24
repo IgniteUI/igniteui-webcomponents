@@ -48,7 +48,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(`<a><slot></slot></a>`, {
+      expect(el).shadowDom.to.equal('<a><slot></slot></a>', {
         ignoreAttributes: [
           'variant',
           'aria-label',

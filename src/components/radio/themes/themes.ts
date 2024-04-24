@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/radio.bootstrap.css.js';
 import { styles as fluentDark } from './dark/radio.fluent.css.js';
@@ -17,7 +18,6 @@ import { styles as bootstrap } from './shared/radio.bootstrap.css.js';
 import { styles as fluent } from './shared/radio.fluent.css.js';
 import { styles as indigo } from './shared/radio.indigo.css.js';
 import { styles as material } from './shared/radio.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

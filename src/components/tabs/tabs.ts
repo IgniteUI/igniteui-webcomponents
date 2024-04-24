@@ -6,13 +6,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import IgcTabPanelComponent from './tab-panel.js';
-import IgcTabComponent from './tab.js';
-import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
-import { styles } from './themes/tabs.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
@@ -23,15 +18,20 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import {
-  MutationControllerParams,
+  type MutationControllerParams,
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, getOffset, isLTR, wrap } from '../common/util.js';
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcTabComponent from './tab.js';
+import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
+import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -68,7 +68,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcTabsComponent,
       IgcTabComponent,
       IgcTabPanelComponent,
       IgcIconButtonComponent
@@ -79,19 +79,19 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected headerRef: Ref<HTMLDivElement> = createRef();
 
-  @queryAssignedElements({ selector: 'igc-tab' })
+  @queryAssignedElements({ selector: IgcTabComponent.tagName })
   protected tabs!: Array<IgcTabComponent>;
 
   @queryAssignedElements({ slot: 'panel' })
   protected panels!: Array<IgcTabPanelComponent>;
 
-  @query('[part="headers-wrapper"]', true)
+  @query('[part="headers-wrapper"]')
   protected wrapper!: HTMLElement;
 
-  @query('[part="headers-content"]', true)
+  @query('[part="headers-content"]')
   protected container!: HTMLElement;
 
-  @query('[part="selected-indicator"]', true)
+  @query('[part="selected-indicator"]')
   protected selectedIndicator!: HTMLElement;
 
   @state()
@@ -179,18 +179,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       transitionDuration: '0.3s',
     };
 
-    if (this.activeTab) {
+    if (this.activeTab && this.wrapper) {
       Object.assign(styles, {
-        width: `${this.activeTab!.offsetWidth}px`,
+        width: `${this.activeTab.offsetWidth}px`,
         transform: `translate(${
           isLTR(this)
-            ? getOffset(this.activeTab!, this.wrapper).left
-            : getOffset(this.activeTab!, this.wrapper).right
+            ? getOffset(this.activeTab, this.wrapper).left
+            : getOffset(this.activeTab, this.wrapper).right
         }px)`,
       });
     }
 
-    Object.assign(this.selectedIndicator.style, styles);
+    Object.assign(this.selectedIndicator?.style ?? {}, styles);
   }
 
   constructor() {
@@ -249,8 +249,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected updateScrollButtons() {
-    const { scrollLeft, offsetWidth } = this.container,
-      { scrollWidth } = this.wrapper;
+    const { scrollLeft, offsetWidth } = this.container;
+    const { scrollWidth } = this.wrapper;
 
     this.disableEndScrollButton =
       scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
@@ -269,7 +269,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected updateSelectedTab() {
-    this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
+    this.tabs.forEach((tab) => {
+      tab.selected = tab === this.activeTab;
+    });
     this.panels.forEach((panel) => {
       panel.hidden = panel.id !== this.activeTab?.panel;
     });
@@ -304,8 +306,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const { scrollLeft, offsetWidth } = this.container;
-    const LTR = isLTR(this),
-      next = direction === 'end';
+    const LTR = isLTR(this);
+    const next = direction === 'end';
 
     const pivot = Math.abs(next ? offsetWidth + scrollLeft : scrollLeft);
 

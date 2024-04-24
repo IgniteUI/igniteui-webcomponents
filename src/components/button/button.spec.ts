@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcButtonComponent from './button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
   'contained',
@@ -23,12 +23,11 @@ describe('Button tests', () => {
       ignoreAttributes: ['part'],
     };
 
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button>Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button>Click</igc-button>`
+      );
+    });
 
     it('is initialized with sensible default values', async () => {
       expect([button.disabled, button.variant]).to.eql([false, 'contained']);
@@ -96,12 +95,11 @@ describe('Button tests', () => {
       ignoreAttributes: ['part', 'aria-disabled'],
     };
 
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button href="/">Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button href="/">Click</igc-button>`
+      );
+    });
 
     it('is initialized with sensible default values', async () => {
       const { disabled, download, target, rel, variant } = button;
@@ -162,10 +160,10 @@ describe('Button tests', () => {
     });
 
     it('reflects link properties', async () => {
-      const rel = 'dns-prefetch',
-        href = '/downloads/entity',
-        download = 'file.txt',
-        target = '_blank';
+      const rel = 'dns-prefetch';
+      const href = '/downloads/entity';
+      const download = 'file.txt';
+      const target = '_blank';
 
       Object.assign(button, { rel, download, target, href });
       await elementUpdated(button);
@@ -196,12 +194,11 @@ describe('Button tests', () => {
   });
 
   describe('Events', () => {
-    beforeEach(
-      async () =>
-        (button = await fixture<IgcButtonComponent>(
-          html`<igc-button>Click</igc-button>`
-        ))
-    );
+    beforeEach(async () => {
+      button = await fixture<IgcButtonComponent>(
+        html`<igc-button>Click</igc-button>`
+      );
+    });
 
     it('focus/blur events are emitted from corresponding methods', async () => {
       const eventSpy = spy(button, 'emitEvent');

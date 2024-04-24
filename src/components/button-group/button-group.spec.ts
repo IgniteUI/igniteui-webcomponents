@@ -82,7 +82,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.true;
         expect(buttonGroup).dom.to.equal(
-          `<igc-button-group disabled></igc-button-group>`,
+          '<igc-button-group disabled></igc-button-group>',
           DIFF_OPTIONS
         );
 
@@ -101,7 +101,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.false;
         expect(buttonGroup).dom.to.equal(
-          `<igc-button-group></igc-button-group>`,
+          '<igc-button-group></igc-button-group>',
           DIFF_OPTIONS
         );
 
@@ -446,6 +446,34 @@ describe('Button Group', () => {
 
         expect(buttonGroup.selection).to.equal('single-required');
         expect(buttonGroup.selectedItems.length).to.equal(0);
+      });
+
+      it('should clear the selection when passing an empty array to `selectedItems` property', () => {
+        buttons[0].selected = true;
+
+        expect(buttonGroup.selectedItems.length).to.equal(1);
+        expect(buttonGroup.selectedItems).to.have.same.members([
+          buttons[0].value,
+        ]);
+
+        buttonGroup.selectedItems = [];
+
+        expect(buttonGroup.selectedItems.length).to.equal(0);
+        expect(buttons[0].selected).to.be.false;
+      });
+
+      it('should clear the selection when passing falsy values to `selectedItems` property', () => {
+        buttons[0].selected = true;
+
+        expect(buttonGroup.selectedItems.length).to.equal(1);
+        expect(buttonGroup.selectedItems).to.have.same.members([
+          buttons[0].value,
+        ]);
+
+        buttonGroup.selectedItems = null as unknown as string[];
+
+        expect(buttonGroup.selectedItems.length).to.equal(0);
+        expect(buttons[0].selected).to.be.false;
       });
 
       it('initial selection through child selection attribute has higher priority', async () => {

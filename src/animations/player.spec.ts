@@ -9,7 +9,7 @@ import { LitElement, css } from 'lit';
 
 import { EaseOut } from './easings.js';
 import { addAnimationController } from './player.js';
-import { AnimationReferenceMetadata, animation } from './types.js';
+import { type AnimationReferenceMetadata, animation } from './types.js';
 
 const keyframes = [
   { opacity: 0, transform: 'scale(0.1)' },
@@ -71,7 +71,7 @@ describe('Animations Player', () => {
 
   it('should error on infinite animations', async () => {
     el.player
-      .play(animation(keyframes, { duration: Infinity }))
+      .play(animation(keyframes, { duration: Number.POSITIVE_INFINITY }))
       .then(() => {})
       .catch((err) => {
         expect(err.message).to.equal(

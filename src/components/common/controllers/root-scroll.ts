@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 type RootScrollControllerConfig = {
-  hideCallback?: Function;
+  hideCallback?: () => void;
   resetListeners?: boolean;
 };
 
