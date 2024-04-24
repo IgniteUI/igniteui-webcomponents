@@ -7,6 +7,10 @@ $theme: $material;
     @include type-style('subtitle-1');
 }
 
+label {
+    gap: rem(2px);
+}
+
 [part~='indicator'] {
     stroke: var-get($theme, 'tick-color');
 }

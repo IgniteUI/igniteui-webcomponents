@@ -51,8 +51,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host(:hover) [part='control checked'],
-:host(:focus-within) [part='control checked'] {
+:host(:hover) [part='control checked'] {
     &::after {
         background: $checked-hover-color;
         box-shadow: inset 0 0 0 rem(1px) $checked-hover-color;
@@ -212,7 +211,7 @@ $disabled-color: var-get($theme, 'disabled-color');
         position: absolute;
         top: -$focus-outline-offset-top;
         left: -$focus-outline-offset-left;
-        box-shadow: 0 0 0 rem(1px) color(gray, 700);
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'focus-outline-color');
         width: calc(100% + (#{$focus-outline-offset-left} * 2));
         height: calc(100% + (#{$focus-outline-offset-top} * 2));
     }
