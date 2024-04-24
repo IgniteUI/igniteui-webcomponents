@@ -8,9 +8,6 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcSelectHeaderComponent from './select-header.js';
-import type IgcSelectItemComponent from './select-item.js';
-import IgcSelectComponent from './select.js';
 import {
   altKey,
   arrowDown,
@@ -29,6 +26,9 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import IgcInputComponent from '../input/input.js';
+import IgcSelectHeaderComponent from './select-header.js';
+import type IgcSelectItemComponent from './select-item.js';
+import IgcSelectComponent from './select.js';
 
 type ItemState = {
   active?: boolean;

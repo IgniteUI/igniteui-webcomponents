@@ -10,7 +10,7 @@ export default class IgcComboListComponent extends LitVirtualizer {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcComboListComponent);
   }
 }
 

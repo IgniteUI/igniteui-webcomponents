@@ -4,10 +4,6 @@
 :host {
     display: inline-flex;
     vertical-align: top;
-
-    igc-icon {
-        --size: #{sizable(rem(16px), rem(20px), rem(20px))};
-    }
 }
 
 :host button {

@@ -10,10 +10,6 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import { styles } from './themes/rating.base.css.js';
-import { styles as shared } from './themes/shared/rating.common.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
@@ -26,12 +22,16 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, format, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import { styles } from './themes/rating.base.css.js';
+import { styles as shared } from './themes/shared/rating.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -72,7 +72,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
+    registerComponent(
+      IgcRatingComponent,
+      IgcIconComponent,
+      IgcRatingSymbolComponent
+    );
   }
 
   @queryAssignedElements({
@@ -199,9 +203,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @watch('max')
   protected handleMaxChange() {
-    this.hasProjectedSymbols
-      ? (this.max = this.ratingSymbols.length)
-      : (this.max = Math.max(0, this.max));
+    this.max = this.hasProjectedSymbols
+      ? this.ratingSymbols.length
+      : Math.max(0, this.max);
+
     if (this.max < this.value) {
       this.value = this.max;
     }
@@ -209,7 +214,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @watch('value')
   protected handleValueChange() {
-    this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
+    this.value = clamp(Number.isNaN(this.value) ? 0 : this.value, 0, this.max);
     this.setFormValue(`${this.value}`, `${this.value}`);
     this.updateValidity();
     this.setInvalidState();
@@ -286,6 +291,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
+  protected handleHoverEnabled() {
+    this.hoverState = true;
+  }
+
+  protected handleHoverDisabled() {
+    this.hoverState = false;
+  }
+
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
@@ -300,8 +313,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected round(value: number) {
-    value = Math.round(value / this.step) * this.step;
-    return Number(value.toFixed(this.getPrecision(this.step)));
+    return Number(
+      (Math.round(value / this.step) * this.step).toFixed(
+        this.getPrecision(this.step)
+      )
+    );
   }
 
   protected clipSymbol(index: number, isLTR = true) {
@@ -415,8 +431,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
           aria-hidden="true"
           part="symbols"
           @click=${this.isInteractive ? this.handleClick : nothing}
-          @mouseenter=${hoverActive ? () => (this.hoverState = true) : nothing}
-          @mouseleave=${hoverActive ? () => (this.hoverState = false) : nothing}
+          @mouseenter=${hoverActive ? () => this.handleHoverEnabled : nothing}
+          @mouseleave=${hoverActive ? () => this.handleHoverDisabled : nothing}
           @mousemove=${hoverActive ? this.handleMouseMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>
