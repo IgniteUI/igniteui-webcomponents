@@ -10,6 +10,10 @@ import messages from '../common/localization/validation-en.js';
 import { partNameMap } from '../common/util.js';
 import { type Validator, requiredValidator } from '../common/validators.js';
 import type { IgcInputEventMap } from '../input/input-base.js';
+import {
+  IgcMaskInputBaseComponent,
+  type MaskRange,
+} from './mask-input-base.js';
 
 export interface IgcMaskInputComponentEventMap extends IgcInputEventMap {}
 
