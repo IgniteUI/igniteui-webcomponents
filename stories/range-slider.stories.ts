@@ -1,8 +1,8 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { disableStoryControls } from './story.js';
 import { IgcRangeSliderComponent, defineComponents } from '../src/index.js';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcRangeSliderComponent);
 
