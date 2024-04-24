@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/calendar.bootstrap.css.js';
 import { styles as fluentDark } from './dark/calendar.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as bootstrap } from './shared/bootstrap/calendar.bootstrap.css.j
 import { styles as fluent } from './shared/fluent/calendar.fluent.css.js';
 import { styles as indigo } from './shared/indigo/calendar.indigo.css.js';
 import { styles as material } from './shared/material/calendar.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`
