@@ -1,12 +1,12 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';
 import { styles as shared } from './themes/button/shared/button.common.css.js';
 import { all } from './themes/button/themes.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 export interface IgcButtonComponentEventMap {
   igcFocus: CustomEvent<void>;
@@ -37,7 +37,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcButtonComponent);
   }
 
   /**

@@ -2,7 +2,7 @@ import { expect } from '@open-wc/testing';
 
 import {
   Calendar,
-  ICalendarDate,
+  type ICalendarDate,
   TimeDeltaInterval,
   WEEKDAYS,
   isLeap,

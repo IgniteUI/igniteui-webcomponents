@@ -1,10 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/chip.base.css.js';
-import { styles as shared } from './themes/shared/chip.common.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -13,6 +10,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcIconComponent from '../icon/icon.js';
+import { styles } from './themes/chip.base.css.js';
+import { styles as shared } from './themes/shared/chip.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
@@ -45,7 +45,7 @@ export default class IgcChipComponent extends SizableMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcIconComponent);
+    registerComponent(IgcChipComponent, IgcIconComponent);
   }
 
   private _removePartRef: Ref<HTMLSlotElement> = createRef();

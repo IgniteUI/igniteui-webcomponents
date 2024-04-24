@@ -1,11 +1,14 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { createCalendarElement } from './calendar-rendering.spec.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcCalendarComponent from './calendar.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}
 
 describe('Calendar Rendering', () => {
   before(() => {

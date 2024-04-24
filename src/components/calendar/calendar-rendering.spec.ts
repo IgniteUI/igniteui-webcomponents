@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
 import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
 
 describe('Calendar Rendering', () => {
   const DIFF_OPTIONS = {
@@ -358,7 +358,7 @@ describe('Calendar Rendering', () => {
       const month = el.shadowRoot?.querySelector(
         'button[part="months-navigation"]'
       ) as Element;
-      expect(month).lightDom.to.equal(`7`);
+      expect(month).lightDom.to.equal('7');
 
       el.formatOptions = {
         month: '2-digit',
@@ -367,7 +367,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('2-digit');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`07`);
+      expect(month).lightDom.to.equal('07');
 
       el.formatOptions = {
         month: 'long',
@@ -376,7 +376,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('long');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`July`);
+      expect(month).lightDom.to.equal('July');
 
       el.formatOptions = {
         month: 'short',
@@ -385,7 +385,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('short');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`Jul`);
+      expect(month).lightDom.to.equal('Jul');
 
       el.formatOptions = {
         month: 'narrow',
@@ -394,7 +394,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('narrow');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`J`);
+      expect(month).lightDom.to.equal('J');
     });
 
     it('successfully changes title', async () => {
@@ -564,6 +564,6 @@ describe('Calendar Rendering', () => {
   });
 });
 
-export const createCalendarElement = () => {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-};
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}

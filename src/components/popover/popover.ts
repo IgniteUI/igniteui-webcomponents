@@ -1,5 +1,5 @@
 import {
-  Middleware,
+  type Middleware,
   autoUpdate,
   computePosition,
   flip,
@@ -11,10 +11,10 @@ import {
 import { LitElement, html } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { styles } from './themes/light/popover.base.css.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { getElementByIdFromRoot } from '../common/util.js';
+import { styles } from './themes/light/popover.base.css.js';
 
 function roundByDPR(value: number) {
   const dpr = globalThis.devicePixelRatio || 1;
@@ -51,7 +51,7 @@ export default class IgcPopoverComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcPopoverComponent);
   }
 
   private dispose?: ReturnType<typeof autoUpdate>;

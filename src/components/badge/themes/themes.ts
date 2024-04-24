@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/badge.bootstrap.css.js';
 import { styles as fluentDark } from './dark/badge.fluent.css.js';
@@ -14,7 +15,6 @@ import { styles as shared } from './light/badge.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
 import { styles as indigo } from './shared/badge.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

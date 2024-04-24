@@ -1,6 +1,6 @@
-import autoprefixer from 'autoprefixer';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import autoprefixer from 'autoprefixer';
 import postcss from 'postcss';
 
 const stripComments = () => {

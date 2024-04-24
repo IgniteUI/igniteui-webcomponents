@@ -166,13 +166,13 @@ describe('Radio Component', () => {
       radio.required = true;
       expect(radio.required).to.be.true;
       await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input required />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input required />', DIFF_OPTIONS);
 
       radio.required = false;
       expect(radio.required).to.be.false;
       await elementUpdated(radio);
 
-      expect(input).dom.to.equal(`<input />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
     it('should emit focus/blur events when methods are called', () => {
@@ -243,7 +243,9 @@ describe('Radio Component', () => {
     });
 
     it('is associated on submit with default value "on"', async () => {
-      radios.forEach((r) => (r.value = ''));
+      radios.forEach((r) => {
+        r.value = '';
+      });
       radios.at(0)!.checked = true;
       await elementUpdated(spec.element);
 
@@ -252,7 +254,9 @@ describe('Radio Component', () => {
 
     it('is associated on submit with default value "on" (setting `checked` first)', async () => {
       radios.at(0)!.checked = true;
-      radios.forEach((r) => (r.value = ''));
+      radios.forEach((r) => {
+        r.value = '';
+      });
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal('on');

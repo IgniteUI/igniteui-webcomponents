@@ -1,8 +1,8 @@
 import {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
-  ReactiveElement,
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
+  type ReactiveElement,
   adoptStyles,
   css,
 } from 'lit';
@@ -11,15 +11,17 @@ import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 import type { Theme, ThemeController, ThemeVariant, Themes } from './types.js';
 
-class ThemeEventListeners {
-  private readonly listeners = new Set<Function>();
+type ThemeCallback = () => void;
 
-  public add(listener: Function) {
+class ThemeEventListeners {
+  private readonly listeners = new Set<ThemeCallback>();
+
+  public add(listener: ThemeCallback) {
     globalThis.addEventListener(CHANGE_THEME_EVENT, this);
     this.listeners.add(listener);
   }
 
-  public remove(listener: Function) {
+  public remove(listener: ThemeCallback) {
     this.listeners.delete(listener);
     if (this.listeners.size < 1) {
       globalThis.removeEventListener(CHANGE_THEME_EVENT, this);
@@ -75,7 +77,7 @@ class ThemingController implements ReactiveController, ThemeController {
     ]);
   }
 
-  private themeChanged = () => {
+  private themeChanged: ThemeCallback = () => {
     this.adoptStyles();
     this.host.requestUpdate();
   };

@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcTextareaComponent from './textarea.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
   before(() => defineComponents(IgcTextareaComponent));

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './ripple.material.css.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './ripple.material.css.js';
 
 /**
  * A ripple can be applied to an element to represent
@@ -15,7 +15,7 @@ export default class IgcRippleComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcRippleComponent);
   }
 
   constructor() {
@@ -32,9 +32,9 @@ export default class IgcRippleComponent extends LitElement {
       display: 'block',
       pointerEvents: 'none',
       transformOrigin: 'center',
-      transform: `translate3d(0, 0, 0) scale(0)`,
+      transform: 'translate3d(0, 0, 0) scale(0)',
       willChange: 'opacity, transform',
-      margin: `0 !important`,
+      margin: '0 !important',
       border: 'none !important',
       width: `${radius}px`,
       height: `${radius}px`,

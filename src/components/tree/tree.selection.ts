@@ -1,6 +1,6 @@
-import IgcTreeItemComponent from './tree-item.js';
-import { IgcSelectionEventArgs } from './tree.common.js';
-import IgcTreeComponent from './tree.js';
+import type IgcTreeItemComponent from './tree-item.js';
+import type { IgcSelectionEventArgs } from './tree.common.js';
+import type IgcTreeComponent from './tree.js';
 
 /* blazorSuppress */
 export class IgcTreeSelectionService {
@@ -60,10 +60,12 @@ export class IgcTreeSelectionService {
     const oldIndeterminate = this.getIndeterminateItems();
     this.itemSelection.clear();
     this.indeterminateItems.clear();
-    oldSelection.forEach((i: IgcTreeItemComponent) => (i.selected = false));
-    oldIndeterminate.forEach(
-      (i: IgcTreeItemComponent) => (i.indeterminate = false)
-    );
+    oldSelection.forEach((i: IgcTreeItemComponent) => {
+      i.selected = false;
+    });
+    oldIndeterminate.forEach((i: IgcTreeItemComponent) => {
+      i.indeterminate = false;
+    });
   }
 
   public isItemSelected(item: IgcTreeItemComponent): boolean {
@@ -302,7 +304,7 @@ export class IgcTreeSelectionService {
       });
 
       // add their direct parent to the set
-      if (item && item.parent) {
+      if (item?.parent) {
         parents.add(item.parent);
       }
     });
@@ -332,7 +334,7 @@ export class IgcTreeSelectionService {
    * Handle the selection state of a given item based the selection states of its direct children
    */
   private handleItemSelectionState(item: IgcTreeItemComponent): void {
-    const itemsArray = item && item.getChildren() ? item.getChildren() : [];
+    const itemsArray = item?.getChildren() ? item.getChildren() : [];
     if (itemsArray.length) {
       if (
         itemsArray.every((i: IgcTreeItemComponent) =>
@@ -350,13 +352,11 @@ export class IgcTreeSelectionService {
       } else {
         this.selectDeselectItem(item, false);
       }
-    } else {
+    } else if (this.isItemSelected(item)) {
       // if the children of the item has been deleted and the item was selected do not change its state
-      if (this.isItemSelected(item)) {
-        this.selectDeselectItem(item, true);
-      } else {
-        this.selectDeselectItem(item, false);
-      }
+      this.selectDeselectItem(item, true);
+    } else {
+      this.selectDeselectItem(item, false);
     }
   }
 

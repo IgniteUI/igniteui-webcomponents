@@ -10,7 +10,7 @@ import { spy } from 'sinon';
 
 import {
   IgcRatingComponent,
-  IgcRatingSymbolComponent,
+  type IgcRatingSymbolComponent,
   defineComponents,
 } from '../../index.js';
 import {
@@ -66,11 +66,11 @@ describe('Rating component', () => {
     });
 
     it('is initialized correctly with passed attributes', async () => {
-      const value = 10,
-        max = 10,
-        name = 'rating',
-        label = 'Test rating',
-        size = 'small';
+      const value = 10;
+      const max = 10;
+      const name = 'rating';
+      const label = 'Test rating';
+      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating
@@ -90,11 +90,11 @@ describe('Rating component', () => {
     });
 
     it('value is truncated if greater than `max` attribute', async () => {
-      const value = 15,
-        max = 10,
-        name = 'rating',
-        label = 'Test rating',
-        size = 'small';
+      const value = 15;
+      const max = 10;
+      const name = 'rating';
+      const label = 'Test rating';
+      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating

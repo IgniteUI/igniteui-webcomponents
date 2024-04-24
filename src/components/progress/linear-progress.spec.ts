@@ -6,9 +6,9 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcLinearProgressComponent from './linear-progress.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { getAnimationsFor } from '../common/utils.spec.js';
+import IgcLinearProgressComponent from './linear-progress.js';
 
 function createBasicProgress() {
   return html`<igc-linear-progress></igc-linear-progress>`;
@@ -55,12 +55,11 @@ describe('Linear progress component', () => {
   before(() => defineComponents(IgcLinearProgressComponent));
 
   describe('DOM', () => {
-    beforeEach(
-      async () =>
-        (progress = await fixture<IgcLinearProgressComponent>(
-          createBasicProgress()
-        ))
-    );
+    beforeEach(async () => {
+      progress = await fixture<IgcLinearProgressComponent>(
+        createBasicProgress()
+      );
+    });
 
     it('is accessible', async () => {
       await expect(progress).to.be.accessible();
@@ -91,12 +90,11 @@ describe('Linear progress component', () => {
   });
 
   describe('Attributes and Properties', () => {
-    beforeEach(
-      async () =>
-        (progress = await fixture<IgcLinearProgressComponent>(
-          createNonAnimatingProgress()
-        ))
-    );
+    beforeEach(async () => {
+      progress = await fixture<IgcLinearProgressComponent>(
+        createNonAnimatingProgress()
+      );
+    });
 
     it('show/hides the default label based on hideLabel', async () => {
       await updateProgress('hideLabel', true);
@@ -229,12 +227,11 @@ describe('Linear progress component', () => {
   });
 
   describe('Slots', () => {
-    beforeEach(
-      async () =>
-        (progress = await fixture<IgcLinearProgressComponent>(
-          createSlottedNonAnimatingProgress()
-        ))
-    );
+    beforeEach(async () => {
+      progress = await fixture<IgcLinearProgressComponent>(
+        createSlottedNonAnimatingProgress()
+      );
+    });
 
     it('default slot projection', async () => {
       expect(getLabelSlotNodes()).not.to.be.empty;

@@ -6,8 +6,8 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcPopoverComponent from './popover.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcPopoverComponent from './popover.js';
 
 async function waitForPaint(popover: IgcPopoverComponent) {
   await elementUpdated(popover);

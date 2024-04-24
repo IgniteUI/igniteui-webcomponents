@@ -26,7 +26,7 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcSelectItemComponent);
   }
 
   @watch('active')

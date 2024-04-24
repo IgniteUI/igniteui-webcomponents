@@ -1,7 +1,7 @@
-import { ChildPart, html, noChange } from 'lit';
+import { type ChildPart, html, noChange } from 'lit';
 import {
   AsyncDirective,
-  DirectiveParameters,
+  type DirectiveParameters,
   directive,
 } from 'lit/async-directive.js';
 
@@ -52,7 +52,8 @@ class RequestRenderer<T> extends AsyncDirective {
 
     if (isNgContext && data.$implicit === this._previousData) {
       return false;
-    } else if (isNgContext) {
+    }
+    if (isNgContext) {
       this._previousData = data.$implicit as T;
     } else if (data === this._previousData) {
       return false;
@@ -79,9 +80,8 @@ class RequestRenderer<T> extends AsyncDirective {
     if (this._shouldUpdate() && this._eventTarget) {
       this._eventTarget.dispatchEvent(this._makeRequestEvent(this._data));
       return html``;
-    } else {
-      return noChange;
     }
+    return noChange;
   }
 
   protected override disconnected() {

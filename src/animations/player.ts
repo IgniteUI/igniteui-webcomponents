@@ -1,8 +1,8 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 
-import type { AnimationReferenceMetadata } from './types.js';
 import { isElement } from '../components/common/util.js';
+import type { AnimationReferenceMetadata } from './types.js';
 
 const listenerOptions = { once: true };
 
@@ -42,7 +42,7 @@ class AnimationController implements ReactiveController {
   public async play(animation: AnimationReferenceMetadata) {
     const { steps, options } = animation;
 
-    if (options?.duration === Infinity) {
+    if (options?.duration === Number.POSITIVE_INFINITY) {
       throw new Error('Promise-based animations must be finite.');
     }
 

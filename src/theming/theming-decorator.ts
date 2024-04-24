@@ -1,4 +1,4 @@
-import { ReactiveElement } from 'lit';
+import type { ReactiveElement } from 'lit';
 
 import { updateWhenThemeChanges } from './theming-controller.js';
 import type { Themes } from './types.js';

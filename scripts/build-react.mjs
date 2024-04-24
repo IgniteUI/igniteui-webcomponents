@@ -150,6 +150,5 @@ function makeEventsMeta(component) {
 }
 
 function fixImportPath(path) {
-  path = path.replace(/^src/, '').replace(/\.ts$/, '.js');
-  return `../..${path}`;
+  return `../..${path.replace(/^src/, '').replace(/\.ts$/, '.js')}`;
 }

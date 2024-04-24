@@ -8,7 +8,7 @@ export function disableStoryControls<T>(meta: Meta<T>): Partial<ArgTypes<T>> {
   return Object.fromEntries(
     Object.entries(structuredClone(meta.argTypes!)).map(([key, args]) => [
       key,
-      Object.assign(args as {}, { table: { disable: true } }),
+      Object.assign(args as object, { table: { disable: true } }),
     ])
   ) as unknown as Partial<ArgTypes<T>>;
 }

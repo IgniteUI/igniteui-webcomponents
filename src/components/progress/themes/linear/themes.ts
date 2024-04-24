@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/linear.progress.bootstrap.css.js';
 import { styles as fluentDark } from './dark/linear.progress.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as sharedLight } from './light/linear.progress.shared.css.js';
 import { styles as bootstrap } from './shared/linear.progress.bootstrap.css.js';
 import { styles as fluent } from './shared/linear.progress.fluent.css.js';
 import { styles as indigo } from './shared/linear.progress.indigo.css.js';
-import { Themes } from '../../../../theming/types.js';
 
 const light = {
   shared: css`

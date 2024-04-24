@@ -8,10 +8,10 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcSnackbarComponent from './snackbar.js';
 import type IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { finishAnimationsFor, getAnimationsFor } from '../common/utils.spec.js';
+import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
   before(() => {

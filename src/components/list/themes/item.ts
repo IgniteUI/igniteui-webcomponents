@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/item/list-item.bootstrap.css.js';
 import { styles as fluentDark } from './dark/item/list-item.fluent.css.js';
@@ -14,7 +15,6 @@ import { styles as materialLight } from './light/item/list-item.material.css.js'
 import { styles as bootstrap } from './shared/item/list-item.bootstrap.css.js';
 import { styles as fluent } from './shared/item/list-item.fluent.css.js';
 import { styles as indigo } from './shared/item/list-item.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`

@@ -6,7 +6,6 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
-import IgcAccordionComponent from './accordion.js';
 import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 import {
   altKey,
@@ -17,6 +16,7 @@ import {
   shiftKey,
 } from '../common/controllers/key-bindings.js';
 import { simulateKeyboard } from '../common/utils.spec.js';
+import IgcAccordionComponent from './accordion.js';
 
 describe('Accordion', () => {
   before(() => {
@@ -345,7 +345,7 @@ describe('Accordion', () => {
   });
 
   const createAccordionComponent = (
-    template = `<igc-accordion></igc-accordion>`
+    template = '<igc-accordion></igc-accordion>'
   ) => {
     return fixture<IgcAccordionComponent>(html`${unsafeStatic(template)}`);
   };

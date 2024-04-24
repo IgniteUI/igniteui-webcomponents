@@ -2,13 +2,13 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { styles } from './themes/avatar.base.css.js';
-import { styles as shared } from './themes/shared/avatar.common.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { styles } from './themes/avatar.base.css.js';
+import { styles as shared } from './themes/shared/avatar.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -30,7 +30,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcAvatarComponent);
   }
 
   private __internals: ElementInternals;
@@ -87,6 +87,10 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.hasError = false;
   }
 
+  protected handleError() {
+    this.hasError = true;
+  }
+
   protected override render() {
     return html`
       <div part="base">
@@ -99,7 +103,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
                 part="image"
                 alt=${ifDefined(this.alt)}
                 src=${ifDefined(this.src)}
-                @error=${() => (this.hasError = true)}
+                @error=${this.handleError}
               />
             `
           : nothing}
