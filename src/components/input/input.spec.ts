@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcInputComponent from './input.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed, simulateInput } from '../common/utils.spec.js';
+import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
   before(() => {
@@ -406,8 +406,8 @@ describe('Input component', () => {
   });
 
   describe('issue-1066', () => {
-    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
     const _expectedValidation = Symbol();
+    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
 
     function validateInput(event: CustomEvent<string>) {
       const element = event.target as TestBedInput;

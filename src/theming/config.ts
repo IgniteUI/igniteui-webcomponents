@@ -1,7 +1,10 @@
-import { CHANGE_THEME_EVENT, ChangeThemeEventDetail } from './theming-event.js';
+import { isDefined } from '../components/common/util.js';
+import {
+  CHANGE_THEME_EVENT,
+  type ChangeThemeEventDetail,
+} from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
 import { getAllCSSVariables } from './utils.js';
-import { isDefined } from '../components/common/util.js';
 
 let theme: Theme;
 let themeVariant: ThemeVariant;
@@ -34,12 +37,12 @@ export const getTheme: () => {
       ) || [];
 
     theme =
-      _theme && _theme[1] && isOfTypeTheme(_theme[1])
+      _theme?.[1] && isOfTypeTheme(_theme[1])
         ? (_theme[1] as Theme)
         : 'bootstrap';
 
     themeVariant =
-      _variant && _variant[1] && isOfTypeThemeVariant(_variant[1])
+      _variant?.[1] && isOfTypeThemeVariant(_variant[1])
         ? (_variant[1] as ThemeVariant)
         : 'light';
   }

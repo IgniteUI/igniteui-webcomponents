@@ -82,7 +82,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.true;
         expect(buttonGroup).dom.to.equal(
-          `<igc-button-group disabled></igc-button-group>`,
+          '<igc-button-group disabled></igc-button-group>',
           DIFF_OPTIONS
         );
 
@@ -101,7 +101,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.false;
         expect(buttonGroup).dom.to.equal(
-          `<igc-button-group></igc-button-group>`,
+          '<igc-button-group></igc-button-group>',
           DIFF_OPTIONS
         );
 
