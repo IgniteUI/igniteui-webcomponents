@@ -44,7 +44,7 @@ export default class IgcHighlightComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcHighlightComponent);
   }
 
   private highlight!: typeof Highlight;
