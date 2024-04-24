@@ -6,3 +6,7 @@ $theme: $bootstrap;
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig-checkbox');
 }
+
+[part~='control'] {
+    background: white;
+}
