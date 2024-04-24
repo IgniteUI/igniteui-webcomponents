@@ -61,6 +61,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: rem(14px);
     background: var-get($theme, 'track-off-color');
     border: rem(1px) solid var-get($theme, 'border-color');
+    z-index: 1;
 }
 
 [part~='control'][part~='checked'] {
