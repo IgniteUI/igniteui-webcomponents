@@ -43,18 +43,17 @@ export class MaskParser {
     options: MaskOptions = { format: 'CCCCCCCCCC', promptCharacter: '_' }
   ) {
     this.options = options;
+    this.parseMaskLiterals();
   }
 
   protected literals = new Map<number, string>();
   protected _escapedMask = '';
 
   public get literalPositions() {
-    this.getMaskLiterals();
     return Array.from(this.literals.keys());
   }
 
   public get escapedMask() {
-    this.getMaskLiterals();
     return this._escapedMask;
   }
 
@@ -64,7 +63,7 @@ export class MaskParser {
 
   public set mask(value: string) {
     this.options.format = value || this.options.format;
-    this.getMaskLiterals();
+    this.parseMaskLiterals();
   }
 
   public get prompt() {
@@ -77,7 +76,7 @@ export class MaskParser {
       : this.options.promptCharacter;
   }
 
-  protected getMaskLiterals() {
+  protected parseMaskLiterals() {
     this.literals.clear();
     this._escapedMask = this.mask;
 
@@ -88,10 +87,8 @@ export class MaskParser {
         this._escapedMask = this.replaceCharAt(this._escapedMask, j, '');
         this.literals.set(j, next);
         i++;
-      } else {
-        if (!FLAGS.has(current)) {
-          this.literals.set(j, current);
-        }
+      } else if (!FLAGS.has(current)) {
+        this.literals.set(j, current);
       }
     }
   }
@@ -111,18 +108,30 @@ export class MaskParser {
 
   protected getNonLiteralPositions(mask = '') {
     const positions = this.literalPositions;
-    return Array.from(mask)
-      .map((_, pos) => (!positions.includes(pos) ? pos : -1))
-      .filter((pos) => pos > -1);
+    const result = [];
+    const iter = Array.from(mask).entries();
+
+    for (const [pos, _] of iter) {
+      if (!positions.includes(pos)) {
+        result.push(pos);
+      }
+    }
+
+    return result;
   }
 
   protected getRequiredNonLiteralPositions(mask: string) {
     const positions = this.literalPositions;
-    return Array.from(mask)
-      .map((char, pos) =>
-        REQUIRED.has(char) && !positions.includes(pos) ? pos : -1
-      )
-      .filter((pos) => pos > -1);
+    const result = [];
+    const iter = Array.from(mask).entries();
+
+    for (const [pos, char] of iter) {
+      if (REQUIRED.has(char) && !positions.includes(pos)) {
+        result.push(pos);
+      }
+    }
+
+    return result;
   }
 
   public getPreviousNonLiteralPosition(start: number) {
@@ -141,13 +150,19 @@ export class MaskParser {
     return start;
   }
 
-  public replace(masked = '', value: string, start: number, end: number) {
+  public replace(
+    maskString: string,
+    value: string,
+    start: number,
+    end: number
+  ) {
+    let masked = maskString ?? '';
     const chars = Array.from(replaceIMENumbers(value));
     const positions = this.literalPositions;
-    end = Math.min(end, masked.length);
+    const final = Math.min(end, masked.length);
     let cursor = start;
 
-    for (let i = start; i < end || (chars.length && i < masked.length); i++) {
+    for (let i = start; i < final || (chars.length && i < masked.length); i++) {
       if (positions.includes(i)) {
         if (chars[0] === masked[i]) {
           cursor = i + 1;
@@ -176,13 +191,17 @@ export class MaskParser {
   }
 
   public parse(masked = '') {
-    return Array.from(masked).reduce((prev, char, pos) => {
-      return `${prev}${
-        !this.literalPositions.includes(pos) && !this.isPromptChar(char)
-          ? char
-          : ''
-      }`;
-    }, '');
+    const positions = this.literalPositions;
+    const result = [];
+    const iter = Array.from(masked).entries();
+
+    for (const [pos, char] of iter) {
+      !positions.includes(pos) && !this.isPromptChar(char)
+        ? result.push(char)
+        : result.push('');
+    }
+
+    return result.join('');
   }
 
   public isValidString(input = '') {
@@ -191,10 +210,10 @@ export class MaskParser {
     if (required.length > this.parse(input).length) {
       return false;
     }
+
     return required.every((pos) => {
       const char = input.charAt(pos);
       return (
-        char !== undefined &&
         this.validate(char, this._escapedMask.charAt(pos)) &&
         !this.isPromptChar(char)
       );
@@ -202,17 +221,17 @@ export class MaskParser {
   }
 
   public apply(input = '') {
-    const nonLiteralPositions = this.getNonLiteralPositions(this._escapedMask);
-    let output = new Array(this._escapedMask.length).fill(this.prompt).join('');
+    const output = new Array(this._escapedMask.length).fill(this.prompt);
 
-    this.literals.forEach((char, pos) => {
-      output = this.replaceCharAt(output, pos, char);
-    });
-
-    if (!input) {
-      return output;
+    for (const [pos, char] of this.literals.entries()) {
+      output[pos] = char;
     }
 
+    if (!input) {
+      return output.join('');
+    }
+
+    const nonLiteralPositions = this.getNonLiteralPositions(this._escapedMask);
     const values = nonLiteralPositions.map((pos, index) => {
       const char = input.charAt(index);
       return !this.validate(char, this._escapedMask.charAt(pos)) &&
@@ -225,11 +244,10 @@ export class MaskParser {
       values.splice(nonLiteralPositions.length);
     }
 
-    let pos = 0;
-    for (const each of values) {
-      output = this.replaceCharAt(output, nonLiteralPositions[pos++], each);
+    for (const [position, char] of values.entries()) {
+      output[nonLiteralPositions[position]] = char;
     }
 
-    return output;
+    return output.join('');
   }
 }

@@ -1,15 +1,15 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
+import type { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
+import { registerIcon } from '../src/components/icon/icon.registry.js';
+import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcDateTimeInputComponent);
 

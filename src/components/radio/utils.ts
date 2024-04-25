@@ -1,5 +1,5 @@
-import type IgcRadioComponent from './radio';
 import { isDefined, iterNodes } from '../common/util.js';
+import type IgcRadioComponent from './radio';
 
 type RadioQueryResult = {
   /** Radio components under the same group name */
