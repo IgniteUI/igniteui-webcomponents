@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 
 [part~='base'] {
-    padding: rem(8px);
+    padding: rem(10px) rem(8px);
     gap: rem(8px);
 }
 
