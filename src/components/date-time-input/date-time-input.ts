@@ -560,8 +560,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       '0'
     );
 
-    this._mask =
-      newMask.indexOf('tt') !== -1 ? newMask.replace(/tt/g, 'LL') : newMask;
+    this._mask = newMask.includes('tt')
+      ? newMask.replace(/tt/g, 'LL')
+      : newMask;
 
     this.parser.mask = this._mask;
     this.parser.prompt = this.prompt;
@@ -572,15 +573,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private parseDate(val: string) {
-    if (!val) {
-      return null;
-    }
-
-    return DateTimeUtil.parseValueFromMask(
-      val,
-      this._inputDateParts,
-      this.prompt
-    );
+    return val
+      ? DateTimeUtil.parseValueFromMask(val, this._inputDateParts, this.prompt)
+      : null;
   }
 
   private getMaskedValue(): string {
@@ -612,17 +607,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private isComplete(): boolean {
-    return this.maskedValue.indexOf(this.prompt) === -1;
+    return !this.maskedValue.includes(this.prompt);
   }
 
   private updateValue(): void {
     if (this.isComplete()) {
       const parsedDate = this.parseDate(this.maskedValue);
-      if (DateTimeUtil.isValidDate(parsedDate)) {
-        this.value = parsedDate;
-      } else {
-        this.value = null;
-      }
+      this.value = DateTimeUtil.isValidDate(parsedDate) ? parsedDate : null;
     } else {
       this.value = null;
     }
@@ -633,29 +624,25 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private getNewPosition(value: string, direction = 0): number {
-    const literals = this._inputDateParts.filter(
-      (p) => p.type === DateParts.Literal
-    );
-    let cursorPos = this.selection.start;
+    const cursorPos = this.selection.start;
 
     if (!direction) {
-      do {
-        cursorPos = cursorPos > 0 ? --cursorPos : cursorPos;
-      } while (!literals.some((l) => l.end === cursorPos) && cursorPos > 0);
-      return cursorPos;
+      // Last literal before the current cursor position or start of input value
+      const part = this._inputDateParts.findLast(
+        (part) => part.type === DateParts.Literal && part.end < cursorPos
+      );
+      return part?.end ?? 0;
     }
-    do {
-      cursorPos++;
-    } while (
-      !literals.some((l) => l.start === cursorPos) &&
-      cursorPos < value.length
+
+    // First literal after the current cursor position or end of input value
+    const part = this._inputDateParts.find(
+      (part) => part.type === DateParts.Literal && part.start > cursorPos
     );
-    return cursorPos;
+    return part?.start ?? value.length;
   }
 
   protected override async handleFocus() {
     this.focused = true;
-    this.updateMask();
     super.handleFocus();
 
     if (this.readOnly) {
