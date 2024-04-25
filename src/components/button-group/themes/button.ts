@@ -6,7 +6,6 @@ import { styles as bootstrap } from './shared/button/button.bootstrap.css.js';
 import { styles as fluent } from './shared/button/button.fluent.css.js';
 import { styles as indigo } from './shared/button/button.indigo.css.js';
 import { styles as material } from './shared/button/button.material.css.js';
-import type { Themes } from '../../../theming/types';
 
 const light = {
   bootstrap: css`
