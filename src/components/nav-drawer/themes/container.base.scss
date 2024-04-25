@@ -3,7 +3,7 @@
 
 :host {
     --menu-full-width: #{rem(240px)};
-    --menu-mini-width: #{rem(56px)};
+    --menu-mini-width: #{rem(40px)};
 
     display: flex;
     flex-shrink: 0;
@@ -24,7 +24,7 @@
     }
 
     [part~='mini'] {
-        width: var(--menu-mini-width);
+        min-width: var(--menu-mini-width);
     }
 
     [part='main'] {
