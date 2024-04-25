@@ -182,9 +182,11 @@ export abstract class IgcProgressBaseComponent extends LitElement {
         asPercent(delta * (end - start) + start, this.max)
       );
 
-      delta < 1
-        ? (this._ticker = requestAnimationFrame(tick))
-        : cancelAnimationFrame(this._ticker);
+      if (delta < 1) {
+        this._ticker = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(this._ticker);
+      }
     };
 
     requestAnimationFrame(tick);

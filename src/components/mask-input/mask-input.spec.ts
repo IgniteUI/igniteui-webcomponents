@@ -2,11 +2,11 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
 
-import IgcMaskInputComponent from './mask-input.js';
-import { MaskParser } from './mask-parser.js';
 import { defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 import IgcFormComponent from '../form/form.js';
+import IgcMaskInputComponent from './mask-input.js';
+import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
@@ -478,7 +478,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       masked.setSelectionRange(4, 4);
-      input().value = masked.value + 'zz';
+      input().value = `${masked.value}zz`;
       fireInputEvent(input(), 'insertText');
       await elementUpdated(masked);
 
@@ -560,7 +560,7 @@ describe('Masked input', () => {
       syncParser();
 
       input().value = 'xx-basic-yy';
-      input().setSelectionRange(3, 3 + `basic`.length);
+      input().setSelectionRange(3, 3 + 'basic'.length);
       fireInputEvent(input(), 'insertFromDrop');
       await elementUpdated(masked);
 

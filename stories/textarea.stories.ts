@@ -2,17 +2,17 @@ import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   IgcIconComponent,
   IgcTextareaComponent,
   defineComponents,
 } from '../src/index.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcTextareaComponent, IgcIconComponent);
 registerIconFromText('source-code', sourceCode.value);

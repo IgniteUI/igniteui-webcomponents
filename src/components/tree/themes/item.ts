@@ -1,9 +1,9 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Share Styles
 import { styles as indigo } from './shared/item.indigo.css.js';
 import { styles as material } from './shared/item.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   material: css`
