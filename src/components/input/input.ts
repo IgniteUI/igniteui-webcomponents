@@ -145,11 +145,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /**
    * The input mode attribute of the control.
-   * @attr
+   * @prop
    *
-   * @deprecated since v4.9.0 - Use `inputMode` property instead.
+   * @deprecated since v4.9.0. Use `inputMode` property instead.
    */
-  @property()
+  @property({ attribute: false })
   public set inputmode(value: string) {
     this.inputMode = value;
   }
