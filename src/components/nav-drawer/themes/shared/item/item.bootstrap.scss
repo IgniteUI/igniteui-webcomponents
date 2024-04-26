@@ -3,6 +3,7 @@
 [part~='base'] {
     padding: rem(8px) rem(16px);
     gap: rem(8px);
+    min-height: rem(40px);
 }
 
 [part~='base'][part~='mini'] {

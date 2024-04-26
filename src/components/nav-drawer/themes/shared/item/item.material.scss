@@ -7,6 +7,7 @@ $theme: $material;
     padding: rem(12px) rem(8px);
     gap: rem(32px);
     background: transparent;
+    min-height: rem(48px);
 
     &::after {
         content: '';
