@@ -79,6 +79,7 @@ $outlined-theme: $material-outlined;
     &:hover {
         color: var-get($flat-theme, 'focus-hover-foreground');
         background: var-get($flat-theme, 'focus-hover-background');
+
         ::slotted(igc-icon) {
             color: var-get($flat-theme, 'icon-color-hover');
         }
@@ -126,6 +127,7 @@ $outlined-theme: $material-outlined;
     &:hover {
         color: var-get($outlined-theme, 'focus-hover-foreground');
         background: var-get($outlined-theme, 'focus-hover-background');
+
         ::slotted(igc-icon) {
             color: var-get($outlined-theme, 'icon-color-hover');
         }
