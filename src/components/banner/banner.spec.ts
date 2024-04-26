@@ -104,14 +104,14 @@ describe('Banner', () => {
       expect(actions).not.to.be.null;
 
       expect(actions?.children[0]).dom.to.equal(
-        `<igc-button>OK 1</igc-button>`,
+        '<igc-button>OK 1</igc-button>',
         {
           ignoreAttributes: [...BUTTON_DIFF_OPTIONS, 'type'],
         }
       );
 
       expect(actions?.children[1]).dom.to.equal(
-        `<igc-button>View log</igc-button>`,
+        '<igc-button>View log</igc-button>',
         {
           ignoreAttributes: [...BUTTON_DIFF_OPTIONS, 'type'],
         }
@@ -128,7 +128,7 @@ describe('Banner', () => {
 
       expect(banner.open).to.be.true;
       expect(banner).dom.to.equal(
-        `<igc-banner open>You are currently offline.</igc-banner>`,
+        '<igc-banner open>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
     });
@@ -140,7 +140,7 @@ describe('Banner', () => {
       await elementUpdated(banner);
 
       expect(banner).dom.to.equal(
-        `<igc-banner open>You are currently offline.</igc-banner>`,
+        '<igc-banner open>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
 
@@ -149,7 +149,7 @@ describe('Banner', () => {
 
       expect(banner.open).to.be.false;
       expect(banner).dom.to.equal(
-        `<igc-banner>You are currently offline.</igc-banner>`,
+        '<igc-banner>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
     });
@@ -162,7 +162,7 @@ describe('Banner', () => {
 
       expect(banner.open).to.be.true;
       expect(banner).dom.to.equal(
-        `<igc-banner open>You are currently offline.</igc-banner>`,
+        '<igc-banner open>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
 
@@ -171,7 +171,7 @@ describe('Banner', () => {
 
       expect(banner.open).to.be.false;
       expect(banner).dom.to.equal(
-        `<igc-banner>You are currently offline.</igc-banner>`,
+        '<igc-banner>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
     });

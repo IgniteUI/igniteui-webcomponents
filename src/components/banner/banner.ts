@@ -1,14 +1,14 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/banner.base.css.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { styles } from './themes/banner.base.css.js';
 
 export interface IgcBannerComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -38,7 +38,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   public static register() {
-    registerComponent(this, IgcButtonComponent);
+    registerComponent(IgcBannerComponent, IgcButtonComponent);
   }
 
   private _internals: ElementInternals;
