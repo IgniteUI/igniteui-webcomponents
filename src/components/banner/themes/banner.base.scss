@@ -1,0 +1,11 @@
+[part~='base'] {
+    overflow: hidden;
+}
+
+:host(:not([open])) [part~='base'] {
+    height: 0;
+}
+
+:host([open]) [part~='base'] {
+    height: auto;
+}

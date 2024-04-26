@@ -3,6 +3,7 @@ import type { IgniteComponent } from './register.js';
 import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcAvatarComponent from '../../avatar/avatar.js';
 import IgcBadgeComponent from '../../badge/badge.js';
+import IgcBannerComponent from '../../banner/banner.js';
 import IgcButtonComponent from '../../button/button.js';
 import IgcIconButtonComponent from '../../button/icon-button.js';
 import IgcButtonGroupComponent from '../../button-group/button-group.js';
@@ -65,6 +66,7 @@ const allComponents: IgniteComponent[] = [
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,
+  IgcBannerComponent,
   IgcButtonComponent,
   IgcIconButtonComponent,
   IgcToggleButtonComponent,
