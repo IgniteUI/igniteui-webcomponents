@@ -36,7 +36,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='indicator'] {
-    stroke: var-get($theme, 'tick-color');
     transform: scale(.8);
 }
 

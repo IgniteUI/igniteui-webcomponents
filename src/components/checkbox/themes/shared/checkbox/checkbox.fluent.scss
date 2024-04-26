@@ -33,7 +33,6 @@ $disabled-color: var-get($theme, 'disabled-color');
 }
 
 [part~='indicator'] {
-    stroke: var-get($theme, 'tick-color');
     stroke-width: 1.5;
     transform: scale(.8);
 }
