@@ -12,7 +12,6 @@ $group-item-border-thickness: rem(1px);
         border-width: $group-item-border-thickness;
         padding-inline: pad-inline(rem(8px), rem(10px), rem(12px));
         padding-block: pad-block(rem(2px), rem(4px), rem(7px));
-        min-width: var(--button-min-width);
 
         &::before {
             position: absolute;

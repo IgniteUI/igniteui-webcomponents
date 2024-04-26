@@ -22,12 +22,12 @@ $outlined-theme: $material-outlined;
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
 }
 
-[part='base'] {
+[part~='base'] {
     transition: all .1s ease-in-out;
 }
 
-:host(:not([disabled])[variant='outlined']) [part='base'],
-:host(:not(:disabled)[variant='outlined']) [part='base'] {
+:host(:not([disabled])[variant='outlined']) [part~='base'],
+:host(:not(:disabled)[variant='outlined']) [part~='base'] {
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
@@ -41,8 +41,8 @@ $outlined-theme: $material-outlined;
     }
 }
 
-:host(:not([disabled])[variant='contained']) [part='base'],
-:host(:not(:disabled)[variant='contained']) [part='base'] {
+:host(:not([disabled])[variant='contained']) [part~='base'],
+:host(:not(:disabled)[variant='contained']) [part~='base'] {
     box-shadow: var-get($contained-theme, 'resting-elevation');
 
     &:hover {
@@ -62,8 +62,8 @@ $outlined-theme: $material-outlined;
     }
 }
 
-:host(:not([disabled])[variant='fab']) [part='base'],
-:host(:not(:disabled)[variant='fab']) [part='base'] {
+:host(:not([disabled])[variant='fab']) [part~='base'],
+:host(:not(:disabled)[variant='fab']) [part~='base'] {
     box-shadow: var-get($fab-theme, 'resting-elevation');
 
     &:hover {

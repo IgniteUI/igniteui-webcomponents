@@ -23,6 +23,7 @@ $theme: $material;
         --igx-icon-size: #{$icon-size};
 
         min-height: $material-flat-btn-size;
+        min-width: var(--button-min-width);
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
         padding-inline: rem(16px);

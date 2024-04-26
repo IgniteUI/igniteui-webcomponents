@@ -6,7 +6,7 @@ $contained-theme: $indigo-contained;
 $fab-theme: $indigo-fab;
 $outlined-theme: $indigo-outlined;
 
-:host [part='base']{
+:host [part~='base']{
     min-width: rem(28px);
     padding: 0 pad(10px, 16px, 24px);
     
@@ -33,7 +33,7 @@ $outlined-theme: $indigo-outlined;
 :host([variant='fab']) {
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
 
-    [part='base'] {
+    [part~='base'] {
         padding: 0 pad(rem(6px), rem(8px), rem(10px));
     }
 }
@@ -41,13 +41,13 @@ $outlined-theme: $indigo-outlined;
 :host([variant='flat']),
 :host([variant='contained']),
 :host([variant='outlined']) {
-    [part='base'] {
+    [part~='base'] {
         border-width: rem(2px);
     }
 }
 
-:host(:not([disabled])[variant='flat']) [part='base'],
-:host(:not(:disabled)[variant='flat']) [part='base'] {
+:host(:not([disabled])[variant='flat']) [part~='base'],
+:host(:not(:disabled)[variant='flat']) [part~='base'] {
     &:focus-visible {
         box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
     }
@@ -59,8 +59,8 @@ $outlined-theme: $indigo-outlined;
     }
 }
 
-:host(:not([disabled])[variant='outlined']) [part='base'],
-:host(:not(:disabled)[variant='outlined']) [part='base'] {
+:host(:not([disabled])[variant='outlined']) [part~='base'],
+:host(:not(:disabled)[variant='outlined']) [part~='base'] {
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
@@ -87,8 +87,8 @@ $outlined-theme: $indigo-outlined;
     }
 }
 
-:host(:not([disabled])[variant='contained']) [part='base'],
-:host(:not(:disabled)[variant='contained']) [part='base'] {
+:host(:not([disabled])[variant='contained']) [part~='base'],
+:host(:not(:disabled)[variant='contained']) [part~='base'] {
     &:hover {
         border-color: var-get($contained-theme, 'hover-border-color');
     }
@@ -115,8 +115,8 @@ $outlined-theme: $indigo-outlined;
     }
 }
 
-:host(:not([disabled])[variant='fab']) [part='base'],
-:host(:not(:disabled)[variant='fab']) [part='base'] {
+:host(:not([disabled])[variant='fab']) [part~='base'],
+:host(:not(:disabled)[variant='fab']) [part~='base'] {
     border-color: var-get($fab-theme, 'border-color');
     min-width: var(--size);
     min-height: var(--size);
@@ -147,8 +147,8 @@ $outlined-theme: $indigo-outlined;
     }
 }
 
-:host([disabled][variant='outlined']) [part='base'],
-:host(:disabled[variant='outlined']) [part='base'] {
+:host([disabled][variant='outlined']) [part~='base'],
+:host(:disabled[variant='outlined']) [part~='base'] {
     border-color: var-get($outlined-theme, 'disabled-border-color');
     border-width: rem(2px);
 }
