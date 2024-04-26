@@ -9,8 +9,8 @@ const baseOptions: KeyframeAnimationOptions = {
 const slideInHor = (options = baseOptions) =>
   animation(
     [
-      { transform: `translateX(100%)`, opacity: 0 },
-      { transform: `translateX(0)`, opacity: 1 },
+      { transform: 'translateX(100%)', opacity: 0 },
+      { transform: 'translateX(0)', opacity: 1 },
     ],
     options
   );
@@ -18,8 +18,8 @@ const slideInHor = (options = baseOptions) =>
 const slideOutHor = (options = baseOptions) =>
   animation(
     [
-      { transform: `translateX(0)`, opacity: 1 },
-      { transform: `translateX(-100%)`, opacity: 0 },
+      { transform: 'translateX(0)', opacity: 1 },
+      { transform: 'translateX(-100%)', opacity: 0 },
     ],
     options
   );

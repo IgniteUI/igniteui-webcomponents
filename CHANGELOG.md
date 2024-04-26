@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   making the property obsolete.
 - Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
 
+### Fixed
+- Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
+
 ## [4.8.2] - 2024-04-15
 ### Fixed
 - Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)

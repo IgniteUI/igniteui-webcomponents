@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/avatar.bootstrap.css.js';
 import { styles as fluentDark } from './dark/avatar.fluent.css.js';
@@ -15,7 +16,6 @@ import { styles as shared } from './light/avatar.shared.css.js';
 import { styles as bootstrap } from './shared/avatar.bootstrap.css.js';
 import { styles as fluent } from './shared/avatar.fluent.css.js';
 import { styles as indigo } from './shared/avatar.indigo.css.js';
-import type { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`
