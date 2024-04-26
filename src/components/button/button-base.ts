@@ -125,6 +125,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   }
 
   protected handleClick() {
+    this.focused = false;
     switch (this.type) {
       case 'submit':
         return this.form?.requestSubmit();
@@ -133,11 +134,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       default:
         return;
     }
-  }
-
-  protected handleMouseDown(event: PointerEvent) {
-    event.preventDefault();
-    this.focused = false;
   }
 
   protected handleKeyUp() {
@@ -164,7 +160,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         @click=${this.handleClick}
         @focus=${this.handleFocus}
         @blur=${this.handleBlur}
-        @pointerdown=${this.handleMouseDown}
       >
         ${this.renderContent()}
       </button>
@@ -187,7 +182,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         rel=${ifDefined(this.rel)}
         @focus=${this.disabled ? nothing : this.handleFocus}
         @blur=${this.disabled ? nothing : this.handleBlur}
-        @pointerdown=${this.disabled ? nothing : this.handleMouseDown}
       >
         ${this.renderContent()}
       </a>

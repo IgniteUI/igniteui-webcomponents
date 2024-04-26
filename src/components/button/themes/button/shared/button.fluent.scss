@@ -33,8 +33,10 @@ $outlined-btn-indent: rem(2px);
 [part~='base'] {
     padding: 0 pad(8px, 12px, 16px);
     transition: all .1s ease-in-out;
+}
 
-    &:focus-visible::after {
+[part='base focused'] {
+    &::after {
         content: '';
         position: absolute;
         inset-block-start: $btn-indent;
@@ -45,12 +47,10 @@ $outlined-btn-indent: rem(2px);
     }
 }
 
-:host(:not([disabled])[variant='flat']) [part~='base'],
-:host(:not(:disabled)[variant='flat']) [part~='base'] {
-    &:focus-visible {
-        &::after {
-            box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-visible-border-color');
-        }
+:host(:not([disabled])[variant='flat']) [part='base focused'],
+:host(:not(:disabled)[variant='flat']) [part='base focused'] {
+    &::after {
+        box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-visible-border-color');
     }
 }
 
@@ -61,40 +61,37 @@ $outlined-btn-indent: rem(2px);
     &:active {
         border-color: var-get($outlined-theme, 'active-border-color');
     }
+}
 
-    &:focus-visible {
-        &::after {
-            inset-block-start: $outlined-btn-indent;
-            inset-inline-start: $outlined-btn-indent;
-            width: calc(100% - (#{$outlined-btn-indent} * 2));
-            height: calc(100% - (#{$outlined-btn-indent} * 2));
-            box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
-        }
+:host(:not([disabled])[variant='outlined']) [part='base focused'],
+:host(:not(:disabled)[variant='outlined']) [part='base focused'] {
+    &::after {
+        inset-block-start: $outlined-btn-indent;
+        inset-inline-start: $outlined-btn-indent;
+        width: calc(100% - (#{$outlined-btn-indent} * 2));
+        height: calc(100% - (#{$outlined-btn-indent} * 2));
+        box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-visible-border-color');
     }
 }
 
-:host(:not([disabled])[variant='contained']) [part~='base'],
-:host(:not(:disabled)[variant='contained']) [part~='base'] {
-    &:focus-visible {
-        color: var-get($contained-theme, 'focus-visible-foreground');
-        background: var-get($contained-theme, 'focus-visible-background');
-        position: relative;
+:host(:not([disabled])[variant='contained']) [part='base focused'],
+:host(:not(:disabled)[variant='contained']) [part='base focused'] {
+    color: var-get($contained-theme, 'focus-visible-foreground');
+    background: var-get($contained-theme, 'focus-visible-background');
+    position: relative;
 
-        &::after {
-            box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-border-color');
-        }
+    &::after {
+        box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-border-color');
     }
 }
 
-:host(:not([disabled])[variant='fab']) [part~='base'],
-:host(:not(:disabled)[variant='fab']) [part~='base'] {
-    &:focus-visible {
-        color: var-get($fab-theme, 'focus-visible-foreground');
-        background: var-get($fab-theme, 'focus-visible-background');
-        position: relative;
+:host(:not([disabled])[variant='fab']) [part='base focused'],
+:host(:not(:disabled)[variant='fab']) [part='base focused'] {
+    color: var-get($fab-theme, 'focus-visible-foreground');
+    background: var-get($fab-theme, 'focus-visible-background');
+    position: relative;
 
-        &::after {
-            box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-border-color');
-        }
+    &::after {
+        box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-border-color');
     }
 }
