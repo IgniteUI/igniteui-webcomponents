@@ -6,10 +6,10 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcCircularGradientComponent from './circular-gradient.js';
-import IgcCircularProgressComponent from './circular-progress.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { getAnimationsFor } from '../common/utils.spec.js';
+import IgcCircularGradientComponent from './circular-gradient.js';
+import IgcCircularProgressComponent from './circular-progress.js';
 
 function createBasicProgress() {
   return html`<igc-circular-progress></igc-circular-progress>`;
@@ -253,12 +253,11 @@ describe('Circular progress component', () => {
   });
 
   describe('Slots', () => {
-    beforeEach(
-      async () =>
-        (progress = await fixture<IgcCircularProgressComponent>(
-          createSlottedNonAnimatingProgress()
-        ))
-    );
+    beforeEach(async () => {
+      progress = await fixture<IgcCircularProgressComponent>(
+        createSlottedNonAnimatingProgress()
+      );
+    });
 
     it('default slot projection', async () => {
       expect(getLabelSlotNodes()).not.to.be.empty;
@@ -276,12 +275,11 @@ describe('Circular progress component', () => {
   });
 
   describe('Gradients slot', () => {
-    beforeEach(
-      async () =>
-        (progress = await fixture<IgcCircularProgressComponent>(
-          createSlottedGradientProgress()
-        ))
-    );
+    beforeEach(async () => {
+      progress = await fixture<IgcCircularProgressComponent>(
+        createSlottedGradientProgress()
+      );
+    });
 
     it('reflects slotted gradient children', async () => {
       const gradients = Array.from(

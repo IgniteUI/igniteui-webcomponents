@@ -1,6 +1,7 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import { defineComponents } from '../../index.js';
 import IgcStepComponent from './step.js';
 import {
   PARTS,
@@ -11,7 +12,6 @@ import {
   stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
 import IgcStepperComponent from './stepper.js';
-import { defineComponents } from '../../index.js';
 
 describe('Stepper', () => {
   before(() => {
@@ -99,7 +99,9 @@ describe('Stepper', () => {
 
     it('Should do nothing when all steps are not accessible and next/prev methods are called', async () => {
       stepper.steps[1].active = true;
-      stepper.steps.forEach((step) => (step.disabled = true));
+      stepper.steps.forEach((step) => {
+        step.disabled = true;
+      });
       await elementUpdated(stepper);
 
       stepper.next();
