@@ -11,6 +11,7 @@ $theme: $bootstrap;
     height: var(--size);
     min-width: var(--size);
     transition: all .15s ease-in-out;
+    background: var-get($theme, 'empty-fill-color');
 
     // Removing visual artifacts, to understand the problem see
     // https://stackoverflow.com/questions/69658462/inset-box-shadow-visual-artifacts-in-google-chrome
@@ -30,7 +31,6 @@ $theme: $bootstrap;
     stroke-width: 3;
     transform: scale(.7);
     transition: none;
-    stroke: var-get($theme, 'tick-color');
 }
 
 [part~='label'] {
@@ -98,7 +98,7 @@ $theme: $bootstrap;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part='indicator checked'] {
+    [part~='indicator'] {
         stroke: black;
     }
 
@@ -127,9 +127,9 @@ $theme: $bootstrap;
 :host(:hover:not(:disabled)[invalid]),
 :host(:hover:not([disabled])[invalid][indeterminate]),
 :host(:hover:not(:disabled)[invalid][indeterminate]) {
-    [part~='control'],
-    [part='control checked'] {
-        &::after {
+        [part~='control'],
+        [part='control checked'] {
+            &::after {
             box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'error-color-hover');
         }
     }
@@ -146,6 +146,15 @@ $theme: $bootstrap;
     [part~='control'] {
         &::after {
             background: var-get($theme, 'error-color');
+        }
+    }
+}
+
+:host(:hover:not([disabled])[invalid][indeterminate]),
+:host(:hover:not(:disabled)[invalid][indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }
