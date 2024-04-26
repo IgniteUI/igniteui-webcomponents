@@ -1,0 +1,4 @@
+{
+  "lit-plugin.strict": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

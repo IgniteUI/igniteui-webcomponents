@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/switch/switch.bootstrap.css.js';
 import { styles as fluentDark } from './dark/switch/switch.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as bootstrap } from './shared/switch/switch.bootstrap.css.js';
 import { styles as fluent } from './shared/switch/switch.fluent.css.js';
 import { styles as indigo } from './shared/switch/switch.indigo.css.js';
 import { styles as material } from './shared/switch/switch.material.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

@@ -1,8 +1,8 @@
-import { LitElement } from 'lit';
+import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import type { Constructor } from './constructor';
 import type { Validator } from '../validators.js';
+import type { Constructor } from './constructor';
 
 export declare class FormAssociatedElementInterface {
   public static readonly formAssociated: boolean;

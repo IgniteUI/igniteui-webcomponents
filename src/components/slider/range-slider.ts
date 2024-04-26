@@ -3,12 +3,12 @@ import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { IgcSliderBaseComponent } from './slider-base.js';
-import IgcSliderLabelComponent from './slider-label.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, asPercent } from '../common/util.js';
+import { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderLabelComponent from './slider-label.js';
 
 /* blazorSuppress */
 export interface IgcRangeSliderValue {
@@ -58,13 +58,13 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcSliderLabelComponent);
+    registerComponent(IgcRangeSliderComponent, IgcSliderLabelComponent);
   }
 
-  @query(`#thumbFrom`)
+  @query('#thumbFrom')
   private thumbFrom!: HTMLElement;
 
-  @query(`#thumbTo`)
+  @query('#thumbTo')
   private thumbTo!: HTMLElement;
 
   private _lower = 0;
@@ -172,27 +172,31 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
     if (fromOffset === toOffset && toOffset < xPointer) {
       return this.thumbTo;
-    } else if (fromOffset === toOffset && toOffset > xPointer) {
-      return this.thumbFrom;
-    } else if (match === fromOffset) {
-      return this.thumbFrom;
-    } else {
-      return this.thumbTo;
     }
+    if (fromOffset === toOffset && toOffset > xPointer) {
+      return this.thumbFrom;
+    }
+    if (match === fromOffset) {
+      return this.thumbFrom;
+    }
+    return this.thumbTo;
   }
 
   protected override updateValue(increment: number) {
     const oldValue = this.activeValue;
-    const isThumbFromActive = this.activeThumb === this.thumbFrom;
     let [lower, upper] = [this.lower, this.upper];
 
-    isThumbFromActive ? (lower += increment) : (upper += increment);
+    if (this.activeThumb === this.thumbFrom) {
+      lower += increment;
+    } else {
+      upper += increment;
+    }
 
     if (lower >= upper) {
       [this.lower, this.upper] = [upper, lower];
       this.toggleActiveThumb();
     } else {
-      isThumbFromActive ? (this.lower = lower) : (this.upper = upper);
+      [this.lower, this.upper] = [lower, upper];
     }
 
     if (oldValue === this.activeValue) {

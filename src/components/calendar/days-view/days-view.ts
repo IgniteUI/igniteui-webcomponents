@@ -8,18 +8,18 @@ import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../../common/i18n/calendar.resources.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
 } from '../common/calendar-base.js';
 import {
   DateRangeType,
-  ICalendarDate,
+  type ICalendarDate,
   TimeDeltaInterval,
   isDateInRanges,
 } from '../common/calendar.model.js';
@@ -58,7 +58,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDaysViewComponent);
   }
 
   private labelFormatter!: Intl.DateTimeFormat;
@@ -230,7 +230,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     const dates = this.values;
     const min = dates[0];
-    let max;
+    let max: Date;
 
     if (dates.length === 1) {
       if (!this.rangePreviewDate) {
@@ -297,16 +297,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           (element) => element.getTime() === date.date.getTime()
         );
         return !!currentDate;
-      } else {
-        return false;
       }
-    } else {
-      return this.isWithinRange(
-        date.date,
-        this.values[0],
-        this.values[this.values.length - 1]
-      );
+      return false;
     }
+    return this.isWithinRange(
+      date.date,
+      this.values[0],
+      this.values[this.values.length - 1]
+    );
   }
 
   private isToday(day: ICalendarDate): boolean {
@@ -383,11 +381,16 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private generateDateRange(start: Date, end: Date): Date[] {
     const result = [];
-    start = getDateOnly(start);
-    end = getDateOnly(end);
-    while (start.getTime() < end.getTime()) {
-      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Day, 1);
-      result.push(start);
+    let startDate = getDateOnly(start);
+    const endDate = getDateOnly(end);
+
+    while (startDate.getTime() < endDate.getTime()) {
+      startDate = this.calendarModel.timedelta(
+        startDate,
+        TimeDeltaInterval.Day,
+        1
+      );
+      result.push(startDate);
     }
 
     return result;

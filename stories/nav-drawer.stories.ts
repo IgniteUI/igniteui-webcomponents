@@ -1,10 +1,10 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
   IgcIconComponent,
   IgcNavDrawerComponent,
-  IgcNavDrawerItemComponent,
+  type IgcNavDrawerItemComponent,
   defineComponents,
   registerIcon,
 } from '../src/index.js';
@@ -88,7 +88,9 @@ const handleClick = (ev: PointerEvent) => {
       navDrawer.querySelectorAll('igc-nav-drawer-item')
     ).filter((item) => item !== drawerItem);
 
-    items.forEach((item) => (item.active = false));
+    items.forEach((item) => {
+      item.active = false;
+    });
   }
 };
 

@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import IgcBadgeComponent from './badge.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcBadgeComponent from './badge.js';
 
 describe('Badge', () => {
   before(() => {

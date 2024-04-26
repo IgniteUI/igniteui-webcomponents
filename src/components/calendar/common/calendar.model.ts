@@ -5,35 +5,36 @@ export interface DateRangeDescriptor {
 }
 
 export enum DateRangeType {
-  After,
-  Before,
-  Between,
-  Specific,
-  Weekdays,
-  Weekends,
+  After = 0,
+  Before = 1,
+  Between = 2,
+  Specific = 3,
+  Weekdays = 4,
+  Weekends = 5,
 }
 
 /**
  * @hidden
  */
 export enum TimeDeltaInterval {
-  Second,
-  Minute,
-  Hour,
-  Day,
-  Week,
-  Month,
-  Quarter,
-  Year,
+  Second = 0,
+  Minute = 1,
+  Hour = 2,
+  Day = 3,
+  Week = 4,
+  Month = 5,
+  Quarter = 6,
+  Year = 7,
 }
 
 const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const FEBRUARY = 1;
 
-export const range = (start = 0, stop: number, step = 1) => {
+export const range = (start: number, stop: number, step = 1) => {
   const res = [];
-  const cur = stop === undefined ? 0 : start;
-  const max = stop === undefined ? start : stop;
+  const beginning = start ?? 0;
+  const cur = stop === undefined ? 0 : beginning;
+  const max = stop === undefined ? beginning : stop;
   for (let i = cur; step < 0 ? i > max : i < max; i += step) {
     res.push(i);
   }
@@ -77,8 +78,12 @@ export const isDateInRanges = (
   date: Date,
   ranges: DateRangeDescriptor[]
 ): boolean => {
-  date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const dateInMs = date.getTime();
+  const searchedDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const searchedDateInMs = searchedDate.getTime();
 
   if (!ranges) {
     return false;
@@ -92,13 +97,13 @@ export const isDateInRanges = (
       : [];
     switch (descriptor.type) {
       case DateRangeType.After:
-        if (dateInMs > dRanges[0].getTime()) {
+        if (searchedDateInMs > dRanges[0].getTime()) {
           return true;
         }
 
         break;
       case DateRangeType.Before:
-        if (dateInMs < dRanges[0].getTime()) {
+        if (searchedDateInMs < dRanges[0].getTime()) {
           return true;
         }
 
@@ -107,7 +112,7 @@ export const isDateInRanges = (
         const dRange = dRanges.map((d) => d.getTime());
         const min = Math.min(dRange[0], dRange[1]);
         const max = Math.max(dRange[0], dRange[1]);
-        if (dateInMs >= min && dateInMs <= max) {
+        if (searchedDateInMs >= min && searchedDateInMs <= max) {
           return true;
         }
 
@@ -116,7 +121,7 @@ export const isDateInRanges = (
       case DateRangeType.Specific: {
         const datesInMs = dRanges.map((d) => d.getTime());
         for (const specificDateInMs of datesInMs) {
-          if (dateInMs === specificDateInMs) {
+          if (searchedDateInMs === specificDateInMs) {
             return true;
           }
         }
@@ -124,7 +129,7 @@ export const isDateInRanges = (
         break;
       }
       case DateRangeType.Weekdays: {
-        const day = date.getDay();
+        const day = searchedDate.getDay();
         if (day % 6 !== 0) {
           return true;
         }
@@ -132,7 +137,7 @@ export const isDateInRanges = (
         break;
       }
       case DateRangeType.Weekends: {
-        const weekday = date.getDay();
+        const weekday = searchedDate.getDay();
         if (weekday % 6 === 0) {
           return true;
         }

@@ -8,11 +8,11 @@ import {
 import { spy } from 'sinon';
 
 import {
-  IgcDateTimeInputComponent,
-  IgcFormComponent,
-  IgcMaskInputComponent,
-  IgcRadioComponent,
-  IgcRatingComponent,
+  type IgcDateTimeInputComponent,
+  type IgcFormComponent,
+  type IgcMaskInputComponent,
+  type IgcRadioComponent,
+  type IgcRatingComponent,
   defineAllComponents,
 } from '../../index.js';
 
@@ -39,7 +39,7 @@ describe('Form', () => {
   it('renders slot successfully', async () => {
     const el = await fixture<IgcFormComponent>(html`<igc-form></igc-form>`);
 
-    expect(el).shadowDom.to.equal(`<slot></slot>`);
+    expect(el).shadowDom.to.equal('<slot></slot>');
   });
 
   it('displays the elements defined in the slot', async () => {
@@ -61,7 +61,7 @@ describe('Form', () => {
     el.novalidate = true;
     expect(el.novalidate).to.be.true;
     await elementUpdated(el);
-    expect(el).dom.to.equal(`<igc-form novalidate></igc-form>`);
+    expect(el).dom.to.equal('<igc-form novalidate></igc-form>');
   });
 
   it('should emit igcSubmit event when the form is submitted', async () => {
@@ -182,7 +182,7 @@ describe('Form', () => {
     expect(spyCall).to.be.null;
   });
 
-  const createEmptyFormComponent = (template = `<igc-form></igc-form>`) => {
+  const createEmptyFormComponent = (template = '<igc-form></igc-form>') => {
     return fixture<IgcFormComponent>(html`${unsafeStatic(template)}`);
   };
 

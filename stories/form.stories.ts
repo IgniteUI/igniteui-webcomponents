@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import { DatePart } from '../src/components/date-time-input/date-util.js';
@@ -307,12 +307,12 @@ The cat was playing<br> in the garden.</textarea
 
 export const Basic: Story = Template.bind({});
 
-document.addEventListener('igcSubmit', function (event) {
+document.addEventListener('igcSubmit', (event) => {
   const customEvent = event as CustomEvent<FormData>;
   const formData = customEvent.detail;
   console.log('Form data:');
   for (const pair of formData.entries()) {
-    console.log(pair[0] + ', ' + pair[1]);
+    console.log(`${pair[0]}, ${pair[1]}`);
   }
   console.log('');
 });

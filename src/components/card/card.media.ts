@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/card.media.base.css.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/card.media.base.css.js';
 
 /** A container for card's media - could be an image, gif, video
  * @element igc-card-media
@@ -14,7 +14,7 @@ export default class IgcCardMediaComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCardMediaComponent);
   }
 
   protected override render() {
