@@ -253,7 +253,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public wrap: 'hard' | 'soft' | 'off' = 'soft';
 
   /**
-   * Consider whether to permit user input to exceed the `maxLength` when it is specified.
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property
+   * when it is defined.
    *
    * @attr validate-only
    */

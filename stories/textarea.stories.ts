@@ -133,7 +133,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     validateOnly: {
       type: 'boolean',
       description:
-        'Consider whether to permit user input to exceed the `maxLength` when it is specified.',
+        'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property\nwhen it is defined.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -241,7 +241,10 @@ interface IgcTextareaArgs {
    * for explanation of the available values.
    */
   wrap: 'hard' | 'soft' | 'off';
-  /** Consider whether to permit user input to exceed the `maxLength` when it is specified. */
+  /**
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property
+   * when it is defined.
+   */
   validateOnly: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
@@ -333,10 +336,12 @@ export const Form: Story = {
             value="I'm disabled"
             label="Disabled"
           >
-            <p slot="helper-text">
-              Disabled state. <strong>Does not </strong> participate in form
-              submission.
-            </p>
+            <div slot="helper-text">
+              <p>
+                Disabled state. <strong>Does not</strong> participate in form
+                submission.
+              </p>
+            </div>
           </igc-textarea>
         </fieldset>
 
@@ -347,10 +352,12 @@ export const Form: Story = {
             readonly
             label="Readonly"
           >
-            <p slot="helper-text">
-              Read-only state. <strong>Does </strong> participate in form
-              submission.
-            </p>
+            <div slot="helper-text">
+              <p>
+                Read-only state. <strong>Does</strong> participate in form
+                submission.
+              </p>
+            </div>
           </igc-textarea>
         </fieldset>
 

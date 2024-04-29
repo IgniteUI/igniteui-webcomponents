@@ -106,7 +106,7 @@ const metadata: Meta<IgcInputComponent> = {
     validateOnly: {
       type: 'boolean',
       description:
-        'Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,\nor to allow spin buttons to surpass the established `min`/`max` limits for a number type input.',
+        'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for\nstring-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -202,8 +202,8 @@ interface IgcInputArgs {
   /** The autocomplete attribute of the control. */
   autocomplete: string;
   /**
-   * Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,
-   * or to allow spin buttons to surpass the established `min`/`max` limits for a number type input.
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
+   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
    */
   validateOnly: boolean;
   /** Makes the control a required field in a form context. */

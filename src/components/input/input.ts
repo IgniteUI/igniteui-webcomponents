@@ -3,9 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { alternateName } from '../common/decorators/alternateName.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
@@ -111,12 +108,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   protected _value = '';
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
    * @attr
    */
   @property()
-  @blazorTwoWayBind('igcChange', 'detail')
   public set value(value: string) {
     this._value = value;
     this.setFormValue(value ? value : null);
@@ -128,11 +125,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this._value;
   }
 
+  /* alternateName: displayType */
   /**
    * The type attribute of the control.
    * @attr
    */
-  @alternateName('displayType')
   @property({ reflect: true })
   public type:
     | 'email'
@@ -248,8 +245,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public autocomplete!: string;
 
   /**
-   * Consider whether to permit user input to exceed the `maxLength` when it is specified for a string type input,
-   * or to allow spin buttons to surpass the established `min`/`max` limits for a number type input.
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
+   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
    *
    * @attr validate-only
    */
@@ -279,8 +276,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.updateValidity();
   }
 
+  /* blazorSuppress */
   /** Replaces the selected text in the input. */
-  @blazorSuppress()
   public override setRangeText(
     replacement: string,
     start: number,
