@@ -524,12 +524,13 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected handleCalendarChangeEvent(event: CustomEvent<Date>) {
+  protected async handleCalendarChangeEvent(event: CustomEvent<Date>) {
     event.stopPropagation();
 
     if (this.readOnly) {
-      event.preventDefault();
-      this._calendar.value = this.value ?? undefined;
+      // Wait till the calendar finishes updating and then restore the current value from the date-picker.
+      await this._calendar.updateComplete;
+      this._calendar.value = this._value ?? undefined;
       return;
     }
 
