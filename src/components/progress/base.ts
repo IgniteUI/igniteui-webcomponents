@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 
 import { watch } from '../common/decorators/watch.js';
-import { asPercent, clamp, format } from '../common/util.js';
+import { asPercent, clamp, formatString } from '../common/util.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   private __internals: ElementInternals;
@@ -182,16 +182,18 @@ export abstract class IgcProgressBaseComponent extends LitElement {
         asPercent(delta * (end - start) + start, this.max)
       );
 
-      delta < 1
-        ? (this._ticker = requestAnimationFrame(tick))
-        : cancelAnimationFrame(this._ticker);
+      if (delta < 1) {
+        this._ticker = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(this._ticker);
+      }
     };
 
     requestAnimationFrame(tick);
   }
 
   protected renderLabelFormat() {
-    return format(this.labelFormat, `${this.value}`, `${this.max}`);
+    return formatString(this.labelFormat, this.value, this.max);
   }
 
   protected renderDefaultSlot() {

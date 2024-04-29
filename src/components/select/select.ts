@@ -7,12 +7,6 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import IgcSelectGroupComponent from './select-group.js';
-import IgcSelectHeaderComponent from './select-header.js';
-import IgcSelectItemComponent from './select-item.js';
-import { styles } from './themes/select.base.css.js';
-import { styles as shared } from './themes/shared/select.common.css.js';
-import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import {
@@ -48,10 +42,16 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { findElementFromEventPath, partNameMap } from '../common/util.js';
-import { Validator, requiredValidator } from '../common/validators.js';
+import { type Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcSelectGroupComponent from './select-group.js';
+import IgcSelectHeaderComponent from './select-header.js';
+import IgcSelectItemComponent from './select-item.js';
+import { styles } from './themes/select.base.css.js';
+import { styles as shared } from './themes/shared/select.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
@@ -109,7 +109,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcSelectComponent,
       IgcIconComponent,
       IgcInputComponent,
       IgcPopoverComponent,

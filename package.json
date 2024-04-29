@@ -32,12 +32,12 @@
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",
     "clean:docs": "rimraf ./docs",
-    "lint": "npm run lint:eslint && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
-    "lint:eslint": "eslint --ext .ts . --ignore-path .gitignore",
+    "lint": "npm run lint:biome && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
+    "lint:biome": "biome lint ./",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
-    "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
+    "format": "biome check --apply ./ && prettier \"**/*.ts\" --write --ignore-path .gitignore",
     "release": "node scripts/gen-changelog.mjs",
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
@@ -58,9 +58,9 @@
     "lit": "^3.1.3"
   },
   "devDependencies": {
-    "@custom-elements-manifest/analyzer": "^0.9.4",
+    "@biomejs/biome": "1.7.1",
+    "@custom-elements-manifest/analyzer": "^0.9.6",
     "@igniteui/material-icons-extended": "^3.0.2",
-    "@open-wc/eslint-config": "^12.0.3",
     "@open-wc/testing": "^4.0.0",
     "@storybook/addon-a11y": "^8.0.9",
     "@storybook/addon-actions": "^8.0.9",
@@ -70,19 +70,11 @@
     "@storybook/web-components": "^8.0.9",
     "@storybook/web-components-vite": "^8.0.9",
     "@types/mocha": "^10.0.6",
-    "@typescript-eslint/eslint-plugin": "^7.7.1",
-    "@typescript-eslint/parser": "^7.7.1",
     "@web/test-runner": "^0.18.1",
     "@web/test-runner-playwright": "^0.11.0",
     "autoprefixer": "^10.4.19",
     "browser-sync": "^3.0.2",
     "concurrently": "^8.2.2",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-storybook": "^0.8.0",
     "globby": "^14.0.1",
     "husky": "^9.0.11",
     "ig-typedoc-theme": "^5.0.3",
@@ -111,8 +103,8 @@
     "vite": "^5.2.10"
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
+    "*.{js,ts,cjs,mjs,jsx,tsx}": [
+      "biome check --apply --no-errors-on-unmatched",
       "prettier --write",
       "git add"
     ]

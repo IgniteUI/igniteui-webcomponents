@@ -1,5 +1,7 @@
 import { css } from 'lit';
 
+// Shared Styles
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/header/list-header.bootstrap.css.js';
 import { styles as fluentDark } from './dark/header/list-header.fluent.css.js';
@@ -10,8 +12,6 @@ import { styles as bootstrapLight } from './light/header/list-header.bootstrap.c
 import { styles as fluentLight } from './light/header/list-header.fluent.css.js';
 import { styles as indigoLight } from './light/header/list-header.indigo.css.js';
 import { styles as materialLight } from './light/header/list-header.material.css.js';
-// Shared Styles
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   material: css`
