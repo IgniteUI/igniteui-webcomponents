@@ -252,6 +252,15 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public wrap: 'hard' | 'soft' | 'off' = 'soft';
 
+  /**
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property
+   * when it is defined.
+   *
+   * @attr validate-only
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
+  public validateOnly = false;
+
   constructor() {
     super();
     this.addEventListener('focus', () => {
@@ -467,6 +476,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         autocapitalize=${ifDefined(this.autocapitalize)}
         inputmode=${ifDefined(this.inputMode)}
         spellcheck=${ifDefined(this.spellcheck)}
+        minlength=${ifDefined(this.minLength)}
+        maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}
