@@ -16,7 +16,6 @@ import { styles as shared } from './light/container/nav-drawer.shared.css.js';
 import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
 import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
 import { styles as material } from './shared/container/nav-drawer.material.css.js';
-import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
 
 const light = {
   shared: css`
