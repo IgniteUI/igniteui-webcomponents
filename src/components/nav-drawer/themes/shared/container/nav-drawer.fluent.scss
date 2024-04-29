@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $fluent;
 
 [part='base'],
 [part~='mini'] {
