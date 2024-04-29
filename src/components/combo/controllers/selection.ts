@@ -1,4 +1,4 @@
-import { ReactiveController } from 'lit';
+import type { ReactiveController } from 'lit';
 
 import type {
   ComboHost,

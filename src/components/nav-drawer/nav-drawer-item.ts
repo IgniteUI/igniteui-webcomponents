@@ -6,12 +6,12 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
-import { styles as shared } from './themes/shared/item/item.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item/item.common.css.js';
 
 /**
  * Represents a navigation drawer item.
@@ -32,7 +32,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcNavDrawerItemComponent);
   }
 
   /**
@@ -75,7 +75,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   protected override render() {
     return html`
       <div part="${partNameMap(this.resolvePartNames('base'))}">
-        <span part="icon" .hidden="${this.navdrawerIcon.length == 0}">
+        <span part="icon" .hidden="${this.navdrawerIcon.length === 0}">
           <slot name="icon"></slot>
         </span>
         <span part="content">

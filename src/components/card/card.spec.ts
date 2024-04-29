@@ -26,7 +26,7 @@ describe('Card Component', () => {
     await elementUpdated(el);
 
     expect(el.elevated).to.be.true;
-    expect(el).dom.to.equal(`<igc-card elevated></igc-card>`);
+    expect(el).dom.to.equal('<igc-card elevated></igc-card>');
   });
 
   it('should render some content', async () => {

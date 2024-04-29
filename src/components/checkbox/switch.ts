@@ -2,13 +2,13 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
 import { all } from './themes/switch-themes.js';
 import { styles } from './themes/switch.base.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -33,7 +33,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcSwitchComponent);
   }
 
   private static readonly increment = createCounter();
