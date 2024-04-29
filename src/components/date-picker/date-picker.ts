@@ -31,7 +31,7 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, format } from '../common/util.js';
+import { createCounter, formatString } from '../common/util.js';
 import {
   type Validator,
   maxDateValidator,
@@ -162,7 +162,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
     maxDateValidator,
     {
       key: 'badInput',
-      message: () => format(messages.disabledDate, `${this.value}`),
+      message: () => formatString(messages.disabledDate, this.value),
       isValid: () =>
         this.value
           ? !isDateInRanges(this.value, this.disabledDates ?? [])
@@ -264,9 +264,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: converter })
   public set value(value: Date | null) {
     this._value = value;
-    this.value
-      ? this.setFormValue(this.value.toISOString())
-      : this.setFormValue(null);
+    this.setFormValue(value ? value.toISOString() : null);
     this.updateValidity();
     this.setInvalidState();
   }

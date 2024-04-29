@@ -124,7 +124,7 @@ export const minDateValidator: Validator<{
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) => format(validatorMessages.min, `${min}`),
+  message: ({ min }) => formatString(validatorMessages.min, min),
   isValid: ({ value, min }) =>
     min
       ? !DateTimeUtil.lessThanMinValue(value ?? new Date(), min, false, true)
@@ -136,7 +136,7 @@ export const maxDateValidator: Validator<{
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) => format(validatorMessages.max, `${max}`),
+  message: ({ max }) => formatString(validatorMessages.max, max),
   isValid: ({ value, max }) =>
     max
       ? !DateTimeUtil.greaterThanMaxValue(value ?? new Date(), max, false, true)
