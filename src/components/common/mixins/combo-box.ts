@@ -1,8 +1,8 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import type { UnpackCustomEvent } from './event-emitter.js';
 import { iterNodes } from '../util.js';
+import type { UnpackCustomEvent } from './event-emitter.js';
 
 interface IgcBaseComboBoxEventMap {
   igcOpening: CustomEvent<void>;

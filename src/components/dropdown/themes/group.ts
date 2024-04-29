@@ -1,8 +1,8 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Shared Styles
 import { styles as fluent } from './shared/group/dropdown-group.fluent.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   fluent: css`

@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Combo, Select and Dropdown components now use the native Popover API [#1082](https://github.com/IgniteUI/igniteui-webcomponents/pull/1082)
 
+### Deprecated
+- Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
+  making the property obsolete.
+
+### Fixed
+- Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
+
 ## [4.8.2] - 2024-04-15
 ### Fixed
 - Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)

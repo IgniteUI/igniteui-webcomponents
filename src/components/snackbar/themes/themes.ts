@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/snackbar.bootstrap.css.js';
 import { styles as fluentDark } from './dark/snackbar.fluent.css.js';
@@ -15,7 +16,6 @@ import { styles as shared } from './light/snackbar.shared.css.js';
 import { styles as bootstrap } from './shared/snackbar.bootstrap.css.js';
 import { styles as fluent } from './shared/snackbar.fluent.css.js';
 import { styles as indigo } from './shared/snackbar.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`

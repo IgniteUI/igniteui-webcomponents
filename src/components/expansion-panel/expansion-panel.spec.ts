@@ -7,7 +7,6 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import IgcExpansionPanelComponent from './expansion-panel.js';
 import {
   altKey,
   arrowDown,
@@ -18,6 +17,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateKeyboard } from '../common/utils.spec.js';
 import type IgcIconComponent from '../icon/icon.js';
+import IgcExpansionPanelComponent from './expansion-panel.js';
 
 type ExpansionSlots =
   | ''
