@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)
+- Input, Textarea - exposed `validateOnly` to enable validation rules being enforced without restricting user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/pull/1178)
 - Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 ### Changed

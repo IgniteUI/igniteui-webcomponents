@@ -1,6 +1,6 @@
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import validatorMessages from './localization/validation-en.js';
-import { asNumber, format, isDefined } from './util.js';
+import { asNumber, formatString, isDefined } from './util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
 type ValidatorMessageFormat<T> = (host: T) => string;
@@ -47,7 +47,7 @@ export const minLengthValidator: Validator<{
 }> = {
   key: 'tooShort',
   message: ({ minLength }) =>
-    format(validatorMessages.minLength, `${minLength}`),
+    formatString(validatorMessages.minLength, minLength),
   isValid: ({ minLength, value }) =>
     minLength ? value.length >= minLength : true,
 };
@@ -58,7 +58,7 @@ export const maxLengthValidator: Validator<{
 }> = {
   key: 'tooLong',
   message: ({ maxLength }) =>
-    format(validatorMessages.maxLength, `${maxLength}`),
+    formatString(validatorMessages.maxLength, maxLength),
   isValid: ({ maxLength, value }) =>
     maxLength ? value.length <= maxLength : true,
 };
@@ -75,7 +75,7 @@ export const minValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) => format(validatorMessages.min, `${min}`),
+  message: ({ min }) => formatString(validatorMessages.min, min),
   isValid: ({ min, value }) =>
     isDefined(min)
       ? isDefined(value) && asNumber(value) >= asNumber(min)
@@ -87,7 +87,7 @@ export const maxValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) => format(validatorMessages.max, `${max}`),
+  message: ({ max }) => formatString(validatorMessages.max, max),
   isValid: ({ max, value }) =>
     isDefined(max)
       ? isDefined(value) && asNumber(value) <= asNumber(max)

@@ -57,24 +57,20 @@ export function isLTR(element: HTMLElement) {
 
 /**
  * Builds a string from format specifiers and replacement parameters.
+ * Will coerce non-string parameters to their string representations.
  *
  * @example
  * ```typescript
- * format('{0} says "{1}".', 'John', 'Hello'); // 'John says "Hello".'
+ * formatString('{0} says "{1}".', 'John', 'Hello'); // 'John says "Hello".'
+ * formatString('{1} is greater than {0}', 0, 1); // '1 is greater than 0'
  * ```
  */
-export function format(template: string, ...params: string[]): string {
-  return template.replace(/{(\d+)}/g, (match: string, index: number) => {
-    if (index >= params.length) {
-      return match;
-    }
+export function formatString(template: string, ...params: unknown[]): string {
+  const length = params.length;
 
-    const value: string = params[index];
-    if (typeof value !== 'number' && !value) {
-      return '';
-    }
-    return value;
-  });
+  return template.replace(/{(\d+)}/g, (match: string, index: number) =>
+    index >= length ? match : `${params[index]}`
+  );
 }
 
 /**

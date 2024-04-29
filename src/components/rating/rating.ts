@@ -26,7 +26,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, format, isLTR } from '../common/util.js';
+import { clamp, formatString, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
@@ -61,7 +61,7 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
@@ -109,7 +109,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     // Skip IEEE 754 representation for screen readers
     const value = this.round(this.value);
     return this.valueFormat
-      ? format(this.valueFormat, `${value}`, `${this.max}`)
+      ? formatString(this.valueFormat, value, this.max)
       : `${value} of ${this.max}`;
   }
 
@@ -431,8 +431,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
           aria-hidden="true"
           part="symbols"
           @click=${this.isInteractive ? this.handleClick : nothing}
-          @mouseenter=${hoverActive ? () => this.handleHoverEnabled : nothing}
-          @mouseleave=${hoverActive ? () => this.handleHoverDisabled : nothing}
+          @mouseenter=${hoverActive ? this.handleHoverEnabled : nothing}
+          @mouseleave=${hoverActive ? this.handleHoverDisabled : nothing}
           @mousemove=${hoverActive ? this.handleMouseMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>
