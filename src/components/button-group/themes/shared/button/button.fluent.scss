@@ -9,26 +9,26 @@ $outline-btn-indent: rem(2px);
     [part~='toggle'] {
         min-height: $fluent-flat-btn-size;
         border-width: $group-item-border-thickness;
+    }
 
-        &:focus-visible {
-            background: var-get($theme, 'item-background');
+    [part='toggle focused'] {
+        background: var-get($theme, 'item-background');
 
-            &::after {
-                content: '';
-                position: absolute;
-                inset-block-start: $outline-btn-indent;
-                inset-inline-start: $outline-btn-indent;
-                pointer-events: none;
-                width: calc(100% - (#{$outline-btn-indent} * 2));
-                height: calc(100% - (#{$outline-btn-indent} * 2));
-                box-shadow: 0 0 0 rem(1px) var-get($theme, 'item-focused-border-color');
-            }
+        &::after {
+            content: '';
+            position: absolute;
+            inset-block-start: $outline-btn-indent;
+            inset-inline-start: $outline-btn-indent;
+            pointer-events: none;
+            width: calc(100% - (#{$outline-btn-indent} * 2));
+            height: calc(100% - (#{$outline-btn-indent} * 2));
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'item-focused-border-color');
         }
     }
 }
 
 :host(:hover) {
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         background: var-get($theme, 'item-hover-background');
     }
 }
@@ -36,10 +36,10 @@ $outline-btn-indent: rem(2px);
 :host(:active) {
     [part~='toggle'] {
         background: var-get($theme, 'item-focused-background');
+    }
 
-        &:focus-visible {
-            background: var-get($theme, 'item-focused-background');
-        }
+    [part='toggle focused'] {
+        background: var-get($theme, 'item-focused-background');
     }
 }
 
@@ -60,7 +60,7 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([selected]) {
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         background: var-get($theme, 'item-selected-background');
     }
 }

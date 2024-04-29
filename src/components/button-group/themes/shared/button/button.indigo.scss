@@ -19,7 +19,7 @@ $group-item-border-thickness: rem(1px);
         --size: var(--button-icon) !important;
     }
 
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         z-index: 2;
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
         border-color: var-get($theme, 'item-border-color');
@@ -32,7 +32,7 @@ $group-item-border-thickness: rem(1px);
         z-index: 1;
     }
 
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         border-color: var-get($theme, 'item-hover-border-color');
         color: var-get($theme, 'item-hover-text-color');
     }
@@ -52,13 +52,13 @@ $group-item-border-thickness: rem(1px);
 }
 
 :host([selected]:hover) {
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         border-color: var-get($theme, 'item-selected-hover-border-color');
     }
 }
 
 :host([selected]) {
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
         border-color: var-get($theme, 'item-selected-border-color');
         color: var-get($theme, 'item-selected-hover-text-color');

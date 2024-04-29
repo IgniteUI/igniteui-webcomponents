@@ -12,7 +12,7 @@ $theme: $material;
         z-index: -1;
     }
 
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         color: var-get($theme, 'item-hover-text-color');
         border-color: var-get($theme, 'item-hover-border-color');
 
@@ -35,11 +35,11 @@ $theme: $material;
             content: '';
             background: var-get($theme, 'item-hover-background');
         }
+    }
 
-        &:focus-visible {
-            &::before {
-                background: var-get($theme, 'item-focused-hover-background');
-            }
+    [part='toggle focused'] {
+        &::before {
+            background: var-get($theme, 'item-focused-hover-background');
         }
     }
 }
@@ -76,7 +76,7 @@ $theme: $material;
         }
     }
 
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         &::before {
             background: var-get($theme, 'item-selected-focus-hover-background');
         }
@@ -84,7 +84,7 @@ $theme: $material;
 }
 
 :host([selected]) {
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         color: var-get($theme, 'item-selected-hover-text-color');
         border-color: var-get($theme, 'item-selected-hover-border-color');
 

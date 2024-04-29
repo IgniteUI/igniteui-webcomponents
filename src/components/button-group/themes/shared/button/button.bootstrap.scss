@@ -22,8 +22,9 @@ $group-item-border-thickness: rem(1px);
         }
     }
 
-    [part~='toggle']:focus-visible {
+    [part='toggle focused'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'idle-shadow-color');
+        z-index: 1;
     }
 }
 
