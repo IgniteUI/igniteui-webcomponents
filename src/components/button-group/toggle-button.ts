@@ -37,7 +37,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   private _nativeButton!: HTMLButtonElement;
 
   @state()
-  public focused = false;
+  protected focused = false;
 
   /**
    * The value attribute of the control.

@@ -171,7 +171,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     );
 
     if (button) {
-      button.focused = false;
+      Object.assign(button, { focused: false });
       this.isMultiple
         ? this.handleMultipleSelection(button)
         : this.handleSingleSelection(button);

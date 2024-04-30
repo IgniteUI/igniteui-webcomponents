@@ -62,6 +62,10 @@ $outlined-theme: $material-outlined;
     &:active {
         box-shadow: var-get($fab-theme, 'active-elevation');
     }
+
+    &:hover {
+        box-shadow: var-get($fab-theme, 'focus-elevation');
+    }
 }
 
 :host(:not([disabled])[variant='fab']) [part~='base'],
