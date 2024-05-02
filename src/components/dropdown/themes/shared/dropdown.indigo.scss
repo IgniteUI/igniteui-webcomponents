@@ -9,4 +9,6 @@ $theme: $indigo;
 
 [part='base'] {
     box-shadow: var(--ig-elevation-3);
+    border: var-get($theme, 'border-width') solid var-get($theme, 'border-color');
+    padding: rem(3px);
 }

@@ -1,0 +1,45 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+:host {
+    padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
+    padding-block: pad-inline(rem(4px), rem(6px), rem(8px));
+    margin-block: rem(2px);
+    gap: rem(8px);
+
+    --item-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
+
+    ::slotted(igc-icon) {
+        --size: var(--item-icon) !important;
+        margin-inline-end: initial;
+    }
+}
+
+:host(:first-of-type),
+:host(:last-of-type) {
+    margin-block: unset;
+}
+
+:host([active]) {
+    outline: rem(2px) solid var-get($theme, 'focused-item-border-color');
+}
+
+:host([selected][active]) {
+    background: var-get($theme, 'selected-item-background');
+    color: var-get($theme, 'selected-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'selected-item-icon-color');
+    }
+}
+
+:host([selected][active]:hover) {
+    background: var-get($theme, 'selected-hover-item-background');
+    color: var-get($theme, 'selected-hover-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'selected-hover-item-icon-color');
+    }
+}
