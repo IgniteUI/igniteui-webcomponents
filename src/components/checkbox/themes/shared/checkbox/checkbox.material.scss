@@ -64,7 +64,7 @@ label {
     }
 }
 
-[part='base']:focus-within,
+[part='base']:focus-visible,
 [part='base focused'] {
     &:hover [part~='control'],
     [part~='control'] {
@@ -75,7 +75,7 @@ label {
     }
 }
 
-[part='base checked']:focus-within,
+[part='base checked']:focus-visible,
 [part='base checked focused'] {
     &:hover [part~='control'],
     [part~='control'] {
@@ -101,7 +101,7 @@ label {
         }
     }
 
-    [part='base']:focus-within,
+    [part='base']:focus-visible,
     [part='base focused'] {
         [part~='control']::before {
             background: var-get($theme, 'fill-color');

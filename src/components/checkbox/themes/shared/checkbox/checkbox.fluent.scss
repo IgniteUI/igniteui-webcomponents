@@ -86,7 +86,7 @@ $disabled-color: var-get($theme, 'disabled-color');
 }
 
 :host([indeterminate]:hover) [part~='control'],
-:host([indeterminate]:focus-within) [part~='control'] {
+:host([indeterminate]:focus-visible) [part~='control'] {
     &::before {
         background: $checked-hover-color;
     }
@@ -116,7 +116,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host([invalid]:focus-within) {
+:host([invalid]:focus-visible) {
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;

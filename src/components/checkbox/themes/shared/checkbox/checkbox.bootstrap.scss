@@ -57,7 +57,7 @@ $theme: $bootstrap;
     }
 }
 
-:host(:focus-within) ,
+:host(:focus-visible) ,
 [part~='focused'] {
     [part~='control'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
@@ -115,7 +115,7 @@ $theme: $bootstrap;
         }
     }
 
-    &:focus-within {
+    &:focus-visible {
         [part~='control'],
         [part='control checked'] {
             box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color-error');
@@ -150,17 +150,17 @@ $theme: $bootstrap;
     }
 }
 
-:host(:hover:not([disabled])[invalid][indeterminate]),
-:host(:hover:not(:disabled)[invalid][indeterminate]) {
-    [part~='control'] {
-        &::after {
-            background: var-get($theme, 'error-color-hover');
-        }
+:host(:focus-visible) [part~='control'],
+[part~='focused'] [part~='control'] {
+    box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
+
+    &::after {
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color');
     }
 }
 
-:host(:focus-within:not([disabled])[invalid]) [part~='control'],
-:host(:focus-within:not(:disabled)[invalid]) [part~='control'],
+:host(:focus-visible:not([disabled])[invalid]) [part~='control'],
+:host(:focus-visible:not(:disabled)[invalid]) [part~='control'],
 :host(:not([disabled])[invalid]) [part~='focused'] [part~='control'],
 :host(:not(:disabled)[invalid]) [part~='focused'] [part~='control'] {
     box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color-error');
