@@ -1,12 +1,12 @@
-import { DataController } from '../controllers/data.js';
+import type { DataController } from '../controllers/data.js';
 import type { ComboRecord, FilteringOptions } from '../types.js';
 
 export default class FilterDataOperation<T extends object> {
   protected normalize<T extends object>(
-    str: string,
+    string: string,
     { caseSensitive, matchDiacritics }: FilteringOptions<T>
   ) {
-    str = caseSensitive ? str : str.toLocaleLowerCase();
+    const str = caseSensitive ? string : string.toLocaleLowerCase();
     return matchDiacritics ? str : str.normalize('NFKD').replace(/\p{M}/gu, '');
   }
 

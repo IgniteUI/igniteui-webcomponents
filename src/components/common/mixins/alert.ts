@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { addAnimationController } from '../../../animations/player.js';
+import type { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import { watch } from '../decorators/watch.js';
 

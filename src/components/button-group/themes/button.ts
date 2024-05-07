@@ -1,10 +1,10 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types';
 // Shared Styles
 import { styles as bootstrap } from './shared/button/button.bootstrap.css.js';
 import { styles as fluent } from './shared/button/button.fluent.css.js';
 import { styles as indigo } from './shared/button/button.indigo.css.js';
-import type { Themes } from '../../../theming/types';
 
 const light = {
   bootstrap: css`

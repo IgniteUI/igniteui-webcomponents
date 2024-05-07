@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
 
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/dropdown-header.base.css.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/dropdown-header.common.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * Represents a header item in a igc-dropdown list.
@@ -20,7 +20,7 @@ export default class IgcDropdownHeaderComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDropdownHeaderComponent);
   }
 
   protected override render() {

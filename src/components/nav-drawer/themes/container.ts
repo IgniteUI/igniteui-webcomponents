@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+import type { Themes } from '../../../theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/container/nav-drawer.bootstrap.css.js';
 import { styles as fluentDark } from './dark/container/nav-drawer.fluent.css.js';
@@ -16,7 +17,6 @@ import { styles as sharedLight } from './light/container/nav-drawer.shared.css.j
 import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
 import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
 import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
-import { Themes } from '../../../theming/types.js';
 
 const light = {
   shared: css`
