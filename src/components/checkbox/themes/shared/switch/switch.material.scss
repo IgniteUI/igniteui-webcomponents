@@ -38,14 +38,18 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         }
     }
 
-    &:focus-within {
+    &:focus-visible,
+    [part='control focused'] {
         [part~='thumb'] {
             &::after {
                 background: var-get($theme, 'track-off-color');
                 opacity: .12;
             }
         }
+    }
 
+    &:focus-visible,
+    [part='control checked focused'] {
         [part~='thumb'][part~='checked'] {
             &::after {
                 background: var-get($theme, 'thumb-on-color');
