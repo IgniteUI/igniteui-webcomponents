@@ -33,12 +33,12 @@ $outline-btn-indent: rem(2px);
     }
 }
 
-:host(:active) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-focused-background');
-    }
+[part~='toggle']:active {
+    background: var-get($theme, 'item-focused-background');
+}
 
-    [part='toggle focused'] {
+[part='toggle focused'] {
+    &:active {
         background: var-get($theme, 'item-focused-background');
     }
 }
@@ -60,13 +60,15 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([selected]) {
+    [part~='toggle']:active {
+        background: var-get($theme, 'item-selected-focus-background');
+    }
+
     [part='toggle focused'] {
         background: var-get($theme, 'item-selected-background');
-    }
-}
 
-:host([selected]:active) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-selected-focus-background');
+        &:active {
+            background: var-get($theme, 'item-selected-focus-background');
+        }
     }
 }

@@ -26,7 +26,7 @@ $theme: $material;
         min-width: var(--button-min-width);
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
-        padding-inline: rem(16px);
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         padding-block: pad-block(rem(1px), rem(4px), rem(6px));
         border-color: var-get($theme, 'item-border-color');
     }

@@ -10,7 +10,6 @@ $group-item-border-thickness: rem(1px);
     [part~='toggle'] {
         min-height: $bootstrap-flat-btn-size;
         border-width: $group-item-border-thickness;
-        padding-inline: pad-inline(rem(8px), rem(10px), rem(12px));
         padding-block: pad-block(rem(2px), rem(4px), rem(7px));
 
         &::before {
@@ -28,16 +27,14 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
-:host(:active) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-hover-background');
-        color: var-get($theme, 'item-hover-text-color');
-        border-color: var-get($theme, 'item-hover-border-color');
+[part~='toggle']:active {
+    background: var-get($theme, 'item-hover-background');
+    color: var-get($theme, 'item-hover-text-color');
+    border-color: var-get($theme, 'item-hover-border-color');
 
-        &::before {
-            content: '';
-            background: var-get($theme, 'item-focused-background');
-        }
+    &::before {
+        content: '';
+        background: var-get($theme, 'item-focused-background');
     }
 
     ::slotted(igc-icon) {
@@ -45,8 +42,8 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
-:host([selected]:active) {
-    [part~='toggle'] {
+:host([selected]) {
+    [part~='toggle']:active {
         background: var-get($theme, 'item-selected-hover-background');
         color: var-get($theme, 'item-selected-hover-text-color');
         border-color: var-get($theme, 'item-selected-hover-border-color');

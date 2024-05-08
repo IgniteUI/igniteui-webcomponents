@@ -38,16 +38,14 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
-:host(:active) {
-    [part~='toggle'] {
-        color: var-get($theme, 'item-hover-text-color');
-        background: var-get($theme, 'item-hover-background');
-        border-color: var-get($theme, 'item-hover-border-color');
-        z-index: 2;
+[part~='toggle']:active {
+    color: var-get($theme, 'item-hover-text-color');
+    background: var-get($theme, 'item-hover-background');
+    border-color: var-get($theme, 'item-hover-border-color');
+    z-index: 2;
 
-        ::slotted(igc-icon) {
-            color: var-get($theme, 'item-hover-icon-color');
-        }
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-hover-icon-color');
     }
 }
 
@@ -63,17 +61,15 @@ $group-item-border-thickness: rem(1px);
         border-color: var-get($theme, 'item-selected-border-color');
         color: var-get($theme, 'item-selected-hover-text-color');
     }
-}
 
-:host([selected]:active) {
-    [part~='toggle'] {
+    [part~='toggle']:active {
         color: var-get($theme, 'item-selected-hover-text-color');
         background: var-get($theme, 'item-selected-hover-background');
         border-color: var-get($theme, 'item-selected-hover-border-color');
-    }
 
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-selected-hover-icon-color');
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-selected-hover-icon-color');
+        }
     }
 }
 
