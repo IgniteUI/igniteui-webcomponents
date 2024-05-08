@@ -12,7 +12,7 @@ $group-item-border-thickness: rem(1px);
 
         min-height: $indigo-flat-btn-size;
         border-width: $group-item-border-thickness;
-        padding-inline: rem(8px);
+        padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
     }
 
     ::slotted(igc-icon) {
