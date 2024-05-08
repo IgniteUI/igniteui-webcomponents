@@ -3,6 +3,18 @@
 
 $theme: $bootstrap;
 
+[part~='label'] {
+    @include type-style('body-1');
+
+    transition: none;
+}
+
+[part~='indicator'] {
+    stroke-width: 3;
+    transform: scale(.7);
+    transition: none;
+}
+
 [part~='control'] {
     --size: #{rem(16px)};
 
@@ -27,33 +39,21 @@ $theme: $bootstrap;
     }
 }
 
-[part~='indicator'] {
-    stroke-width: 3;
-    transform: scale(.7);
-    transition: none;
+[part='control checked'] {
+    &::after {
+        background: var-get($theme, 'fill-color');
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color');
+    }
 }
 
-[part~='label'] {
-    transition: none;
-}
-
-[part='control checked']::after {
-    background: var-get($theme, 'fill-color');
-    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color');
-}
-
-:host(:not([disabled]):hover) {
-    [part='control'] {
-        &::after {
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'empty-color-hover');
-        }
+:host(:hover) {
+    [part~='control']::after {
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'empty-color-hover'); 
     }
 
-    [part='control checked'] {
-        &::after {
-            background: var-get($theme, 'fill-color-hover');
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color-hover');
-        }
+    [part='control checked']::after {
+        background: var-get($theme, 'fill-color-hover');
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color-hover');
     }
 }
 
@@ -67,11 +67,11 @@ $theme: $bootstrap;
         &::after {
             box-shadow: inset 0 0 0 rem(1px) color(primary, 200);
         }
+    }
 
-        &:hover {
-            &::after {
-                box-shadow: inset 0 0 0 rem(1px) color(primary, 300);
-            }
+    &:hover {
+        [part='control']::after {
+            box-shadow: inset 0 0 0 rem(1px) color(primary, 300);
         }
     }
 }
@@ -98,10 +98,6 @@ $theme: $bootstrap;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part~='indicator'] {
-        stroke: black;
-    }
-
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'error-color');
@@ -127,9 +123,9 @@ $theme: $bootstrap;
 :host(:hover:not(:disabled)[invalid]),
 :host(:hover:not([disabled])[invalid][indeterminate]),
 :host(:hover:not(:disabled)[invalid][indeterminate]) {
-        [part~='control'],
-        [part='control checked'] {
-            &::after {
+    [part~='control'],
+    [part='control checked'] {
+        &::after {
             box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'error-color-hover');
         }
     }
@@ -150,12 +146,12 @@ $theme: $bootstrap;
     }
 }
 
-:host(:focus-visible) [part~='control'],
-[part~='focused'] [part~='control'] {
-    box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
-
-    &::after {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color');
+:host(:hover:not([disabled])[invalid][indeterminate]),
+:host(:hover:not(:disabled)[invalid][indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: var-get($theme, 'error-color-hover');
+        }
     }
 }
 
