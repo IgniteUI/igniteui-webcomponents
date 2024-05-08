@@ -25,6 +25,7 @@ $theme: $indigo;
 
 :host([active]) {
     outline: rem(2px) solid var-get($theme, 'focused-item-border-color');
+    outline-offset: rem(-2px);
 }
 
 :host([selected][active]) {
