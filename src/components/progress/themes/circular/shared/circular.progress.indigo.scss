@@ -8,3 +8,7 @@ $theme: $indigo;
 
     color: var-get($theme, 'text-color');
 }
+
+[part~='fill'] {
+    stroke-width: calc(var(--stroke-thickness) + rem(1px));
+}
