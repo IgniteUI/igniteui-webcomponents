@@ -3,6 +3,10 @@
 
 $theme: $indigo;
 
+:host {
+    --diameter: 48px;
+}
+
 [part~='label'] {
     @include type-style('subtitle-2');
 
