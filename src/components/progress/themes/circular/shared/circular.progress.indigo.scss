@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+[part~='label'] {
+    @include type-style('subtitle-2');
+
+    color: var-get($theme, 'text-color');
+}
