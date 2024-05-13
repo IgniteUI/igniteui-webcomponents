@@ -17,7 +17,7 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @csspart toggle - The native button element.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = [styles, shared];
   public static readonly tagName = 'igc-toggle-button';
