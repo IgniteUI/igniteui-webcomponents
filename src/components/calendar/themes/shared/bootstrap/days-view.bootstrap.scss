@@ -7,7 +7,7 @@ $border-size: rem(1px);
 :host([part='days-view']) {
     overflow: hidden;
     position: relative;
-    padding: 0 0 rem(16px) 0;
+    padding: 0 0 rem(16px);
 }
 
 [part~='days-row'] {
