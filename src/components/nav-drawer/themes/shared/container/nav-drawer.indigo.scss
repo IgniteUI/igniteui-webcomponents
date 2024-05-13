@@ -4,7 +4,14 @@
 $theme: $indigo;
 
 :host {
+    --menu-full-width: #{rem(240px)};
+    --menu-mini-width: #{rem(48px)};
+
     [part='overlay'] {
         background: var-get($overlay-indigo, 'background-color');
+    }
+
+    [part='mini'], [part="base"] {
+        padding: rem(8px);
     }
 }
