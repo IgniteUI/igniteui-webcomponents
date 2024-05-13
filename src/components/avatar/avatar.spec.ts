@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import IgcAvatarComponent from './avatar.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcAvatarComponent from './avatar.js';
 
 describe('Avatar', () => {
   const DIFF_OPTIONS = {

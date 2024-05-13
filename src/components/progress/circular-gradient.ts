@@ -17,7 +17,7 @@ export default class IgcCircularGradientComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcCircularGradientComponent);
   }
 
   /**

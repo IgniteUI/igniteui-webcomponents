@@ -345,7 +345,7 @@ describe('Dialog component', () => {
       expect(dialog.open).to.eq(false);
     });
 
-    const createDialogComponent = (template = `<igc-dialog></igc-dialog>`) => {
+    const createDialogComponent = (template = '<igc-dialog></igc-dialog>') => {
       return fixture<IgcDialogComponent>(html`${unsafeStatic(template)}`);
     };
   });

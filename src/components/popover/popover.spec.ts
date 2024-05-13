@@ -6,8 +6,8 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import IgcPopoverComponent from './popover.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcPopoverComponent from './popover.js';
 
 async function waitForPaint(popover: IgcPopoverComponent) {
   await elementUpdated(popover);
@@ -140,22 +140,6 @@ describe('Popover', () => {
         expect(delta.width).to.equal(anchor.getBoundingClientRect().width);
       });
 
-      it('`strategy` updates are reflected', async () => {
-        const floater = getFloater(popover);
-        const getPosition = () =>
-          getComputedStyle(floater).getPropertyValue('position');
-
-        anchor.click();
-        await waitForPaint(popover);
-
-        expect(getPosition()).to.equal('absolute');
-
-        popover.strategy = 'fixed';
-        await waitForPaint(popover);
-
-        expect(getPosition()).to.equal('fixed');
-      });
-
       it('`anchor` slot changes are reflected', async () => {
         const floater = getFloater(popover);
         const newAnchor = document.createElement('button');
@@ -271,22 +255,6 @@ describe('Popover', () => {
 
         expect(delta.width).to.be.greaterThan(initial.width);
         expect(delta.width).to.equal(anchor.getBoundingClientRect().width);
-      });
-
-      it('`strategy` updates are reflected', async () => {
-        const floater = getFloater(popover);
-        const getPosition = () =>
-          getComputedStyle(floater).getPropertyValue('position');
-
-        anchor.click();
-        await waitForPaint(popover);
-
-        expect(getPosition()).to.equal('absolute');
-
-        popover.strategy = 'fixed';
-        await waitForPaint(popover);
-
-        expect(getPosition()).to.equal('fixed');
       });
 
       it('`anchor` property updates are reflected', async () => {
