@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    [part='overlay'] {
+        background: var-get($overlay-bootstrap, 'background-color');
+    }
+}

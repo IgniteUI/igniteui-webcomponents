@@ -1,14 +1,17 @@
 import { LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+
 import { alternateName } from '../common/decorators/alternateName.js';
-import { watch } from '../common/decorators/watch.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { watch } from '../common/decorators/watch.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-
-import { Validator, requiredBooleanValidator } from '../common/validators.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import {
+  type Validator,
+  requiredBooleanValidator,
+} from '../common/validators.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -21,6 +24,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
   protected override validators: Validator<this>[] = [requiredBooleanValidator];
+
+  protected _value!: string;
+  protected _checked = false;
 
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
@@ -39,7 +45,16 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public value!: string;
+  public set value(value: string) {
+    this._value = value;
+    if (this.checked) {
+      this.setFormValue(this._value || 'on');
+    }
+  }
+
+  public get value(): string {
+    return this._value;
+  }
 
   /**
    * The checked state of the control.
@@ -47,7 +62,19 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
-  public checked = false;
+  public set checked(value: boolean) {
+    this._checked = Boolean(value);
+    this.setFormValue(this._checked ? this.value || 'on' : null);
+    this.updateValidity();
+
+    if (this.hasUpdated) {
+      this.setInvalidState();
+    }
+  }
+
+  public get checked(): boolean {
+    return this._checked;
+  }
 
   /**
    * The label position of the control.
@@ -61,12 +88,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('keyup', this.handleKeyUp);
   }
 
-  @watch('checked')
-  protected checkedChanged() {
-    const value = this.value || 'on';
-    this.checked ? this.setFormValue(value, value) : this.setFormValue(null);
+  public override connectedCallback() {
+    super.connectedCallback();
     this.updateValidity();
-    this.setInvalidState();
   }
 
   @watch('focused', { waitUntilFirstUpdate: true })

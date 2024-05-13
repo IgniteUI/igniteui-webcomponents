@@ -1,5 +1,7 @@
-import { html, LitElement } from 'lit';
-import { styles } from './rating-symbol.base.css.js';
+import { LitElement, html } from 'lit';
+
+import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/rating-symbol.base.css.js';
 
 /**
  *
@@ -17,6 +19,11 @@ import { styles } from './rating-symbol.base.css.js';
 export default class IgcRatingSymbolComponent extends LitElement {
   public static readonly tagName = 'igc-rating-symbol';
   public static override styles = [styles];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcRatingSymbolComponent);
+  }
 
   public override connectedCallback() {
     super.connectedCallback();

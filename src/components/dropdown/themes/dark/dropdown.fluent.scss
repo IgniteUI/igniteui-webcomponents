@@ -1,9 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-dropdown {
-        @include css-vars-from-theme($fluent, 'ig-dropdown');
-    }
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme(diff($base, $theme), 'ig-dropdown');
 }

@@ -1,9 +1,14 @@
-import { expect, fixture, html, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
 import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
 
 describe('Calendar Rendering', () => {
+  const DIFF_OPTIONS = {
+    ignoreAttributes: ['size', 'style'],
+  };
+
   before(() => {
     defineComponents(IgcCalendarComponent);
   });
@@ -35,7 +40,7 @@ describe('Calendar Rendering', () => {
       <div part="content">
         <div part="days-view-container">
           <div part="navigation">
-            <div>
+            <div part="picker-dates">
               <button part="months-navigation"></button>
               <span class="aria-off-screen"></span>
               <button part="years-navigation"></button>
@@ -135,7 +140,7 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar header-orientation="horizontal"></igc-calendar>
       `,
-        { ignoreAttributes: ['size'] }
+        DIFF_OPTIONS
       );
 
       el.headerOrientation = 'vertical';
@@ -147,7 +152,7 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar header-orientation="vertical"></igc-calendar>
       `,
-        { ignoreAttributes: ['size'] }
+        DIFF_OPTIONS
       );
     });
 
@@ -156,7 +161,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="large"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
 
       el.size = 'medium';
@@ -168,7 +178,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="medium"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
 
       el.size = 'small';
@@ -180,7 +195,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="small"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
     });
 
@@ -338,7 +358,7 @@ describe('Calendar Rendering', () => {
       const month = el.shadowRoot?.querySelector(
         'button[part="months-navigation"]'
       ) as Element;
-      expect(month).lightDom.to.equal(`7`);
+      expect(month).lightDom.to.equal('7');
 
       el.formatOptions = {
         month: '2-digit',
@@ -347,7 +367,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('2-digit');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`07`);
+      expect(month).lightDom.to.equal('07');
 
       el.formatOptions = {
         month: 'long',
@@ -356,7 +376,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('long');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`July`);
+      expect(month).lightDom.to.equal('July');
 
       el.formatOptions = {
         month: 'short',
@@ -365,7 +385,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('short');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`Jul`);
+      expect(month).lightDom.to.equal('Jul');
 
       el.formatOptions = {
         month: 'narrow',
@@ -374,7 +394,7 @@ describe('Calendar Rendering', () => {
       expect(el.formatOptions.month).to.equal('narrow');
       await elementUpdated(el);
 
-      expect(month).lightDom.to.equal(`J`);
+      expect(month).lightDom.to.equal('J');
     });
 
     it('successfully changes title', async () => {
@@ -386,7 +406,13 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar title="New Title"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation', 'size'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            'size',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
     });
 
@@ -538,6 +564,6 @@ describe('Calendar Rendering', () => {
   });
 });
 
-export const createCalendarElement = () => {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-};
+function createCalendarElement() {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+}

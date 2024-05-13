@@ -1,12 +1,13 @@
 import { expect } from '@open-wc/testing';
+
 import {
   Calendar,
-  ICalendarDate,
+  type ICalendarDate,
+  TimeDeltaInterval,
+  WEEKDAYS,
   isLeap,
   monthRange,
-  TimeDeltaInterval,
   weekDay,
-  WEEKDAYS,
 } from './calendar.model.js';
 
 describe('Calendar model', () => {

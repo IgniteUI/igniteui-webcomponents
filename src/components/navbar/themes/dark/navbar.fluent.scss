@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
-@mixin theme() {
-    igc-navbar {
-        @include css-vars-from-theme($fluent, 'ig-navbar');
-    }
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-navbar');
 }

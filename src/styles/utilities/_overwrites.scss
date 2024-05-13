@@ -3,7 +3,7 @@
 @function color(
     $color: primary,
     $variant: 500,
-    $opacity: #{var(--ig-#{$color}-a)}) {
+    $opacity: null) {
     @return theming.color(
         $palette: null,
         $color: $color,
@@ -12,10 +12,11 @@
     );
 }
 
-@function contrast-color($color: primary, $variant: 500) {
+@function contrast-color($color: primary, $variant: 500, $opacity: null) {
     @return theming.contrast-color(
         $palette: null,
         $color: $color,
-        $variant: $variant
+        $variant: $variant,
+        $opacity: $opacity
     );
 }

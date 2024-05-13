@@ -1,6 +1,8 @@
+import { writeFile } from 'node:fs/promises';
 import watch from 'node-watch';
+import * as sass from 'sass-embedded';
 import report from './report.js';
-import { sassRender, template } from './sass.mjs';
+import { compileSass, fromTemplate } from './sass.mjs';
 
 const watchOptions = {
   recursive: true,
@@ -9,26 +11,31 @@ const watchOptions = {
   },
 };
 
-watch(['src'], watchOptions, function(_event, fileName) {
-  addToQueue(fileName);
-});
-
 let updating = false;
+const compiler = await sass.initAsyncCompiler();
 
-async function addToQueue(fileName) {
-  const output = fileName.replace(/\.scss$/, '.css.ts');
+const watcher = watch(['src'], watchOptions, async (_, fileName) => {
   if (updating) {
     return;
   }
+
   report.warn(`Change detected: ${fileName}`);
   updating = true;
-  console.log('Rebuilding styles...');
 
-  await sassRender(fileName, template, output).catch((err) => {
+  try {
+    await writeFile(
+      fileName.replace(/\.scss$/, '.css.ts'),
+      fromTemplate(await compileSass(fileName, compiler)),
+      'utf8'
+    );
+  } catch (err) {
     report.error(err);
-  });
+  }
+
   report.success('Styles rebuilt 🎨');
   updating = false;
-}
+});
+
+watcher.on('close', () => compiler.dispose());
 
 console.log('Styles watcher started...');

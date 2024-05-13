@@ -3,17 +3,24 @@ import {
   instagram,
   twitter,
 } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
   IgcAvatarComponent,
+  IgcButtonComponent,
   IgcCardComponent,
   IgcIconButtonComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
+defineComponents(
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCardComponent,
+  IgcIconButtonComponent
+);
 
 const icons = [facebook, instagram, twitter];
 
@@ -38,7 +45,7 @@ const metadata: Meta<IgcCardComponent> = {
       type: 'boolean',
       description: 'Sets card elevated style, otherwise card looks outlined.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { elevated: false },
@@ -53,18 +60,12 @@ interface IgcCardArgs {
 type Story = StoryObj<IgcCardArgs>;
 
 // endregion
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
 
-const Template = (
-  { elevated = false }: IgcCardArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ elevated = false }: IgcCardArgs) => {
   return html`
     <div style="display:flex; margin:16px">
       <div style="max-width: 344px; margin-right: 16px">
-        <igc-card ?elevated=${elevated} dir=${direction}>
+        <igc-card ?elevated=${elevated}>
           <igc-card-media style="max-height: 194px">
             <img
               src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
@@ -90,18 +91,19 @@ const Template = (
             </p>
           </igc-card-content>
           <igc-card-actions>
-            <igc-button slot="start">Like</igc-button>
-            <igc-button slot="start">Learn More</igc-button>
+            <igc-button slot="start" variant="flat">Like</igc-button>
+            <igc-button slot="start" variant="flat">Learn More</igc-button>
             <igc-icon-button
               slot="end"
               name="star_border"
               collection="internal"
+              variant="flat"
             ></igc-icon-button>
           </igc-card-actions>
         </igc-card>
       </div>
       <div style="max-width: 344px">
-        <igc-card dir=${direction} ?elevated=${elevated}>
+        <igc-card ?elevated=${elevated}>
           <igc-card-header>
             <igc-avatar
               slot="thumbnail"
@@ -122,7 +124,7 @@ const Template = (
             <p>
               New York City comprises 5 boroughs sitting where the Hudson River
               meets the Atlantic Ocean. At its core is Manhattan, a densely
-              populated borough that’s among the world’s major commercial,
+              populated borough that's among the world's major commercial,
               financial and cultural centers.
             </p>
           </igc-card-content>
@@ -152,7 +154,7 @@ const Template = (
               <h5 slot="subtitle">Under the Grave (2016)</h5>
             </igc-card-header>
             <igc-card-content>
-              As I have always said: I write what’s real and what’s true, even
+              As I have always said: I write what's real and what's true, even
               if it means throwing myself under the bus.
             </igc-card-content>
           </div>

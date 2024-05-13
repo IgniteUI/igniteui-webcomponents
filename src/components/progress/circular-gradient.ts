@@ -1,6 +1,8 @@
 import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { registerComponent } from '../common/definitions/register.js';
+
 /**
  * Used for defining gradient stops in the igc-circular-progress.
  * For each `igc-circular-gradient` defined as `gradient` slot of `igc-circular-progress` element would be created a SVG stop element.
@@ -12,6 +14,11 @@ import { property } from 'lit/decorators.js';
  */
 export default class IgcCircularGradientComponent extends LitElement {
   public static readonly tagName = 'igc-circular-gradient';
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcCircularGradientComponent);
+  }
 
   /**
    * Defines where the gradient stop is placed along the gradient vector

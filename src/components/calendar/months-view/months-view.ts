@@ -1,21 +1,22 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import { registerComponent } from '../../common/definitions/register.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css.js';
-import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css.js';
 import { styles } from '../themes/year-month-view.base.css.js';
+import { all } from '../themes/year-month.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -28,16 +29,19 @@ import { styles } from '../themes/year-month-view.base.css.js';
  */
 @blazorIndirectRender
 @blazorSuppressComponent
-@themes({
-  bootstrap,
-  fluent,
-})
+@themes(all)
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-months-view';
   public static styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcMonthsViewComponent);
+  }
+
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

@@ -1,10 +1,12 @@
-import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
+
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderLabelComponent from './slider-label.js';
 
 export interface IgcSliderEventMap {
   /**
@@ -47,17 +49,26 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-slider';
 
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
+  }
+
+  private _value = 0;
+
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component.
    * @attr
    */
   @property({ type: Number })
-  public value = 0;
+  public set value(value: number) {
+    this._value = this.validateValue(asNumber(value, this._value));
+    this.setFormValue(`${this._value}`);
+  }
 
-  @watch('value')
-  protected valueChanged() {
-    this.value = this.validateValue(this.value);
-    this.setFormValue(`${this.value}`);
+  public get value(): number {
+    return this._value;
   }
 
   protected override get activeValue(): number {
@@ -69,23 +80,23 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override getTrackStyle() {
-    const position = this.valueToFraction(this.value);
-    const filledTrackStyle = {
-      width: `${position * 100}%`,
+    return {
+      width: `${asPercent(this.value - this.min, this.distance)}%`,
     };
-
-    return filledTrackStyle;
   }
 
   protected override updateValue(increment: number) {
-    const oldValue = this.value;
+    const value = clamp(
+      this.value + increment,
+      this.lowerBound,
+      this.upperBound
+    );
 
-    this.value = (this.value as number) + increment;
-
-    if (oldValue === this.value) {
+    if (this.value === value) {
       return false;
     }
 
+    this.value = value;
     this.emitInputEvent();
     return true;
   }
@@ -115,11 +126,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override renderThumbs() {
-    const ariaLabel = this.getAttribute('aria-label');
-    if (ariaLabel) {
-      this.removeAttribute('aria-label');
-    }
-    return html`${this.renderThumb(this.value, ariaLabel!)}`;
+    return this.renderThumb(this.value, this.ariaLabel!);
   }
 }
 

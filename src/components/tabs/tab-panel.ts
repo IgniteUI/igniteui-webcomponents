@@ -1,6 +1,8 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
+import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { styles } from './themes/light/tab-panel.base.css.js';
+import { styles } from './themes/tab-panel.base.css.js';
 
 /**
  * Represents the content of a tab
@@ -11,8 +13,12 @@ import { styles } from './themes/light/tab-panel.base.css.js';
  */
 export default class IgcTabPanelComponent extends LitElement {
   public static readonly tagName = 'igc-tab-panel';
-
   public static override styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcTabPanelComponent);
+  }
 
   private static readonly increment = createCounter();
 

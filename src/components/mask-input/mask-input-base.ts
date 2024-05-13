@@ -1,6 +1,6 @@
 import { property, state } from 'lit/decorators.js';
+
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
 
@@ -134,7 +134,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     }
   }
 
-  @blazorSuppress()
+  /* blazorSuppress */
   public override setSelectionRange(
     start: number,
     end: number,
@@ -144,5 +144,44 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     this.selection = { start, end };
   }
 
+  /* blazorSuppress */
+  /** Replaces the selected text in the control and re-applies the mask */
+  public override setRangeText(
+    replacement: string,
+    start?: number,
+    end?: number,
+    selectMode?: 'select' | 'start' | 'end' | 'preserve'
+  ) {
+    const current = this.inputSelection;
+    const _start = start ?? current.start;
+    const _end = end ?? current.end;
+
+    const result = this.parser.replace(
+      this.maskedValue || this.emptyMask,
+      replacement,
+      _start,
+      _end
+    );
+    this.maskedValue = this.parser.apply(this.parser.parse(result.value));
+    this._updateSetRangeTextValue();
+
+    this.updateComplete.then(() => {
+      switch (selectMode) {
+        case 'select':
+          this.setSelectionRange(_start, _end);
+          break;
+        case 'start':
+          this.setSelectionRange(_start, _start);
+          break;
+        case 'end':
+          this.setSelectionRange(_end, _end);
+          break;
+        default:
+          this.setSelectionRange(current.start, current.end);
+      }
+    });
+  }
+
+  protected abstract _updateSetRangeTextValue(): void;
   protected abstract updateInput(string: string, range: MaskRange): void;
 }

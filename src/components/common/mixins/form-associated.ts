@@ -1,12 +1,13 @@
-import { LitElement } from 'lit';
+import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import type { Constructor } from './constructor';
+
 import type { Validator } from '../validators.js';
+import type { Constructor } from './constructor';
 
 export declare class FormAssociatedElementInterface {
   public static readonly formAssociated: boolean;
 
-  #internals: ElementInternals;
+  private __internals: ElementInternals;
   protected validators: Validator[];
   protected _disabled: boolean;
   protected _invalid: boolean;
@@ -126,7 +127,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   class FormAssociatedElement extends superClass {
     public static readonly formAssociated = true;
 
-    #internals: ElementInternals;
+    private __internals: ElementInternals;
     protected validators: Validator[] = [];
     protected _disabled = false;
     protected _invalid = false;
@@ -152,66 +153,66 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public name!: string;
 
     /** Returns the HTMLFormElement associated with this element. */
-    public get form() {
-      return this.#internals.form;
+    public get form(): HTMLFormElement | null {
+      return this.__internals.form;
     }
 
     /**
      * Returns a ValidityState object which represents the different validity states
      * the element can be in, with respect to constraint validation.
      */
-    public get validity() {
-      return this.#internals.validity;
+    public get validity(): ValidityState {
+      return this.__internals.validity;
     }
 
     /** A string containing the validation message of this element. */
-    public get validationMessage() {
-      return this.#internals.validationMessage;
+    public get validationMessage(): string {
+      return this.__internals.validationMessage;
     }
 
     /**
      * A boolean value which returns true if the element is a submittable element
      * that is a candidate for constraint validation.
      */
-    public get willValidate() {
-      return this.#internals.willValidate;
+    public get willValidate(): boolean {
+      return this.__internals.willValidate;
     }
 
     /**
      * The disabled state of the component
-     * @attr [disabled=false]
+     *
+     * @attr
+     * @default false
      */
     @property({ type: Boolean, reflect: true })
-    public get disabled() {
-      return this._disabled;
-    }
-
     public set disabled(value: boolean) {
-      const prev = this._disabled;
       this._disabled = value;
       this.toggleAttribute('disabled', Boolean(this._disabled));
-      this.requestUpdate('disabled', prev);
+    }
+
+    public get disabled(): boolean {
+      return this._disabled;
     }
 
     /**
      * Control the validity of the control.
-     * @attr [invalid=false]
+     *
+     * @attr
+     * @default false
      */
     @property({ type: Boolean, reflect: true })
-    public get invalid() {
-      return this._invalid;
-    }
-
     public set invalid(value: boolean) {
-      const prev = this._invalid;
       this._invalid = value;
       this.toggleAttribute('invalid', Boolean(this._invalid));
-      this.requestUpdate('invalid', prev);
+    }
+
+    public get invalid(): boolean {
+      return this._invalid;
     }
 
     constructor(...args: any[]) {
       super(args);
-      this.#internals = this.attachInternals();
+      this.__internals = this.attachInternals();
       this.addEventListener('invalid', this.handleInvalid);
     }
 
@@ -256,7 +257,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       value: string | File | FormData | null,
       state?: string | File | FormData | null | undefined
     ) {
-      this.#internals.setFormValue(value, state || value);
+      this.__internals.setFormValue(value, state || value);
     }
 
     protected setValidity(
@@ -264,7 +265,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       message?: string | undefined,
       anchor?: HTMLElement | undefined
     ) {
-      this.#internals.setValidity(flags, message, anchor);
+      this.__internals.setValidity(flags, message, anchor);
     }
 
     protected formResetCallback() {
@@ -307,7 +308,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
         validationMessage = message;
       }
 
-      this.#internals.setValidity(validity, validationMessage);
+      this.__internals.setValidity(validity, validationMessage);
     }
 
     /**
@@ -324,12 +325,12 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity() {
-      return this.#internals.reportValidity();
+      return this.__internals.reportValidity();
     }
 
     /** Checks for validity of the control and emits the invalid event if it invalid. */
     public checkValidity() {
-      return this.#internals.checkValidity();
+      return this.__internals.checkValidity();
     }
 
     /**

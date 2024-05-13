@@ -1,44 +1,32 @@
+import { LitElement, html, nothing } from 'lit';
 import {
   property,
   query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { html, LitElement } from 'lit';
-import { isLTR, partNameMap } from '../common/util.js';
-import { styles } from './themes/light/tree-item.base.css.js';
-import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
-import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
-import { styles as material } from './themes/light/tree-item.material.css.js';
-import type IgcTreeComponent from './tree.js';
-import { watch } from '../common/decorators/watch.js';
-import { IgcTreeSelectionService } from './tree.selection.js';
-import { IgcTreeNavigationService } from './tree.navigation.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+
+import { addAnimationController } from '../../animations/player.js';
+import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import {
-  AnimationPlayer,
-  growVerIn,
-  growVerOut,
-} from '../../animations/index.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcIconComponent from '../icon/icon.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import {
+  findElementFromEventPath,
+  isLTR,
+  partNameMap,
+} from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcCheckboxComponent,
-  IgcCircularProgressComponent
-);
-
-const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
-  small: 1 / 2,
-  medium: 2 / 3,
-  large: 1,
-};
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item.common.css.js';
+import type IgcTreeComponent from './tree.js';
+import type { IgcTreeNavigationService } from './tree.navigation.js';
+import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -60,16 +48,27 @@ const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes(all)
 export default class IgcTreeItemComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-tree-item';
-  /** @private */
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcTreeItemComponent,
+      IgcIconComponent,
+      IgcCheckboxComponent,
+      IgcCircularProgressComponent
+    );
+  }
 
   private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;
-  private animationPlayer!: AnimationPlayer;
+
+  private groupRef: Ref<HTMLElement> = createRef();
+
+  private animationPlayer = addAnimationController(this, this.groupRef);
 
   /** A reference to the tree the item is a part of. */
   @blazorSuppress()
@@ -88,10 +87,6 @@ export default class IgcTreeItemComponent extends LitElement {
   @query('#wrapper')
   @blazorSuppress()
   public wrapper!: HTMLElement;
-
-  /** @private */
-  @query('[role="group"]', true)
-  private group!: HTMLElement;
 
   @state()
   private isFocused = false;
@@ -159,10 +154,6 @@ export default class IgcTreeItemComponent extends LitElement {
    */
   @property({ attribute: true })
   public value: any = undefined;
-
-  public override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.group);
-  }
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
@@ -249,7 +240,7 @@ export default class IgcTreeItemComponent extends LitElement {
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
     this.addEventListener('focus', this.onFocus);
-    this.addEventListener('pointerdown', this.pointerDown);
+    this.addEventListener('click', this.itemClick);
     this.activeChange();
     // if the item is not added/moved runtime
     if (this.init) {
@@ -286,15 +277,12 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private get directChildren(): Array<IgcTreeItemComponent> {
     return this.allChildren.filter(
-      (x) =>
-        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
-          this
-        )
+      (x) => (x.parent ?? x.parentElement?.closest('igc-tree-item')) === this
     ) as IgcTreeItemComponent[];
   }
 
   private get allChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
+    return Array.from(this.querySelectorAll('igc-tree-item'));
   }
 
   /** The full path to the tree item, starting from the top-most ancestor. */
@@ -302,13 +290,22 @@ export default class IgcTreeItemComponent extends LitElement {
     return this.parent?.path ? [...this.parent.path, this] : [this];
   }
 
-  private pointerDown(event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.disabled) {
+  private itemClick(event: MouseEvent): void {
+    if (
+      this.disabled ||
+      this !== findElementFromEventPath(this.tagName, event)
+    ) {
       return;
     }
     this.tabIndex = 0;
-    this.navService?.setFocusedAndActiveItem(this, true, false);
+    if (this.tree?.toggleNodeOnClick && event.button === 0) {
+      if (this.expanded) {
+        this.collapseWithEvent();
+      } else {
+        this.expandWithEvent();
+      }
+    }
+    this.navService?.setFocusedAndActiveItem(this, true, true);
   }
 
   private expandIndicatorClick(): void {
@@ -324,6 +321,9 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private selectorClick(event: MouseEvent): void {
     event.preventDefault();
+    if (this.tree?.toggleNodeOnClick) {
+      event.stopPropagation();
+    }
     if (event.shiftKey) {
       this.selectionService?.selectMultipleItems(this);
       return;
@@ -347,7 +347,7 @@ export default class IgcTreeItemComponent extends LitElement {
         inline: 'nearest',
       });
     }
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       // set tabIndex = 0 to all tabbable elements
       // focus the first one
       this.tabbableEl.forEach((element: HTMLElement) => {
@@ -387,7 +387,7 @@ export default class IgcTreeItemComponent extends LitElement {
     });
 
     if (this.navService?.focusedItem === this) {
-      // called twice when clicking on already focused item with link (pointerDown handler)
+      // called twice when clicking on already focused item with link (itemClick handler)
       this.setAttribute('tabindex', '0');
     }
   }
@@ -404,7 +404,7 @@ export default class IgcTreeItemComponent extends LitElement {
       this.tabbableEl.splice(0, 0, firstElement);
     }
 
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       this.setAttribute('role', 'none');
       this.tabbableEl[0].setAttribute('role', 'treeitem');
 
@@ -433,9 +433,8 @@ export default class IgcTreeItemComponent extends LitElement {
   ): IgcTreeItemComponent[] {
     if (options.flatten) {
       return this.allChildren;
-    } else {
-      return this.directChildren;
     }
+    return this.directChildren;
   }
 
   /**
@@ -513,16 +512,12 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const size = this.level * (this.tree ? sizeMultiplier[this.tree!.size] : 1);
     const ltr = this.tree ? isLTR(this.tree) : true;
 
     return html`
-      <div
-        id="wrapper"
-        part="wrapper ${this.tree?.size} ${partNameMap(this.parts)}"
-      >
+      <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
         <div
-          style="width: calc(${size} * var(--igc-tree-indentation-size))"
+          style="width: calc(${this.level} * var(--igc-tree-indentation-size))"
           part="indentation"
           aria-hidden="true"
         >
@@ -536,15 +531,20 @@ export default class IgcTreeItemComponent extends LitElement {
                 </slot>
               `
             : html`
-                <slot name="indicator" @click=${this.expandIndicatorClick}>
+                <slot
+                  name="indicator"
+                  @click=${this.tree?.toggleNodeOnClick
+                    ? nothing
+                    : this.expandIndicatorClick}
+                >
                   ${this.hasChildren
                     ? html`
                         <igc-icon
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
                             : !ltr
-                            ? 'navigate_before'
-                            : 'keyboard_arrow_right'}
+                              ? 'navigate_before'
+                              : 'keyboard_arrow_right'}
                           collection="internal"
                         >
                         </igc-icon>
@@ -578,7 +578,7 @@ export default class IgcTreeItemComponent extends LitElement {
           </slot>
         </div>
       </div>
-      <div role="group" aria-hidden=${!this.expanded}>
+      <div ${ref(this.groupRef)} role="group" aria-hidden=${!this.expanded}>
         <slot @slotchange=${this.handleChange}></slot>
       </div>
     `;

@@ -1,8 +1,8 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
-import { defineComponents, IgcDialogComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+
+import { IgcDialogComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcDialogComponent);
 
@@ -12,6 +12,7 @@ const metadata: Meta<IgcDialogComponent> = {
   component: 'igc-dialog',
   parameters: {
     docs: { description: { component: 'Represents a Dialog component.' } },
+    actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     keepOpenOnEscape: {
@@ -19,36 +20,31 @@ const metadata: Meta<IgcDialogComponent> = {
       description:
         "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the dialog should be closed when clicking outside of it.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideDefaultAction: {
       type: 'boolean',
       description:
         'Whether to hide the default action button for the dialog.\n\nWhen there is projected content in the `footer` slot this property\nhas no effect.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     open: {
       type: 'boolean',
       description: 'Whether the dialog is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     title: {
       type: 'string',
       description: 'Sets the title of the dialog.',
-      control: 'text',
-    },
-    returnValue: {
-      type: 'string',
-      description: 'Sets the return value for the dialog.',
       control: 'text',
     },
   },
@@ -78,18 +74,10 @@ interface IgcDialogArgs {
   open: boolean;
   /** Sets the title of the dialog. */
   title: string;
-  /** Sets the return value for the dialog. */
-  returnValue: string;
 }
 type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcClosing', 'igcClosed'],
-  },
-});
 
 const openDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).show();
@@ -103,16 +91,13 @@ const authSelected = (ev: CustomEvent) => {
     ev.detail.value;
 };
 
-const Template = (
-  {
-    keepOpenOnEscape,
-    closeOnOutsideClick,
-    title,
-    open,
-    hideDefaultAction,
-  }: IgcDialogComponent,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  keepOpenOnEscape,
+  closeOnOutsideClick,
+  title,
+  open,
+  hideDefaultAction,
+}: IgcDialogComponent) => {
   return html`
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px; gap: 1rem"
@@ -133,7 +118,6 @@ const Template = (
         ?hide-default-action=${hideDefaultAction}
         .open=${open}
         title=${ifDefined(title)}
-        dir=${ifDefined(direction)}
       >
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus rerum
         enim, incidunt magni ea asperiores laudantium, ducimus itaque quisquam
@@ -143,25 +127,27 @@ const Template = (
 
       <igc-dialog
         id="projected"
-        dir=${ifDefined(direction)}
         ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
         <h4 slot="title">Danger</h4>
         <p>Doing this action is irrevocable?</p>
-        <div slot="footer">
-          <igc-button @click=${() => closeDialog('projected')} variant="flat"
-            >Cancel</igc-button
-          >
-          <igc-button @click=${() => closeDialog('projected')} variant="flat"
-            >OK</igc-button
-          >
-        </div>
+        <igc-button
+          slot="footer"
+          @click=${() => closeDialog('projected')}
+          variant="flat"
+          >Cancel</igc-button
+        >
+        <igc-button
+          slot="footer"
+          @click=${() => closeDialog('projected')}
+          variant="contained"
+          >OK</igc-button
+        >
       </igc-dialog>
 
       <igc-dialog
         id="with-form"
-        dir=${ifDefined(direction)}
         hide-default-action
         ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
@@ -172,12 +158,7 @@ const Template = (
             <div style="display: flex; flex-flow: column; gap: 1rem">
               <igc-input outlined label="Username"></igc-input>
               <igc-input outlined label="Password" type="password"></igc-input>
-              <igc-dropdown
-                flip
-                same-width
-                position-strategy="fixed"
-                @igcChange=${authSelected}
-              >
+              <igc-dropdown flip same-width @igcChange=${authSelected}>
                 <igc-input
                   style="width: 100%"
                   outlined

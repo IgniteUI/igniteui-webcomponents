@@ -1,9 +1,11 @@
-import { css, html, LitElement } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
+
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
 export interface IgcFormEventMap {
   igcSubmit: CustomEvent<FormData>;
@@ -21,8 +23,7 @@ export interface IgcFormEventMap {
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
  *
- * @deprecated - since version 4.4.0
- * Use the native `<form>` element instead.
+ * @deprecated since version 4.4.0. Use the native `<form>` element instead.
  */
 export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
@@ -35,6 +36,11 @@ export default class IgcFormComponent extends EventEmitterMixin<
       display: block;
     }
   `;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcFormComponent);
+  }
 
   private _controlsWithChecked = [
     'input',
@@ -94,7 +100,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
         }
       } else if (
         (tagName === 'input' &&
-          (element.type === 'checkbox' || element.type == 'radio')) ||
+          (element.type === 'checkbox' || element.type === 'radio')) ||
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');

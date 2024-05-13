@@ -2,14 +2,13 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { alternateName } from '../common/decorators/alternateName.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { IgcInputBaseComponent } from './input-base.js';
 import {
-  Validator,
+  type Validator,
+  emailValidator,
   maxLengthValidator,
   maxValidator,
   minLengthValidator,
@@ -18,7 +17,9 @@ import {
   requiredNumberValidator,
   requiredValidator,
   stepValidator,
+  urlValidator,
 } from '../common/validators.js';
+import { IgcInputBaseComponent } from './input-base.js';
 
 /**
  * @element igc-input
@@ -41,6 +42,11 @@ import {
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcInputComponent);
+  }
 
   private get isStringType() {
     return this.type !== 'number';
@@ -81,21 +87,49 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       isValid: () =>
         this.isStringType ? patternValidator.isValid(this) : true,
     },
+    {
+      key: 'typeMismatch',
+      isValid: () => {
+        switch (this.type) {
+          case 'email':
+            return emailValidator.isValid(this);
+          case 'url':
+            return urlValidator.isValid(this);
+          default:
+            return true;
+        }
+      },
+      message: () =>
+        (this.type === 'email'
+          ? emailValidator.message
+          : urlValidator.message) as string,
+    },
   ];
 
+  protected _value = '';
+
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
    * @attr
    */
   @property()
-  @blazorTwoWayBind('igcChange', 'detail')
-  public value = '';
+  public set value(value: string) {
+    this._value = value;
+    this.setFormValue(value ? value : null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
 
+  public get value() {
+    return this._value;
+  }
+
+  /* alternateName: displayType */
   /**
    * The type attribute of the control.
    * @attr
    */
-  @alternateName('displayType')
   @property({ reflect: true })
   public type:
     | 'email'
@@ -126,53 +160,53 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * The pattern attribute of the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public pattern!: string;
 
   /**
    * The minimum string length required by the control.
-   * @attr
+   * @attr minlength
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
+  /* blazorCSSuppress */
   /**
    * The minlength attribute of the control.
-   * @attr
+   * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `minLength` property instead.
+   * @deprecated since v4.4.0. Use the `minLength` property instead.
    */
   @property({ attribute: false })
-  public get minlength() {
-    return this.minLength;
-  }
-
   public set minlength(value: number) {
     this.minLength = value;
   }
 
-  /**
-   * The maximum string length of the control.
-   * @attr
-   */
-  @property({ type: Number })
-  public maxLength!: number;
-
-  /**
-   * The maxlength attribute of the control.
-   * @attr
-   *
-   * @deprecated - since v4.4.0
-   * Use the `maxLength` property instead.
-   */
-  @property({ attribute: false })
-  public get maxlength() {
-    return this.maxLength;
+  public get minlength() {
+    return this.minLength;
   }
 
+  /**
+   * The maximum string length of the control.
+   * @attr maxlength
+   */
+  @property({ type: Number, attribute: 'maxlength' })
+  public maxLength!: number;
+
+  /* blazorCSSuppress */
+  /**
+   * The maxlength attribute of the control.
+   * @prop
+   *
+   * @deprecated since v4.4.0. Use the `maxLength` property instead.
+   */
+  @property({ attribute: false })
   public set maxlength(value: number) {
     this.maxLength = value;
+  }
+
+  public get maxlength() {
+    return this.maxLength;
   }
 
   /**
@@ -210,6 +244,18 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
+  /**
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
+   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
+   *
+   * @attr validate-only
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
+  public validateOnly = false;
+
+  /**
+   * @internal
+   */
   @property({ type: Number })
   public override tabIndex = 0;
 
@@ -223,16 +269,15 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.updateValidity();
   }
 
-  @watch('value')
-  protected valueChange() {
-    const value = this.value ? this.value : null;
-    this.setFormValue(value, value);
+  /** @hidden */
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.setFormValue(this._value ? this._value : null);
     this.updateValidity();
-    this.setInvalidState();
   }
 
+  /* blazorSuppress */
   /** Replaces the selected text in the input. */
-  @blazorSuppress()
   public override setRangeText(
     replacement: string,
     start: number,
@@ -276,7 +321,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected override handleBlur(): void {
-    this.invalid = !this.checkValidity();
+    this.checkValidity();
     super.handleBlur();
   }
 
@@ -297,10 +342,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputmode)}
-        min=${ifDefined(this.min)}
-        max=${ifDefined(this.max)}
+        min=${ifDefined(this.validateOnly ? undefined : this.min)}
+        max=${ifDefined(this.validateOnly ? undefined : this.max)}
         minlength=${ifDefined(this.minLength)}
-        maxlength=${ifDefined(this.maxLength)}
+        maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         step=${ifDefined(this.step)}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         @change=${this.handleChange}

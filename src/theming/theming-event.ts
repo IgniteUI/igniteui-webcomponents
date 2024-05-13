@@ -1,4 +1,4 @@
-import type { Theme } from './types.js';
+import type { Theme, ThemeVariant } from './types.js';
 
 export const CHANGE_THEME_EVENT = 'igc-change-theme';
 
@@ -15,4 +15,5 @@ declare global {
  */
 export type ChangeThemeEventDetail = {
   theme: Theme;
+  themeVariant: ThemeVariant;
 };

@@ -1,14 +1,14 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
-import { Context } from './story.js';
+
 import {
-  defineComponents,
   IgcTabsComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTabsComponent);
 
@@ -18,19 +18,15 @@ const metadata: Meta<IgcTabsComponent> = {
   component: 'igc-tabs',
   parameters: {
     docs: { description: { component: 'Represents tabs component' } },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
-    selected: {
-      type: 'string',
-      description: 'Returns the currently selected tab.',
-      control: 'text',
-    },
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
       description: 'Sets the alignment for the tab headers',
       options: ['start', 'end', 'center', 'justify'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'start',
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'start' } },
     },
     activation: {
       type: '"auto" | "manual"',
@@ -38,7 +34,7 @@ const metadata: Meta<IgcTabsComponent> = {
         'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
       options: ['auto', 'manual'],
       control: { type: 'inline-radio' },
-      defaultValue: 'auto',
+      table: { defaultValue: { summary: 'auto' } },
     },
   },
   args: { alignment: 'start', activation: 'auto' },
@@ -47,8 +43,6 @@ const metadata: Meta<IgcTabsComponent> = {
 export default metadata;
 
 interface IgcTabsArgs {
-  /** Returns the currently selected tab. */
-  selected: string;
   /** Sets the alignment for the tab headers */
   alignment: 'start' | 'end' | 'center' | 'justify';
   /**
@@ -62,12 +56,6 @@ interface IgcTabsArgs {
 type Story = StoryObj<IgcTabsArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange'],
-  },
-});
 
 registerIcon(
   'home',
@@ -115,19 +103,15 @@ const tabs = Array.from(
   )
 );
 
-const Template = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
     ${tabs}
   </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+  <igc-tabs alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
     </igc-tab>
@@ -141,7 +125,7 @@ const Template = (
     <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+  <igc-tabs alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
       <input />
@@ -169,12 +153,8 @@ const Template = (
   </igc-tabs>
 `;
 
-const TabStrip = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const TabStrip = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
@@ -182,12 +162,8 @@ const TabStrip = (
   </igc-tabs>
 `;
 
-const RemovableTabs = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const RemovableTabs = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >

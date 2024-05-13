@@ -1,27 +1,30 @@
 import {
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
+  type ReactiveElement,
   adoptStyles,
   css,
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
-  ReactiveElement,
 } from 'lit';
+
 import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, ThemeController, Themes } from './types.js';
+import type { Theme, ThemeController, ThemeVariant, Themes } from './types.js';
+
+type ThemeCallback = () => void;
 
 class ThemeEventListeners {
-  private readonly listeners = new Set<Function>();
+  private readonly listeners = new Set<ThemeCallback>();
 
-  public add(listener: Function) {
-    window.addEventListener(CHANGE_THEME_EVENT, this);
+  public add(listener: ThemeCallback) {
+    globalThis.addEventListener(CHANGE_THEME_EVENT, this);
     this.listeners.add(listener);
   }
 
-  public remove(listener: Function) {
+  public remove(listener: ThemeCallback) {
     this.listeners.delete(listener);
     if (this.listeners.size < 1) {
-      window.removeEventListener(CHANGE_THEME_EVENT, this);
+      globalThis.removeEventListener(CHANGE_THEME_EVENT, this);
     }
   }
 
@@ -38,6 +41,7 @@ class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
   public theme!: Theme;
+  public themeVariant!: ThemeVariant;
 
   constructor(host: ReactiveControllerHost & ReactiveElement, themes: Themes) {
     this.host = host;
@@ -54,19 +58,26 @@ class ThemingController implements ReactiveController, ThemeController {
   }
 
   protected adoptStyles() {
-    this.theme = getTheme();
-    const ctor = this.host.constructor as typeof LitElement;
+    const { theme, themeVariant } = getTheme();
+    this.theme = theme;
+    this.themeVariant = themeVariant;
 
-    const [_, cssResult] =
-      Object.entries(this.themes).find(([name]) => name === this.theme) ?? [];
+    const ctor = this.host.constructor as typeof LitElement;
+    const stylesheets = Object.entries(this.themes[themeVariant]);
+
+    const [_unused, sharedStyles] =
+      stylesheets.find(([name]) => name === 'shared') ?? [];
+    const [_, themeStyles] =
+      stylesheets.find(([name]) => name === this.theme) ?? [];
 
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
-      cssResult ?? css``,
+      sharedStyles ?? css``,
+      themeStyles ?? css``,
     ]);
   }
 
-  private themeChanged = () => {
+  private themeChanged: ThemeCallback = () => {
     this.adoptStyles();
     this.host.requestUpdate();
   };

@@ -1,32 +1,35 @@
 import type { ArgTypes, Meta } from '@storybook/web-components';
 import { html } from 'lit';
 
-export type Direction = 'ltr' | 'rtl' | 'auto';
-export type Variant = 'light' | 'dark';
-export type Size = 'attribute' | 'small' | 'medium' | 'large';
-
-export interface Context {
-  globals: {
-    theme: string;
-    direction: Direction;
-    variant: Variant;
-    size: Size;
-  };
-}
+import { IgcDialogComponent, defineComponents } from '../src/index.js';
+defineComponents(IgcDialogComponent);
 
 export function disableStoryControls<T>(meta: Meta<T>): Partial<ArgTypes<T>> {
   return Object.fromEntries(
     Object.entries(structuredClone(meta.argTypes!)).map(([key, args]) => [
       key,
-      Object.assign(args as {}, { table: { disable: true } }),
+      Object.assign(args as object, { table: { disable: true } }),
     ])
   ) as unknown as Partial<ArgTypes<T>>;
 }
 
+function showDialog(data: FormData) {
+  const dialog = document.createElement('igc-dialog');
+  dialog.title = 'Form submission result';
+  dialog.addEventListener('igcClosed', () => dialog.remove());
+
+  const dump = document.createElement('pre');
+  dump.textContent = JSON.stringify(Object.fromEntries(data), undefined, '\t');
+
+  dialog.appendChild(dump);
+  document.body.appendChild(dialog);
+
+  dialog.show();
+}
+
 export function formSubmitHandler(event: SubmitEvent) {
   event.preventDefault();
-  const form = event.target as HTMLFormElement;
-  console.table(Object.fromEntries(new FormData(form)));
+  showDialog(new FormData(event.currentTarget as HTMLFormElement));
 }
 
 export function formControls() {

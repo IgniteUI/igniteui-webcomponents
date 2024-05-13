@@ -1,25 +1,37 @@
-import { html, LitElement, nothing } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import { LitElement, html, nothing } from 'lit';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  queryAssignedNodes,
+  state,
+} from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { guard } from 'lit/directives/guard.js';
+
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, format, isLTR } from '../common/util.js';
-import { styles } from './rating.base.css.js';
-import { styles as bootstrap } from './rating.bootstrap.css.js';
-import { styles as fluent } from './rating.fluent.css.js';
-import { styles as indigo } from './rating.indigo.css.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import IgcIconComponent from '../icon/icon.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
-
-defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { clamp, formatString, isLTR } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import { styles } from './themes/rating.base.css.js';
+import { styles as shared } from './themes/shared/rating.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -49,16 +61,29 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes({ fluent, bootstrap, indigo })
+@themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
   )
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
-  protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcRatingComponent,
+      IgcIconComponent,
+      IgcRatingSymbolComponent
+    );
+  }
+
+  @queryAssignedElements({
+    selector: IgcRatingSymbolComponent.tagName,
+    slot: 'symbol',
+  })
+  protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
 
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
@@ -84,7 +109,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     // Skip IEEE 754 representation for screen readers
     const value = this.round(this.value);
     return this.valueFormat
-      ? format(this.valueFormat, `${value}`, `${this.max}`)
+      ? formatString(this.valueFormat, value, this.max)
       : `${value} of ${this.max}`;
   }
 
@@ -124,6 +149,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ attribute: 'value-format' })
   public valueFormat!: string;
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component
    * @attr
@@ -133,32 +159,32 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /**
    * Sets hover preview behavior for the component
-   * @attr
+   * @attr hover-preview
    */
   @property({ type: Boolean, reflect: true, attribute: 'hover-preview' })
   public hoverPreview = false;
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @attr readonly
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /* blazorCSSuppress */
   /**
    * Sets the readonly state of the component
-   * @attr
+   * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `readOnly` property instead.
+   * @deprecated since v4.4.0. Use the `readOnly` property instead.
    */
   @property({ attribute: false })
-  public get readonly() {
-    return this.readOnly;
-  }
-
   public set readonly(value: boolean) {
     this.readOnly = value;
+  }
+
+  public get readonly() {
+    return this.readOnly;
   }
 
   /**
@@ -168,11 +194,19 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ type: Boolean })
   public single = false;
 
+  /**
+   * Whether to reset the rating when the user selects the same value.
+   * @attr allow-reset
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'allow-reset' })
+  public allowReset = false;
+
   @watch('max')
   protected handleMaxChange() {
-    this.hasProjectedSymbols
-      ? (this.max = this.ratingSymbols.length)
-      : (this.max = Math.max(0, this.max));
+    this.max = this.hasProjectedSymbols
+      ? this.ratingSymbols.length
+      : Math.max(0, this.max);
+
     if (this.max < this.value) {
       this.value = this.max;
     }
@@ -180,7 +214,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @watch('value')
   protected handleValueChange() {
-    this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
+    this.value = clamp(Number.isNaN(this.value) ? 0 : this.value, 0, this.max);
     this.setFormValue(`${this.value}`, `${this.value}`);
     this.updateValidity();
     this.setInvalidState();
@@ -201,24 +235,39 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   constructor() {
     super();
-    this.addEventListener('keydown', this.handleKeyDown);
+
+    addKeybindings(this, {
+      skip: () => !this.isInteractive,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(arrowUp, () => this.emitValueUpdate(this.value + this.step))
+      .set(arrowRight, () =>
+        this.emitValueUpdate(
+          isLTR(this) ? this.value + this.step : this.value - this.step
+        )
+      )
+      .set(arrowDown, () => this.emitValueUpdate(this.value - this.step))
+      .set(arrowLeft, () =>
+        this.emitValueUpdate(
+          isLTR(this) ? this.value - this.step : this.value + this.step
+        )
+      )
+      .set(homeKey, () => this.emitValueUpdate(this.step))
+      .set(endKey, () => this.emitValueUpdate(this.max));
   }
 
   protected handleClick({ clientX }: MouseEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
     const value = this.calcNewValue(clientX);
-    this.value === value ? (this.value = 0) : (this.value = value);
-    this.emitEvent('igcChange', { detail: this.value });
+    const sameValue = this.value === value;
+
+    if (this.allowReset && sameValue) {
+      this.emitValueUpdate(0);
+    } else if (!sameValue) {
+      this.emitValueUpdate(value);
+    }
   }
 
   protected handleMouseMove({ clientX }: MouseEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
     const value = this.calcNewValue(clientX);
 
     if (this.hoverValue !== value) {
@@ -228,67 +277,26 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  protected handleMouseEnter() {
-    if (this.isInteractive) {
-      this.hoverState = true;
-    }
-  }
-
-  protected handleMouseLeave() {
-    if (this.isInteractive) {
-      this.hoverState = false;
-    }
-  }
-
-  protected handleKeyDown({ key }: KeyboardEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
-    let result = this.value;
-    const ltr = isLTR(this);
-
-    switch (key) {
-      case 'ArrowUp':
-      case 'ArrowRight':
-        result += ltr ? this.step : -this.step;
-        break;
-      case 'ArrowDown':
-      case 'ArrowLeft':
-        result -= ltr ? this.step : -this.step;
-        break;
-      case 'Home':
-        result = this.step;
-        break;
-      case 'End':
-        result = this.max;
-        break;
-      default:
-        return;
-    }
-
-    // Verify new value is in bounds and emit
-    this.value = clamp(result, 0, this.max);
-
-    if (result === this.value) {
+  protected emitValueUpdate(value: number) {
+    this.value = clamp(value, 0, this.max);
+    if (value === this.value) {
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
-  protected handleSlotChange(event: Event) {
-    const slot = event.target as HTMLSlotElement;
-
-    this.ratingSymbols = slot
-      .assignedElements()
-      .filter(
-        (el) => el instanceof IgcRatingSymbolComponent
-      ) as IgcRatingSymbolComponent[];
-
+  protected handleSlotChange() {
     if (this.hasProjectedSymbols) {
       this.max = this.ratingSymbols.length;
+      this.requestUpdate();
     }
+  }
 
-    this.requestUpdate();
+  protected handleHoverEnabled() {
+    this.hoverState = true;
+  }
+
+  protected handleHoverDisabled() {
+    this.hoverState = false;
   }
 
   protected calcNewValue(x: number) {
@@ -305,8 +313,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected round(value: number) {
-    value = Math.round(value / this.step) * this.step;
-    return Number(value.toFixed(this.getPrecision(this.step)));
+    return Number(
+      (Math.round(value / this.step) * this.step).toFixed(
+        this.getPrecision(this.step)
+      )
+    );
   }
 
   protected clipSymbol(index: number, isLTR = true) {
@@ -400,6 +411,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       this.ratingSymbols,
     ];
 
+    const hoverActive = this.hoverPreview && this.isInteractive;
+
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
         >${this.label}</label
@@ -417,10 +430,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         <div
           aria-hidden="true"
           part="symbols"
-          @click=${this.handleClick}
-          @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
-          @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
-          @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+          @click=${this.isInteractive ? this.handleClick : nothing}
+          @mouseenter=${hoverActive ? this.handleHoverEnabled : nothing}
+          @mouseleave=${hoverActive ? this.handleHoverDisabled : nothing}
+          @mousemove=${hoverActive ? this.handleMouseMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>
             ${guard(props, () => {

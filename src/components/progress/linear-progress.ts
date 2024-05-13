@@ -1,13 +1,14 @@
-import { html, nothing } from 'lit';
+import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { asPercent, partNameMap } from '../common/util.js';
+import { styleMap } from 'lit/directives/style-map.js';
+
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
-import { styles as bootstrap } from './themes/linear/linear.progress.bootstrap.css.js';
-import { styles as fluent } from './themes/linear/linear.progress.fluent.css.js';
-import { styles as indigo } from './themes/linear/linear.progress.indigo.css.js';
-import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { styles as shared } from './themes/linear/shared/linear.progress.common.css.js';
+import { all } from './themes/linear/themes.js';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -29,10 +30,15 @@ import { themes } from '../../theming/theming-decorator.js';
  * @csspart info
  * @csspart success
  */
-@themes({ bootstrap, indigo, fluent })
+@themes(all)
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcLinearProgressComponent);
+  }
 
   /**
    * Sets the striped look of the control.
@@ -54,8 +60,8 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     | 'bottom'
     | 'bottom-end' = 'top-start';
 
-  protected get wrapperParts() {
-    return {
+  protected override render() {
+    const parts = {
       fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
@@ -65,29 +71,16 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       warning: this.variant === 'warning',
       info: this.variant === 'info',
     };
-  }
 
-  protected get animInfo() {
-    return {
-      width: asPercent(this.value, this.max) + '%',
-      '--duration': this.animationDuration + 'ms',
+    const animation = {
+      width: `${this.progress * 100}%`,
+      '--duration': `${this.animationDuration}ms`,
     };
-  }
 
-  protected override render() {
     return html`
-      <div
-        part="track"
-        role="progressbar"
-        aria-valuemin="0"
-        aria-valuemax=${this.max}
-        aria-valuenow=${this.indeterminate ? nothing : this.value}
-      >
-        <div
-          part="${partNameMap(this.wrapperParts)}"
-          style="${styleMap(this.animInfo)}"
-        ></div>
-        <div part="${partNameMap(this.wrapperParts)} secondary"></div>
+      <div part="track">
+        <div part=${partNameMap(parts)} style=${styleMap(animation)}></div>
+        <div part="${partNameMap(parts)} secondary"></div>
       </div>
       ${this.renderDefaultSlot()}
     `;

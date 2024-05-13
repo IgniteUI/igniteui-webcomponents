@@ -1,6 +1,7 @@
-import { ReactiveController } from 'lit';
-import IgcComboListComponent from '../combo-list.js';
-import { ComboRecord, ComboHost } from '../types.js';
+import type { ReactiveController } from 'lit';
+
+import type IgcComboListComponent from '../combo-list.js';
+import type { ComboHost, ComboRecord } from '../types.js';
 
 const START_INDEX: Readonly<number> = -1;
 
@@ -209,9 +210,8 @@ export class NavigationController<T extends object>
 
     if (index >= 0 && index < items.length) {
       return index;
-    } else {
-      return -1;
     }
+    return -1;
   }
 
   public hostConnected() {}

@@ -1,9 +1,10 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/list-item.base.css.js';
-import { styles as bootstrap } from './themes/light/list-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/list-item.fluent.css.js';
-import { styles as indigo } from './themes/light/list-item.indigo.css.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item/list-item.common.css.js';
 
 /**
  * The list-item component is a container
@@ -24,19 +25,23 @@ import { styles as indigo } from './themes/light/list-item.indigo.css.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes(all)
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
+  public static override styles = [styles, shared];
 
-  public static override styles = styles;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcListItemComponent);
+  }
+
+  private _internals: ElementInternals;
 
   constructor() {
     super();
-  }
+    this._internals = this.attachInternals();
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'listitem');
+    this._internals.role = 'listitem';
   }
 
   protected override render() {

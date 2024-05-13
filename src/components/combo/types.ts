@@ -1,6 +1,7 @@
-import { ReactiveControllerHost, TemplateResult } from 'lit';
-import IgcComboComponent from './combo.js';
 import type { RenderItemFunction } from '@lit-labs/virtualizer/virtualize.js';
+import type { ReactiveControllerHost, TemplateResult } from 'lit';
+
+import type IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];
@@ -15,7 +16,7 @@ export type ComboRecord<T extends object> = {
 export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
 
-export type GroupingDirection = 'asc' | 'desc';
+export type GroupingDirection = 'asc' | 'desc' | 'none';
 export type ComboChangeType = 'selection' | 'deselection' | 'addition';
 export type ComboRenderFunction<T extends object> = RenderItemFunction<
   ComboRecord<T>

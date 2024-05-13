@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../light/themes' as light;
 
-@mixin theme() {
-    igc-slider {
-        --inactive-background: #{color(secondary, 500, .48)};
-    }
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-slider');
 }

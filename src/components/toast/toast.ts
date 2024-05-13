@@ -1,11 +1,12 @@
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html } from 'lit';
+
+import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
+import { styles as shared } from './themes/shared/toast.common.css.js';
+import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
-import { styles as bootstrap } from './themes/toast.bootstrap.css.js';
-import { styles as fluent } from './themes/toast.fluent.css.js';
-import { styles as indigo } from './themes/toast.indigo.css.js';
-import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 /**
  * A toast component is used to show a notification
@@ -14,97 +15,22 @@ import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
  *
  * @csspart base - The base wrapper of the toast.
  */
-
-@themes({ bootstrap, fluent, indigo })
-export default class IgcToastComponent extends LitElement {
+@themes(all)
+export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
-  private displayTimeout!: ReturnType<typeof setTimeout>;
-  private animationPlayer!: AnimationPlayer;
+  protected override _animationPlayer: ReturnType<
+    typeof addAnimationController
+  > = addAnimationController(this);
 
-  /**
-   * Determines whether the toast is opened.
-   * @attr
-   */
-  @property({ type: Boolean, reflect: true })
-  public open = false;
-
-  /**
-   * Determines the time after which the toast will close
-   * @attr display-time
-   */
-  @property({ type: Number, reflect: false, attribute: 'display-time' })
-  public displayTime = 4000;
-
-  /**
-   * Determines whether the toast is closed automatically or not.
-   * @attr keep-open
-   */
-  @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
-  public keepOpen = false;
-
-  protected override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this);
-  }
-
-  private async toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? fadeIn : fadeOut;
-
-    const [_, event] = await Promise.all([
-      this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation()),
-    ]);
-
-    return event.type === 'finish';
-  }
-
-  /** Closes the toast. */
-  public async hide() {
-    if (this.open) {
-      await this.toggleAnimation('close');
-      this.open = false;
-    }
-  }
-
-  /** Opens the toast. */
-  public show() {
-    window.clearTimeout(this.displayTimeout);
-
-    if (!this.open) {
-      this.toggleAnimation('open');
-      this.open = true;
-    }
-
-    if (this.keepOpen === false) {
-      this.displayTimeout = setTimeout(async () => {
-        await this.toggleAnimation('close');
-        this.open = false;
-      }, this.displayTime);
-    }
-  }
-
-  /** Toggles the open state of the toast. */
-  public toggle() {
-    if (this.open) {
-      this.hide();
-    } else {
-      this.show();
-    }
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'alert');
-    }
-    if (!this.hasAttribute('aria-live')) {
-      this.setAttribute('aria-live', 'polite');
-    }
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcToastComponent);
   }
 
   protected override render() {
-    return html`<slot></slot>`;
+    return html`<slot .inert=${!this.open}></slot>`;
   }
 }
 

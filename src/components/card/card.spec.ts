@@ -1,5 +1,6 @@
-import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcCardComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { IgcCardComponent, defineComponents } from '../../index.js';
 
 describe('Card Component', () => {
   before(() => {
@@ -25,7 +26,7 @@ describe('Card Component', () => {
     await elementUpdated(el);
 
     expect(el.elevated).to.be.true;
-    expect(el).dom.to.equal(`<igc-card elevated></igc-card>`);
+    expect(el).dom.to.equal('<igc-card elevated></igc-card>');
   });
 
   it('should render some content', async () => {

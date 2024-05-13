@@ -1,4 +1,4 @@
-import { WeekDays } from './calendar.model.js';
+import type { WeekDays } from './calendar.model.js';
 
 const weekDaysMap = {
   sunday: 0,
@@ -46,7 +46,7 @@ export const isEqual = (obj1: any, obj2: any): boolean => {
 
 export const isValidDate = (value: any): value is Date => {
   if (isDate(value)) {
-    return !isNaN(value.getTime());
+    return !Number.isNaN(value.getTime());
   }
 
   return false;

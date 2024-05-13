@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+
+:host {
+    @include type-style('caption');
+
+    padding: rem(8px) rem(12px);
+}

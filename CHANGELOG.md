@@ -4,6 +4,130 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.0] - 2024-04-30
+### Added
+- Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)
+- Input, Textarea - exposed `validateOnly` to enable validation rules being enforced without restricting user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/pull/1178)
+
+### Changed
+- Combo, Select and Dropdown components now use the native Popover API [#1082](https://github.com/IgniteUI/igniteui-webcomponents/pull/1082)
+
+### Deprecated
+- Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
+  making the property obsolete.
+
+### Fixed
+- Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
+
+## [4.8.2] - 2024-04-15
+### Fixed
+- Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)
+- Tabs - error when dynamically creating and adding a tab group and tabs in a single call stack [#1140](https://github.com/IgniteUI/igniteui-webcomponents/issues/1140)
+- Checkbox/Switch - participate in form submission when initially checked [#1144](https://github.com/IgniteUI/igniteui-webcomponents/issues/1144)
+- Dialog - `igcClosed` fired before the component was actually closed/hidden.
+
+## [4.8.1] - 2024-04-08
+### Fixed
+- Date-time input - `inputFormat` is not applied to an already set value [#1114](https://github.com/IgniteUI/igniteui-webcomponents/issues/1114)
+- Checkbox, Radio, Switch - apply form validation synchronously [#1122](https://github.com/IgniteUI/igniteui-webcomponents/issues/1122)
+- Select, Dropdown - Unable to select item when clicking on a wrapping element inside the dropdown/select item slot [#1123](https://github.com/IgniteUI/igniteui-webcomponents/issues/1123)
+- Tree - active state is correctly applied to the correct tree node on click [#1131](https://github.com/IgniteUI/igniteui-webcomponents/issues/1131)
+
+## [4.8.0] - 2024-03-20
+### Added
+- Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data. [#1026](https://github.com/IgniteUI/igniteui-webcomponents/pull/1026)
+- Button/Icon button - updated visual looks across themes, new states. [#1050](https://github.com/IgniteUI/igniteui-webcomponents/pull/1050)
+- Navigation bar - added border in Bootstrap theme. [#1060](https://github.com/IgniteUI/igniteui-webcomponents/pull/1060)
+
+### Changed
+- Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
+  **Behavioral change**
+  In previous release the sorting directions of the groups sorted the items as well. If you want to achieve this behavior you can pass already sorted data to the Combo component.
+
+### Deprecated
+- Slider
+   - `aria-label-upper` and `aria-label-lower` are deprecated and will be removed in the next major release. Use `thumb-label-upper` and `thumb-label-lower` instead.
+
+### Fixed
+- Button
+   - slotted icon size. [#1054](https://github.com/IgniteUI/igniteui-webcomponents/pull/1054)
+- Button group
+   - updated Fluent theme look. [#1044](https://github.com/IgniteUI/igniteui-webcomponents/pull/1044)
+   - disabled state in Safari. [#1047](https://github.com/IgniteUI/igniteui-webcomponents/pull/1047)
+- Combo/Select
+   - style issues. [#1038](https://github.com/IgniteUI/igniteui-webcomponents/pull/1038) [#1059](https://github.com/IgniteUI/igniteui-webcomponents/pull/1059)
+- Slider
+   - clicks on the slider track now use the track element width as a basis for the calculation. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - input events are not longer emitted while continuously dragging the slider thumb and exceeding upper/lower bounds. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - when setting **upper-bound/lower-bound** *before* **min/max**, the slider will no longer overwrite the bound properties with the previous values of min/max. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+   - the **aria-label** bound to the slider thumb is no longer reset on consequent renders. [#1049](https://github.com/IgniteUI/igniteui-webcomponents/pull/1049)
+- Input
+   - default validators are run synchronously. [#1066](https://github.com/IgniteUI/igniteui-webcomponents/issues/1066)
+   - style issues. [#1038](https://github.com/IgniteUI/igniteui-webcomponents/pull/1038) [#1104](https://github.com/IgniteUI/igniteui-webcomponents/pull/1104)
+- Date-time input
+   - setRangeText() updates underlying value. [#1075](https://github.com/IgniteUI/igniteui-webcomponents/issues/1075)
+
+## [4.7.0] - 2024-01-05
+### Added
+- Tree - Added **`toggleNodeOnClick`** property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`. [#1003](https://github.com/IgniteUI/igniteui-webcomponents/pull/1003).
+- Rating - **`allowReset`** added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014).
+  **Behavioral change**
+
+  In previous releases this was the default behavior of the rating component. Make sure to set `allowReset` if you need to keep this behavior in your application.
+
+### Changed
+- Improved WAI-ARIA compliance for Avatar, Badge and Combo components [#1007](https://github.com/IgniteUI/igniteui-webcomponents/pull/1007)
+
+### Fixed
+- Active item visual styles for Dropdown, Select and Combo components [#1002](https://github.com/IgniteUI/igniteui-webcomponents/pull/1002)
+- Navigation drawer - mini variant broken visual style [#1011](https://github.com/IgniteUI/igniteui-webcomponents/pull/1011)
+
+## [4.6.0] - 2023-12-05
+### Added
+- **`action`** slot added to Snackbar [#974](https://github.com/IgniteUI/igniteui-webcomponents/issues/974)
+- **`indicator-expanded`** slot added to Expansion panel [#982](https://github.com/IgniteUI/igniteui-webcomponents/pull/982)
+- **`toggle-icon-expanded`** slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/pull/983)
+- Select, Dropdown - exposed **`selectedItem`**, **`items`** and **`groups`** getters
+
+### Changed
+- Updated the package to Lit v3
+- Components dark variants are now bound to their shadow root [#940](https://github.com/IgniteUI/igniteui-webcomponents/pull/940)
+- Components implement default sizes based on current theme [#977](https://github.com/IgniteUI/igniteui-webcomponents/pull/977)
+- Button group - changed events to non-cancellable [#984](https://github.com/IgniteUI/igniteui-webcomponents/pull/984)
+- Optimized components CSS and reduced bundle size [#972](https://github.com/IgniteUI/igniteui-webcomponents/pull/972)
+- WAI-ARIA improvements for Icon, Select, Dropdown and List components [#980](https://github.com/IgniteUI/igniteui-webcomponents/pull/980) [#983](https://github.com/IgniteUI/igniteui-webcomponents/pull/983)
+
+### Fixed
+- Textarea missing styling parts [#944](https://github.com/IgniteUI/igniteui-webcomponents/issues/944)
+- Tree item disabled styles [#949](https://github.com/IgniteUI/igniteui-webcomponents/pull/949)
+- Snackbar removed unnecessary styles [#960](https://github.com/IgniteUI/igniteui-webcomponents/pull/960)
+- Tree item hover state visual design [#987](https://github.com/IgniteUI/igniteui-webcomponents/pull/987)
+- Calendar not keeping focus state when switching views [#992](https://github.com/IgniteUI/igniteui-webcomponents/issues/992)
+
+## [4.5.0] - 2023-10-09
+### Added
+- Text area component [#764](https://github.com/IgniteUI/igniteui-webcomponents/issues/764)
+- Button group component [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827)
+- Toggle button component [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+- Navigation drawer now supports CSS transitions [#922](https://github.com/IgniteUI/igniteui-webcomponents/pull/922)
+- Position attribute for toast and snackbar [#934](https://github.com/IgniteUI/igniteui-webcomponents/pull/934)
+
+### Deprecated
+- The `size` property and attribute have been deprecated for all components. Use the `--ig-size` CSS custom property instead.
+  The following example sets the size of the avatar component to small:
+  ```css
+    igc-avatar {
+      --ig-size: var(--ig-size-small);
+    }
+  ```
+
+### Fixed
+- Combo items position in Safari [#903](https://github.com/IgniteUI/igniteui-webcomponents/pull/903)
+- Calendar navigation buttons in RTL context [#915](https://github.com/IgniteUI/igniteui-webcomponents/pull/915)
+- Export `IgcComboChangeEventArgs` type [#917](https://github.com/IgniteUI/igniteui-webcomponents/pull/917)
+- Combo value and selection states with lazy data binding [#937](https://github.com/IgniteUI/igniteui-webcomponents/pull/937)
+- Various style and theming fixes and adjustments
+
 ## [4.4.0] - 2023-08-30
 ### Added
 - The following components are now Form Associated Custom Elements. They are automatically associated with a parent `<form>`
@@ -338,6 +462,13 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.9.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.2...4.9.0
+[4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
+[4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
+[4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
+[4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
+[4.6.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0
+[4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.1...4.4.0
 [4.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.3...4.3.0

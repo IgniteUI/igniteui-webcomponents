@@ -5,8 +5,9 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcRadioComponent } from '../../index.js';
+import { spy } from 'sinon';
+
+import { IgcRadioComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Radio Component', () => {
@@ -165,17 +166,17 @@ describe('Radio Component', () => {
       radio.required = true;
       expect(radio.required).to.be.true;
       await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input required />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input required />', DIFF_OPTIONS);
 
       radio.required = false;
       expect(radio.required).to.be.false;
       await elementUpdated(radio);
 
-      expect(input).dom.to.equal(`<input />`, DIFF_OPTIONS);
+      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
     it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = sinon.spy(radio, 'emitEvent');
+      const eventSpy = spy(radio, 'emitEvent');
       radio.focus();
 
       expect(radio.shadowRoot?.activeElement).to.equal(input);
@@ -189,7 +190,7 @@ describe('Radio Component', () => {
     });
 
     it('should emit igcChange event when radio is checked', async () => {
-      const eventSpy = sinon.spy(radio, 'emitEvent');
+      const eventSpy = spy(radio, 'emitEvent');
       radio.click();
 
       await elementUpdated(radio);
@@ -242,8 +243,20 @@ describe('Radio Component', () => {
     });
 
     it('is associated on submit with default value "on"', async () => {
-      radios.forEach((r) => (r.value = ''));
+      radios.forEach((r) => {
+        r.value = '';
+      });
       radios.at(0)!.checked = true;
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+    });
+
+    it('is associated on submit with default value "on" (setting `checked` first)', async () => {
+      radios.at(0)!.checked = true;
+      radios.forEach((r) => {
+        r.value = '';
+      });
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal('on');
@@ -310,6 +323,29 @@ describe('Radio Component', () => {
       for (const radio of radios) {
         expect(radio.invalid).to.be.false;
       }
+    });
+  });
+
+  describe('issue-1122', () => {
+    const spec = new FormAssociatedTestBed<IgcRadioComponent>(
+      html`<igc-radio name="selection" value="1" required></igc-radio>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcRadioComponent.tagName);
+    });
+
+    it('synchronously validates component', async () => {
+      // Invalid state
+      expect(spec.form.checkValidity()).to.be.false;
+      spec.submitFails();
+
+      spec.reset();
+
+      // Passes
+      spec.element.click();
+      expect(spec.form.checkValidity()).to.be.true;
+      spec.submitValidates();
     });
   });
 });

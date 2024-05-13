@@ -1,28 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/card' as *;
 
-$material: map.merge(
-    digest-schema($light-card),
-    (
-        border-radius: border-radius(map.get($light-card, 'border-radius')...)
-    )
-);
-$bootstrap: map.merge(
-    digest-schema($bootstrap-card),
-    (
-        border-radius: border-radius(map.get($bootstrap-card, 'border-radius')...)
-    )
-);
-$fluent: map.merge(
-    digest-schema($fluent-card),
-    (
-        border-radius: border-radius(map.get($fluent-card, 'border-radius')...)
-    )
-);
-$indigo: map.merge(
-    digest-schema($indigo-card),
-    (
-        border-radius: border-radius(map.get($indigo-card, 'border-radius')...)
-    )
-);
+$base: digest-schema($light-card);
+$material: digest-schema($material-card);
+$bootstrap: digest-schema($bootstrap-card);
+$fluent: digest-schema($fluent-card);
+$indigo: digest-schema($indigo-card);

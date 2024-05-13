@@ -1,14 +1,14 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { styles } from './themes/light/switch.base.css.js';
-import { styles as bootstrap } from './themes/light/switch.bootstrap.css.js';
-import { styles as fluent } from './themes/light/switch.fluent.css.js';
-import { styles as indigo } from './themes/light/switch.indigo.css.js';
-import { styles as material } from './themes/light/switch.material.css.js';
+import { styles as shared } from './themes/shared/switch/switch.common.css.js';
+import { all } from './themes/switch-themes.js';
+import { styles } from './themes/switch.base.css.js';
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -26,10 +26,16 @@ import { styles as material } from './themes/light/switch.material.css.js';
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes(all)
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
-  public static styles = styles;
+  public static styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcSwitchComponent);
+  }
+
   private static readonly increment = createCounter();
 
   private inputId = `switch-${IgcSwitchComponent.increment()}`;

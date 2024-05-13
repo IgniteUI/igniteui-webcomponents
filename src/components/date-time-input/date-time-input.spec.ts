@@ -5,12 +5,23 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
+
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  ctrlKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
-import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));
@@ -55,6 +66,34 @@ describe('Date Time Input component', () => {
       expect(el.placeholder).to.equal('dd.MM.yyyy');
       expect(el.inputFormat).to.equal('dd.MM.yyyy');
       expect(input.value).to.equal('03.03.2020');
+    });
+
+    it('should use inputFormat if no displayFormat is defined - issue 1114', async () => {
+      el.inputFormat = 'yyyy#MM#dd';
+      await elementUpdated(el);
+
+      expect(el.displayFormat).to.be.undefined;
+      expect(input.placeholder).to.equal('yyyy#MM#dd');
+
+      el.value = new Date(2020, 2, 3);
+      await elementUpdated(el);
+
+      el.inputFormat = 'yyyy@MM@dd';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2020@03@03');
+
+      // displayFormats overwrites
+      el.displayFormat = '-- yyyy -- MM -- dd --';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('-- 2020 -- 03 -- 03 --');
+
+      // Reset
+      el.displayFormat = undefined as any;
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2020@03@03');
     });
 
     it('should use displayFormat when defined', async () => {
@@ -311,6 +350,51 @@ describe('Date Time Input component', () => {
       expect(el.value!.getSeconds()).to.equal(value.getSeconds() - 1);
     });
 
+    it('setRangeText()', async () => {
+      const checkSelectionRange = (start: number, end: number) =>
+        expect([start, end]).to.eql([input.selectionStart, input.selectionEnd]);
+      const checkDates = (a: Date, b: Date) =>
+        expect(a.toISOString()).to.equal(b.toISOString());
+
+      const startDate = new Date(2024, 1, 15);
+
+      el.value = startDate;
+      el.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(el);
+
+      // No boundaries, from current user selection
+      el.setSelectionRange(2, 2);
+      el.setRangeText('03');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 1, 3));
+      checkSelectionRange(2, 2);
+
+      // Keep passed selection range
+      el.value = startDate;
+      el.setRangeText('03', 0, 2, 'select');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 2, 15));
+      checkSelectionRange(0, 2);
+
+      // Collapse range to start
+      el.value = startDate;
+      el.setRangeText('0303', 0, 4, 'start');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(2024, 2, 3));
+      checkSelectionRange(0, 0);
+
+      // Collapse range to end
+      el.value = startDate;
+      el.setRangeText('1999', 5, 10, 'end');
+      await elementUpdated(el);
+
+      checkDates(el.value, new Date(1999, 1, 15));
+      checkSelectionRange(10, 10);
+    });
+
     it('should respect spinDelta', async () => {
       const spinDelta: DatePartDeltas = {
         date: 2,
@@ -392,10 +476,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
-
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
@@ -408,10 +489,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
-
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
@@ -424,7 +502,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
@@ -439,8 +517,8 @@ describe('Date Time Input component', () => {
       // Year part
       el.setSelectionRange(0, 1);
 
-      let start = input.selectionStart,
-        end = input.selectionEnd;
+      let start = input.selectionStart;
+      let end = input.selectionEnd;
 
       el.stepDown();
       await elementUpdated(el);
@@ -451,7 +529,8 @@ describe('Date Time Input component', () => {
 
       // Month part
       el.setSelectionRange(5, 6);
-      (start = input.selectionStart), (end = input.selectionEnd);
+      start = input.selectionStart;
+      end = input.selectionEnd;
 
       el.stepUp();
       expect(el.value.getMonth()).to.eq(6);
@@ -466,28 +545,14 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       //Move selection to the beginning of 'year' part.
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowLeft',
-          ctrlKey: true,
-          bubbles: true,
-        })
-      );
-
+      simulateKeyboard(input, [ctrlKey, arrowLeft]);
       await elementUpdated(el);
 
       expect(input.selectionStart).to.equal(6);
       expect(input.selectionEnd).to.equal(6);
 
       //Move selection to the end of 'year' part.
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowRight',
-          ctrlKey: true,
-          bubbles: true,
-        })
-      );
-
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
       await elementUpdated(el);
 
       expect(input.selectionStart).to.equal(10);
@@ -611,10 +676,7 @@ describe('Date Time Input component', () => {
 
       expect(el.value).to.be.null;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: ';', bubbles: true, ctrlKey: true })
-      );
-
+      simulateKeyboard(input, [ctrlKey, ';']);
       await elementUpdated(el);
 
       expect(el.value).to.not.be.undefined;
@@ -627,18 +689,14 @@ describe('Date Time Input component', () => {
       el.value = value;
       el.spinLoop = false;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, 'ArrowUp');
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(value.getDate());
 
       el.spinLoop = true;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, 'ArrowUp');
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(1);
@@ -752,24 +810,22 @@ describe('Date Time Input component', () => {
     });
 
     it('should emit events correctly', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
 
       el.focus();
       await elementUpdated(el);
       expect(eventSpy).calledOnceWithExactly('igcFocus');
       eventSpy.resetHistory();
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
+
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
+
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
@@ -810,11 +866,11 @@ describe('Date Time Input component', () => {
     const options: Intl.DateTimeFormatOptions = {};
 
     if (includeDate) {
-      options['dateStyle'] = format;
+      options.dateStyle = format;
     }
 
     if (includeTime) {
-      options['timeStyle'] = format;
+      options.timeStyle = format;
     }
 
     const formatter = new Intl.DateTimeFormat('en', options);

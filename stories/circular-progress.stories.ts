@@ -1,11 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
+
 import {
-  defineComponents,
   IgcCircularProgressComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcCircularProgressComponent);
 
@@ -26,38 +26,38 @@ const metadata: Meta<IgcCircularProgressComponent> = {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      defaultValue: 100,
+      table: { defaultValue: { summary: 100 } },
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
-      defaultValue: 'primary',
+      table: { defaultValue: { summary: 'primary' } },
     },
     animationDuration: {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      defaultValue: 500,
+      table: { defaultValue: { summary: 500 } },
     },
     indeterminate: {
       type: 'boolean',
       description: 'The indeterminate state of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideLabel: {
       type: 'boolean',
       description: 'Shows/hides the label of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     labelFormat: {
       type: 'string',
@@ -103,23 +103,19 @@ type Story = StoryObj<IgcCircularProgressArgs>;
 
 // endregion
 
-const Template = (
-  {
-    variant,
-    hideLabel,
-    value,
-    max,
-    animationDuration,
-    indeterminate,
-    labelFormat,
-  }: IgcCircularProgressArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  variant,
+  hideLabel,
+  value,
+  max,
+  animationDuration,
+  indeterminate,
+  labelFormat,
+}: IgcCircularProgressArgs) => html`
   <div style="display: flex; align-items: center; gap: 16px">
     <igc-circular-progress
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}
@@ -129,7 +125,6 @@ const Template = (
     <igc-circular-progress
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}
@@ -148,7 +143,6 @@ const Template = (
       style="--diameter: 72px; --stroke-thickness: 12px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}

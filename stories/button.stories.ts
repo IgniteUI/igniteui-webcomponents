@@ -1,10 +1,14 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
-import { defineComponents, IgcButtonComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
-defineComponents(IgcButtonComponent);
+import {
+  IgcButtonComponent,
+  IgcIconComponent,
+  defineComponents,
+  registerIcon,
+} from '../src/index.js';
+
+defineComponents(IgcButtonComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcButtonComponent> = {
@@ -17,20 +21,22 @@ const metadata: Meta<IgcButtonComponent> = {
           'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.',
       },
     },
+    actions: { handles: ['igcFocus', 'igcBlur'] },
   },
   argTypes: {
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
       description: 'Sets the variant of the button.',
       options: ['flat', 'contained', 'outlined', 'fab'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'contained',
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'contained' } },
     },
     type: {
       type: '"button" | "reset" | "submit"',
-      description: 'The type of the button. Defaults to undefined.',
+      description: 'The type of the button. Defaults to `button`.',
       options: ['button', 'reset', 'submit'],
       control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'button' } },
     },
     href: {
       type: 'string',
@@ -44,10 +50,10 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'text',
     },
     target: {
-      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      type: '"_blank" | "_parent" | "_self" | "_top"',
       description:
         'Where to display the linked URL, as the name for a browsing context.',
-      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      options: ['_blank', '_parent', '_self', '_top'],
       control: { type: 'select' },
     },
     rel: {
@@ -60,17 +66,10 @@ const metadata: Meta<IgcButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
+      table: { defaultValue: { summary: false } },
     },
   },
-  args: { variant: 'contained', disabled: false, size: 'medium' },
+  args: { variant: 'contained', type: 'button', disabled: false },
 };
 
 export default metadata;
@@ -78,14 +77,14 @@ export default metadata;
 interface IgcButtonArgs {
   /** Sets the variant of the button. */
   variant: 'flat' | 'contained' | 'outlined' | 'fab';
-  /** The type of the button. Defaults to undefined. */
+  /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */
   href: string;
   /** Prompts to save the linked URL instead of navigating to it. */
   download: string;
   /** Where to display the linked URL, as the name for a browsing context. */
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  target: '_blank' | '_parent' | '_self' | '_top';
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
@@ -93,72 +92,67 @@ interface IgcButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcBlur', 'igcFocus'],
-  },
-});
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
 
-const ButtonTemplate = (
-  { disabled = false, size, variant, type }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => {
-  const handleClick = () => {
-    console.log('the button was clicked');
-  };
-
-  return html`
-    <igc-button
-      @click=${handleClick}
-      .disabled=${disabled}
-      .size=${size}
-      .variant=${variant}
-      .type=${type}
-      dir=${ifDefined(direction)}
-    >
-      <span slot="prefix">+</span>
-      Click
-      <span slot="suffix">-</span>
+export const BasicButton: Story = {
+  render: ({ disabled, variant, type }) => html`
+    <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
+      Basic button
     </igc-button>
-  `;
+  `,
 };
 
-const LinkTemplate = (
-  {
-    disabled = false,
-    size,
-    variant,
-    href = 'http://www.infragistics.com',
-    download,
-    rel,
-    target,
-  }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => html`
-  <igc-button
-    .disabled=${disabled}
-    .size=${size}
-    .variant=${variant}
-    .href=${href}
-    .download=${download}
-    .rel=${rel}
-    .target=${target}
-    dir=${ifDefined(direction)}
-  >
-    Click me
-  </igc-button>
-`;
+export const ButtonWithSlots: Story = {
+  render: ({ disabled, variant, type }) => html`
+    <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
+      <span slot="prefix">+</span>
+      Click me
+      <span slot="suffix">-</span>
+    </igc-button>
+  `,
+};
 
-export const Button: Story = ButtonTemplate.bind({});
-export const Link: Story = LinkTemplate.bind({});
-export const BlankTarget: Story = LinkTemplate.bind({});
-BlankTarget.args = {
-  target: '_blank',
+export const BasicLinkButton: Story = {
+  args: {
+    href: 'https://www.infragistics.com/products/ignite-ui-web-components',
+  },
+  render: ({ disabled, download, href, rel, target, variant }) =>
+    html`<igc-button
+      ?disabled=${disabled}
+      download=${download}
+      href=${href}
+      rel=${rel}
+      target=${target}
+      variant=${variant}
+    >
+      Basic link button
+    </igc-button>`,
+};
+
+export const LinkButtonWithSlots: Story = {
+  args: {
+    href: 'https://www.infragistics.com/products/ignite-ui-web-components',
+    target: '_blank',
+  },
+  render: ({ disabled, download, href, rel, target, variant }) =>
+    html`<igc-button
+      ?disabled=${disabled}
+      download=${download}
+      href=${href}
+      rel=${rel}
+      target=${target}
+      variant=${variant}
+    >
+      <igc-icon name="home" slot="prefix"></igc-icon>
+      Open in new tab
+      <igc-icon name="home" slot="suffix"></igc-icon>
+    </igc-button>`,
 };

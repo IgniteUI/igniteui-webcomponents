@@ -1,11 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context } from './story.js';
+
 import {
-  defineComponents,
   IgcTreeComponent,
-  IgcTreeItemComponent,
+  type IgcTreeItemComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTreeComponent);
 
@@ -20,6 +20,16 @@ const metadata: Meta<IgcTreeComponent> = {
           'The tree allows users to represent hierarchical data in a tree-view structure,\nmaintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.',
       },
     },
+    actions: {
+      handles: [
+        'igcSelection',
+        'igcItemCollapsed',
+        'igcItemCollapsing',
+        'igcItemExpanded',
+        'igcItemExpanding',
+        'igcItemActivated',
+      ],
+    },
   },
   argTypes: {
     singleBranchExpand: {
@@ -27,24 +37,28 @@ const metadata: Meta<IgcTreeComponent> = {
       description:
         "Whether a single or multiple of a parent's child items can be expanded.",
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
+    },
+    toggleNodeOnClick: {
+      type: 'boolean',
+      description:
+        'Whether clicking over nodes will change their expanded state or not.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     selection: {
-      type: '"multiple" | "none" | "cascade"',
+      type: '"none" | "multiple" | "cascade"',
       description: 'The selection state of the tree.',
-      options: ['multiple', 'none', 'cascade'],
+      options: ['none', 'multiple', 'cascade'],
       control: { type: 'inline-radio' },
-      defaultValue: 'none',
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
+      table: { defaultValue: { summary: 'none' } },
     },
   },
-  args: { singleBranchExpand: false, selection: 'none', size: 'large' },
+  args: {
+    singleBranchExpand: false,
+    toggleNodeOnClick: false,
+    selection: 'none',
+  },
 };
 
 export default metadata;
@@ -52,60 +66,16 @@ export default metadata;
 interface IgcTreeArgs {
   /** Whether a single or multiple of a parent's child items can be expanded. */
   singleBranchExpand: boolean;
+  /** Whether clicking over nodes will change their expanded state or not. */
+  toggleNodeOnClick: boolean;
   /** The selection state of the tree. */
-  selection: 'multiple' | 'none' | 'cascade';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
+  selection: 'none' | 'multiple' | 'cascade';
 }
 type Story = StoryObj<IgcTreeArgs>;
 
 // endregion
 
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: [
-      'igcItemExpanding',
-      'igcItemExpanded',
-      'igcItemCollapsing',
-      'igcItemCollapsed',
-    ],
-  },
-});
-
-const handleEvent = (ev: any) => {
-  // const treeItem = document.getElementById('asd1') as IgcTreeItemComponent;
-  // const treeItem1 = document.getElementById('parent') as IgcTreeItemComponent;
-  // if (ev.detail.newSelection.indexOf(treeItem1) >= 0) {
-  //   const tree = document.getElementById('tree') as IgcTreeComponent;
-  //   // requestAnimationFrame(() => {
-  //   tree?.deselect([tree.items[tree.items.length - 1]]);
-
-  //   // });
-  // }
-  // ev.detail.newSelection = [];
-  console.log(ev);
-};
-
-const handleActive = (ev: any) => {
-  console.log(ev);
-};
-
 const arr1 = [1, 2, 3];
-
-const handleExpanding = (ev: any) => {
-  console.log(ev);
-};
-
-const handleExpanded = (ev: any) => {
-  console.log(ev);
-};
-
-const handleCollapsing = (ev: any) => {
-  console.log(ev);
-};
-const handleCollapsed = (ev: any) => {
-  console.log(ev);
-};
 
 const addChildren = (
   parent: IgcTreeItemComponent,
@@ -195,23 +165,17 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate = (
-  { size, singleBranchExpand, selection }: IgcTreeArgs,
-  { globals: { direction } }: Context
-) => {
+const BasicTemplate = ({
+  singleBranchExpand,
+  selection,
+  toggleNodeOnClick,
+}: IgcTreeArgs) => {
   return html`
       <igc-tree style="height: 250px"
         id="tree"
-        .size=${size}
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
-        .dir=${direction}
-        @igcSelection=${handleEvent}
-        @igcActiveItem=${handleActive}
-        @igcItemExpanding=${handleExpanding}
-        @igcItemExpanded=${handleExpanded}
-        @igcItemCollapsing=${handleCollapsing}
-        @igcItemCollapsed=${handleCollapsed}
+        .toggleNodeOnClick = ${toggleNodeOnClick}
       >
         <igc-tree-item expanded active selected label="Tree Node 1">
           <igc-tree-item expanded id="parent" label="Tree Node 1.1">

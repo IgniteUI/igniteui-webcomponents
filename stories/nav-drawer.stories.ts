@@ -1,14 +1,13 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
-  defineComponents,
   IgcIconComponent,
   IgcNavDrawerComponent,
-  IgcNavDrawerItemComponent,
+  type IgcNavDrawerItemComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
-import { Context } from './story.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
@@ -30,13 +29,13 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       description: 'The position of the drawer.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
-      defaultValue: 'start',
+      table: { defaultValue: { summary: 'start' } },
     },
     open: {
       type: 'boolean',
       description: 'Determines whether the drawer is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { position: 'start', open: false },
@@ -89,7 +88,9 @@ const handleClick = (ev: PointerEvent) => {
       navDrawer.querySelectorAll('igc-nav-drawer-item')
     ).filter((item) => item !== drawerItem);
 
-    items.forEach((item) => (item.active = false));
+    items.forEach((item) => {
+      item.active = false;
+    });
   }
 };
 
@@ -189,17 +190,24 @@ const navbarItems = [
   },
 ];
 
-const Template = (
-  { open = false, position }: IgcNavDrawerArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
   return html`
-    <div
-      class="ig-scrollbar"
-      style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
-    >
+    <style>
+      .main {
+        display: flex;
+        margin: -1rem;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .content {
+        padding-inline-start: 20px;
+        font-family: var(--ig-font-family);
+      }
+    </style>
+
+    <div class="ig-scrollbar main">
       <igc-nav-drawer
-        dir=${ifDefined(direction)}
         .open=${open}
         .position=${position}
         @click="${handleClick}"
@@ -226,12 +234,12 @@ const Template = (
         </div>
       </igc-nav-drawer>
 
-      <div style="padding-left: 20px;">
+      <section class="content">
         <p>Sample page content</p>
         <igc-button @click="${handleOpen}">Open</igc-button>
         <igc-button @click="${handleClose}">Close</igc-button>
         <igc-button @click="${handleToggle}">Toggle</igc-button>
-      </div>
+      </section>
     </div>
   `;
 };

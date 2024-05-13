@@ -1,20 +1,18 @@
-import { html, LitElement, nothing, TemplateResult } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { styles } from './themes/light/input.base.css.js';
-import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
-import { styles as fluent } from './themes/light/input.fluent.css.js';
-import { styles as indigo } from './themes/light/input.indigo.css.js';
-import { styles as material } from './themes/light/input.material.css.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { styles } from './themes/input.base.css.js';
+import { styles as shared } from './themes/shared/input.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -25,7 +23,7 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo }, true)
+@themes(all, true)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   SizableMixin(
@@ -39,13 +37,13 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     delegatesFocus: true,
   };
 
-  public static styles = styles;
+  public static styles = [styles, shared];
   private static readonly increment = createCounter();
 
   protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
+  /* blazorSuppress */
   /** The value attribute of the control. */
-  @blazorSuppress()
   public abstract value: string | Date | null;
 
   @query('input')
@@ -69,39 +67,39 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @attr readonly
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /* blazorCSSuppress */
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @prop
    *
-   * @deprecated - since v4.4.0
-   * Use the `readOnly` property instead.
+   * @deprecated since v4.4.0. Use the `readOnly` property instead.
    */
   @property({ attribute: false })
-  public get readonly() {
-    return this.readOnly;
-  }
-
   public set readonly(value: boolean) {
     this.readOnly = value;
+  }
+
+  public get readonly() {
+    return this.readOnly;
   }
 
   /**
    * The placeholder attribute of the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public placeholder!: string;
 
   /**
    * The label for the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public label!: string;
 
   constructor() {
@@ -202,7 +200,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+      <div part="helper-text" .hidden="${this.helperText.length === 0}">
         <slot name="helper-text"></slot>
       </div>
     `;
@@ -213,14 +211,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+      <div part="helper-text" .hidden="${this.helperText.length === 0}">
         <slot name="helper-text"></slot>
       </div>`;
   }
 
   protected override render() {
-    return html`${this[themeSymbol] === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard()}`;
+    return html`
+      ${this[themeSymbol] === 'material'
+        ? this.renderMaterial()
+        : this.renderStandard()}
+    `;
   }
 }

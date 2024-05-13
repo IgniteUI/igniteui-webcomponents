@@ -1,13 +1,9 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcInputComponent } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { spy } from 'sinon';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { FormAssociatedTestBed, simulateInput } from '../common/utils.spec.js';
+import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
   before(() => {
@@ -19,7 +15,7 @@ describe('Input component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      el = await createInputComponent();
+      el = await fixture<IgcInputComponent>(html`<igc-input></igc-input>`);
       input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
     });
 
@@ -224,7 +220,7 @@ describe('Input component', () => {
     });
 
     it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);
@@ -238,7 +234,7 @@ describe('Input component', () => {
     });
 
     it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);
@@ -265,10 +261,6 @@ describe('Input component', () => {
     expect(el.reportValidity()).to.equal(true);
   });
 
-  const createInputComponent = (template = '<igc-input></igc-input>') => {
-    return fixture<IgcInputComponent>(html`${unsafeStatic(template)}`);
-  };
-
   describe('Form integration', () => {
     const spec = new FormAssociatedTestBed<IgcInputComponent>(
       html`<igc-input name="input"></igc-input>`
@@ -288,7 +280,6 @@ describe('Input component', () => {
 
     it('is associated on submit', async () => {
       spec.element.value = 'abc';
-      await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal(
         spec.element.value
@@ -297,7 +288,6 @@ describe('Input component', () => {
 
     it('is correctly reset on form reset', async () => {
       spec.element.value = 'abc';
-      await elementUpdated(spec.element);
 
       spec.reset();
       expect(spec.element.value).to.equal('');
@@ -394,6 +384,81 @@ describe('Input component', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+
+    it('validates schema types - email', async () => {
+      spec.element.type = 'email';
+      spec.element.value = '123';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = '123@';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = '123@321';
+      await elementUpdated(spec.element);
+
+      spec.submitValidates();
+    });
+  });
+
+  describe('issue-1066', () => {
+    const _expectedValidation = Symbol();
+    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
+
+    function validateInput(event: CustomEvent<string>) {
+      const element = event.target as TestBedInput;
+      expect(element.checkValidity()).to.equal(element[_expectedValidation]);
+    }
+
+    function getInternalInput(element: IgcInputComponent) {
+      return element.shadowRoot!.querySelector('input')!;
+    }
+
+    function setExpectedValidationState(
+      state: boolean,
+      element: IgcInputComponent
+    ) {
+      (element as TestBedInput)[_expectedValidation] = state;
+    }
+
+    const spec = new FormAssociatedTestBed<IgcInputComponent>(
+      html`<igc-input
+        name="input"
+        type="email"
+        required
+        @igcInput=${validateInput}
+      ></igc-input>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+    });
+
+    it('synchronously validates component', async () => {
+      const input = getInternalInput(spec.element);
+
+      // Invalid email
+      setExpectedValidationState(false, spec.element);
+      simulateInput(input, '1');
+      await elementUpdated(spec.element);
+
+      // Invalid email
+      simulateInput(input, '1@');
+      await elementUpdated(spec.element);
+
+      // Valid email
+      setExpectedValidationState(true, spec.element);
+      simulateInput(input, '1@1');
+      await elementUpdated(spec.element);
+
+      // Valid email, required invalidates
+      setExpectedValidationState(false, spec.element);
+      simulateInput(input, '');
+      await elementUpdated(spec.element);
     });
   });
 });

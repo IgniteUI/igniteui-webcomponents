@@ -1,30 +1,31 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
+import { registerComponent } from '../../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../../common/i18n/calendar.resources.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
 } from '../common/calendar-base.js';
 import {
   DateRangeType,
-  ICalendarDate,
-  isDateInRanges,
+  type ICalendarDate,
   TimeDeltaInterval,
+  isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
-import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css.js';
 import { styles } from '../themes/days-view.base.css.js';
-import { styles as fluent } from '../themes/fluent/days-view.fluent.css.js';
+import { all } from '../themes/days.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -47,16 +48,19 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  */
 @blazorSuppressComponent
 @blazorIndirectRender
-@themes({
-  bootstrap,
-  fluent,
-})
+@themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcDaysViewComponent);
+  }
+
   private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
@@ -226,7 +230,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     const dates = this.values;
     const min = dates[0];
-    let max;
+    let max: Date;
 
     if (dates.length === 1) {
       if (!this.rangePreviewDate) {
@@ -293,16 +297,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           (element) => element.getTime() === date.date.getTime()
         );
         return !!currentDate;
-      } else {
-        return false;
       }
-    } else {
-      return this.isWithinRange(
-        date.date,
-        this.values[0],
-        this.values[this.values.length - 1]
-      );
+      return false;
     }
+    return this.isWithinRange(
+      date.date,
+      this.values[0],
+      this.values[this.values.length - 1]
+    );
   }
 
   private isToday(day: ICalendarDate): boolean {
@@ -379,11 +381,16 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private generateDateRange(start: Date, end: Date): Date[] {
     const result = [];
-    start = getDateOnly(start);
-    end = getDateOnly(end);
-    while (start.getTime() < end.getTime()) {
-      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Day, 1);
-      result.push(start);
+    let startDate = getDateOnly(start);
+    const endDate = getDateOnly(end);
+
+    while (startDate.getTime() < endDate.getTime()) {
+      startDate = this.calendarModel.timedelta(
+        startDate,
+        TimeDeltaInterval.Day,
+        1
+      );
+      result.push(startDate);
     }
 
     return result;

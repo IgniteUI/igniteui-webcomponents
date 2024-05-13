@@ -1,21 +1,27 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/header/dropdown-header.base.css.js';
-import { styles as bootstrap } from './themes/light/header/dropdown-header.bootstrap.css.js';
-import { styles as fluent } from './themes/light/header/dropdown-header.fluent.css.js';
-import { styles as indigo } from './themes/light/header/dropdown-header.indigo.css.js';
-import { styles as material } from './themes/light/header/dropdown-header.material.css.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/dropdown-header.base.css.js';
+import { all } from './themes/header.js';
+import { styles as shared } from './themes/shared/header/dropdown-header.common.css.js';
 
 /**
- * @element igc-dropdown-header - Represents a header item in a dropdown list.
+ * Represents a header item in a igc-dropdown list.
+ *
+ * @element igc-dropdown-header
  *
  * @slot - Renders the header.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes(all)
 export default class IgcDropdownHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-header';
+  public static override styles = [styles, shared];
 
-  public static override styles = styles;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcDropdownHeaderComponent);
+  }
 
   protected override render() {
     return html`<slot></slot>`;

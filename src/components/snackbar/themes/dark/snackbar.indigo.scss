@@ -1,11 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
-@mixin theme() {
-    igc-snackbar {
-        @include css-vars-from-theme($indigo, 'ig-snackbar');
+$theme: $indigo;
 
-        --background-color: #{color(gray, 300)};
-        --text-color: #{contrast-color(gray, 200)};
-    }
+:host {
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-snackbar');
 }

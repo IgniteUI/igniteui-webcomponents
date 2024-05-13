@@ -1,18 +1,15 @@
-import { html, nothing, svg } from 'lit';
+import { html, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
-import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { asPercent, partNameMap } from '../common/util.js';
-import { IgcProgressBaseComponent } from './base.js';
-import { styles } from './themes/circular/circular.progress.base.css.js';
-import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css.js';
-import { styles as fluent } from './themes/circular/circular.progress.fluent.css.js';
+
 import { themes } from '../../theming/theming-decorator.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { createCounter, partNameMap } from '../common/util.js';
+import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
-
-defineComponents(IgcCircularGradientComponent);
+import { styles } from './themes/circular/circular.progress.base.css.js';
+import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
+import { all } from './themes/circular/themes.js';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -37,70 +34,65 @@ defineComponents(IgcCircularGradientComponent);
  * @csspart info
  * @csspart success
  */
-
-@themes({ bootstrap, fluent })
+@themes(all)
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
-  protected gradientId = Date.now().toString(16);
+  private static readonly increment = createCounter();
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcCircularProgressComponent,
+      IgcCircularGradientComponent
+    );
+  }
+
+  private _gradientId = `circular-progress-${IgcCircularProgressComponent.increment()}`;
 
   @queryAssignedElements({ slot: 'gradient' })
-  protected gradientElements!: Array<IgcCircularGradientComponent>;
-
-  protected get stroke() {
-    return {
-      stroke: `url(#${this.gradientId})`,
-      '--percentage': (asPercent(this.value, this.max) / 100).toString(),
-      '--duration': this.animationDuration + 'ms',
-    };
-  }
-
-  protected get svgParts() {
-    return {
-      indeterminate: this.indeterminate,
-    };
-  }
-
-  private gradientChange() {
-    this.requestUpdate();
-  }
+  private _assignedGradients!: Array<IgcCircularGradientComponent>;
 
   protected renderSvg() {
+    const parts = { indeterminate: this.indeterminate, track: true };
+    const styles = {
+      stroke: `url(#${this._gradientId})`,
+      '--percentage': `${this.progress}`,
+      '--duration': `${this.animationDuration}ms`,
+    };
+
+    const gradients = this._assignedGradients.length
+      ? this._assignedGradients.map(
+          ({ offset, color, opacity }) =>
+            svg`<stop offset=${offset} stop-color=${color} stop-opacity=${opacity}/>`
+        )
+      : svg`
+        <stop offset="0%" part="gradient_start" />
+        <stop offset="100%" part="gradient_end" />
+      `;
+
     return svg`
-      <circle part="track ${partNameMap(this.svgParts)}"/>
-      <circle style="${styleMap(this.stroke)}" part="fill"/>
+      <circle part=${partNameMap(parts)}/>
+      <circle style=${styleMap(styles)} part="fill"/>
 
       <defs>
-          <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
-          ${when(
-            this.gradientElements.length,
-            () =>
-              this.gradientElements.map((el: IgcCircularGradientComponent) => {
-                return svg`<stop offset=${el.offset} stop-color=${el.color} stop-opacity=${el.opacity}/>`;
-              }),
-            () => svg`
-              <stop offset="0%" part="gradient_start" />
-              <stop offset="100%" part="gradient_end" />
-          `
-          )}
+          <linearGradient id=${this._gradientId} gradientTransform="rotate(90)">
+          ${gradients}
           </linearGradient>
       </defs>
     `;
   }
 
   protected renderWrapper() {
+    const parts = {
+      svg: true,
+      indeterminate: this.indeterminate,
+    };
+
     return html`
-      <svg
-        part="svg ${partNameMap(this.svgParts)}"
-        role="progressbar"
-        aria-valuemin="0"
-        aria-valuemax=${this.max}
-        aria-valuenow=${this.indeterminate ? nothing : this.value}
-      >
-        ${this.renderSvg()}
-      </svg>
-      <slot name="gradient" @slotchange=${this.gradientChange}></slot>
+      <svg part=${partNameMap(parts)}>${this.renderSvg()}</svg>
+      <slot name="gradient" @slotchange=${this.slotChanged}></slot>
       ${this.renderDefaultSlot()}
     `;
   }

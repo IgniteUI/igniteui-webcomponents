@@ -1,51 +1,52 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
+
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { SizableInterface } from '../common/mixins/sizable.js';
+import { registerComponent } from '../common/definitions/register.js';
 import type IgcDropdownItemComponent from './dropdown-item';
-import { styles } from './themes/light/group/dropdown-group.base.css.js';
-import { styles as fluent } from './themes/light/group/dropdown-group.fluent.css.js';
-import { styles as bootstrap } from './themes/light/group/dropdown-group.bootstrap.css.js';
-import { styles as indigo } from './themes/light/group/dropdown-group.indigo.css.js';
-import { styles as material } from './themes/light/group/dropdown-group.material.css.js';
+import { styles } from './themes/dropdown-group.base.css.js';
+import { all } from './themes/group.js';
+import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
 
 /**
- * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
+ * A container for a group of `igc-dropdown-item` components.
+ *
+ * @element igc-dropdown-group
  *
  * @slot label - Contains the group's label.
  * @slot - Intended to contain the items belonging to this group.
  *
  * @csspart label - The native label element.
  */
-@themes({ fluent, bootstrap, indigo, material })
+@themes(all)
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
+  public static override styles = [styles, shared];
 
-  public static override styles = styles;
-  protected parent!: SizableInterface;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcDropdownGroupComponent);
+  }
+
+  private _internals: ElementInternals;
 
   /** All child `igc-dropdown-item`s. */
   @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.setAttribute('role', 'group');
-    this.parent = this.getParent();
-  }
-
-  protected getParent() {
-    return this.closest('igc-dropdown')!;
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'group';
   }
 
   protected override render() {
-    this.setAttribute('size', this.parent?.size ?? 'large');
-
     return html`
-      <label part="label"><slot name="label"></slot></label>
+      <label part="label">
+        <slot name="label"></slot>
+      </label>
       <slot></slot>
     `;
   }

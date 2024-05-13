@@ -1,8 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/navbar' as *;
 
-$material: digest-schema($light-navbar);
+$base: digest-schema($light-navbar);
+$material: digest-schema($material-navbar);
 $bootstrap: digest-schema($bootstrap-navbar);
 $fluent: digest-schema($fluent-navbar);
 $indigo: digest-schema($indigo-navbar);

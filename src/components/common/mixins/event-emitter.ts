@@ -1,4 +1,5 @@
-import { LitElement } from 'lit';
+import type { LitElement } from 'lit';
+
 import type { AbstractConstructor, Constructor } from './constructor';
 
 export type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
@@ -35,7 +36,7 @@ export declare class EventEmitterInterface<E> {
 
 export function EventEmitterMixin<E, T extends AbstractConstructor<LitElement>>(
   superClass: T
-): AbstractConstructor<EventEmitterInterface<E>> & T;
+): Constructor<EventEmitterInterface<E>> & T;
 export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
   superClass: T
 ) {

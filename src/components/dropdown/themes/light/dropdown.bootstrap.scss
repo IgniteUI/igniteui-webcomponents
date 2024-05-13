@@ -1,16 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-dropdown');
-}
-
-[part='base'] {
-    background: var-get($theme, 'background-color');
-    border-radius: var-get($theme, 'border-radius');
-    padding: rem(8px) 0;
-    border: rem(1px) solid var-get($theme, 'border-color');
+    @include css-vars-from-theme(diff($base, $theme), 'ig-dropdown');
 }

@@ -6,8 +6,9 @@ import {
   unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcDialogComponent } from '../../index.js';
+import { spy } from 'sinon';
+
+import { IgcDialogComponent, defineComponents } from '../../index.js';
 
 describe('Dialog component', () => {
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
@@ -67,6 +68,7 @@ describe('Dialog component', () => {
             'id',
             'hidden',
             'open',
+            'style',
           ],
         }
       );
@@ -82,11 +84,11 @@ describe('Dialog component', () => {
       expect(footer).dom.to.equal(
         `<footer>
           <slot name="footer">
-            <igc-button>OK</igc-button>
+            <igc-button type="button">OK</igc-button>
           </slot>
         </footer>`,
         {
-          ignoreAttributes: ['part', 'variant', 'size'],
+          ignoreAttributes: ['part', 'variant', 'size', 'style'],
         }
       );
 
@@ -99,7 +101,7 @@ describe('Dialog component', () => {
           </slot>
         </footer>`,
         {
-          ignoreAttributes: ['part'],
+          ignoreAttributes: ['part', 'style'],
         }
       );
     });
@@ -118,7 +120,7 @@ describe('Dialog component', () => {
           </section>
           <footer>
             <slot name="footer">
-              <igc-button>
+              <igc-button type="button">
                 OK
               </igc-button>
             </slot>
@@ -136,6 +138,7 @@ describe('Dialog component', () => {
             'size',
             'id',
             'hidden',
+            'style',
           ],
         }
       );
@@ -198,43 +201,43 @@ describe('Dialog component', () => {
     });
 
     it('does not emit events through API calls', async () => {
-      const spy = sinon.spy(dialog, 'emitEvent');
+      const eventSpy = spy(dialog, 'emitEvent');
       dialog.show();
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.true;
-      expect(spy.callCount).to.equal(0);
+      expect(eventSpy.callCount).to.equal(0);
 
       dialog.hide();
       await waitUntil(() => !dialog.open);
 
       expect(dialog.open).to.be.false;
-      expect(spy.callCount).to.equal(0);
+      expect(eventSpy.callCount).to.equal(0);
 
       dialog.open = true;
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.true;
-      expect(spy.callCount).to.equal(0);
+      expect(eventSpy.callCount).to.equal(0);
 
       dialog.open = false;
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.false;
-      expect(spy.callCount).to.equal(0);
+      expect(eventSpy.callCount).to.equal(0);
     });
 
     it('default action button emits closing events', async () => {
-      const spy = sinon.spy(dialog, 'emitEvent');
+      const eventSpy = spy(dialog, 'emitEvent');
       dialog.show();
       await elementUpdated(dialog);
 
       dialog.shadowRoot!.querySelector('igc-button')!.click();
       await waitUntil(() => !dialog.open);
 
-      expect(spy.callCount).to.equal(2);
-      expect(spy.firstCall).calledWith('igcClosing');
-      expect(spy.secondCall).calledWith('igcClosed');
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.secondCall).calledWith('igcClosed');
     });
 
     it('cancels closing event correctly', async () => {
@@ -242,7 +245,7 @@ describe('Dialog component', () => {
       await elementUpdated(dialog);
       expect(dialog.open).to.be.true;
 
-      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      const eventSpy = spy(dialog, 'emitEvent');
 
       dialog.addEventListener('igcClosing', (ev) => {
         ev.preventDefault();
@@ -260,7 +263,7 @@ describe('Dialog component', () => {
       dialog.closeOnOutsideClick = true;
       await elementUpdated(dialog);
 
-      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      const eventSpy = spy(dialog, 'emitEvent');
       dialog.addEventListener('igcClosing', (e) => e.preventDefault());
 
       const { x, y } = getBoundingRect(dialog);
@@ -316,7 +319,7 @@ describe('Dialog component', () => {
         })
       );
 
-      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      const eventSpy = spy(dialog, 'emitEvent');
       await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(dialog.open).to.be.false;
@@ -342,7 +345,7 @@ describe('Dialog component', () => {
       expect(dialog.open).to.eq(false);
     });
 
-    const createDialogComponent = (template = `<igc-dialog></igc-dialog>`) => {
+    const createDialogComponent = (template = '<igc-dialog></igc-dialog>') => {
       return fixture<IgcDialogComponent>(html`${unsafeStatic(template)}`);
     };
   });

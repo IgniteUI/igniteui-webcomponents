@@ -1,4 +1,6 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './ripple.material.css.js';
 
 /**
@@ -9,8 +11,12 @@ import { styles } from './ripple.material.css.js';
  */
 export default class IgcRippleComponent extends LitElement {
   public static readonly tagName = 'igc-ripple';
-
   public static override styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcRippleComponent);
+  }
 
   constructor() {
     super();
@@ -26,9 +32,9 @@ export default class IgcRippleComponent extends LitElement {
       display: 'block',
       pointerEvents: 'none',
       transformOrigin: 'center',
-      transform: `translate3d(0, 0, 0) scale(0)`,
+      transform: 'translate3d(0, 0, 0) scale(0)',
       willChange: 'opacity, transform',
-      margin: `0 !important`,
+      margin: '0 !important',
       border: 'none !important',
       width: `${radius}px`,
       height: `${radius}px`,

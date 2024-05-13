@@ -1,6 +1,10 @@
-import { queryAssignedNodes } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
+import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
+import { all } from '../dropdown/themes/item.js';
+import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 
 /**
  * Represents an item in a select list.
@@ -15,11 +19,15 @@ import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
-  @queryAssignedNodes({ flatten: true })
-  private content!: Array<Element>;
+@themes(all)
+export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
+  public static readonly tagName = 'igc-select-item';
+  public static override styles = [styles, shared];
 
-  public static override readonly tagName = 'igc-select-item';
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcSelectItemComponent);
+  }
 
   @watch('active')
   protected activeChange() {
@@ -28,21 +36,6 @@ export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
     if (this.active) {
       this.focus();
     }
-  }
-
-  /** Returns the text of the item without the prefix and suffix content. */
-  public override get textContent() {
-    return this.content
-      .map((t) => t.textContent?.trim())
-      .filter((t) => t !== '')
-      .join(' ');
-  }
-
-  /** Sets the textContent of the item without touching the prefix and suffix content. */
-  public override set textContent(value: string) {
-    const text = new Text(value);
-    this.content.forEach((n) => n.remove());
-    this.appendChild(text);
   }
 }
 

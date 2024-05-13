@@ -1,10 +1,15 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcBadgeComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
-import { Context } from './story.js';
 
-defineComponents(IgcBadgeComponent);
+import {
+  IgcBadgeComponent,
+  IgcIconComponent,
+  IgcTabsComponent,
+  defineComponents,
+  registerIcon,
+} from '../src/index.js';
+
+defineComponents(IgcBadgeComponent, IgcIconComponent, IgcTabsComponent);
 
 // region default
 const metadata: Meta<IgcBadgeComponent> = {
@@ -24,20 +29,20 @@ const metadata: Meta<IgcBadgeComponent> = {
       description: 'The type of badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
-      defaultValue: 'primary',
+      table: { defaultValue: { summary: 'primary' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Sets whether to draw an outlined version of the badge.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     shape: {
       type: '"rounded" | "square"',
       description: 'The shape of the badge.',
       options: ['rounded', 'square'],
       control: { type: 'inline-radio' },
-      defaultValue: 'rounded',
+      table: { defaultValue: { summary: 'rounded' } },
     },
   },
   args: { variant: 'primary', outlined: false, shape: 'rounded' },
@@ -57,63 +62,45 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 
-const Template = (
-  { outlined = false, shape, variant }: IgcBadgeArgs,
-  { globals: { direction } }: Context
-) => {
-  return html`
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
-    >
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
+function renderTabs(args: IgcBadgeArgs) {
+  return ['primary', 'info', 'success', 'warning', 'danger'].map(
+    (variant, idx) => html`
+      <igc-tab>
+        <span>
+          ${variant.toUpperCase()}
+          <igc-badge
+            variant=${variant as IgcBadgeArgs['variant']}
+            ?outlined=${args.outlined}
+            shape=${args.shape}
+            >${idx + 1}</igc-badge
+          >
+        </span>
+      </igc-tab>
+    `
+  );
+}
+
+export const Basic: Story = {
+  render: ({ outlined, shape, variant }) => html`
+    <igc-badge ?outlined=${outlined} shape=${shape} variant=${variant}>
+      <igc-icon name="home"></igc-icon>
     </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
-    >
-      <span>1</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
-    >
-      <span>99</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant="success"
-      dir=${ifDefined(direction)}
-    >
-      <span>online</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
-    >
-      <igc-icon name="star" collection="internal"></igc-icon>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant="warning"
-      dir=${ifDefined(direction)}
-    >
-      <span class="material-icons">wifi</span>
-    </igc-badge>
-  `;
+  `,
 };
 
-export const Basic: Story = Template.bind({});
+export const Variants: Story = {
+  render: (args) =>
+    html` <style>
+        igc-badge {
+          position: absolute;
+          top: 0;
+          right: 0;
+        }
+      </style>
+      <igc-tabs>${renderTabs(args)}</igc-tabs>`,
+};

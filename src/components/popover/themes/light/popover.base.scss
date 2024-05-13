@@ -1,0 +1,16 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: contents;
+}
+
+:popover-open {
+    position: fixed;
+    overflow: visible;
+    isolation: isolate;
+    height: fit-content;
+    inset: unset;
+    border: none;
+    padding: 0;
+}

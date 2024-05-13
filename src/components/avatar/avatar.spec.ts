@@ -1,7 +1,13 @@
-import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcAvatarComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcAvatarComponent from './avatar.js';
 
 describe('Avatar', () => {
+  const DIFF_OPTIONS = {
+    ignoreAttributes: ['style'],
+  };
+
   before(() => {
     defineComponents(IgcAvatarComponent);
   });
@@ -12,6 +18,7 @@ describe('Avatar', () => {
     );
 
     await expect(el).shadowDom.to.be.accessible();
+    await expect(el).to.be.accessible();
   });
 
   it('should initialize avatar component with default values', async () => {
@@ -33,13 +40,15 @@ describe('Avatar', () => {
     el.size = 'medium';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="medium" shape="square"></igc-avatar>`
+      `<igc-avatar size="medium" shape="square"></igc-avatar>`,
+      DIFF_OPTIONS
     );
 
     el.size = 'large';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="large" shape="square"></igc-avatar>`
+      `<igc-avatar size="large" shape="square"></igc-avatar>`,
+      DIFF_OPTIONS
     );
   });
 
@@ -53,13 +62,15 @@ describe('Avatar', () => {
     el.shape = 'rounded';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="rounded"></igc-avatar>`
+      `<igc-avatar size="small" shape="rounded"></igc-avatar>`,
+      DIFF_OPTIONS
     );
 
     el.shape = 'circle';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="circle"></igc-avatar>`
+      `<igc-avatar size="small" shape="circle"></igc-avatar>`,
+      DIFF_OPTIONS
     );
   });
 
@@ -70,14 +81,14 @@ describe('Avatar', () => {
 
     expect(el.src).to.be.undefined;
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base">
       <span part="initials">ab</span>
       </div>`
     );
 
     el.setAttribute('src', 'abs');
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base">
       <span part="initials">ab</span>
       </div>`
     );

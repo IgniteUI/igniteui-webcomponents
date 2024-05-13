@@ -1,5 +1,7 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
+
+import { parseKeys } from './controllers/key-bindings.js';
 import type { FormAssociatedElementInterface } from './mixins/form-associated';
 
 export class FormAssociatedTestBed<
@@ -78,5 +80,144 @@ export class FormAssociatedTestBed<
   public submitFails(msg?: string) {
     expect(this.submit(), msg).to.be.undefined;
     expect(this.valid).to.be.false;
+  }
+}
+
+export function simulatePointerDown(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+) {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+      })
+    );
+  }
+}
+
+export function simulateLostPointerCapture(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('lostpointercapture', {
+      composed: true,
+      bubbles: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+type PointerEventIncrement = {
+  x?: number;
+  y?: number;
+};
+
+export function simulatePointerMove(
+  node: Element,
+  options?: PointerEventInit,
+  increment?: PointerEventIncrement,
+  times = 1
+) {
+  const { x = 0, y = 0 } = increment ?? {};
+  const { clientX = 0, clientY = 0 } = options ?? {};
+
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointermove', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+        clientX: clientX + i * x,
+        clientY: clientY + i * y,
+      })
+    );
+  }
+}
+
+export function simulateClick(node: Element, times = 1) {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, composed: true })
+    );
+  }
+}
+
+export function simulateInput(input: HTMLInputElement, value = '') {
+  input.value = value;
+  input.dispatchEvent(new InputEvent('input'));
+}
+
+/**
+ * Simulates keyboard interaction on a given element node.
+ *
+ * @param node - the target element
+ * @param key - the key(s) to simulate
+ * @param times - how many times to simulate keydown with the passed key(s). Defaults to 1.
+ */
+export function simulateKeyboard(
+  node: Element,
+  key: string | string[],
+  times = 1
+) {
+  const { keys, modifiers } = parseKeys(key);
+  const eventOptions = modifiers.reduce(
+    (acc, m) => Object.assign(acc, { [`${m}Key`]: true }),
+    {}
+  );
+
+  for (const k of keys) {
+    for (let i = 0; i < times; i++) {
+      node.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: k,
+          bubbles: true,
+          composed: true,
+          ...eventOptions,
+        })
+      );
+    }
+  }
+
+  for (const k of keys) {
+    node.dispatchEvent(
+      new KeyboardEvent('keyup', {
+        key: k,
+        bubbles: true,
+        composed: true,
+        ...eventOptions,
+      })
+    );
+  }
+}
+
+/**
+ * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
+ * It can optionally return Animation objects for descendant elements too.
+ */
+export function getAnimationsFor(
+  element: ShadowRoot | Element,
+  options?: GetAnimationsOptions
+) {
+  return element.getAnimations(options);
+}
+
+/**
+ * Runs all animations for the given element and/or descendant elements to completion.
+ */
+export function finishAnimationsFor(
+  element: ShadowRoot | Element,
+  options?: GetAnimationsOptions
+) {
+  const animations = getAnimationsFor(element, options);
+  for (const animation of animations) {
+    animation.finish();
   }
 }

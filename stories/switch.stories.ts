@@ -1,13 +1,13 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { IgcSwitchComponent, defineComponents } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcSwitchComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcSwitchComponent);
 
@@ -22,31 +22,14 @@ const metadata: Meta<IgcSwitchComponent> = {
           'Similar to a checkbox, a switch controls the state of a single setting on or off.',
       },
     },
+    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
   },
   argTypes: {
-    value: {
-      type: 'string',
-      description: 'The value attribute of the control.',
-      control: 'text',
-    },
-    checked: {
-      type: 'boolean',
-      description: 'The checked state of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    labelPosition: {
-      type: '"before" | "after"',
-      description: 'The label position of the control.',
-      options: ['before', 'after'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'after',
-    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -57,33 +40,45 @@ const metadata: Meta<IgcSwitchComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
+    },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+    },
+    checked: {
+      type: 'boolean',
+      description: 'The checked state of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    labelPosition: {
+      type: '"before" | "after"',
+      description: 'The label position of the control.',
+      options: ['before', 'after'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'after' } },
     },
   },
   args: {
-    checked: false,
-    labelPosition: 'after',
     required: false,
     disabled: false,
     invalid: false,
+    checked: false,
+    labelPosition: 'after',
   },
 };
 
 export default metadata;
 
 interface IgcSwitchArgs {
-  /** The value attribute of the control. */
-  value: string;
-  /** The checked state of the control. */
-  checked: boolean;
-  /** The label position of the control. */
-  labelPosition: 'before' | 'after';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -92,21 +87,23 @@ interface IgcSwitchArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
+  /** The value attribute of the control. */
+  value: string;
+  /** The checked state of the control. */
+  checked: boolean;
+  /** The label position of the control. */
+  labelPosition: 'before' | 'after';
 }
 type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 
-const Template = (
-  { labelPosition, checked, disabled }: IgcSwitchArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ labelPosition, checked, disabled }: IgcSwitchArgs) => {
   return html`
     <igc-switch
       label-position=${ifDefined(labelPosition)}
       .checked=${checked}
       .disabled=${disabled}
-      dir=${ifDefined(direction)}
     >
       Label
     </igc-switch>
@@ -123,6 +120,12 @@ export const Form: Story = {
         <fieldset>
           <legend>Default section</legend>
           <igc-switch name="switch">Switch 1</igc-switch>
+        </fieldset>
+        <fieldset>
+          <legend>Initial checked state</legend>
+          <igc-switch name="switch-initial" value="initial" checked
+            >Initial checked state</igc-switch
+          >
         </fieldset>
         <fieldset>
           <legend>Required section</legend>

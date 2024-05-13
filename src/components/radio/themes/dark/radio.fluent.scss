@@ -1,8 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-radio {
-        @include css-vars-from-theme($fluent, 'ig-radio');
-    }
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme(diff($base, $theme), 'ig-radio');
 }

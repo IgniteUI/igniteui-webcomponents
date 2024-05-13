@@ -1,21 +1,26 @@
-import { html, LitElement, nothing } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/item/combo-item.base.css.js';
-import { styles as bootstrap } from '../dropdown/themes/light/item/dropdown-item.bootstrap.css.js';
-import { styles as fluent } from '../dropdown/themes/light/item/dropdown-item.fluent.css.js';
-import { styles as indigo } from '../dropdown/themes/light/item/dropdown-item.indigo.css.js';
-import { styles as material } from '../dropdown/themes/light/item/dropdown-item.material.css.js';
+import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
-import IgcCheckboxComopnent from '../checkbox/checkbox.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 
-defineComponents(IgcCheckboxComopnent);
+import { themes } from '../../theming/theming-decorator.js';
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { all } from '../dropdown/themes/item.js';
+import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
+import { styles } from './themes/combo-item.base.css.js';
+
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo, material })
+@themes(all)
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcComboItemComponent, IgcCheckboxComponent);
+  }
+
+  private _internals: ElementInternals;
 
   @property({ attribute: false })
   public index!: number;
@@ -42,9 +47,14 @@ export default class IgcComboItemComponent extends LitElement {
 
   @watch('selected')
   protected selectedChange() {
-    this.selected
-      ? this.setAttribute('aria-selected', 'true')
-      : this.removeAttribute('aria-selected');
+    this._internals.ariaSelected = `${this.selected}`;
+  }
+
+  constructor() {
+    super();
+
+    this._internals = this.attachInternals();
+    this._internals.role = 'option';
   }
 
   public override connectedCallback() {
@@ -55,9 +65,8 @@ export default class IgcComboItemComponent extends LitElement {
   private renderCheckbox() {
     return html`<section part="prefix">
       <igc-checkbox
-        aria-hidden="true"
+        inert
         ?checked=${this.selected}
-        tabindex="-1"
         exportparts="control: checkbox, indicator: checkbox-indicator, checked"
       ></igc-checkbox>
     </section>`;

@@ -1,6 +1,6 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
   IgcAvatarComponent,
   IgcButtonComponent,
@@ -11,7 +11,6 @@ import {
   defineComponents,
   registerIcon,
 } from '../src/index.js';
-import { Context } from './story.js';
 
 defineComponents(
   IgcNavbarComponent,
@@ -34,8 +33,6 @@ const metadata: Meta<IgcNavbarComponent> = {
       },
     },
   },
-  argTypes: {},
-  args: {},
 };
 
 export default metadata;
@@ -50,15 +47,14 @@ interface NavbarStoryArgs {
 
 type EnhancedStory = StoryObj<NavbarStoryArgs>;
 
-Object.assign(metadata.argTypes!, {
-  content: {
-    type: 'string',
-    control: 'text',
+Object.assign(metadata, {
+  argTypes: {
+    content: {
+      type: 'string',
+      control: 'text',
+    },
   },
-});
-
-Object.assign(metadata.args!, {
-  content: 'Title',
+  args: { content: 'Title' },
 });
 
 registerIcon(
@@ -71,12 +67,9 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
 );
 
-const Template = (
-  { content }: NavbarStoryArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ content }: NavbarStoryArgs) => {
   return html`
-    <igc-navbar dir=${ifDefined(direction)} style="height:30px">
+    <igc-navbar style="height:30px">
       <igc-icon slot="start" name="home"></igc-icon>
       <h2>${content}</h2>
       <igc-input

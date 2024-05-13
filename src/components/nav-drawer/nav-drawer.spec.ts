@@ -5,7 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcNavDrawerComponent } from '../../index.js';
+
+import { IgcNavDrawerComponent, defineComponents } from '../../index.js';
 import type { IgcNavDrawerItemComponent } from '../../index.js';
 
 describe('Navigation Drawer', () => {
@@ -69,10 +70,9 @@ describe('Navigation Drawer', () => {
           <div part="main">
             <slot></slot>
           </div>
-
-          <div part="mini hidden">
-            <slot name="mini"></slot>
-          </div>
+        </div>
+        <div part="mini hidden">
+          <slot name="mini"></slot>
         </div>
       `);
     });

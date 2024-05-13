@@ -5,15 +5,25 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { TemplateResult } from 'lit';
-import sinon from 'sinon';
+import type { TemplateResult } from 'lit';
+import { spy } from 'sinon';
+
 import {
-  defineComponents,
-  IgcTabsComponent,
+  type IgcIconButtonComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
-  IgcIconButtonComponent,
+  IgcTabsComponent,
+  defineComponents,
 } from '../../index.js';
+import {
+  arrowLeft,
+  arrowRight,
+  endKey,
+  enterKey,
+  homeKey,
+  spaceBar,
+} from '../common/controllers/key-bindings.js';
+import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 
 describe('Tabs component', () => {
   // Helper functions
@@ -140,19 +150,20 @@ describe('Tabs component', () => {
     });
 
     it('selects next/previous tab when pressing right/left arrow', async () => {
-      getTabs(element)[1].click();
-      getScrollContainer(element).dispatchEvent(
-        fireKeyboardEvent('ArrowRight')
-      );
+      const container = getScrollContainer(element);
+
+      simulateClick(getTabs(element)[1]);
+      simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
+
       verifySelection(element, 'third');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
       verifySelection(element, 'second');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('forth');
@@ -160,24 +171,23 @@ describe('Tabs component', () => {
     });
 
     it('selects next/previous tab when pressing right/left arrow (RTL)', async () => {
+      const container = getScrollContainer(element);
+
       element.dir = 'rtl';
       getTabs(element)[1].focus();
-      getScrollContainer(element).dispatchEvent(
-        fireKeyboardEvent('ArrowRight')
-      );
+      simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
+
       expect(element.selected).to.eq('forth');
       expect(getSelectedTab(element).panel).to.eq('forth');
 
-      getScrollContainer(element).dispatchEvent(
-        fireKeyboardEvent('ArrowRight')
-      );
+      simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('third');
       expect(getSelectedTab(element).panel).to.eq('third');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('forth');
@@ -185,13 +195,14 @@ describe('Tabs component', () => {
     });
 
     it('selects first/last enabled tab when pressing home/end keys', async () => {
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('End'));
+      const container = getScrollContainer(element);
+      simulateKeyboard(container, endKey);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('forth');
       expect(getSelectedTab(element).panel).to.eq('forth');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('Home'));
+      simulateKeyboard(container, homeKey);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('second');
@@ -202,7 +213,7 @@ describe('Tabs component', () => {
       element.activation = 'manual';
       await elementUpdated(element);
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('End'));
+      simulateKeyboard(getScrollContainer(element), endKey);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('second');
@@ -212,24 +223,26 @@ describe('Tabs component', () => {
     });
 
     it('selects the focused tab when activation is set to `manual` and space/enter is pressed', async () => {
-      element.activation = 'manual';
-      await elementUpdated(element);
+      const container = getScrollContainer(element);
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('End'));
+      element.activation = 'manual';
+      simulateKeyboard(container, endKey);
+      await elementUpdated(element);
 
       expect(element.selected).to.eq('second');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent(' '));
+      simulateKeyboard(container, spaceBar);
       await elementUpdated(element);
 
       expect(getSelectedTab(element).panel).to.eq('forth');
       expect(element.selected).to.eq('forth');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('Home'));
+      simulateKeyboard(container, homeKey);
+      await elementUpdated(element);
 
       expect(element.selected).to.eq('forth');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('Enter'));
+      simulateKeyboard(container, enterKey);
       await elementUpdated(element);
 
       expect(getSelectedTab(element).panel).to.eq('second');
@@ -243,7 +256,7 @@ describe('Tabs component', () => {
 
       expect(indicator.style.transform).to.eq('translate(90px)');
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
 
       element.alignment = 'justify';
@@ -252,10 +265,10 @@ describe('Tabs component', () => {
       element.select('forth');
       await elementUpdated(element);
 
-      const offsetLeft = getSelectedTab(element).offsetLeft + 'px';
+      const offsetLeft = `${getSelectedTab(element).offsetLeft}px`;
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
     });
 
@@ -269,7 +282,7 @@ describe('Tabs component', () => {
 
       expect(indicator.style.transform).to.eq('translate(90px)');
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
 
       element.alignment = 'justify';
@@ -278,19 +291,19 @@ describe('Tabs component', () => {
       element.select('forth');
       await elementUpdated(element);
 
-      const offsetLeft =
+      const offsetLeft = `${
         getSelectedTab(element).offsetLeft +
         getSelectedTab(element).offsetWidth -
-        element.clientWidth +
-        'px';
+        element.clientWidth
+      }px`;
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        getSelectedTab(element).offsetWidth + 'px'
+        `${getSelectedTab(element).offsetWidth}px`
       );
     });
 
     it('emits `igcChange` when selecting item via mouse click', async () => {
-      const eventSpy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       getTabs(element)[3].click();
       await elementUpdated(element);
@@ -301,7 +314,7 @@ describe('Tabs component', () => {
     });
 
     it('emits `igcChange` when selecting item via arrow key press', async () => {
-      const eventSpy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
       await elementUpdated(element);
@@ -645,6 +658,16 @@ describe('Tabs component', () => {
 
       // Check the last one for auto-generated `panel` prop.
       expect(tabs.at(-1)?.panel).to.not.equal('');
+    });
+  });
+
+  describe('issue-1140', () => {
+    it('Tabs throw if a child tab is immediately appended', async () => {
+      const tabs = document.createElement(IgcTabsComponent.tagName);
+      const tab = document.createElement(IgcTabComponent.tagName);
+      document.body.appendChild(tabs);
+
+      expect(() => tabs.appendChild(tab)).not.to.throw();
     });
   });
 });

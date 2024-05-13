@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+
+:host {
+    overflow: hidden auto;
+    flex: 1 1 auto;
+}
+
+:host(:not([hidden])) {
+    display: block;
+}

@@ -1,62 +1,58 @@
-import { html, LitElement, TemplateResult } from 'lit';
-import { styleMap } from 'lit/directives/style-map.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/combo.base.css.js';
-import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
-import { styles as material } from './themes/light/combo.material.css.js';
-import { styles as fluent } from './themes/light/combo.fluent.css.js';
-import { styles as indigo } from './themes/light/combo.indigo.css.js';
+import { LitElement, type TemplateResult, html } from 'lit';
 import {
   property,
   query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcComboListComponent from './combo-list.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcInputComponent from '../input/input.js';
-import IgcIconComponent from '../icon/icon.js';
-import { NavigationController } from './controllers/navigation.js';
-import { SelectionController } from './controllers/selection.js';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
-import { DataController } from './controllers/data.js';
-import { IgcToggleComponent } from '../toggle/types.js';
-import type {
-  Keys,
-  ComboRecord,
-  GroupingDirection,
-  FilteringOptions,
-  IgcComboEventMap,
-  ComboItemTemplate,
-  ComboRenderFunction,
-  Item,
-  ComboValue,
-} from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { partNameMap } from '../common/util.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
+
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
+import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { partNameMap } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcComboListComponent,
-  IgcComboItemComponent,
-  IgcComboHeaderComponent,
-  IgcInputComponent
-);
+import IgcIconComponent from '../icon/icon.js';
+import IgcInputComponent from '../input/input.js';
+import IgcPopoverComponent from '../popover/popover.js';
+import IgcComboHeaderComponent from './combo-header.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import { DataController } from './controllers/data.js';
+import { NavigationController } from './controllers/navigation.js';
+import { SelectionController } from './controllers/selection.js';
+import { styles } from './themes/combo.base.css.js';
+import { styles as shared } from './themes/shared/combo.common.css.js';
+import { all } from './themes/themes.js';
+import type {
+  ComboItemTemplate,
+  ComboRecord,
+  ComboRenderFunction,
+  ComboValue,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboEventMap,
+  Item,
+  Keys,
+} from './types.js';
 
 /* blazorSupportsVisualChildren */
 /**
+ * The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.
+ * In contrast to the Select component, the Combo component displays all options in a virtualized list of items,
+ * meaning the combo box can simultaneously show thousands of options, where one or more options can be selected.
+ * Additionally, users can create custom item templates, allowing for robust data visualization.
+ * The Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.
+ *
  * @element igc-combo
  *
  * @slot prefix - Renders content before the input.
@@ -98,19 +94,34 @@ defineComponents(
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes({ material, bootstrap, fluent, indigo }, true)
+@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
-export default class IgcComboComponent<T extends object = any>
-  extends FormAssociatedRequiredMixin(
-    EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
-  )
-  implements Partial<IgcToggleComponent>
-{
+export default class IgcComboComponent<
+  T extends object = any,
+> extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-combo';
-  public static styles = styles;
+  public static styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcComboComponent,
+      IgcIconComponent,
+      IgcComboListComponent,
+      IgcComboItemComponent,
+      IgcComboHeaderComponent,
+      IgcInputComponent,
+      IgcPopoverComponent
+    );
+  }
 
   private _value: ComboValue<T>[] = [];
+
+  @state()
+  private _activeDescendant!: string;
 
   @state()
   private _displayValue = '';
@@ -135,7 +146,6 @@ export default class IgcComboComponent<T extends object = any>
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
-  protected toggleController!: IgcToggleController;
   private declare readonly [themeSymbol]: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
@@ -245,7 +255,7 @@ export default class IgcComboComponent<T extends object = any>
   /**
    * Sorts the items in each group by ascending or descending order.
    * @attr group-sorting
-   * @type {"asc" | "desc"}
+   * @type {"asc" | "desc" | "none"}
    */
   @property({ attribute: 'group-sorting', reflect: false })
   public groupSorting: GroupingDirection = 'asc';
@@ -320,11 +330,14 @@ export default class IgcComboComponent<T extends object = any>
 
   @watch('data')
   protected dataChanged() {
+    if (this.data.length === 0) return;
     this.dataState = structuredClone(this.data) as ComboRecord<T>[];
 
     if (this.hasUpdated) {
       this.pipeline();
     }
+
+    this.requestUpdate('value');
   }
 
   @watch('valueKey')
@@ -348,24 +361,21 @@ export default class IgcComboComponent<T extends object = any>
 
   @watch('open')
   protected toggleDirectiveChange() {
-    if (!this.target) return;
-    this.toggleController.target = this.target;
-    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+    this._rootClickController.update();
   }
+
+  private _rootClickController = addRootClickHandler(this, {
+    hideCallback: async () => {
+      if (!this.handleClosing()) return;
+      this.open = false;
+
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
+    },
+  });
 
   constructor() {
     super();
-
-    this.toggleController = new IgcToggleController(this, {
-      target: this.target,
-      closeCallback: async () => {
-        if (!this.handleClosing()) return;
-        this.open = false;
-
-        await this.updateComplete;
-        this.emitEvent('igcClosed');
-      },
-    });
 
     this.addEventListener('focus', () => {
       this.emitEvent('igcFocus');
@@ -387,12 +397,6 @@ export default class IgcComboComponent<T extends object = any>
       'keydown',
       this.navigationController.navigateHost.bind(this.navigationController)
     );
-  }
-
-  protected override async getUpdateComplete() {
-    const result = await super.getUpdateComplete();
-    await this.toggleController.rendered;
-    return result;
   }
 
   protected resetSearchTerm() {
@@ -464,11 +468,11 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   /**
-   * Returns the current selection as a list of commma separated values,
+   * Returns the current selection as a list of comma separated values,
    * represented by the value key, when provided.
    */
   @property({ attribute: true, type: Array })
-  public get value() {
+  public get value(): ComboValue<T>[] {
     return this._value;
   }
 
@@ -480,7 +484,8 @@ export default class IgcComboComponent<T extends object = any>
     const items = this._value;
 
     if (items.length < 1) {
-      return super.setFormValue(null);
+      super.setFormValue(null);
+      return;
     }
 
     const data = new FormData();
@@ -497,6 +502,7 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   protected async updateValue() {
+    if (this.data.length === 0) return;
     const selected = Array.from(this.selectionController.selected);
 
     this._value = this.selectionController.getValue(selected, this.valueKey!);
@@ -687,18 +693,24 @@ export default class IgcComboComponent<T extends object = any>
       >${this.groupHeaderTemplate({ item: record.value })}</igc-combo-header
     >`;
 
-    const itemParts = partNameMap({
-      item: true,
-      selected,
-      active,
-    });
+    const itemPosition = index + 1;
+    const itemId = this.id
+      ? `${this.id}-item-${itemPosition}`
+      : `item-${itemPosition}`;
+
+    if (active) {
+      this._activeDescendant = itemId;
+    }
 
     const itemTemplate = html`<igc-combo-item
-      part="${itemParts}"
+      id=${itemId}
+      part=${partNameMap({ item: true, selected, active })}
+      aria-setsize=${this.dataState.length}
+      aria-posinset=${itemPosition}
       exportparts="checkbox, checkbox-indicator, checked"
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
-      .active=${active}
+      ?active=${active}
       ?selected=${selected}
       ?hide-checkbox=${this.singleSelect}
       >${this.itemTemplate({ item: record.value })}</igc-combo-item
@@ -797,6 +809,10 @@ export default class IgcComboComponent<T extends object = any>
     return this.inputSuffix.length > 0;
   }
 
+  private _stopPropagation(e: Event) {
+    e.stopPropagation();
+  }
+
   private renderToggleIcon() {
     const openIcon =
       this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
@@ -847,8 +863,11 @@ export default class IgcComboComponent<T extends object = any>
   private renderMainInput() {
     return html`<igc-input
       id="target"
+      slot="anchor"
       role="combobox"
       aria-controls="dropdown"
+      aria-owns="dropdown"
+      aria-expanded=${this.open ? 'true' : 'false'}
       aria-describedby="helper-text"
       aria-disabled=${this.disabled}
       exportparts="container: input, input: native-input, label, prefix, suffix"
@@ -858,7 +877,7 @@ export default class IgcComboComponent<T extends object = any>
       }}
       placeholder=${ifDefined(this.placeholder)}
       label=${ifDefined(this.label)}
-      @igcChange=${(e: Event) => e.stopPropagation()}
+      @igcChange=${this._stopPropagation}
       @igcFocus=${(e: Event) => {
         e.stopPropagation();
 
@@ -866,7 +885,7 @@ export default class IgcComboComponent<T extends object = any>
           this.target.select();
         });
       }}
-      @igcBlur=${(e: Event) => e.stopPropagation()}
+      @igcBlur=${this._stopPropagation}
       @igcInput=${this.handleMainInput}
       @keydown=${this.handleMainInputKeydown}
       .value=${this._displayValue}
@@ -897,8 +916,8 @@ export default class IgcComboComponent<T extends object = any>
         part="search-input"
         placeholder=${this.placeholderSearch}
         exportparts="input: search-input"
-        @igcFocus=${(e: Event) => e.stopPropagation()}
-        @igcBlur=${(e: Event) => e.stopPropagation()}
+        @igcFocus=${this._stopPropagation}
+        @igcBlur=${this._stopPropagation}
         @igcInput=${this.handleSearchInput}
         @keydown=${this.handleSearchInputKeydown}
       >
@@ -923,23 +942,28 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   private renderList() {
+    const hasItems = this.dataState.length > 0;
+
     return html`<div
+      .inert=${!this.open}
       @keydown=${this.listKeydownHandler}
       part="list-wrapper"
-      style=${styleMap({ position: this.positionStrategy })}
-      ${this.toggleController.toggleDirective}
     >
       ${this.renderSearchInput()}
       <div part="header">
         <slot name="header"></slot>
       </div>
       <igc-combo-list
+        aria-multiselectable=${!this.singleSelect}
         id="dropdown"
         part="list"
-        aria-label="${this.label}"
+        role="listbox"
+        tabindex="0"
+        aria-labelledby="target"
+        aria-activedescendant=${ifDefined(this._activeDescendant)}
         .items=${this.dataState}
         .renderItem=${this.itemRenderer}
-        ?hidden=${this.dataState.length === 0}
+        ?hidden=${!hasItems}
       >
       </igc-combo-list>
       ${this.renderEmptyTemplate()}
@@ -961,7 +985,10 @@ export default class IgcComboComponent<T extends object = any>
 
   protected override render() {
     return html`
-      ${this.renderMainInput()}${this.renderList()}${this.renderHelperText()}
+      <igc-popover ?open=${this.open} flip shift same-width>
+        ${this.renderMainInput()} ${this.renderList()}
+      </igc-popover>
+      ${this.renderHelperText()}
     `;
   }
 }

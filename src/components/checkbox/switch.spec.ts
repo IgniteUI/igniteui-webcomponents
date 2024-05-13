@@ -5,8 +5,9 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcSwitchComponent } from '../../index.js';
+import { spy } from 'sinon';
+
+import { IgcSwitchComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Switch', () => {
@@ -175,7 +176,7 @@ describe('Switch', () => {
     });
 
     it('should emit igcFocus/igcBlur events when the switch gains/loses focus', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);
@@ -189,7 +190,7 @@ describe('Switch', () => {
     });
 
     it('should emit igcChange event when the switch checked state changes', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.click();
 
       await elementUpdated(el);

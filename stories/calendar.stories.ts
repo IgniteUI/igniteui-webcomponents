@@ -1,9 +1,12 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
-import { defineComponents, IgcCalendarComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+
+import {
+  type DateRangeDescriptor,
+  DateRangeType,
+} from '../src/components/calendar/common/calendar.model.js';
+import { IgcCalendarComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcCalendarComponent);
 
@@ -18,6 +21,7 @@ const metadata: Meta<IgcCalendarComponent> = {
           'Represents a calendar that lets users\nto select a date value in a variety of different ways.',
       },
     },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
     hideOutsideDays: {
@@ -25,21 +29,21 @@ const metadata: Meta<IgcCalendarComponent> = {
       description:
         'Controls the visibility of the dates that do not belong to the current month.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideHeader: {
       type: 'boolean',
       description:
         'Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
       description: 'The orientation of the header.',
       options: ['vertical', 'horizontal'],
       control: { type: 'inline-radio' },
-      defaultValue: 'horizontal',
+      table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
       type: '"vertical" | "horizontal"',
@@ -47,30 +51,23 @@ const metadata: Meta<IgcCalendarComponent> = {
         'The orientation of the multiple months displayed in days view.',
       options: ['vertical', 'horizontal'],
       control: { type: 'inline-radio' },
-      defaultValue: 'horizontal',
+      table: { defaultValue: { summary: 'horizontal' } },
     },
     visibleMonths: {
       type: 'number',
       description: 'The number of months displayed in days view.',
       control: 'number',
-      defaultValue: 1,
+      table: { defaultValue: { summary: 1 } },
     },
     activeView: {
       type: '"days" | "months" | "years"',
       description: 'The active view.',
       options: ['days', 'months', 'years'],
       control: { type: 'inline-radio' },
-      defaultValue: 'days',
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
+      table: { defaultValue: { summary: 'days' } },
     },
     value: {
-      type: 'Date | undefined',
+      type: 'Date',
       description:
         'The current value of the calendar.\nUsed when selection is set to single.',
       control: 'date',
@@ -80,13 +77,13 @@ const metadata: Meta<IgcCalendarComponent> = {
       description: 'Sets the type of date selection.',
       options: ['single', 'multiple', 'range'],
       control: { type: 'inline-radio' },
-      defaultValue: 'single',
+      table: { defaultValue: { summary: 'single' } },
     },
     showWeekNumbers: {
       type: 'boolean',
       description: 'Show/hide the week numbers.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
@@ -101,7 +98,7 @@ const metadata: Meta<IgcCalendarComponent> = {
         'saturday',
       ],
       control: { type: 'select' },
-      defaultValue: 'sunday',
+      table: { defaultValue: { summary: 'sunday' } },
     },
     activeDate: {
       type: 'Date',
@@ -114,7 +111,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       description:
         'Sets the locale used for formatting and displaying the dates in the calendar.',
       control: 'text',
-      defaultValue: 'en',
+      table: { defaultValue: { summary: 'en' } },
     },
   },
   args: {
@@ -124,7 +121,6 @@ const metadata: Meta<IgcCalendarComponent> = {
     orientation: 'horizontal',
     visibleMonths: 1,
     activeView: 'days',
-    size: 'large',
     selection: 'single',
     showWeekNumbers: false,
     weekStart: 'sunday',
@@ -147,13 +143,11 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The active view. */
   activeView: 'days' | 'months' | 'years';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
   /**
    * The current value of the calendar.
    * Used when selection is set to single.
    */
-  value: Date | undefined;
+  value: Date;
   /** Sets the type of date selection. */
   selection: 'single' | 'multiple' | 'range';
   /** Show/hide the week numbers. */
@@ -184,13 +178,7 @@ interface IgcCalendarArgs {
   values: string;
 }
 
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange'],
-  },
-});
-
-// Add additional configration options
+// Add additional configuration options
 Object.assign(metadata.argTypes!, {
   weekDayFormat: {
     type: '"long" | "short" | "narrow"',
@@ -221,45 +209,48 @@ Object.assign(metadata.args!, {
   monthFormat: 'long',
 });
 
-const Template = (
-  {
-    showWeekNumbers,
-    hideOutsideDays,
-    weekStart,
-    locale,
-    weekDayFormat,
-    monthFormat,
-    selection,
-    activeView,
-    size,
-    hideHeader = false,
-    headerOrientation,
-    orientation,
-    title,
-    visibleMonths,
-    value,
-    values,
-    activeDate,
-  }: IgcCalendarArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  showWeekNumbers,
+  hideOutsideDays,
+  weekStart,
+  locale,
+  weekDayFormat,
+  monthFormat,
+  selection,
+  activeView,
+  hideHeader = false,
+  headerOrientation,
+  orientation,
+  title,
+  visibleMonths,
+  value,
+  values,
+  activeDate,
+}: IgcCalendarArgs) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
     month: monthFormat,
     weekday: weekDayFormat,
   };
 
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+
   const disabledDates: DateRangeDescriptor[] = [
-    // {
-    //   type: DateRangeType.Before,
-    //   dateRange: [new Date()],
-    // },
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 7)],
+    },
   ];
 
   const specialDates: DateRangeDescriptor[] = [
-    // {
-    //   type: DateRangeType.Specific,
-    //   dateRange: [new Date(2021, 8, 22)],
-    // },
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 22)],
+    },
+    {
+      type: DateRangeType.Specific,
+      dateRange: [new Date(currentYear, currentMonth, 23)],
+    },
   ];
 
   return html`
@@ -279,9 +270,7 @@ const Template = (
       .activeDate=${activeDate ? new Date(activeDate) : new Date()}
       .value=${value ? new Date(value as Date) : undefined}
       values=${ifDefined(values)}
-      size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
-      dir=${ifDefined(direction)}
       @igcChange=${(ev: Event) => {
         console.log(ev);
       }}

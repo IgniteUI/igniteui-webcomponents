@@ -1,17 +1,14 @@
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { LitElement, html } from 'lit';
+import { property, queryAssignedElements } from 'lit/decorators.js';
+
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/nav-drawer.base.css.js';
-import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
-import { styles as material } from './themes/light/nav-drawer.material.css.js';
-import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
-import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
-
-defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
+import { styles as shared } from './themes/shared/container/nav-drawer.common.css.js';
 
 /**
  * Represents a side navigation container that provides
@@ -26,10 +23,22 @@ defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@themes({ indigo, material, fluent, bootstrap })
+@themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcNavDrawerComponent,
+      IgcNavDrawerHeaderItemComponent,
+      IgcNavDrawerItemComponent
+    );
+  }
+
+  @queryAssignedElements({ slot: 'mini' })
+  private _miniSlotElements!: Array<HTMLElement>;
 
   /**
    * The position of the drawer.
@@ -73,26 +82,24 @@ export default class IgcNavDrawerComponent extends LitElement {
   }
 
   private resolvePartNames(base: string) {
-    const mini = document.querySelector('div[slot="mini"]');
-    const hasChildren = mini !== null && mini.children.length > 0;
-
     return {
       [base]: true,
-      hidden: !hasChildren,
+      hidden: this._miniSlotElements.length < 1,
     };
   }
 
   protected override render() {
     return html`
       <div part="overlay" @click=${this.hide}></div>
+
       <div part="base">
         <div part="main">
           <slot></slot>
         </div>
+      </div>
 
-        <div part="${partNameMap(this.resolvePartNames('mini'))}">
-          <slot name="mini"></slot>
-        </div>
+      <div part="${partNameMap(this.resolvePartNames('mini'))}">
+        <slot name="mini"></slot>
       </div>
     `;
   }

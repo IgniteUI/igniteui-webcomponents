@@ -1,43 +1,49 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { alternateName } from '../common/decorators/alternateName.js';
+
+import { themes } from '../../theming/theming-decorator.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './icon.base.css.js';
-import { styles as material } from './light/icon.material.css.js';
-import { styles as bootstrap } from './light/icon.bootstrap.css.js';
-import { styles as fluent } from './light/icon.fluent.css.js';
-import { styles as indigo } from './light/icon.indigo.css.js';
 import {
-  IconsRegistry,
-  registerIcon as registerIcon_impl,
+  getIconRegistry,
   registerIconFromText as registerIconFromText_impl,
+  registerIcon as registerIcon_impl,
 } from './icon.registry.js';
+import { styles } from './themes/icon.base.css.js';
+import { styles as shared } from './themes/shared/icon.common.css.js';
+import { all } from './themes/themes.js';
 
-@themes({ material, bootstrap, fluent, indigo })
 /**
- * Icon component
+ * The icon component allows visualizing collections of pre-registered SVG icons.
  *
  * @element igc-icon
  *
  *
  */
+@themes(all)
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
+  public static override styles = [styles, shared];
 
-  public static override styles = styles;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcIconComponent);
+  }
 
-  @state() private svg = '';
+  private __internals: ElementInternals;
 
+  @state()
+  private svg = '';
+
+  /* alternateName: iconName */
   /**
    * The name of the icon glyph to draw.
    * @attr
    */
   @property()
-  @alternateName('iconName')
   public name = '';
 
   /**
@@ -57,19 +63,18 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   constructor() {
     super();
+    this.__internals = this.attachInternals();
+    this.__internals.role = 'img';
     this.size = 'medium';
   }
 
   public override connectedCallback() {
     super.connectedCallback();
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'img');
-    }
-    IconsRegistry.instance().subscribe(this.iconLoaded);
+    getIconRegistry().subscribe(this.iconLoaded);
   }
 
   public override disconnectedCallback() {
-    IconsRegistry.instance().unsubscribe(this.iconLoaded);
+    getIconRegistry().unsubscribe(this.iconLoaded);
     super.disconnectedCallback();
   }
 
@@ -88,17 +93,18 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   };
 
   private getIcon() {
-    const svg =
-      this.name && this.collection
-        ? IconsRegistry.instance().getIcon(this.name, this.collection)
-        : '';
+    const { svg, title } =
+      getIconRegistry().get(this.name, this.collection) ?? {};
+
     this.svg = svg ?? '';
+    this.__internals.ariaLabel = title ?? null;
   }
 
   protected override render() {
-    return html` ${unsafeSVG(this.svg)} `;
+    return html`${unsafeSVG(this.svg)}`;
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected async registerIcon(
     name: string,
@@ -108,6 +114,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     await registerIcon_impl(name, url, collection);
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected registerIconFromText(
     name: string,

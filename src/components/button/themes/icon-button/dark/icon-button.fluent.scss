@@ -1,8 +1,18 @@
-@use 'styles/utilities' as utils;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-@mixin theme() {
-    igc-icon-button {
-        --text-color: #{utils.color(surface, 500)};
-        --hover-contained-background: #{utils.color(primary, 300)};
-    }
+$flat-theme: $fluent-flat;
+$contained-theme: $fluent-contained;
+$outlined-theme: $fluent-outlined;
+
+:host([variant='flat']) {
+    @include css-vars-from-theme($flat-theme, 'ig-icon-button');
+}
+
+:host([variant='outlined']) {
+    @include css-vars-from-theme($outlined-theme, 'ig-icon-button');
+}
+
+:host([variant='contained']) {
+    @include css-vars-from-theme($contained-theme, 'ig-icon-button');
 }

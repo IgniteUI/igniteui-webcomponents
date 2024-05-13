@@ -1,18 +1,14 @@
 @use 'styles/utilities' as *;
 
 $border-width: rem(1px);
-$week-number-bg: color(gray, 200);
-$week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
-$row-gap: rem(6px);
-$border-radius: border-radius(rem(4px));
+$row-gap: rem(4px);
 
 :host([part='days-view']) {
     display: flex;
     flex-direction: column;
-    min-width: rem(290px);
     outline: none;
-    padding: 0 rem(12px) rem(16px) rem(12px);
+    padding: rem(16px) rem(12px);
     overflow: hidden;
     box-sizing: border-box;
     gap: $row-gap;
@@ -22,40 +18,36 @@ $border-radius: border-radius(rem(4px));
     display: flex;
     align-items: center;
     justify-content: center;
+
+    // TODO hide the 7 row only if all the children have hidden part on them,
+    //  I need to know if the calendar is in multi view to achieve this
+    // &:nth-child(7) {
+    //     > [part~='date']:has(:not([part~='hidden'])) {
+    //         display: none;
+    //     }
+    // }
 }
+
 
 [part~='date-inner'] {
     cursor: pointer;
     user-select: none;
     z-index: 2;
 
-    &:hover,
-    &:focus {
-        background: color(secondary, 100);
-        color: contrast-color(secondary, 100);
-        border-color: color(secondary, 100);
+    &::after {
+        box-sizing: border-box;
     }
 }
 
-[part~='date-inner'][part~='current'][part~='selected'] {
-    box-shadow: inset 0 0 0 rem(1px) color(surface), 0 0 0 rem(1px) color(secondary, 500);
-}
-
-[part~='current'][part~='date-inner'] {
-    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
-
-    &:hover,
-    &:focus {
-        box-shadow: inset 0 0 0 rem(1px) color(surface);
-    }
+[part~='date'] {
+    margin: 0 !important;
+    z-index: 0;
 }
 
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
-    font-size: var(--ig-subtitle-1-font-size);
     width: 100%;
-    color: color(gray, 800);
     position: relative;
     display: flex;
     justify-content: center;
@@ -63,14 +55,17 @@ $border-radius: border-radius(rem(4px));
     outline: none;
     box-sizing: border-box;
     user-select: none;
-    border-top: $border-width solid transparent;
-    border-bottom: $border-width solid transparent;
+    margin: 0;
+
+    &::before,
+    &::after {
+        box-sizing: border-box;
+    }
 }
 
 [part='label-inner'] {
     text-overflow: ellipsis;
     overflow: hidden;
-    min-width: 4ch;
     text-align: center;
 }
 
@@ -79,49 +74,24 @@ $border-radius: border-radius(rem(4px));
     display: flex;
     align-items: center;
     justify-content: center;
-    border: $border-width solid transparent;
 
     &:focus {
         outline: none;
     }
 }
 
-[part~='date'][part~='range'] {
-    background: color(secondary, 50);
-}
-
-[part~='date'][part~='range'][part~='preview'] {
-    background: transparent;
-    border-top: $border-width dashed color(gray, 300);
-    border-bottom: $border-width dashed color(gray, 300);
-}
-
-[part~='date'][part~='range'][part~='preview'][part~='first'],
-[part~='date'][part~='range'][part~='preview'][part~='last'] {
-    background: transparent;
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-
-    &::after {
-        border-top: $border-width dashed color(gray, 300);
-        border-bottom: $border-width dashed color(gray, 300);
-        background: transparent;
-    }
-}
-
 [part~='date'][part~='range'][part~='first'],
 [part~='date'][part~='range'][part~='last'] {
-    background: transparent;
-
     &::after {
         content: '';
         position: absolute;
-        height: 100%;
-        width: calc(50% + #{rem(1px)});
-        background: color(secondary, 50);
-        border-top: $border-width solid color(secondary, 50);
-        border-bottom: $border-width solid color(secondary, 50);
-        z-index: 1;
+        width: 50%;
+        z-index: -1;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
     }
 }
 
@@ -143,96 +113,29 @@ $border-radius: border-radius(rem(4px));
     }
 }
 
-[part~='date-inner'][part~='inactive'],
-[part~='date-inner'][part~='label'],
-[part~='date-inner'][part~='disabled'] {
-    color: $week-number-color;
-}
-
-[part~='date-inner'][part~='weekend'],
-[part~='date-inner'][part~='inactive'] {
-    &:hover,
-    &:focus {
-        color: contrast-color(secondary, 100);
-    }
-}
-
-[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='first'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='last'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='first'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='last'] {
-    color: contrast-color(secondary, 700);
-}
-
-[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'],
-[part~='date-inner'][part~='selected'][part~='range'] {
-    color: contrast-color(secondary, 50);
-
-    &:hover,
-    &:focus {
-        color: contrast-color(secondary, 100);
-        background: color(secondary, 100);
-        border-color: color(secondary, 100);
-    }
-}
-
-[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
-[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
-[part~='date-inner'][part~='selected']:not([part~='range']) {
-    background: color(secondary, 500);
-    border-color: color(secondary, 500);
-
-    &:hover,
-    &:focus {
-        background: color(secondary, 700);
-        border-color: color(secondary, 700);
-        color: contrast-color(secondary, 700);
-    }
-}
-
-[part~='date-inner'][part~='selected'][part~='weekend']:not([part~='range']),
-[part~='date-inner'][part~='selected'][part~='inactive']:not([part~='range']),
-[part~='date-inner'][part~='selected']:not([part~='range']) {
-    color: contrast-color(secondary, 700);
-}
-
 [part~='week-number'] {
     order: 0;
-    color: $week-number-color;
     cursor: default;
+    margin-inline-end: $row-gap;
 }
 
 [part='week-number-inner first'] {
-    border-top-left-radius: $border-radius;
-    border-top-right-radius: $border-radius;
-
     &::after {
         display: none;
     }
 }
 
-[part='week-number-inner last'] {
-    border-bottom-left-radius: $border-radius;
-    border-bottom-right-radius: $border-radius;
-}
-
 [part~='week-number-inner'] {
     position: relative;
-    background: $week-number-bg;
-    border-inline-end-color: $week-number-bg;
 
     &::after {
         content: '';
         position: absolute;
-        bottom: 100%;
-        height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
-        width: 100%;
-        background: $week-number-bg;
-        border-inline-start: rem(1px) solid $week-number-bg;
-        border-inline-end: rem(1px) solid $week-number-bg;
+        height: $row-gap;
+
+        // rem(1px) is needed because of the border around the week-number-inner element
+        bottom: calc(100% + #{rem(1px)});
+        box-sizing: border-box;
     }
 }
 
@@ -242,18 +145,16 @@ $border-radius: border-radius(rem(4px));
     cursor: not-allowed;
 }
 
-[part~='date-inner'][part~='special'][part~='range'],
-[part~='date-inner'][part~='special'] {
-    background: color(gray, 100);
-    border-color: color(gray, 100);
-    color: color(gray, 900);
-    font-weight: 900;
+[part~='date-inner'][part~='disabled'][part~='special'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='single'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='first'],
+[part~='date-inner'][part~='disabled'][part~='selected'][part~='last'],
+[part~='date-inner'][part~='disabled'][part~='current'] {
+    opacity: .38;
+}
 
-    &:hover,
-    &:focus {
-        background: color(secondary, 100);
-        border-color: color(secondary, 100);
-    }
+[part~='date-inner'][part~='inactive'][part~='disabled'] {
+    opacity: 1;
 }
 
 [part~='hidden'] {

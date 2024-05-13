@@ -1,15 +1,14 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/avatar.base.css.js';
-import { styles as material } from './themes/light/avatar.material.css.js';
-import { styles as bootstrap } from './themes/light/avatar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/avatar.fluent.css.js';
-import { styles as indigo } from './themes/light/avatar.indigo.css.js';
+import { styles as shared } from './themes/shared/avatar.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -24,10 +23,20 @@ import { styles as indigo } from './themes/light/avatar.indigo.css.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes(all)
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcAvatarComponent);
+  }
+
+  private __internals: ElementInternals;
+
+  @state()
+  private hasError = false;
 
   /**
    * The image source to use.
@@ -35,9 +44,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
    */
   @property()
   public src!: string;
-
-  @state()
-  private hasError = false;
 
   /**
    * Alternative text for the image.
@@ -60,22 +66,20 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 
-  private get classes() {
-    const { size, shape } = this;
-
-    return {
-      circle: shape === 'circle',
-      rounded: shape === 'rounded',
-      square: shape === 'square',
-      small: size === 'small',
-      medium: size === 'medium',
-      large: size === 'large',
-    };
-  }
-
   constructor() {
     super();
+
+    this.__internals = this.attachInternals();
+    this.__internals.role = 'img';
+    this.__internals.ariaLabel = 'avatar';
+
     this.size = 'small';
+  }
+
+  @watch('initials')
+  @watch('alt')
+  protected roleDescriptionChange() {
+    this.__internals.ariaRoleDescription = this.alt ?? this.initials;
   }
 
   @watch('src')
@@ -83,28 +87,26 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.hasError = false;
   }
 
+  protected handleError() {
+    this.hasError = true;
+  }
+
   protected override render() {
     return html`
-      <div
-        part="base"
-        role="img"
-        aria-label="avatar"
-        aria-roledescription=${this.size + ' ' + this.shape}
-        class=${classMap(this.classes)}
-      >
+      <div part="base">
         ${this.initials
           ? html`<span part="initials">${this.initials}</span>`
-          : html` <slot></slot> `}
+          : html`<slot></slot>`}
         ${this.src && !this.hasError
           ? html`
               <img
                 part="image"
                 alt=${ifDefined(this.alt)}
                 src=${ifDefined(this.src)}
-                @error="${() => (this.hasError = true)}"
+                @error=${this.handleError}
               />
             `
-          : ''}
+          : nothing}
       </div>
     `;
   }

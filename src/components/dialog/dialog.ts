@@ -1,22 +1,21 @@
-import { html, LitElement, nothing } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { LitElement, html, nothing } from 'lit';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+
+import { addAnimationController } from '../../animations/player.js';
+import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
+import { themes } from '../../theming/theming-decorator.js';
+import IgcButtonComponent from '../button/button.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { styles } from './themes/light/dialog.base.css.js';
-import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dialog.fluent.css.js';
-import { styles as indigo } from './themes/light/dialog.indigo.css.js';
-import { styles as material } from './themes/light/dialog.material.css.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcButtonComponent from '../button/button.js';
-import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
-
-defineComponents(IgcButtonComponent);
+import { styles } from './themes/dialog.base.css.js';
+import { styles as shared } from './themes/shared/dialog.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcDialogEventMap {
   igcClosing: CustomEvent<void>;
@@ -40,21 +39,35 @@ export interface IgcDialogEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';
-  public static styles = [styles];
+  public static styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcDialogComponent, IgcButtonComponent);
+  }
 
   private static readonly increment = createCounter();
   private titleId = `title-${IgcDialogComponent.increment()}`;
-  private animationPlayer!: AnimationPlayer;
 
-  @query('dialog', true)
-  private dialog!: HTMLDialogElement;
+  private dialogRef: Ref<HTMLDialogElement> = createRef();
+  private animationPlayer = addAnimationController(this, this.dialogRef);
+
+  private get dialog() {
+    return this.dialogRef.value!;
+  }
+
+  @queryAssignedElements({ slot: 'title' })
+  private titleElements!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'footer' })
+  private footerElements!: Array<HTMLElement>;
 
   /* blazorSuppress */
   /**
@@ -119,13 +132,20 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public returnValue!: string;
 
+  protected resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      titled: this.titleElements.length > 0 || this.title,
+      footed: this.footerElements.length > 0 || !this.hideDefaultAction,
+    };
+  }
+
   @watch('open', { waitUntilFirstUpdate: true })
   protected handleOpenState() {
     this.open ? this.dialog.showModal() : this.dialog.close();
   }
 
   protected override async firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.dialog);
     await this.updateComplete;
     if (this.open) {
       this.dialog.showModal();
@@ -186,10 +206,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     if (await this.toggleAnimation('close')) {
       this.open = false;
       this.animating = false;
+      await this.updateComplete;
       this.emitEvent('igcClosed');
     }
-
-    await this.updateComplete;
   }
 
   private handleCancel(event: Event) {
@@ -201,7 +220,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private handleClick({ clientX, clientY, target }: MouseEvent) {
-    if (this.closeOnOutsideClick && this.dialog.isSameNode(target as Node)) {
+    if (this.closeOnOutsideClick && this.dialog === target) {
       const { left, top, right, bottom } = this.dialog.getBoundingClientRect();
       const between = (x: number, low: number, high: number) =>
         x >= low && x <= high;
@@ -246,7 +265,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return html`
       <div part=${backdropParts} aria-hidden=${!this.open}></div>
       <dialog
-        part="base"
+        ${ref(this.dialogRef)}
+        part="${partNameMap(this.resolvePartNames('base'))}"
         role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}

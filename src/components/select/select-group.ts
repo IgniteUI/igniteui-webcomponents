@@ -1,6 +1,16 @@
+import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+
+import { themes } from '../../theming/theming-decorator.js';
+import {
+  type MutationControllerParams,
+  createMutationController,
+} from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
-import IgcDropdownGroupComponent from '../dropdown/dropdown-group.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
+import { all } from '../dropdown/themes/group.js';
+import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';
 import IgcSelectItemComponent from './select-item.js';
 
 /**
@@ -11,22 +21,45 @@ import IgcSelectItemComponent from './select-item.js';
  *
  * @csspart label - The native label element.
  */
-export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
-  /** @private */
-  public static override readonly tagName = 'igc-select-group';
+@themes(all)
+export default class IgcSelectGroupComponent extends LitElement {
+  public static readonly tagName = 'igc-select-group';
+  public static override styles = [styles, shared];
 
-  private observer!: MutationObserver;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcSelectGroupComponent);
+  }
+
+  private _internals: ElementInternals;
   private controlledItems!: Array<IgcSelectItemComponent>;
 
   /** All child `igc-select-item`s. */
-  @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
-  public override items!: Array<IgcSelectItemComponent>;
+  @queryAssignedElements({
+    flatten: true,
+    selector: IgcSelectItemComponent.tagName,
+  })
+  public items!: Array<IgcSelectItemComponent>;
 
   @queryAssignedElements({
     flatten: true,
-    selector: 'igc-select-item:not([disabled])',
+    selector: `${IgcSelectItemComponent.tagName}:not([disabled])`,
   })
   protected activeItems!: Array<IgcSelectItemComponent>;
+
+  private _observerCallback({
+    changes: { attributes },
+  }: MutationControllerParams<IgcSelectItemComponent>) {
+    for (const item of attributes) {
+      if (!this.disabled) {
+        this.controlledItems = this.activeItems;
+      }
+
+      if (this.disabled && !item.disabled) {
+        item.disabled = true;
+      }
+    }
+  }
 
   /**
    * Whether the group item and all its children are disabled.
@@ -37,55 +70,42 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
 
   constructor() {
     super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'group';
 
-    this.observer = new MutationObserver(this.updateControlledItems.bind(this));
-  }
-
-  public override disconnectedCallback() {
-    this.observer.disconnect();
-    super.disconnectedCallback();
-  }
-
-  protected override getParent() {
-    return this.closest('igc-select')!;
+    createMutationController(this, {
+      callback: this._observerCallback,
+      filter: [IgcSelectItemComponent.tagName],
+      config: {
+        attributeFilter: ['disabled'],
+        subtree: true,
+      },
+    });
   }
 
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
-    this.setAttribute('role', 'presentation');
 
-    this.items.forEach((i) => {
-      this.observer.observe(i, {
-        attributes: true,
-        attributeFilter: ['disabled'],
-      });
-    });
-
-    this.updateDisabled();
-  }
-
-  protected updateControlledItems(mutations: MutationRecord[]) {
-    mutations.forEach((mutation) => {
-      const item = mutation.target as IgcSelectItemComponent;
-
-      if (!this.disabled) {
-        this.controlledItems = this.activeItems;
-      }
-
-      if (this.disabled && !item.disabled) {
-        item.disabled = true;
-      }
-    });
+    this.disabledChange();
   }
 
   @watch('disabled', { waitUntilFirstUpdate: true })
-  protected updateDisabled() {
-    this.disabled
-      ? this.setAttribute('aria-disabled', 'true')
-      : this.removeAttribute('aria-disabled');
+  protected disabledChange() {
+    this._internals.ariaDisabled = `${this.disabled}`;
 
-    this.controlledItems?.forEach((i) => (i.disabled = this.disabled));
+    for (const item of this.controlledItems) {
+      item.disabled = this.disabled;
+    }
+  }
+
+  protected override render() {
+    return html`
+      <label part="label">
+        <slot name="label"></slot>
+      </label>
+      <slot></slot>
+    `;
   }
 }
 

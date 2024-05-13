@@ -1,53 +1,36 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+} from '../common/controllers/key-bindings.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  any,
-  createCounter,
-  isLTR,
-  partNameMap,
-  wrap,
-} from '../common/util.js';
-import { styles } from './themes/light/radio.base.css.js';
-import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
-import { styles as fluent } from './themes/light/radio.fluent.css.js';
-import { styles as indigo } from './themes/light/radio.indigo.css.js';
-import { styles as material } from './themes/light/radio.material.css.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { Validator } from '../common/validators.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
+import type { Validator } from '../common/validators.js';
+import { styles } from './themes/radio.base.css.js';
+import { styles as shared } from './themes/shared/radio.common.css.js';
+import { all } from './themes/themes.js';
+import { getGroup } from './utils.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-
-const arrowKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
-const arrowKeyDelta = new Map(
-  Object.entries({
-    ArrowUp: () => -1,
-    ArrowLeft: (ltr?: boolean) => (ltr ? -1 : 1),
-    ArrowRight: (ltr?: boolean) => (ltr ? 1 : -1),
-    ArrowDown: () => 1,
-  })
-);
-
-type RadioQueryResult = {
-  /** All the radio components under the same name */
-  radios: IgcRadioComponent[];
-  /** All the radio components under the same name which are not disabled */
-  nonDisabled: IgcRadioComponent[];
-  /** All the radio components under the same name except the caller */
-  siblings: IgcRadioComponent[];
-};
 
 /**
  * @element igc-radio
@@ -62,12 +45,18 @@ type RadioQueryResult = {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes(all)
 export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = styles;
+  protected static styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcRadioComponent);
+  }
+
   private static readonly increment = createCounter();
 
   protected override validators: Validator<this>[] = [
@@ -75,14 +64,19 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       key: 'valueMissing',
       message: messages.required,
       isValid: () => {
-        const { radios } = this.radioGroup;
-        return any(radios, 'required') ? any(radios, 'checked') : true;
+        const { radios, checked } = this.group;
+        return radios.some((radio) => radio.required)
+          ? checked.length > 0
+          : true;
       },
     },
   ];
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
+
+  protected _checked = false;
+  protected _value!: string;
 
   @query('input[type="radio"]')
   protected input!: HTMLInputElement;
@@ -99,32 +93,12 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @state()
   protected hideLabel = false;
 
-  private get radioGroup(): RadioQueryResult {
-    const radios: IgcRadioComponent[] = Array.from(
-      document.querySelectorAll(`${this.tagName}[name='${this.name}']`)
-    );
-    const nonDisabled = [];
-    const siblings = [];
-
-    for (const radio of radios) {
-      if (!radio.disabled) {
-        nonDisabled.push(radio);
-      }
-      if (!radio.isSameNode(this)) {
-        siblings.push(radio);
-      }
-    }
-
-    return { radios, nonDisabled, siblings };
+  private get group() {
+    return getGroup(this);
   }
 
   protected override setDefaultValue(): void {
-    const firstChecked = this.radioGroup.radios.find((r) => r.checked);
-    if (firstChecked && firstChecked.isSameNode(this)) {
-      this._defaultValue = true;
-    } else {
-      this._defaultValue = false;
-    }
+    this._defaultValue = this === this.group.checked[0];
   }
 
   /**
@@ -132,7 +106,16 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public value!: string;
+  public set value(value: string) {
+    this._value = value;
+    if (this._checked) {
+      this.setFormValue(this._value || 'on');
+    }
+  }
+
+  public get value(): string {
+    return this._value;
+  }
 
   /**
    * The checked state of the control.
@@ -140,7 +123,17 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
-  public checked = false;
+  public set checked(value: boolean) {
+    this._checked = Boolean(value);
+
+    if (this.hasUpdated) {
+      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    }
+  }
+
+  public get checked(): boolean {
+    return this._checked;
+  }
 
   /**
    * The label position of the radio control.
@@ -152,7 +145,22 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
     this.addEventListener('keyup', this.handleKeyUp);
-    this.addEventListener('keydown', this.handleKeyDown);
+
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
+    })
+      .set(arrowLeft, () => this.navigate(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this.navigate(-1))
+      .set(arrowDown, () => this.navigate(1));
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this._checked = this === this.group.checked[0];
+    this.updateValidity();
   }
 
   /** Simulates a click on the radio control. */
@@ -177,7 +185,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const { radios } = this.radioGroup;
+    const { radios } = this.group;
 
     for (const radio of radios) {
       radio.updateValidity(message);
@@ -187,7 +195,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   @watch('required', { waitUntilFirstUpdate: true })
   protected override requiredChange(): void {
-    const { radios } = this.radioGroup;
+    const { radios } = this.group;
 
     for (const radio of radios) {
       radio.updateValidity();
@@ -196,7 +204,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateCheckedState() {
-    const siblings = this.radioGroup.siblings;
+    const { siblings } = this.group;
 
     this.setFormValue(this.value || 'on');
     this.updateValidity();
@@ -214,7 +222,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateUncheckedState() {
-    const siblings = this.radioGroup.siblings;
+    const { siblings } = this.group;
 
     this.setFormValue(null);
     this.updateValidity();
@@ -227,11 +235,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     for (const radio of siblings) {
       radio.updateValidity();
     }
-  }
-
-  @watch('checked')
-  protected checkedChanged() {
-    this.checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   protected handleMouseDown(event: PointerEvent) {
@@ -260,23 +263,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected handleKeyDown(event: KeyboardEvent) {
-    if (!arrowKeys.has(event.key)) return;
+  protected navigate(idx: number) {
+    const { active } = this.group;
+    const nextIdx = wrap(0, active.length - 1, active.indexOf(this) + idx);
+    const radio = active[nextIdx];
 
-    event.preventDefault();
-
-    const { nonDisabled } = this.radioGroup;
-    const LTR = isLTR(this);
-    const idx = wrap(
-      0,
-      nonDisabled.length - 1,
-      nonDisabled.indexOf(this) + arrowKeyDelta.get(event.key)!(LTR)
-    );
-
-    const target = nonDisabled[idx];
-    target.focus();
-    target.checked = true;
-    target.emitEvent('igcChange', { detail: target.checked });
+    radio.focus();
+    radio.checked = true;
+    radio.emitEvent('igcChange', { detail: radio.checked });
   }
 
   protected handleSlotChange() {

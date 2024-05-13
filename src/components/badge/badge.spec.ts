@@ -1,5 +1,7 @@
-import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcBadgeComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcBadgeComponent from './badge.js';
 
 describe('Badge', () => {
   before(() => {
@@ -10,6 +12,7 @@ describe('Badge', () => {
     const el = await fixture<IgcBadgeComponent>(html`<igc-badge></igc-badge>`);
 
     await expect(el).shadowDom.to.be.accessible();
+    await expect(el).to.be.accessible();
   });
 
   it('should initialize with default values', async () => {

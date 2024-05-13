@@ -1,14 +1,14 @@
 import { all } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
   IgcIconButtonComponent,
   IgcRippleComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import type { Context } from './story';
 
 defineComponents(IgcIconButtonComponent, IgcRippleComponent);
 
@@ -18,7 +18,7 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconButtonComponent> = {
   title: 'IconButton',
   component: 'igc-icon-button',
-  parameters: { docs: { description: {} } },
+  parameters: { docs: { description: { component: '' } } },
   argTypes: {
     name: {
       type: 'string',
@@ -34,20 +34,21 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'Whether to flip the icon button. Useful for RTL layouts.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     variant: {
       type: '"flat" | "contained" | "outlined"',
       description: 'The visual variant of the icon button.',
       options: ['flat', 'contained', 'outlined'],
       control: { type: 'inline-radio' },
-      defaultValue: 'contained',
+      table: { defaultValue: { summary: 'contained' } },
     },
     type: {
       type: '"button" | "reset" | "submit"',
-      description: 'The type of the button. Defaults to undefined.',
+      description: 'The type of the button. Defaults to `button`.',
       options: ['button', 'reset', 'submit'],
       control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'button' } },
     },
     href: {
       type: 'string',
@@ -61,10 +62,10 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'text',
     },
     target: {
-      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      type: '"_blank" | "_parent" | "_self" | "_top"',
       description:
         'Where to display the linked URL, as the name for a browsing context.',
-      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      options: ['_blank', '_parent', '_self', '_top'],
       control: { type: 'select' },
     },
     rel: {
@@ -77,21 +78,14 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
     mirrored: false,
     variant: 'contained',
+    type: 'button',
     disabled: false,
-    size: 'large',
   },
 };
 
@@ -106,14 +100,14 @@ interface IgcIconButtonArgs {
   mirrored: boolean;
   /** The visual variant of the icon button. */
   variant: 'flat' | 'contained' | 'outlined';
-  /** The type of the button. Defaults to undefined. */
+  /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */
   href: string;
   /** Prompts to save the linked URL instead of navigating to it. */
   download: string;
   /** Where to display the linked URL, as the name for a browsing context. */
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  target: '_blank' | '_parent' | '_self' | '_top';
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
@@ -121,8 +115,6 @@ interface IgcIconButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcIconButtonArgs>;
 
@@ -145,21 +137,17 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template = (
-  {
-    name = 'biking',
-    collection = 'default',
-    mirrored,
-    href,
-    download,
-    size,
-    target,
-    rel,
-    variant,
-    disabled,
-  }: IgcIconButtonArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name = 'biking',
+  collection = 'default',
+  mirrored,
+  href,
+  download,
+  target,
+  rel,
+  variant,
+  disabled,
+}: IgcIconButtonArgs) => {
   return html`
     <igc-icon-button
       .name=${name}
@@ -168,11 +156,9 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
     </igc-icon-button>
@@ -188,11 +174,9 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
       💙
@@ -201,11 +185,9 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <span class="material-icons">favorite</span>
     </igc-icon-button>
@@ -213,11 +195,9 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <i class="fa-solid fa-droplet"></i>
     </igc-icon-button>

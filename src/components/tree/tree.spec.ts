@@ -1,22 +1,23 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
+import { spy } from 'sinon';
+
 import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
-import IgcTreeComponent from './tree.js';
+import { defineComponents } from '../../index.js';
 import {
-  activeItemsTree,
   DIFF_OPTIONS,
+  PARTS,
+  SLOTS,
+  TreeTestFunctions,
+  activeItemsTree,
   disabledItemsTree,
   expandCollapseTree,
   navigationTree,
-  PARTS,
   selectedItemsTree,
   simpleHierarchyTree,
   simpleTree,
-  SLOTS,
-  TreeTestFunctions,
   wrappedItemsTree,
 } from './tree-utils.spec.js';
+import IgcTreeComponent from './tree.js';
 
 describe('Tree', () => {
   before(() => {
@@ -78,19 +79,18 @@ describe('Tree', () => {
 
     it('Should render items correctly depending on size settings', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
-      const indentationSize = parseFloat(
-        getComputedStyle(tree.firstElementChild as Element).getPropertyValue(
-          '--igc-tree-indentation-size'
-        )
-      );
+      const indentationSize = {
+        small: 12,
+        medium: 16,
+        large: 24,
+      };
 
       expect(tree.size).to.equal('large');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv).to.have.attribute('part').match(/large/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          item.level * indentationSize * 1 + 'px'
+          `${item.level * indentationSize.large * 1}px`
         );
       });
 
@@ -100,12 +100,9 @@ describe('Tree', () => {
       expect(tree.size).to.equal('medium');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv)
-          .to.have.attribute('part')
-          .match(/medium/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize * 2) / 3 + 'px'
+          `${(item.level * indentationSize.medium * 2) / 3}px`
         );
       });
 
@@ -115,10 +112,9 @@ describe('Tree', () => {
       expect(tree.size).to.equal('small');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv).to.have.attribute('part').match(/small/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize * 1) / 2 + 'px'
+          `${(item.level * indentationSize.large * 1) / 2}px`
         );
       });
     });
@@ -431,7 +427,7 @@ describe('Tree', () => {
     it('Should emit igcActiveItem event when the active item changes', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
-      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const eventSpy = spy(tree, 'emitEvent');
       await elementUpdated(tree);
 
       tree.items.forEach((item) => {
@@ -439,7 +435,7 @@ describe('Tree', () => {
         expect(selectionPart).to.be.null;
       });
 
-      tree.items[0].dispatchEvent(new PointerEvent('pointerdown'));
+      tree.items[0].dispatchEvent(new PointerEvent('click'));
       await elementUpdated(tree);
       expect(tree.navService.activeItem).to.equal(tree.items[0]);
       expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
@@ -591,7 +587,7 @@ describe('Tree', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should expand all collapsed (including the disabled) items w/ tree.expand()', async () => {
@@ -774,6 +770,94 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
+    });
+
+    it('Should expand/collapse nodes when clicking over them if `toggleNodeOnClick` is set to `true`', async () => {
+      tree.toggleNodeOnClick = true;
+      topLevelItems[0].active = true;
+      await elementUpdated(tree);
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+
+      // Should emit ing and ed events when item state is toggled through UI
+      const expandingArgs = {
+        detail: topLevelItems[0],
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
+      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+        detail: topLevelItems[0],
+      });
+
+      eventSpy.resetHistory();
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+
+      // Should emit ing and ed events when item state is toggled through UI
+      const collapsingArgs = {
+        detail: topLevelItems[0],
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith(
+        'igcItemCollapsing',
+        collapsingArgs
+      );
+      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+        detail: topLevelItems[0],
+      });
+    });
+
+    it('Should expand/collapse nodes only when clicking the expand indicator if `toggleNodeOnClick` is set to `false`', async () => {
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+    });
+
+    it('Should not expand/collapse nodes on right click', async () => {
+      tree.toggleNodeOnClick = true;
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('click', { button: 2 }));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+    });
+
+    it('Should not be able to expand/collapse nodes when clicking over nodes` checkbox if `toggleNodeOnClick` is set to `true`', async () => {
+      tree.toggleNodeOnClick = true;
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      TreeTestFunctions.verifyItemSelection(topLevelItems[0], false);
+
+      const selectionPart = topLevelItems[0].shadowRoot!.querySelector(
+        PARTS.select
+      );
+      const cb = selectionPart?.children[0] as IgcCheckboxComponent;
+      cb?.dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+      TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
+      expect(cb.checked).to.be.true;
     });
 
     it('Should toggle item state when item.toggle() is called', async () => {
@@ -998,7 +1082,7 @@ describe('Tree', () => {
       tree = await TreeTestFunctions.createTreeElement(disabledItemsTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
       disabledItems = tree.items.filter((i) => i.disabled === true);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should be able to select/activate/expand disabled item through API', async () => {
@@ -1072,7 +1156,7 @@ describe('Tree', () => {
       expect(item11.active).to.be.false;
       expect(eventSpy).not.to.be.called;
 
-      item11.dispatchEvent(new MouseEvent('pointerdown'));
+      item11.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       expect(item11.active).to.be.false;
@@ -1286,7 +1370,7 @@ describe('Tree', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(navigationTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
       tree.dir = 'rtl';
       await elementUpdated(tree);
     });

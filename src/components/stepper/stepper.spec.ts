@@ -1,16 +1,17 @@
+import { elementUpdated, expect } from '@open-wc/testing';
+import { spy } from 'sinon';
+
 import { defineComponents } from '../../index.js';
-import IgcStepperComponent from './stepper.js';
 import IgcStepComponent from './step.js';
-import sinon from 'sinon';
 import {
-  linearModeStepper,
   PARTS,
-  simpleStepper,
   SLOTS,
   StepperTestFunctions,
+  linearModeStepper,
+  simpleStepper,
   stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
-import { elementUpdated, expect } from '@open-wc/testing';
+import IgcStepperComponent from './stepper.js';
 
 describe('Stepper', () => {
   before(() => {
@@ -98,7 +99,9 @@ describe('Stepper', () => {
 
     it('Should do nothing when all steps are not accessible and next/prev methods are called', async () => {
       stepper.steps[1].active = true;
-      stepper.steps.forEach((step) => (step.disabled = true));
+      stepper.steps.forEach((step) => {
+        step.disabled = true;
+      });
       await elementUpdated(stepper);
 
       stepper.next();
@@ -182,7 +185,7 @@ describe('Stepper', () => {
     });
 
     it('Should emit ing and ed events when a step is activated through UI', async () => {
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       const argsIng = {
@@ -213,7 +216,7 @@ describe('Stepper', () => {
     });
 
     it('Should not emit events when a step is activated through API', async () => {
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       expect(stepper.steps[0].active).to.be.true;
@@ -1025,7 +1028,7 @@ describe('Stepper', () => {
   describe('Keyboard navigation', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
     });
 
     it('Should navigate to the first/last step on Home/End key press', async () => {
@@ -1401,7 +1404,7 @@ describe('Stepper', () => {
   describe('Aria', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
     });
 
     it('Should render proper role and orientation attributes for the stepper', async () => {

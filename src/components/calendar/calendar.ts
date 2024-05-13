@@ -1,42 +1,36 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
+import type { Theme } from '../../theming/types.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
+  type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
 import {
   IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
+  type IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
 } from './common/calendar-base.js';
-import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
+import {
+  type ICalendarDate,
+  TimeDeltaInterval,
+} from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import { styles } from './themes/calendar.base.css.js';
-import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
-import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
-import { styles as indigo } from './themes/indigo/calendar.indigo.css.js';
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
-import IgcIconComponent from '../icon/icon.js';
-import { Theme } from '../../theming/types.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcDaysViewComponent,
-  IgcMonthsViewComponent,
-  IgcYearsViewComponent
-);
+import { styles } from './themes/calendar.base.css.js';
+import { all } from './themes/calendar.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
 
 /**
  * Represents a calendar that lets users
@@ -66,22 +60,27 @@ defineComponents(
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes(
-  {
-    bootstrap,
-    fluent,
-    indigo,
-  },
-  true
-)
+@themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
-  public static styles = styles;
   public static readonly tagName = 'igc-calendar';
+  public static styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcCalendarComponent,
+      IgcIconComponent,
+      IgcDaysViewComponent,
+      IgcMonthsViewComponent,
+      IgcYearsViewComponent
+    );
+  }
+
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
@@ -158,40 +157,36 @@ export default class IgcCalendarComponent extends SizableMixin(
     return this.activeView === 'days'
       ? this.resourceStrings.previousMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.previousYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.previousYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.previousYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.previousYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private get nextButtonLabel() {
     return this.activeView === 'days'
       ? this.resourceStrings.nextMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.nextYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.nextYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.nextYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.nextYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private monthSelectLabel(activeDate: Date) {
-    return (
-      activeDate.toLocaleString(this.locale, {
-        month: 'long',
-      }) +
-      ', ' +
-      this.resourceStrings.selectMonth
-    );
+    return `${activeDate.toLocaleString(this.locale, {
+      month: 'long',
+    })}, ${this.resourceStrings.selectMonth}`;
   }
 
   private yearSelectLabel(activeDate: Date) {
-    return activeDate.getFullYear() + ', ' + this.resourceStrings.selectYear;
+    return `${activeDate.getFullYear()}, ${this.resourceStrings.selectYear}`;
   }
 
   private handleKeyDown = (event: KeyboardEvent) => {
@@ -470,7 +465,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     event.stopPropagation();
 
     const daysView = event.target as IgcDaysViewComponent;
-    let newValue;
+    let newValue: Date | Date[] | undefined;
 
     if (this.selection === 'single') {
       this.value = daysView.value;
@@ -499,16 +494,22 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.focusActiveDate();
   }
 
-  private switchToMonths(daysViewIndex: number) {
+  private async switchToMonths(daysViewIndex: number) {
     this.activateDaysView(daysViewIndex);
     this.activeView = 'months';
+
+    await this.updateComplete;
+    this.focusActiveDate();
   }
 
-  private switchToYears(daysViewIndex: number) {
+  private async switchToYears(daysViewIndex: number) {
     if (this.activeView === 'days') {
       this.activateDaysView(daysViewIndex);
     }
     this.activeView = 'years';
+
+    await this.updateComplete;
+    this.focusActiveDate();
   }
 
   private activateDaysView(daysViewIndex: number) {
@@ -588,12 +589,10 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private renderNavigation(
-    activeDate?: Date,
+    activeDate = this.activeDate,
     renderButtons = true,
     daysViewIndex = 0
   ) {
-    activeDate = activeDate ?? this.activeDate;
-
     let startYear = undefined;
     let endYear = undefined;
     const prev_icon =
@@ -607,7 +606,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     }
 
     return html`<div part="navigation">
-      <div>
+      <div part="picker-dates">
         ${this.activeView === 'days'
           ? html`<button
               part="months-navigation"
@@ -706,7 +705,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     const dates = this.values;
 
     return html`<span
-        >${dates && dates.length
+        >${dates?.length
           ? this.formatterMonthDay.format(dates[0])
           : this.resourceStrings.startDate}</span
       >

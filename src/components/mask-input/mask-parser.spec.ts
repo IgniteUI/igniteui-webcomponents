@@ -1,10 +1,13 @@
 import { expect } from '@open-wc/testing';
+
 import { MaskParser } from './mask-parser.js';
 
 describe('Mask parser', () => {
   let parser: MaskParser;
 
-  beforeEach(() => (parser = new MaskParser()));
+  beforeEach(() => {
+    parser = new MaskParser();
+  });
 
   it('default mask', () => {
     expect(parser.apply()).to.equal('__________');

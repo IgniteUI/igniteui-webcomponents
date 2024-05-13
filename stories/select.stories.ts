@@ -1,7 +1,12 @@
-import { github } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import {
+  arrowDownLeft,
+  arrowUpLeft,
+  github,
+} from '@igniteui/material-icons-extended';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { groupBy } from '../src/components/common/util.js';
 import {
   IgcIconComponent,
   IgcSelectComponent,
@@ -9,23 +14,42 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
-registerIconFromText(github.name, github.value);
+
+for (const each of [github, arrowDownLeft, arrowUpLeft]) {
+  registerIconFromText(each.name, each.value);
+}
 
 // region default
 const metadata: Meta<IgcSelectComponent> = {
   title: 'Select',
   component: 'igc-select',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component: 'Represents a control that provides a menu of options.',
+      },
+    },
+    actions: {
+      handles: [
+        'igcFocus',
+        'igcBlur',
+        'igcChange',
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+      ],
+    },
+  },
   argTypes: {
     value: {
-      type: 'string | undefined',
+      type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
     },
@@ -33,12 +57,19 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     autofocus: {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    distance: {
+      type: 'number',
+      description: 'The distance of the select dropdown from its input.',
+      control: 'number',
+      table: { defaultValue: { summary: 0 } },
     },
     label: {
       type: 'string',
@@ -50,60 +81,10 @@ const metadata: Meta<IgcSelectComponent> = {
       description: 'The placeholder attribute of the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Control the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    keepOpenOnSelect: {
-      type: 'boolean',
-      description: 'Whether the dropdown should be kept open on selection.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
-      description:
-        'Determines the behavior of the component during scrolling the container.',
-      options: ['scroll', 'block', 'close'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'scroll',
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    open: {
-      type: 'boolean',
-      description: 'Sets the open state of the component.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
       description:
-        'The preferred placement of the component around the target element.',
+        'The preferred placement of the select dropdown around its input.',
       options: [
         'top',
         'top-start',
@@ -119,34 +100,72 @@ const metadata: Meta<IgcSelectComponent> = {
         'left-end',
       ],
       control: { type: 'select' },
-      defaultValue: 'bottom-start',
+      table: { defaultValue: { summary: 'bottom-start' } },
     },
-    distance: {
-      type: 'number',
-      description: 'The distance from the target element.',
-      control: 'number',
-      defaultValue: 0,
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
+    scrollStrategy: {
+      type: '"scroll" | "block" | "close"',
+      description:
+        'Determines the behavior of the component during scrolling of the parent container.',
+      options: ['scroll', 'block', 'close'],
       control: { type: 'inline-radio' },
-      defaultValue: 'medium',
+      table: { defaultValue: { summary: 'scroll' } },
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    keepOpenOnSelect: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on selection.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on clicking outside of it.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    open: {
+      type: 'boolean',
+      description: 'Sets the open state of the component.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
     outlined: false,
+    autofocus: false,
+    distance: 0,
+    placement: 'bottom-start',
+    scrollStrategy: 'scroll',
     required: false,
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
-    scrollStrategy: 'scroll',
     keepOpenOnOutsideClick: false,
     open: false,
-    placement: 'bottom-start',
-    distance: 0,
-    size: 'medium',
   },
 };
 
@@ -154,32 +173,18 @@ export default metadata;
 
 interface IgcSelectArgs {
   /** The value attribute of the control. */
-  value: string | undefined;
+  value: string;
   /** The outlined attribute of the control. */
   outlined: boolean;
   /** The autofocus attribute of the control. */
   autofocus: boolean;
+  /** The distance of the select dropdown from its input. */
+  distance: number;
   /** The label attribute of the control. */
   label: string;
   /** The placeholder attribute of the control. */
   placeholder: string;
-  /** Makes the control a required field in a form context. */
-  required: boolean;
-  /** The name attribute of the control. */
-  name: string;
-  /** The disabled state of the component */
-  disabled: boolean;
-  /** Control the validity of the control. */
-  invalid: boolean;
-  /** Whether the dropdown should be kept open on selection. */
-  keepOpenOnSelect: boolean;
-  /** Determines the behavior of the component during scrolling the container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  /** Whether the component should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
-  /** Sets the open state of the component. */
-  open: boolean;
-  /** The preferred placement of the component around the target element. */
+  /** The preferred placement of the select dropdown around its input. */
   placement:
     | 'top'
     | 'top-start'
@@ -193,28 +198,26 @@ interface IgcSelectArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** The distance from the target element. */
-  distance: number;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
+  /** Determines the behavior of the component during scrolling of the parent container. */
+  scrollStrategy: 'scroll' | 'block' | 'close';
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
+  /** Whether the component dropdown should be kept open on selection. */
+  keepOpenOnSelect: boolean;
+  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
 }
 type Story = StoryObj<IgcSelectArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: [
-      'igcFocus',
-      'igcBlur',
-      'igcChange',
-      'igcOpening',
-      'igcOpened',
-      'igcClosing',
-      'igcClosed',
-    ],
-  },
-});
 
 const items = [
   {
@@ -253,113 +256,225 @@ const items = [
     disabled: true,
     selected: false,
   },
-];
-const Template = (
-  {
-    label = 'Sample Label',
-    placeholder,
-    name,
-    value = 'docs',
-    size = 'medium',
-    open = false,
-    disabled = false,
-    outlined = false,
-    invalid = false,
-    required = false,
-    autofocus = false,
-  }: IgcSelectArgs,
-  { globals: { direction } }: Context
-) => html`
-  <igc-select
-    value=${value}
-    label=${ifDefined(label)}
-    name=${ifDefined(name)}
-    placeholder=${ifDefined(placeholder)}
-    size=${size}
-    ?open=${open}
-    ?autofocus=${autofocus}
-    ?outlined=${outlined}
-    ?required=${required}
-    ?disabled=${disabled}
-    ?invalid=${invalid}
-    .dir=${direction}
-  >
-    <header slot="header">Sample Header</header>
-    <footer slot="footer">Sample Footer</footer>
-    <span slot="helper-text">Sample helper text.</span>
-    <igc-select-header>Tasks</igc-select-header>
-    ${items.map(
-      (item) =>
-        html` <igc-select-item
-          value=${item.value}
-          ?disabled=${item.disabled}
-          ?selected=${item.selected}
-        >
-          ${item.text}
-          <igc-icon slot="suffix" name="github"></igc-icon>
-        </igc-select-item>`
-    )}
-  </igc-select>
-`;
+].map(
+  (item) =>
+    html`<igc-select-item
+      .value=${item.value}
+      ?disabled=${item.disabled}
+      ?selected=${item.selected}
+      >${item.text}</igc-select-item
+    >`
+);
 
-const countries = [
-  {
-    continent: 'Europe',
-    country: 'Bulgaria',
-    value: 'bg',
-    selected: true,
-    disabled: false,
-  },
-  {
-    continent: 'Europe',
-    country: 'United Kingdom',
-    value: 'uk',
-    selected: false,
-    disabled: true,
-  },
-  {
-    continent: 'North America',
-    country: 'United States of America',
-    value: 'us',
-    selected: false,
-    disabled: false,
-  },
-  {
-    continent: 'North America',
-    country: 'Canada',
-    value: 'ca',
-    selected: false,
-    disabled: false,
-  },
-  {
-    continent: 'Asia',
-    country: 'Japan',
-    value: 'ja',
-    selected: false,
-    disabled: false,
-  },
-  {
-    continent: 'Asia',
-    country: 'India',
-    value: 'in',
-    selected: false,
-    disabled: true,
-  },
-];
+const countries = Object.entries(
+  groupBy(
+    [
+      {
+        continent: 'Europe',
+        country: 'Bulgaria',
+        value: 'bg',
+        selected: true,
+        disabled: false,
+      },
+      {
+        continent: 'Europe',
+        country: 'United Kingdom',
+        value: 'uk',
+        selected: false,
+        disabled: true,
+      },
+      {
+        continent: 'North America',
+        country: 'United States of America',
+        value: 'us',
+        selected: false,
+        disabled: false,
+      },
+      {
+        continent: 'North America',
+        country: 'Canada',
+        value: 'ca',
+        selected: false,
+        disabled: false,
+      },
+      {
+        continent: 'Asia',
+        country: 'Japan',
+        value: 'ja',
+        selected: false,
+        disabled: false,
+      },
+      {
+        continent: 'Asia',
+        country: 'India',
+        value: 'in',
+        selected: false,
+        disabled: true,
+      },
+    ],
+    'continent'
+  )
+);
 
-function groupBy(objectArray: any, property: string) {
-  return objectArray.reduce(function (acc: any, obj: any) {
-    const key = obj[property];
+export const Basic: Story = {
+  args: {
+    label: 'Assign task',
+    value: 'docs',
+  },
 
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(obj);
-    return acc;
-  }, {});
-}
+  render: (args) => html`
+    <igc-select
+      .value=${args.value}
+      .label=${args.label}
+      .name=${args.name}
+      .placeholder=${args.placeholder}
+      .placement=${args.placement}
+      .scrollStrategy=${args.scrollStrategy}
+      .distance=${args.distance}
+      ?open=${args.open}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?keep-open-on-select=${args.keepOpenOnSelect}
+      ?autofocus=${args.autofocus}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+    >
+      <igc-select-header>Available tasks:</igc-select-header>
+      ${items}
+      <p slot="helper-text">Choose a task to assign.</p>
+    </igc-select>
+  `,
+};
 
-export const Basic: Story = Template.bind({});
+export const WithGroups: Story = {
+  args: {
+    label: 'Select a country',
+  },
+
+  render: (args) => html`
+    <igc-select
+      .value=${args.value}
+      .label=${args.label}
+      .name=${args.name}
+      .placeholder=${args.placeholder}
+      .placement=${args.placement}
+      .scrollStrategy=${args.scrollStrategy}
+      .distance=${args.distance}
+      ?open=${args.open}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?keep-open-on-select=${args.keepOpenOnSelect}
+      ?autofocus=${args.autofocus}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+    >
+      ${countries.map(
+        ([continent, countries]) => html`
+          <igc-select-group>
+            <igc-select-header slot="label">${continent}</igc-select-header>
+            ${countries.map(
+              (item) => html`
+                <igc-select-item value=${item.value} ?disabled=${item.disabled}
+                  >${item.country}</igc-select-item
+                >
+              `
+            )}
+          </igc-select-group>
+        `
+      )}
+      <p slot="helper-text">Choose a country.</p>
+    </igc-select>
+  `,
+};
+
+export const InitialValue: Story = {
+  args: { value: '1' },
+  render: ({ value }) => html`
+    <style>
+      igc-select {
+        margin-bottom: 2rem;
+      }
+    </style>
+    <igc-select value=${value} label="Initial through value attribute">
+      <igc-select-item value="1">First</igc-select-item>
+      <igc-select-item value="2">Second</igc-select-item>
+      <igc-select-item value="3">Third</igc-select-item>
+    </igc-select>
+
+    <igc-select label="Through selected attribute on igc-select-item">
+      <igc-select-item value="1">First</igc-select-item>
+      <igc-select-item value="2" selected>Second</igc-select-item>
+      <igc-select-item value="3" selected>Third</igc-select-item>
+
+      <p slot="helper-text">
+        If there are multiple items with the <code>selected</code> attribute,
+        the last one will take precedence and set the initial value of the
+        component.
+      </p>
+    </igc-select>
+
+    <igc-select label="Both set on initial render" value=${value}>
+      <igc-select-item value="1">First</igc-select-item>
+      <igc-select-item value="2" selected>Second</igc-select-item>
+      <igc-select-item value="3">Third</igc-select-item>
+
+      <p slot="helper-text">
+        If both are set on initial render, then the
+        <code>selected</code> attribute of the child (if any) item will take
+        precedence over the <code>value</code> attribute of the select.
+      </p>
+    </igc-select>
+  `,
+};
+
+export const Slots: Story = {
+  render: () => html`
+    <style>
+      .template {
+        background-color: hsl(var(--ig-primary-A200));
+        color: hsl(var(--ig-primary-A200-contrast));
+        padding: 0.5rem;
+      }
+
+      igc-select::part(list) {
+        max-height: 50vh;
+      }
+    </style>
+    <igc-select label="Select component with all slots">
+      <igc-icon name=${github.name} slot="prefix"></igc-icon>
+      <igc-icon name=${github.name} slot="suffix"></igc-icon>
+
+      <igc-icon name=${arrowDownLeft.name} slot="toggle-icon"></igc-icon>
+      <igc-icon name=${arrowUpLeft.name} slot="toggle-icon-expanded"></igc-icon>
+
+      <section class="template" slot="header">This is a header</section>
+      <section class="template" slot="footer">This is a footer</section>
+
+      <p slot="helper-text">Helper text</p>
+
+      <igc-select-header>Tasks</igc-select-header>
+      ${items}
+
+      <igc-select-header>Countries</igc-select-header>
+      ${countries.map(
+        ([continent, countries]) => html`
+          <igc-select-group>
+            <igc-select-header slot="label">${continent}</igc-select-header>
+            ${countries.map(
+              (item) => html`
+                <igc-select-item value=${item.value} ?disabled=${item.disabled}
+                  >${item.country}</igc-select-item
+                >
+              `
+            )}
+          </igc-select-group>
+        `
+      )}
+    </igc-select>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -373,14 +488,14 @@ export const Form: Story = {
             name="default-select"
             label="Countries (value through attribute)"
           >
-            ${Object.entries(groupBy(countries, 'continent')).map(
+            ${countries.map(
               ([continent, countries]) => html`
                 <igc-select-group>
                   <igc-select-header slot="label"
                     >${continent}</igc-select-header
                   >
-                  ${(countries as any).map(
-                    (item: any) => html`
+                  ${countries.map(
+                    (item) => html`
                       <igc-select-item
                         value=${item.value}
                         ?disabled=${item.disabled}
@@ -397,14 +512,14 @@ export const Form: Story = {
             name="default-select-2"
             label="Countries (value through selected item)"
           >
-            ${Object.entries(groupBy(countries, 'continent')).map(
+            ${countries.map(
               ([continent, countries]) => html`
                 <igc-select-group>
                   <igc-select-header slot="label"
                     >${continent}</igc-select-header
                   >
-                  ${(countries as any).map(
-                    (item: any) => html`
+                  ${countries.map(
+                    (item) => html`
                       <igc-select-item
                         value=${item.value}
                         ?selected=${item.selected}
@@ -422,14 +537,14 @@ export const Form: Story = {
         <fieldset>
           <legend>Required select</legend>
           <igc-select name="required-select" label="Countries" required>
-            ${Object.entries(groupBy(countries, 'continent')).map(
+            ${countries.map(
               ([continent, countries]) => html`
                 <igc-select-group>
                   <igc-select-header slot="label"
                     >${continent}</igc-select-header
                   >
-                  ${(countries as any).map(
-                    (item: any) => html`
+                  ${countries.map(
+                    (item) => html`
                       <igc-select-item
                         value=${item.value}
                         ?disabled=${item.disabled}
@@ -446,14 +561,14 @@ export const Form: Story = {
         <fieldset disabled>
           <legend>Disabled form group</legend>
           <igc-select label="Countries">
-            ${Object.entries(groupBy(countries, 'continent')).map(
+            ${countries.map(
               ([continent, countries]) => html`
                 <igc-select-group>
                   <igc-select-header slot="label"
                     >${continent}</igc-select-header
                   >
-                  ${(countries as any).map(
-                    (item: any) => html`
+                  ${countries.map(
+                    (item) => html`
                       <igc-select-item
                         value=${item.value}
                         ?disabled=${item.disabled}

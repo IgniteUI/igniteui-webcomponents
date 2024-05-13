@@ -1,11 +1,12 @@
-import { html } from 'lit';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import sinon from 'sinon';
+import { html } from 'lit';
+import { spy } from 'sinon';
+
 import { defineComponents } from '../../index.js';
-import { MaskParser } from './mask-parser.js';
-import IgcMaskInputComponent from './mask-input.js';
-import IgcFormComponent from '../form/form.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcFormComponent from '../form/form.js';
+import IgcMaskInputComponent from './mask-input.js';
+import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
@@ -207,41 +208,60 @@ describe('Masked input', () => {
     });
 
     it('setRangeText() method', async () => {
+      const checkSelectionRange = (start: number, end: number) =>
+        expect([start, end]).to.eql([
+          input().selectionStart,
+          input().selectionEnd,
+        ]);
+
       masked.mask = '(CC) (CC)';
       masked.value = '1111';
 
       await elementUpdated(masked);
       syncParser();
 
-      masked.setRangeText('22', 0, 2); // (22) (11)
+      // No boundaries, from current user selection
+      masked.setSelectionRange(2, 2);
+      await elementUpdated(masked);
+      masked.setRangeText('22'); // (12) (21)
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(masked.value).to.equal('1221');
+      checkSelectionRange(2, 2);
+
+      // Keep passed selection range
+      masked.value = '1111';
+      masked.setRangeText('22', 0, 2, 'select'); // (22) (11)
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('2211');
+      checkSelectionRange(0, 2);
 
+      // Collapse range to start
       masked.value = '';
-      await elementUpdated(masked);
-
-      masked.setRangeText('xx', 0, 4);
+      masked.setRangeText('xx', 0, 4, 'start');
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('xx');
+      checkSelectionRange(0, 0);
 
+      // Collapse range to end
       masked.value = 'xx';
-      await elementUpdated(masked);
-
-      masked.setRangeText('yy', 2, 5);
+      masked.setRangeText('yy', 2, 5, 'end');
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('xyy');
+      checkSelectionRange(5, 5);
     });
 
     it('igcChange event', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       await elementUpdated(masked);
 
@@ -252,7 +272,7 @@ describe('Masked input', () => {
     it('igcChange event with literals', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       masked.valueMode = 'withFormatting';
       await elementUpdated(masked);
@@ -268,7 +288,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(2, 3);
       await elementUpdated(masked);
@@ -282,7 +302,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(3, 3);
       await elementUpdated(masked);
@@ -458,7 +478,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       masked.setSelectionRange(4, 4);
-      input().value = masked.value + 'zz';
+      input().value = `${masked.value}zz`;
       fireInputEvent(input(), 'insertText');
       await elementUpdated(masked);
 
@@ -540,7 +560,7 @@ describe('Masked input', () => {
       syncParser();
 
       input().value = 'xx-basic-yy';
-      input().setSelectionRange(3, 3 + `basic`.length);
+      input().setSelectionRange(3, 3 + 'basic'.length);
       fireInputEvent(input(), 'insertFromDrop');
       await elementUpdated(masked);
 

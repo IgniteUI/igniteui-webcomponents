@@ -1,14 +1,13 @@
 import { all } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
-  defineComponents,
   IgcIconComponent,
+  defineComponents,
   registerIcon,
   registerIconFromText,
 } from '../src/index.js';
-import type { Context } from './story';
 
 defineComponents(IgcIconComponent);
 
@@ -18,36 +17,36 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The icon component allows visualizing collections of pre-registered SVG icons.',
+      },
+    },
+  },
   argTypes: {
     name: {
       type: 'string',
       description: 'The name of the icon glyph to draw.',
       control: 'text',
-      defaultValue: '',
+      table: { defaultValue: { summary: '' } },
     },
     collection: {
       type: 'string',
       description:
         'The name of the registered collection for look up of icons.\nDefaults to `default`.',
       control: 'text',
-      defaultValue: 'default',
+      table: { defaultValue: { summary: 'default' } },
     },
     mirrored: {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      defaultValue: false,
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
+      table: { defaultValue: { summary: false } },
     },
   },
-  args: { name: '', collection: 'default', mirrored: false, size: 'medium' },
+  args: { name: '', collection: 'default', mirrored: false },
 };
 
 export default metadata;
@@ -62,8 +61,6 @@ interface IgcIconArgs {
   collection: string;
   /** Whether to flip the icon. Useful for RTL layouts. */
   mirrored: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcIconArgs>;
 
@@ -98,24 +95,14 @@ const registerIconClick = () => {
   );
 };
 
-const Template = (
-  {
-    name = 'biking',
-    collection = 'default',
-    size = 'medium',
-    mirrored = false,
-  }: IgcIconArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name = 'biking',
+  collection = 'default',
+  mirrored = false,
+}: IgcIconArgs) => {
   return html`
     <div style="display: flex;">
-      <igc-icon
-        .name=${name}
-        .collection=${collection}
-        .size=${size}
-        .mirrored=${mirrored}
-        dir=${ifDefined(direction)}
-      >
+      <igc-icon .name=${name} .collection=${collection} .mirrored=${mirrored}>
       </igc-icon>
 
       <button @click=${registerIconClick}>Register Icon</button>

@@ -2,12 +2,17 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { watch } from '../common/decorators/watch.js';
+
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
-import { partNameMap } from '../common/util.js';
-import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { Validator, requiredValidator } from '../common/validators.js';
+import { partNameMap } from '../common/util.js';
+import { type Validator, requiredValidator } from '../common/validators.js';
+import {
+  IgcMaskInputBaseComponent,
+  type MaskRange,
+} from './mask-input-base.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -33,6 +38,11 @@ import { Validator, requiredValidator } from '../common/validators.js';
  */
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcMaskInputComponent);
+  }
 
   protected override validators: Validator<this>[] = [
     {
@@ -66,7 +76,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
-  public get value() {
+  public get value(): string {
     return this.valueMode !== 'raw' ? this.maskedValue : this._value;
   }
 
@@ -81,7 +91,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * @attr
    */
   @property()
-  public get mask() {
+  public get mask(): string {
     return this._mask;
   }
 
@@ -187,21 +197,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  /* blazorSuppress */
-  /** Replaces the selected text in the control and re-applies the mask */
-  public override setRangeText(
-    replacement: string,
-    start: number,
-    end: number,
-    _selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
-  ) {
-    const { value } = this.parser.replace(
-      this.maskedValue || this.emptyMask,
-      replacement,
-      start,
-      end
-    );
-    this.maskedValue = this.parser.apply(this.parser.parse(value));
+  protected override _updateSetRangeTextValue() {
     this.value = this.parser.parse(this.maskedValue);
   }
 

@@ -2,7 +2,7 @@ import type IgcTreeItemComponent from './tree-item.js';
 
 export interface IgcTreeEventMap {
   /* alternateName: selectionChanged */
-  igcSelection: CustomEvent<{ newSelection: IgcTreeItemComponent[] }>;
+  igcSelection: CustomEvent<TreeSelectionChange>;
   igcItemExpanding: CustomEvent<IgcTreeItemComponent>;
   igcItemExpanded: CustomEvent<IgcTreeItemComponent>;
   igcItemCollapsing: CustomEvent<IgcTreeItemComponent>;
@@ -10,6 +10,10 @@ export interface IgcTreeEventMap {
   igcActiveItem: CustomEvent<IgcTreeItemComponent>;
 }
 export interface IgcSelectionEventArgs {
-  detail: { readonly newSelection: IgcTreeItemComponent[] };
+  detail: TreeSelectionChange;
   cancelable: boolean;
+}
+
+export interface TreeSelectionChange {
+  newSelection: IgcTreeItemComponent[];
 }

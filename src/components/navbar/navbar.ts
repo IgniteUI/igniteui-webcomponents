@@ -1,10 +1,10 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/navbar.base.css.js';
-import { styles as bootstrap } from './themes/light/navbar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/navbar.fluent.css.js';
-import { styles as indigo } from './themes/light/navbar.indigo.css.js';
-import { styles as material } from './themes/light/navbar.material.css.js';
+import { styles as shared } from './themes/shared/navbar.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * A navigation bar component is used to facilitate navigation through
@@ -21,10 +21,15 @@ import { styles as material } from './themes/light/navbar.material.css.js';
  * @csspart middle - The navigation bar title container.
  * @csspart end - The right aligned action icons container.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes(all)
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcNavbarComponent);
+  }
 
   protected override render() {
     return html`

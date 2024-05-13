@@ -1,16 +1,18 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { AnimationPlayer, EaseInOut } from '../../animations/index.js';
-import { Animation, animations } from './animations.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { when } from 'lit/directives/when.js';
-import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+
+import { EaseInOut } from '../../animations/easings.js';
+import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/step/light/step.base.css.js';
-import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
-import { styles as indigo } from './themes/step/light/step.indigo.css.js';
-import { styles as fluent } from './themes/step/light/step.fluent.css.js';
-import { styles as material } from './themes/step/light/step.material.css.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
+import { type Animation, animations } from './animations.js';
+import { styles as shared } from './themes/step/shared/step.common.css.js';
+import { styles } from './themes/step/step.base.css.js';
+import { all } from './themes/step/themes.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -42,14 +44,19 @@ import { styles as material } from './themes/step/light/step.material.css.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes({ bootstrap, indigo, fluent, material })
+@themes(all)
 export default class IgcStepComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-step';
-  /** @private */
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
-  private animationPlayer!: AnimationPlayer;
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcStepComponent);
+  }
+
+  private bodyRef: Ref<HTMLElement> = createRef();
+
+  private animationPlayer = addAnimationController(this, this.bodyRef);
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -64,10 +71,6 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
-
-  /* blazorSuppress */
-  @query('[part~="body"]')
-  public body!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -138,10 +141,6 @@ export default class IgcStepComponent extends LitElement {
   /** @hidden @internal @private */
   @property({ attribute: false })
   public animationDuration = 350;
-
-  public override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.body);
-  }
 
   public async toggleAnimation(
     type: 'in' | 'out',
@@ -252,9 +251,8 @@ export default class IgcStepComponent extends LitElement {
           </slot>
         </div>
       `;
-    } else {
-      return nothing;
     }
+    return nothing;
   }
 
   protected renderTitleAndSubtitle() {
@@ -272,6 +270,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderContent() {
     return html`<div
+      ${ref(this.bodyRef)}
       id="igc-step-content-${this.index}"
       part="body"
       role="tabpanel"

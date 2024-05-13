@@ -1,6 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use '../shared' as *;
+@use '../animations' as *;
 @use '../vars' as *;
 
 :host {
@@ -19,7 +19,6 @@
 [part~='label'] {
     @extend %label !optional;
 
-    fill: $text-color;
     position: absolute;
     transform: translate(-50%, -50%);
     top: 50%;
@@ -48,10 +47,6 @@
     transform: rotate(-90deg);
 }
 
-[part~='track'] {
-    stroke: $track-color;
-}
-
 [part~='fill'] {
     stroke-dasharray: #{$circumference} #{$circumference};
     stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
@@ -75,31 +70,6 @@
     // This will break the component in Safari
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     transform-origin: center;
-}
-
-[part~='gradient_start'],
-[part~='gradient_end'] {
-    stop-color: $fill-color;
-}
-
-:host([variant='danger']) [part~='gradient_start'],
-:host([variant='danger']) [part~='gradient_end'] {
-    stop-color: $danger-color;
-}
-
-:host([variant='warning']) [part~='gradient_start'],
-:host([variant='warning']) [part~='gradient_end'] {
-    stop-color: $warning-color;
-}
-
-:host([variant='info']) [part~='gradient_start'],
-:host([variant='info']) [part~='gradient_end'] {
-    stop-color: $info-color;
-}
-
-:host([variant='success']) [part~='gradient_start'],
-:host([variant='success']) [part~='gradient_end'] {
-    stop-color: $success-color;
 }
 
 :host([dir='rtl']) {

@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+
+:host {
+    @include type-style('body-1');
+}
+
+::slotted(*) {
+    @include type-style('body-1');
+}

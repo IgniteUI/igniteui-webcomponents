@@ -1,11 +1,9 @@
+import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
+import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import {
   slideInHor,
   slideOutHor,
-  fadeIn,
-  fadeOut,
-  growVerIn,
-  growVerOut,
-} from '../../animations/index.js';
+} from '../../animations/presets/slide/index.js';
 import { animation } from '../../animations/types.js';
 
 const noopAnimation = () => animation([], {});

@@ -5,7 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcIconButtonComponent } from '../../index.js';
+
+import { IgcIconButtonComponent, defineComponents } from '../../index.js';
 
 describe('IconButton component', () => {
   before(() => {
@@ -14,7 +15,7 @@ describe('IconButton component', () => {
 
   const DIFF_OPTIONS = {
     ignoreChildren: ['a'],
-    ignoreAttributes: ['aria-label', 'aria-disabled', 'part', 'role'],
+    ignoreAttributes: ['aria-label', 'aria-disabled', 'part', 'role', 'style'],
   };
   let el: IgcIconButtonComponent;
 
@@ -25,17 +26,21 @@ describe('IconButton component', () => {
 
     it('renders a button element internally', async () => {
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(`<button><slot></slot></button>`, {
-        ignoreAttributes: [
-          'variant',
-          'aria-label',
-          'aria-disabled',
-          'aria-hidden',
-          'part',
-          'role',
-          'size',
-        ],
-      });
+      expect(el).shadowDom.to.equal(
+        `<button type="button"><slot></slot></button>`,
+        {
+          ignoreAttributes: [
+            'variant',
+            'aria-label',
+            'aria-disabled',
+            'aria-hidden',
+            'part',
+            'role',
+            'size',
+            'style',
+          ],
+        }
+      );
     });
 
     it('renders an anchor element internally', async () => {
@@ -43,7 +48,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(`<a><slot></slot></a>`, {
+      expect(el).shadowDom.to.equal('<a><slot></slot></a>', {
         ignoreAttributes: [
           'variant',
           'aria-label',
@@ -53,6 +58,7 @@ describe('IconButton component', () => {
           'role',
           'size',
           'href',
+          'style',
         ],
       });
     });
@@ -75,7 +81,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button>
+        `<button type="button">
           <igc-icon name="${el.name}" collection="${el.collection}"></igc-icon>
           <slot></slot>
         </button>`,
@@ -88,6 +94,7 @@ describe('IconButton component', () => {
             'part',
             'role',
             'size',
+            'style',
           ],
         }
       );
@@ -98,7 +105,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button>
+        `<button type="button">
           <igc-icon mirrored></igc-icon>
           <slot></slot>
         </button>`,
@@ -111,6 +118,7 @@ describe('IconButton component', () => {
             'part',
             'role',
             'size',
+            'style',
           ],
         }
       );
@@ -161,7 +169,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button disabled>
+        `<button type="button" disabled>
           <slot>
           </slot>
         </button>`,
@@ -173,6 +181,7 @@ describe('IconButton component', () => {
             'role',
             'size',
             'variant',
+            'style',
           ],
         }
       );

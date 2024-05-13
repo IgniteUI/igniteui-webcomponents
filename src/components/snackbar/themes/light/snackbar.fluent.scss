@@ -1,26 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-snackbar');
-}
-
-[part~='base'] {
-    border-radius: var-get($theme, 'border-radius');
-}
-
-[part~='message'] {
-    @include type-style('caption');
-}
-
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: color(secondary, 500);
-}
-
-igc-button::part(base):focus-visible::after {
-    display: none;
+    @include css-vars-from-theme(diff($base, $theme), 'ig-snackbar');
 }

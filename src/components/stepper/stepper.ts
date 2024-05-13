@@ -1,19 +1,18 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { IgcStepperEventMap } from './stepper.common.js';
-import IgcStepComponent from './step.js';
+
 import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isLTR } from '../common/util.js';
+import IgcStepComponent from './step.js';
+import type { IgcStepperEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
-import { watch } from '../common/decorators/watch.js';
-import { isLTR } from '../common/util.js';
-
-defineComponents(IgcStepComponent);
 
 /**
  * IgxStepper provides a wizard-like workflow by dividing content into logical steps.
@@ -29,16 +28,23 @@ defineComponents(IgcStepComponent);
  * @fires igcActiveStepChanging - Emitted when the active step is about to change.
  * @fires igcActiveStepChanged - Emitted when the active step is changed.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcStepperComponent extends EventEmitterMixin<
   IgcStepperEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
   public static readonly tagName = 'igc-stepper';
-  /** @private */
   protected static styles = styles;
 
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcStepperComponent, IgcStepComponent);
+  }
+
+  // biome-ignore lint/complexity/noBannedTypes: No easy fix as the callback shapes are wildly different
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
       Enter: this.activateStep,
@@ -137,9 +143,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   @watch('stepType', { waitUntilFirstUpdate: true })
   protected stepTypeChange(): void {
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.stepType = this.stepType)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.stepType = this.stepType;
+    });
   }
 
   @watch('titlePosition', { waitUntilFirstUpdate: true })
@@ -160,9 +166,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   @watch('contentTop', { waitUntilFirstUpdate: true })
   protected contentTopChange(): void {
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.contentTop = this.contentTop)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.contentTop = this.contentTop;
+    });
   }
 
   @watch('linear', { waitUntilFirstUpdate: true })
@@ -398,7 +404,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         .pop();
     }
 
-    let prevStep;
+    let prevStep: IgcStepComponent | undefined;
     for (let i = focusedStep.index - 1; i >= 0; i--) {
       const step = this.steps[i];
       if (step.isAccessible) {
@@ -425,9 +431,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         }
       });
     } else {
-      this.steps.forEach(
-        (step: IgcStepComponent) => (step.linearDisabled = false)
-      );
+      this.steps.forEach((step: IgcStepComponent) => {
+        step.linearDisabled = false;
+      });
     }
   }
 
@@ -507,7 +513,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * The steps' content will not be automatically reset.
    */
   public reset(): void {
-    this.steps.forEach((step) => (step.visited = false));
+    this.steps.forEach((step) => {
+      step.visited = false;
+    });
     this.activateFirstStep();
   }
 

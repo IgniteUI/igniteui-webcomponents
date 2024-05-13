@@ -1,15 +1,6 @@
 @use 'styles/utilities' as *;
 
-$danger-color: color(error, 500);
-$warning-color: color(warn, 500);
-$success-color: color(success, 500);
-$info-color: color(info, 500);
-$primary-color: color(primary, 500);
-$text-color: color(gray, 900);
-$track-color: color(gray, 300);
-$fill-color: $primary-color;
 $background-size: #{rem(40px)} #{rem(40px)};
-$stripe-grays: color(gray, 50, .7);
 $stripe-size: rem(16px);
 $animation-direction: normal;
 $animation-direction-rtl: reverse;

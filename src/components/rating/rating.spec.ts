@@ -6,13 +6,25 @@ import {
   html,
 } from '@open-wc/testing';
 import { nothing } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
+
 import {
-  defineComponents,
   IgcRatingComponent,
-  IgcRatingSymbolComponent,
+  type IgcRatingSymbolComponent,
+  defineComponents,
 } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -33,8 +45,6 @@ describe('Rating component', () => {
   };
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
-  const fireKeyboardEvent = (key: string) =>
-    new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
     new MouseEvent(type, opts);
   const getBoundingRect = (el: Element) => el.getBoundingClientRect();
@@ -56,11 +66,11 @@ describe('Rating component', () => {
     });
 
     it('is initialized correctly with passed attributes', async () => {
-      const value = 10,
-        max = 10,
-        name = 'rating',
-        label = 'Test rating',
-        size = 'small';
+      const value = 10;
+      const max = 10;
+      const name = 'rating';
+      const label = 'Test rating';
+      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating
@@ -80,11 +90,11 @@ describe('Rating component', () => {
     });
 
     it('value is truncated if greater than `max` attribute', async () => {
-      const value = 15,
-        max = 10,
-        name = 'rating',
-        label = 'Test rating',
-        size = 'small';
+      const value = 15;
+      const max = 10;
+      const name = 'rating';
+      const label = 'Test rating';
+      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating
@@ -274,7 +284,7 @@ describe('Rating component', () => {
     });
 
     it('correctly updates value on click', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       symbol.dispatchEvent(
@@ -289,7 +299,7 @@ describe('Rating component', () => {
     });
 
     it('correctly updates value on click [precision != 1]', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.step = 0.5;
       await elementUpdated(el);
 
@@ -307,7 +317,7 @@ describe('Rating component', () => {
     });
 
     it('correctly reflects hover state', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.value = 2;
       el.hoverPreview = true;
       await elementUpdated(el);
@@ -325,11 +335,13 @@ describe('Rating component', () => {
       expect(el.value).to.equal(2);
     });
 
-    it('correctly resets value if the same rating value is clicked', async () => {
-      el.value = 5;
-      await elementUpdated(el);
+    it('does not reset value if the same rating value is clicked with allow-reset = false', async () => {
+      const eventSpy = spy(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(4);
       const { x, width } = getBoundingRect(symbol);
+
+      el.value = 5;
+      await elementUpdated(el);
 
       symbol.dispatchEvent(
         fireMouseEvent('click', {
@@ -338,11 +350,34 @@ describe('Rating component', () => {
           clientX: x + width / 2,
         })
       );
+
+      expect(el.value).to.equal(5);
+      expect(eventSpy).not.to.be.called;
+    });
+
+    it('correctly resets value if the same rating value is clicked with allow-reset = true', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      const symbol = getRatingSymbols(el).item(4);
+      const { x, width } = getBoundingRect(symbol);
+
+      el.value = 5;
+      el.allowReset = true;
+      await elementUpdated(el);
+
+      symbol.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
+      );
+
       expect(el.value).to.equal(0);
+      expect(eventSpy).to.have.been.calledOnceWith('igcChange', { detail: 0 });
     });
 
     it('does nothing on click if disabled', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.disabled = true;
       await elementUpdated(el);
 
@@ -352,12 +387,26 @@ describe('Rating component', () => {
     });
 
     it('does nothing on click if readonly', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.readOnly = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
-      expect(eventSpy).to.not.called;
+      await elementUpdated(el);
+
+      expect(eventSpy).to.not.be.called;
+      expect(el.value).to.equal(0);
+    });
+
+    it('does nothing on keyboard interaction if readonly', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.readOnly = true;
+      await elementUpdated(el);
+
+      simulateKeyboard(el, arrowRight);
+      await elementUpdated(el);
+
+      expect(eventSpy).to.not.be.called;
       expect(el.value).to.equal(0);
     });
 
@@ -365,13 +414,13 @@ describe('Rating component', () => {
       el.value = 3;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(el.value).to.equal(4);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowUp'));
+      simulateKeyboard(el, arrowUp);
       expect(el.value).to.equal(5);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(el.value).to.equal(5);
     });
 
@@ -379,13 +428,13 @@ describe('Rating component', () => {
       el.value = 2;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(el, arrowLeft);
       expect(el.value).to.equal(1);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowDown'));
+      simulateKeyboard(el, arrowDown);
       expect(el.value).to.equal(0);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(el, arrowLeft);
       expect(el.value).to.equal(0);
     });
 
@@ -394,20 +443,20 @@ describe('Rating component', () => {
       el.value = 5;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('Home'));
+      simulateKeyboard(el, homeKey);
       expect(el.value).to.equal(1);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('End'));
+      simulateKeyboard(el, endKey);
       expect(el.value).to.equal(10);
     });
 
     it('should not emit a change event if the value is unchanged', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.value = 5;
 
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(eventSpy).to.not.be.calledOnce;
     });
 

@@ -1,47 +1,62 @@
 import { github } from '@igniteui/material-icons-extended';
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
+  IgcIconComponent,
   IgcInputComponent,
   defineComponents,
+  registerIcon,
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
 
-defineComponents(IgcInputComponent);
+defineComponents(IgcInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
+registerIcon(
+  'search',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
 
 // region default
 const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: { description: { component: '' } },
+    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+  },
   argTypes: {
+    value: {
+      type: 'string | Date',
+      description: 'The value of the control.',
+      options: ['string', 'Date'],
+      control: 'text',
+    },
     type: {
-      type: '"number" | "email" | "password" | "search" | "tel" | "text" | "url"',
+      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
       description: 'The type attribute of the control.',
-      options: ['number', 'email', 'password', 'search', 'tel', 'text', 'url'],
+      options: ['email', 'number', 'password', 'search', 'tel', 'text', 'url'],
       control: { type: 'select' },
-      defaultValue: 'text',
+      table: { defaultValue: { summary: 'text' } },
     },
     inputmode: {
-      type: '"numeric" | "none" | "email" | "search" | "tel" | "url" | "txt" | "decimal"',
+      type: '"none" | "txt" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"',
       description: 'The input mode attribute of the control.',
       options: [
-        'numeric',
         'none',
-        'email',
-        'search',
-        'tel',
-        'url',
         'txt',
         'decimal',
+        'numeric',
+        'tel',
+        'search',
+        'email',
+        'url',
       ],
       control: { type: 'select' },
     },
@@ -61,14 +76,16 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'number',
     },
     min: {
-      type: 'string | number',
+      type: 'number | string',
       description: 'The min attribute of the control.',
-      control: 'text',
+      options: ['number', 'string'],
+      control: 'number',
     },
     max: {
-      type: 'string | number',
+      type: 'number | string',
       description: 'The max attribute of the control.',
-      control: 'text',
+      options: ['number', 'string'],
+      control: 'number',
     },
     step: {
       type: 'number',
@@ -79,30 +96,54 @@ const metadata: Meta<IgcInputComponent> = {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     autocomplete: {
       type: 'string',
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
-    tabIndex: { type: 'number', control: 'number', defaultValue: 0 },
-    value: {
+    validateOnly: {
+      type: 'boolean',
+      description:
+        'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for\nstring-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    name: {
       type: 'string',
-      description: 'The value of the control.',
+      description: 'The name attribute of the control.',
       control: 'text',
-      defaultValue: '',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placeholder: {
       type: 'string',
@@ -114,65 +155,36 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Control the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     type: 'text',
-    tabIndex: 0,
-    value: '',
-    outlined: false,
-    readOnly: false,
+    autofocus: false,
+    validateOnly: false,
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
+    outlined: false,
+    readOnly: false,
   },
 };
 
 export default metadata;
 
 interface IgcInputArgs {
+  /** The value of the control. */
+  value: string | Date;
   /** The type attribute of the control. */
-  type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
   /** The input mode attribute of the control. */
   inputmode:
-    | 'numeric'
     | 'none'
-    | 'email'
-    | 'search'
-    | 'tel'
-    | 'url'
     | 'txt'
-    | 'decimal';
+    | 'decimal'
+    | 'numeric'
+    | 'tel'
+    | 'search'
+    | 'email'
+    | 'url';
   /** The pattern attribute of the control. */
   pattern: string;
   /** The minimum string length required by the control. */
@@ -180,26 +192,20 @@ interface IgcInputArgs {
   /** The maximum string length of the control. */
   maxLength: number;
   /** The min attribute of the control. */
-  min: string | number;
+  min: number | string;
   /** The max attribute of the control. */
-  max: string | number;
+  max: number | string;
   /** The step attribute of the control. */
   step: number;
   /** The autofocus attribute of the control. */
   autofocus: boolean;
   /** The autocomplete attribute of the control. */
   autocomplete: string;
-  tabIndex: number;
-  /** The value of the control. */
-  value: string;
-  /** Whether the control will have outlined appearance. */
-  outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
-  /** The placeholder attribute of the control. */
-  placeholder: string;
-  /** The label for the control. */
-  label: string;
+  /**
+   * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
+   * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
+   */
+  validateOnly: boolean;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -208,48 +214,48 @@ interface IgcInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The label for the control. */
+  label: string;
 }
 type Story = StoryObj<IgcInputArgs>;
 
 // endregion
 
-const Template = (
-  {
-    type,
-    size,
-    label = 'Sample Label',
-    outlined,
-    autofocus,
-    autocomplete,
-    minLength,
-    maxLength,
-    step,
-    value,
-    placeholder,
-    readOnly,
-    required,
-    disabled,
-    min,
-    max,
-    invalid,
-  }: IgcInputArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  type,
+  label = 'Sample Label',
+  outlined,
+  autofocus,
+  autocomplete,
+  minLength,
+  maxLength,
+  step,
+  value,
+  placeholder,
+  readOnly,
+  required,
+  disabled,
+  min,
+  max,
+  invalid,
+}: IgcInputArgs) => html`
   <igc-input
     type=${type}
     label=${label}
-    size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
-    dir=${direction}
     minlength=${ifDefined(minLength)}
     maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     min=${ifDefined(min)}
     max=${ifDefined(max)}
-    .value=${value}
+    .value=${value ?? ''}
     ?autofocus=${autofocus}
     ?invalid=${invalid}
     .readOnly=${readOnly}
@@ -257,8 +263,8 @@ const Template = (
     .required=${required}
     .disabled=${disabled}
   >
-    <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
-    <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-input>
 `;
@@ -269,49 +275,171 @@ export const Form: Story = {
   render: () => {
     return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>
-        <igc-input name="input" label="Default" label="Username"></igc-input>
-        <igc-input
-          name="input-default"
-          label="Initial value"
-          value="Jane Doe"
-        ></igc-input>
+        <igc-input name="input" label="Default" label="Username">
+          <p slot="helper-text">
+            Default state with no initial value and no validation.
+          </p>
+        </igc-input>
+
+        <igc-input name="input-default" label="Initial value" value="Jane Doe">
+          <p slot="helper-text">
+            With initial value and no validation. Resetting the form will
+            restore the initial value.
+          </p>
+        </igc-input>
       </fieldset>
-      <fieldset disabled>
+
+      <fieldset>
         <igc-input
-          name="input-disabled"
+          name="input-readonly"
           label="Username"
           value="John Doe"
-        ></igc-input>
+          readonly
+        >
+          <p slot="helper-text">
+            Read-only state. <strong>Does</strong> participate in form
+            submission.
+          </p>
+        </igc-input>
       </fieldset>
+
+      <fieldset disabled>
+        <igc-input name="input-disabled" label="Username" value="John Doe">
+          <p slot="helper-text">
+            Disabled state. <strong>Does not</strong> participate in form
+            submission.
+          </p>
+        </igc-input>
+      </fieldset>
+
       <fieldset>
-        <igc-input name="input-required" label="Required" required></igc-input>
+        <igc-input name="input-search" label="Search" type="search">
+          <igc-icon name="search" slot="prefix"></igc-icon>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
+        <igc-input name="input-required" label="Required" required>
+          <p slot="helper-text">With required validator.</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           name="input-minlength"
           label="Minimum length (3 characters)"
           minlength="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">With minimum length validator.</p>
+        </igc-input>
+
         <igc-input
           name="input-maximum"
           label="Maximum length (3 characters)"
           maxlength="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With maximum length validator. Since validate-only is not applied,
+            typing in the input beyond the maximum length is not possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          name="input-maximum-soft"
+          label="Maximum length (3 characters) validate-only"
+          maxlength="3"
+          validate-only
+        >
+          <p slot="helper-text">
+            With maximum length validator and validate-only applied. Typing in
+            the input beyond the maximum length is possible and will invalidate
+            the input.
+          </p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           type="number"
           name="input-min"
           label="Minimum number (3)"
           min="3"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With minimum value validator. Since validate-only is not applied,
+            using the spin buttons to go below the minimum value is not
+            possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          type="number"
+          name="input-min-soft"
+          label="Minimum number (3) validate-only"
+          min="3"
+          validate-only
+        >
+          <p slot="helper-text">
+            With minimum value validator and validate-only applied. Using the
+            spin buttons to go below the minimum value is possible and will
+            invalidate the input.
+          </p>
+        </igc-input>
+
         <igc-input
           type="number"
           name="input-max"
           label="Maximum number (17)"
           max="17"
-        ></igc-input>
+        >
+          <p slot="helper-text">
+            With maximum value validator. Since validate-only is not applied,
+            using the spin buttons to go above the maximum value is not
+            possible.
+          </p>
+        </igc-input>
+
+        <igc-input
+          type="number"
+          name="input-max-soft"
+          label="Maximum number (17) validate-only"
+          max="17"
+          validate-only
+        >
+          <p slot="helper-text">
+            With maximum value validator and validate-only applied. Using the
+            spin buttons to go above the maximum value is possible and will
+            invalidate the input.
+          </p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
         <igc-input
           name="input-pattern"
           pattern="[0-9]{3}"
           label="Pattern [0-9]{3}"
-        ></igc-input>
+        >
+          <p slot="helper-text">With pattern validator.</p>
+        </igc-input>
+
+        <igc-input
+          name="input-email"
+          type="email"
+          label="Email type"
+          value="john.doe@example.com"
+        >
+          <p slot="helper-text">With email validator.</p></igc-input
+        >
+
+        <igc-input
+          name="input-url"
+          type="url"
+          label="URL type"
+          value="https://igniteui.github.io/igniteui-webcomponents/"
+        >
+          <p slot="helper-text">With URL validator.</p>
+        </igc-input>
       </fieldset>
       ${formControls()}
     </form> `;

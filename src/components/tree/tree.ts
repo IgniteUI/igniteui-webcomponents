@@ -1,20 +1,20 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/tree.base.css.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { IgcTreeEventMap } from './tree.common.js';
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
+import IgcTreeItemComponent from './tree-item.js';
+import type { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcTreeItemComponent from './tree-item.js';
-
-defineComponents(IgcTreeItemComponent);
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
@@ -31,14 +31,18 @@ defineComponents(IgcTreeItemComponent);
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
  * @fires igcItemActivated - Emitted when the tree's `active` item changes.
  */
+@themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
   public static readonly tagName = 'igc-tree';
-  /** @private */
   public static styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(IgcTreeComponent, IgcTreeItemComponent);
+  }
 
   /** @private */
   @blazorSuppress()
@@ -53,6 +57,13 @@ export default class IgcTreeComponent extends SizableMixin(
    */
   @property({ attribute: 'single-branch-expand', reflect: true, type: Boolean })
   public singleBranchExpand = false;
+
+  /**
+   * Whether clicking over nodes will change their expanded state or not.
+   * @attr toggle-node-on-click
+   */
+  @property({ attribute: 'toggle-node-on-click', reflect: true, type: Boolean })
+  public toggleNodeOnClick = false;
 
   /**
    * The selection state of the tree.
@@ -132,7 +143,7 @@ export default class IgcTreeComponent extends SizableMixin(
   /** Returns all of the tree's items. */
   @blazorSuppress()
   public get items(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
+    return Array.from(this.querySelectorAll('igc-tree-item'));
   }
 
   private handleKeydown(event: KeyboardEvent) {
@@ -141,7 +152,7 @@ export default class IgcTreeComponent extends SizableMixin(
 
   /** @private */
   public expandToItem(item: IgcTreeItemComponent): void {
-    if (item && item.parent) {
+    if (item?.parent) {
       item.path.forEach((i) => {
         if (i !== item && !i.expanded) {
           i.expanded = true;
@@ -157,12 +168,14 @@ export default class IgcTreeComponent extends SizableMixin(
     items?: IgcTreeItemComponent[]
   ): void {
     if (!items) {
-      items =
+      this.selectionService.selectItemsWithNoEvent(
         this.selection === 'cascade'
-          ? this.items.filter((item: IgcTreeItemComponent) => item.level === 0)
-          : this.items;
+          ? this.items.filter((item) => item.level === 0)
+          : this.items
+      );
+    } else {
+      this.selectionService.selectItemsWithNoEvent(items);
     }
-    this.selectionService.selectItemsWithNoEvent(items);
   }
 
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
@@ -183,8 +196,10 @@ export default class IgcTreeComponent extends SizableMixin(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    items = items || this.items;
-    items.forEach((item) => (item.expanded = true));
+    const _items = items || this.items;
+    _items.forEach((item) => {
+      item.expanded = true;
+    });
   }
 
   /**
@@ -196,8 +211,10 @@ export default class IgcTreeComponent extends SizableMixin(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    items = items || this.items;
-    items.forEach((item) => (item.expanded = false));
+    const _items = items || this.items;
+    _items.forEach((item) => {
+      item.expanded = false;
+    });
   }
 
   protected override render() {

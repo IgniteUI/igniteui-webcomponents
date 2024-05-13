@@ -1,22 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $indigo;
-$background-color: var(--background-color, color(gray, 700, .9)) !default;
-$text-color: var(--text-color, contrast-color(gray, 700)) !default;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-snackbar');
-}
-
-[part~='base'] {
-    border-radius: var-get($theme, 'border-radius');
-    background: $background-color;
-    color: $text-color;
-}
-
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: $text-color;
+    @include css-vars-from-theme(diff($base, $theme), 'ig-snackbar');
 }

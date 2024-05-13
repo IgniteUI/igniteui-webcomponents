@@ -1,7 +1,8 @@
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { range } from 'lit/directives/range.js';
-import type { Meta, StoryObj } from '@storybook/web-components';
-import { defineComponents, IgcAccordionComponent } from '../src/index.js';
+
+import { IgcAccordionComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcAccordionComponent);
 
@@ -22,7 +23,7 @@ const metadata: Meta<IgcAccordionComponent> = {
       type: 'boolean',
       description: 'Allows only one panel to be expanded at a time.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { singleExpand: false },
@@ -45,8 +46,8 @@ Object.assign(metadata.parameters!, {
 });
 
 export const Default: Story = {
-  render: (args, { globals: { direction } }) => html`
-    <igc-accordion ?single-expand=${args.singleExpand} .dir=${direction}>
+  render: (args) => html`
+    <igc-accordion ?single-expand=${args.singleExpand}>
       ${Array.from(range(1, 4)).map(
         (i) =>
           html` <igc-expansion-panel>

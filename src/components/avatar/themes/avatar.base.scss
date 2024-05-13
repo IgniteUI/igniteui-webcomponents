@@ -32,18 +32,6 @@ img {
     text-transform: uppercase;
 }
 
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
 :host([shape='square']) [part='base'] {
     border-radius: 0;
 }
