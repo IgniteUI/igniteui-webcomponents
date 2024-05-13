@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { format, partNameMap } from '../common/util.js';
+import { formatString, partNameMap } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
 import type { IgcInputEventMap } from '../input/input-base.js';
 import {
@@ -84,7 +84,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     },
     {
       key: 'rangeUnderflow',
-      message: () => format(messages.min, `${this.min}`),
+      message: () => formatString(messages.min, this.min),
       isValid: () =>
         this.min
           ? !DateTimeUtil.lessThanMinValue(
@@ -97,7 +97,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     },
     {
       key: 'rangeOverflow',
-      message: () => format(messages.max, `${this.max}`),
+      message: () => formatString(messages.max, this.max),
       isValid: () =>
         this.max
           ? !DateTimeUtil.greaterThanMaxValue(
