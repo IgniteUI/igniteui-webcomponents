@@ -1,18 +1,18 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { when } from 'lit/directives/when.js';
 
-import { Animation, animations } from './animations.js';
-import { styles as shared } from './themes/step/shared/step.common.css.js';
-import { styles } from './themes/step/step.base.css.js';
-import { all } from './themes/step/themes.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import { type Animation, animations } from './animations.js';
+import { styles as shared } from './themes/step/shared/step.common.css.js';
+import { styles } from './themes/step/step.base.css.js';
+import { all } from './themes/step/themes.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -44,14 +44,14 @@ import { partNameMap } from '../common/util.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcStepComponent);
   }
 
   private bodyRef: Ref<HTMLElement> = createRef();
@@ -251,9 +251,8 @@ export default class IgcStepComponent extends LitElement {
           </slot>
         </div>
       `;
-    } else {
-      return nothing;
     }
+    return nothing;
   }
 
   protected renderTitleAndSubtitle() {

@@ -4,12 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.9.0] - 2024-04-30
+### Added
+- Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)
+- Input, Textarea - exposed `validateOnly` to enable validation rules being enforced without restricting user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/pull/1178)
+
+### Changed
+- Combo, Select and Dropdown components now use the native Popover API [#1082](https://github.com/IgniteUI/igniteui-webcomponents/pull/1082)
+
+### Deprecated
+- Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
+  making the property obsolete.
+
 ### Fixed
+- Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
+
+## [4.8.2] - 2024-04-15
+### Fixed
+- Textarea - resize handle position for non-suffixed textarea [#1094](https://github.com/IgniteUI/igniteui-webcomponents/issues/1094)
 - Tabs - error when dynamically creating and adding a tab group and tabs in a single call stack [#1140](https://github.com/IgniteUI/igniteui-webcomponents/issues/1140)
 - Checkbox/Switch - participate in form submission when initially checked [#1144](https://github.com/IgniteUI/igniteui-webcomponents/issues/1144)
 - Dialog - `igcClosed` fired before the component was actually closed/hidden.
-
 
 ## [4.8.1] - 2024-04-08
 ### Fixed
@@ -447,6 +462,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.9.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.2...4.9.0
+[4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
 [4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
 [4.8.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0
 [4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0

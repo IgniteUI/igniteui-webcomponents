@@ -5,14 +5,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
-import { styles as shared } from './themes/shared/item.common.css.js';
-import type IgcTreeComponent from './tree.js';
-import { IgcTreeNavigationService } from './tree.navigation.js';
-import { IgcTreeSelectionService } from './tree.selection.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -27,6 +21,12 @@ import {
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item.common.css.js';
+import type IgcTreeComponent from './tree.js';
+import type { IgcTreeNavigationService } from './tree.navigation.js';
+import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -48,7 +48,7 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = [styles, shared];
@@ -56,7 +56,7 @@ export default class IgcTreeItemComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcTreeItemComponent,
       IgcIconComponent,
       IgcCheckboxComponent,
       IgcCircularProgressComponent
@@ -282,7 +282,7 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get allChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
+    return Array.from(this.querySelectorAll('igc-tree-item'));
   }
 
   /** The full path to the tree item, starting from the top-most ancestor. */
@@ -347,7 +347,7 @@ export default class IgcTreeItemComponent extends LitElement {
         inline: 'nearest',
       });
     }
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       // set tabIndex = 0 to all tabbable elements
       // focus the first one
       this.tabbableEl.forEach((element: HTMLElement) => {
@@ -404,7 +404,7 @@ export default class IgcTreeItemComponent extends LitElement {
       this.tabbableEl.splice(0, 0, firstElement);
     }
 
-    if (this.tabbableEl && this.tabbableEl.length) {
+    if (this.tabbableEl?.length) {
       this.setAttribute('role', 'none');
       this.tabbableEl[0].setAttribute('role', 'treeitem');
 
@@ -433,9 +433,8 @@ export default class IgcTreeItemComponent extends LitElement {
   ): IgcTreeItemComponent[] {
     if (options.flatten) {
       return this.allChildren;
-    } else {
-      return this.directChildren;
     }
+    return this.directChildren;
   }
 
   /**
