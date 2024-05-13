@@ -1,10 +1,10 @@
 export enum DateRangeType {
-  After,
-  Before,
-  Between,
-  Specific,
-  Weekdays,
-  Weekends,
+  After = 0,
+  Before = 1,
+  Between = 2,
+  Specific = 3,
+  Weekdays = 4,
+  Weekends = 5,
 }
 
 /* creationType: DateRangeDescriptor */

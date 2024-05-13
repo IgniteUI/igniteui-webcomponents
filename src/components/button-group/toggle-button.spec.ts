@@ -32,7 +32,7 @@ describe('Toggle Button', () => {
 
     it('is correctly rendered', () => {
       expect(button).shadowDom.to.equal(
-        `<button><slot></slot></button>`,
+        '<button><slot></slot></button>',
         DIFF_OPTIONS
       );
     });
@@ -73,7 +73,7 @@ describe('Toggle Button', () => {
 
       expect(button.selected).to.be.false;
       expect(button).dom.to.equal(
-        `<igc-toggle-button>Click</igc-toggle-button>`
+        '<igc-toggle-button>Click</igc-toggle-button>'
       );
 
       button.selected = true;
@@ -81,7 +81,7 @@ describe('Toggle Button', () => {
 
       expect(button.selected).to.be.true;
       expect(button).dom.to.equal(
-        `<igc-toggle-button selected>Click</igc-toggle-button>`
+        '<igc-toggle-button selected>Click</igc-toggle-button>'
       );
     });
 
@@ -90,25 +90,25 @@ describe('Toggle Button', () => {
         <igc-toggle-button disabled>Click</igc-toggle-button>`);
 
       expect(button.disabled).to.be.true;
-      expect(button).shadowDom.to.equal(`<button disabled />`, DIFF_OPTIONS);
+      expect(button).shadowDom.to.equal('<button disabled />', DIFF_OPTIONS);
 
       button.disabled = false;
       await elementUpdated(button);
 
       expect(button.disabled).to.be.false;
       expect(button).dom.to.equal(
-        `<igc-toggle-button>Click</igc-toggle-button>`
+        '<igc-toggle-button>Click</igc-toggle-button>'
       );
-      expect(button).shadowDom.to.equal(`<button />`, DIFF_OPTIONS);
+      expect(button).shadowDom.to.equal('<button />', DIFF_OPTIONS);
 
       button.disabled = true;
       await elementUpdated(button);
 
       expect(button.disabled).to.be.true;
       expect(button).dom.to.equal(
-        `<igc-toggle-button disabled>Click</igc-toggle-button>`
+        '<igc-toggle-button disabled>Click</igc-toggle-button>'
       );
-      expect(button).shadowDom.to.equal(`<button disabled />`, DIFF_OPTIONS);
+      expect(button).shadowDom.to.equal('<button disabled />', DIFF_OPTIONS);
     });
 
     it('sets `aria-label` successfully', async () => {

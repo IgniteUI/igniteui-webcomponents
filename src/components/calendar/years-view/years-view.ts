@@ -7,7 +7,7 @@ import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { Constructor } from '../../common/mixins/constructor.js';
+import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { chunk, partNameMap } from '../../common/util.js';
 import { YEARS_PER_ROW, getViewElement, getYearRange } from '../helpers.js';
@@ -37,7 +37,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcYearsViewComponent);
   }
 
   @state()

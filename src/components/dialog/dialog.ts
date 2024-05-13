@@ -1,11 +1,8 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { styles } from './themes/dialog.base.css.js';
-import { styles as shared } from './themes/shared/dialog.common.css.js';
-import { all } from './themes/themes.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -16,6 +13,9 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import { styles } from './themes/dialog.base.css.js';
+import { styles as shared } from './themes/shared/dialog.common.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcDialogEventMap {
   igcClosing: CustomEvent<void>;
@@ -50,7 +50,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this, IgcButtonComponent);
+    registerComponent(IgcDialogComponent, IgcButtonComponent);
   }
 
   private static readonly increment = createCounter();

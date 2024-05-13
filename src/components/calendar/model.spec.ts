@@ -1,9 +1,9 @@
 import { expect } from '@open-wc/testing';
 
+import { first, last } from '../common/util.js';
 import { calendarRange, isDateInRanges } from './helpers.js';
 import { CalendarDay } from './model.js';
 import { DateRangeType } from './types.js';
-import { first, last } from '../common/util.js';
 
 describe('Calendar day model', () => {
   const start = new CalendarDay({ year: 1987, month: 6, date: 17 });

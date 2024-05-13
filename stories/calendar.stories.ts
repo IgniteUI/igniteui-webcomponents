@@ -1,9 +1,9 @@
-import { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
-  DateRangeDescriptor,
+  type DateRangeDescriptor,
   DateRangeType,
   IgcCalendarComponent,
   defineComponents,

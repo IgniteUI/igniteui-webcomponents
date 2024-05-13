@@ -2,9 +2,6 @@ import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
 
-import IgcDropdownHeaderComponent from './dropdown-header.js';
-import type IgcDropdownItemComponent from './dropdown-item.js';
-import IgcDropdownComponent from './dropdown.js';
 import IgcButtonComponent from '../button/button.js';
 import {
   arrowDown,
@@ -17,6 +14,9 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import type IgcDropdownItemComponent from './dropdown-item.js';
+import IgcDropdownComponent from './dropdown.js';
 
 type ItemState = {
   active?: boolean;

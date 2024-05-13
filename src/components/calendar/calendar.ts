@@ -1,24 +1,9 @@
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { IgcCalendarBaseComponent } from './base.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import {
-  MONTHS_PER_ROW,
-  YEARS_PER_ROW,
-  areSameMonth,
-  getYearRange,
-  isDateInRanges,
-} from './helpers.js';
-import { CalendarDay } from './model.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import { styles } from './themes/calendar.base.css.js';
-import { all } from './themes/calendar.js';
-import { IgcCalendarBaseEventMap } from './types.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import {
@@ -43,11 +28,26 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   findElementFromEventPath,
   first,
-  format,
+  formatString,
   last,
   partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import { IgcCalendarBaseComponent } from './base.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import {
+  MONTHS_PER_ROW,
+  YEARS_PER_ROW,
+  areSameMonth,
+  getYearRange,
+  isDateInRanges,
+} from './helpers.js';
+import { CalendarDay } from './model.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import { styles } from './themes/calendar.base.css.js';
+import { all } from './themes/calendar.js';
+import type { IgcCalendarBaseEventMap } from './types.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
 
 /**
  * Represents a calendar that lets users
@@ -90,7 +90,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   /* blazorSuppress */
   public static register() {
     registerComponent(
-      this,
+      IgcCalendarComponent,
       IgcIconComponent,
       IgcDaysViewComponent,
       IgcMonthsViewComponent,
@@ -119,21 +119,21 @@ export default class IgcCalendarComponent extends SizableMixin(
   private get previousButtonLabel() {
     if (this._isDayView) {
       return this.resourceStrings.previousMonth;
-    } else if (this._isMonthView) {
-      return this.resourceStrings.previousYear;
-    } else {
-      return format(this.resourceStrings.previousYears, `${this.yearPerPage}`);
     }
+    if (this._isMonthView) {
+      return this.resourceStrings.previousYear;
+    }
+    return formatString(this.resourceStrings.previousYears, this.yearPerPage);
   }
 
   private get nextButtonLabel() {
     if (this._isDayView) {
       return this.resourceStrings.nextMonth;
-    } else if (this._isMonthView) {
-      return this.resourceStrings.nextYear;
-    } else {
-      return format(this.resourceStrings.nextYears, `${this.yearPerPage}`);
     }
+    if (this._isMonthView) {
+      return this.resourceStrings.nextYear;
+    }
+    return formatString(this.resourceStrings.nextYears, this.yearPerPage);
   }
 
   private contentRef: Ref<HTMLDivElement> = createRef();
@@ -267,12 +267,13 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private getSubsequentActiveDate(start: CalendarDay, delta: -1 | 1) {
     const disabled = this.disabledDates;
+    let beginning = start.clone();
 
     while (isDateInRanges(start, disabled)) {
-      start = start.add('day', delta);
+      beginning = beginning.add('day', delta);
     }
 
-    return start;
+    return beginning;
   }
 
   private handleArrowKey(period: 'day' | 'week', delta: -1 | 1) {
@@ -302,10 +303,10 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onPageKeys(delta: -1 | 1) {
     const unit = this._isDayView ? 'month' : 'year';
-    delta = (this._isYearView ? this.yearPerPage : 1) * delta;
+    const incr = (this._isYearView ? this.yearPerPage : 1) * delta;
     this._activeDate = this.getSubsequentActiveDate(
-      this._activeDate.add(unit, delta),
-      delta as -1 | 1
+      this._activeDate.add(unit, incr),
+      incr as -1 | 1
     );
     this.focusActiveDate();
   }
@@ -678,7 +679,11 @@ export default class IgcCalendarComponent extends SizableMixin(
     event.stopPropagation();
 
     const view = event.target as IgcDaysViewComponent;
-    this._isSingle ? (this.value = view.value) : (this.values = view.values);
+    if (this._isSingle) {
+      this.value = view.value;
+    } else {
+      this.values = view.values;
+    }
 
     this.emitEvent('igcChange', {
       detail: this._isSingle ? this.value : this.values,

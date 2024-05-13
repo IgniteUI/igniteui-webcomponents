@@ -1,11 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import {
-  getCalendarDOM,
-  getDOMDate,
-  getDayViewDOM,
-} from './calendar-keyboard-navigation.spec.js';
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
+import { first, last } from '../common/util.js';
+import { simulateClick } from '../common/utils.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
   calendarRange,
@@ -13,11 +11,9 @@ import {
   getWeekDayNumber,
   isDateInRanges,
 } from './helpers.js';
+import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
-import { DateRangeDescriptor, DateRangeType } from './types.js';
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
-import { first, last } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
+import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar interactions', () => {
   let calendar: IgcCalendarComponent;

@@ -25,7 +25,7 @@ import {
 import { CalendarDay, daysInWeek } from '../model.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
-import { DateRangeType, IgcCalendarBaseEventMap } from '../types.js';
+import { DateRangeType, type IgcCalendarBaseEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<Date>;
@@ -58,7 +58,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(this);
+    registerComponent(IgcDaysViewComponent);
   }
 
   @state()
@@ -211,7 +211,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     }
 
     if (this._isSingle) {
-      if (this._value && this._value.equalTo(value)) {
+      if (this._value?.equalTo(value)) {
         return false;
       }
       this._value = value;
@@ -248,14 +248,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           dateRange: this.values,
         },
       ]);
-    } else {
-      return isDateInRanges(day, [
-        {
-          type: DateRangeType.Between,
-          dateRange: [first(this._values).native, last(this._values).native],
-        },
-      ]);
     }
+    return isDateInRanges(day, [
+      {
+        type: DateRangeType.Between,
+        dateRange: [first(this._values).native, last(this._values).native],
+      },
+    ]);
   }
 
   // XXX: Range interaction
@@ -285,11 +284,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       return false;
     }
 
-    const target =
-      this._rangePreviewDate &&
-      this._rangePreviewDate.lessThan(first(this._values))
-        ? this._rangePreviewDate
-        : first(this._values);
+    const target = this._rangePreviewDate?.lessThan(first(this._values))
+      ? this._rangePreviewDate
+      : first(this._values);
 
     return target.equalTo(day);
   }
@@ -299,11 +296,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       return false;
     }
 
-    const target =
-      this._rangePreviewDate &&
-      this._rangePreviewDate.greaterThan(last(this._values))
-        ? this._rangePreviewDate
-        : last(this._values);
+    const target = this._rangePreviewDate?.greaterThan(last(this._values))
+      ? this._rangePreviewDate
+      : last(this._values);
 
     return target.equalTo(day);
   }
@@ -343,7 +338,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const fmt = this._intl.get('label');
 
     // Range selection in progress
-    if (this._rangePreviewDate && this._rangePreviewDate.equalTo(day)) {
+    if (this._rangePreviewDate?.equalTo(day)) {
       return fmt.formatRange(
         first(this._values).native,
         this._rangePreviewDate.native

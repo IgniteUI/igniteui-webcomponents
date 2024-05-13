@@ -1,4 +1,4 @@
-import { LitElement, TemplateResult, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -6,11 +6,8 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { styles as shared } from './themes/shared/slider.common.css.js';
-import { styles } from './themes/slider.base.css.js';
-import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
@@ -30,10 +27,13 @@ import {
   asNumber,
   asPercent,
   clamp,
-  format,
+  formatString,
   isDefined,
   isLTR,
 } from '../common/util.js';
+import { styles as shared } from './themes/shared/slider.common.css.js';
+import { styles } from './themes/slider.base.css.js';
+import { all } from './themes/themes.js';
 
 @themes(all)
 @blazorDeepImport
@@ -378,7 +378,9 @@ export class IgcSliderBaseComponent extends LitElement {
 
   protected formatValue(value: number) {
     const strValue = value.toLocaleString(this.locale, this.valueFormatOptions);
-    return this.valueFormat ? format(this.valueFormat, strValue) : strValue;
+    return this.valueFormat
+      ? formatString(this.valueFormat, strValue)
+      : strValue;
   }
 
   private normalizeByStep(value: number) {
@@ -461,9 +463,8 @@ export class IgcSliderBaseComponent extends LitElement {
       }
 
       return Math.round(change / stepDistance) * this.step;
-    } else {
-      return change / scale;
     }
+    return change / scale;
   }
 
   private updateSlider(mouseX: number) {

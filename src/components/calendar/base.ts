@@ -1,6 +1,9 @@
 import { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
+import { watch } from '../common/decorators/watch.js';
 import {
   dateFromISOString,
   datesFromISOStrings,
@@ -8,9 +11,6 @@ import {
 } from './helpers.js';
 import { CalendarDay } from './model.js';
 import type { DateRangeDescriptor } from './types.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { watch } from '../common/decorators/watch.js';
 
 @blazorIndirectRender
 @blazorDeepImport
@@ -139,8 +139,10 @@ export class IgcCalendarBaseComponent extends LitElement {
       return;
     }
 
-    this._isSingle
-      ? (this.activeDate = this.value ?? this.activeDate)
-      : (this.activeDate = this.values[0] ?? this.activeDate);
+    if (this._isSingle) {
+      this.activeDate = this.value ?? this.activeDate;
+    } else {
+      this.activeDate = this.values[0] ?? this.activeDate;
+    }
   }
 }

@@ -1,18 +1,22 @@
 import {
-  CalendarDay,
-  CalendarRangeParams,
-  DayParameter,
-  daysInWeek,
-  toCalendarDay,
-} from './model.js';
-import { DateRangeDescriptor, DateRangeType, WeekDays } from './types.js';
-import {
   asNumber,
   findElementFromEventPath,
   first,
   last,
   modulo,
 } from '../common/util.js';
+import {
+  CalendarDay,
+  type CalendarRangeParams,
+  type DayParameter,
+  daysInWeek,
+  toCalendarDay,
+} from './model.js';
+import {
+  type DateRangeDescriptor,
+  DateRangeType,
+  type WeekDays,
+} from './types.js';
 
 /* Constants */
 
@@ -50,7 +54,7 @@ export function datesFromISOStrings(value: string | null) {
  *
  */
 export function getViewElement(event: Event) {
-  const element = findElementFromEventPath<HTMLElement>(`[data-value]`, event);
+  const element = findElementFromEventPath<HTMLElement>('[data-value]', event);
   return element ? asNumber(element.dataset.value, -1) : -1;
 }
 
