@@ -1,11 +1,12 @@
 import { LitElement, type TemplateResult, html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { partNameMap } from '../common/util.js';
 
 export interface IgcButtonEventMap {
   igcFocus: CustomEvent<void>;
@@ -28,6 +29,9 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   @query('[part="base"]', true)
   private _nativeButton!: HTMLButtonElement;
+
+  @state()
+  protected focused = false;
 
   /* alternateName: displayType */
   /**
@@ -90,6 +94,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   constructor() {
     super();
     this.__internals = this.attachInternals();
+    this.addEventListener('keyup', this.handleKeyUp);
     this.size = 'medium';
   }
 
@@ -116,9 +121,11 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleClick() {
+    this.focused = false;
     switch (this.type) {
       case 'submit':
         return this.form?.requestSubmit();
@@ -126,6 +133,12 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         return this.form?.reset();
       default:
         return;
+    }
+  }
+
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
     }
   }
 
@@ -137,7 +150,10 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   private renderButton() {
     return html`
       <button
-        part="base"
+        part=${partNameMap({
+          base: true,
+          focused: this.focused,
+        })}
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
@@ -153,7 +169,10 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   private renderLinkButton() {
     return html`
       <a
-        part="base"
+        part=${partNameMap({
+          base: true,
+          focused: this.focused,
+        })}
         role="button"
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
