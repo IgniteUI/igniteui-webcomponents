@@ -44,7 +44,7 @@ import { all } from './themes/step/themes.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];

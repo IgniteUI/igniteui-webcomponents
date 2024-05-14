@@ -1,8 +1,9 @@
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
@@ -17,7 +18,7 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @csspart toggle - The native button element.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = [styles, shared];
   public static readonly tagName = 'igc-toggle-button';
@@ -34,6 +35,9 @@ export default class IgcToggleButtonComponent extends LitElement {
 
   @query('[part="toggle"]', true)
   private _nativeButton!: HTMLButtonElement;
+
+  @state()
+  protected focused = false;
 
   /**
    * The value attribute of the control.
@@ -56,6 +60,11 @@ export default class IgcToggleButtonComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  constructor() {
+    super();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
   /* alternateName: focusComponent */
   /** Sets focus on the button. */
   public override focus(options?: FocusOptions) {
@@ -73,15 +82,29 @@ export default class IgcToggleButtonComponent extends LitElement {
     this._nativeButton.click();
   }
 
+  protected handleBlur() {
+    this.focused = false;
+  }
+
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
+    }
+  }
+
   protected override render() {
     return html`
       <button
-        part="toggle"
+        part=${partNameMap({
+          toggle: true,
+          focused: this.focused,
+        })}
         type="button"
         ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
+        @blur=${this.handleBlur}
       >
         <slot></slot>
       </button>
