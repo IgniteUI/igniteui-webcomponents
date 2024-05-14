@@ -3,6 +3,26 @@ import { LitElement, html } from 'lit';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './ripple.material.css.js';
 
+const rippleFrames: Keyframe[] = [
+  { opacity: 0.5, transform: 'scale(.3)' },
+  { opacity: 0, transform: 'scale(2)' },
+];
+
+const rippleAnimation: KeyframeAnimationOptions = {
+  duration: 600, // --igc-ripple-duration,
+  fill: 'forwards',
+  easing: 'linear', // --igc-ripple-easing
+};
+
+let rippleElement: HTMLElement;
+
+function getRippleElement() {
+  if (!rippleElement) {
+    rippleElement = document.createElement('span');
+  }
+  return rippleElement.cloneNode() as HTMLElement;
+}
+
 /**
  * A ripple can be applied to an element to represent
  * interactive surface.
@@ -20,11 +40,11 @@ export default class IgcRippleComponent extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener('mousedown', this.handler);
+    this.addEventListener('pointerdown', this.handler);
   }
 
-  private handler = ({ clientX, clientY }: MouseEvent) => {
-    const element = document.createElement('span');
+  private handler = ({ clientX, clientY }: PointerEvent) => {
+    const element = getRippleElement();
     const { radius, top, left } = this.getDimensions(clientX, clientY);
 
     const styles: Partial<CSSStyleDeclaration> = {
@@ -43,31 +63,29 @@ export default class IgcRippleComponent extends LitElement {
       left: `${left}px`,
       background: 'var(--color, hsl(var(--ig-gray-800)))',
     };
-    const frames: Keyframe[] = [
-      { opacity: 0.5, transform: 'scale(.3)' },
-      { opacity: 0, transform: 'scale(2)' },
-    ];
-    const opts: KeyframeAnimationOptions = {
-      duration: 600, // --igc-ripple-duration,
-      fill: 'forwards',
-      easing: 'linear', // --igc-ripple-easing
-    };
 
     Object.assign(element.style, styles);
-    this.shadowRoot?.appendChild(element);
-    element.animate(frames, opts).finished.then(() => element.remove());
+    this.renderRoot.appendChild(element);
+
+    element
+      .animate(rippleFrames, rippleAnimation)
+      .finished.then(() => element.remove());
   };
 
   private getDimensions(x: number, y: number) {
-    const { width, height, left, top } = this.getBoundingClientRect();
-    const radius = Math.max(width, height);
-    const _left = Math.round(x - left - radius / 2);
-    const _top = Math.round(y - top - radius / 2);
-    return { radius, top: _top, left: _left };
+    const rect = this.getBoundingClientRect();
+    const radius = Math.max(rect.width, rect.height);
+    const halfRadius = radius / 2;
+
+    return {
+      radius,
+      top: Math.round(y - rect.top - halfRadius),
+      left: Math.round(x - rect.left - halfRadius),
+    };
   }
 
   protected override render() {
-    return html`<div></div>`;
+    return html``;
   }
 }
 
