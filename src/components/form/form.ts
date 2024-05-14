@@ -1,7 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -75,8 +74,8 @@ export default class IgcFormComponent extends EventEmitterMixin<
     this.addEventListener('click', this.handleClick);
   }
 
+  /* alternateName: performSubmit */
   /** Submits the form. */
-  @alternateName('performSubmit')
   public submit(): boolean {
     const formData = this.getFormData();
     if (!this.novalidate && !this.reportValidity()) {
@@ -87,8 +86,8 @@ export default class IgcFormComponent extends EventEmitterMixin<
     return true;
   }
 
+  /* alternateName: performReset */
   /** Resets the form. */
-  @alternateName('performReset')
   public reset() {
     const formElements = this.getFormElements();
     formElements.forEach((element) => {

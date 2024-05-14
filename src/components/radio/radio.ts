@@ -11,8 +11,6 @@ import {
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
-import { alternateName } from '../common/decorators/alternateName.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
@@ -117,12 +115,12 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The checked state of the control.
    * @attr
    */
   @property({ type: Boolean })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set checked(value: boolean) {
     this._checked = Boolean(value);
 
@@ -168,14 +166,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     this.input.click();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the radio control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the radio control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }

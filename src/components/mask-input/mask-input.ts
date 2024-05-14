@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
@@ -74,12 +73,12 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    * @attr
    */
-  @property()
-  @blazorTwoWayBind('igcChange', 'detail')
   public get value(): string {
     return this.valueMode !== 'raw' ? this.maskedValue : this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  @property()
   public set value(string: string) {
     this._value = string ?? '';
     this.maskedValue = this.parser.apply(this._value);

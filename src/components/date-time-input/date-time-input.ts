@@ -11,7 +11,6 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
@@ -152,8 +151,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   @property({ converter: converter })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set value(val: Date | null) {
     this._value = val
       ? DateTimeUtil.isValidDate(val)

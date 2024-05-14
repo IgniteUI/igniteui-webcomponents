@@ -25,7 +25,6 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
@@ -546,14 +545,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     e.stopPropagation();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
     super.blur();
