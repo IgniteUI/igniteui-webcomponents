@@ -29,7 +29,10 @@ $icon-size: rem(16px);
         &:focus-within,
         &:active {
             border-color: var-get($flat-theme, 'border-color');
-            box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'focus-border-color');
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
         }
     }
 }
@@ -40,10 +43,8 @@ $icon-size: rem(16px);
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
-        &:focus,
-        &:focus-visible,
-        &:active {
-            box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'focus-border-color');
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
         }
 
         &:hover {
@@ -75,10 +76,8 @@ $icon-size: rem(16px);
             }
         }
 
-        &:focus,
-        &:focus-visible,
-        &:active {
-            box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'focus-border-color');
+        &:focus-visible {
+            box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
             
             &:hover {
                 &::after {
