@@ -11,7 +11,7 @@ $theme: $indigo;
         background: var-get($overlay-indigo, 'background-color');
     }
 
-    [part='mini'], [part="base"] {
+    [part='mini'], [part="main"] {
         padding: rem(8px);
     }
 }
