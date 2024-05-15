@@ -269,7 +269,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     const disabled = this.disabledDates;
     let beginning = start.clone();
 
-    while (isDateInRanges(start, disabled)) {
+    while (isDateInRanges(beginning, disabled)) {
       beginning = beginning.add('day', delta);
     }
 
