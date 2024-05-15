@@ -26,8 +26,8 @@ describe('Calendar interactions', () => {
 
     calendar = await fixture<IgcCalendarComponent>(html`
       <igc-calendar
-        value=${value.native.toISOString()}
-        active-date=${value.native.toISOString()}
+        .value=${value.native}
+        .activeDate=${value.native}
       ></igc-calendar>
     `);
 
