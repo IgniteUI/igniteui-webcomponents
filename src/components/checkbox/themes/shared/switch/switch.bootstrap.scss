@@ -46,7 +46,7 @@ $theme: $bootstrap;
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     margin-inline-start: var(--thumb-offset);
-    background: color(gray, 400);
+    background: var-get($theme, 'thumb-off-color');
 }
 
 [part~='thumb'][part~='checked'] {
