@@ -23,9 +23,10 @@ $theme: $material;
         --igx-icon-size: #{$icon-size};
 
         min-height: $material-flat-btn-size;
+        min-width: var(--button-min-width);
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
-        padding-inline: rem(16px);
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         padding-block: pad-block(rem(1px), rem(4px), rem(6px));
         border-color: var-get($theme, 'item-border-color');
     }
@@ -44,24 +45,6 @@ $theme: $material;
 
     ::slotted(igc-icon) {
         color: var-get($theme, 'item-hover-icon-color');
-    }
-}
-
-:host(:focus) {
-    [part~='toggle'] {
-        color: var-get($theme, 'item-focused-text-color');
-        background: var-get($theme, 'item-focused-background');
-        border-color: var-get($theme, 'item-focused-border-color');
-
-        &:hover {
-            color: var-get($theme, 'item-hover-text-color');
-            background: var-get($theme, 'item-hover-background');
-            border-color: var-get($theme, 'item-hover-border-color');
-
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-hover-icon-color');
-            }
-        }
     }
 }
 
@@ -89,16 +72,6 @@ $theme: $material;
     }
 }
 
-:host([selected]:focus) {
-    [part~='toggle'] {
-        &:hover {
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-selected-hover-icon-color');
-            }
-        }
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
     @include disabled();
@@ -107,4 +80,17 @@ $theme: $material;
 :host-context([disabled]),
 :host-context(:disabled) {
     @include disabled();
+}
+
+:host([selected]:disabled),
+:host([selected][disabled]) {
+    [part~='toggle'] {
+        &::before {
+            position: absolute;
+            content: '';
+            inset: 0;
+            z-index: 3;
+            background: var-get($theme, 'disabled-selected-background');
+        }
+    }
 }
