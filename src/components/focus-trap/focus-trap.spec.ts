@@ -1,12 +1,21 @@
 import { expect, fixture, html } from '@open-wc/testing';
 
+import IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcInputComponent from '../input/input.js';
 import IgcFocusTrapComponent from './focus-trap.js';
 
 describe('Focus trap', () => {
-  before(() => defineComponents(IgcFocusTrapComponent, IgcCalendarComponent));
+  before(() =>
+    defineComponents(
+      IgcFocusTrapComponent,
+      IgcCalendarComponent,
+      IgcInputComponent,
+      IgcButtonComponent
+    )
+  );
 
   let trap: IgcFocusTrapComponent;
 
@@ -107,6 +116,34 @@ describe('Focus trap', () => {
       trap.focusLastElement();
       expect(document.activeElement).instanceOf(IgcCalendarComponent);
       expect(daysView.shadowRoot?.activeElement).instanceOf(HTMLSpanElement);
+    });
+  });
+
+  describe('Mix of Light/Shadow and content editable elements', () => {
+    beforeEach(async () => {
+      trap = await fixture(html`
+        <igc-focus-trap>
+          <igc-input tabindex="-1"></igc-input>
+          <igc-button>First</igc-button>
+          <igc-button aria-hidden="true"></igc-button>
+          <input type="text" value="Second" />
+          <igc-input label="Third"></igc-input>
+          <div contenteditable>Fourth</div>
+          <button disabled></button>
+        </igc-focus-trap>
+      `);
+    });
+
+    it('has correct number of focusable elements', () => {
+      expect(trap.focusableElements).lengthOf(4);
+    });
+
+    it('correctly focuses first/last focusable element', () => {
+      trap.focusFirstElement();
+      expect(document.activeElement?.textContent).to.equal('First');
+
+      trap.focusLastElement();
+      expect(document.activeElement?.textContent).to.equal('Fourth');
     });
   });
 });

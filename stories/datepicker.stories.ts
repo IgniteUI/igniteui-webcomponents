@@ -5,7 +5,7 @@ import {
   type DateRangeDescriptor,
   DateRangeType,
   IgcButtonComponent,
-  IgcDatepickerComponent,
+  IgcDatePickerComponent,
   defineComponents,
 } from '../src/index.js';
 import {
@@ -14,10 +14,10 @@ import {
   formSubmitHandler,
 } from './story.js';
 
-defineComponents(IgcDatepickerComponent, IgcButtonComponent);
+defineComponents(IgcDatePickerComponent, IgcButtonComponent);
 
 // region default
-const metadata: Meta<IgcDatepickerComponent> = {
+const metadata: Meta<IgcDatePickerComponent> = {
   title: 'Datepicker',
   component: 'igc-datepicker',
   parameters: {
@@ -362,17 +362,17 @@ export const Default: Story = {
 };
 
 function showTrimester() {
-  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
   picker.visibleMonths = 3;
 }
 
 function showSingleMonth() {
-  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
   picker.visibleMonths = 1;
 }
 
 function selectToday() {
-  const picker = document.querySelector<IgcDatepickerComponent>('#picker')!;
+  const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
   picker.value = new Date();
   picker.hide();
 }

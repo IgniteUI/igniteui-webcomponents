@@ -137,7 +137,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
-export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
+export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatepickerEventMap,
     AbstractConstructor<IgcBaseComboBoxLikeComponent>
@@ -152,7 +152,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
   };
 
   private static readonly increment = createCounter();
-  protected inputId = `date-picker-${IgcDatepickerComponent.increment()}`;
+  protected inputId = `date-picker-${IgcDatePickerComponent.increment()}`;
 
   private declare readonly [themeSymbol]: Theme;
 
@@ -172,7 +172,7 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
   public static register() {
     registerComponent(
-      IgcDatepickerComponent,
+      IgcDatePickerComponent,
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
       IgcFocusTrapComponent,
@@ -766,6 +766,6 @@ export default class IgcDatepickerComponent extends FormAssociatedRequiredMixin(
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-date-picker': IgcDatepickerComponent;
+    'igc-date-picker': IgcDatePickerComponent;
   }
 }

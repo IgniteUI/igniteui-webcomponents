@@ -118,11 +118,26 @@ function isDisabled(node: HTMLElement) {
   return node.hasAttribute('disabled') || node.hasAttribute('inert');
 }
 
+function isContentEditable(node: HTMLElement) {
+  return (
+    node.hasAttribute('contenteditable') &&
+    node.getAttribute('contenteditable') !== 'false'
+  );
+}
+
 /**
  * Returns whether the element can be focused.
  */
 function isFocusable(node: HTMLElement) {
-  if (node.tabIndex === -1 || isHidden(node) || isDisabled(node)) {
+  if (isHidden(node) || isDisabled(node)) {
+    return false;
+  }
+
+  if (isContentEditable(node)) {
+    return true;
+  }
+
+  if (node.tabIndex === -1) {
     return false;
   }
 

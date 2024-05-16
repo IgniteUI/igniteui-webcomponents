@@ -20,17 +20,17 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import IgcDatepickerComponent from './date-picker.js';
+import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
-  before(() => defineComponents(IgcDatepickerComponent));
+  before(() => defineComponents(IgcDatePickerComponent));
 
-  let picker: IgcDatepickerComponent;
+  let picker: IgcDatePickerComponent;
   let dateTimeInput: IgcDateTimeInputComponent;
   let calendar: IgcCalendarComponent;
 
   beforeEach(async () => {
-    picker = await fixture<IgcDatepickerComponent>(
+    picker = await fixture<IgcDatePickerComponent>(
       html`<igc-date-picker></igc-date-picker>`
     );
     dateTimeInput = picker.shadowRoot!.querySelector(
@@ -68,7 +68,7 @@ describe('Date picker', () => {
     });
 
     it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title, actions', async () => {
-      picker = await fixture<IgcDatepickerComponent>(
+      picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker>
           <span slot="prefix">$</span>
           <span slot="suffix">~</span>
@@ -173,7 +173,7 @@ describe('Date picker', () => {
     });
 
     it('should not render title slot elements in dropdown mode', async () => {
-      picker = await fixture<IgcDatepickerComponent>(
+      picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker mode="dropdown">
           <p slot="title">Custom title</p>
         </igc-date-picker>`
@@ -188,7 +188,7 @@ describe('Date picker', () => {
 
     it('should be successfully initialized with value', async () => {
       const expectedValue = new Date(2024, 1, 29);
-      picker = await fixture<IgcDatepickerComponent>(
+      picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker .value="${expectedValue}"></igc-date-picker>`
       );
       dateTimeInput = picker.shadowRoot!.querySelector(
@@ -202,7 +202,7 @@ describe('Date picker', () => {
     });
 
     it('should be successfully initialized in open state in dropdown mode', async () => {
-      picker = await fixture<IgcDatepickerComponent>(
+      picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker open></igc-date-picker>`
       );
       calendar = picker.shadowRoot!.querySelector(
@@ -220,7 +220,7 @@ describe('Date picker', () => {
     });
 
     it('should be successfully initialized in open state in dialog mode', async () => {
-      picker = await fixture<IgcDatepickerComponent>(
+      picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker open mode="dialog"></igc-date-picker>`
       );
       calendar = picker.shadowRoot!.querySelector(
@@ -456,7 +456,7 @@ describe('Date picker', () => {
 
       it('should initialize activeDate = value when it is not set, but value is', async () => {
         const valueDate = after10DaysDate;
-        picker = await fixture<IgcDatepickerComponent>(
+        picker = await fixture<IgcDatePickerComponent>(
           html`<igc-date-picker .value=${valueDate}></igc-date-picker>`
         );
         await elementUpdated(picker);
@@ -786,12 +786,12 @@ describe('Date picker', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcDatepickerComponent>(
+    const spec = new FormAssociatedTestBed<IgcDatePickerComponent>(
       html`<igc-date-picker name="datePicker"></igc-date-picker>`
     );
 
     beforeEach(async () => {
-      await spec.setup(IgcDatepickerComponent.tagName);
+      await spec.setup(IgcDatePickerComponent.tagName);
     });
 
     it('should be form associated', async () => {
