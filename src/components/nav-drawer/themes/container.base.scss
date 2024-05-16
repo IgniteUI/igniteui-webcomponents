@@ -24,10 +24,10 @@
     }
 
     [part~='mini'] {
-        min-width: var(--menu-mini-width);
+        width: var(--menu-mini-width);
     }
 
-    [part='main'] {
+    [part='main'], [part='base'] {
         width: var(--menu-full-width);
     }
 
