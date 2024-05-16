@@ -178,8 +178,8 @@ $theme: $bootstrap;
 
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
-    [part='control']::after {
-        background: var-get($theme, 'disabled-color');
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'disabled-color');
+    [part~='control']::after {
+        background: var-get($theme, 'disabled-indeterminate-color');
+        box-shadow: none;
     }
 }

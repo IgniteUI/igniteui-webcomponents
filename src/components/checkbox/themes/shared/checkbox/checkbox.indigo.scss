@@ -21,12 +21,10 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     width: var(--size, rem(16px));
     height: var(--size, rem(16px));
     min-width: var(--size, rem(16px));
-    transition: background .15s ease-in;
 
     &::after {
         border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid $empty-color;
-        transition: border-color .15s ease-in;
     }
 }
 
@@ -78,7 +76,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]) {
     [part~='indicator'] {
-        transform: rotate(45deg) translateX(-.125rem) scale(.8);
+        transform: rotate(45deg) translateX(-.1rem) scale(.8);
     }
 
     [part~='control'] {
