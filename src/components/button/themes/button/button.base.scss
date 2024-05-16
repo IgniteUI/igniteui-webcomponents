@@ -20,7 +20,7 @@
     }
 }
 
-[part='base'] {
+[part~='base'] {
     @include type-style(button);
 
     position: relative;
@@ -41,8 +41,8 @@
     min-width: rem(88px);
 }
 
-:host(:not([disabled])) [part='base']:hover,
-:host(:not(:disabled)) [part='base']:hover {
+:host(:not([disabled])) [part~='base']:hover,
+:host(:not(:disabled)) [part~='base']:hover {
     cursor: pointer;
 }
 
