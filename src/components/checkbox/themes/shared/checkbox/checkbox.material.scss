@@ -7,8 +7,8 @@ $theme: $material;
     @include type-style('subtitle-1');
 }
 
-[part~='indicator'] {
-    stroke: var-get($theme, 'tick-color');
+label {
+    gap: rem(2px);
 }
 
 [part~='control'] {
@@ -64,7 +64,7 @@ $theme: $material;
     }
 }
 
-[part='base']:focus-within,
+[part='base']:focus-visible,
 [part='base focused'] {
     &:hover [part~='control'],
     [part~='control'] {
@@ -75,7 +75,7 @@ $theme: $material;
     }
 }
 
-[part='base checked']:focus-within,
+[part='base checked']:focus-visible,
 [part='base checked focused'] {
     &:hover [part~='control'],
     [part~='control'] {
@@ -101,7 +101,7 @@ $theme: $material;
         }
     }
 
-    [part='base']:focus-within,
+    [part='base']:focus-visible,
     [part='base focused'] {
         [part~='control']::before {
             background: var-get($theme, 'fill-color');
