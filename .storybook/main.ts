@@ -11,9 +11,6 @@ const config: StorybookConfig = {
     name: '@storybook/web-components-vite',
     options: {},
   },
-  docs: {
-    autodocs: false,
-  },
   viteFinal: async (config, options) => {
     const { mergeConfig } = await import('vite');
     if (options.configType === 'PRODUCTION') {
