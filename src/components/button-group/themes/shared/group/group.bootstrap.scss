@@ -5,5 +5,4 @@ $theme: $bootstrap;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-    --button-min-width: #{rem(42px)};
 }
