@@ -3,6 +3,11 @@
 
 $theme: $fluent;
 
+:host {
+    --menu-full-width: #{rem(240px)};
+    --menu-mini-width: #{rem(40px)};
+}
+
 [part='base'],
 [part~='mini'] {
     border: rem(1px) solid var-get($theme, 'border-color');
