@@ -1,18 +1,22 @@
 import type { StorybookConfig } from '@storybook/web-components-vite';
 
 const config: StorybookConfig = {
-  stories: ['../stories/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ['../stories/**/*.stories.ts'],
   addons: [
     '@storybook/addon-a11y',
     '@storybook/addon-links',
     '@storybook/addon-essentials',
   ],
+  core: {
+    builder: '@storybook/builder-vite',
+  },
   framework: {
     name: '@storybook/web-components-vite',
     options: {},
   },
   viteFinal: async (config, options) => {
     const { mergeConfig } = await import('vite');
+
     if (options.configType === 'PRODUCTION') {
       return mergeConfig(config, {
         build: {
@@ -28,7 +32,7 @@ const config: StorybookConfig = {
       });
     }
 
-    return config;
+    return mergeConfig(config, {});
   },
 };
 
