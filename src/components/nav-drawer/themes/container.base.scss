@@ -2,6 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --menu-full-width: #{rem(240px)};
+
     display: flex;
     flex-shrink: 0;
     font-family: var(--ig-font-family);

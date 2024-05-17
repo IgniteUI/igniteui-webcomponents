@@ -1,7 +1,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --menu-full-width: #{rem(240px)};
     --menu-mini-width: #{rem(56px)};
 }
 
