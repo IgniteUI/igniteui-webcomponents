@@ -464,6 +464,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this.updateValidity();
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   /** Clears the input part of the component of any user input */
   public clear() {
     this.value = null;
@@ -565,10 +571,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     event.stopPropagation();
   }
 
-  protected onSlotChange() {
-    this.requestUpdate();
-  }
-
   private setDateConstraints() {
     const dates: DateRangeDescriptor[] = [];
     if (this._min) {
@@ -589,7 +591,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       ? nothing
       : html`
           <span slot="suffix" part="clear-icon" @click=${this.clear}>
-            <slot name="clear-icon" @slotchange=${this.onSlotChange}>
+            <slot name="clear-icon">
               <igc-icon
                 name="clear"
                 collection="internal"
@@ -613,9 +615,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
-        <slot name=${state} @slotchange=${this.onSlotChange}>
-          ${defaultIcon}
-        </slot>
+        <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
   }
@@ -648,13 +648,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         month, month-inner, year, year-inner, selected, current"
       >
         ${!this.isDropDown
-          ? html`<slot
-              name="title"
-              slot="title"
-              @slotchange=${this.onSlotChange}
-            >
-              Select date
-            </slot> `
+          ? html`<slot name="title" slot="title">Select date</slot> `
           : nothing}
       </igc-calendar>
     `;
@@ -670,7 +664,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         ?hidden=${!this.actions.length}
         slot=${ifDefined(slot)}
       >
-        <slot name="actions" @slotchange=${this.onSlotChange}></slot>
+        <slot name="actions"></slot>
       </div>
     `;
   }
@@ -708,7 +702,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private renderHelperText() {
     return html`<div part="helper-text" ?hidden=${!this.helperText.length}>
-      <slot name="helper-text" @slotchange=${this.onSlotChange}></slot>
+      <slot name="helper-text"></slot>
     </div>`;
   }
 
@@ -743,13 +737,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         <slot
           name="prefix"
           slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
-          @slotchange=${this.onSlotChange}
         ></slot>
         ${this.renderClearIcon()}
         <slot
           name="suffix"
           slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
-          @slotchange=${this.onSlotChange}
         ></slot>
       </igc-date-time-input>
     `;
