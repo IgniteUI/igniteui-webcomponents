@@ -6,7 +6,6 @@ $theme: $bootstrap;
 :host {
     box-shadow: var(--ig-elevation-0);
     padding: 0 rem(8px);
-    border-bottom: rem(1px) solid var-get($theme, 'border-color');
 }
 
 [part='base'] {
