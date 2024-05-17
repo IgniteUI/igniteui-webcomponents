@@ -739,12 +739,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         @igcInput=${this.handleInputEvent}
         exportparts="input, label, prefix, suffix"
       >
+        ${this.renderCalendarIcon()}
         <slot
           name="prefix"
           slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
           @slotchange=${this.onSlotChange}
         ></slot>
-        ${this.renderClearIcon()}${this.renderCalendarIcon()}
+        ${this.renderClearIcon()}
         <slot
           name="suffix"
           slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
