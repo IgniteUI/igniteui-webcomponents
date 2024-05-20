@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 
-import { createFocusRing } from '../common/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -26,7 +26,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 ) {
   protected override validators: Validator<this>[] = [requiredBooleanValidator];
 
-  protected _focusManager = createFocusRing(this);
+  protected _kbFocus = addKeyboardFocusRing(this);
   protected _value!: string;
   protected _checked = false;
 
@@ -117,7 +117,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-    this._focusManager.reset();
+    this._kbFocus.reset();
   }
 
   protected handleFocus() {

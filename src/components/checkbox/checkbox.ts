@@ -61,10 +61,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         part=${partNameMap({
           base: true,
           checked: this.checked,
-          focused: this._focusManager.focused,
+          focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
-        @pointerdown=${this._focusManager.reset}
+        @pointerdown=${this._kbFocus.reset}
       >
         <input
           id=${this.inputId}

@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
-import { createFocusRing } from '../common/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { styles } from './themes/button.base.css.js';
@@ -34,7 +34,7 @@ export default class IgcToggleButtonComponent extends LitElement {
     registerComponent(IgcToggleButtonComponent);
   }
 
-  private _focusManager = createFocusRing(this);
+  private _kbFocus = addKeyboardFocusRing(this);
 
   @query('[part="toggle"]', true)
   private _nativeButton!: HTMLButtonElement;
@@ -82,15 +82,15 @@ export default class IgcToggleButtonComponent extends LitElement {
       <button
         part=${partNameMap({
           toggle: true,
-          focused: this._focusManager.focused,
+          focused: this._kbFocus.focused,
         })}
         type="button"
         ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
-        @click=${this._focusManager.reset}
-        @blur=${this._focusManager.reset}
+        @click=${this._kbFocus.reset}
+        @blur=${this._kbFocus.reset}
       >
         <slot></slot>
       </button>

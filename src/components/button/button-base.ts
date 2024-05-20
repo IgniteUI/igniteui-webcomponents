@@ -3,7 +3,7 @@ import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
-import { createFocusRing } from '../common/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -25,7 +25,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     delegatesFocus: true,
   };
 
-  private _focusManager = createFocusRing(this);
+  private _kbFocus = addKeyboardFocusRing(this);
 
   protected __internals: ElementInternals;
   protected _disabled = false;
@@ -119,11 +119,11 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-    this._focusManager.reset();
+    this._kbFocus.reset();
   }
 
   protected handleClick() {
-    this._focusManager.reset();
+    this._kbFocus.reset();
     switch (this.type) {
       case 'submit':
         return this.form?.requestSubmit();
@@ -144,7 +144,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       <button
         part=${partNameMap({
           base: true,
-          focused: this._focusManager.focused,
+          focused: this._kbFocus.focused,
         })}
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         ?disabled=${this.disabled}
@@ -163,7 +163,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       <a
         part=${partNameMap({
           base: true,
-          focused: this._focusManager.focused,
+          focused: this._kbFocus.focused,
         })}
         role="button"
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}

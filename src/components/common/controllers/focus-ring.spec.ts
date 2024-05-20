@@ -13,7 +13,7 @@ import {
   simulateKeyboard,
   simulatePointerDown,
 } from '../utils.spec.js';
-import { createFocusRing } from './focus-ring.js';
+import { addKeyboardFocusRing } from './focus-ring.js';
 import { tabKey } from './key-bindings.js';
 
 describe('Focus ring controller', () => {
@@ -29,7 +29,7 @@ describe('Focus ring controller', () => {
           }
         `;
 
-        public manager = createFocusRing(this);
+        public manager = addKeyboardFocusRing(this);
 
         public get button() {
           return this.renderRoot.querySelector('button')!;

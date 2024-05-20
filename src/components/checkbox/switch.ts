@@ -48,7 +48,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
       <label
         part=${partNameMap({ base: true, checked: this.checked })}
         for=${this.inputId}
-        @pointerdown=${this._focusManager.reset}
+        @pointerdown=${this._kbFocus.reset}
       >
         <input
           id=${this.inputId}
@@ -69,7 +69,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           part=${partNameMap({
             control: true,
             checked: this.checked,
-            focused: this._focusManager.focused,
+            focused: this._kbFocus.focused,
           })}
         >
           <span

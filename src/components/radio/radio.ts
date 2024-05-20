@@ -4,7 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { themes } from '../../theming/theming-decorator.js';
-import { createFocusRing } from '../common/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
   arrowDown,
@@ -75,7 +75,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
-  private _focusManager = createFocusRing(this);
+  private _kbFocus = addKeyboardFocusRing(this);
 
   protected _checked = false;
   protected _value!: string;
@@ -242,7 +242,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-    this._focusManager.reset();
+    this._kbFocus.reset();
   }
 
   protected handleFocus() {
@@ -271,10 +271,10 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
         part=${partNameMap({
           base: true,
           checked: this.checked,
-          focused: this._focusManager.focused,
+          focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
-        @pointerdown=${this._focusManager.reset}
+        @pointerdown=${this._kbFocus.reset}
       >
         <input
           id=${this.inputId}
