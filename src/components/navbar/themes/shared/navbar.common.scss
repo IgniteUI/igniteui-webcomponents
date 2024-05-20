@@ -6,6 +6,7 @@ $theme: $material;
 :host {
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
+    border-bottom: rem(1px) solid var-get($theme, 'border-color');
     box-shadow: var(--ig-elevation-4);
 }
 

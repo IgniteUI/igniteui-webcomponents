@@ -42,8 +42,8 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 |Snackbar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/snackbar)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
 |Toast|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
 |Rating|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/rating)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
-|Slider|:white_check_mark:|[Docs]()|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)|
-|Range Slider|:white_check_mark:|[Docs]()|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)| 
+|Slider|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/slider)|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)|
+|Range Slider|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/slider)|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)| 
 |Avatar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/avatar)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
 |Badge|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/badge)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
 |Button|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/button)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|

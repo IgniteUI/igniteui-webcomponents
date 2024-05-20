@@ -27,7 +27,7 @@ import {
   asNumber,
   asPercent,
   clamp,
-  format,
+  formatString,
   isDefined,
   isLTR,
 } from '../common/util.js';
@@ -378,7 +378,9 @@ export class IgcSliderBaseComponent extends LitElement {
 
   protected formatValue(value: number) {
     const strValue = value.toLocaleString(this.locale, this.valueFormatOptions);
-    return this.valueFormat ? format(this.valueFormat, strValue) : strValue;
+    return this.valueFormat
+      ? formatString(this.valueFormat, strValue)
+      : strValue;
   }
 
   private normalizeByStep(value: number) {

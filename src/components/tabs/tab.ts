@@ -22,7 +22,7 @@ import { styles } from './themes/tab.base.css.js';
  * @csspart suffix - The suffix wrapper.
  */
 
-@themes(all, true)
+@themes(all)
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
   public static override styles = [styles, shared];

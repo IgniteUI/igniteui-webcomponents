@@ -48,7 +48,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes(all, true)
+@themes(all)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = [styles, shared];
