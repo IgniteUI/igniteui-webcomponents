@@ -30,17 +30,17 @@ $theme: $material;
     max-height: var-get($theme, 'size');
 }
 
-:host(:not([disabled])[active]) {
+:host(:not([disabled])[active]) [part~='wrapper'] {
     background: var-get($theme, 'background-active');
     color: var-get($theme, 'foreground-active');
 }
 
-:host(:not([disabled])[selected]) {
+:host(:not([disabled])[selected]) [part~='wrapper']{
     background: var-get($theme, 'background-selected');
     color: var-get($theme, 'foreground-selected');
 }
 
-:host(:not([disabled])[selected][active]) {
+:host(:not([disabled])[selected][active]) [part~='wrapper']{
     background: var-get($theme, 'background-active-selected');
     color: var-get($theme, 'foreground-active-selected');
 }

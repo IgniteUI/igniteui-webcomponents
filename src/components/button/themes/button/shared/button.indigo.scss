@@ -6,7 +6,7 @@ $contained-theme: $indigo-contained;
 $fab-theme: $indigo-fab;
 $outlined-theme: $indigo-outlined;
 
-:host [part='base']{
+:host [part~='base']{
     min-width: rem(28px);
     padding: 0 pad(10px, 16px, 24px);
     
@@ -33,103 +33,93 @@ $outlined-theme: $indigo-outlined;
 :host([variant='fab']) {
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
 
-    [part='base'] {
+    [part~='base'] {
         padding: 0 pad(rem(6px), rem(8px), rem(10px));
     }
 }
 
-:host(:not([disabled])[variant='flat']) [part='base'],
-:host(:not(:disabled)[variant='flat']) [part='base'] {
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
+:host([variant='flat']),
+:host([variant='contained']),
+:host([variant='outlined']) {
+    [part~='base'] {
+        border-width: rem(2px);
     }
 }
 
-:host(:not([disabled])[variant='outlined']) [part='base'],
-:host(:not(:disabled)[variant='outlined']) [part='base'] {
-    border-style: solid;
-    border-color: var-get($outlined-theme, 'border-color');
-    border-width: rem(2px);
+:host(:not([disabled])[variant='flat']) [part~='base'],
+:host(:not(:disabled)[variant='flat']) [part~='base'] {
+    &:active {
+        ::slotted(igc-icon) {
+            color: var-get($flat-theme, 'icon-color-hover');
+        }
+    }
+}
+
+:host(:not([disabled])[variant='flat']) [part='base focused'],
+:host(:not(:disabled)[variant='flat']) [part='base focused'] {
+    box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
+}
+
+:host(:not([disabled])[variant='outlined']) [part~='base'],
+:host(:not(:disabled)[variant='outlined']) [part~='base'] {
+    &:hover {
+        border-color: var-get($outlined-theme, 'hover-border-color');
+    }
+
+    &:active {
+        border-color: var-get($outlined-theme, 'active-border-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($outlined-theme, 'icon-color-hover');
+        }
+    }
+}
+
+:host(:not([disabled])[variant='outlined']) [part='base focused'],
+:host(:not(:disabled)[variant='outlined']) [part='base focused'] {
+    border-color: var-get($outlined-theme, 'focus-visible-border-color');
+    box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
 
     &:hover {
         border-color: var-get($outlined-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($outlined-theme, 'focus-border-color');
-
-        &:hover {
-            border-color: var-get($outlined-theme, 'hover-border-color');
-        }
-    }
-
     &:active {
         border-color: var-get($outlined-theme, 'active-border-color');
     }
-
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
-    }
-
-    &:focus-visible {
-        border-color: var-get($outlined-theme, 'focus-visible-border-color');
-
-        &:hover {
-            border-color: var-get($outlined-theme, 'hover-border-color');
-        }
-
-        &:active {
-            color: var-get($outlined-theme, 'active-foreground');
-            background: var-get($outlined-theme, 'active-background');
-            border-color: var-get($outlined-theme, 'active-border-color');
-        }
-    }
 }
 
-:host(:not([disabled])[variant='contained']) [part='base'],
-:host(:not(:disabled)[variant='contained']) [part='base'] {
+:host(:not([disabled])[variant='contained']) [part~='base'],
+:host(:not(:disabled)[variant='contained']) [part~='base'] {
     &:hover {
         border-color: var-get($contained-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($contained-theme, 'focus-border-color');
+    &:active {
+        border-color: var-get($contained-theme, 'active-border-color');
 
-        &:hover {
-            border-color: var-get($contained-theme, 'hover-border-color');
+        ::slotted(igc-icon) {
+            color: var-get($contained-theme, 'icon-color-hover');
         }
+    }
+}
+
+:host(:not([disabled])[variant='contained']) [part='base focused'],
+:host(:not(:disabled)[variant='contained']) [part='base focused'] {
+    box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
+    border-color: var-get($contained-theme, 'focus-visible-border-color');
+
+    &:hover {
+        border-color: var-get($contained-theme, 'hover-border-color');
     }
 
     &:active {
         border-color: var-get($contained-theme, 'active-border-color');
     }
-
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
-    }
-
-    &:focus-visible {
-        background: var-get($contained-theme, 'focus-visible-background');
-        color: var-get($contained-theme, 'focus-visible-foreground');
-        border-color: var-get($contained-theme, 'focus-visible-border-color');
-
-        &:hover {
-            border-color: var-get($contained-theme, 'hover-border-color');
-        }
-
-        &:active {
-            color: var-get($contained-theme, 'active-foreground');
-            background: var-get($contained-theme, 'active-background');
-            border-color: var-get($contained-theme, 'active-border-color');
-        }
-    }
 }
 
-:host(:not([disabled])[variant='fab']) [part='base'],
-:host(:not(:disabled)[variant='fab']) [part='base'] {
+:host(:not([disabled])[variant='fab']) [part~='base'],
+:host(:not(:disabled)[variant='fab']) [part~='base'] {
     border-color: var-get($fab-theme, 'border-color');
     min-width: var(--size);
     min-height: var(--size);
@@ -138,38 +128,31 @@ $outlined-theme: $indigo-outlined;
         border-color: var-get($fab-theme, 'hover-border-color');
     }
 
-    &:focus {
-        border-color: var-get($fab-theme, 'focus-border-color');
+    &:active {
+        border-color: var-get($fab-theme, 'active-border-color');
 
-        &:hover {
-            border-color: var-get($fab-theme, 'hover-border-color');
+        ::slotted(igc-icon) {
+            color: var-get($fab-theme, 'icon-color-hover');
         }
+    }
+}
+
+:host(:not([disabled])[variant='fab']) [part='base focused'],
+:host(:not(:disabled)[variant='fab']) [part='base focused'] {
+    border-color: var-get($fab-theme, 'focus-visible-border-color');
+    box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
+
+    &:hover {
+        border-color: var-get($fab-theme, 'hover-border-color');
     }
 
     &:active {
         border-color: var-get($fab-theme, 'active-border-color');
     }
-
-    &:focus,
-    &:active {
-        box-shadow: 0 0 0 rem(3px) var-get($fab-theme, 'shadow-color');
-    }
-
-    &:focus-visible {
-        border-color: var-get($fab-theme, 'focus-visible-border-color');
-
-        &:hover {
-            border-color: var-get($fab-theme, 'hover-border-color');
-        }
-
-        &:active {
-            border-color: var-get($fab-theme, 'active-border-color');
-        }
-    }
 }
 
-:host([disabled][variant='outlined']) [part='base'],
-:host(:disabled[variant='outlined']) [part='base'] {
+:host([disabled][variant='outlined']) [part~='base'],
+:host(:disabled[variant='outlined']) [part~='base'] {
     border-color: var-get($outlined-theme, 'disabled-border-color');
     border-width: rem(2px);
 }

@@ -6,7 +6,7 @@ $checked-color: var-get($theme, 'track-on-color') !default;
 $border-width: rem(1px);
 
 :host {
-    --size: #{rem(34px)};
+    --size: #{rem(32px)};
     --thumb-size: #{rem(8px)};
     --border-size: #{rem(1px)};
     --thumb-offset: #{rem(2px)};
@@ -15,11 +15,22 @@ $border-width: rem(1px);
     font-weight: 600;
 }
 
-[part~='base'] {
-    &:hover {
-        [part~='control'][part~='checked'] {
-            border-color: var-get($theme, 'border-on-hover-color');
-        }
+[part~='label'] {
+    @include type-style('body-2');
+}
+
+:host(:hover) {
+    [part~='control'] {
+        border-color: var-get($theme, 'border-hover-color');
+    }
+
+    [part~='thumb']:not([part~='checked']) {
+        background: var-get($theme, 'border-hover-color');
+    }
+
+    [part~='control'][part~='checked'] {
+        background: var-get($theme, 'track-on-hover-color');
+        border-color: var-get($theme, 'border-on-hover-color');
     }
 }
 
@@ -91,6 +102,6 @@ $border-width: rem(1px);
 :host([disabled]),
 :host(:disabled) {
     [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'border-disabled-color');
+        border-color: transparent;
     }
 }
