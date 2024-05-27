@@ -10,6 +10,12 @@ $theme: $material;
     transition: all .2s ease-in-out;
 }
 
+:host(:hover) {
+    [part~='label'] {
+        color: var-get($theme, 'label-hover-color');
+    }
+}
+
 :host([disabled]),
 :host(:disabled) {
     [part~='label'] {
