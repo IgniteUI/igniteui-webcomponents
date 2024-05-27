@@ -7,3 +7,31 @@ $theme: $material;
 :host {
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
 }
+
+[part~='base']:hover {
+    [part~='control']::before {
+        opacity: .12;
+    }
+}
+
+
+[part='base']:focus-visible,
+[part='base focused'],
+[part='base checked']:focus-visible,
+[part='base checked focused'] {
+    &:hover [part~='control'],
+    [part~='control'] {
+        &::before {
+            opacity: .24;
+        }
+    }
+}
+
+:host([indeterminate]) {
+    [part='base']:focus-visible,
+    [part='base focused'] {
+        [part~='control']::before {
+            opacity: .24;
+        }
+    }
+}

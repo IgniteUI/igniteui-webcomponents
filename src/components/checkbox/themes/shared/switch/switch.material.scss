@@ -17,7 +17,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     &:hover {
         [part~='thumb'] {
             &::after {
-                background: var-get($theme, 'track-off-color');
+                background: color(gray, 600);
                 opacity: .06;
             }
         }
@@ -42,7 +42,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     [part='control focused'] {
         [part~='thumb'] {
             &::after {
-                background: var-get($theme, 'track-off-color');
+                background: color(gray, 600);
                 opacity: .12;
             }
         }

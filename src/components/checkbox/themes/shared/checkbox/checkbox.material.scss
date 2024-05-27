@@ -126,7 +126,7 @@ label {
 
     [part~='base']:hover {
         [part~='control']::before {
-            background: var-get($theme, 'error-color-hover');
+            background: var-get($theme, 'error-color');
         }
     }
 
