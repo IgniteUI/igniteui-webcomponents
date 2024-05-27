@@ -97,7 +97,7 @@ label {
     [part='base']:hover {
         [part~='control']::before {
             background: var-get($theme, 'fill-color');
-            opacity: .12;
+            opacity: .06;
         }
     }
 
