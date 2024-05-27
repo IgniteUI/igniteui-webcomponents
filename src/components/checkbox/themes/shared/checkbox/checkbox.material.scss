@@ -94,18 +94,11 @@ label {
         }
     }
 
-    [part='base']:hover {
-        [part~='control']::before {
-            background: var-get($theme, 'fill-color');
-            opacity: .06;
-        }
-    }
-
+    [part='base']:hover,
     [part='base']:focus-visible,
     [part='base focused'] {
         [part~='control']::before {
             background: var-get($theme, 'fill-color');
-            opacity: .12;
         }
     }
 }

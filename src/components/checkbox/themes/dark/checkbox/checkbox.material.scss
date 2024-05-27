@@ -26,12 +26,3 @@ $theme: $material;
         }
     }
 }
-
-:host([indeterminate]) {
-    [part='base']:focus-visible,
-    [part='base focused'] {
-        [part~='control']::before {
-            opacity: .24;
-        }
-    }
-}
