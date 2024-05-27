@@ -6,7 +6,7 @@ $theme: $fluent;
 [part~='spacer'] {
     padding: rem(8px);
     background: var-get($theme, 'banner-background');
-    border-bottom: rem(1px) solid var-get($theme, 'banner-border-color');
+    box-shadow: inset 0 rem(-1px) 0 0  var-get($theme, 'banner-border-color');
     border-radius: var-get($theme, 'border-radius');
 }
 
