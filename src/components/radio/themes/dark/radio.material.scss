@@ -16,7 +16,8 @@ $theme: $material;
         }
     }
 
-    &:focus-within {
+    &:focus-visible,
+    &[part~='focused'] {
         [part='ripple'],
         [part='ripple checked'] {
             opacity: 0.24;
