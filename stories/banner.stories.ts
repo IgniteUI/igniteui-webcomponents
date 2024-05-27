@@ -52,26 +52,26 @@ registerIconFromText('success', checkIcon, 'material');
 
 const BasicTemplate = ({ open }: IgcBannerArgs) => {
   return html`
-    <igc-button onclick="banner.toggle()">Toggle</igc-button>
     <igc-banner id="banner" .open=${open}>
       You are currently not logged in! Please, log into your account first.
     </igc-banner>
+    <igc-button onclick="banner.toggle()">Toggle</igc-button>
   `;
 };
 
 const SlottedContentTemplate = ({ open }: IgcBannerArgs) => {
   return html`
-    <igc-button onclick="banner.toggle()">Toggle</igc-button>
     <igc-banner id="banner" .open=${open}>
       <igc-icon name="success" collection="material" slot="prefix"></igc-icon>
 
-      Build <strong>f58a1815-c069-429d-ab20-860849e96a59</strong> completed!
+      Build f58a1815-c069-429d-ab20-860849e96a59 completed!
 
       <div slot="actions">
-        <igc-button>OK</igc-button>
-        <igc-button>View log</igc-button>
+        <igc-button variant="flat">OK</igc-button>
+        <igc-button variant="outlined">View log</igc-button>
       </div>
     </igc-banner>
+    <igc-button onclick="banner.toggle()">Toggle</igc-button>
   `;
 };
 

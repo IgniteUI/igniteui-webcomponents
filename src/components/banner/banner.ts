@@ -4,11 +4,13 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
+import { themes } from '../../theming/theming-decorator';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/banner.base.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcBannerComponentEventMap {
   igcClosing: CustomEvent<void>;
@@ -30,6 +32,7 @@ export interface IgcBannerComponentEventMap {
  * @csspart base - The base wrapper of the banner component.
  */
 
+@themes(all)
 export default class IgcBannerComponent extends EventEmitterMixin<
   IgcBannerComponentEventMap,
   Constructor<LitElement>
@@ -108,17 +111,26 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div ${ref(this._bannerRef)} part="base" .inert=${!this.open}>
-        <slot name="prefix"></slot>
-        <slot></slot>
-        <slot name="actions">
-          <igc-button
-            type="button"
-            variant="flat"
-            size="small"
-            @click=${this.handleClick}
-            >OK</igc-button
-          >
-        </slot>
+        <div part="spacer">
+          <div part="message">
+            <div part="illustration">
+              <slot name="prefix"></slot>
+            </div>
+            <div part="content">
+              <slot></slot>
+            </div>
+          </div>
+          <div part="actions">
+            <slot name="actions">
+              <igc-button
+                type="button"
+                variant="flat"
+                @click=${this.handleClick}
+                >OK</igc-button
+              >
+            </slot>
+          </div>
+        </div>
       </div>
     `;
   }
