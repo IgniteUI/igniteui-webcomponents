@@ -11,10 +11,10 @@ import { styles as bootstrapLight } from './light/banner.bootstrap.css.js';
 import { styles as fluentLight } from './light/banner.fluent.css.js';
 import { styles as indigoLight } from './light/banner.indigo.css.js';
 import { styles as materialLight } from './light/banner.material.css.js';
+// Shared Styles
 import { styles as bootstrap } from './shared/banner.bootstrap.css.js';
 import { styles as fluent } from './shared/banner.fluent.css.js';
 import { styles as indigo } from './shared/banner.indigo.css.js';
-// Shared Styles
 import { styles as material } from './shared/banner.material.css.js';
 
 const light = {

@@ -1,9 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../light/themes' as light;
 
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-banner');
+    @include css-vars-from-theme($theme, 'ig-banner');
 }
