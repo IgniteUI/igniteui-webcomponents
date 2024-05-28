@@ -112,7 +112,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleClick() {
     this.checked = !this.checked;
-    this.focused = false;
     this.emitEvent('igcChange', { detail: this.checked });
   }
 
