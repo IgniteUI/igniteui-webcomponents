@@ -22,7 +22,7 @@ $thumb-label-height: rem(22px);
 }
 
 [part='thumb-label'] {
-    top: calc((#{$thumb-label-height} + rem(16px)) * -1);
+    top: calc((#{$thumb-label-height} + rem(18px)) * -1);
     height: $thumb-label-height;
 }
 
