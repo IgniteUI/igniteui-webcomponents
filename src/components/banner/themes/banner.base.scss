@@ -2,9 +2,10 @@
 
 :host {
     display: block;
+    min-width: rem(320px);
+    flex-basis: rem(320px);
 }
 
-// TODO see if this container can be removed
 [part~='spacer'] {
     display: flex;
     flex-wrap: wrap;
@@ -13,8 +14,8 @@
 }
 
 [part~='message'] {
-    min-width: rem(320px);
-    flex-basis: rem(320px);
+    min-width: rem(150px);
+    flex-basis: rem(150px);
     flex-grow: 1;
 }
 
