@@ -14,6 +14,11 @@ $thumb-label-height: rem(22px);
     @include border-radius(rem(3px));
 
     min-width: $thumb-label-width;
+    
+    &::after {
+        border-top: rem(12px) solid var-get($theme, 'label-background-color');
+        top: rem(16px);
+    }
 }
 
 [part='thumb-label'] {
@@ -31,12 +36,15 @@ $thumb-label-height: rem(22px);
     }
 }
 
+[part='track'] {
+    @include border-radius(rem(4px));
+}
+
 [part='track'],
 [part='fill'],
 [part='inactive'] {
     height: rem(2px);
     top: initial;
-    border-radius: initial;
 }
 
 [part='steps'] {
@@ -68,7 +76,7 @@ $thumb-label-height: rem(22px);
     }
 
     &:focus {
-        box-shadow: 0 0 0 rem(2px) var-get($theme, 'thumb-focus-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'thumb-focus-color');
     }
 
     &::after {
