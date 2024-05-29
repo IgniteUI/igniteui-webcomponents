@@ -9,6 +9,19 @@ $thumb-scale-hover: calc(16 / 12);
 $thumb-label-width: rem(36px);
 $thumb-label-height: rem(22px);
 
+[part='ticks'] {
+    bottom: rem(3px);
+
+    &:first-child {
+        top: rem(3px);
+
+        [part='tick-label'] {
+            top: auto;
+            bottom: rem(20px);
+        }
+    }
+}
+
 [part='thumb-label-inner'] {
     @include type-style('subtitle-2');
     @include border-radius(rem(3px));
@@ -59,6 +72,7 @@ $thumb-label-height: rem(22px);
 [part='tick-label'] {
     @include type-style('body-2');
 
+    top: rem(20px);
     color: var-get($theme, 'tick-label-color');
     
 }

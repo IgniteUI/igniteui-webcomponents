@@ -8,6 +8,7 @@ $ripple-size: rem(40px);
 $ripple-radius: math.div($ripple-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
+$tick-width: rem(2px);
 
 :host {
     display: block;
@@ -101,7 +102,7 @@ slot {
 
 [part='tick'] {
     height: rem(8px);
-    width: rem(2px);
+    width: $tick-width;
 }
 
 [part='tick'][data-primary='true'] {
@@ -119,7 +120,7 @@ slot {
 }
 
 [part='tick-label-inner'] {
-    margin-inline-start: -50%;
+    margin-inline-start: calc(-50% + $tick-width);
 }
 
 [part='thumbs'] {
