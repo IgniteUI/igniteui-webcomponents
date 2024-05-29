@@ -2,7 +2,6 @@
 @use 'igniteui-theming/sass/themes/schemas/components/dark/navdrawer' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/overlay' as *;
 
-$base: digest-schema($dark-base-navdrawer);
 $material: digest-schema($dark-material-navdrawer);
 $bootstrap: digest-schema($dark-bootstrap-navdrawer);
 $fluent: digest-schema($dark-fluent-navdrawer);
