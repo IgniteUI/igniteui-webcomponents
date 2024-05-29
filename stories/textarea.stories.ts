@@ -114,7 +114,6 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'string',
       description: 'The value of the component',
       control: 'text',
-      table: { defaultValue: { summary: '' } },
     },
     spellcheck: {
       type: 'boolean',
@@ -167,7 +166,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     readOnly: false,
     resize: 'vertical',
     rows: 2,
-    value: '',
     spellcheck: true,
     wrap: 'soft',
     validateOnly: false,

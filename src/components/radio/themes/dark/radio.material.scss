@@ -1,10 +1,11 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-radio');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-radio');
 }
 
 [part~='base'] {
@@ -15,7 +16,8 @@ $theme: $material;
         }
     }
 
-    &:focus-within {
+    &:focus-visible,
+    &[part~='focused'] {
         [part='ripple'],
         [part='ripple checked'] {
             opacity: 0.24;

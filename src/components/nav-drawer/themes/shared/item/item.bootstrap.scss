@@ -1,5 +1,15 @@
 @use 'styles/utilities' as *;
 
+[part~='base'] {
+    padding: rem(8px) rem(16px);
+    gap: rem(8px);
+    min-height: rem(40px);
+}
+
+[part~='base'][part~='mini'] {
+    min-width: rem(56px);
+}
+
 [part='content'] {
     @include type-style('body-2');
 }

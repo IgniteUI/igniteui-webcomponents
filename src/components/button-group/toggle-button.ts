@@ -1,7 +1,8 @@
 import { LitElement, html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { styles } from './themes/button.base.css.js';
@@ -33,11 +34,10 @@ export default class IgcToggleButtonComponent extends LitElement {
     registerComponent(IgcToggleButtonComponent);
   }
 
+  private _kbFocus = addKeyboardFocusRing(this);
+
   @query('[part="toggle"]', true)
   private _nativeButton!: HTMLButtonElement;
-
-  @state()
-  protected focused = false;
 
   /**
    * The value attribute of the control.
@@ -60,11 +60,6 @@ export default class IgcToggleButtonComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  constructor() {
-    super();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
   /* alternateName: focusComponent */
   /** Sets focus on the button. */
   public override focus(options?: FocusOptions) {
@@ -82,29 +77,20 @@ export default class IgcToggleButtonComponent extends LitElement {
     this._nativeButton.click();
   }
 
-  protected handleBlur() {
-    this.focused = false;
-  }
-
-  protected handleKeyUp() {
-    if (!this.focused) {
-      this.focused = true;
-    }
-  }
-
   protected override render() {
     return html`
       <button
         part=${partNameMap({
           toggle: true,
-          focused: this.focused,
+          focused: this._kbFocus.focused,
         })}
         type="button"
         ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
-        @blur=${this.handleBlur}
+        @click=${this._kbFocus.reset}
+        @blur=${this._kbFocus.reset}
       >
         <slot></slot>
       </button>

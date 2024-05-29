@@ -13,6 +13,10 @@
     ::slotted(igc-icon) {
         --ig-size: 3;
     }
+
+    ::slotted(igc-button) {
+        --ig-size: 2;
+    }
 }
 
 [part='base'] {

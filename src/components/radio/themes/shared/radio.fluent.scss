@@ -9,7 +9,7 @@ $theme: $fluent;
 
 :host [part~='base'] {
     transition-duration: .1s;
-    gap: rem(6px);
+    gap: rem(8px);
 }
 
 :host [part~='control'] {
@@ -107,7 +107,7 @@ $theme: $fluent;
         }
 
         &::before {
-            background: var-get($theme, 'error-color-hover');
+            background: var-get($theme, 'error-color');
         }
     }
 
@@ -141,7 +141,7 @@ $theme: $fluent;
         }
 
         &::before {
-            background: var-get($theme, 'error-color-hover');
+            background: var-get($theme, 'error-color');
         }
     }
 }

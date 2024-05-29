@@ -87,6 +87,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     delegatesFocus: true,
   };
 
+  private _value = '';
   private observer!: ResizeObserver;
 
   @queryAssignedNodes({ flatten: true })
@@ -228,7 +229,16 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public value = '';
+  public set value(value: string) {
+    this._value = value ?? '';
+    this.setFormValue(this._value ? this._value : null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  public get value(): string {
+    return this._value;
+  }
 
   /**
    * Controls whether the element may be checked for spelling errors.
@@ -278,6 +288,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   public override async connectedCallback() {
     super.connectedCallback();
+    this.updateValidity();
 
     await this.updateComplete;
 
@@ -342,10 +353,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   @watch('value')
   protected async valueChanged() {
-    this.value ? this.setFormValue(this.value) : this.setFormValue(null);
-    this.updateValidity();
-    this.setInvalidState();
-
     await this.updateComplete;
     this.setAreaHeight();
   }
