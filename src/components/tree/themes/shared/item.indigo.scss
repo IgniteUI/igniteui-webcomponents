@@ -4,7 +4,7 @@
 $theme: $indigo;
 
 :host {
-    --igc-tree-indentation-size: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --igc-tree-indentation-size: #{sizable(rem(24px))};
 }
 
 [part~='indicator'] {
@@ -19,6 +19,7 @@ $theme: $indigo;
 [part~='wrapper'] {
     border-radius: rem(4px);
     margin-block-end: rem(4px);
+    padding: 0 pad(8px, 12px, 16px);
 
     &::after {
         border-radius: rem(4px);
@@ -35,6 +36,8 @@ $theme: $indigo;
         color: var-get($theme, 'foreground');
 
         &:hover {
+            color: var-get($theme, 'foreground-selected');
+            
             &::after {
                 background: var-get($theme, 'hover-color');
             }
