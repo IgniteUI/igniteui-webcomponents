@@ -120,7 +120,7 @@ slot {
 }
 
 [part='tick-label-inner'] {
-    margin-inline-start: calc(-50% + $tick-width);
+    margin-inline-start: -50%;
 }
 
 [part='thumbs'] {
