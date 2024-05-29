@@ -31,7 +31,8 @@ $theme: $material;
         }
     }
 
-    &:focus-within {
+    &:focus-visible,
+    &[part~='focused'] {
         [part='ripple'] {
             background: var-get($theme, 'empty-color');
             opacity: .12;
@@ -89,7 +90,8 @@ $theme: $material;
             }
         }
 
-        &:focus-within {
+        &:focus-visible,
+        &[part~='focused'] {
             [part~='ripple'] {
                 background: var-get($theme, 'error-color');
             }
