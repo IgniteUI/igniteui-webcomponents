@@ -22,7 +22,7 @@ describe('Input component', () => {
     it('is initialized with the proper default values', async () => {
       expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
-      expect(el.value).to.equal('');
+      expect(el.value).to.be.empty;
       expect(el.invalid).to.be.false;
       expect(el.required).to.be.false;
       expect(el.readonly).to.be.false;
@@ -118,7 +118,7 @@ describe('Input component', () => {
     });
 
     it('sets the pattern property successfully', async () => {
-      expect(input.pattern).to.equal('');
+      expect(input.pattern).to.be.empty;
       el.pattern = '123';
 
       await elementUpdated(el);
@@ -246,6 +246,20 @@ describe('Input component', () => {
       expect(eventSpy).calledTwice;
       expect(eventSpy).calledWithExactly('igcBlur');
     });
+
+    it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {
+      el.value = 'a';
+      await elementUpdated(el);
+
+      expect(el.value).to.equal('a');
+      expect(input.value).to.equal('a');
+
+      el.value = undefined as any;
+      await elementUpdated(el);
+
+      expect(el.value).to.be.empty;
+      expect(input.value).to.be.empty;
+    });
   });
 
   it('should reflect validation state when updating through attribute', async () => {
@@ -290,7 +304,7 @@ describe('Input component', () => {
       spec.element.value = 'abc';
 
       spec.reset();
-      expect(spec.element.value).to.equal('');
+      expect(spec.element.value).to.be.empty;
     });
 
     it('reflects disabled ancestor state', async () => {
