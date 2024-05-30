@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { themes } from '../../theming/theming-decorator.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
   arrowDown,
@@ -72,6 +73,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
+  private _kbFocus = addKeyboardFocusRing(this);
 
   protected _checked = false;
   protected _value!: string;
@@ -84,9 +86,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   @state()
   private _tabIndex = 0;
-
-  @state()
-  private focused = false;
 
   @state()
   protected hideLabel = false;
@@ -142,7 +141,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
-    this.addEventListener('keyup', this.handleKeyUp);
 
     addKeybindings(this, {
       skip: () => this.disabled,
@@ -235,12 +233,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected handleMouseDown(event: PointerEvent) {
-    event.preventDefault();
-    this.input.focus();
-    this.focused = false;
-  }
-
   protected handleClick() {
     this.checked = true;
     this.emitEvent('igcChange', { detail: this.checked });
@@ -248,17 +240,11 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-    this.focused = false;
+    this._kbFocus.reset();
   }
 
   protected handleFocus() {
     this.emitEvent('igcFocus');
-  }
-
-  protected handleKeyUp() {
-    if (!this.focused) {
-      this.focused = true;
-    }
   }
 
   protected navigate(idx: number) {
@@ -283,10 +269,10 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
         part=${partNameMap({
           base: true,
           checked: this.checked,
-          focused: this.focused,
+          focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
-        @pointerdown=${this.handleMouseDown}
+        @pointerdown=${this._kbFocus.reset}
       >
         <input
           id=${this.inputId}

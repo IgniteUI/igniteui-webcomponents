@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { watch } from '../common/decorators/watch.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -23,6 +24,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 ) {
   protected override validators: Validator<this>[] = [requiredBooleanValidator];
 
+  protected _kbFocus = addKeyboardFocusRing(this);
   protected _value!: string;
   protected _checked = false;
 
@@ -31,9 +33,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedNodes({ flatten: true })
   protected label!: Array<Node>;
-
-  @state()
-  protected focused = false;
 
   @state()
   protected hideLabel = false;
@@ -81,11 +80,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
-  constructor() {
-    super();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     this.updateValidity();
@@ -121,24 +115,12 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-    this.focused = false;
+    this._kbFocus.reset();
   }
 
   protected handleFocus() {
     this._dirty = true;
     this.emitEvent('igcFocus');
-  }
-
-  protected handleMouseDown(event: PointerEvent) {
-    event.preventDefault();
-    this.input.focus();
-    this.focused = false;
-  }
-
-  protected handleKeyUp() {
-    if (!this.focused) {
-      this.focused = true;
-    }
   }
 
   protected handleSlotChange() {
