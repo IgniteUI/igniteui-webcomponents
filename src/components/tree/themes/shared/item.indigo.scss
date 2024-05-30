@@ -33,10 +33,9 @@ $theme: $indigo;
 :host(:not([disabled])[selected]) {
     [part~='wrapper'] {
         background: var-get($theme, 'background');
-        color: var-get($theme, 'foreground');
 
         &:hover {
-            color: var-get($theme, 'foreground-selected');
+            color: var-get($theme, 'foreground-active');
             
             &::after {
                 background: var-get($theme, 'hover-color');
