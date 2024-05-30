@@ -2,6 +2,7 @@ import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   IgcIconComponent,
@@ -113,7 +114,6 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'string',
       description: 'The value of the component',
       control: 'text',
-      table: { defaultValue: { summary: '' } },
     },
     spellcheck: {
       type: 'boolean',
@@ -166,7 +166,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     readOnly: false,
     resize: 'vertical',
     rows: 2,
-    value: '',
     spellcheck: true,
     wrap: 'soft',
     validateOnly: false,
@@ -261,6 +260,27 @@ type Story = StoryObj<IgcTextareaArgs>;
 
 export const Default: Story = {
   args: { label: 'Your feedback' },
+  render: (args) => html`
+    <igc-textarea
+      autocapitalize=${ifDefined(args.autocapitalize)}
+      name=${ifDefined(args.name)}
+      label=${args.label}
+      rows=${args.rows}
+      placeholder=${args.placeholder}
+      resize=${args.resize}
+      value=${ifDefined(args.value)}
+      minlength=${ifDefined(args.minLength)}
+      maxlength=${ifDefined(args.maxLength)}
+      wrap=${args.wrap}
+      ?outlined=${args.outlined}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?validate-only=${args.validateOnly}
+      ?spellcheck=${args.spellcheck}
+    ></igc-textarea>
+  `,
 };
 
 export const ProjectContent: Story = {
