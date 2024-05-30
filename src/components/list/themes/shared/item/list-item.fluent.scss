@@ -14,3 +14,11 @@ $theme: $fluent;
 [part='title'] {
     @include type-style('caption');
 }
+
+[name='start']::slotted(*) {
+    margin-inline-end: pad(rem(16px));
+}
+
+[name='end']::slotted(*) {
+    margin-inline-start: pad(rem(16px));
+}
