@@ -5,15 +5,21 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  build-and-deploy:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.build-publish.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install and Build 🔧
-        run: |
-          npm install
-          npm run storybook:build
-          npm run deploy-storybook
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - id: build-publish
+        uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+        with:
+          path: storybook-static
+          install_command: npm ci
+          build_command: npm run storybook:build
