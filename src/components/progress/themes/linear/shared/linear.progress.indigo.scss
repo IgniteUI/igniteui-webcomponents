@@ -7,6 +7,14 @@ $theme: $indigo;
 $stripe-size: rem(6px);
 $stripe-space: rem(14px);
 
+:host {
+    gap: rem(4px);
+}
+
+[part~='value'] {
+    @include type-style('subtitle-2');
+}
+
 [part~='striped']:not([part~='indeterminate']) {
     /* stylelint-disable */
     background: var-get($theme, 'fill-color-default') repeating-linear-gradient(
