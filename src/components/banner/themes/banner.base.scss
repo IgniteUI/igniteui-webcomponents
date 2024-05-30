@@ -1,3 +1,53 @@
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+    min-width: rem(320px);
+    flex-basis: rem(320px);
+}
+
+[part~='spacer'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(8px);
+    justify-content: flex-end;
+}
+
+[part~='message'] {
+    min-width: rem(150px);
+    flex-basis: rem(150px);
+    flex-grow: 1;
+}
+
+[part~='illustration'] {
+    justify-content: center;
+}
+
+[part~='illustration'],
+[part~='message'] {
+    display: flex;
+    align-items: center;
+}
+
+[part~='actions'] {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: flex-end;
+}
+
+::slotted([slot='actions']) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(8px);
+}
+
+::slotted([slot='prefix']) {
+    margin-inline-end: rem(16px);
+}
+
+// OPEN CLOSE BEHAVIOR
 [part~='base'] {
     overflow: hidden;
 }
