@@ -3,7 +3,6 @@
 :host {
     padding-inline: pad-inline(rem(4px), rem(12px), rem(16px));
     padding-block: pad-block(rem(2px), rem(6px), rem(8px));
-
     gap: rem(16px);
 
     ::slotted(igc-avatar) {
