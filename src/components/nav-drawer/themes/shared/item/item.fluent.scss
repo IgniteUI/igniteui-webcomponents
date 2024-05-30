@@ -1,5 +1,11 @@
 @use 'styles/utilities' as *;
 
+[part~='base'] {
+    padding: rem(10px) rem(8px);
+    gap: rem(8px);
+    min-height: rem(44px);
+}
+
 [part='content'] {
     @include type-style('body-2');
 }
