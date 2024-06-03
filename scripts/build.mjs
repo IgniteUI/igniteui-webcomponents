@@ -52,14 +52,22 @@ async function runTask(cmd, tag) {
   await runTask(
     generateVsCodeCustomElementData.bind(null, customElements, {
       outdir: 'dist',
-      cssFileName: 'igniteui-webcomponents.css-custom-data.json',
-      htmlFileName: 'igniteui-webcomponents.html-custom-data.json',
+      cssFileName: 'igniteui-webcomponents.css-data.json',
+      htmlFileName: 'igniteui-webcomponents.html-data.json',
+      hideMethodDocs: true,
+      hideCssPartsDocs: false,
+      hideLogs: true,
     }),
     'VSCode custom data'
   );
 
   await runTask(
-    generateJetBrainsWebTypes.bind(null, customElements, { outdir: 'dist' }),
+    generateJetBrainsWebTypes.bind(null, customElements, {
+      outdir: 'dist',
+      hideMethodDocs: true,
+      hideCssPartsDocs: false,
+      hideLogs: true,
+    }),
     'JetBrains web types'
   );
 
