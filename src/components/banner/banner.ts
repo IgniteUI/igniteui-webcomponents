@@ -30,6 +30,11 @@ export interface IgcBannerComponentEventMap {
  * @fires igcClosed - Emitted after the banner is closed - when a user interacts (click) with the default action of the banner.
  *
  * @csspart base - The base wrapper of the banner component.
+ * @csspart spacer - The inner wrapper that sets the space around the banner.
+ * @csspart message - The part that holds the text and the illustration.
+ * @csspart illustration - The part that holds the banner icon/illustration.
+ * @csspart content - The part that holds the banner text content.
+ * @csspart actions - The part that holds the banner action buttons.
  */
 
 @themes(all)
