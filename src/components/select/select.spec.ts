@@ -259,7 +259,7 @@ describe('Select', () => {
         select.value = '123151';
         await elementUpdated(select);
 
-        expect(input.value).to.be.null;
+        expect(input.value).to.be.empty;
       });
     });
 

@@ -1,0 +1,123 @@
+name: 🐛 Bug Report
+description: Report a bug that affects one or more Ignite UI web components
+title: '[Bug]: <title>'
+labels: ['bug', ':new: status: new']
+body:
+  - type: dropdown
+    id: affected
+    validations:
+      required: true
+    attributes:
+      label: Which component(s) are affected?
+      multiple: true
+      description: Note you can select more than one.
+      options:
+        - Accordion
+        - Avatar
+        - Badge
+        - Button
+        - Button group
+        - Calendar
+        - Card
+        - Chip
+        - Checkbox / Switch
+        - Combo
+        - Date-time input
+        - Date picker
+        - Dialog
+        - Dropdown
+        - Expansion panel
+        - Icon(s)
+        - Icon button
+        - Input
+        - List
+        - Masked input
+        - Navigation bar
+        - Navigation drawer
+        - Progress bar (circular/linear)
+        - Radio & Radio Group
+        - Rating
+        - Slider (single/range)
+        - Snackbar
+        - Stepper
+        - Tabs & Tab group
+        - Textarea
+        - Toast
+        - Tree
+        - Theming & Styles
+        - Other/unknown (please specify in the description)
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: |
+        Please describe the bug in as much detail as possible. Include what you expected to happen, and what actually happened.
+        If you have an error message, please include as much of the error message as possible.
+        Attach any pictures/screen recordings if applicable.
+
+  - type: textarea
+    id: reproduction
+    validations:
+      required: true
+    attributes:
+      label: Reproduction
+      description: |
+        Please link to a working reproduction that will help us verify and understand the bug.
+
+        1. For bugs that show up in the browser, consider using an interactive playground such as StackBlitz/CodeSandbox/etc.
+        2. For bugs during building/bundling the library in a project, please create a public GitHub repo, and provide step-by-step instructions for cloning, setting up, and observing the bug.
+        3. If none of the above are possible, consider attaching a minimal reproduction case as a zipped archive.
+
+        If you are unable to create a reproduction with the above methods, please list and describe the steps taken to reproduce the problem as detailed as possible.
+
+  - type: textarea
+    id: workaround
+    validations:
+      required: true
+    attributes:
+      label: Workaround
+      description: |
+        If you have found a workaround for this problem, please explain it here. If you have not found a workaround, please write "I have not found a workaround".
+      placeholder: |
+        I have worked around this problem by doing X
+
+        ... or:
+
+        I have not found a workaround.
+
+  - type: dropdown
+    id: regression
+    validations:
+      required: true
+    attributes:
+      label: Is this a regression?
+      multiple: false
+      options:
+        - Yes. This used to work, but now it doesn't.
+        - No or unsure. This never worker, or I haven't tried before.
+
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Affected versions
+      description: Please specify which version of the package you are using, and if this is a known regression, what is the last known version that worked? Run e.g. `npm ls igniteui-webcomponents` to check your installed version.
+      placeholder: Failing in 4.8.0, worked in 4.7.0
+
+  - type: textarea
+    id: environment
+    validations:
+      required: true
+    attributes:
+      label: Browser/OS/Node environment
+      description: |
+        Please list which browser and operating system combination(s) you are using, and/or if this bug affects a command-line tool, please list your Node and npm versions.
+      placeholder: |
+        Browser: Chrome 122.0.6261.129 (Official Build) (64-bit)
+        OS: macOS 14.4
+        Node version: 20.11.1
+        npm version: 10.5.0

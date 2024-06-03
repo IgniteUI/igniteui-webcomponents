@@ -6,27 +6,27 @@ import { styles as bootstrapDark } from './dark/container/nav-drawer.bootstrap.c
 import { styles as fluentDark } from './dark/container/nav-drawer.fluent.css.js';
 import { styles as indigoDark } from './dark/container/nav-drawer.indigo.css.js';
 import { styles as materialDark } from './dark/container/nav-drawer.material.css.js';
-import { styles as sharedDark } from './dark/container/nav-drawer.shared.css.js';
 // Light Overrides
 import { styles as bootstrapLight } from './light/container/nav-drawer.bootstrap.css.js';
 import { styles as fluentLight } from './light/container/nav-drawer.fluent.css.js';
 import { styles as indigoLight } from './light/container/nav-drawer.indigo.css.js';
 import { styles as materialLight } from './light/container/nav-drawer.material.css.js';
-import { styles as sharedLight } from './light/container/nav-drawer.shared.css.js';
+import { styles as shared } from './light/container/nav-drawer.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
 import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
 import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
+import { styles as material } from './shared/container/nav-drawer.material.css.js';
 
 const light = {
   shared: css`
-    ${sharedLight}
+    ${shared}
   `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -38,13 +38,13 @@ const light = {
 
 const dark = {
   shared: css`
-    ${sharedDark}
+    ${shared}
   `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

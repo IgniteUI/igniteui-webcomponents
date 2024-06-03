@@ -10,14 +10,14 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     --size: #{rem(36px)};
     --thumb-size: #{rem(20px)};
     --thumb-offset: #{rem(-1px)};
-    --label-gap: #{rem(8px)};
+    --label-gap: #{rem(12px)};
 }
 
 [part~='base'] {
     &:hover {
         [part~='thumb'] {
             &::after {
-                background: var-get($theme, 'track-off-color');
+                background: color(gray, 600);
                 opacity: .06;
             }
         }
@@ -38,14 +38,18 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         }
     }
 
-    &:focus-within {
+    &:focus-visible,
+    [part='control focused'] {
         [part~='thumb'] {
             &::after {
-                background: var-get($theme, 'track-off-color');
+                background: color(gray, 600);
                 opacity: .12;
             }
         }
+    }
 
+    &:focus-visible,
+    [part='control checked focused'] {
         [part~='thumb'][part~='checked'] {
             &::after {
                 background: var-get($theme, 'thumb-on-color');
@@ -61,6 +65,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: rem(14px);
     background: var-get($theme, 'track-off-color');
     border: rem(1px) solid var-get($theme, 'border-color');
+    z-index: 1;
 }
 
 [part~='control'][part~='checked'] {
@@ -75,7 +80,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     background: var-get($theme, 'thumb-off-color');
-    box-shadow: var(--ig-elevation-2);
+    box-shadow: var-get($theme, 'resting-elevation');
     margin-inline-start: var(--thumb-offset);
 
     &::after {
@@ -87,10 +92,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
-    }
-
-    &:hover {
-        box-shadow: var(--ig-elevation-3);
+        z-index: -1;
     }
 }
 

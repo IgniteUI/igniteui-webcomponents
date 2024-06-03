@@ -7,7 +7,7 @@ $theme: $fluent;
     --size: #{rem(40px)};
     --thumb-size: #{rem(12px)};
     --border-size: #{rem(2px)};
-    --thumb-offset: calc(var(--thumb-size) / 2 - #{rem(2px)});
+    --thumb-offset: calc(var(--thumb-size) / 2 - #{rem(3px)});
     --label-gap: #{rem(8px)};
 }
 
@@ -45,8 +45,8 @@ $theme: $fluent;
 [part~='focused'] {
     position: relative;
 
-    $focus-outline-offset-top: rem(2px);
-    $focus-outline-offset-left: rem(2px);
+    $focus-outline-offset-top: rem(3px);
+    $focus-outline-offset-left: rem(3px);
 
     &::after {
         content: '';

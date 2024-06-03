@@ -24,7 +24,7 @@ $theme: $bootstrap;
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
-    background: none;
+    background: var-get($theme, 'empty-fill-color');
     transition: transparent;
 
     &::before,
@@ -34,22 +34,24 @@ $theme: $bootstrap;
     }
 
     &::before {
-        transform: translate(-50%, -50%) scale(.375);
+        transform: translate(-50%, -50%) scale(.4375);
     }
 
     &::after {
         width: inherit;
         height: inherit;
         min-width: inherit;
-        border: rem(1px) solid  var-get($theme, 'empty-color');
+        border: rem(1px) solid var-get($theme, 'empty-color');
     }
 }
 
-[part~='focused'] [part~='control'] {
-    box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-outline-color');
+[part~='focused'] {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
+    }
 
-    &::after {
-        border-color: var-get($theme, 'fill-color');
+    [part='control']::after {
+        border-color: color('primary', 200);
     }
 }
 
@@ -62,6 +64,27 @@ $theme: $bootstrap;
     &::before {
         border-color: var-get($theme, 'fill-hover-border-color');
         background: var-get($theme, 'fill-hover-border-color');
+    }
+}
+
+:host(:hover) {
+    [part='control'] {
+        &::after {
+            border-color: var-get($theme, 'hover-color');
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            background: var-get($theme, 'fill-color-hover');
+            border-color: var-get($theme, 'fill-color-hover');
+        }
+    }
+
+    [part~='focused'] [part='control'] {
+        &::after {
+            border-color: color('primary', 300);
+        }
     }
 }
 
@@ -78,7 +101,19 @@ $theme: $bootstrap;
     }
 
     [part~='focused'] [part~='control'] {
-        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color-error');
+    }
+}
+
+:host(:not([disabled])[invalid]:hover) {
+    [part~='control']::after {
+        border-color: var-get($theme, 'error-color-hover');
+    }
+
+    [part='control checked'] {
+        &::after {
+            background: var-get($theme, 'error-color-hover');
+        }
     }
 }
 
@@ -86,14 +121,14 @@ $theme: $bootstrap;
 :host(:disabled) {
     [part='control'] {
         &::after {
-            border-color: var-get($theme, 'disabled-label-color');
+            border-color: var-get($theme, 'disabled-color');
         }
     }
 
     [part='control checked'] {
         &::after {
-            background: var-get($theme, 'disabled-color');
-            border-color: var-get($theme, 'disabled-color');
+            background: var-get($theme, 'disabled-fill-color');
+            border-color: var-get($theme, 'disabled-fill-color');
         }
     }
 }

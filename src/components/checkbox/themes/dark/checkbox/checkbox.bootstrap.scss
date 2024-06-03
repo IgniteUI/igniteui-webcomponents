@@ -7,3 +7,17 @@ $theme: $bootstrap;
 :host {
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
 }
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    [part~='indicator'] {
+        stroke: black;
+    }
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part~='control'] {
+        background: color('surface');
+    }
+}

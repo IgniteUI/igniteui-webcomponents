@@ -1,8 +1,25 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-radio');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-radio');
+}
+
+:host(:not([disabled])[invalid]:hover) {
+    [part='control'] {
+        &::before {
+            background: color(error, 500);
+        }
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part='focused'] [part='control'] {
+        &::before {
+            background: color(error, 500);
+        }
+    }
 }

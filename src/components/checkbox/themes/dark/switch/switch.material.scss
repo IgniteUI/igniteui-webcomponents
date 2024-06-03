@@ -1,8 +1,38 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../../light/switch/themes' as light;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-switch');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-switch');
+}
+
+[part~='base'] {
+    &:hover {
+        [part~='thumb'],
+        [part~='thumb'][part~='checked'] {
+            &::after {
+                opacity: .12;
+            }
+        }
+    }
+
+    &:focus-visible,
+    [part='control focused'] {
+        [part~='thumb'] {
+            &::after {
+                opacity: .24;
+            }
+        }
+    }
+
+    &:focus-visible,
+    [part='control checked focused'] {
+        [part~='thumb'][part~='checked'] {
+            &::after {
+                opacity: .24;
+            }
+        }
+    }
 }
