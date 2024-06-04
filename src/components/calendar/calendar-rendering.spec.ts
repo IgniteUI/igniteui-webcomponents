@@ -2,8 +2,8 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcCalendarComponent from './calendar.js';
-import type IgcDaysViewComponent from './days-view/days-view.js';
-import type IgcMonthsViewComponent from './months-view/months-view.js';
+import type IgcDaysViewComponent from './days-view/days-view.js.js';
+import type IgcMonthsViewComponent from './months-view/months-view.js.js';
 
 describe('Calendar Rendering', () => {
   const DIFF_OPTIONS = {
