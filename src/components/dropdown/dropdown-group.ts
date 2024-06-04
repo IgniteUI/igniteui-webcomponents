@@ -4,7 +4,7 @@ import { queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type IgcDropdownItemComponent from './dropdown-item';
+import type IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
 import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
