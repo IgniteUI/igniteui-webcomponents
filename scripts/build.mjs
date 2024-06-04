@@ -3,43 +3,90 @@ import { copyFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { generateJetBrainsWebTypes } from 'custom-element-jet-brains-integration';
+import { generateVsCodeCustomElementData } from 'custom-element-vs-code-integration';
+import customElements from '../custom-elements.json' assert { type: 'json' };
 import { buildThemes } from './build-styles.mjs';
+import report from './report.mjs';
 
 const exec = promisify(_exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 
+async function runTask(cmd, tag) {
+  report.info(`[${tag}] Building...`);
+  try {
+    await cmd();
+    report.success(`[${tag}] Done`);
+  } catch (e) {
+    report.error(`[${tag}] Failed with: ${e}`);
+  }
+}
+
 (async () => {
   await exec('npm run clean');
 
-  console.info('Building styles...');
-  await exec('npm run build:styles');
+  await runTask(exec.bind(null, 'npm run build:styles'), 'Styles');
 
   // https://github.com/microsoft/TypeScript/issues/14619
-  console.info('Building components...');
-  await exec(
-    'tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json'
+  await runTask(
+    exec.bind(
+      null,
+      'tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json'
+    ),
+    'Components'
   );
 
-  console.info('Generating theme files...');
-  await buildThemes();
+  await runTask(buildThemes, 'Themes');
 
-  console.info('Generating custom-elements.json file...');
-  await exec('npm run cem');
-  await copyFile('custom-elements.json', DEST_DIR('custom-elements.json'));
+  await runTask(
+    copyFile.bind(
+      null,
+      'custom-elements.json',
+      DEST_DIR('custom-elements.json')
+    ),
+    'custom-elements.json'
+  );
 
-  console.info('Generating package.json...');
-  await copyFile('scripts/_package.json', DEST_DIR('package.json'));
+  await runTask(
+    generateVsCodeCustomElementData.bind(null, customElements, {
+      outdir: 'dist',
+      cssFileName: 'igniteui-webcomponents.css-data.json',
+      htmlFileName: 'igniteui-webcomponents.html-data.json',
+      hideMethodDocs: true,
+      hideCssPartsDocs: false,
+      hideLogs: true,
+    }),
+    'VSCode custom data'
+  );
 
-  console.info('Copying CHANGELOG.md...');
-  await copyFile('CHANGELOG.md', DEST_DIR('CHANGELOG.md'));
+  await runTask(
+    generateJetBrainsWebTypes.bind(null, customElements, {
+      outdir: 'dist',
+      hideMethodDocs: true,
+      hideCssPartsDocs: false,
+      hideLogs: true,
+    }),
+    'JetBrains web types'
+  );
 
-  console.info('Copying LICENSE...');
-  await copyFile('LICENSE', DEST_DIR('LICENSE'));
+  await runTask(
+    copyFile.bind(null, 'scripts/_package.json', DEST_DIR('package.json')),
+    'package.json'
+  );
 
-  console.info('Copying README.md...');
-  await copyFile('README.md', DEST_DIR('README.md'));
+  await runTask(
+    copyFile.bind(null, 'CHANGELOG.md', DEST_DIR('CHANGELOG.md')),
+    'CHANGELOG'
+  );
 
-  console.log('Done! 🎉');
+  await runTask(copyFile.bind(null, 'LICENSE', DEST_DIR('LICENSE')), 'LICENSE');
+
+  await runTask(
+    copyFile.bind(null, 'README.md', DEST_DIR('README.md')),
+    'README'
+  );
+
+  report.success('Done! 🎉');
 })();
