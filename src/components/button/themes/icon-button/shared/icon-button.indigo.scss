@@ -14,9 +14,9 @@ $icon-size: rem(16px);
     --size: #{$icon-size};
 }
 
-[part='base'] {
+[part~='base'] {
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
-    padding: pad(6px);
+    padding: pad(4px, 6px, 8px);
 }
 
 :host([variant='flat']) {
@@ -24,16 +24,9 @@ $icon-size: rem(16px);
 
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
-    [part='base'] {
-        &:focus,
-        &:focus-within,
-        &:active {
-            border-color: var-get($flat-theme, 'border-color');
-        }
-
-        &:focus-visible {
-            box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
-        }
+    [part='base focused'] {
+        border-color: var-get($flat-theme, 'border-color');
+        box-shadow: 0 0 0 rem(3px) var-get($flat-theme, 'shadow-color');
     }
 }
 
@@ -42,16 +35,17 @@ $icon-size: rem(16px);
 
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
-    [part='base'] {
-        &:focus-visible {
-            box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
-        }
-
-        &:hover {
+    [part~='base'] {
+        &:hover,
+        &:active {
             igc-icon {
                 color: var-get($contained-theme, 'hover-foreground');
             }
         }
+    }
+
+    [part='base focused'] {
+        box-shadow: 0 0 0 rem(3px) var-get($contained-theme, 'shadow-color');
     }
 }
 
@@ -60,7 +54,7 @@ $icon-size: rem(16px);
 
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
-    [part='base'] {
+    [part~='base'] {
         &::after {
             position: absolute;
             content: '';
@@ -70,19 +64,21 @@ $icon-size: rem(16px);
             border-radius: inherit;
         }
 
-        &:hover {
+        &:hover,
+        &:active {
             &::after {
                 box-shadow: inset 0 0 0 rem(2px) var-get($outlined-theme, 'foreground');
             }
         }
+    }
 
-        &:focus-visible {
-            box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
-            
-            &:hover {
-                &::after {
-                    box-shadow: inset 0 0 0 rem(2px) var-get($outlined-theme, 'foreground');
-                }
+    [part='base focused'] {
+        box-shadow: 0 0 0 rem(3px) var-get($outlined-theme, 'shadow-color');
+
+        &:hover,
+        &:active {
+            &::after {
+                box-shadow: inset 0 0 0 rem(2px) var-get($outlined-theme, 'foreground');
             }
         }
     }
@@ -90,23 +86,24 @@ $icon-size: rem(16px);
 
 :host([variant="outlined"]),
 :host([variant="flat"]) {
-    [part="base"] {
-        &:hover {    
+    [part~="base"] {
+        &:hover,
+        &:active {    
             igc-icon {
                 color: var-get($flat-theme, 'hover-foreground');
             }
         }
+    }
 
-        &:focus,
-        &:focus-within {
+    [part='base focused'] {
+        igc-icon {
+            color: var-get($flat-theme, 'focus-foreground');
+        }
+
+        &:hover,
+        &:active {
             igc-icon {
-                color: var-get($flat-theme, 'focus-foreground');
-            }
-
-            &:hover {
-                igc-icon {
-                    color: var-get($flat-theme, 'focus-hover-foreground');
-                }
+                color: var-get($flat-theme, 'focus-hover-foreground');
             }
         }
     }
@@ -114,14 +111,14 @@ $icon-size: rem(16px);
 
 :host([disabled]),
 :host(:disabled) {
-    [part='base'] {
+    [part~='base'] {
         box-shadow: none;
     }
 }
 
 :host([disabled][variant='outlined']),
 :host(:disabled[variant='outlined']) {
-    [part='base'] {
+    [part~='base'] {
         border-width: rem(2px);
 
         &::after {
