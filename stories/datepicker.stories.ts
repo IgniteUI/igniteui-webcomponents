@@ -324,6 +324,10 @@ type Story = StoryObj<IgcDatepickerArgs>;
 
 // endregion
 
+const onChange = (ev: CustomEvent<any>) => {
+  console.log(ev);
+};
+
 export const Default: Story = {
   args: {
     label: 'Pick a date',
@@ -356,6 +360,7 @@ export const Default: Story = {
       ?hide-outside-days=${args.hideOutsideDays}
       ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
       ?keep-open-on-select=${args.keepOpenOnSelect}
+      @igcChange=${onChange}
     >
     </igc-date-picker>
   `,
