@@ -9,6 +9,14 @@ $theme: $base;
     color: var-get($theme, 'label-color');
 }
 
+[part~='control'] {
+    background: var-get($theme, 'empty-fill-color');
+}
+
+[part~='indicator'] {
+    stroke: var-get($theme, 'tick-color');
+}
+
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
     [part~='label'] {

@@ -1,5 +1,30 @@
 @use 'styles/utilities' as *;
 
 :host {
+    min-height: rem(56px);
     box-shadow: var(--ig-elevation-0);
+
+    [name='start']::slotted(*),
+    [name='end']::slotted(*) {
+        margin: initial;
+    }
+}
+
+[part='end'] {
+    gap: rem(8px);
+}
+
+[part='base'] {
+    gap: rem(16px);
+}
+
+::slotted(*) {
+    @include type-style('h5');
+}
+
+::slotted(igc-icon) {
+    --size: rem(16px);
+
+    padding: rem(6px);
+    margin: 0;
 }

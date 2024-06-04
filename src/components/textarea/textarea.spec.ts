@@ -48,6 +48,25 @@ describe('Textarea component', () => {
 
       expect(element.value).to.equal([value, ...additional].join('\r\n'));
     });
+
+    it('issue #1206 - passing undefined sets the underlying textarea value to undefined', async () => {
+      element = await fixture<IgcTextareaComponent>(
+        html`<igc-textarea></igc-textarea>`
+      );
+      textArea = element.renderRoot.querySelector('textarea')!;
+
+      element.value = 'a';
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('a');
+      expect(textArea.value).to.equal('a');
+
+      element.value = undefined as any;
+      await elementUpdated(element);
+
+      expect(element.value).to.be.empty;
+      expect(textArea.value).to.be.empty;
+    });
   });
 
   describe('Events', () => {
@@ -193,7 +212,7 @@ describe('Textarea component', () => {
       await elementUpdated(spec.element);
 
       spec.reset();
-      expect(spec.element.value).to.equal('');
+      expect(spec.element.value).to.be.empty;
     });
 
     it('reflects disabled ancestor state', async () => {
