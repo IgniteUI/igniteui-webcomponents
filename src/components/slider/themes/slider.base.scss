@@ -8,6 +8,7 @@ $ripple-size: rem(40px);
 $ripple-radius: math.div($ripple-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
+$tick-width: rem(2px);
 
 :host {
     display: block;
@@ -95,13 +96,13 @@ slot {
     }
 
     &:last-of-type {
-        margin-inline-start: rem(-1px);
+        margin-inline-end: rem(-1px);
     }
 }
 
 [part='tick'] {
     height: rem(8px);
-    width: rem(2px);
+    width: $tick-width;
 }
 
 [part='tick'][data-primary='true'] {

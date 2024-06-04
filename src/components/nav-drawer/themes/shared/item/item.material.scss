@@ -1,0 +1,48 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='base'] {
+    padding: rem(12px) rem(8px);
+    gap: rem(32px);
+    background: transparent;
+    min-height: rem(48px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        inset-block-start: rem(4px);
+        inset-inline-start: 0;
+        height: calc(100% - #{rem(8px)});
+        border-radius: var-get($theme, 'item-border-radius');
+        z-index: -1;
+    }
+
+    &:hover,
+    &:focus-within {
+        background: transparent;
+
+        &::after {
+            background: var-get($theme, 'item-hover-background');
+        }
+    }
+}
+
+:host([active]) {
+    [part~='base'] {
+        background: transparent;
+
+        &::after {
+            background: var-get($theme, 'item-active-background');
+        }
+    }
+}
+
+[part~='base'][part~='mini'] {
+    margin-inline: 0;
+    min-width: rem(40px);
+}
+
+

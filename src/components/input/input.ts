@@ -115,7 +115,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property()
   public set value(value: string) {
-    this._value = value;
+    this._value = value ?? '';
     this.setFormValue(value ? value : null);
     this.updateValidity();
     this.setInvalidState();
