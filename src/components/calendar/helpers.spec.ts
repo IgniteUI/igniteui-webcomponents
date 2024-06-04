@@ -1,8 +1,8 @@
-import type IgcCalendarComponent from './calendar';
-import IgcDaysViewComponent from './days-view/days-view';
-import type { CalendarDay } from './model';
-import IgcMonthsViewComponent from './months-view/months-view';
-import IgcYearsViewComponent from './years-view/years-view';
+import type IgcCalendarComponent from './calendar.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import type { CalendarDay } from './model.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
 
 export function getDayViewDOM(element: IgcDaysViewComponent) {
   const root = element.shadowRoot!;
