@@ -2,7 +2,7 @@ import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { watch } from '../decorators/watch.js';
-import type { Constructor } from './constructor';
+import type { Constructor } from './constructor.js';
 
 export declare class SizableInterface {
   /**

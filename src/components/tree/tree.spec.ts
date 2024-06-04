@@ -1,8 +1,9 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
-import { defineComponents } from '../../index.js';
+import type IgcCheckboxComponent from '../checkbox/checkbox.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import type IgcTreeItemComponent from './tree-item.js';
 import {
   DIFF_OPTIONS,
   PARTS,
