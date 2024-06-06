@@ -28,16 +28,18 @@ describe('Date picker', () => {
   let picker: IgcDatePickerComponent;
   let dateTimeInput: IgcDateTimeInputComponent;
   let calendar: IgcCalendarComponent;
+  let calendarShowIcon: HTMLElement;
 
   beforeEach(async () => {
     picker = await fixture<IgcDatePickerComponent>(
       html`<igc-date-picker></igc-date-picker>`
     );
-    dateTimeInput = picker.shadowRoot!.querySelector(
+    dateTimeInput = picker.renderRoot.querySelector(
       IgcDateTimeInputComponent.tagName
     )!;
 
-    calendar = picker.shadowRoot!.querySelector(IgcCalendarComponent.tagName)!;
+    calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
+    calendarShowIcon = picker.renderRoot.querySelector('#anchor-icon')!;
   });
 
   describe('Rendering and initialization', () => {
@@ -556,6 +558,15 @@ describe('Date picker', () => {
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
     });
+
+    it('should set the underlying igc-input into readonly mode when dialog mode is enabled', async () => {
+      expect(dateTimeInput.readOnly).to.be.false;
+
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      expect(dateTimeInput.readOnly).to.be.true;
+    });
   });
 
   describe('Methods', () => {
@@ -782,6 +793,40 @@ describe('Date picker', () => {
 
       expect(eventSpy).not.called;
       expect(picker.value).to.be.null;
+    });
+
+    it('should open the picker on calendar show icon click in dropdown mode', async () => {
+      simulateClick(calendarShowIcon);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('should not open the picker when clicking the input in dropdown mode', async () => {
+      simulateClick(dateTimeInput);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+    });
+
+    it('should open the picker on calendar show icon click in dialog mode', async () => {
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      simulateClick(calendarShowIcon);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('should open the picker when clicking the input in dialog mode', async () => {
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      simulateClick(dateTimeInput);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
     });
   });
 

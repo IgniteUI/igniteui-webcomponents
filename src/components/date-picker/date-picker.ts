@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
+import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -31,7 +31,11 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, formatString } from '../common/util.js';
+import {
+  createCounter,
+  findElementFromEventPath,
+  formatString,
+} from '../common/util.js';
 import {
   type Validator,
   maxDateValidator,
@@ -454,7 +458,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
     })
-      .set([altKey, arrowDown], this._show.bind(this, true))
+      .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this.onEscapeKey)
       .set(escapeKey, this.onEscapeKey);
   }
@@ -515,6 +519,23 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     if (await this._hide(true)) {
       this._input.focus();
     }
+  }
+
+  protected handleInputClick(event: Event) {
+    if (findElementFromEventPath('#anchor-icon', event)) {
+      // Click events originating from the calendar show icon are ignored
+      return;
+    }
+
+    this.handleAnchorClick();
+  }
+
+  protected override async handleAnchorClick() {
+    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
+
+    super.handleAnchorClick();
+    await this.updateComplete;
+    this._calendar[focusActiveDate]();
   }
 
   private async _shouldCloseCalendarDropdown() {
@@ -614,7 +635,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
 
     return html`
-      <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
+      <span
+        id="anchor-icon"
+        slot="prefix"
+        part=${state}
+        @click=${this.handleAnchorClick}
+      >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
@@ -711,6 +737,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       ? `${this._displayFormat}Date`
       : this._displayFormat;
 
+    // Dialog mode is always readonly, rest depends on configuration
+    const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;
+
     return html`
       <igc-date-time-input
         id=${id}
@@ -719,7 +748,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
-        ?readonly=${this.nonEditable || this.readOnly}
+        ?readonly=${readOnly}
         ?required=${this.required}
         .value=${this.value ?? null}
         .locale=${this.locale}
@@ -731,6 +760,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
+        @click=${this.isDropDown ? nothing : this.handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon()}
