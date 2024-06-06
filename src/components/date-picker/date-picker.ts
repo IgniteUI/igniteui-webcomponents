@@ -475,9 +475,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   /** Clears the input part of the component of any user input */
-  public clear(event: Event) {
-    // Don't propagate the event to the input to not open the dialog in dialog mode
-    event.stopPropagation();
+  public clear() {
     this.value = null;
     this._input?.clear();
   }
@@ -524,12 +522,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleInputClick(event: Event) {
-    if (findElementFromEventPath('#anchor-icon', event)) {
-      // Click events originating from the calendar show icon are ignored
-      return;
+    if (findElementFromEventPath('input', event)) {
+      // Open only if the click originates from the underlying input
+      this.handleAnchorClick();
     }
-
-    this.handleAnchorClick();
   }
 
   protected override async handleAnchorClick() {
@@ -637,12 +633,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
 
     return html`
-      <span
-        id="anchor-icon"
-        slot="prefix"
-        part=${state}
-        @click=${this.handleAnchorClick}
-      >
+      <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
         <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
@@ -724,7 +715,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private renderLabel(id: string) {
     return this.label
-      ? html`<label part="label" for=${id}>${this.label}</label>`
+      ? html`<label
+          part="label"
+          for=${id}
+          @click=${this.isDropDown ? nothing : this.handleAnchorClick}
+          >${this.label}</label
+        >`
       : nothing;
   }
 

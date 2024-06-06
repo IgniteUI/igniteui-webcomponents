@@ -25,10 +25,20 @@ import IgcDatePickerComponent from './date-picker.js';
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
 
+  const pickerShowIcon = 'calendar_today';
+  const pickerClearIcon = 'clear';
+
+  function getIcon(name: string) {
+    return picker.renderRoot.querySelector(`[name='${name}']`)!;
+  }
+
+  function getLabel() {
+    return picker.renderRoot.querySelector('label')!;
+  }
+
   let picker: IgcDatePickerComponent;
   let dateTimeInput: IgcDateTimeInputComponent;
   let calendar: IgcCalendarComponent;
-  let calendarShowIcon: HTMLElement;
 
   beforeEach(async () => {
     picker = await fixture<IgcDatePickerComponent>(
@@ -39,7 +49,6 @@ describe('Date picker', () => {
     )!;
 
     calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
-    calendarShowIcon = picker.renderRoot.querySelector('#anchor-icon')!;
   });
 
   describe('Rendering and initialization', () => {
@@ -796,7 +805,7 @@ describe('Date picker', () => {
     });
 
     it('should open the picker on calendar show icon click in dropdown mode', async () => {
-      simulateClick(calendarShowIcon);
+      simulateClick(getIcon(pickerShowIcon));
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
@@ -813,7 +822,7 @@ describe('Date picker', () => {
       picker.mode = 'dialog';
       await elementUpdated(picker);
 
-      simulateClick(calendarShowIcon);
+      simulateClick(getIcon(pickerShowIcon));
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
@@ -823,7 +832,51 @@ describe('Date picker', () => {
       picker.mode = 'dialog';
       await elementUpdated(picker);
 
-      simulateClick(dateTimeInput);
+      simulateClick(dateTimeInput.renderRoot.querySelector('input')!);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('should not open the picker in dropdown mode when clicking the clear icon', async () => {
+      picker.value = new Date();
+      await elementUpdated(picker);
+
+      simulateClick(getIcon(pickerClearIcon));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(picker.value).to.be.null;
+    });
+
+    it('should not open the picker in dialog mode when clicking the clear icon', async () => {
+      picker.mode = 'dialog';
+      picker.value = new Date();
+      await elementUpdated(picker);
+
+      simulateClick(getIcon(pickerClearIcon));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(picker.value).to.be.null;
+    });
+
+    it('should not open the picker in dropdown mode when clicking the label', async () => {
+      picker.label = 'Label';
+      await elementUpdated(picker);
+
+      simulateClick(getLabel());
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+    });
+
+    it('should open the picker in dialog mode when clicking the label', async () => {
+      picker.label = 'Label';
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      simulateClick(getLabel());
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
