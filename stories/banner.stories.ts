@@ -5,11 +5,17 @@ import {
   IgcBannerComponent,
   IgcButtonComponent,
   IgcIconComponent,
+  IgcNavbarComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcBannerComponent, IgcIconComponent, IgcButtonComponent);
+defineComponents(
+  IgcBannerComponent,
+  IgcIconComponent,
+  IgcButtonComponent,
+  IgcNavbarComponent
+);
 
 // region default
 const metadata: Meta<IgcBannerComponent> = {
@@ -52,15 +58,28 @@ registerIconFromText('success', checkIcon, 'material');
 
 const BasicTemplate = ({ open }: IgcBannerArgs) => {
   return html`
+    <style>
+      igc-button {
+        margin-block-start: 12px;
+      }
+    </style>
+    <igc-navbar style="height:30px">
+      <h2>Title</h2>
+    </igc-navbar>
     <igc-banner id="banner" .open=${open}>
       You are currently not logged in! Please, log into your account first.
     </igc-banner>
-    <igc-button onclick="banner.toggle()">Toggle</igc-button>
+    <igc-button onclick="banner.toggle()">Toggle Banner</igc-button>
   `;
 };
 
 const SlottedContentTemplate = ({ open }: IgcBannerArgs) => {
   return html`
+    <style>
+      igc-banner[open] + igc-button {
+        margin-block-start: 12px;
+      }
+    </style>
     <igc-banner id="banner" .open=${open}>
       <igc-icon name="success" collection="material" slot="prefix"></igc-icon>
 
@@ -71,7 +90,7 @@ const SlottedContentTemplate = ({ open }: IgcBannerArgs) => {
         <igc-button variant="outlined">View log</igc-button>
       </div>
     </igc-banner>
-    <igc-button onclick="banner.toggle()">Toggle</igc-button>
+    <igc-button onclick="banner.toggle()">Toggle Banner</igc-button>
   `;
 };
 
