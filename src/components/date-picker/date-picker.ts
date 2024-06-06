@@ -475,7 +475,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   /** Clears the input part of the component of any user input */
-  public clear() {
+  public clear(event: Event) {
+    // Don't propagate the event to the input to not open the dialog in dialog mode
+    event.stopPropagation();
     this.value = null;
     this._input?.clear();
   }
