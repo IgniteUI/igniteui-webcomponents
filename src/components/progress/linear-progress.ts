@@ -18,17 +18,17 @@ import { all } from './themes/linear/themes.js';
  *
  * @slot - The text area container.
  *
- * @csspart track
- * @csspart fill
- * @csspart striped
- * @csspart label
- * @csspart value
- * @csspart indeterminate
- * @csspart primary
- * @csspart danger
- * @csspart warning
- * @csspart info
- * @csspart success
+ * @csspart track - The igc-linear-progress track area.
+ * @csspart fill - The igc-linear-progress indicator area.
+ * @csspart striped - The igc-linear-progress striped indicator.
+ * @csspart label - The igc-linear-progress label.
+ * @csspart value - The igc-linear-progress label value.
+ * @csspart indeterminate - The igc-linear-progress indeterminate state.
+ * @csspart primary - The igc-linear-progress indicator primary state.
+ * @csspart danger - The igc-linear-progress indicator error state.
+ * @csspart warning - The igc-linear-progress indicator warning state.
+ * @csspart info - The igc-linear-progress indicator info state.
+ * @csspart success - The igc-linear-progress indicator success state.
  */
 @themes(all)
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
@@ -61,7 +61,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     | 'bottom-end' = 'top-start';
 
   protected override render() {
-    const parts = {
+    const parts = partNameMap({
       fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
@@ -70,7 +70,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       danger: this.variant === 'danger',
       warning: this.variant === 'warning',
       info: this.variant === 'info',
-    };
+    });
 
     const animation = {
       width: `${this.progress * 100}%`,
@@ -79,8 +79,8 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
     return html`
       <div part="track">
-        <div part=${partNameMap(parts)} style=${styleMap(animation)}></div>
-        <div part="${partNameMap(parts)} secondary"></div>
+        <div part=${parts} style=${styleMap(animation)}></div>
+        <div part="${parts} secondary"></div>
       </div>
       ${this.renderDefaultSlot()}
     `;
