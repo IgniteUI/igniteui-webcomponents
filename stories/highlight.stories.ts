@@ -49,6 +49,13 @@ const metadata: Meta<IgcHighlightComponent> = {
       control: 'text',
       table: { defaultValue: { summary: 'igc-default-active-highlight' } },
     },
+    condition: {
+      type: '"contains" | "startsWith"',
+      description: 'The condition to apply when matching text nodes.',
+      options: ['contains', 'startsWith'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'contains' } },
+    },
     search: {
       type: 'string',
       description:
@@ -60,6 +67,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     caseSensitive: false,
     theme: 'igc-default-highlight',
     activeTheme: 'igc-default-active-highlight',
+    condition: 'contains',
   },
 };
 
@@ -72,6 +80,8 @@ interface IgcHighlightArgs {
   theme: string;
   /** The highlight theme name to use for the current active range. */
   activeTheme: string;
+  /** The condition to apply when matching text nodes. */
+  condition: 'contains' | 'startsWith';
   /** The string to search and highlight in the DOM content of the component. */
   search: string;
 }
@@ -107,10 +117,7 @@ function next() {
 }
 
 export const Default: Story = {
-  render: (
-    { activeTheme, caseSensitive, theme },
-    { globals: { variant } }
-  ) => html`
+  render: (args, { globals: { variant } }) => html`
     <style>
       .sticky {
         position: sticky;
@@ -164,9 +171,11 @@ export const Default: Story = {
     </igc-input>
 
     <igc-highlight
-      ?case-sensitive=${caseSensitive}
-      .activeTheme=${activeTheme}
-      .theme=${theme}
+      ?case-sensitive=${args.caseSensitive}
+      .activeTheme=${args.activeTheme}
+      .theme=${args.theme}
+      .search=${args.search}
+      .condition=${args.condition}
     >
       <h1>Document Object Model</h1>
       <p>

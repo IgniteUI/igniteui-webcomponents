@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import IgcHighlightComponent from './highlight.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcHighlightComponent from './highlight.js';
 
 describe('Highlight', () => {
   before(() => defineComponents(IgcHighlightComponent));
@@ -56,6 +56,15 @@ describe('Highlight', () => {
       highlight = await fixture(createHighlight());
     });
 
+    it('default theme keys are registered with correct priority', async () => {
+      const theme = CSS.highlights.get(highlight.theme)!;
+      const activeTheme = CSS.highlights.get(highlight.activeTheme)!;
+
+      expect(theme).to.exist;
+      expect(activeTheme).to.exist;
+      expect(activeTheme.priority).greaterThan(theme.priority);
+    });
+
     it('matches on changing `search` value', async () => {
       expect(highlight.size).to.equal(0);
 
@@ -68,6 +77,25 @@ describe('Highlight', () => {
       await elementUpdated(highlight);
 
       expect(highlight.size).to.equal(0);
+    });
+
+    it('matches on changing `condition`', async () => {
+      expect(highlight.size).to.equal(0);
+
+      highlight.search = 'dolor';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
+
+      highlight.condition = 'startsWith';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(0);
+
+      highlight.condition = 'contains';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
     });
 
     it('matches with case sensitivity', async () => {

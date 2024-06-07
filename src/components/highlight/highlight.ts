@@ -5,9 +5,6 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { iterNodes, wrap } from '../common/util.js';
 
-// Workaround until it lands in the DOM d.ts
-declare let Highlight: any;
-
 function createRange(node: Node, span: [number, number]) {
   const range = new Range();
   range.setStart(node, span[0]);
@@ -20,7 +17,7 @@ function escapeRegex(regex: string) {
 }
 
 function getHighlightsAPI() {
-  return (CSS as any).highlights;
+  return CSS.highlights;
 }
 
 type HighlightNavigation = { preventScroll?: boolean };
@@ -47,8 +44,8 @@ export default class IgcHighlightComponent extends LitElement {
     registerComponent(IgcHighlightComponent);
   }
 
-  private highlight!: typeof Highlight;
-  private activeHighlight!: typeof Highlight;
+  private highlight!: Highlight;
+  private activeHighlight!: Highlight;
 
   private get _size(): number {
     return this.highlight.size;
@@ -77,6 +74,13 @@ export default class IgcHighlightComponent extends LitElement {
    */
   @property({ attribute: 'active-theme' })
   public activeTheme = 'igc-default-active-highlight';
+
+  /**
+   * The condition to apply when matching text nodes.
+   * @attr condition
+   */
+  @property()
+  public condition: 'contains' | 'startsWith' = 'contains';
 
   /**
    * The string to search and highlight in the DOM content of the component.
@@ -112,6 +116,7 @@ export default class IgcHighlightComponent extends LitElement {
   }
 
   @watch('search')
+  @watch('condition')
   protected searchChanged() {
     this.highlight.clear();
     this.activeHighlight.clear();
@@ -142,12 +147,20 @@ export default class IgcHighlightComponent extends LitElement {
     this.searchChanged();
   }
 
+  private buildRegex(search: string) {
+    const flags = this.caseSensitive ? 'gud' : 'guid';
+    const regex =
+      this.condition === 'startsWith'
+        ? `^${escapeRegex(search)}`
+        : escapeRegex(search);
+    return new RegExp(regex, flags);
+  }
+
   private find(term: string) {
     if (!term) return;
 
     const nodes = iterNodes(this, 'SHOW_TEXT');
-    const flags = this.caseSensitive ? 'gud' : 'guid';
-    const regex = new RegExp(`${escapeRegex(term)}`, flags);
+    const regex = this.buildRegex(term);
 
     for (const node of nodes) {
       for (const { indices } of node.textContent!.matchAll(regex)) {
