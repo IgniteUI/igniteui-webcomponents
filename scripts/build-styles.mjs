@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { globby } from 'globby';
 import * as sass from 'sass-embedded';
-import report from './report.js';
+import report from './report.mjs';
 import { compileSass, fromTemplate } from './sass.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
