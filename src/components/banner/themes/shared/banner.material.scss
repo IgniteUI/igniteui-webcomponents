@@ -17,6 +17,10 @@ $theme: $material;
     --default-size: 3;
     --component-size: var(--ig-size, var(--default-size)) !important;
 
+    color: inherit;
+}
+
+[part~='illustration'] {
     color: var-get($theme, 'banner-illustration-color');
 }
 

@@ -19,6 +19,10 @@ $theme: $indigo;
     --component-size: var(--ig-size, var(--default-size)) !important;
 
     margin-inline-end: 0;
+    color: inherit;
+}
+
+[part~='illustration'] {
     color: var-get($theme, 'banner-illustration-color');
 }
 
