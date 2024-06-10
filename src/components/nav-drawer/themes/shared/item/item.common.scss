@@ -36,3 +36,13 @@ $theme: $material;
         }
     }
 }
+
+:host([disabled]) {
+    [part~='base'] {
+        color: var-get($theme, 'item-disabled-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-disabled-icon-color');
+        }
+    }
+}

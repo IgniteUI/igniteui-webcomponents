@@ -222,6 +222,10 @@ const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
             </igc-nav-drawer-item>
           `;
         })}
+        <igc-nav-drawer-item disabled>
+          <igc-icon slot="icon" name="home"></igc-icon>
+          <span slot="content">Disabled item</span>
+        </igc-nav-drawer-item>
 
         <div slot="mini">
           <igc-nav-drawer-item>
