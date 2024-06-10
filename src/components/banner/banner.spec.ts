@@ -1,23 +1,33 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcBannerComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
   before(() => {
     defineComponents(IgcBannerComponent);
   });
 
+  const createDefaultBanner = () => html`
+    <igc-banner> You are currently offline. </igc-banner>
+  `;
+
+  const createSlottedBanner = () => html`
+    <igc-banner>
+      <igc-icon slot="prefix"></igc-icon>
+      Build <strong>123</strong> completed!
+      <div slot="actions">
+        <igc-button>OK 1</igc-button>
+        <igc-button>View log</igc-button>
+      </div>
+    </igc-banner>
+  `;
+
   let banner: IgcBannerComponent;
 
   beforeEach(async () => {
-    banner = await createBannerComponent();
+    banner = await fixture<IgcBannerComponent>(createDefaultBanner());
   });
 
   const DIFF_OPTIONS = {
@@ -54,15 +64,25 @@ describe('Banner', () => {
         '<igc-banner>You are currently offline.</igc-banner>'
       );
       expect(banner).shadowDom.to.equal(
-        `<div inert>
-          <slot name="prefix"></slot>
-          <slot></slot>
-          <slot name="actions">
-            <igc-button type="button">OK</igc-button>
-          </slot>
+        `<div part="base" inert>
+          <div part="spacer">
+            <div part="message">
+              <div part="illustration">
+                <slot name="prefix"></slot>
+              </div>
+              <div part="content">
+                <slot></slot>
+              </div>
+            </div>
+            <div part="actions">
+              <slot name="actions">
+                <igc-button type="button">OK</igc-button>
+              </slot>
+            </div>
+          </div>
         </div>`,
         {
-          ignoreAttributes: [...BUTTON_DIFF_OPTIONS, 'part'],
+          ignoreAttributes: BUTTON_DIFF_OPTIONS,
         }
       );
 
@@ -73,29 +93,31 @@ describe('Banner', () => {
         '<igc-banner open>You are currently offline.</igc-banner>'
       );
       expect(banner).shadowDom.to.equal(
-        `<div>
-          <slot name="prefix"></slot>
-          <slot></slot>
-          <slot name="actions">
-            <igc-button type="button">OK</igc-button>
-          </slot>
+        `<div part="base">
+          <div part="spacer">
+            <div part="message">
+              <div part="illustration">
+                <slot name="prefix"></slot>
+              </div>
+              <div part="content">
+                <slot></slot>
+              </div>
+            </div>
+            <div part="actions">
+              <slot name="actions">
+                <igc-button type="button">OK</igc-button>
+              </slot>
+            </div>
+          </div>
         </div>`,
         {
-          ignoreAttributes: [...BUTTON_DIFF_OPTIONS, 'part'],
+          ignoreAttributes: BUTTON_DIFF_OPTIONS,
         }
       );
     });
 
     it('should correctly render slotted content', async () => {
-      banner = await createBannerComponent(`
-        <igc-banner>
-          <igc-icon slot="prefix"></igc-icon>
-          Build <strong>123</strong> completed!
-          <div slot="actions">
-            <igc-button>OK 1</igc-button>
-            <igc-button>View log</igc-button>
-          </div>
-        </igc-banner>`);
+      banner = await fixture<IgcBannerComponent>(createSlottedBanner());
 
       const prefix = banner.querySelector('igc-icon');
       const actions = banner.querySelector('div');
@@ -238,13 +260,4 @@ describe('Banner', () => {
       expect(banner.open).to.be.true;
     });
   });
-
-  const createBannerComponent = (
-    template = `
-      <igc-banner>
-        You are currently offline.
-      </igc-banner>`
-  ) => {
-    return fixture<IgcBannerComponent>(html`${unsafeStatic(template)}`);
-  };
 });

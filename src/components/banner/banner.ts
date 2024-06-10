@@ -45,6 +45,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-banner';
   public static styles = [styles];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(IgcBannerComponent, IgcButtonComponent);
   }
@@ -105,9 +106,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   }
 
   private handleClick() {
-    const allowed = this.emitEvent('igcClosing', { cancelable: true });
-
-    if (allowed) {
+    if (this.emitEvent('igcClosing', { cancelable: true })) {
       this.hide();
       this.emitEvent('igcClosed');
     }
