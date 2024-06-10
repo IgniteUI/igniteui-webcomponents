@@ -115,16 +115,18 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  protected slotChanged() {
-    this.requestUpdate();
-  }
-
   constructor() {
     super();
     this.__internals = this.attachInternals();
 
     this.__internals.role = 'progressbar';
     this.__internals.ariaValueMin = '0';
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   protected override updated() {
@@ -201,7 +203,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       this.indeterminate || this.hideLabel || this.assignedElements.length;
 
     return html`
-      <slot part="label" @slotchange=${this.slotChanged}></slot>
+      <slot part="label"></slot>
       ${hasNoLabel
         ? nothing
         : html`<span part="label value">${this.renderLabelText()}</span>`}
