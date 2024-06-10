@@ -92,5 +92,9 @@ $outlined-theme: $bootstrap-outlined;
                 color: var-get($outlined-theme, 'focus-hover-foreground');
             }
         }
+
+        &:active {
+            border-color: var-get($outlined-theme, 'focus-border-color');
+        }
     }
 }
