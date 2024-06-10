@@ -29,6 +29,20 @@ $btn-indent: rem(3px);
 
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
+    [part~='base'] {
+        &:hover {
+            igc-icon {
+                color: var-get($flat-theme, 'hover-foreground');
+            }
+        }
+
+        &:active {
+            igc-icon {
+                color: var-get($flat-theme, 'active-foreground');
+            }
+        }
+    }
+
     [part='base focused'] {
         &::after {
             box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-border-color');
