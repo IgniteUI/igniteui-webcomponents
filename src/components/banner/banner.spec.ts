@@ -1,7 +1,14 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
@@ -36,6 +43,13 @@ describe('Banner', () => {
   };
 
   const BUTTON_DIFF_OPTIONS = ['variant', 'size', 'style'];
+
+  async function clickHideComplete() {
+    finishAnimationsFor(banner.shadowRoot!);
+    await elementUpdated(banner);
+    await nextFrame();
+    await nextFrame();
+  }
 
   describe('Initialization Tests', () => {
     it('passes the a11y audit', async () => {
@@ -86,8 +100,7 @@ describe('Banner', () => {
         }
       );
 
-      banner.show();
-      await elementUpdated(banner);
+      await banner.show();
 
       expect(banner).dom.to.equal(
         '<igc-banner open>You are currently offline.</igc-banner>'
@@ -142,32 +155,18 @@ describe('Banner', () => {
   });
 
   describe('Methods` Tests', () => {
-    it('calls `show` method successfully', async () => {
+    it('calls `show` and `hide` methods successfully', async () => {
       expect(banner.open).to.be.false;
 
-      banner.show();
-      await elementUpdated(banner);
+      await banner.show();
 
       expect(banner.open).to.be.true;
       expect(banner).dom.to.equal(
         '<igc-banner open>You are currently offline.</igc-banner>',
         DIFF_OPTIONS
       );
-    });
 
-    it('calls `hide` method successfully', async () => {
-      expect(banner.open).to.be.false;
-
-      banner.open = true;
-      await elementUpdated(banner);
-
-      expect(banner).dom.to.equal(
-        '<igc-banner open>You are currently offline.</igc-banner>',
-        DIFF_OPTIONS
-      );
-
-      banner.hide();
-      await elementUpdated(banner);
+      await banner.hide();
 
       expect(banner.open).to.be.false;
       expect(banner).dom.to.equal(
@@ -179,8 +178,7 @@ describe('Banner', () => {
     it('calls `toggle` method successfully', async () => {
       expect(banner.open).to.be.false;
 
-      banner.toggle();
-      await elementUpdated(banner);
+      await banner.toggle();
 
       expect(banner.open).to.be.true;
       expect(banner).dom.to.equal(
@@ -188,8 +186,7 @@ describe('Banner', () => {
         DIFF_OPTIONS
       );
 
-      banner.toggle();
-      await elementUpdated(banner);
+      await banner.toggle();
 
       expect(banner.open).to.be.false;
       expect(banner).dom.to.equal(
@@ -197,21 +194,52 @@ describe('Banner', () => {
         DIFF_OPTIONS
       );
     });
+
+    it('`show`, `hide`, `toggle` methods return proper values', async () => {
+      expect(banner.open).to.be.false;
+
+      // hide banner when already hidden
+      let animation = await banner.hide();
+      expect(animation).to.be.false;
+
+      // show banner when hidden
+      animation = await banner.show();
+      expect(animation).to.be.true;
+      expect(banner.open).to.be.true;
+
+      // show banner when already shown
+      animation = await banner.show();
+      expect(animation).to.be.false;
+
+      // hide banner when shown
+      animation = await banner.hide();
+      expect(animation).to.be.true;
+      expect(banner.open).to.be.false;
+
+      // hide -> show
+      animation = await banner.toggle();
+      expect(animation).to.be.true;
+      expect(banner.open).to.be.true;
+
+      // show -> hide
+      animation = await banner.toggle();
+      expect(animation).to.be.true;
+      expect(banner.open).to.be.false;
+    });
   });
 
   describe('Action Tests', () => {
     it('should close the banner when clicking the default button', async () => {
       expect(banner.open).to.be.false;
 
-      banner.show();
-      await elementUpdated(banner);
+      await banner.show();
 
       expect(banner.open).to.be.true;
 
       const button = banner.shadowRoot!.querySelector('igc-button');
 
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(banner);
+      await clickHideComplete();
 
       expect(banner.open).to.be.false;
     });
@@ -221,21 +249,20 @@ describe('Banner', () => {
 
       expect(banner.open).to.be.false;
 
-      banner.show();
-      await elementUpdated(banner);
+      await banner.show();
 
       expect(banner.open).to.be.true;
 
       const button = banner.shadowRoot!.querySelector('igc-button');
-
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(banner);
 
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcClosing', {
-        cancelable: true,
-      });
-      expect(eventSpy.secondCall).calledWith('igcClosed');
+      expect(eventSpy.callCount).to.equal(1);
+      expect(eventSpy).calledWith('igcClosing', { cancelable: true });
+
+      eventSpy.resetHistory();
+      await clickHideComplete();
+
+      expect(eventSpy).calledWith('igcClosed');
       expect(banner.open).to.be.false;
     });
 
@@ -247,13 +274,12 @@ describe('Banner', () => {
         event.preventDefault();
       });
 
-      banner.show();
-      await elementUpdated(banner);
+      await banner.show();
 
       expect(banner.open).to.be.true;
 
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(banner);
+      await clickHideComplete();
 
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).not.calledWith('igcClosed');

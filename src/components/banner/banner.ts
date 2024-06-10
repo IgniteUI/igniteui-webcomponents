@@ -69,29 +69,30 @@ export default class IgcBannerComponent extends EventEmitterMixin<
     this._internals.ariaLive = 'polite';
   }
 
-  /** Shows the banner if not already shown. */
-  public show(): void {
+  /** Shows the banner if not already shown. Returns `true` when the animation has completed. */
+  public async show(): Promise<boolean> {
     if (this.open) {
-      return;
+      return false;
     }
 
     this.open = true;
-    this.toggleAnimation('open');
+    return await this.toggleAnimation('open');
   }
 
-  /** Hides the banner if not already hidden. */
-  public hide(): void {
+  /** Hides the banner if not already hidden. Returns `true` when the animation has completed. */
+  public async hide(): Promise<boolean> {
     if (!this.open) {
-      return;
+      return false;
     }
 
-    this.toggleAnimation('close');
+    await this.toggleAnimation('close');
     this.open = false;
+    return true;
   }
 
-  /** Toggles between shown/hidden state. */
-  public toggle(): void {
-    this.open ? this.hide() : this.show();
+  /** Toggles between shown/hidden state. Returns `true` when the animation has completed. */
+  public async toggle(): Promise<boolean> {
+    return this.open ? await this.hide() : await this.show();
   }
 
   private async toggleAnimation(dir: 'open' | 'close') {
@@ -105,9 +106,9 @@ export default class IgcBannerComponent extends EventEmitterMixin<
     return event.type === 'finish';
   }
 
-  private handleClick() {
+  private async handleClick() {
     if (this.emitEvent('igcClosing', { cancelable: true })) {
-      this.hide();
+      await this.hide();
       this.emitEvent('igcClosed');
     }
   }
