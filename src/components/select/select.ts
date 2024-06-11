@@ -85,13 +85,13 @@ export interface IgcSelectEventMap {
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart list - The list of options wrapper.
- * @csspart input - The encapsulated igc-input.
- * @csspart label - The encapsulated text label.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart toggle-icon - The toggle icon wrapper.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart list - The list wrapping container for the items of the igc-select.
+ * @csspart input - The encapsulated igc-input of the igc-select.
+ * @csspart label - The encapsulated text label of the igc-select.
+ * @csspart prefix - The prefix wrapper of the input of the igc-select.
+ * @csspart suffix - The suffix wrapper of the input of the igc-select.
+ * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
+ * @csspart helper-text - The helper text wrapper of the igc-select.
  */
 @themes(all, true)
 @blazorAdditionalDependencies(
