@@ -140,22 +140,33 @@ export const Form: Story = {
           <legend>Default section</legend>
           <igc-checkbox name="checkbox">Checkbox 1</igc-checkbox>
         </fieldset>
+
         <fieldset>
           <legend>Initial checked state</legend>
           <igc-checkbox name="checkbox-initial" value="initial" checked
             >Checked initial state</igc-checkbox
           >
         </fieldset>
+
         <fieldset>
           <legend>Required section</legend>
           <igc-checkbox required name="required-checkbox"
             >Required checkbox</igc-checkbox
           >
         </fieldset>
+
+        <fieldset>
+          <legend>Indeterminate with required state</legend>
+          <igc-checkbox name="required-indeterminate" indeterminate required>
+            Are you sure?
+          </igc-checkbox>
+        </fieldset>
+
         <fieldset disabled>
           <legend>Disabled section</legend>
           <igc-checkbox name="checkbox-disabled">Checkbox 2</igc-checkbox>
         </fieldset>
+
         ${formControls()}
       </form>
     `;

@@ -81,7 +81,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           part=${partNameMap({ label: true, checked: this.checked })}
           id=${this.labelId}
         >
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot></slot>
         </span>
       </label>
     `;
