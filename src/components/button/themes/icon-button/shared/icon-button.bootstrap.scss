@@ -6,7 +6,7 @@ $contained-theme: $bootstrap-contained;
 $outlined-theme: $bootstrap-outlined;
 
 [part~='base'] {
-    transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
+    transition: box-shadow .15s ease-out, color .15s ease-out;
     padding: pad(7px, 10px, 15px);
 }
 
