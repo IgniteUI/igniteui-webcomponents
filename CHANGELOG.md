@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
 - Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 ### Fixed
