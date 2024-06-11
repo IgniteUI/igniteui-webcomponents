@@ -1,5 +1,5 @@
+import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
@@ -29,13 +29,18 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
     registerComponent(IgcSelectItemComponent);
   }
 
-  @watch('active')
-  protected activeChange() {
-    this.tabIndex = this.active ? 0 : -1;
+  /**
+   * Whether the item is disabled.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public override set active(value: boolean) {
+    this._active = Boolean(value);
+    this.tabIndex = this._active ? 0 : -1;
+  }
 
-    if (this.active) {
-      this.focus();
-    }
+  public override get active() {
+    return this._active;
   }
 }
 

@@ -403,7 +403,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     if (item) {
       this.open ? this.activateItem(item) : this._selectItem(item);
+      this._activeItem.focus();
     }
+  }
+
+  protected override handleAnchorClick(): void {
+    super.handleAnchorClick();
+    this.focusItemOnOpen();
   }
 
   private onEnterKey() {
@@ -431,6 +437,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private altArrowDown() {
     if (!this.open) {
       this._show(true);
+      this.focusItemOnOpen();
     }
   }
 
@@ -520,6 +527,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _navigateToActiveItem(item?: IgcSelectItemComponent) {
     if (item) {
       this.activateItem(item);
+      this._activeItem.focus({ preventScroll: true });
       item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
@@ -536,6 +544,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this._selectedItem.selected = false;
     }
     this._selectedItem = null;
+  }
+
+  private async focusItemOnOpen() {
+    await this.updateComplete;
+    (this._selectedItem || this._activeItem)?.focus();
   }
 
   protected getItem(value: string) {
