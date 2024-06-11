@@ -14,9 +14,17 @@ $theme: $indigo;
 }
 
 :host([active]) {
+    [part~='title'] {
+        @include type-style('subtitle-2');
+    }
+
     [part~='indicator'] {
         box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'current-indicator-outline');
     }
+}
+
+[part~='content'] {
+    @include type-style('body-2');
 }
 
 [part~='disabled'] {

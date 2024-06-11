@@ -145,8 +145,9 @@ const BasicTemplate = ({
       .verticalAnimation=${verticalAnimation}
       .horizontalAnimation=${horizontalAnimation}
     >
-      <igc-step>
+      <igc-step complete>
         <span slot="title">Step1</span>
+        <span slot="subtitle">(completed)</span>
         <label for="first-name">First Name:</label>
         <input type="text" id="first-name" name="first-name" required />
         <br /><br />
@@ -155,6 +156,7 @@ const BasicTemplate = ({
 
       <igc-step>
         <span slot="title">Step 2</span>
+        <span slot="subtitle">(default)</span>
         <label for="last-name">Last Name:</label>
         <input type="text" id="last-name" name="last-name" required />
         <br /><br />
@@ -174,8 +176,9 @@ const BasicTemplate = ({
         <igc-button @click=${next}>Next</igc-button>
       </igc-step>
 
-      <igc-step>
+      <igc-step disabled>
         <span slot="title">Step 4</span>
+        <span slot="subtitle">(disabled)</span>
         <div tabindex="0">
           Tabbable content
           <br />
