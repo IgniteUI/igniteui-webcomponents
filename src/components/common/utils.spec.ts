@@ -2,7 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
 import { parseKeys } from './controllers/key-bindings.js';
-import type { FormAssociatedElementInterface } from './mixins/form-associated';
+import type { FormAssociatedElementInterface } from './mixins/form-associated.js';
 
 export class FormAssociatedTestBed<
   T extends FormAssociatedElementInterface & Element,
