@@ -15,7 +15,6 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
@@ -44,6 +43,7 @@ import type {
   Item,
   Keys,
 } from './types.js';
+import { comboValidators } from './validators.js';
 
 /* blazorSupportsVisualChildren */
 /**
@@ -132,16 +132,9 @@ export default class IgcComboComponent<
     matchDiacritics: false,
   };
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () =>
-        this.required
-          ? Array.isArray(this.value) && this.value.length > 0
-          : true,
-    },
-  ];
+  protected override get __validators(): Validator<this>[] {
+    return comboValidators;
+  }
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);

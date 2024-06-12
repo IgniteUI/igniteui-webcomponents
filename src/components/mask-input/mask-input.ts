@@ -6,13 +6,13 @@ import { live } from 'lit/directives/live.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import { partNameMap } from '../common/util.js';
-import { type Validator, requiredValidator } from '../common/validators.js';
+import type { Validator } from '../common/validators.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
 } from './mask-input-base.js';
+import { maskValidators } from './validators.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -44,17 +44,9 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     registerComponent(IgcMaskInputComponent);
   }
 
-  protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () => (this.required ? !!this._value : true),
-    },
-    {
-      key: 'badInput',
-      message: messages.mask,
-      isValid: () => this.parser.isValidString(this.maskedValue),
-    },
-  ];
+  protected override get __validators(): Validator<this>[] {
+    return maskValidators;
+  }
 
   protected _value = '';
 

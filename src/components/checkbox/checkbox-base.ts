@@ -19,11 +19,15 @@ export interface IgcCheckboxEventMap {
   igcBlur: CustomEvent<void>;
 }
 
+const checkBoxValidators = [requiredBooleanValidator];
+
 @blazorDeepImport
 export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  protected override validators: Validator<this>[] = [requiredBooleanValidator];
+  protected override get __validators(): Validator<this>[] {
+    return checkBoxValidators;
+  }
 
   protected _kbFocus = addKeyboardFocusRing(this);
   protected _value!: string;

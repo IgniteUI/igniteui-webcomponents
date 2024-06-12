@@ -151,7 +151,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @state()
   protected _activeItem!: IgcSelectItemComponent;
 
-  protected override validators: Validator<this>[] = [requiredValidator];
+  protected override get __validators(): Validator<this>[] {
+    return [requiredValidator];
+  }
 
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;

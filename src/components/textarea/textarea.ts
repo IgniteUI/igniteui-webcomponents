@@ -17,15 +17,11 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  maxLengthValidator,
-  minLengthValidator,
-  requiredValidator,
-} from '../common/validators.js';
+import type { Validator } from '../common/validators.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
+import { textAreaValidators } from './validators.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -71,11 +67,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   private declare readonly [themeSymbol]: Theme;
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-    minLengthValidator,
-    maxLengthValidator,
-  ];
+
+  protected override get __validators(): Validator<this>[] {
+    return textAreaValidators;
+  }
 
   private static readonly increment = createCounter();
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
