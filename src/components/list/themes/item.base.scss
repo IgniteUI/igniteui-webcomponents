@@ -30,14 +30,6 @@
     justify-content: center;
 }
 
-[name='start']::slotted(*) {
-    margin-inline-end: pad(rem(16px));
-}
-
-[name='end']::slotted(*) {
-    margin-inline-start: pad(rem(16px));
-}
-
 [part='title'] {
     @include type-style('subtitle-1');
 }
