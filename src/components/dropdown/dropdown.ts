@@ -137,7 +137,7 @@ export default class IgcDropdownComponent extends SizableMixin(
    * Sets the component's positioning strategy.
    * @attr position-strategy
    *
-   * @deprecated since v4.9.0 - Stacking context is now handled through the popover API.
+   * @deprecated since v4.9.0. Stacking context is now handled through the popover API.
    */
   @property({ attribute: 'position-strategy' })
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
