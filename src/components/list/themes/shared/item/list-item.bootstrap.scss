@@ -18,11 +18,3 @@ $theme: $bootstrap;
 [part='subtitle'] {
     @include type-style('body-2');
 }
-
-[name='start']::slotted(*) {
-    margin-inline-end: pad(rem(16px));
-}
-
-[name='end']::slotted(*) {
-    margin-inline-start: pad(rem(16px));
-}
