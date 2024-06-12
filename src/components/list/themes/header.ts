@@ -12,6 +12,8 @@ import { styles as bootstrapLight } from './light/header/list-header.bootstrap.c
 import { styles as fluentLight } from './light/header/list-header.fluent.css.js';
 import { styles as indigoLight } from './light/header/list-header.indigo.css.js';
 import { styles as materialLight } from './light/header/list-header.material.css.js';
+// Shared Styles
+import { styles as indigo } from './shared/header/list-header.indigo.css.js';
 
 const light = {
   material: css`
@@ -24,7 +26,7 @@ const light = {
     ${fluentLight}
   `,
   indigo: css`
-    ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -39,7 +41,7 @@ const dark = {
     ${fluentDark}
   `,
   indigo: css`
-    ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 
