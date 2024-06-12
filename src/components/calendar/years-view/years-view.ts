@@ -43,7 +43,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   @state()
   private _value = CalendarDay.today;
 
-  @query(`[tabindex='0']`)
+  @query('[tabindex="0"]')
   private activeYear!: HTMLElement;
 
   /** Тhe current value of the calendar. */
@@ -113,18 +113,18 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected override render() {
+  protected override *render() {
     const now = CalendarDay.today;
     const { start } = getYearRange(this._value, this.yearsPerPage);
     const years = Array.from(range(start, start + this.yearsPerPage));
 
-    return Array.from(chunk(years, YEARS_PER_ROW)).map(
-      (row) => html`
+    for (const row of chunk(years, YEARS_PER_ROW)) {
+      yield html`
         <div part="years-row" role="row">
           ${row.map((year) => this.renderYear(year, now))}
         </div>
-      `
-    );
+      `;
+    }
   }
 }
 

@@ -64,7 +64,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   @state()
   private dates!: CalendarDay[];
 
-  @query(`[tabindex='0']`)
+  @query('[tabindex="0"]')
   private activeDay!: HTMLElement;
 
   /** The active state of the component. */
@@ -477,13 +477,15 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const weeks = Array.from(chunk(this.dates, daysInWeek));
     const last = weeks.length - 1;
 
-    for (const [i, week] of weeks.entries()) {
-      yield html`<div role="row" part="days-row">
-        ${this.showWeekNumbers
-          ? this.renderWeekNumber(week[0], i === last)
-          : nothing}
-        ${week.map((day) => this.renderDay(day, today))}
-      </div>`;
+    for (const [idx, week] of weeks.entries()) {
+      yield html`
+        <div role="row" part="days-row">
+          ${this.showWeekNumbers
+            ? this.renderWeekNumber(week[0], idx === last)
+            : nothing}
+          ${week.map((day) => this.renderDay(day, today))}
+        </div>
+      `;
     }
   }
 

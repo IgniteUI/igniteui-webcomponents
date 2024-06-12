@@ -265,7 +265,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private getSubsequentActiveDate(start: CalendarDay, delta: -1 | 1) {
+  private getSubsequentActiveDate(start: CalendarDay, delta: number) {
     const disabled = this.disabledDates;
     let beginning = start.clone();
 
@@ -303,10 +303,11 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private onPageKeys(delta: -1 | 1) {
     const unit = this._isDayView ? 'month' : 'year';
-    const incr = (this._isYearView ? this.yearPerPage : 1) * delta;
+    const increment = (this._isYearView ? this.yearPerPage : 1) * delta;
+
     this._activeDate = this.getSubsequentActiveDate(
-      this._activeDate.add(unit, incr),
-      incr as -1 | 1
+      this._activeDate.add(unit, increment),
+      increment
     );
     this.focusActiveDate();
   }
@@ -485,9 +486,9 @@ export default class IgcCalendarComponent extends SizableMixin(
   protected renderYearRangeNavigation(active: CalendarDay) {
     const { start, end } = getYearRange(active, this.yearPerPage);
 
-    return html`<span part="years-range" aria-live="polite">
-      ${start} - ${end}
-    </span>`;
+    return html`
+      <span part="years-range" aria-live="polite"> ${start} - ${end} </span>
+    `;
   }
 
   protected renderNavigation(
@@ -614,7 +615,8 @@ export default class IgcCalendarComponent extends SizableMixin(
     const format = this.formatOptions
       .month as Intl.DateTimeFormatOptions['month'];
 
-    return html`${this.renderNavigation()}
+    return html`
+      ${this.renderNavigation()}
       <igc-months-view
         part="months-view"
         exportparts="month, selected, month-inner, current"
@@ -622,7 +624,8 @@ export default class IgcCalendarComponent extends SizableMixin(
         .value=${this.activeDate}
         .locale=${this.locale}
         .monthFormat=${format!}
-      ></igc-months-view>`;
+      ></igc-months-view>
+    `;
   }
 
   protected renderYearView() {

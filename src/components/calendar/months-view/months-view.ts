@@ -45,7 +45,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   @state()
   private _value = CalendarDay.today;
 
-  @query(`[tabindex='0']`)
+  @query('[tabindex="0"]')
   private activeMonth!: HTMLElement;
 
   /** Тhe current value of the calendar. */
@@ -137,19 +137,19 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected override render() {
+  protected override *render() {
     const now = CalendarDay.today;
     const months = Array.from(range(12));
 
-    return Array.from(chunk(months, MONTHS_PER_ROW)).map(
-      (row) => html`
+    for (const row of chunk(months, MONTHS_PER_ROW)) {
+      yield html`
         <div part="months-row" role="row">
           ${row.map((month) =>
             this.renderMonth(this._value.set({ month }), now)
           )}
         </div>
-      `
-    );
+      `;
+    }
   }
 }
 
