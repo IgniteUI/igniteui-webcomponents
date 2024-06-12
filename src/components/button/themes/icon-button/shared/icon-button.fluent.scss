@@ -6,12 +6,14 @@ $contained-theme: $fluent-contained;
 $outlined-theme: $fluent-outlined;
 $btn-indent: rem(3px);
 
-[part='base'] {
+[part~='base'] {
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
     padding: pad(3px, 7px, 10px);
+}
 
-    &:focus-visible::after {
+[part='base focused'] {
+    &::after {
         position: absolute;
         content: '';
         pointer-events: none;
@@ -27,8 +29,22 @@ $btn-indent: rem(3px);
 
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
-    [part='base'] {
-        &:focus-visible::after {
+    [part~='base'] {
+        &:hover {
+            igc-icon {
+                color: var-get($flat-theme, 'hover-foreground');
+            }
+        }
+
+        &:active {
+            igc-icon {
+                color: var-get($flat-theme, 'active-foreground');
+            }
+        }
+    }
+
+    [part='base focused'] {
+        &::after {
             box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-border-color');
         }
     }
@@ -39,8 +55,12 @@ $btn-indent: rem(3px);
 
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
-    [part='base'] {
-        &:focus-visible::after {
+    [part~='base'] {
+        border-color: var-get($contained-theme, 'border-color');
+    }
+
+    [part='base focused'] {
+        &::after {
             box-shadow: 0 0 0 rem(1px) var-get($contained-theme, 'focus-border-color');
         }
     }
@@ -51,14 +71,12 @@ $btn-indent: rem(3px);
 
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
-    [part='base'] {
-        &:hover,
-        &:focus:hover,
-        &:focus:active {
-            background: var-get($outlined-theme, 'hover-background');
-        }
+    [part~='base'] {
+        border-color: var-get($outlined-theme, 'border-color');
+    }
 
-        &:focus-visible::after {
+    [part='base focused'] {
+        &::after {
             box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-border-color');
         }
     }
