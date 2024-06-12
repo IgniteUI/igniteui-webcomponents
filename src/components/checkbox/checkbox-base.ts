@@ -5,7 +5,6 @@ import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
-import { watch } from '../common/decorators/watch.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
@@ -30,7 +29,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   protected _value!: string;
   protected _checked = false;
 
-  @query('input[type="checkbox"]', true)
+  @query('input', true)
   protected input!: HTMLInputElement;
 
   @queryAssignedNodes({ flatten: true })
@@ -65,10 +64,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     this._checked = Boolean(value);
     this.setFormValue(this._checked ? this.value || 'on' : null);
     this.updateValidity();
-
-    if (this.hasUpdated) {
-      this.setInvalidState();
-    }
+    this.setInvalidState();
   }
 
   public get checked(): boolean {
@@ -82,15 +78,17 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
+      this.hideLabel = this.label.length < 1;
+    });
+    return root;
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
     this.updateValidity();
-  }
-
-  @watch('focused', { waitUntilFirstUpdate: true })
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    this.invalid = !this.checkValidity();
   }
 
   /** Simulates a click on the control. */
@@ -123,9 +121,5 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   protected handleFocus() {
     this._dirty = true;
     this.emitEvent('igcFocus');
-  }
-
-  protected handleSlotChange() {
-    this.hideLabel = this.label.length < 1;
   }
 }
