@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -23,6 +23,7 @@ import {
   minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
@@ -45,6 +46,11 @@ export interface IgcTextareaEventMap {
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot too-long - Renders content when the maxlength validation fails.
+ * @slot too-short - Renders content when the minlength validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input.
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
@@ -67,7 +73,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcTextareaComponent);
+    registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
   private declare readonly [themeSymbol]: Theme;
@@ -96,9 +102,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
 
   @query('textarea', true)
   private input!: HTMLTextAreaElement;
@@ -411,12 +414,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     ></slot>`;
   }
 
-  protected renderHelperText() {
-    return html`
-      <div part="helper-text" .hidden=${this.helperText.length < 1}>
-        <slot name="helper-text" @slotchange=${this.slotChange}></slot>
-      </div>
-    `;
+  protected renderValidationContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected renderPrefix() {
@@ -445,7 +444,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       <div part=${partNameMap(this.resolvePartNames('container'))}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      ${this.renderHelperText()}
+      ${this.renderValidationContainer()}
     `;
   }
 
@@ -463,7 +462,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      ${this.renderHelperText()}
+      ${this.renderValidationContainer()}
     `;
   }
 

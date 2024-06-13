@@ -9,6 +9,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
 import { partNameMap } from '../common/util.js';
 import { type Validator, requiredValidator } from '../common/validators.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -23,6 +24,10 @@ import {
  * @slot prefix - Renders content before the input
  * @slot suffix - Renders content after the input
  * @slot helper-text - Renders content below the input
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot bad-input - Renders content when a required mask pattern validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input
  * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
@@ -41,7 +46,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcMaskInputComponent);
+    registerComponent(IgcMaskInputComponent, IgcValidationContainerComponent);
   }
 
   protected override validators: Validator<this>[] = [

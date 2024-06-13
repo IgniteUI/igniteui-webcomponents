@@ -36,7 +36,7 @@ export declare class FormAssociatedElementInterface {
   /**
    * Executes the component validators and updates the internal validity state.
    */
-  protected updateValidity(message?: string): void;
+  protected updateValidity(error?: string, isUserSet?: boolean): void;
 
   /**
    * Saves the initial value/checked state of the control.
@@ -76,7 +76,7 @@ export declare class FormAssociatedElementInterface {
   public disabled: boolean;
 
   /**
-   * Control the validity of the control.
+   * Sets the control into invalid state (visual state only).
    * @attr
    */
   public invalid: boolean;
@@ -195,7 +195,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Control the validity of the control.
+     * Sets the control into invalid state (visual state only).
      *
      * @attr
      * @default false
@@ -283,12 +283,9 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       this.requestUpdate();
     }
 
-    /**
-     * Executes the component validators and updates the internal validity state.
-     */
-    protected updateValidity(message?: string) {
+    private __runValidators() {
       const validity: ValidityStateFlags = {};
-      let validationMessage = '';
+      let message = '';
 
       for (const validator of this.validators) {
         const isValid = validator.isValid(this);
@@ -296,19 +293,46 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
         validity[validator.key] = !isValid;
 
         if (!isValid) {
-          validationMessage =
+          message =
             typeof validator.message === 'function'
               ? validator.message(this)
               : validator.message;
         }
       }
 
-      if (message) {
-        validity.customError = true;
-        validationMessage = message;
+      return { validity, message };
+    }
+
+    /**
+     * Executes the component validators and updates the internal validity state.
+     */
+    protected updateValidity(error?: string, isUserSet?: boolean) {
+      let { validity, message } = this.__runValidators();
+
+      // If `valueMissing` is true, rebuild the validation state
+      // with only it and possibly `customError`.
+      if (validity.valueMissing) {
+        validity = { valueMissing: true, customError: false };
       }
 
-      this.__internals.setValidity(validity, validationMessage);
+      if (isUserSet) {
+        // validation cycle triggered by calling `setCustomValidity()`.
+        // Update validity with the passed in state of `customError`...
+
+        validity.customError = Boolean(error);
+        message = error || message;
+      } else {
+        //...otherwise check if there is already a custom error set by a previous call to setCustomValidity.
+        // If there is keep setting it and overwriting the validation message until the user clears it,
+        // in which case it will be handled in the branch above.
+
+        const keepCustomError = this.validity.customError && !error;
+
+        validity.customError = keepCustomError;
+        message = keepCustomError ? this.validationMessage : message;
+      }
+
+      this.setValidity(validity, message);
     }
 
     /**
@@ -325,12 +349,16 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity() {
-      return this.__internals.reportValidity();
+      const state = this.__internals.reportValidity();
+      this.invalid = !state;
+      return state;
     }
 
     /** Checks for validity of the control and emits the invalid event if it invalid. */
     public checkValidity() {
-      return this.__internals.checkValidity();
+      const state = this.__internals.checkValidity();
+      this.invalid = !state;
+      return state;
     }
 
     /**
@@ -338,8 +366,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * As long as `message` is not empty, the control is considered invalid.
      */
     public setCustomValidity(message: string) {
-      this.updateValidity(message);
-      this.invalid = !this.checkValidity();
+      this.updateValidity(message, true);
     }
   }
 

@@ -10,6 +10,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
 import { all } from './themes/themes.js';
@@ -49,14 +50,14 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @query('input')
   protected input!: HTMLInputElement;
 
+  @query(IgcValidationContainerComponent.tagName)
+  protected validatorContainer!: IgcValidationContainerComponent;
+
   @queryAssignedElements({ slot: 'prefix' })
   protected prefixes!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
 
   /**
    * Whether the control will have outlined appearance.
@@ -107,14 +108,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     this.size = 'medium';
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
-  }
-
-  public override disconnectedCallback() {
-    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
-    super.disconnectedCallback();
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   /** Sets focus on the control. */
@@ -130,7 +127,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected abstract renderInput(): TemplateResult;
-  protected handleSlotChange = () => this.requestUpdate();
+
+  protected renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
+  }
 
   protected resolvePartNames(base: string) {
     return {
@@ -182,17 +182,17 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   private renderLabel() {
     return this.label
-      ? html`<label part="label" for="${this.inputId}"> ${this.label} </label>`
+      ? html`<label part="label" for=${this.inputId}> ${this.label} </label>`
       : nothing;
   }
 
   private renderMaterial() {
     return html`
       <div
-        part="${partNameMap({
+        part=${partNameMap({
           ...this.resolvePartNames('container'),
           labelled: this.label,
-        })}"
+        })}
       >
         <div part="start">${this.renderPrefix()}</div>
         ${this.renderInput()}
@@ -200,20 +200,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length === 0}">
-        <slot name="helper-text"></slot>
-      </div>
+      ${this.renderValidatorContainer()}
     `;
   }
 
   private renderStandard() {
     return html`${this.renderLabel()}
-      <div part="${partNameMap(this.resolvePartNames('container'))}">
+      <div part=${partNameMap(this.resolvePartNames('container'))}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text" .hidden="${this.helperText.length === 0}">
-        <slot name="helper-text"></slot>
-      </div>`;
+      ${this.renderValidatorContainer()}`;
   }
 
   protected override render() {

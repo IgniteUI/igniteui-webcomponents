@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
-import { html } from 'lit';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import IgcButtonComponent from '../button/button.js';
@@ -13,7 +12,11 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+  simulateScroll,
+} from '../common/utils.spec.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
 import IgcDropdownComponent from './dropdown.js';
@@ -130,13 +133,6 @@ describe('Dropdown', () => {
   describe('Scroll strategy', () => {
     let container: HTMLDivElement;
 
-    const scrollBy = async (amount: number) => {
-      container.scrollTo({ top: amount });
-      container.dispatchEvent(new Event('scroll'));
-      await elementUpdated(dropDown);
-      await nextFrame();
-    };
-
     beforeEach(async () => {
       container = await fixture(createScrollableDropdownParent());
       dropDown = container.querySelector(IgcDropdownComponent.tagName)!;
@@ -144,7 +140,7 @@ describe('Dropdown', () => {
 
     it('`scroll` behavior', async () => {
       await openDropdown();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(dropDown.open).to.be.true;
     });
@@ -154,7 +150,7 @@ describe('Dropdown', () => {
 
       dropDown.scrollStrategy = 'close';
       await openDropdown();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(dropDown.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
@@ -164,7 +160,7 @@ describe('Dropdown', () => {
     it('`block behavior`', async () => {
       dropDown.scrollStrategy = 'block';
       await openDropdown();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(dropDown.open).to.be.true;
     });

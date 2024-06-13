@@ -186,7 +186,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     const { radios } = this.group;
 
     for (const radio of radios) {
-      radio.updateValidity(message);
+      radio.updateValidity(message, true);
       radio.setInvalidState();
     }
   }

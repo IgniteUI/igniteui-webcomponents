@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { type TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -46,6 +46,7 @@ import { type Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
@@ -76,6 +77,9 @@ export interface IgcSelectEventMap {
  * @slot helper-text - Renders content below the input.
  * @slot toggle-icon - Renders content inside the suffix container.
  * @slot toggle-icon-expanded - Renders content for the toggle icon when the component is in open state.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcFocus - Emitted when the select gains focus.
  * @fires igcBlur - Emitted when the select loses focus.
@@ -156,9 +160,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;
 
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
-
   @queryAssignedElements({ slot: 'suffix' })
   protected inputSuffix!: Array<HTMLElement>;
 
@@ -178,10 +179,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected get hasSuffixes() {
     return this.inputSuffix.length > 0;
-  }
-
-  protected get hasHelperText() {
-    return this.helperText.length > 0;
   }
 
   /**
@@ -329,6 +326,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('focusout', this.handleFocusOut);
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
@@ -462,11 +465,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected onEndKey() {
     const item = this._activeItems.at(-1);
     this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
-  }
-
-  /** Monitor input slot changes and request update */
-  protected inputSlotChanged() {
-    this.requestUpdate();
   }
 
   private activateItem(item: IgcSelectItemComponent) {
@@ -607,11 +605,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot=${prefixName}>
-        <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="prefix"></slot>
       </span>
 
       <span slot=${suffixName}>
-        <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="suffix"></slot>
       </span>
     `;
   }
@@ -630,36 +628,23 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
-        <slot
-          name="toggle-icon"
-          ?hidden=${iconHidden}
-          @slotchange=${this.inputSlotChanged}
-        >
+        <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
             name=${this.open ? openIcon : closeIcon}
             collection="internal"
           ></igc-icon>
         </slot>
-        <slot
-          name="toggle-icon-expanded"
-          ?hidden=${iconExpandedHidden}
-          @slotchange=${this.inputSlotChanged}
-        ></slot>
+        <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>
       </span>
     `;
   }
 
-  protected renderHelperText() {
-    return html`
-      <div
-        id="helper-text"
-        part="helper-text"
-        slot="anchor"
-        ?hidden=${!this.hasHelperText}
-      >
-        <slot name="helper-text" @slotchange=${this.inputSlotChanged}></slot>
-      </div>
-    `;
+  protected renderHelperText(): TemplateResult {
+    return IgcValidationContainerComponent.create(this, {
+      id: 'select-helper-text',
+      slot: 'anchor',
+      hasHelperText: true,
+    });
   }
 
   protected renderInputAnchor() {
@@ -672,7 +657,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         role="combobox"
         readonly
         aria-controls="dropdown"
-        aria-describedby="helper-text"
+        aria-describedby="select-helper-text"
         aria-expanded=${this.open ? 'true' : 'false'}
         exportparts="container: input, input: native-input, label, prefix, suffix"
         tabIndex=${this.disabled ? -1 : 0}

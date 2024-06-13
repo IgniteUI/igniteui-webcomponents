@@ -1,12 +1,7 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import type { TemplateResult } from 'lit';
 import {
   arrowDown,
   arrowLeft,
@@ -17,14 +12,19 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  checkValidationSlots,
+  simulateInput,
   simulateKeyboard,
+  simulateWheel,
 } from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
-  before(() => defineComponents(IgcDateTimeInputComponent));
+  before(() => {
+    defineComponents(IgcDateTimeInputComponent);
+  });
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -35,9 +35,10 @@ describe('Date Time Input component', () => {
 
   describe('', async () => {
     beforeEach(async () => {
-      el = await createDateTimeInputComponent();
-      input = el.shadowRoot!.querySelector('input') as HTMLInputElement;
-
+      el = await fixture<IgcDateTimeInputComponent>(
+        html`<igc-date-time-input></igc-date-time-input>`
+      );
+      input = el.renderRoot.querySelector('input')!;
       parser.prompt = defaultPrompt;
       parser.mask = '__/__/____';
     });
@@ -423,20 +424,14 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
-      );
-
+      simulateWheel(input, { deltaY: -125 });
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear() + 1);
 
       el.setSelectionRange(0, 0);
 
-      input.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: 125, bubbles: true })
-      );
-
+      simulateWheel(input, { deltaY: 125 });
       await elementUpdated(el);
 
       expect(el.value.getMonth()).to.equal(value.getMonth() - 1);
@@ -447,10 +442,7 @@ describe('Date Time Input component', () => {
       el.value = value;
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
-      );
-
+      simulateWheel(input, { deltaY: -125 });
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
@@ -463,7 +455,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(new WheelEvent('wheel', { deltaY: -125 }));
+      simulateWheel(input, { deltaY: -125 });
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
@@ -566,13 +558,12 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const val = '1010';
-      input.value = val;
-      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      const value = '1010';
+      simulateInput(input, { value, inputType: 'insertText' });
       await elementUpdated(el);
 
       //10.10.____
-      const parse = parser.replace(input.value, val, 0, 3);
+      const parse = parser.replace(input.value, value, 0, 3);
       expect(input.value).to.equal(parse.value);
       expect(el.value).to.be.null;
 
@@ -595,13 +586,12 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const val = '1099';
-      input.value = val;
-      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      const value = '1099';
+      simulateInput(input, { value, inputType: 'insertText' });
       await elementUpdated(el);
 
       //10.99.____
-      const parse = parser.replace(input.value, val, 0, 3);
+      const parse = parser.replace(input.value, value, 0, 3);
       expect(input.value).to.equal(parse.value);
       expect(el.value).to.be.null;
 
@@ -609,7 +599,7 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(el.value).to.be.null;
-      expect(input.value).to.equal('');
+      expect(input.value).to.be.empty;
     });
 
     it('set value when input is complete', async () => {
@@ -619,13 +609,12 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const val = '10102020';
-      input.value = val;
-      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      const value = '10102020';
+      simulateInput(input, { value, inputType: 'insertText' });
       await elementUpdated(el);
 
       //10.10.2020
-      const parse = parser.replace(input.value, val, 0, 3);
+      const parse = parser.replace(input.value, value, 0, 3);
       expect(input.value).to.equal(parse.value);
 
       const parse2 = DateTimeUtil.parseValueFromMask(
@@ -649,13 +638,12 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const val = '10992020';
-      input.value = val;
-      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      const value = '10992020';
+      simulateInput(input, { value, inputType: 'insertText' });
       await elementUpdated(el);
 
       //10.99.2020
-      const parse = parser.replace(input.value, val, 0, 3);
+      const parse = parser.replace(input.value, value, 0, 3);
       expect(input.value).to.equal(parse.value);
 
       const parse2 = DateTimeUtil.parseValueFromMask(
@@ -689,14 +677,14 @@ describe('Date Time Input component', () => {
       el.value = value;
       el.spinLoop = false;
 
-      simulateKeyboard(input, 'ArrowUp');
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(value.getDate());
 
       el.spinLoop = true;
 
-      simulateKeyboard(input, 'ArrowUp');
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(1);
@@ -715,7 +703,7 @@ describe('Date Time Input component', () => {
       input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
       await elementUpdated(el);
 
-      expect(input.value).to.equal('');
+      expect(input.value).to.be.empty;
     });
 
     //check if needed
@@ -735,9 +723,10 @@ describe('Date Time Input component', () => {
       input.value = '1010';
       input.setSelectionRange(0, 4);
 
-      input.dispatchEvent(
-        new InputEvent('input', { inputType: 'insertFromDrop' })
-      );
+      simulateInput(input, {
+        skipValueProperty: true,
+        inputType: 'insertFromDrop',
+      });
       await elementUpdated(el);
 
       expect(input.value).to.equal('10/10/2020');
@@ -829,9 +818,7 @@ describe('Date Time Input component', () => {
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
-      input.dispatchEvent(
-        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
-      );
+      simulateWheel(input, { deltaY: -125 });
       await elementUpdated(el);
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
@@ -845,9 +832,9 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       //10.10.____
-      const val = '1010';
-      input.value = val;
-      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      const value = '1010';
+      input.value = value;
+      simulateInput(input, { value, inputType: 'insertText' });
       await elementUpdated(el);
 
       el.blur();
@@ -876,12 +863,6 @@ describe('Date Time Input component', () => {
     const formatter = new Intl.DateTimeFormat('en', options);
 
     return formatter.format(date);
-  };
-
-  const createDateTimeInputComponent = (
-    template = '<igc-date-time-input></igc-date-time-input>'
-  ) => {
-    return fixture<IgcDateTimeInputComponent>(html`${unsafeStatic(template)}`);
   };
 
   describe('Form integration', () => {
@@ -967,6 +948,69 @@ describe('Date Time Input component', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    let element: IgcDateTimeInputComponent;
+
+    const now = new Date(2024, 6, 17);
+    const tomorrow = new Date(2024, 6, 18);
+    const yesterday = new Date(2024, 6, 16);
+
+    async function createFixture(template: TemplateResult) {
+      element = await fixture<IgcDateTimeInputComponent>(template);
+    }
+
+    it('renders range-overflow slot', async () => {
+      await createFixture(html`
+        <igc-date-time-input .value=${now} .max=${yesterday}>
+          <div slot="range-overflow"></div>
+        </igc-date-time-input>
+      `);
+
+      await checkValidationSlots(element, 'rangeOverflow');
+    });
+
+    it('renders range-underflow slot', async () => {
+      await createFixture(html`
+        <igc-date-time-input .value=${now} .min=${tomorrow}>
+          <div slot="range-underflow"></div>
+        </igc-date-time-input>
+      `);
+
+      await checkValidationSlots(element, 'rangeUnderflow');
+    });
+
+    it('renders value-missing slot', async () => {
+      await createFixture(html`
+        <igc-date-time-input required>
+          <div slot="value-missing"></div>
+        </igc-date-time-input>
+      `);
+
+      await checkValidationSlots(element, 'valueMissing');
+    });
+
+    it('renders invalid slot', async () => {
+      await createFixture(html`
+        <igc-date-time-input required>
+          <div slot="invalid"></div>
+        </igc-date-time-input>
+      `);
+
+      await checkValidationSlots(element, 'invalid');
+    });
+
+    it('renders custom-error slot', async () => {
+      await createFixture(html`
+        <igc-date-time-input>
+          <div slot="custom-error"></div>
+        </igc-date-time-input>
+      `);
+
+      element.setCustomValidity('invalid');
+      await checkValidationSlots(element, 'customError');
     });
   });
 });

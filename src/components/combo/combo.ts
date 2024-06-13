@@ -24,6 +24,7 @@ import type { Validator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboListComponent from './combo-list.js';
@@ -62,6 +63,9 @@ import type {
  * @slot helper-text - Renders content below the input.
  * @slot toggle-icon - Renders content inside the suffix container.
  * @slot clear-icon - Renders content inside the suffix container.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcFocus - Emitted when the select gains focus.
  * @fires igcBlur - Emitted when the select loses focus.
@@ -114,7 +118,8 @@ export default class IgcComboComponent<
       IgcComboItemComponent,
       IgcComboHeaderComponent,
       IgcInputComponent,
-      IgcPopoverComponent
+      IgcPopoverComponent,
+      IgcValidationContainerComponent
     );
   }
 
@@ -147,9 +152,6 @@ export default class IgcComboComponent<
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
   private declare readonly [themeSymbol]: Theme;
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'suffix' })
   protected inputSuffix!: Array<HTMLElement>;
@@ -868,7 +870,7 @@ export default class IgcComboComponent<
       aria-controls="dropdown"
       aria-owns="dropdown"
       aria-expanded=${this.open ? 'true' : 'false'}
-      aria-describedby="helper-text"
+      aria-describedby="combo-helper-text"
       aria-disabled=${this.disabled}
       exportparts="container: input, input: native-input, label, prefix, suffix"
       @click=${(e: MouseEvent) => {
@@ -973,14 +975,11 @@ export default class IgcComboComponent<
     </div>`;
   }
 
-  private renderHelperText() {
-    return html`<div
-      id="helper-text"
-      part="helper-text"
-      ?hidden="${this.helperText.length === 0}"
-    >
-      <slot name="helper-text"></slot>
-    </div>`;
+  private renderHelperText(): TemplateResult {
+    return IgcValidationContainerComponent.create(this, {
+      id: 'combo-helper-text',
+      hasHelperText: true,
+    });
   }
 
   protected override render() {
