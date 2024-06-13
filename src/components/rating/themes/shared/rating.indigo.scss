@@ -13,7 +13,10 @@ $theme: $indigo;
     gap: rem(8px);
 }
 
-[part~='label'],
 [part~='value-label'] {
-    @include type-style('body-1');
+    @include type-style('caption');
+}
+
+[part~='symbols'] {
+    --symbol-size: #{sizable(rem(18px), rem(24px), rem(30px))};
 }
