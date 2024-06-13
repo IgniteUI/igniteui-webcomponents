@@ -34,34 +34,6 @@ $theme: $material;
     }
 }
 
-:host([complete]) {
-    [part~='header'] {
-        &:hover {
-            background: var-get($theme, 'complete-step-hover-background');
-        }
-
-        &:focus,
-        &:focus-within,
-        &:active {
-            background: var-get($theme, 'complete-step-focus-background');
-        }
-    }
-}
-
-:host([active]) {
-    [part~='header'] {
-        &:hover {
-            background: var-get($theme, 'current-step-hover-background');
-        }
-
-        &:focus,
-        &:focus-within,
-        &:active {
-            background: var-get($theme, 'current-step-focus-background');
-        }
-    }
-}
-
 [part~='header-container'],
 [part~='header'] {
     &::before {
@@ -112,6 +84,18 @@ $theme: $material;
 }
 
 :host([complete]) {
+	[part~='header'] {
+		&:hover {
+			background: var-get($theme, 'complete-step-hover-background');
+		}
+		
+		&:focus,
+		&:focus-within,
+		&:active {
+			background: var-get($theme, 'complete-step-focus-background');
+		}
+	}
+	
     [part~='body'] {
         &::before {
             border-inline-start-style: var-get($theme, 'complete-step-separator-style');
@@ -148,6 +132,18 @@ $theme: $material;
 }
 
 :host([active]) {
+	[part~='header'] {
+		&:hover {
+			background: var-get($theme, 'current-step-hover-background');
+		}
+		
+		&:focus,
+		&:focus-within,
+		&:active {
+			background: var-get($theme, 'current-step-focus-background');
+		}
+	}
+	
     [part~='indicator'] {
         background: var-get($theme, 'current-indicator-background');
         color: var-get($theme, 'current-indicator-color');
