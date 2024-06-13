@@ -51,8 +51,11 @@ export function createCounter() {
   };
 }
 
+/**
+ * Returns whether an element has a Left-to-Right directionality.
+ */
 export function isLTR(element: HTMLElement) {
-  return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
+  return element.matches(':dir(ltr)');
 }
 
 /**

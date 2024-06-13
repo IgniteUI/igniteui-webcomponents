@@ -417,6 +417,19 @@ describe('Input component', () => {
 
       spec.submitValidates();
     });
+
+    it('validates schema types - url', async () => {
+      spec.element.type = 'url';
+      spec.element.value = '123';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = 'https://github.com/IgniteUI/igniteui-webcomponents';
+      await elementUpdated(spec.element);
+
+      spec.submitValidates();
+    });
   });
 
   describe('issue-1066', () => {
