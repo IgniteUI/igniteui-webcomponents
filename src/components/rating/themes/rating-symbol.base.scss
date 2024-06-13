@@ -2,8 +2,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --symbol-size: #{sizable(rem(18px), rem(24px), rem(36px))};
-
     display: flex;
     justify-content: center;
     align-items: center;
