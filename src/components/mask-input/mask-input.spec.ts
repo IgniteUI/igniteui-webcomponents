@@ -654,6 +654,34 @@ describe('Masked input', () => {
       expect(spec.element.value).to.equal('');
     });
 
+    it('is with correct input value and placeholder after a form reset', async () => {
+      const input = spec.element.renderRoot.querySelector('input')!;
+      const placeholder = 'Type something';
+
+      // Empty mask pattern as placeholder
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(spec.element.mask);
+
+      spec.reset();
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(spec.element.mask);
+
+      // User provided placeholder
+
+      spec.element.placeholder = placeholder;
+      await elementUpdated(spec.element);
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(placeholder);
+
+      spec.reset();
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(placeholder);
+    });
+
     it('is correctly reset on form reset with value formatting enabled', async () => {
       const bed = new FormAssociatedTestBed<IgcMaskInputComponent>(
         html`<igc-mask-input

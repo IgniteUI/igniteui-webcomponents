@@ -230,6 +230,8 @@ export default class IgcDropdownComponent extends SizableMixin(
       .set(enterKey, this.onEnterKey)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
+
+    this.size = 'medium';
   }
 
   protected override async firstUpdated() {

@@ -1,0 +1,18 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host {
+    --diameter: 46px;
+}
+
+[part~='label'] {
+    @include type-style('subtitle-2');
+
+    color: var-get($theme, 'text-color');
+}
+
+[part~='fill'] {
+    stroke-width: calc(var(--stroke-thickness) + rem(1px));
+}

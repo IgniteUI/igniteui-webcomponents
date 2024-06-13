@@ -248,7 +248,7 @@ export default class IgcPopoverComponent extends LitElement {
   protected override render() {
     return html`
       <slot name="anchor" @slotchange=${this._anchorSlotChange}></slot>
-      <div id="container" popover="manual">
+      <div id="container" part="container" popover="manual">
         <slot></slot>
       </div>
     `;

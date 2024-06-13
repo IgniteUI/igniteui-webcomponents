@@ -50,6 +50,8 @@
 }
 
 [part~='indicator'] {
+    --ig-size: 3;
+
     display: flex;
     align-items: center;
     z-index: 1;
@@ -58,10 +60,6 @@
     user-select: none;
     margin-inline-end: rem(4px);
     min-width: rem(24px);
-
-    igc-icon {
-        --ig-size: 3;
-    }
 }
 
 [part~='label'] {

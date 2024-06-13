@@ -29,7 +29,7 @@ $icon-size: rem(18px);
 //     pointer-events: none;
 // }
 
-[part='base'] {
+[part~='base'] {
     display: flex;
     align-items: center;
     justify-content: center;
