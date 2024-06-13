@@ -43,10 +43,11 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const checked = this.checked;
 
     return html`
       <label
-        part=${partNameMap({ base: true, checked: this.checked })}
+        part=${partNameMap({ base: true, checked })}
         for=${this.inputId}
         @pointerdown=${this._kbFocus.reset}
       >
@@ -57,8 +58,8 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           value=${ifDefined(this.value)}
           .required=${this.required}
           .disabled=${this.disabled}
-          .checked=${live(this.checked)}
-          aria-checked=${this.checked ? 'true' : 'false'}
+          .checked=${live(checked)}
+          aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
@@ -68,17 +69,15 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         <span
           part=${partNameMap({
             control: true,
-            checked: this.checked,
+            checked,
             focused: this._kbFocus.focused,
           })}
         >
-          <span
-            part=${partNameMap({ thumb: true, checked: this.checked })}
-          ></span>
+          <span part=${partNameMap({ thumb: true, checked })}></span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked: this.checked })}
+          part=${partNameMap({ label: true, checked })}
           id=${this.labelId}
         >
           <slot></slot>

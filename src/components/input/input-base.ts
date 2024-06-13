@@ -50,9 +50,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @query('input')
   protected input!: HTMLInputElement;
 
-  @query(IgcValidationContainerComponent.tagName)
-  protected validatorContainer!: IgcValidationContainerComponent;
-
   @queryAssignedElements({ slot: 'prefix' })
   protected prefixes!: Array<HTMLElement>;
 

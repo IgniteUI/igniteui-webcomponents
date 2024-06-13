@@ -150,15 +150,20 @@ export const Form: Story = {
 
         <fieldset>
           <legend>Required section</legend>
-          <igc-checkbox required name="required-checkbox"
-            >Required checkbox</igc-checkbox
-          >
+          <igc-checkbox required name="required-checkbox">
+            Required checkbox
+            <div slot="value-missing">This field is required!</div>
+          </igc-checkbox>
         </fieldset>
 
         <fieldset>
           <legend>Indeterminate with required state</legend>
           <igc-checkbox name="required-indeterminate" indeterminate required>
             Are you sure?
+            <div slot="helper-text">
+              You do want to check me before submit..
+            </div>
+            <div slot="invalid">Mhm, nope, not gonna happen!</div>
           </igc-checkbox>
         </fieldset>
 
