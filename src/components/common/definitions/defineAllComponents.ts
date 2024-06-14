@@ -18,6 +18,7 @@ import IgcChipComponent from '../../chip/chip.js';
 import IgcComboComponent from '../../combo/combo.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../../dialog/dialog.js';
+import IgcDividerComponent from '../../divider/divider.js';
 import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
 import IgcDropdownItemComponent from '../../dropdown/dropdown-item.js';
@@ -85,6 +86,7 @@ const allComponents: IgniteComponent[] = [
   IgcDropdownHeaderComponent,
   IgcDropdownItemComponent,
   IgcDialogComponent,
+  IgcDividerComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
   IgcFormComponent,
