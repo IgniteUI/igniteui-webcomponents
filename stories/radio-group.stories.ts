@@ -129,10 +129,12 @@ export const Form: Story = {
           <legend>Required</legend>
           <igc-radio-group alignment=${ifDefined(args.alignment)}>
             ${radios.map(
-              (e) =>
-                html`<igc-radio name="required-fruit" required value=${e}
-                  >${titleCase(e)}</igc-radio
-                >`
+              (e) => html`
+                <igc-radio name="required-fruit" required value=${e}>
+                  ${titleCase(e)}
+                  <div slot="value-missing">Please select a value!</div>
+                </igc-radio>
+              `
             )}
             <igc-radio name="required-fruit" disabled value="tomato"
               >Tomato</igc-radio

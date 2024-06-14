@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, type TemplateResult, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -22,6 +22,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -37,6 +38,10 @@ export interface IgcRadioEventMap {
  * @element igc-radio
  *
  * @slot - The radio label.
+ * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
  * @fires igcFocus - Emitted when the control gains focus.
@@ -55,7 +60,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcRadioComponent);
+    registerComponent(IgcRadioComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
@@ -65,7 +70,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       key: 'valueMissing',
       message: messages.required,
       isValid: () => {
-        const { radios, checked } = this.group;
+        const radios = this._radios;
+        const checked = this._checkedRadios;
+        console.log(radios);
         return radios.some((radio) => radio.required)
           ? checked.length > 0
           : true;
@@ -92,12 +99,28 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @state()
   protected hideLabel = false;
 
-  private get group() {
-    return getGroup(this);
+  /** Returns all radio elements from the group, that is having the same name property. */
+  private get _radios() {
+    return getGroup(this).radios;
+  }
+
+  /** All sibling radio elements of the one invoking the getter. */
+  private get _siblings() {
+    return getGroup(this).siblings;
+  }
+
+  /** All non-disabled radio elements from the group. */
+  private get _active() {
+    return getGroup(this).active;
+  }
+
+  /** All checked radio elements from the group. */
+  private get _checkedRadios() {
+    return getGroup(this).checked;
   }
 
   protected override setDefaultValue(): void {
-    this._defaultValue = this === this.group.checked[0];
+    this._defaultValue = this === this._checkedRadios[0];
   }
 
   /**
@@ -124,10 +147,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @blazorTwoWayBind('igcChange', 'detail')
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-
-    if (this.hasUpdated) {
-      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
-    }
+    this._checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   public get checked(): boolean {
@@ -154,10 +174,18 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       .set(arrowDown, () => this.navigate(1));
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
+      this.hideLabel = this.label.length < 1;
+    });
+    return root;
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
 
-    this._checked = this === this.group.checked[0];
+    this._checked = this === this._checkedRadios[0];
     this.updateValidity();
   }
 
@@ -183,7 +211,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const { radios } = this.group;
+    const radios = this._radios;
 
     for (const radio of radios) {
       radio.updateValidity(message, true);
@@ -193,7 +221,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   @watch('required', { waitUntilFirstUpdate: true })
   protected override requiredChange(): void {
-    const { radios } = this.group;
+    const radios = this._radios;
 
     for (const radio of radios) {
       radio.updateValidity();
@@ -202,7 +230,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateCheckedState() {
-    const { siblings } = this.group;
+    const siblings = this._siblings;
 
     this.setFormValue(this.value || 'on');
     this.updateValidity();
@@ -220,18 +248,28 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateUncheckedState() {
-    const { siblings } = this.group;
+    const siblings = this._siblings;
 
     this.setFormValue(null);
     this.updateValidity();
     this.setInvalidState();
-
-    if (this.hasUpdated) {
-      this._tabIndex = -1;
-    }
+    this._tabIndex = -1;
 
     for (const radio of siblings) {
       radio.updateValidity();
+    }
+  }
+
+  protected override formResetCallback(): void {
+    super.formResetCallback();
+    this._resetTabIndexes();
+  }
+
+  /** Called after a form reset callback to restore default keyboard navigation. */
+  private _resetTabIndexes() {
+    const radios = this._radios;
+    for (const radio of radios) {
+      radio._tabIndex = 0;
     }
   }
 
@@ -250,7 +288,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected navigate(idx: number) {
-    const { active } = this.group;
+    const active = this._active;
     const nextIdx = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[nextIdx];
 
@@ -259,18 +297,19 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     radio.emitEvent('igcChange', { detail: radio.checked });
   }
 
-  protected handleSlotChange() {
-    this.hideLabel = this.label.length < 1;
+  protected renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const checked = this.checked;
 
     return html`
       <label
         part=${partNameMap({
           base: true,
-          checked: this.checked,
+          checked,
           focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
@@ -283,29 +322,30 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           value=${ifDefined(this.value)}
           .required=${this.required}
           .disabled=${this.disabled}
-          .checked=${live(this.checked)}
+          .checked=${live(checked)}
           tabindex=${this._tabIndex}
-          aria-checked=${this.checked ? 'true' : 'false'}
+          aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked: this.checked })}>
+        <span part=${partNameMap({ control: true, checked })}>
           <span
             .hidden=${this.disabled}
-            part=${partNameMap({ ripple: true, checked: this.checked })}
+            part=${partNameMap({ ripple: true, checked })}
           ></span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked: this.checked })}
+          part=${partNameMap({ label: true, checked })}
           id=${this.labelId}
         >
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot></slot>
         </span>
       </label>
+      ${this.renderValidatorContainer()}
     `;
   }
 }
