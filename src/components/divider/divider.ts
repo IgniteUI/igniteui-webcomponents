@@ -56,10 +56,7 @@ export default class IgcDividerComponent extends LitElement {
   }
 
   protected override render() {
-    return html`
-      <hr>
-      </hr>
-    `;
+    return html``;
   }
 }
 
