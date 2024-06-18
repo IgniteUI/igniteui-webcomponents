@@ -25,24 +25,21 @@ export default class IgcDividerComponent extends LitElement {
     registerComponent(IgcDividerComponent);
   }
 
+  private _vertical = false;
+
   /**
    * Whether to render a vertical divider line.
    * @attr
    */
-  @property({ type: Boolean, reflect: true })
-  private _vertical = false;
-
-  get vertical() {
-    return this._vertical;
-  }
-
-  set vertical(value) {
-    const oldValue = this._vertical;
-    this._vertical = value;
-    this.requestUpdate('vertical', oldValue);
+  public set vertical(value: boolean) {
+    this._vertical = Boolean(value);
     this._internals.ariaOrientation = this._vertical
       ? 'vertical'
       : 'horizontal';
+  }
+
+  public get vertical(): boolean {
+    return this._vertical;
   }
 
   /**
