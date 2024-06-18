@@ -1,8 +1,9 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../light/themes' as light;
 
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-divider');
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-divider');
 }
