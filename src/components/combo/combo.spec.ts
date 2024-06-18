@@ -745,6 +745,30 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
     });
 
+    it("shouldn't deselect an item if it's already selected on Enter key", async () => {
+      const selection = 'BG02';
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.select(selection);
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      pressKey(options, 'ArrowDown', 2, { altKey: false });
+      pressKey(options, 'Enter', 1, { altKey: false });
+
+      await elementUpdated(combo);
+
+      const itms = items(combo);
+      expect(itms[1].active).to.be.false;
+      expect(itms[1].selected).to.be.true;
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql([selection]);
+    });
+
     it('should support a single selection variant', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
@@ -857,6 +881,25 @@ describe('Combo', () => {
 
       expect(items(combo)[1].selected).to.be.false;
       expect(items(combo)[2].selected).to.be.true;
+    });
+
+    it('should maintain value with repeated selection via input in single selection mode', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+      await elementUpdated(combo);
+
+      pressKey(input, 'Enter');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+      expect(combo.value).to.deep.equal(['BG01']);
     });
 
     it('should clear selection upon changing the search term via input', async () => {
@@ -1207,6 +1250,22 @@ describe('Combo', () => {
 
       comboHeadersLabel = headerItems(combo).map((header) => header.innerText);
       expect(comboHeadersLabel).to.eql(['Méxícó', 'Ángel', 'México']);
+    });
+
+    it('should clear the search term upon toggling disableFiltering', async () => {
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+      expect(items(combo).length).to.equal(cities.length);
+
+      await filterCombo('sof');
+      expect(items(combo).length).to.equal(1);
+
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo).length).to.equal(cities.length);
     });
   });
 
