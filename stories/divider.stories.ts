@@ -87,9 +87,9 @@ const MiddleInsetTemplate = (args: IgcDividerArgs) => {
   return html`
     <p>First paragraph</p>
     <igc-divider
-      ?middle="true"
+      ?middle=${args.middle}
       type=${args.type}
-      style="--inset: 20px;"
+      style="--inset: 100px;"
     ></igc-divider>
     <p>Second paragraph</p>
   `;

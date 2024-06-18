@@ -15,9 +15,23 @@ $theme: $material;
     }
 }
 
+:host(:not([vertical])[middle]) {
+    &::after {
+        min-width: rem(4px);
+        width: calc(100% - (var-get($theme, 'inset') * 2));
+    }
+}
+
 :host([vertical]) {
     &::after {
         inset-block-start: var-get($theme, 'inset');
+    }
+}
+
+:host([vertical][middle]) {
+    &::after {
+        min-height: rem(4px);
+        height: calc(100% - (var-get($theme, 'inset') * 2));
     }
 }
 
