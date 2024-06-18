@@ -13,9 +13,6 @@ import { all } from './themes/themes.js';
  *
  */
 
-/**
- * Enum for the type, determining if the divider is solid or dashed.
- */
 @themes(all)
 export default class IgcDividerComponent extends LitElement {
   public static readonly tagName = 'igc-divider';
@@ -29,11 +26,24 @@ export default class IgcDividerComponent extends LitElement {
   }
 
   /**
-   * Determines Whether to render a vertical divider line.
+   * Whether to render a vertical divider line.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public vertical = false;
+  private _vertical = false;
+
+  get vertical() {
+    return this._vertical;
+  }
+
+  set vertical(value) {
+    const oldValue = this._vertical;
+    this._vertical = value;
+    this.requestUpdate('vertical', oldValue);
+    this._internals.ariaOrientation = this._vertical
+      ? 'vertical'
+      : 'horizontal';
+  }
 
   /**
    * When set and inset is provided, it will shrink the divider line from both sides.
@@ -43,7 +53,7 @@ export default class IgcDividerComponent extends LitElement {
   public middle = false;
 
   /**
-   * Determines whether to render a solid or a dashed divider line.
+   * Whether to render a solid or a dashed divider line.
    * @attr
    */
 
@@ -55,7 +65,9 @@ export default class IgcDividerComponent extends LitElement {
     this._internals = this.attachInternals();
 
     this._internals.role = 'separator';
-    this._internals.ariaOrientation = this.vertical ? 'vertical' : 'horizontal';
+    this._internals.ariaOrientation = this._vertical
+      ? 'vertical'
+      : 'horizontal';
   }
 
   protected override render() {

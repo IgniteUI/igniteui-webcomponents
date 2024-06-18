@@ -16,17 +16,11 @@ const metadata: Meta<IgcDividerComponent> = {
     docs: {
       description: {
         component:
-          'Enum for the type, determining if the divider is solid or dashed.',
+          'The igc-divider allows the content author to easily create a horizontal/vertical rule as a break between content to better organize information on a page.',
       },
     },
   },
   argTypes: {
-    vertical: {
-      type: 'boolean',
-      description: 'Determines Whether to render a vertical divider line.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     middle: {
       type: 'boolean',
       description:
@@ -36,24 +30,21 @@ const metadata: Meta<IgcDividerComponent> = {
     },
     type: {
       type: '"solid" | "dashed"',
-      description:
-        'Determines whether to render a solid or a dashed divider line.',
+      description: 'Whether to render a solid or a dashed divider line.',
       options: ['solid', 'dashed'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'solid' } },
     },
   },
-  args: { vertical: false, middle: false, type: 'solid' },
+  args: { middle: false, type: 'solid' },
 };
 
 export default metadata;
 
 interface IgcDividerArgs {
-  /** Determines Whether to render a vertical divider line. */
-  vertical: boolean;
   /** When set and inset is provided, it will shrink the divider line from both sides. */
   middle: boolean;
-  /** Determines whether to render a solid or a dashed divider line. */
+  /** Whether to render a solid or a dashed divider line. */
   type: 'solid' | 'dashed';
 }
 type Story = StoryObj<IgcDividerArgs>;
@@ -68,7 +59,7 @@ const BasicTemplate = (args: IgcDividerArgs) => {
   `;
 };
 
-const VerticalDashedTemplate = ({ vertical, type, middle }: IgcDividerArgs) => {
+const VerticalDashedTemplate = (args: IgcDividerArgs) => {
   return html`
     <div style="display:flex; gap: 16px">
       <p style="text-align: justify">
@@ -79,7 +70,7 @@ const VerticalDashedTemplate = ({ vertical, type, middle }: IgcDividerArgs) => {
         obcaecati placeat provident, quam repellendus vitae! Cupiditate eveniet,
         facere harum hic quisquam sed.
       </p>
-      <igc-divider vertical ?middle=${middle} type=${type}></igc-divider>
+      <igc-divider vertical ?middle=${args.middle} type="dashed"></igc-divider>
       <p style="text-align: justify">
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
         suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
@@ -92,5 +83,18 @@ const VerticalDashedTemplate = ({ vertical, type, middle }: IgcDividerArgs) => {
   `;
 };
 
+const MiddleInsetTemplate = (args: IgcDividerArgs) => {
+  return html`
+    <p>First paragraph</p>
+    <igc-divider
+      ?middle="true"
+      type=${args.type}
+      style="--inset: 20px;"
+    ></igc-divider>
+    <p>Second paragraph</p>
+  `;
+};
+
 export const Basic: Story = BasicTemplate.bind({});
 export const VerticalDashed: Story = VerticalDashedTemplate.bind({});
+export const MiddleInset: Story = MiddleInsetTemplate.bind({});
