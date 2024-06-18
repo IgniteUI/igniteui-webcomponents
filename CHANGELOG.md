@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
 ### Fixed
 - Input, Textarea - passing `undefined` to **value** sets the underlying input value to undefined [#1206](https://github.com/IgniteUI/igniteui-webcomponents/issues/1206)
+- Mask input - after a form `reset` call correctly update underlying input value and placeholder state
+- Tree - setting `--ig-size` on the item `indicator` CSS Part will now change the size of the icon
 
 ## [4.9.0] - 2024-04-30
 ### Added
