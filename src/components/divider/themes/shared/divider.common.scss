@@ -10,7 +10,7 @@ $theme: $material;
 }
 
 :host(:not([vertical])) {
-    &:after {
+    &::after {
         inset-inline-start: var-get($theme, 'inset');
     }
 }
