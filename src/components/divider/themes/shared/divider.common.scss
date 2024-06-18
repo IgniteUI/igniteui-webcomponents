@@ -1,0 +1,46 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    &::after {
+        background: var-get($theme, 'color');
+    }
+}
+
+:host(:not([vertical])) {
+    &:after {
+        inset-inline-start: var-get($theme, 'inset');
+    }
+}
+
+:host([vertical]) {
+    &::after {
+        inset-block-start: var-get($theme, 'inset');
+    }
+}
+
+:host(:not([vertical])[type='dashed']) {
+    &::after {
+        background: repeating-linear-gradient(
+            to right,
+            var-get($theme, 'color'),
+            var-get($theme, 'color') rem(10px),
+            transparent rem(10px),
+            transparent rem(20px)
+        );
+    }
+}
+
+:host([vertical][type='dashed']) {
+    &::after {
+        background: repeating-linear-gradient(
+            to bottom,
+            var-get($theme, 'color'),
+            var-get($theme, 'color') rem(10px),
+            transparent rem(10px),
+            transparent rem(20px)
+        );
+    }
+}

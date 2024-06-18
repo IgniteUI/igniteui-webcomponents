@@ -1,7 +1,10 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/divider.base.css.js';
+import { styles as shared } from './themes/shared/divider.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * The igc-divider allows the content author to easily create a horizontal/vertical rule as a break between content to better organize information on a page.
@@ -13,10 +16,10 @@ import { styles } from './themes/divider.base.css.js';
 /**
  * Enum for the type, determining if the divider is solid or dashed.
  */
-
+@themes(all)
 export default class IgcDividerComponent extends LitElement {
   public static readonly tagName = 'igc-divider';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
   private _internals: ElementInternals;
 

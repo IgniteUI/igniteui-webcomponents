@@ -63,17 +63,31 @@ type Story = StoryObj<IgcDividerArgs>;
 const BasicTemplate = (args: IgcDividerArgs) => {
   return html`
     <p>First paragraph</p>
-    <igc-divider></igc-divider>
+    <igc-divider ?middle=${args.middle} type=${args.type}></igc-divider>
     <p>Second paragraph</p>
   `;
 };
 
-const VerticalDashedTemplate = ({ vertical, type }: IgcDividerArgs) => {
+const VerticalDashedTemplate = ({ vertical, type, middle }: IgcDividerArgs) => {
   return html`
-    <div>
-      <igc-button>Save</igc-button>
-      <igc-divider vertical type="dashed"></igc-divider>
-      <igc-button>Cancel</igc-button>
+    <div style="display:flex; gap: 16px">
+      <p style="text-align: justify">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
+        suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
+        sapiente ullam. Adipisci alias architecto eligendi est, expedita,
+        explicabo fugiat iure laudantium minima molestiae molestias nam
+        obcaecati placeat provident, quam repellendus vitae! Cupiditate eveniet,
+        facere harum hic quisquam sed.
+      </p>
+      <igc-divider vertical ?middle=${middle} type=${type}></igc-divider>
+      <p style="text-align: justify">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
+        suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
+        sapiente ullam. Adipisci alias architecto eligendi est, expedita,
+        explicabo fugiat iure laudantium minima molestiae molestias nam
+        obcaecati placeat provident, quam repellendus vitae! Cupiditate eveniet,
+        facere harum hic quisquam sed.
+      </p>
     </div>
   `;
 };

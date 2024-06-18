@@ -1,4 +1,24 @@
-:host {
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
+:host {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    overflow: hidden;
+    min-height: rem(1px);
+    width: 100%;
+
+    &::after {
+        content: '';
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
 }
 
+:host([vertical]) {
+    display: inline-flex;
+    min-width: rem(1px);
+    width: rem(1px);
+}
