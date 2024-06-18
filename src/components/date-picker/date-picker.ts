@@ -667,7 +667,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         month, month-inner, year, year-inner, selected, current"
       >
         ${!this.isDropDown
-          ? html`<slot name="title" slot="title">Select date</slot> `
+          ? html`<slot name="title" slot="title"
+              >${this.resourceStrings.selectDate}</slot
+            >`
           : nothing}
       </igc-calendar>
     `;
@@ -699,7 +701,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         `
       : html`
           <igc-dialog
-            aria-label="Select date"
+            aria-label=${ifDefined(this.resourceStrings.selectDate)}
             role="dialog"
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
