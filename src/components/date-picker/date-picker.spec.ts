@@ -18,6 +18,7 @@ import {
   FormAssociatedTestBed,
   simulateClick,
   simulateKeyboard,
+  simulatePointerDown,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
@@ -1001,6 +1002,29 @@ describe('Date picker', () => {
       spec.element.value = new Date();
       expect(spec.form.checkValidity()).to.be.true;
       spec.submitValidates();
+    });
+  });
+
+  describe('Initial validation', () => {
+    it('should not enter in invalid state when clicking the calendar toggle part', async () => {
+      picker = await fixture(
+        html`<igc-date-picker required></igc-date-picker>`
+      );
+      dateTimeInput = picker.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+      const icon = picker.renderRoot.querySelector(
+        `[name='${pickerShowIcon}']`
+      )!;
+
+      expect(picker.invalid).to.be.false;
+      expect(dateTimeInput.invalid).to.be.false;
+
+      simulatePointerDown(icon);
+      await elementUpdated(picker);
+
+      expect(picker.invalid).to.be.false;
+      expect(dateTimeInput.invalid).to.be.false;
     });
   });
 });
