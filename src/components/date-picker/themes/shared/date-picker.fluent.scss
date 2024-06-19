@@ -1,0 +1,42 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    igc-dialog[open]::part(base) {
+        border-radius: 0;
+    }
+
+    [part='label'] {
+        @include type-style('subtitle-2');
+    }
+
+    [part='helper-text'] {
+        margin-top: rem(5px);
+        padding-inline: 0;
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
+}
+
+:host(:focus-within) {
+    [part='label'] {
+        color: color(gray, 800);
+    }
+}
+
+:host([required]) {
+    [part='label']::after {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    [part='label']::after {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
