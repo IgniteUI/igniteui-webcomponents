@@ -50,10 +50,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () => (this.required ? !!this._value : true),
-    },
+    requiredValidator,
     {
       key: 'badInput',
       message: messages.mask,
