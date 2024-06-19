@@ -1,0 +1,60 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    igc-focus-trap {
+        --min-width: #{sizable(rem(290px), rem(314px), rem(360px))};
+
+        display: flex;
+        flex: 1 0 0;
+        flex-direction: column;
+        min-width: var(--min-width);
+        max-width: calc(var(--min-width) * 2);
+        overflow: auto hidden;
+
+        igc-calendar {
+            border: none;
+            box-shadow: none;
+        }
+    }
+
+    igc-calendar[header-orientation='vertical'] {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+}
+
+:host([required]) {
+    [part='label']::after {
+        content: '*';
+    }
+}
+
+[part='helper-text'] {
+    line-height: 1;
+
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        line-height: inherit;
+    }
+}
+
+[part='label'] {
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+[part='actions'] {
+    display: flex;
+    justify-content: flex-end;
+    padding: rem(8px);
+    gap: rem(8px);
+
+    ::slotted(*) {
+        display: flex;
+        gap: rem(8px);
+    }
+}
