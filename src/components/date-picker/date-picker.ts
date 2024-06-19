@@ -174,6 +174,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     },
   ];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       IgcDatePickerComponent,
