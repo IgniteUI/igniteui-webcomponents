@@ -2,17 +2,15 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import {
-  type IgcRadioComponent,
-  IgcRadioGroupComponent,
-  defineComponents,
-} from '../../index.js';
-import {
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateKeyboard } from '../common/utils.spec.js';
+import IgcRadioComponent from '../radio/radio.js';
+import IgcRadioGroupComponent from './radio-group.js';
 
 describe('Radio Group Component', () => {
   before(() => {
@@ -21,118 +19,213 @@ describe('Radio Group Component', () => {
 
   let group: IgcRadioGroupComponent;
   let radios: IgcRadioComponent[];
+  const values = ['apple', 'orange', 'mango'];
 
   describe('', () => {
-    beforeEach(async () => {
-      group = await createRadioGroupComponent();
-      radios = group.querySelectorAll(
-        'igc-radio'
-      ) as unknown as IgcRadioComponent[];
+    describe('Properties and attributes', () => {
+      beforeEach(async () => {
+        group = await fixture(createDefaultGroup());
+        radios = Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
+      });
+
+      it('is initialized with sensible default values', async () => {
+        expect(group.alignment).to.equal('vertical');
+        expect(group.name).to.be.undefined;
+        expect(group.value).to.be.empty;
+      });
+
+      it('is accessible', async () => {
+        await expect(group).dom.to.be.accessible();
+        await expect(group).shadowDom.to.be.accessible();
+      });
+
+      it('setting a `name` overwrites the children names', async () => {
+        group.name = 'new-name';
+        await elementUpdated(group);
+
+        expect(radios.every((radio) => radio.name === group.name)).to.be.true;
+      });
+
+      it('setting a `value` property is reflected in the radio children', async () => {
+        group.value = 'mango';
+        await elementUpdated(group);
+
+        expect(radios.find((radio) => radio.value === 'mango')?.checked).to.be
+          .true;
+      });
+
+      it('`value` property returns the checked state of the radio children', async () => {
+        radios[0].checked = true;
+        await elementUpdated(radios[0]);
+
+        expect(group.value).to.equal(radios[0].value);
+      });
     });
 
-    it('is initialized with the proper default values', async () => {
-      expect(group.alignment).to.equal('vertical');
-    });
+    describe('Behaviors', () => {
+      describe('Initial rendering with `name` and `value` state', async () => {
+        beforeEach(async () => {
+          group = await fixture(createGroupWithInitialState());
+          radios = Array.from(
+            group.querySelectorAll(IgcRadioComponent.tagName)
+          );
+        });
 
-    it('renders a radio element successfully', async () => {
-      await expect(group).shadowDom.to.be.accessible();
-    });
+        it('has correct initial rendering state', async () => {
+          expect(radios.every((radio) => radio.name === group.name)).to.be.true;
+          expect(radios.find((radio) => radio.value === group.value)?.checked)
+            .to.be.true;
+        });
+      });
 
-    it('sets alignment properly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreTags: ['igc-radio'],
-        ignoreAttributes: ['label-position', 'disabled'],
-      };
+      describe('Initial rendering with declarative checked state on an radio child', () => {
+        beforeEach(async () => {
+          group = await fixture(createGroupWithChildCheckedState());
+          radios = Array.from(
+            group.querySelectorAll(IgcRadioComponent.tagName)
+          );
+        });
 
-      group.alignment = 'horizontal';
-      await elementUpdated(group);
-      expect(group).dom.to.equal(
-        `<igc-radio-group alignment="${group.alignment}"></igc-radio-group>`,
-        DIFF_OPTIONS
-      );
+        it('has correct initial rendering state', async () => {
+          expect(radios.every((radio) => radio.name === group.name)).to.be.true;
+          expect(radios[2].checked).to.be.true;
+        });
+      });
 
-      group.alignment = 'vertical';
-      await elementUpdated(group);
-      expect(group).dom.to.equal(
-        `<igc-radio-group alignment="${group.alignment}"></igc-radio-group>`,
-        DIFF_OPTIONS
-      );
-    });
+      describe('Keyboard navigation', () => {
+        let spies: unknown[];
 
-    it('should be able to navigate radios using arrow keys', async () => {
-      const radio1 = spy(radios[0], 'emitEvent');
-      const radio2 = spy(radios[1], 'emitEvent');
-      const [first, second, _] = radios;
+        async function waitForUpdate() {
+          await Promise.all(radios.map((radio) => elementUpdated(radio)));
+        }
 
-      first.click();
+        function validateGroupSelected(radio: IgcRadioComponent) {
+          expect(group.value).to.equal(radio.value);
+        }
 
-      await elementUpdated(first);
-      expect(radio1).to.be.calledWith('igcFocus');
-      expect(radio1).to.be.calledWith('igcChange');
+        beforeEach(async () => {
+          group = await fixture(createDefaultGroup());
+          radios = Array.from(
+            group.querySelectorAll(IgcRadioComponent.tagName)
+          );
+          spies = radios.map((radio) => spy(radio, 'emitEvent'));
+        });
 
-      simulateKeyboard(first, arrowDown);
-      await elementUpdated(first);
-      await elementUpdated(second);
-      expect(radio1).to.be.calledWith('igcBlur');
-      expect(radio2).to.be.calledWith('igcFocus');
-      expect(radio2).to.be.calledWith('igcChange');
+        it('should be able to navigate through radios using arrow keys', async () => {
+          const [first, second, third] = radios;
+          const [firstSpy, secondSpy, thirdSpy] = spies;
 
-      simulateKeyboard(second, arrowUp);
-      await elementUpdated(first);
-      await elementUpdated(second);
-      expect(radio2).to.be.calledWith('igcBlur');
-      expect(radio1).to.be.calledWith('igcFocus');
-      expect(radio1).to.be.calledWith('igcChange');
+          first.click();
+          await elementUpdated(first);
 
-      simulateKeyboard(first, arrowRight);
-      await elementUpdated(first);
-      await elementUpdated(second);
-      expect(radio1).to.be.calledWith('igcBlur');
-      expect(radio2).to.be.calledWith('igcFocus');
-      expect(radio2).to.be.calledWith('igcChange');
+          validateGroupSelected(first);
+          expect(firstSpy).calledWith('igcFocus');
+          expect(firstSpy).calledWith('igcChange');
 
-      simulateKeyboard(second, arrowLeft);
-      await elementUpdated(first);
-      await elementUpdated(second);
-      expect(radio2).to.be.calledWith('igcBlur');
-      expect(radio1).to.be.calledWith('igcFocus');
-      expect(radio1).to.be.calledWith('igcChange');
-    });
+          simulateKeyboard(first, arrowDown);
+          await waitForUpdate();
 
-    it('should ignore disabled radios when navigating', async () => {
-      const radio1 = spy(radios[0], 'emitEvent');
-      const radio2 = spy(radios[1], 'emitEvent');
-      const radio3 = spy(radios[2], 'emitEvent');
+          validateGroupSelected(second);
+          expect(firstSpy).calledWith('igcBlur');
+          expect(secondSpy).calledWith('igcFocus');
+          expect(secondSpy).calledWith('igcChange');
 
-      radios[0].click();
-      await elementUpdated(radios[0]);
+          simulateKeyboard(second, arrowUp);
+          await waitForUpdate();
 
-      radios[1].disabled = true;
-      await elementUpdated(radios[1]);
+          validateGroupSelected(first);
+          expect(secondSpy).to.be.calledWith('igcBlur');
+          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(firstSpy).to.be.calledWith('igcChange');
 
-      simulateKeyboard(radios[0], arrowDown);
+          simulateKeyboard(first, arrowRight);
+          await waitForUpdate();
 
-      await elementUpdated(radios[0]);
-      await elementUpdated(radios[1]);
-      await elementUpdated(radios[2]);
-      expect(radio1).to.be.calledWith('igcBlur');
-      expect(radio2).to.not.be.called;
-      expect(radio3).to.be.calledWith('igcFocus');
-      expect(radio3).to.be.calledWith('igcChange');
+          validateGroupSelected(second);
+          expect(firstSpy).to.be.calledWith('igcBlur');
+          expect(secondSpy).to.be.calledWith('igcFocus');
+          expect(secondSpy).to.be.calledWith('igcChange');
+
+          simulateKeyboard(second, arrowLeft);
+          await waitForUpdate();
+
+          validateGroupSelected(first);
+          expect(secondSpy).to.be.calledWith('igcBlur');
+          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(firstSpy).to.be.calledWith('igcChange');
+
+          simulateKeyboard(first, arrowLeft);
+          await waitForUpdate();
+
+          validateGroupSelected(third);
+          expect(firstSpy).to.be.calledWith('igcBlur');
+          expect(thirdSpy).to.be.calledWith('igcFocus');
+          expect(thirdSpy).to.be.calledWith('igcChange');
+
+          simulateKeyboard(third, arrowDown);
+          await waitForUpdate();
+
+          validateGroupSelected(first);
+          expect(thirdSpy).to.be.calledWith('igcBlur');
+          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(firstSpy).to.be.calledWith('igcChange');
+        });
+
+        it('should skip disabled radios when navigating', async () => {
+          const [first, second, third] = radios;
+          const [firstSpy, secondSpy, thirdSpy] = spies;
+
+          second.disabled = true;
+          await elementUpdated(second);
+
+          first.click();
+          await elementUpdated(first);
+
+          validateGroupSelected(first);
+
+          simulateKeyboard(first, arrowDown);
+          await waitForUpdate();
+
+          validateGroupSelected(third);
+          expect(firstSpy).calledWith('igcBlur');
+          expect(secondSpy).to.not.be.called;
+          expect(thirdSpy).calledWith('igcFocus');
+          expect(thirdSpy).calledWith('igcChange');
+        });
+      });
     });
   });
 
-  const values = ['orange', 'apple', 'mango'];
-  const createRadioGroupComponent = (
-    template = html`<igc-radio-group>
-      ${values.map(
-        (value) =>
-          html`<igc-radio name="fruit" required value=${value}
-            >${value}</igc-radio
-          >`
-      )}
-    </igc-radio-group>`
-  ) => {
-    return fixture<IgcRadioGroupComponent>(template);
-  };
+  function createDefaultGroup() {
+    return html`
+      <igc-radio-group>
+        ${values.map(
+          (value) =>
+            html`<igc-radio name="fruit" value=${value}>${value}</igc-radio>`
+        )}
+      </igc-radio-group>
+    `;
+  }
+
+  function createGroupWithInitialState() {
+    return html`
+      <igc-radio-group name="favorite-fruit" value="orange">
+        ${values.map(
+          (value) => html`<igc-radio value=${value}>${value}</igc-radio>`
+        )}
+      </igc-radio-group>
+    `;
+  }
+
+  function createGroupWithChildCheckedState() {
+    const radios = values.map(
+      (value, idx) =>
+        html`<igc-radio value=${value} ?checked=${idx >= 2}
+          >${value}</igc-radio
+        >`
+    );
+    return html`
+      <igc-radio-group name="fruit" value="apple">${radios}</igc-radio-group>
+    `;
+  }
 });

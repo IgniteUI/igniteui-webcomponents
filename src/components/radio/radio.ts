@@ -63,7 +63,8 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       key: 'valueMissing',
       message: messages.required,
       isValid: () => {
-        const { radios, checked } = this.group;
+        const radios = this._radios;
+        const checked = this._checkedRadios;
         return radios.some((radio) => radio.required)
           ? checked.length > 0
           : true;
@@ -90,12 +91,28 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @state()
   protected hideLabel = false;
 
-  private get group() {
-    return getGroup(this);
+  /** Returns all radio elements from the group, that is having the same name property. */
+  private get _radios() {
+    return getGroup(this).radios;
+  }
+
+  /** All sibling radio elements of the one invoking the getter. */
+  private get _siblings() {
+    return getGroup(this).siblings;
+  }
+
+  /** All non-disabled radio elements from the group. */
+  private get _active() {
+    return getGroup(this).active;
+  }
+
+  /** All checked radio elements from the group. */
+  private get _checkedRadios() {
+    return getGroup(this).checked;
   }
 
   protected override setDefaultValue(): void {
-    this._defaultValue = this === this.group.checked[0];
+    this._defaultValue = this === this._checkedRadios[0];
   }
 
   /**
@@ -122,10 +139,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-
-    if (this.hasUpdated) {
-      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
-    }
+    this._checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   public get checked(): boolean {
@@ -152,10 +166,18 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       .set(arrowDown, () => this.navigate(1));
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
+      this.hideLabel = this.label.length < 1;
+    });
+    return root;
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
 
-    this._checked = this === this.group.checked[0];
+    this._checked = this === this._checkedRadios[0];
     this.updateValidity();
   }
 
@@ -181,7 +203,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const { radios } = this.group;
+    const radios = this._radios;
 
     for (const radio of radios) {
       radio.updateValidity(message);
@@ -191,7 +213,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   @watch('required', { waitUntilFirstUpdate: true })
   protected override requiredChange(): void {
-    const { radios } = this.group;
+    const radios = this._radios;
 
     for (const radio of radios) {
       radio.updateValidity();
@@ -200,7 +222,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateCheckedState() {
-    const { siblings } = this.group;
+    const siblings = this._siblings;
 
     this.setFormValue(this.value || 'on');
     this.updateValidity();
@@ -218,18 +240,29 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateUncheckedState() {
-    const { siblings } = this.group;
+    const siblings = this._siblings;
 
     this.setFormValue(null);
     this.updateValidity();
     this.setInvalidState();
 
-    if (this.hasUpdated) {
-      this._tabIndex = -1;
-    }
+    this._tabIndex = -1;
 
     for (const radio of siblings) {
       radio.updateValidity();
+    }
+  }
+
+  protected override formResetCallback() {
+    super.formResetCallback();
+    this._resetTabIndexes();
+  }
+
+  /** Called after a form reset callback to restore default keyboard navigation. */
+  private _resetTabIndexes() {
+    const radios = this._radios;
+    for (const radio of radios) {
+      radio._tabIndex = 0;
     }
   }
 
@@ -248,7 +281,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected navigate(idx: number) {
-    const { active } = this.group;
+    const active = this._active;
     const nextIdx = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[nextIdx];
 
@@ -257,18 +290,15 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     radio.emitEvent('igcChange', { detail: radio.checked });
   }
 
-  protected handleSlotChange() {
-    this.hideLabel = this.label.length < 1;
-  }
-
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const checked = this.checked;
 
     return html`
       <label
         part=${partNameMap({
           base: true,
-          checked: this.checked,
+          checked,
           focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
@@ -281,27 +311,27 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           value=${ifDefined(this.value)}
           .required=${this.required}
           .disabled=${this.disabled}
-          .checked=${live(this.checked)}
+          .checked=${live(checked)}
           tabindex=${this._tabIndex}
-          aria-checked=${this.checked ? 'true' : 'false'}
+          aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked: this.checked })}>
+        <span part=${partNameMap({ control: true, checked })}>
           <span
             .hidden=${this.disabled}
-            part=${partNameMap({ ripple: true, checked: this.checked })}
+            part=${partNameMap({ ripple: true, checked })}
           ></span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked: this.checked })}
+          part=${partNameMap({ label: true, checked })}
           id=${this.labelId}
         >
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot></slot>
         </span>
       </label>
     `;

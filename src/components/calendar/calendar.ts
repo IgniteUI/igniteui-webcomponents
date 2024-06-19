@@ -32,6 +32,8 @@ import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 
+export const focusActiveDate = Symbol();
+
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -211,7 +213,7 @@ export default class IgcCalendarComponent extends SizableMixin(
         }
 
         if (this.activeView === 'days') {
-          this.focusActiveDate();
+          this[focusActiveDate]();
         }
         break;
       case 'PageUp':
@@ -224,7 +226,7 @@ export default class IgcCalendarComponent extends SizableMixin(
         }
 
         if (this.activeView === 'days') {
-          this.focusActiveDate();
+          this[focusActiveDate]();
         }
         break;
       case 'Home':
@@ -253,7 +255,7 @@ export default class IgcCalendarComponent extends SizableMixin(
           this.activeDate = date;
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
       case 'End':
         event.preventDefault();
@@ -284,7 +286,7 @@ export default class IgcCalendarComponent extends SizableMixin(
           this.activeDate = date;
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
       case 'ArrowLeft':
         event.preventDefault();
@@ -314,7 +316,7 @@ export default class IgcCalendarComponent extends SizableMixin(
           this.previousYear();
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
       case 'ArrowRight':
         event.preventDefault();
@@ -346,7 +348,7 @@ export default class IgcCalendarComponent extends SizableMixin(
           this.nextYear();
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
       case 'ArrowUp':
         event.preventDefault();
@@ -384,7 +386,7 @@ export default class IgcCalendarComponent extends SizableMixin(
           );
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
       case 'ArrowDown':
         event.preventDefault();
@@ -424,12 +426,12 @@ export default class IgcCalendarComponent extends SizableMixin(
           );
         }
 
-        this.focusActiveDate();
+        this[focusActiveDate]();
         break;
     }
   };
 
-  private async focusActiveDate() {
+  public async [focusActiveDate]() {
     await this.updateComplete;
 
     if (this.activeView === 'days') {
@@ -483,7 +485,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeDate = (event.target as IgcMonthsViewComponent).value;
     this.activeView = 'days';
 
-    this.focusActiveDate();
+    this[focusActiveDate]();
   }
 
   private changeYear(event: CustomEvent<void>) {
@@ -491,7 +493,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeDate = (event.target as IgcYearsViewComponent).value;
     this.activeView = 'months';
 
-    this.focusActiveDate();
+    this[focusActiveDate]();
   }
 
   private async switchToMonths(daysViewIndex: number) {
@@ -499,7 +501,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeView = 'months';
 
     await this.updateComplete;
-    this.focusActiveDate();
+    this[focusActiveDate]();
   }
 
   private async switchToYears(daysViewIndex: number) {
@@ -509,7 +511,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeView = 'years';
 
     await this.updateComplete;
-    this.focusActiveDate();
+    this[focusActiveDate]();
   }
 
   private activateDaysView(daysViewIndex: number) {
@@ -528,7 +530,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.activeDate = day.date;
 
     if (!day.isCurrentMonth) {
-      this.focusActiveDate();
+      this[focusActiveDate]();
     }
   }
 
