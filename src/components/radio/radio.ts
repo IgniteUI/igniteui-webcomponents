@@ -72,7 +72,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
       isValid: () => {
         const radios = this._radios;
         const checked = this._checkedRadios;
-        console.log(radios);
         return radios.some((radio) => radio.required)
           ? checked.length > 0
           : true;
