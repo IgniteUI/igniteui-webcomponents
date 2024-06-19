@@ -252,6 +252,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     this.setFormValue(null);
     this.updateValidity();
     this.setInvalidState();
+
     this._tabIndex = -1;
 
     for (const radio of siblings) {
@@ -259,7 +260,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected override formResetCallback(): void {
+  protected override formResetCallback() {
     super.formResetCallback();
     this._resetTabIndexes();
   }

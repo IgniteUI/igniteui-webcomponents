@@ -174,6 +174,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     },
   ];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       IgcDatePickerComponent,
@@ -454,6 +455,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
+    this.addEventListener('focusin', this.handleFocusIn);
+    this.addEventListener('focusout', this.handleFocusOut);
+
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
@@ -519,6 +523,24 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     if (await this._hide(true)) {
       this._input.focus();
     }
+  }
+
+  protected handleFocusIn() {
+    this._dirty = true;
+  }
+
+  protected handleFocusOut({ relatedTarget }: FocusEvent) {
+    if (!this.contains(relatedTarget as Node)) {
+      this.checkValidity();
+    }
+  }
+
+  protected handlerCalendarIconSlotPointerDown(event: PointerEvent) {
+    // This is where the delegateFocus of the underlying input is a chore.
+    // If we have a required validator we don't want the input to enter an invalid
+    // state right off the bat when opening the picker which will happen since focus is transferred to the calendar element.
+    // So we call preventDefault on the event in order to not focus the input and trigger its validation logic on blur.
+    event.preventDefault();
   }
 
   protected handleInputClick(event: Event) {
@@ -633,7 +655,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
 
     return html`
-      <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
+      <span
+        slot="prefix"
+        part=${state}
+        @pointerdown=${this.handlerCalendarIconSlotPointerDown}
+        @click=${this.handleAnchorClick}
+      >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
