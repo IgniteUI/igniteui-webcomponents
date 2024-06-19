@@ -11,6 +11,9 @@ import { all } from './themes/themes.js';
  *
  * @element igc-divider
  *
+ * @cssproperty --color - Sets the color of the divider.
+ * @cssproperty --inset - Shrinks the divider by the given amount from the start. If `middle` is set it will shrink from both sides.
+ *
  */
 
 @themes(all)
@@ -31,6 +34,7 @@ export default class IgcDividerComponent extends LitElement {
    * Whether to render a vertical divider line.
    * @attr
    */
+  @property({ type: Boolean, reflect: true })
   public set vertical(value: boolean) {
     this._vertical = Boolean(value);
     this._internals.ariaOrientation = this._vertical

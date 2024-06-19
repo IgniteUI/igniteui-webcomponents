@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
+- Divider component [#1237](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
 ### Fixed
 - Input, Textarea - passing `undefined` to **value** sets the underlying input value to undefined [#1206](https://github.com/IgniteUI/igniteui-webcomponents/issues/1206)
 - Mask input - after a form `reset` call correctly update underlying input value and placeholder state
