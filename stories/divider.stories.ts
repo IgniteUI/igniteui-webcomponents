@@ -21,6 +21,12 @@ const metadata: Meta<IgcDividerComponent> = {
     },
   },
   argTypes: {
+    vertical: {
+      type: 'boolean',
+      description: 'Whether to render a vertical divider line.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     middle: {
       type: 'boolean',
       description:
@@ -36,12 +42,14 @@ const metadata: Meta<IgcDividerComponent> = {
       table: { defaultValue: { summary: 'solid' } },
     },
   },
-  args: { middle: false, type: 'solid' },
+  args: { vertical: false, middle: false, type: 'solid' },
 };
 
 export default metadata;
 
 interface IgcDividerArgs {
+  /** Whether to render a vertical divider line. */
+  vertical: boolean;
   /** When set and inset is provided, it will shrink the divider line from both sides. */
   middle: boolean;
   /** Whether to render a solid or a dashed divider line. */
