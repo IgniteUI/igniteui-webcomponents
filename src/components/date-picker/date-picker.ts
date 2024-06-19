@@ -1,4 +1,10 @@
-import { type ComplexAttributeConverter, LitElement, html, nothing } from 'lit';
+import {
+  type ComplexAttributeConverter,
+  LitElement,
+  type TemplateResult,
+  html,
+  nothing,
+} from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -48,6 +54,7 @@ import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
@@ -183,7 +190,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       IgcFocusTrapComponent,
       IgcIconComponent,
       IgcPopoverComponent,
-      IgcDialogComponent
+      IgcDialogComponent,
+      IgcValidationContainerComponent
     );
   }
 
@@ -222,9 +230,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'actions' })
   private actions!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  private helperText!: Array<HTMLElement>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -753,10 +758,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       : nothing;
   }
 
-  private renderHelperText() {
-    return html`<div part="helper-text" ?hidden=${!this.helperText.length}>
-      <slot name="helper-text"></slot>
-    </div>`;
+  private renderHelperText(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected renderInput(id: string) {
