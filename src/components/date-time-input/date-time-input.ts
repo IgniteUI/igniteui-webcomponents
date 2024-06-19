@@ -430,10 +430,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected handleChange() {
-    this.emitEvent('igcChange', { detail: this.value });
-  }
-
   protected override handleInput() {
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
@@ -484,7 +480,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private spinValue(datePart: DatePart, delta: number): Date {
-    if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
+    if (!(this.value && DateTimeUtil.isValidDate(this.value))) {
       return new Date();
     }
 
@@ -659,9 +655,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override handleBlur() {
+    const isEmptyMask = this.maskedValue === this.emptyMask;
+    const isSameValue = this._oldValue === this.value;
+
     this.focused = false;
 
-    if (!this.isComplete() && this.maskedValue !== this.emptyMask) {
+    if (!(this.isComplete() || isEmptyMask)) {
       const parse = this.parseDate(this.maskedValue);
 
       if (parse) {
@@ -674,9 +673,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.updateMask();
     }
 
-    if (!this.readOnly && this._oldValue !== this.value) {
-      this.handleChange();
+    if (!(this.readOnly || isSameValue)) {
+      this.emitEvent('igcChange', { detail: this.value });
     }
+
     this.checkValidity();
     super.handleBlur();
   }
@@ -710,7 +710,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         @keydown=${super.handleKeydown}
         @click=${this.handleClick}
         @cut=${this.handleCut}
-        @change=${this.handleChange}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @dragenter=${this.handleDragEnter}
