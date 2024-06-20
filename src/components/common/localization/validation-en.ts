@@ -8,4 +8,5 @@ export default {
   max: 'A value no more than {0} should be entered',
   email: 'A valid email address should be entered',
   url: 'A valid url address should be entered',
+  disabledDate: 'The entered value {0} is within the disabled dates range',
 } as const;
