@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mask input - after a form `reset` call correctly update underlying input value and placeholder state
 - Tree - setting `--ig-size` on the item `indicator` CSS Part will now change the size of the icon
 - Date-time input - double emit of `igcChange` in certain scenarios
-- - Navigation drawer - mini variant is not initially rendered when not in an open state [#1266](https://github.com/IgniteUI/igniteui-webcomponents/issues/1266)
+- Navigation drawer - mini variant is not initially rendered when not in an open state [#1266](https://github.com/IgniteUI/igniteui-webcomponents/issues/1266)
 
 ## [4.9.0] - 2024-04-30
 ### Added
