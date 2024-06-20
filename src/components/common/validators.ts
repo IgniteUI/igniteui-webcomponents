@@ -1,3 +1,4 @@
+import { DateTimeUtil } from '../date-time-input/date-util.js';
 import validatorMessages from './localization/validation-en.js';
 import { asNumber, formatString, isDefined } from './util.js';
 
@@ -10,9 +11,12 @@ export interface Validator<T = any> {
   isValid: ValidatorHandler<T>;
 }
 
+const emailRegex =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
 export const requiredValidator: Validator<{
   required: boolean;
-  value?: string;
+  value?: unknown;
 }> = {
   key: 'valueMissing',
   message: validatorMessages.required,
@@ -103,9 +107,6 @@ export const stepValidator: Validator<{
       : true,
 };
 
-const emailRegex =
-  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
 export const emailValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
   message: validatorMessages.email,
@@ -116,4 +117,28 @@ export const urlValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
   message: validatorMessages.url,
   isValid: ({ value }) => URL.canParse(value),
+};
+
+export const minDateValidator: Validator<{
+  value?: Date | null;
+  min?: Date | null;
+}> = {
+  key: 'rangeUnderflow',
+  message: ({ min }) => formatString(validatorMessages.min, min),
+  isValid: ({ value, min }) =>
+    min
+      ? !DateTimeUtil.lessThanMinValue(value ?? new Date(), min, false, true)
+      : true,
+};
+
+export const maxDateValidator: Validator<{
+  value?: Date | null;
+  max?: Date | null;
+}> = {
+  key: 'rangeOverflow',
+  message: ({ max }) => formatString(validatorMessages.max, max),
+  isValid: ({ value, max }) =>
+    max
+      ? !DateTimeUtil.greaterThanMaxValue(value ?? new Date(), max, false, true)
+      : true,
 };

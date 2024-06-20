@@ -8,6 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import {
+  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -495,17 +496,58 @@ describe('Date Time Input component', () => {
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
     });
 
-    it('Up/Down arrow readonly', async () => {
+    it('Up/Down arrow readonly is a no-op', async () => {
       const value = new Date(2020, 2, 3);
       el.readOnly = true;
       el.value = value;
       el.focus();
       await elementUpdated(el);
 
-      simulateKeyboard(input, arrowDown);
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateKeyboard(input, [altKey, arrowUp]);
       await elementUpdated(el);
 
-      expect(el.value.getFullYear()).to.equal(value.getFullYear());
+      expect(eventSpy).not.to.have.been.called;
+
+      simulateKeyboard(input, [altKey, arrowDown]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+    });
+
+    it('Alt + ArrowUp/Down is a no-op', async () => {
+      const value = new Date(202, 2, 3);
+      el.value = value;
+      el.focus();
+      await elementUpdated(el);
+
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateKeyboard(input, [altKey, arrowUp]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+
+      simulateKeyboard(input, [altKey, arrowDown]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+    });
+
+    it('should not emit change event when readonly', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+
+      el.value = new Date(2023, 5, 1);
+      el.readOnly = true;
+      el.focus();
+      await elementUpdated(el);
+
+      el.blur();
+      await elementUpdated(el);
+
+      // -> [igcFocus, igcBlur]
+      expect(eventSpy.getCalls()).lengthOf(2);
     });
 
     it('should not move input selection (caret) from a focused part when stepUp/stepDown are invoked', async () => {
