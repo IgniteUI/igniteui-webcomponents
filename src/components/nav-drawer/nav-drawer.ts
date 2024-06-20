@@ -16,12 +16,12 @@ import { styles as shared } from './themes/shared/container/nav-drawer.common.cs
  *
  * @element igc-nav-drawer
  *
- * @slot - The default slot for the drawer.
- * @slot mini - The slot for the mini variant of the drawer.
+ * @slot - The default slot for the igc-navigation-drawer.
+ * @slot mini - The slot for the mini variant of the igc-navigation-drawer.
  *
- * @csspart base - The base wrapper of the navigation drawer.
- * @csspart main - The main container.
- * @csspart mini - The mini container.
+ * @csspart base - The base wrapper of the igc-navigation-drawer.
+ * @csspart main - The main container of the igc-navigation-drawer.
+ * @csspart mini - The mini container of the igc-navigation-drawer.
  */
 @themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
@@ -54,6 +54,12 @@ export default class IgcNavDrawerComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public open = false;
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   /** Opens the drawer. */
   public show() {
     if (this.open) {
@@ -74,21 +80,15 @@ export default class IgcNavDrawerComponent extends LitElement {
 
   /** Toggles the open state of the drawer. */
   public toggle() {
-    if (this.open) {
-      this.hide();
-    } else {
-      this.show();
-    }
-  }
-
-  private resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      hidden: this._miniSlotElements.length < 1,
-    };
+    this.open ? this.hide() : this.show();
   }
 
   protected override render() {
+    const parts = partNameMap({
+      mini: true,
+      hidden: this._miniSlotElements.length < 1,
+    });
+
     return html`
       <div part="overlay" @click=${this.hide}></div>
 
@@ -98,7 +98,7 @@ export default class IgcNavDrawerComponent extends LitElement {
         </div>
       </div>
 
-      <div part="${partNameMap(this.resolvePartNames('mini'))}">
+      <div part=${parts}>
         <slot name="mini"></slot>
       </div>
     `;
