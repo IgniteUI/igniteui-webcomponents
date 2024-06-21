@@ -58,7 +58,7 @@
     "lit": "^3.1.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.1",
+    "@biomejs/biome": "1.8.2",
     "@custom-elements-manifest/analyzer": "^0.9.6",
     "@igniteui/material-icons-extended": "^3.0.2",
     "@open-wc/testing": "^4.0.0",
@@ -96,7 +96,7 @@
     "stylelint": "^16.6.1",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.0",
-    "stylelint-scss": "^6.3.1",
+    "stylelint-scss": "^6.3.2",
     "ts-lit-plugin": "^2.0.2",
     "tslib": "^2.6.3",
     "typedoc": "^0.25.13",
