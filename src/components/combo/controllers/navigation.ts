@@ -155,7 +155,7 @@ export class NavigationController<T extends object>
 
     const item = this.dataState[this.active];
 
-    if (!item.header) {
+    if (!item.header && this.host.singleSelect) {
       this.select(this.active);
     }
 
