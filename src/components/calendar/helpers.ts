@@ -123,8 +123,10 @@ export function isDateInRanges(
   ranges: DateRangeDescriptor[]
 ) {
   const value = toCalendarDay(date);
+  // TODO: Fix `ranges` being passed as undefined from the date-picker
+  const _ranges = ranges ?? [];
 
-  return ranges.some((range) => {
+  return _ranges.some((range) => {
     const days = (range.dateRange ?? []).map((day) => toCalendarDay(day));
 
     switch (range.type) {
