@@ -49,6 +49,8 @@ import { all } from './themes/calendar.js';
 import type { IgcCalendarBaseEventMap } from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 
+export const focusActiveDate = Symbol();
+
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -232,7 +234,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     });
   }
 
-  private async focusActiveDate() {
+  public async [focusActiveDate]() {
     await this.updateComplete;
 
     if (this._isDayView) {
