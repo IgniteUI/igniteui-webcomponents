@@ -9,11 +9,12 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
   before(() => {
-    defineComponents(IgcBannerComponent);
+    defineComponents(IgcBannerComponent, IgcIconComponent);
   });
 
   const createDefaultBanner = () => html`
