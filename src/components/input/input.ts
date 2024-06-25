@@ -140,11 +140,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
+  /* blazorCSSuppress */
   /**
    * The input mode attribute of the control.
    * @prop
    *
-   * @deprecated since v4.9.0. Use `inputMode` property instead.
+   * @deprecated since v4.10.0. Use `inputMode` property instead.
    */
   @property({ attribute: false })
   public set inputmode(value: string) {
