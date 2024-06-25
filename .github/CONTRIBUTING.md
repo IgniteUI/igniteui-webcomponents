@@ -1,187 +1,51 @@
-# Overview  
-Ignite UI for Web Components version accepts contributions, as long as they follow the guidelines explained below. When contributing you would have to follow these steps:
+# Contributing to Ignite UI Web Components
 
-1. Fork the repository or make a branch (if you have the necessary rights)
-2. Perform the changes in your fork/branch
-3. Create a pull request with your changes and reference the issue you're working on
+We're excited you're interested in contributing to Ignite UI Web Components! This document outlines the guidelines for contributing code, documentation, and other improvements to the project.
 
-Your pull request will undergo a review and if approved will be merged. All checks for the pull request should pass before a pull request is merged.
+## Code of Conduct
 
-In order to perform all the necessary checks before pulling your changes in, you need to run
+We have a [Code of Conduct](../CODE_OF_CONDUCT.md), please follow it in all interactions with project maintainers and fellow users.
 
-    npm install
-    npm test
-    
 For detailed information on issue and pull request statuses, process for testing, etc. please refer to the general [Guidelines in Ignite UI for Angular](https://github.com/IgniteUI/igniteui-angular/blob/master/.github/CONTRIBUTING.md).
 
-# Coding Guidelines
+## Getting Started
 
-## Component Structure
+- **Fork the Repository**: Before making changes, create a fork of the repository on your GitHub account. This allows you to make your own edits without affecting the main project code.
+- **Clone your Fork**: Clone your forked repository to your local machine using Git. This will create a local copy of the project you can work on.
+- **Create a Branch**: Create a new branch for your specific contribution. This helps keep your changes isolated and organized.
 
-When adding a new component make sure to order the class members like this:
+## Set up
 
-```ts
-export default class IgcSomethingComponent extends LitElement {
-  /**
-   * 1. Static members
-   */
-  public static readonly tagName = 'igc-something';
+You will need at least [Node >= 18.19.0](https://nodejs.org/en) installed on your machine.
 
-  public static override styles = [styles];
+Once you have the minimum Node version installed, you can continue with the rest of the repo setup.
 
-  /**
-   * 2. Private/protected members and properties
-   */
-  private num = 0;
-  protected text = 'text';
+```shell
+node -v
+v18.19.1
 
-  private get roundedNum() {
-    return Math.round(this.num);
-  }
-
-  /**
-   * 3. @query members
-   */
-  @query('[part="base"]', true)
-  private baseElement!: HTMLElement;
-
-  /**
-   * 4. @state members
-   */
-  @state()
-  private hasError = false;
-
-  /**
-   * 5. @property members
-   */
-  @property()
-  public label!: string;
-
-  /**
-   * 6. @watch methods
-   */
-  @watch('label')
-  protected labelChange() {
-    this.hasError = false;
-  }
-
-  /**
-   * 7. Constructor
-   */
-  constructor() {
-    super();
-    this.addEventListener('click', this.handleClick);
-  }
-
-  /**
-   * 8. Lifecycle hooks
-   */
-  public override connectedCallback() {
-    super.connectedCallback();
-    // ...
-  }
-
-  protected override firstUpdated() {
-    // ...
-  }
-
-  /**
-   * 9. Event handlers
-   */
-  private handleClick = () => {
-    // ...
-  }
-
-  /**
-   * 10. Private/protected methods
-   */
-  private updateState() {
-    // ...
-  }
-
-  protected resetState() {
-    // ...
-  }
-
-  /**
-   * 11. Public methods
-   */
-  /**
-   * Resets the component.
-   */
-  public reset() {
-    // ...
-  }
-
-  /**
-   * 12. Render helper methods
-   */
-  private renderHeader() {
-    // ...
-  }
-
-  private renderFooter() {
-    // ...
-  }
-
-  /**
-   * 13. Render method
-   */
-  protected override render() {
-    return html`
-      ${this.renderHeader()}
-      ${this.renderFooter()}
-    `;
-  }
-}
+git clone https://github.com/IgniteUI/igniteui-webcomponents.git
+cd igniteui-webcomponents
+npm ci
+npm run build
 ```
 
-## Events
+## Making Changes
 
-When you need to raise custom events in a component, make sure to derive from the `EventEmitterMixin` and add an event map class like this:
+- **Code Style**: Follow the [existing code style conventions](./CODING_GUIDELINES.md) used in the project. This might involve specific formatting guidelines or linting tools. Refer to the project's codebase or any existing documentation for details.
+- **Commit Messages**: Write clear and concise commit messages that describe your changes.
+- **Testing**: Ensure your contributions include relevant tests to verify their functionality and avoid introducing regressions.
 
-```ts
-export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<boolean>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
-}
+## Contributing Code
 
-export class IgcCheckboxBaseComponent extends EventEmitterMixin<
-  IgcCheckboxEventMap,
-  Constructor<LitElement>
->(LitElement) {
-  // ...
-}
+- **Pull Requests**: Once your changes are ready, submit a pull request to the main repository.
+- **Pull Request Description**: Provide a detailed description of your pull request, including the issue it addresses (if applicable) and the specific changes made.
+- **Code Reviews**: Be prepared to address feedback and make revisions during the code review process.
 
-```
+## Reporting Issues
 
-Please note that events are emitted only for user interactions with the component. If a property is changed via API, no events should be emitted.
+- **Search Existing Issues**: Before creating a new issue, check if a similar issue has already been reported.
+- **Clear and Descriptive Titles**: Use clear and descriptive titles for your issue reports to help maintainers understand the problem quickly.
+- **Provide Details**: In your issue report, provide as much detail as possible to help diagnose the problem. This might include steps to reproduce the issue, error messages, and expected behavior.
 
-Events should be propagated from the child components to the parent components.
-
-## Properties and Attributes
-
-Complex property names should use `camelCase` while its corresponding attribute should use `kebab-case`.
-
-```ts
-  @property({ attribute: 'header-text' })
-  public headerText = '';
-```
-
-Please note that boolean attributes should always default to `false`, otherwise there is no way to remove them in the html markup.
-
-```ts
-  @property({ type: Boolean, reflect: true })
-  public disabled = false;
-```
-
-Properties should be propagated from the parent components to the child components.
-
-## Component API Documentation
-
-You could find a component documentation guide [here](https://github.com/IgniteUI/igniteui-webcomponents/wiki/How-to-document-your-component).
-
-## Changelog
-
-When adding a new component or fixing an issue make sure to update the [CHANGELOG](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md) file.
+Thank you!

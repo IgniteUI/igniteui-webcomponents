@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
+- Divider component [#1237](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
+- Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+- Radio group - Bind underlying radio components name and checked state through the radio group [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
+
+### Fixed
+- Input, Textarea - passing `undefined` to **value** sets the underlying input value to undefined [#1206](https://github.com/IgniteUI/igniteui-webcomponents/issues/1206)
+- Mask input - after a form `reset` call correctly update underlying input value and placeholder state
+- Tree - setting `--ig-size` on the item `indicator` CSS Part will now change the size of the icon
+- Date-time input - double emit of `igcChange` in certain scenarios
+- Navigation drawer - mini variant is not initially rendered when not in an open state [#1266](https://github.com/IgniteUI/igniteui-webcomponents/issues/1266)
+- Combo:
+  - Selecting an entry using the Enter key now correctly works in single selection mode [#1229](https://github.com/IgniteUI/igniteui-webcomponents/issues/1229)
+  - Turning on the `disableFiltering` option now clears any previously entered search term [#1238](https://github.com/IgniteUI/igniteui-webcomponents/issues/1238)
+  - Entering a search term in single selection mode that already matches the selected item now works correctly [#1260](https://github.com/IgniteUI/igniteui-webcomponents/issues/1260)
+
 ## [4.9.0] - 2024-04-30
 ### Added
 - Button group component now allows resetting the selection state via the `selectedItems` property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/pull/1168)

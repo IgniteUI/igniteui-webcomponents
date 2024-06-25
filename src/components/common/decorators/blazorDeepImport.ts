@@ -1,4 +1,7 @@
-import type { AbstractConstructor, Constructor } from '../mixins/constructor';
+import type {
+  AbstractConstructor,
+  Constructor,
+} from '../mixins/constructor.js';
 
 /**
  * Indicates a class isn't imported at the root of the API, so needs to be referred to with a deep import in the wrappers.

@@ -2,8 +2,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --menu-full-width: #{rem(256px)};
-    --menu-mini-width: #{rem(60px)};
+    --menu-full-width: #{rem(240px)};
 
     display: flex;
     flex-shrink: 0;
@@ -24,12 +23,16 @@
     }
 
     [part~='mini'] {
-        min-width: var(--menu-mini-width);
+        width: var(--menu-mini-width);
     }
-
-    [part='main'] {
+	
+	[part='base'] {
         width: var(--menu-full-width);
     }
+	
+	[part='main'] {
+		width: 100%;
+	}
 
     [part='overlay'] {
         position: fixed;

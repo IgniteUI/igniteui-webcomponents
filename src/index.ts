@@ -2,6 +2,7 @@
 export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
 export { default as IgcAccordionComponent } from './components/accordion/accordion.js';
 export { default as IgcBadgeComponent } from './components/badge/badge.js';
+export { default as IgcBannerComponent } from './components/banner/banner.js';
 export { default as IgcButtonComponent } from './components/button/button.js';
 export { default as IgcButtonGroupComponent } from './components/button-group/button-group.js';
 export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
@@ -15,8 +16,10 @@ export { default as IgcCircularProgressComponent } from './components/progress/c
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
 export { default as IgcComboComponent } from './components/combo/combo.js';
+export { default as IgcDatePickerComponent } from './components/date-picker/date-picker.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
+export { default as IgcDividerComponent } from './components/divider/divider.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';

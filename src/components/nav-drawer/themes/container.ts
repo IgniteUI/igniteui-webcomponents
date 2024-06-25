@@ -17,6 +17,7 @@ import { styles as sharedLight } from './light/container/nav-drawer.shared.css.j
 import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
 import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
 import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
+import { styles as material } from './shared/container/nav-drawer.material.css.js';
 
 const light = {
   shared: css`
@@ -26,7 +27,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -44,7 +45,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}
