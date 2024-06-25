@@ -190,6 +190,16 @@ export class SelectionController<T extends object>
     }
   }
 
+  public selectByIndex(index: number) {
+    const item = this.data[index];
+
+    if (this.host.valueKey) {
+      this.select([item[this.host.valueKey]], true);
+    } else {
+      this.select([item], true);
+    }
+  }
+
   constructor(protected host: ComboHost<T>) {
     this.host.addController(this);
   }
