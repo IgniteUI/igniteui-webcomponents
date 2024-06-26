@@ -2,7 +2,11 @@
 
 :host {
     --stroke-thickness: 4px;
-    --diameter: 28px;
+    --diameter: 50px;
+}
+
+[part~='label'] {
+    @include type-style('subtitle-1');
 }
 
 [part~='svg'][part~='indeterminate'] {

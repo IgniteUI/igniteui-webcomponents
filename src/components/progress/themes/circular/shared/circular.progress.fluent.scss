@@ -5,3 +5,9 @@
 :host {
     --stroke-thickness: 1.5px;
 }
+
+[part~='label'],
+[part~='value'] {
+    font-weight: 700;
+    letter-spacing: normal;
+}
