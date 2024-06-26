@@ -49,11 +49,10 @@
     "build:typedoc:serve": "node scripts/build-typedoc.js serve && concurrently -k -r \"npm:build:typedoc:watch\"",
     "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
     "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN",
-    "deploy-storybook": "storybook-to-ghpages --ci --existing-output-dir=./storybook-static",
     "prepare": "husky"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.6.5",
+    "@floating-ui/dom": "^1.6.6",
     "@lit-labs/virtualizer": "^2.0.13",
     "lit": "^3.1.4"
   },
@@ -79,13 +78,13 @@
     "globby": "^14.0.1",
     "husky": "^9.0.11",
     "ig-typedoc-theme": "^5.0.3",
-    "igniteui-theming": "^8.1.0",
+    "igniteui-theming": "^8.2.0",
     "keep-a-changelog": "^2.5.3",
     "lint-staged": "^15.2.7",
     "lit-analyzer": "^2.0.3",
     "madge": "^7.0.0",
     "node-watch": "^0.7.4",
-    "playwright": "^1.44.1",
+    "playwright": "^1.45.0",
     "postcss": "^8.4.38",
     "prettier": "^3.3.2",
     "rimraf": "^5.0.7",
