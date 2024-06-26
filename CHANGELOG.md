@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Tree - setting `--ig-size` on the item `indicator` CSS Part will now change the size of the icon
 - Date-time input - double emit of `igcChange` in certain scenarios
 - Navigation drawer - mini variant is not initially rendered when not in an open state [#1266](https://github.com/IgniteUI/igniteui-webcomponents/issues/1266)
+- Combo:
+  - Selecting an entry using the Enter key now correctly works in single selection mode [#1229](https://github.com/IgniteUI/igniteui-webcomponents/issues/1229)
+  - Turning on the `disableFiltering` option now clears any previously entered search term [#1238](https://github.com/IgniteUI/igniteui-webcomponents/issues/1238)
+  - Entering a search term in single selection mode that already matches the selected item now works correctly [#1260](https://github.com/IgniteUI/igniteui-webcomponents/issues/1260)
 
 ## [4.9.0] - 2024-04-30
 ### Added
@@ -29,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
   making the property obsolete.
+- Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
 
 ### Fixed
 - Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
