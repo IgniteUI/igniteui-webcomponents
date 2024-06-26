@@ -11,7 +11,6 @@ import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -70,39 +69,39 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private animationPlayer = addAnimationController(this, this.groupRef);
 
+  /* blazorSuppress */
   /** A reference to the tree the item is a part of. */
-  @blazorSuppress()
   public tree?: IgcTreeComponent;
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
 
+  /* blazorSuppress */
   /** @private */
-  @blazorSuppress()
   public init = false;
 
   @queryAssignedElements({ slot: 'label', flatten: true })
   private contentList!: Array<HTMLElement>;
 
+  /* blazorSuppress */
   /** @private */
   @query('#wrapper')
-  @blazorSuppress()
   public wrapper!: HTMLElement;
 
   @state()
   private isFocused = false;
 
+  /* blazorSuppress */
   /** @private */
   @state()
-  @blazorSuppress()
   public hasChildren = false;
 
   /** The depth of the item, relative to the root. */
   @state()
   public level = 0;
 
+  /* blazorSuppress */
   /** @private */
   @state()
-  @blazorSuppress()
   public indeterminate = false;
 
   /**
@@ -422,12 +421,12 @@ export default class IgcTreeItemComponent extends LitElement {
     this.navService?.update_visible_cache(this, this.expanded, false);
   }
 
+  /* blazorSuppress */
   /**
    * Returns a collection of child items.
    * If the parameter value is true returns all tree item's direct children,
    * otherwise - only the direct children.
    */
-  @blazorSuppress()
   public getChildren(
     options: { flatten: boolean } = { flatten: false }
   ): IgcTreeItemComponent[] {

@@ -1,7 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -135,9 +134,8 @@ export default class IgcFormComponent extends EventEmitterMixin<
     return formElements;
   }
 
-  //suppressing in blazor for now due to an issue, bringing it back later
+  /* blazorSuppress */
   /** Retrieves the data from the form in the format of a FormData object. */
-  @blazorSuppress()
   public getFormData() {
     const formData = new FormData();
 
