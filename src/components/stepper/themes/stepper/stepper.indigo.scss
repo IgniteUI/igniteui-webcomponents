@@ -6,3 +6,7 @@
     --indicator-box-shadow-size: #{rem(1px)};
     --separator-size: #{rem(1px)};
 }
+
+:host([orientation='horizontal']) {
+    --horizontal-body-padding: #{rem(16px)};
+}
