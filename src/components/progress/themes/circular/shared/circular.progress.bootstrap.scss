@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --stroke-thickness: 4px;
+    --stroke-thickness: 2px;
     --diameter: 50px;
 }
 
@@ -20,4 +20,8 @@
 
 [part~='track'][part~='indeterminate'] {
     stroke: transparent;
+}
+
+[part~='fill'] {
+    stroke-width: var(--stroke-thickness);
 }

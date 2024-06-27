@@ -3,11 +3,15 @@
 // TODO If possible make the animation the same as the MS fluent
 
 :host {
-    --stroke-thickness: 1.5px;
+    --stroke-thickness: 2px;
 }
 
 [part~='label'],
 [part~='value'] {
     font-weight: 700;
     letter-spacing: normal;
+}
+
+[part~='fill'] {
+    stroke-width: var(--stroke-thickness);
 }
