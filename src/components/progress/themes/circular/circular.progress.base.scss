@@ -72,7 +72,6 @@
     stroke-dasharray: #{$circumference} #{$circumference};
     stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
     transition: stroke-dashoffset var(--duration) linear;
-
     stroke-width: calc(var(--stroke-thickness) + rem(1px));
 
     --percentage: 0;
