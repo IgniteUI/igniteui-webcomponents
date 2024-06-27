@@ -12,7 +12,7 @@
     // Do not use rem values here
     // This will break the component in Safari
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
-    --stroke-thickness: 2px;
+    --stroke-thickness: 1.5px;
     --diameter: 30px;
 }
 
@@ -72,7 +72,7 @@
     stroke-dasharray: #{$circumference} #{$circumference};
     stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
     transition: stroke-dashoffset var(--duration) linear;
-    stroke-width: calc(var(--stroke-thickness) + rem(1px));
+    stroke-width: calc(var(--stroke-thickness) + rem(0.75px));
 
     --percentage: 0;
     --duration: 500ms;

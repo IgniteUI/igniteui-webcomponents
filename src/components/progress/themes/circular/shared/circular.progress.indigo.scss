@@ -10,3 +10,7 @@ $theme: $indigo;
 [part~='label'] {
     @include type-style('subtitle-2');
 }
+
+[part~='fill'] {
+    stroke-width: calc(var(--stroke-thickness) + rem(1px));
+}
