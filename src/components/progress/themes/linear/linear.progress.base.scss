@@ -80,9 +80,7 @@
 }
 
 [part~='value'] {
-    margin: 0;
-    font-size: em(14px);
-    font-weight: 600;
+    @include type-style('subtitle-2');
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {

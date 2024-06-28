@@ -4,7 +4,7 @@
 $theme: $material;
 
 [part~='label'] {
-    fill: var-get($theme, 'text-color');
+    color: var-get($theme, 'text-color');
 }
 
 [part~='track'] {
