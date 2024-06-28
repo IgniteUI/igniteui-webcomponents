@@ -4,13 +4,12 @@
 $theme: $indigo;
 
 :host {
+    --stroke-thickness: 2px;
     --diameter: 46px;
 }
 
 [part~='label'] {
     @include type-style('subtitle-2');
-
-    color: var-get($theme, 'text-color');
 }
 
 [part~='fill'] {
