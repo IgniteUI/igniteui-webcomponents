@@ -23,10 +23,6 @@ $stripe-space: rem(14px);
     }
 }
 
-[part~='value'] {
-    @include type-style('subtitle-2');
-}
-
 [part~='striped']:not([part~='indeterminate']) {
     /* stylelint-disable */
     background: var-get($theme, 'fill-color-default') repeating-linear-gradient(
