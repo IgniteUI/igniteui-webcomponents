@@ -1,6 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -8,6 +9,8 @@ import { createCounter } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
+import { all } from './themes/container.js';
+import { styles as shared } from './themes/shared/carousel.common.css.js';
 
 export interface IgcCarouselComponentEventMap {
   igcSlideChanged: CustomEvent<void>;
@@ -25,11 +28,12 @@ export interface IgcCarouselComponentEventMap {
  * @csspart
  */
 
+@themes(all)
 export default class IgcCarouselComponent extends EventEmitterMixin<
   IgcCarouselComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static styles = [styles];
+  public static styles = [styles, shared];
   public static readonly tagName = 'igc-carousel';
 
   /* blazorSuppress */

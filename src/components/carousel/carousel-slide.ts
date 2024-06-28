@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { styles } from './themes/carousel.base.css.js';
+import { styles } from './themes/carousel-slide.base.css.js';
 
 /**
  * A single content container within a set of containers used in the context of an `igc-carousel`.
