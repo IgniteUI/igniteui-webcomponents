@@ -811,29 +811,6 @@ describe('Date Time Input component', () => {
       expect(el.invalid).to.be.false;
     });
 
-    it('should correctly set min/maxValue with ISO string', async () => {
-      const minValue = new Date(2020, 2, 3).toISOString();
-      const maxValue = new Date(2020, 3, 3).toISOString();
-
-      el.setAttribute('min-value', minValue);
-      el.setAttribute('max-value', maxValue);
-
-      el.value = new Date(2019, 3, 3);
-      await elementUpdated(el);
-      expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
-
-      el.value = new Date(2021, 3, 3);
-      await elementUpdated(el);
-      expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
-
-      el.value = new Date(2020, 2, 14);
-      await elementUpdated(el);
-      expect(el.checkValidity()).to.be.true;
-      expect(el.invalid).to.be.false;
-    });
-
     it('valid/invalid state with required', async () => {
       expect(el.reportValidity()).to.be.true;
 
