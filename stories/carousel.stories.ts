@@ -46,11 +46,31 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    vertical: {
+      type: 'boolean',
+      description: 'The carousel alignment.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    indicatorsOrientation: {
+      type: '"start" | "end"',
+      description: 'Sets the orientation of the picker controls (dots).',
+      options: ['start', 'end'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'end' } },
+    },
     interval: {
       type: 'number',
       description:
         'The duration in milliseconds between changing the active slide.',
       control: 'number',
+    },
+    animationType: {
+      type: '"slide" | "fade" | "none"',
+      description: 'The animation type.',
+      options: ['slide', 'fade', 'none'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'slide' } },
     },
   },
   args: {
@@ -58,6 +78,9 @@ const metadata: Meta<IgcCarouselComponent> = {
     skipPauseOnInteraction: false,
     skipNavigation: false,
     withPicker: false,
+    vertical: false,
+    indicatorsOrientation: 'end',
+    animationType: 'slide',
   },
 };
 
@@ -72,8 +95,14 @@ interface IgcCarouselArgs {
   skipNavigation: boolean;
   /** Whether the carousel should render the picker controls (dots). */
   withPicker: boolean;
+  /** The carousel alignment. */
+  vertical: boolean;
+  /** Sets the orientation of the picker controls (dots). */
+  indicatorsOrientation: 'start' | 'end';
   /** The duration in milliseconds between changing the active slide. */
   interval: number;
+  /** The animation type. */
+  animationType: 'slide' | 'fade' | 'none';
 }
 type Story = StoryObj<IgcCarouselArgs>;
 
@@ -84,7 +113,10 @@ const BasicTemplate = ({
   skipPauseOnInteraction,
   skipNavigation,
   withPicker,
+  vertical,
+  indicatorsOrientation,
   interval,
+  animationType,
 }: IgcCarouselArgs) => {
   return html`
     <style>
@@ -102,6 +134,9 @@ const BasicTemplate = ({
       ?skip-navigation=${skipNavigation}
       ?with-picker=${withPicker}
       .interval=${interval}
+      .animationType=${animationType}
+      .vertical=${vertical}
+      .indicatorsOrientation=${indicatorsOrientation}
     >
       <igc-carousel-slide>
         <div class="image-container">
