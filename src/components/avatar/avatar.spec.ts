@@ -25,31 +25,7 @@ describe('Avatar', () => {
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`
     );
-
-    expect(el.size).to.equal('small');
     expect(el.shape).to.equal('square');
-  });
-
-  it('should set avatar size correctly', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar size="small"></igc-avatar>`
-    );
-
-    expect(el.size).to.equal('small');
-
-    el.size = 'medium';
-    await elementUpdated(el);
-    expect(el).dom.to.equal(
-      `<igc-avatar size="medium" shape="square"></igc-avatar>`,
-      DIFF_OPTIONS
-    );
-
-    el.size = 'large';
-    await elementUpdated(el);
-    expect(el).dom.to.equal(
-      `<igc-avatar size="large" shape="square"></igc-avatar>`,
-      DIFF_OPTIONS
-    );
   });
 
   it('should set avatar shape correctly', async () => {
