@@ -1,10 +1,12 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 
-import { watch } from '../decorators/watch.js';
-
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected _internals: ElementInternals;
+
+  protected _active = false;
+  protected _disabled = false;
+  protected _selected = false;
   protected _value!: string;
 
   @queryAssignedNodes({ flatten: true })
@@ -19,21 +21,42 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public active = false;
+  public set active(value: boolean) {
+    this._active = Boolean(value);
+  }
+
+  public get active() {
+    return this._active;
+  }
 
   /**
    * Whether the item is disabled.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public disabled = false;
+  public set disabled(value: boolean) {
+    this._disabled = Boolean(value);
+    this._internals.ariaDisabled = `${this._disabled}`;
+  }
+
+  public get disabled() {
+    return this._disabled;
+  }
 
   /**
    * Whether the item is selected.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public selected = false;
+  public set selected(value: boolean) {
+    this._selected = Boolean(value);
+    this._internals.ariaSelected = `${this._selected}`;
+    this.active = this.selected;
+  }
+
+  public get selected() {
+    return this._selected;
+  }
 
   /**
    * The current value of the item.
@@ -42,25 +65,12 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
    * @attr
    */
   @property()
+  public set value(value: string) {
+    this._value = value;
+  }
+
   public get value(): string {
     return this._value ? this._value : this._contentSlotText;
-  }
-
-  public set value(value: string) {
-    const old = this._value;
-    this._value = value;
-    this.requestUpdate('value', old);
-  }
-
-  @watch('disabled')
-  protected disabledChange() {
-    this._internals.ariaDisabled = `${this.disabled}`;
-  }
-
-  @watch('selected')
-  protected selectedChange() {
-    this._internals.ariaSelected = `${this.selected}`;
-    this.active = this.selected;
   }
 
   constructor() {
