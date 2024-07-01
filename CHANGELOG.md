@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Removed
+- Input - readonly, inputmode, maxlength and minlength.
+  Use the native readOnly, inputMode, maxLength and minLength properties instead.
+
+
 ## [4.10.0] - 2024-07-01
 ### Added
 - Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
