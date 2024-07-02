@@ -7,6 +7,7 @@ import { addAnimationController } from '../../animations/player.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { type Animation, animations } from '../stepper/animations.js';
+import IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
 import { styles as shared } from './themes/shared/slide/slide.common.css.js';
 
@@ -42,18 +43,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
-  /**
-   * The index of the slide inside the carousel.
-   * @hidden @internal @private
-   */
-  public index = 0;
-
-  /**
-   * The total number of slides inside the carousel.
-   * @hidden @internal @private
-   */
-  public total = 0;
-
   /** @hidden @internal @private */
   public animation: Animation = 'slide';
 
@@ -85,8 +74,18 @@ export default class IgcCarouselSlideComponent extends LitElement {
     this._internals.ariaRoleDescription = 'slide';
   }
 
-  protected override firstUpdated() {
-    this._internals.ariaLabel = `${this.index + 1} of ${this.total}`;
+  protected override willUpdate(): void {
+    const carousel = this.closest(IgcCarouselComponent.tagName);
+
+    let index = 0;
+    let total = 0;
+
+    if (carousel) {
+      index = carousel.slides.indexOf(this);
+      total = carousel.total;
+    }
+
+    this._internals.ariaLabel = `${index + 1} of ${total}`;
   }
 
   public override connectedCallback(): void {

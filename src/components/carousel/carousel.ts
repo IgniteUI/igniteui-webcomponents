@@ -54,8 +54,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
   private _internals: ElementInternals;
-
-  private stoppedByInteraction = false;
+  private _stoppedByInteraction = false;
+  private _lastInterval: any;
+  private _playing = false;
+  private _paused = false;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -134,7 +136,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   /**
    * The total number of slides.
    */
-  @property({ type: Number, reflect: false, attribute: false })
   public get total(): number {
     return this.slides.length;
   }
@@ -142,9 +143,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   /**
    * The index of the current active slide.
    */
-  @property({ type: Number, reflect: false, attribute: false })
   public get current(): number {
-    return this.slides.findIndex((slide) => slide.active) ?? 0;
+    const index = this.slides.findIndex((slide) => slide.active);
+    return index === -1 ? 0 : index;
   }
 
   /**
@@ -156,14 +157,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   /**
    * Whether the carousel is in playing state.
    */
-  @property({ type: Boolean, reflect: false, attribute: false })
-  public isPlaying = false;
+  public get isPlaying() {
+    return this._playing;
+  }
 
   /**
    * Whether the carousel in in paused state.
    */
-  @property({ type: Boolean, reflect: false, attribute: false })
-  public isPaused = false;
+  public get isPaused() {
+    return this._paused;
+  }
 
   /**
    * The animation type.
@@ -177,6 +180,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.slides.forEach((slide: IgcCarouselSlideComponent) => {
       slide.animation = this.animationType;
     });
+  }
+
+  @watch('interval', { waitUntilFirstUpdate: true })
+  protected intervalChange() {
+    this.restartInterval();
   }
 
   constructor() {
@@ -198,22 +206,22 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   protected override firstUpdated() {
-    this.slides.forEach((slide, index) => {
-      slide.index = index;
-      slide.total = this.slides.length;
-    });
+    const index = this.slides.findIndex((slide) => slide.active);
+
+    if (this.total && index === -1) {
+      this.slides[0].active = true;
+    }
   }
 
   /**
    * Resumes playing of the carousel slides.
    */
   public play(): void {
-    if (this.isPaused) {
-      this.isPaused = false;
-      this.isPlaying = true;
-      this.emitEvent('igcPlaying');
-      // set interval
-      this.stoppedByInteraction = false;
+    if (!this.isPlaying) {
+      this._paused = false;
+      this._playing = true;
+      this.restartInterval();
+      this._stoppedByInteraction = false;
     }
   }
 
@@ -222,10 +230,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    */
   public pause(): void {
     if (!this.skipPauseOnInteraction) {
-      this.isPlaying = false;
-      this.isPaused = true;
-      this.emitEvent('igcPaused');
-      // set interval
+      this._playing = false;
+      this._paused = true;
+      this.resetInterval();
     }
   }
 
@@ -242,7 +249,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     await this.animateSlides(this.slides[index], this.slides[this.current]);
     this.slides[index].active = true;
-    this.emitEvent('igcSlideChanged');
     return true;
   }
 
@@ -259,7 +265,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     await this.animateSlides(this.slides[index], this.slides[this.current]);
     this.slides[index].active = true;
-    this.emitEvent('igcSlideChanged');
     return true;
   }
 
@@ -271,40 +276,71 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
   }
 
+  private resetInterval() {
+    if (this._lastInterval) {
+      clearInterval(this._lastInterval);
+      this._lastInterval = null;
+    }
+  }
+
+  private restartInterval() {
+    this.resetInterval();
+
+    if (!Number.isNaN(this.interval) && this.interval > 0) {
+      this._lastInterval = setInterval(() => {
+        const tick = +this.interval;
+        if (this.isPlaying && this.total && !Number.isNaN(tick) && tick > 0) {
+          this.next();
+        } else {
+          this.pause();
+        }
+      }, this.interval);
+    }
+  }
+
   private async animateSlides(
     nextSlide: IgcCarouselSlideComponent,
     currentSlide: IgcCarouselSlideComponent
   ) {
-    if (nextSlide.index > currentSlide.index) {
-      // Animate slides in next direction
-      currentSlide.toggleAnimation('out');
-      nextSlide.toggleAnimation('in');
-    } else {
-      // Animate slides in previous direction
-      currentSlide.toggleAnimation('in', 'reverse');
-      nextSlide.toggleAnimation('out', 'reverse');
-    }
+    // if (nextSlide.index > currentSlide.index) {
+    //   // Animate slides in next direction
+    //   currentSlide.toggleAnimation('out');
+    //   nextSlide.toggleAnimation('in');
+    // } else {
+    //   // Animate slides in previous direction
+    //   currentSlide.toggleAnimation('in', 'reverse');
+    //   nextSlide.toggleAnimation('out', 'reverse');
+    // }
+
+    currentSlide.toggleAnimation('in', 'reverse');
+    nextSlide.toggleAnimation('out', 'reverse');
   }
 
-  private handleMouseEnter() {
+  private handlePointerEnter() {
     if (!this.skipPauseOnInteraction && this.isPlaying) {
-      this.stoppedByInteraction = true;
+      this._stoppedByInteraction = true;
     }
     this.pause();
   }
 
-  private handleMouseLeave() {
-    if (this.stoppedByInteraction) {
+  private handlePointerLeave() {
+    if (this._stoppedByInteraction) {
       this.play();
     }
   }
 
   private async handleClick(slide: IgcCarouselSlideComponent) {
-    if (slide.index !== this.current) {
-      await this.animateSlides(slide, this.slides[this.current]);
-      slide.active = true;
-      this.emitEvent('igcSlideChanged');
-    }
+    // if (slide.index !== this.current) {
+    //   await this.animateSlides(slide, this.slides[this.current]);
+    //   slide.active = true;
+    //   this.emitEvent('igcSlideChanged');
+    //   this.restartInterval();
+    // }
+
+    await this.animateSlides(slide, this.slides[this.current]);
+    slide.active = true;
+    this.emitEvent('igcSlideChanged');
+    this.restartInterval();
   }
 
   private navigationTemplate() {
@@ -312,34 +348,34 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     const next_icon = this.vertical ? 'arrow_downward' : 'navigate_next';
 
     return html`
-      <div
+      <button
         part="navigation previous"
-        role="button"
-        tabindex="0"
         aria-label="Previous slide"
         aria-controls=${this.carouselId}
         @click=${this.prev}
       >
-        <igc-icon
-          name=${prev_icon}
-          collection="internal"
-          aria-hidden="true"
-        ></igc-icon>
-      </div>
-      <div
+        <slot name="previous-button">
+          <igc-icon
+            name=${prev_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </button>
+      <button
         part="navigation next"
-        role="button"
-        tabindex="0"
         aria-label="Next slide"
         aria-controls=${this.carouselId}
         @click=${this.next}
       >
-        <igc-icon
-          name=${next_icon}
-          collection="internal"
-          aria-hidden="true"
-        ></igc-icon>
-      </div>
+        <slot name="next-button">
+          <igc-icon
+            name=${next_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </button>
     `;
   }
 
@@ -352,15 +388,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
           start: this.indicatorsOrientation === 'start',
         })}
       >
-        ${this.slides.map((slide) => {
+        ${this.slides.map((slide, index) => {
           return html`<button
             role="tab"
-            aria-label="Slide ${slide.index + 1}"
+            aria-label="Slide ${index + 1}"
             aria-selected=${slide.active ? 'true' : 'false'}
             aria-controls="${slide.id}"
             @click=${() => this.handleClick(slide)}
           >
-            ${slide.index + 1}
+            ${index + 1}
+            <slot name="indicator"></slot>
           </button>`;
         })}
       </div>
@@ -370,8 +407,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <section
-        @mouseenter=${this.handleMouseEnter}
-        @mouseleave=${this.handleMouseLeave}
+        @pointerenter=${this.handlePointerEnter}
+        @pointerleave=${this.handlePointerLeave}
       >
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
         ${this.withPicker ? this.pickerTemplate() : nothing}
