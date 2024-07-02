@@ -4,12 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.10.0] - 2024-07-01
 ### Added
 - Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
 - Divider component [#1237](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
 - Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 - Radio group - Bind underlying radio components name and checked state through the radio group [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
+- VSCode custom data intellisense (both HTML and CSS)
+- JetBrains editors WebTypes intellisense
+
+### Deprecated
+- Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
 
 ### Fixed
 - Input, Textarea - passing `undefined` to **value** sets the underlying input value to undefined [#1206](https://github.com/IgniteUI/igniteui-webcomponents/issues/1206)
@@ -33,7 +38,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Deprecated
 - Dropdown `positionStrategy` property. The dropdown now uses the Popover API to render its container in the top layer of the browser viewport,
   making the property obsolete.
-- Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
 
 ### Fixed
 - Date-time input - Label in Material theme is broken when component is in read-only mode [#1166](https://github.com/IgniteUI/igniteui-webcomponents/issues/1166)
@@ -481,6 +485,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0
 [4.9.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.2...4.9.0
 [4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
 [4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1
