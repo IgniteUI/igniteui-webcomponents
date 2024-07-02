@@ -2,11 +2,8 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import IgcCalendarComponent from '../calendar/calendar.js';
-import {
-  type DateRangeDescriptor,
-  DateRangeType,
-} from '../calendar/common/calendar.model.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import {
   altKey,
   arrowDown,
