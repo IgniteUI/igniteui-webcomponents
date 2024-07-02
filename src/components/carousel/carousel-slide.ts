@@ -8,6 +8,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { type Animation, animations } from '../stepper/animations.js';
 import { styles } from './themes/carousel-slide.base.css.js';
+import { styles as shared } from './themes/shared/slide/slide.common.css.js';
 
 /**
  * A single content container within a set of containers used in the context of an `igc-carousel`.
@@ -20,7 +21,7 @@ import { styles } from './themes/carousel-slide.base.css.js';
  */
 
 export default class IgcCarouselSlideComponent extends LitElement {
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
   public static readonly tagName = 'igc-carousel-slide';
 
   /* blazorSuppress */

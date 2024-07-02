@@ -1,2 +1,45 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+
+[part~='indicators'] {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: rem(16px) 0;
+    list-style: none;
+    z-index: 10;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+}
+
+[part='indicators start'] {
+    bottom: unset;
+    top: 0;
+}
+
+[part~='navigation'] {
+    margin: 0 rem(16px);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    outline: none;
+    user-select: none;
+}
+
+[part='navigation previous'] {
+    inset-inline-start: 0;
+}
+
+[part='navigation next'] {
+    inset-inline-end: 0;
+}
+
+// :host([dir='rtl']) {
+//     [part='navigation previous'],
+//     [part='navigation next'] {
+//         transform: scaleX(-1);
+//     }
+// }

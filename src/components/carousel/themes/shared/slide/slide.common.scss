@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host [part~='base'] {
+    background: var-get($theme, 'slide-background');
+}

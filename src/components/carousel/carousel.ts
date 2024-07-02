@@ -10,7 +10,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
@@ -313,6 +313,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     return html`
       <div
+        part="navigation previous"
         role="button"
         tabindex="0"
         aria-label="Previous slide"
@@ -326,6 +327,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ></igc-icon>
       </div>
       <div
+        part="navigation next"
         role="button"
         tabindex="0"
         aria-label="Next slide"
@@ -343,7 +345,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private pickerTemplate() {
     return html`
-      <div role="tablist">
+      <div
+        role="tablist"
+        part=${partNameMap({
+          indicators: true,
+          start: this.indicatorsOrientation === 'start',
+        })}
+      >
         ${this.slides.map((slide) => {
           return html`<button
             role="tab"

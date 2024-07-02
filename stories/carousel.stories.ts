@@ -121,7 +121,6 @@ const BasicTemplate = ({
   return html`
     <style>
       .image-container {
-        max-width: 85%;
         display: flex;
         align-items: center;
         justify-content: center;
