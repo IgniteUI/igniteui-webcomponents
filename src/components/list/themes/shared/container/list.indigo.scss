@@ -4,5 +4,5 @@
 $theme: $indigo;
 
 :host {
-    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')}) !important;
 }

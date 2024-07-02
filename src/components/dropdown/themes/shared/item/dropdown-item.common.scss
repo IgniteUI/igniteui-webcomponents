@@ -6,12 +6,20 @@ $theme: $material;
 :host {
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
+    }
 }
 
-:host([active]),
+:host([active]:hover),
 :host(:hover) {
     background: var-get($theme, 'hover-item-background');
     color: var-get($theme, 'hover-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'hover-item-icon-color');
+    }
 }
 
 :host([active]) {
@@ -22,15 +30,27 @@ $theme: $material;
 :host([selected]) {
     background: var-get($theme, 'selected-item-background');
     color: var-get($theme, 'selected-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'selected-item-icon-color');
+    }
 }
 
 :host([selected]:hover),
 :host([selected][active]) {
     background: var-get($theme, 'selected-hover-item-background');
     color: var-get($theme, 'selected-hover-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'selected-hover-item-icon-color');
+    }
 }
 
 :host([disabled]) {
     background: var-get($theme, 'disabled-item-background');
     color: var-get($theme, 'disabled-item-text-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'disabled-item-text-color');
+    }
 }

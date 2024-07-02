@@ -97,6 +97,8 @@ async function main() {
     theme: 'igtheme',
     excludePrivate: true,
     excludeProtected: true,
+    excludeNotDocumented: true,
+    suppressCommentWarningsInDeclarationFiles: true,
     name: 'Ignite UI for Web Components',
     readme: 'none',
   });

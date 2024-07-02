@@ -314,6 +314,20 @@ describe('Checkbox', () => {
       spec.submitValidates();
     });
 
+    it('fulfils required constraint with indeterminate', async () => {
+      // See the Note mention at
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#indeterminate_state_checkboxes
+      spec.element.required = true;
+      spec.element.indeterminate = true;
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
     it('fulfils custom constraint', async () => {
       spec.element.setCustomValidity('invalid');
       spec.submitFails();

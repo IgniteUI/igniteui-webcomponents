@@ -5,20 +5,25 @@ import { live } from 'lit/directives/live.js';
 
 import {
   addKeybindings,
+  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { formatString, partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
+import { noop, partNameMap } from '../common/util.js';
+import {
+  type Validator,
+  maxDateValidator,
+  minDateValidator,
+  requiredValidator,
+} from '../common/validators.js';
+import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -78,14 +83,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override validators: Validator<this>[] = [
+    requiredValidator,
+
     {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () => (this.required ? !!this.value : true),
-    },
-    {
-      key: 'rangeUnderflow',
-      message: () => formatString(messages.min, this.min),
+      ...minDateValidator,
       isValid: () =>
         this.min
           ? !DateTimeUtil.lessThanMinValue(
@@ -97,8 +98,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
           : true,
     },
     {
-      key: 'rangeOverflow',
-      message: () => formatString(messages.max, this.max),
+      ...maxDateValidator,
       isValid: () =>
         this.max
           ? !DateTimeUtil.greaterThanMaxValue(
@@ -145,16 +145,16 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * The value of the input.
-   * @attr
-   */
   public get value(): Date | null {
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /**
+   * The value of the input.
+   * @attr
+   */
   @property({ converter: converter })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set value(val: Date | null) {
     this._value = val
       ? DateTimeUtil.isValidDate(val)
@@ -340,11 +340,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       skip: () => this.readOnly,
-      bindingDefaults: { preventDefault: true },
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      .set([ctrlKey, ';'], () => {
-        this.value = new Date();
-      })
+      // Skip default spin when in the context of a date picker
+      .set([altKey, arrowUp], noop)
+      .set([altKey, arrowDown], noop)
+
+      .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
       .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
@@ -395,6 +397,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.value = null;
   }
 
+  protected setToday() {
+    this.value = new Date();
+    this.handleInput();
+  }
+
   protected updateMask() {
     if (this.focused) {
       this.maskedValue = this.getMaskedValue();
@@ -423,10 +430,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         this.maskedValue = this.value.toLocaleString();
       }
     }
-  }
-
-  protected handleChange() {
-    this.emitEvent('igcChange', { detail: this.value });
   }
 
   protected override handleInput() {
@@ -479,7 +482,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private spinValue(datePart: DatePart, delta: number): Date {
-    if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
+    if (!(this.value && DateTimeUtil.isValidDate(this.value))) {
       return new Date();
     }
 
@@ -654,9 +657,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override handleBlur() {
+    const isEmptyMask = this.maskedValue === this.emptyMask;
+    const isSameValue = this._oldValue === this.value;
+
     this.focused = false;
 
-    if (!this.isComplete() && this.maskedValue !== this.emptyMask) {
+    if (!(this.isComplete() || isEmptyMask)) {
       const parse = this.parseDate(this.maskedValue);
 
       if (parse) {
@@ -669,9 +675,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.updateMask();
     }
 
-    if (this._oldValue !== this.value) {
-      this.handleChange();
+    if (!(this.readOnly || isSameValue)) {
+      this.emitEvent('igcChange', { detail: this.value });
     }
+
     this.checkValidity();
     super.handleBlur();
   }
@@ -705,7 +712,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         @keydown=${super.handleKeydown}
         @click=${this.handleClick}
         @cut=${this.handleCut}
-        @change=${this.handleChange}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @dragenter=${this.handleDragEnter}

@@ -1,0 +1,32 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+[part~='spacer'] {
+    background: var-get($theme, 'banner-background');
+    box-shadow: inset 0 rem(-1px) 0 0  var-get($theme, 'banner-border-color');
+    border-radius: var-get($theme, 'border-radius');
+}
+
+[part~='message'] {
+    padding: 0 rem(8px);
+}
+
+::slotted([slot='prefix']) {
+    --default-size: 3;
+    --component-size: var(--ig-size, var(--default-size)) !important;
+
+    color: inherit;
+}
+
+[part~='illustration'] {
+    color: var-get($theme, 'banner-illustration-color');
+}
+
+[part~='content'] {
+    @include type-style('caption');
+
+    color: var-get($theme, 'banner-message-color');
+}
+

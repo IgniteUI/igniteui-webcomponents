@@ -376,6 +376,12 @@ export default class IgcComboComponent<
     this._rootClickController.update();
   }
 
+  @watch('disableFiltering')
+  protected updateOnDisableFiltering() {
+    this.resetSearchTerm();
+    this.pipeline();
+  }
+
   private _rootClickController = addRootClickHandler(this, {
     hideCallback: async () => {
       if (!this.handleClosing()) return;
@@ -521,6 +527,10 @@ export default class IgcComboComponent<
     this._displayValue = this.selectionController
       .getValue(selected, this.displayKey!)
       .join(', ');
+
+    if (this.target && this.singleSelect) {
+      this.target.value = this._displayValue;
+    }
 
     this.setFormValue();
     this.updateValidity();
@@ -772,6 +782,14 @@ export default class IgcComboComponent<
     this.updateValue();
   }
 
+  protected selectByIndex(index: number) {
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.selectByIndex(dataIndex);
+    this.navigationController.active = index;
+    this.updateValue();
+  }
+
   protected navigateTo(item: T) {
     this.navigationController.navigateTo(item, this.list);
   }
@@ -927,6 +945,7 @@ export default class IgcComboComponent<
       ?hidden=${this.disableFiltering || this.singleSelect}
     >
       <igc-input
+        .value=${this.dataController.searchTerm}
         part="search-input"
         placeholder=${this.placeholderSearch}
         exportparts="input: search-input"

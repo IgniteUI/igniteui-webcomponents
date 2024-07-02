@@ -146,6 +146,25 @@ describe('Navigation Drawer', () => {
       computedStyles = window.getComputedStyle(mini);
       expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
     });
+
+    it('initial render of a navbar with mini slot', async () => {
+      el = await fixture<IgcNavDrawerComponent>(html`
+        <igc-nav-drawer>
+          <div slot="mini">
+            <igc-nav-drawer-item>
+              <igc-icon slot="icon" name="home"></igc-icon>
+            </igc-nav-drawer-item>
+
+            <igc-nav-drawer-item>
+              <igc-icon slot="icon" name="search"></igc-icon>
+            </igc-nav-drawer-item>
+          </div>
+        </igc-nav-drawer>
+      `);
+
+      expect(el.open).to.be.false;
+      expect(el.renderRoot.querySelector<Element>('[part="mini"]')).to.exist;
+    });
   });
 
   const createNavDrawerElement = (

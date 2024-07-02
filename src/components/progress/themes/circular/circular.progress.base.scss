@@ -12,7 +12,7 @@
     // Do not use rem values here
     // This will break the component in Safari
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
-    --stroke-thickness: 2px;
+    --stroke-thickness: 1.3px;
     --diameter: 30px;
 }
 
@@ -27,8 +27,10 @@
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(var(--diameter) / 3 - var(--stroke-thickness));
-    line-height: normal;
+    font-size: rem(12px);
+    line-height: rem(16px);
+    font-weight: 600;
+    letter-spacing: rem(0.15px);
 }
 
 [part='svg indeterminate'] {
@@ -47,21 +49,11 @@
     transform: rotate(-90deg);
 }
 
-[part~='fill'] {
-    stroke-dasharray: #{$circumference} #{$circumference};
-    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
-    transition: stroke-dashoffset var(--duration) linear;
-
-    --percentage: 0;
-    --duration: 500ms;
-}
-
 [part~='track'],
 [part~='fill'] {
     width: 100%;
     height: 100%;
     fill: transparent;
-    stroke-width: var(--stroke-thickness);
     cx: calc(#{$diameter} / 2);
     cy: calc(#{$diameter} / 2);
     r: $radius;
@@ -70,6 +62,20 @@
     // This will break the component in Safari
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     transform-origin: center;
+}
+
+[part~='track'] {
+    stroke-width: var(--stroke-thickness);
+}
+
+[part~='fill'] {
+    stroke-dasharray: #{$circumference} #{$circumference};
+    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
+    transition: stroke-dashoffset var(--duration) linear;
+    stroke-width: calc(var(--stroke-thickness) + rem(0.75px));
+
+    --percentage: 0;
+    --duration: 500ms;
 }
 
 :host([dir='rtl']) {

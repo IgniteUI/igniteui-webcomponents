@@ -1,0 +1,42 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    igc-dialog {
+        igc-calendar {
+            border: none;
+        }
+    }
+    
+    igc-dialog::part(base) {
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
+    igc-focus-trap {
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+    }
+
+    [part='helper-text'] {
+        padding-inline: 0;
+
+        ::slotted([slot='helper-text']) {
+            @include type-style('body-2');
+        }
+    }
+
+    [part~='label'] {
+        @include type-style('body-1');
+
+        margin-bottom: rem(4px);
+    
+        &:empty {
+            display: none;
+        }
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
+}

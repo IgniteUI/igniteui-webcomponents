@@ -3,6 +3,12 @@
 
 $theme: $base;
 
+:host {
+    igc-popover::part(container) {
+        border-radius: var-get($theme, 'border-radius');
+    }
+}
+
 [part='base'] {
     background: var-get($theme, 'background-color');
     border-radius: var-get($theme, 'border-radius');

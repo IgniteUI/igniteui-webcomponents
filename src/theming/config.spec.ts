@@ -42,7 +42,7 @@ describe('Theming Config', () => {
       expect(getTheme()).to.deep.equal({ theme, themeVariant });
     });
 
-    const { detail } = await oneEvent(window, CHANGE_THEME_EVENT, false);
+    const { detail } = await oneEvent(window, CHANGE_THEME_EVENT);
     expect(detail.theme).to.equal(theme);
     expect(detail.themeVariant).to.equal(themeVariant);
   });

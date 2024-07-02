@@ -49,7 +49,8 @@
     }
 }
 
-::slotted(*) {
+// Calendar should be excluded because of the date picker dialog mode
+::slotted(:not(igc-calendar)) {
     font: inherit;
     letter-spacing: inherit;
     line-height: inherit;

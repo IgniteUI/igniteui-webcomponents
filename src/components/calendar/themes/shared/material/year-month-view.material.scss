@@ -6,40 +6,40 @@ $theme: $material;
 [part~='month-inner'] {
     &:focus,
     &:hover {
-        color: var-get($theme, 'month-hover-foreground');
-        background: var-get($theme, 'month-hover-background');
+        color: var-get($theme, 'ym-hover-foreground');
+        background: var-get($theme, 'ym-hover-background');
     }
 
     &[part~='current'] {
-        color: var-get($theme, 'month-current-foreground');
-        background: var-get($theme, 'month-current-background');
+        color: var-get($theme, 'ym-current-foreground');
+        background: var-get($theme, 'ym-current-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'month-current-hover-foreground');
-            background: var-get($theme, 'month-current-hover-background');
+            color: var-get($theme, 'ym-current-hover-foreground');
+            background: var-get($theme, 'ym-current-hover-background');
         }
     }
 
     &[part~='selected'] {
-        color: var-get($theme, 'month-selected-foreground');
-        background: var-get($theme, 'month-selected-background');
+        color: var-get($theme, 'ym-selected-foreground');
+        background: var-get($theme, 'ym-selected-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'month-selected-hover-foreground');
-            background: var-get($theme, 'month-selected-hover-background');
+            color: var-get($theme, 'ym-selected-hover-foreground');
+            background: var-get($theme, 'ym-selected-hover-background');
         }
     }
 
     &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'month-selected-current-foreground');
-        background: var-get($theme, 'month-selected-current-background');
+        color: var-get($theme, 'ym-selected-current-foreground');
+        background: var-get($theme, 'ym-selected-current-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'month-selected-current-hover-foreground');
-            background: var-get($theme, 'month-selected-current-hover-background');
+            color: var-get($theme, 'ym-selected-current-hover-foreground');
+            background: var-get($theme, 'ym-selected-current-hover-background');
         }
     }
 }
@@ -47,42 +47,42 @@ $theme: $material;
 [part~='year-inner'] {
     &:focus,
     &:hover {
-        color: var-get($theme, 'year-hover-foreground');
-        background: var-get($theme, 'year-hover-background');
+        color: var-get($theme, 'ym-hover-foreground');
+        background: var-get($theme, 'ym-hover-background');
     }
 
     &[part~='current'] {
-        color: var-get($theme, 'year-current-foreground');
-        background: var-get($theme, 'year-current-background');
+        color: var-get($theme, 'ym-current-foreground');
+        background: var-get($theme, 'ym-current-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'year-current-hover-foreground');
-            background: var-get($theme, 'year-current-hover-background');
+            color: var-get($theme, 'ym-current-hover-foreground');
+            background: var-get($theme, 'ym-current-hover-background');
         }
     }
 
 
     &[part~='selected'] {
-        color: var-get($theme, 'year-selected-foreground');
-        background: var-get($theme, 'year-selected-background');
+        color: var-get($theme, 'ym-selected-foreground');
+        background: var-get($theme, 'ym-selected-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'year-selected-hover-foreground');
-            background: var-get($theme, 'year-selected-hover-background');
+            color: var-get($theme, 'ym-selected-hover-foreground');
+            background: var-get($theme, 'ym-selected-hover-background');
         }
     }
 
 
     &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'year-selected-current-foreground');
-        background: var-get($theme, 'year-selected-current-background');
+        color: var-get($theme, 'ym-selected-current-foreground');
+        background: var-get($theme, 'ym-selected-current-background');
 
         &:focus,
         &:hover {
-            color: var-get($theme, 'year-selected-current-hover-foreground');
-            background: var-get($theme, 'year-selected-current-hover-background');
+            color: var-get($theme, 'ym-selected-current-hover-foreground');
+            background: var-get($theme, 'ym-selected-current-hover-background');
         }
     }
 }
@@ -91,7 +91,7 @@ $theme: $material;
 [part~='year-inner'] {
     height: var-get($theme, 'size');
     font-weight: 400;
-    border-radius: var-get($theme, 'month-year-border-radius');
+    border-radius: var-get($theme, 'ym-border-radius');
 
     &:focus,
     &:focus-visible,
@@ -100,26 +100,26 @@ $theme: $material;
     }
 
     &[part~='current'] {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'current-outline-color');
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-color');
 
         &:hover {
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'current-outline-hover-color');
+            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-hover-color');
         }
     }
 
     &[part~='selected'] {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'selected-outline-color');
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'ym-selected-outline-color');
 
         &:hover {
-            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'selected-hover-outline-color');
+            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'ym-selected-hover-outline-color');
         }
     }
 
     &[part~='selected'][part~='current'] {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-color');
 
         &:hover {
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'selected-current-outline-color');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-color');
         }
     }
 }

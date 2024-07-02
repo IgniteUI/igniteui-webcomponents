@@ -243,15 +243,23 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   };
 
-  private handleSlotChange() {
+  private slotChanged() {
+    this.requestUpdate();
+  }
+
+  private handleContentChange() {
     // Setup submit handling for supported forms
-    Array.from(this.querySelectorAll('igc-form, form'))
-      .filter((each) => each.getAttribute('method') === 'dialog')
-      .forEach((form) => {
-        const event = /igc-form/i.test(form.tagName) ? 'igcSubmit' : 'submit';
-        form.removeEventListener(event, this.formSubmitHandler);
-        form.addEventListener(event, this.formSubmitHandler);
-      });
+    for (const form of this.querySelectorAll('igc-form, form')) {
+      if (form.getAttribute('method') !== 'dialog') {
+        continue;
+      }
+
+      const eventName = form.matches('form') ? 'submit' : 'igcSubmit';
+      form.removeEventListener(eventName, this.formSubmitHandler);
+      form.addEventListener(eventName, this.formSubmitHandler);
+    }
+
+    this.slotChanged();
   }
 
   protected override render() {
@@ -274,13 +282,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         aria-labelledby=${ifDefined(labelledby)}
       >
         <header part="title" id=${this.titleId}>
-          <slot name="title"><span>${this.title}</span></slot>
+          <slot name="title" @slotchange=${this.slotChanged}
+            ><span>${this.title}</span></slot
+          >
         </header>
         <section part="content">
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot @slotchange=${this.handleContentChange}></slot>
         </section>
         <footer part="footer">
-          <slot name="footer">
+          <slot name="footer" @slotchange=${this.slotChanged}>
             ${this.hideDefaultAction
               ? nothing
               : html`<igc-button variant="flat" @click=${this.hideWithEvent}

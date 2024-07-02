@@ -1,8 +1,12 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --stroke-thickness: 4px;
-    --diameter: 28px;
+    --stroke-thickness: 2px;
+    --diameter: 50px;
+}
+
+[part~='label'] {
+    @include type-style('subtitle-1');
 }
 
 [part~='svg'][part~='indeterminate'] {
@@ -16,4 +20,8 @@
 
 [part~='track'][part~='indeterminate'] {
     stroke: transparent;
+}
+
+[part~='fill'] {
+    stroke-width: var(--stroke-thickness);
 }
