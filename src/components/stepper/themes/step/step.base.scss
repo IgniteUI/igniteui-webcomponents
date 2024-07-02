@@ -138,7 +138,6 @@
     height: auto;
     overflow: auto;
     opacity: 0;
-    transition: opacity 0.35s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 
     > slot {
         display: block;

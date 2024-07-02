@@ -12,7 +12,3 @@
     --indicator-box-shadow-size: #{rem(1px)};
     --separator-type: solid;
 }
-
-:host(:not([orientation='horizontal'])) {
-    --vertical-body-height: 32px;
-}

@@ -3,11 +3,12 @@ import { html } from 'lit';
 
 import {
   IgcButtonComponent,
+  IgcInputComponent,
   IgcStepperComponent,
   defineComponents,
 } from '../src/index.js';
 
-defineComponents(IgcStepperComponent, IgcButtonComponent);
+defineComponents(IgcStepperComponent, IgcButtonComponent, IgcInputComponent);
 
 // region default
 const metadata: Meta<IgcStepperComponent> = {
@@ -148,17 +149,25 @@ const BasicTemplate = ({
       <igc-step complete>
         <span slot="title">Step1</span>
         <span slot="subtitle">(completed)</span>
-        <label for="first-name">First Name:</label>
-        <input type="text" id="first-name" name="first-name" required />
+        <igc-input
+          label="First Name"
+          id="first-name"
+          name="first-name"
+          required
+        ></igc-input>
         <br /><br />
         <igc-button @click=${next}>Next</igc-button>
       </igc-step>
 
-      <igc-step>
+      <igc-step active>
         <span slot="title">Step 2</span>
         <span slot="subtitle">(default)</span>
-        <label for="last-name">Last Name:</label>
-        <input type="text" id="last-name" name="last-name" required />
+        <igc-input
+          label="Last Name"
+          id="last-name"
+          name="last-name"
+          required
+        ></igc-input>
         <br /><br />
         <igc-button @click=${prev}>Prev</igc-button>
         <igc-button @click=${next}>Next</igc-button>
