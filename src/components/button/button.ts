@@ -42,11 +42,6 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   @property({ reflect: true })
   public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'contained';
 
-  constructor() {
-    super();
-    this.size = 'medium';
-  }
-
   protected renderContent() {
     return html`
       <slot name="prefix"></slot>

@@ -8,7 +8,6 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
@@ -35,9 +34,10 @@ export interface IgcChipEventMap {
  * @csspart suffix - The suffix container of the chip.
  */
 @themes(all)
-export default class IgcChipComponent extends SizableMixin(
-  EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcChipComponent extends EventEmitterMixin<
+  IgcChipEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];
 
@@ -86,12 +86,17 @@ export default class IgcChipComponent extends SizableMixin(
 
   constructor() {
     super();
-    this.size = 'medium';
 
     addKeybindings(this, {
       ref: this._removePartRef,
       bindingDefaults: { triggers: ['keyup'] },
     }).setActivateHandler(this.handleRemove);
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   protected handleSelect() {
@@ -117,7 +122,7 @@ export default class IgcChipComponent extends SizableMixin(
       >
         <span part="prefix">
           ${this.selectable && this.selected
-            ? html`<slot @slotchange=${this.slotChanges} name="select">
+            ? html`<slot name="select">
                 <igc-icon
                   size=${this.size}
                   name="chip_select"
@@ -135,7 +140,6 @@ export default class IgcChipComponent extends SizableMixin(
           ${this.removable && !this.disabled
             ? html`<slot
                 ${ref(this._removePartRef)}
-                @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
                 name="remove"
               >
@@ -152,10 +156,6 @@ export default class IgcChipComponent extends SizableMixin(
         </span>
       </button>
     `;
-  }
-
-  protected slotChanges() {
-    this.requestUpdate();
   }
 }
 
