@@ -52,7 +52,7 @@ const metadata: Meta<IgcRadioComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -81,7 +81,7 @@ interface IgcRadioArgs {
   name: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
 }
 type Story = StoryObj<IgcRadioArgs>;

@@ -14,11 +14,11 @@ import {
   minLengthValidator,
   minValidator,
   patternValidator,
-  requiredNumberValidator,
   requiredValidator,
   stepValidator,
   urlValidator,
 } from '../common/validators.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
 
 /**
@@ -27,6 +27,16 @@ import { IgcInputBaseComponent } from './input-base.js';
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot type-mismatch - Renders content when the a type url/email input pattern validation fails.
+ * @slot pattern-mismatch - Renders content when the pattern validation fails.
+ * @slot too-long - Renders content when the maxlength validation fails.
+ * @slot too-short - Renders content when the minlength validation fails.
+ * @slot range-overflow - Renders content when the max validation fails.
+ * @slot range-underflow - Renders content when the min validation fails.
+ * @slot step-mismatch - Renders content when the step validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
@@ -45,7 +55,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcInputComponent);
+    registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
   private get isStringType() {
@@ -53,13 +63,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () =>
-        this.isStringType
-          ? requiredValidator.isValid(this)
-          : requiredNumberValidator.isValid(this),
-    },
+    requiredValidator,
     {
       ...minLengthValidator,
       isValid: () =>

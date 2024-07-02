@@ -1,610 +1,621 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import { type TemplateResult, html } from 'lit';
 import { spy } from 'sinon';
 
-import { defineComponents } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
-import IgcFormComponent from '../form/form.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  FormAssociatedTestBed,
+  checkValidationSlots,
+  simulateInput,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
+  before(() => defineComponents(IgcMaskInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
   const defaultMask = 'CCCCCCCCCC';
 
-  const syncParser = () => {
-    parser.mask = masked.mask;
-    parser.prompt = masked.prompt;
-  };
-  const input = () =>
-    masked.shadowRoot!.querySelector('input') as HTMLInputElement;
+  let element: IgcMaskInputComponent;
+  let input: HTMLInputElement;
 
-  let masked: IgcMaskInputComponent;
+  const syncParser = () => {
+    parser.mask = element.mask;
+    parser.prompt = element.prompt;
+  };
 
   describe('Generic properties', async () => {
     beforeEach(async () => {
-      masked = await fixture<IgcMaskInputComponent>(
+      element = await fixture<IgcMaskInputComponent>(
         html`<igc-mask-input></igc-mask-input>`
       );
+      input = element.renderRoot.querySelector('input')!;
     });
 
     it('sensible default values', async () => {
-      expect(masked.prompt).to.equal(defaultPrompt);
-      expect(masked.mask).to.equal(defaultMask);
-      expect(masked.value).to.equal('');
-      expect(input().placeholder).to.equal(parser.escapedMask);
+      expect(element.prompt).to.equal(defaultPrompt);
+      expect(element.mask).to.equal(defaultMask);
+      expect(element.value).to.equal('');
+      expect(input.placeholder).to.equal(parser.escapedMask);
     });
 
     it('prompt character change (no value)', async () => {
-      masked.prompt = '*';
+      element.prompt = '*';
       syncParser();
 
-      await elementUpdated(masked);
-      expect(input().placeholder).to.equal(parser.escapedMask);
+      await elementUpdated(element);
+      expect(input.placeholder).to.equal(parser.escapedMask);
     });
 
     it('prompt character change (value)', async () => {
-      masked.value = '777';
-      await elementUpdated(masked);
+      element.value = '777';
+      await elementUpdated(element);
 
-      masked.prompt = '*';
+      element.prompt = '*';
       syncParser();
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('mask change (no value)', async () => {
-      masked.mask = 'CCCC';
+      element.mask = 'CCCC';
       syncParser();
 
-      await elementUpdated(masked);
-      expect(input().placeholder).to.equal(parser.escapedMask);
+      await elementUpdated(element);
+      expect(input.placeholder).to.equal(parser.escapedMask);
     });
 
     it('mask change (value)', async () => {
-      masked.value = '1111';
-      await elementUpdated(masked);
+      element.value = '1111';
+      await elementUpdated(element);
 
-      masked.mask = 'CC CC';
+      element.mask = 'CC CC';
       syncParser();
 
-      await elementUpdated(masked);
-      expect(input().value).to.equal(parser.apply(masked.value));
+      await elementUpdated(element);
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('placeholder is updated correctly', async () => {
       const placeholder = 'Enter payment info';
       syncParser();
 
-      masked.placeholder = placeholder;
-      await elementUpdated(masked);
+      element.placeholder = placeholder;
+      await elementUpdated(element);
 
-      expect(input().placeholder).to.equal(placeholder);
+      expect(input.placeholder).to.equal(placeholder);
 
-      masked.placeholder = '';
-      await elementUpdated(masked);
+      element.placeholder = '';
+      await elementUpdated(element);
 
-      expect(input().placeholder).to.equal('');
+      expect(input.placeholder).to.equal('');
 
-      masked.placeholder = null as any;
-      await elementUpdated(masked);
+      element.placeholder = null as any;
+      await elementUpdated(element);
 
-      expect(input().placeholder).to.equal(parser.escapedMask);
+      expect(input.placeholder).to.equal(parser.escapedMask);
     });
 
     it('empty value without literals', async () => {
-      expect(masked.value).to.equal('');
+      expect(element.value).to.equal('');
     });
 
     it('empty value with literals', async () => {
-      masked.valueMode = 'withFormatting';
+      element.valueMode = 'withFormatting';
       syncParser();
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('');
+      expect(element.value).to.equal('');
     });
 
     it('empty value and readonly on focus', async () => {
-      masked.readonly = true;
+      element.readonly = true;
       syncParser();
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      masked.focus();
-      await elementUpdated(masked);
+      element.focus();
+      await elementUpdated(element);
 
-      expect(input().value).to.equal('');
+      expect(input.value).to.equal('');
     });
 
     it('get value without literals', async () => {
-      masked.mask = '(CC) (CC)';
-      masked.value = '1234';
+      element.mask = '(CC) (CC)';
+      element.value = '1234';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('1234');
+      expect(element.value).to.equal('1234');
     });
 
     it('value with literals then value without', async () => {
-      masked.mask = '(CC) (CC)';
-      masked.value = '1234';
-      masked.valueMode = 'withFormatting';
+      element.mask = '(CC) (CC)';
+      element.value = '1234';
+      element.valueMode = 'withFormatting';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('(12) (34)');
+      expect(element.value).to.equal('(12) (34)');
 
-      masked.valueMode = 'raw';
-      await elementUpdated(masked);
+      element.valueMode = 'raw';
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('1234');
+      expect(element.value).to.equal('1234');
     });
 
     it('invalid state is correctly reflected', async () => {
-      masked.required = true;
-      await elementUpdated(masked);
+      element.required = true;
+      await elementUpdated(element);
 
-      expect(masked.reportValidity()).to.be.false;
-      expect(masked.invalid).to.be.true;
+      expect(element.reportValidity()).to.be.false;
+      expect(element.invalid).to.be.true;
 
-      masked.required = false;
-      await elementUpdated(masked);
+      element.required = false;
+      await elementUpdated(element);
 
-      expect(masked.reportValidity()).to.be.true;
-      expect(masked.invalid).to.be.false;
+      expect(element.reportValidity()).to.be.true;
+      expect(element.invalid).to.be.false;
 
       // Disabled inputs are always valid
-      masked.required = true;
-      masked.disabled = true;
-      await elementUpdated(masked);
+      element.required = true;
+      element.disabled = true;
+      await elementUpdated(element);
 
-      expect(masked.reportValidity()).to.be.true;
-      expect(masked.invalid).to.be.false;
+      expect(element.reportValidity()).to.be.true;
+      expect(element.invalid).to.be.false;
     });
 
     it('valid/invalid state based on mask pattern', async () => {
-      masked.mask = '(####)';
-      await elementUpdated(masked);
+      element.mask = '(####)';
+      await elementUpdated(element);
 
-      masked.value = '111';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.false;
+      element.value = '111';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.false;
 
-      masked.value = '2222';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.true;
+      element.value = '2222';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.true;
 
-      masked.mask = 'CCC';
-      masked.value = '';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.true;
+      element.mask = 'CCC';
+      element.value = '';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.true;
 
-      masked.mask = 'CC &';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.true;
+      element.mask = 'CC &';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.true;
 
-      masked.value = 'R';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.false;
+      element.value = 'R';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.false;
 
-      masked.value = '  R';
-      await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.true;
+      element.value = '  R';
+      await elementUpdated(element);
+      expect(element.checkValidity()).to.be.true;
     });
 
     it('setCustomValidity', async () => {
-      masked.setCustomValidity('Fill in the value');
-      await elementUpdated(masked);
+      element.setCustomValidity('Fill in the value');
+      element.reportValidity();
+      await elementUpdated(element);
 
-      expect(masked.invalid).to.be.true;
+      expect(element.invalid).to.be.true;
 
-      masked.setCustomValidity('');
-      await elementUpdated(masked);
+      element.setCustomValidity('');
+      element.reportValidity();
+      await elementUpdated(element);
 
-      expect(masked.invalid).to.be.false;
+      expect(element.invalid).to.be.false;
     });
 
     it('setRangeText() method', async () => {
       const checkSelectionRange = (start: number, end: number) =>
-        expect([start, end]).to.eql([
-          input().selectionStart,
-          input().selectionEnd,
-        ]);
+        expect([start, end]).to.eql([input.selectionStart, input.selectionEnd]);
 
-      masked.mask = '(CC) (CC)';
-      masked.value = '1111';
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
       // No boundaries, from current user selection
-      masked.setSelectionRange(2, 2);
-      await elementUpdated(masked);
-      masked.setRangeText('22'); // (12) (21)
-      await elementUpdated(masked);
+      element.setSelectionRange(2, 2);
+      await elementUpdated(element);
+      element.setRangeText('22'); // (12) (21)
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
-      expect(masked.value).to.equal('1221');
+      expect(input.value).to.equal(parser.apply(element.value));
+      expect(element.value).to.equal('1221');
       checkSelectionRange(2, 2);
 
       // Keep passed selection range
-      masked.value = '1111';
-      masked.setRangeText('22', 0, 2, 'select'); // (22) (11)
-      await elementUpdated(masked);
+      element.value = '1111';
+      element.setRangeText('22', 0, 2, 'select'); // (22) (11)
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
-      expect(masked.value).to.equal('2211');
+      expect(input.value).to.equal(parser.apply(element.value));
+      expect(element.value).to.equal('2211');
       checkSelectionRange(0, 2);
 
       // Collapse range to start
-      masked.value = '';
-      masked.setRangeText('xx', 0, 4, 'start');
-      await elementUpdated(masked);
+      element.value = '';
+      element.setRangeText('xx', 0, 4, 'start');
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
-      expect(masked.value).to.equal('xx');
+      expect(input.value).to.equal(parser.apply(element.value));
+      expect(element.value).to.equal('xx');
       checkSelectionRange(0, 0);
 
       // Collapse range to end
-      masked.value = 'xx';
-      masked.setRangeText('yy', 2, 5, 'end');
-      await elementUpdated(masked);
+      element.value = 'xx';
+      element.setRangeText('yy', 2, 5, 'end');
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
-      expect(masked.value).to.equal('xyy');
+      expect(input.value).to.equal(parser.apply(element.value));
+      expect(element.value).to.equal('xyy');
       checkSelectionRange(5, 5);
     });
 
     it('igcChange event', async () => {
       syncParser();
 
-      const eventSpy = spy(masked, 'emitEvent');
-      masked.value = 'abc';
-      await elementUpdated(masked);
+      const eventSpy = spy(element, 'emitEvent');
+      element.value = 'abc';
+      await elementUpdated(element);
 
-      input().dispatchEvent(new Event('change'));
+      input.dispatchEvent(new Event('change'));
       expect(eventSpy).calledWith('igcChange', { detail: 'abc' });
     });
 
     it('igcChange event with literals', async () => {
       syncParser();
 
-      const eventSpy = spy(masked, 'emitEvent');
-      masked.value = 'abc';
-      masked.valueMode = 'withFormatting';
-      await elementUpdated(masked);
+      const eventSpy = spy(element, 'emitEvent');
+      element.value = 'abc';
+      element.valueMode = 'withFormatting';
+      await elementUpdated(element);
 
-      input().dispatchEvent(new Event('change'));
+      input.dispatchEvent(new Event('change'));
       expect(eventSpy).calledWith('igcChange', {
-        detail: parser.apply(masked.value),
+        detail: parser.apply(element.value),
       });
     });
 
     it('igcInput event', async () => {
-      masked.mask = 'CCC';
-      await elementUpdated(masked);
+      element.mask = 'CCC';
+      await elementUpdated(element);
       syncParser();
 
-      const eventSpy = spy(masked, 'emitEvent');
-      masked.value = '111';
-      masked.setSelectionRange(2, 3);
-      await elementUpdated(masked);
+      const eventSpy = spy(element, 'emitEvent');
+      element.value = '111';
+      element.setSelectionRange(2, 3);
+      await elementUpdated(element);
 
-      fireInputEvent(input(), 'insertText');
+      // fireInputEvent(input, 'insertText');
+      simulateInput(input, {
+        inputType: 'insertText',
+        skipValueProperty: true,
+      });
       expect(eventSpy).calledWith('igcInput', { detail: '111' });
     });
 
     it('igInput event (end of pattern)', async () => {
-      masked.mask = 'CCC';
-      await elementUpdated(masked);
+      element.mask = 'CCC';
+      await elementUpdated(element);
       syncParser();
 
-      const eventSpy = spy(masked, 'emitEvent');
-      masked.value = '111';
-      masked.setSelectionRange(3, 3);
-      await elementUpdated(masked);
+      const eventSpy = spy(element, 'emitEvent');
+      element.value = '111';
+      element.setSelectionRange(3, 3);
+      await elementUpdated(element);
 
-      fireInputEvent(input(), 'insertText');
+      simulateInput(input, {
+        inputType: 'insertText',
+        skipValueProperty: true,
+      });
       expect(eventSpy).not.calledWith('igcInput', { detail: '111' });
     });
 
-    it('is accessible', async () => await expect(masked).to.be.accessible());
+    it('is accessible', async () => {
+      await expect(element).to.be.accessible();
+    });
 
     it('focus updates underlying input mask', async () => {
-      masked.focus();
+      element.focus();
       syncParser();
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply());
+      expect(input.value).to.equal(parser.apply());
     });
 
     it('blur updates underlying input mask (empty)', async () => {
       syncParser();
 
-      masked.focus();
-      await elementUpdated(masked);
-      masked.blur();
-      await elementUpdated(masked);
+      element.focus();
+      await elementUpdated(element);
+      element.blur();
+      await elementUpdated(element);
 
-      expect(input().value).to.equal('');
+      expect(input.value).to.equal('');
     });
 
     it('blur updates underlying input mask (non-empty)', async () => {
-      masked.mask = '[CC] CC CC';
+      element.mask = '[CC] CC CC';
       syncParser();
 
-      masked.value;
-      masked.focus();
-      await elementUpdated(masked);
-      masked.value = '654321';
-      masked.blur();
-      await elementUpdated(masked);
+      element.value;
+      element.focus();
+      await elementUpdated(element);
+      element.value = '654321';
+      element.blur();
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply('654321'));
+      expect(input.value).to.equal(parser.apply('654321'));
     });
 
     it('drag enter without focus', async () => {
       syncParser();
 
-      input().dispatchEvent(new DragEvent('dragenter'));
-      await elementUpdated(masked);
+      input.dispatchEvent(new DragEvent('dragenter'));
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply());
+      expect(input.value).to.equal(parser.apply());
     });
 
     it('drag enter with focus', async () => {
       syncParser();
 
-      masked.focus();
-      await elementUpdated(masked);
+      element.focus();
+      await elementUpdated(element);
 
-      input().dispatchEvent(new DragEvent('dragenter'));
-      await elementUpdated(masked);
+      input.dispatchEvent(new DragEvent('dragenter'));
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('drag leave without focus', async () => {
       syncParser();
 
-      input().dispatchEvent(new DragEvent('dragleave'));
-      await elementUpdated(masked);
+      input.dispatchEvent(new DragEvent('dragleave'));
+      await elementUpdated(element);
 
-      expect(input().value).to.equal('');
+      expect(input.value).to.equal('');
     });
 
     it('drag leave with focus', async () => {
-      masked.focus();
-      await elementUpdated(masked);
+      element.focus();
+      await elementUpdated(element);
 
-      input().dispatchEvent(new DragEvent('dragleave'));
-      await elementUpdated(masked);
+      input.dispatchEvent(new DragEvent('dragleave'));
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Delete key behavior', async () => {
-      masked.value = '1234';
-      await elementUpdated(masked);
-      masked.setSelectionRange(3, 4);
+      element.value = '1234';
+      await elementUpdated(element);
+      element.setSelectionRange(3, 4);
 
-      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
-      fireInputEvent(input(), 'deleteContentForward');
-      await elementUpdated(masked);
+      simulateKeyboard(input, 'Delete');
+      simulateInput(input, {
+        inputType: 'deleteContentForward',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('123');
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(element.value).to.equal('123');
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Delete key behavior - skip literals', async () => {
-      masked.mask = 'CC--CCC---CC';
-      masked.value = '1234567';
+      element.mask = 'CC--CCC---CC';
+      element.value = '1234567';
       // value: 12--345---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
       // value: 12--345---67
-      masked.setSelectionRange(1, 1);
-      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
-      fireInputEvent(input(), 'deleteContentForward');
+      element.setSelectionRange(1, 1);
+      simulateKeyboard(input, 'Delete');
+      simulateInput(input, {
+        inputType: 'deleteContentForward',
+        skipValueProperty: true,
+      });
       // value: 1_--345---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
-      fireInputEvent(input(), 'deleteContentForward');
+      simulateKeyboard(input, 'Delete');
+      simulateInput(input, {
+        inputType: 'deleteContentForward',
+        skipValueProperty: true,
+      });
       // value: 1_--_45---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(input().value).to.equal('1_--_45---67');
-      expect(masked.value).to.equal('14567');
+      expect(input.value).to.equal('1_--_45---67');
+      expect(element.value).to.equal('14567');
     });
 
     it('Backspace key behavior', async () => {
-      masked.value = '1234';
-      await elementUpdated(masked);
-      masked.setSelectionRange(0, 1);
+      element.value = '1234';
+      await elementUpdated(element);
+      element.setSelectionRange(0, 1);
 
-      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
-      fireInputEvent(input(), 'deleteContentBackward');
-      await elementUpdated(masked);
+      simulateKeyboard(input, 'Backspace');
+      simulateInput(input, {
+        inputType: 'deleteContentBackward',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('234');
-      expect(input().value).to.equal(parser.apply(input().value));
+      expect(element.value).to.equal('234');
+      expect(input.value).to.equal(parser.apply(input.value));
     });
 
     it('Backspace key behavior - skip literals', async () => {
-      masked.mask = 'CC--CCC---CC';
-      masked.value = '1234567';
+      element.mask = 'CC--CCC---CC';
+      element.value = '1234567';
       // value: 12--345---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      masked.setSelectionRange(4, 5);
-      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
-      fireInputEvent(input(), 'deleteContentBackward');
+      element.setSelectionRange(4, 5);
+      simulateKeyboard(input, 'Backspace');
+      simulateInput(input, {
+        inputType: 'deleteContentBackward',
+        skipValueProperty: true,
+      });
       // value: 12--_45---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
       // Emulate range shift on multiple backspace presses as
       // it is not correctly reflected in test environment
-      masked.setSelectionRange(3, 4);
-      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
-      fireInputEvent(input(), 'deleteContentBackward');
+      element.setSelectionRange(3, 4);
+      simulateKeyboard(input, 'Backspace');
+      simulateInput(input, {
+        inputType: 'deleteContentBackward',
+        skipValueProperty: true,
+      });
       // value: 1_--_45---67
-      await elementUpdated(masked);
+      await elementUpdated(element);
 
-      expect(input().value).to.equal('1_--_45---67');
-      expect(masked.value).to.equal('14567');
+      expect(input.value).to.equal('1_--_45---67');
+      expect(element.value).to.equal('14567');
     });
 
     it('Backspace key behavior with composition', async () => {
-      masked.value = '1234';
-      await elementUpdated(masked);
+      element.value = '1234';
+      await elementUpdated(element);
 
-      masked.setSelectionRange(0, 1);
+      element.setSelectionRange(0, 1);
 
-      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
-      fireInputEvent(input(), 'deleteContentBackward', { isComposing: true });
-      await elementUpdated(masked);
+      simulateKeyboard(input, 'Backspace');
+      simulateInput(input, {
+        inputType: 'deleteContentBackward',
+        isComposing: true,
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('1234');
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(element.value).to.equal('1234');
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Default input behavior', async () => {
-      masked.value = 'xxxx';
-      await elementUpdated(masked);
+      element.value = 'xxxx';
+      await elementUpdated(element);
 
-      masked.setSelectionRange(4, 4);
-      input().value = `${masked.value}zz`;
-      fireInputEvent(input(), 'insertText');
-      await elementUpdated(masked);
+      element.setSelectionRange(4, 4);
+      input.value = `${element.value}zz`;
+      simulateInput(input, {
+        inputType: 'insertText',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('xxxxzz');
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(element.value).to.equal('xxxxzz');
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Composition behavior', async () => {
       const data = 'ときょお１２や';
-      masked.value = ' ';
-      masked.mask = 'CCCC::###';
+      element.value = ' ';
+      element.mask = 'CCCC::###';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
-      masked.setSelectionRange(0, 0);
-      fireCompositionEvent(input(), 'compositionstart');
-      input().setSelectionRange(0, data.length);
-      fireCompositionEvent(input(), 'compositionend', { data });
-      await elementUpdated(masked);
+      element.setSelectionRange(0, 0);
+      fireCompositionEvent(input, 'compositionstart');
+      input.setSelectionRange(0, data.length);
+      fireCompositionEvent(input, 'compositionend', { data });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('ときょお12');
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(element.value).to.equal('ときょお12');
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Cut behavior', async () => {
-      masked.value = 'xxxyyyxxx';
-      masked.mask = 'CCC-CCC-CCC';
+      element.value = 'xxxyyyxxx';
+      element.mask = 'CCC-CCC-CCC';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
-      masked.setSelectionRange(4, 7);
-      input().dispatchEvent(new ClipboardEvent('cut'));
-      fireInputEvent(input(), 'deleteByCut');
-      await elementUpdated(masked);
+      element.setSelectionRange(4, 7);
+      input.dispatchEvent(new ClipboardEvent('cut'));
 
-      expect(masked.value).to.equal('xxxxxx');
-      expect(input().value).to.equal('xxx-___-xxx');
+      simulateInput(input, {
+        inputType: 'deleteByCut',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('xxxxxx');
+      expect(input.value).to.equal('xxx-___-xxx');
     });
 
     it('Paste behavior', async () => {
-      masked.value = '111111';
-      masked.mask = 'CCC::CCC';
+      element.value = '111111';
+      element.mask = 'CCC::CCC';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
       // Emulate paste behavior
-      input().value = '112222';
-      input().setSelectionRange(2, 8);
+      input.value = '112222';
+      input.setSelectionRange(2, 8);
 
-      fireInputEvent(input(), 'insertFromPaste');
-      await elementUpdated(masked);
-      expect(input().value).to.equal(parser.apply(masked.value));
+      simulateInput(input, {
+        inputType: 'insertFromPaste',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
+      expect(input.value).to.equal(parser.apply(element.value));
     });
 
     it('Drop behavior', async () => {
-      masked.mask = 'CCC::CCC';
-      masked.value = '123456';
+      element.mask = 'CCC::CCC';
+      element.value = '123456';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
       // Emulate drop behavior
-      input().value = '   abc';
-      input().setSelectionRange(3, 8);
+      input.value = '   abc';
+      input.setSelectionRange(3, 8);
 
-      fireInputEvent(input(), 'insertFromDrop');
-      await elementUpdated(masked);
+      simulateInput(input, {
+        inputType: 'insertFromDrop',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(input.value).to.equal(parser.apply(element.value));
 
       // https://github.com/IgniteUI/igniteui-webcomponents/issues/383
-      masked.mask = 'CC-CC';
-      masked.value = 'xxyy';
+      element.mask = 'CC-CC';
+      element.value = 'xxyy';
 
-      await elementUpdated(masked);
+      await elementUpdated(element);
       syncParser();
 
-      input().value = 'xx-basic-yy';
-      input().setSelectionRange(3, 3 + 'basic'.length);
-      fireInputEvent(input(), 'insertFromDrop');
-      await elementUpdated(masked);
+      input.value = 'xx-basic-yy';
+      input.setSelectionRange(3, 3 + 'basic'.length);
+      simulateInput(input, {
+        inputType: 'insertFromDrop',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
 
-      expect(masked.value).to.equal('xxba');
-      expect(input().value).to.equal(parser.apply(masked.value));
-    });
-  });
-
-  // TODO: Remove after igc-form removal
-  describe('igc-form interaction', async () => {
-    let form: IgcFormComponent;
-
-    beforeEach(async () => {
-      form = await fixture<IgcFormComponent>(html`
-        <igc-form>
-          <igc-mask-input></igc-mask-input>
-        </igc-form>
-      `);
-      masked = form.querySelector('igc-mask-input') as IgcMaskInputComponent;
-    });
-
-    it('empty non-required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(true);
-    });
-
-    it('empty required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      masked.required = true;
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
-    });
-
-    it('non-empty non-required mask with required pattern positions', async () => {
-      masked.mask = '&&CC';
-      masked.value = 'F';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
+      expect(element.value).to.equal('xxba');
+      expect(input.value).to.equal(parser.apply(element.value));
     });
   });
 
@@ -745,16 +756,54 @@ describe('Masked input', () => {
       spec.submitValidates();
     });
   });
-});
 
-type KeyboardEventType = 'keydown' | 'keypress' | 'keyup';
-type InputEventType =
-  | 'insertText'
-  | 'insertFromDrop'
-  | 'insertFromPaste'
-  | 'deleteContentForward'
-  | 'deleteContentBackward'
-  | 'deleteByCut';
+  describe('Validation message slots', () => {
+    async function createFixture(template: TemplateResult) {
+      element = await fixture<IgcMaskInputComponent>(template);
+    }
+
+    it('renders bad-input slot', async () => {
+      await createFixture(html`
+        <igc-mask-input mask="00-00">
+          <div slot="bad-input"></div>
+        </igc-mask-input>
+      `);
+
+      await checkValidationSlots(element, 'badInput');
+    });
+
+    it('renders value-missing slot', async () => {
+      await createFixture(html`
+        <igc-mask-input required>
+          <div slot="value-missing"></div>
+        </igc-mask-input>
+      `);
+
+      await checkValidationSlots(element, 'valueMissing');
+    });
+
+    it('renders invalid slot', async () => {
+      await createFixture(html`
+        <igc-mask-input required>
+          <div slot="invalid"></div>
+        </igc-mask-input>
+      `);
+
+      await checkValidationSlots(element, 'invalid');
+    });
+
+    it('renders custom-error slot', async () => {
+      await createFixture(html`
+        <igc-mask-input>
+          <div slot="custom-error"></div>
+        </igc-mask-input>
+      `);
+
+      element.setCustomValidity('invalid');
+      await checkValidationSlots(element, 'customError');
+    });
+  });
+});
 
 type CompositionEventType = 'compositionstart' | 'compositionend';
 
@@ -763,21 +812,3 @@ const fireCompositionEvent = (
   type: CompositionEventType,
   options: Partial<CompositionEventInit> = {}
 ) => target.dispatchEvent(new CompositionEvent(type, { ...options }));
-
-const fireKeyboardEvent = (
-  target: HTMLElement,
-  type: KeyboardEventType,
-  options: Partial<KeyboardEventInit> = {}
-) => {
-  target.dispatchEvent(new KeyboardEvent(type, { ...options }));
-};
-
-const fireInputEvent = (
-  target: HTMLElement,
-  type: InputEventType,
-  options: Partial<InputEventInit> = {}
-) => {
-  target.dispatchEvent(
-    new InputEvent('input', { inputType: type, ...options })
-  );
-};

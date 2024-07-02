@@ -129,7 +129,7 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -206,7 +206,7 @@ interface IgcSelectArgs {
   name: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** Whether the component dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
@@ -555,6 +555,7 @@ export const Form: Story = {
                 </igc-select-group>
               `
             )}
+            <span slot="value-missing">This field is required!</span>
             <span slot="helper-text">Sample helper text.</span>
           </igc-select>
         </fieldset>
