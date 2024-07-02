@@ -4,12 +4,11 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
-import IgcFormComponent from '../form/form.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
+  before(() => defineComponents(IgcMaskInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -566,45 +565,6 @@ describe('Masked input', () => {
 
       expect(masked.value).to.equal('xxba');
       expect(input().value).to.equal(parser.apply(masked.value));
-    });
-  });
-
-  // TODO: Remove after igc-form removal
-  describe('igc-form interaction', async () => {
-    let form: IgcFormComponent;
-
-    beforeEach(async () => {
-      form = await fixture<IgcFormComponent>(html`
-        <igc-form>
-          <igc-mask-input></igc-mask-input>
-        </igc-form>
-      `);
-      masked = form.querySelector('igc-mask-input') as IgcMaskInputComponent;
-    });
-
-    it('empty non-required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(true);
-    });
-
-    it('empty required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      masked.required = true;
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
-    });
-
-    it('non-empty non-required mask with required pattern positions', async () => {
-      masked.mask = '&&CC';
-      masked.value = 'F';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
     });
   });
 
