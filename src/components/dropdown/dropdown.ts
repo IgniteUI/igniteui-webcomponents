@@ -18,7 +18,6 @@ import {
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -376,8 +375,8 @@ export default class IgcDropdownComponent extends SizableMixin(
   public navigateTo(value: string): IgcDropdownItemComponent | null;
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -393,8 +392,8 @@ export default class IgcDropdownComponent extends SizableMixin(
   public select(value: string): IgcDropdownItemComponent | null;
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public select(value: string | number): IgcDropdownItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];

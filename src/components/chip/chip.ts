@@ -4,7 +4,6 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -69,12 +68,12 @@ export default class IgcChipComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public selectable = false;
 
+  /* @tsTwoWayProperty(true, "igcSelect", "detail", false) */
   /**
    * Defines if the chip is selected or not.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  @blazorTwoWayBind('igcSelect', 'detail')
   public selected = false;
 
   /**

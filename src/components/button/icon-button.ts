@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { themes } from '../../theming/theming-decorator.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -32,11 +31,11 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
     registerComponent(IgcIconButtonComponent, IgcIconComponent);
   }
 
+  /* alternateName: iconName */
   /**
    * The name of the icon.
    * @attr
    */
-  @alternateName('iconName')
   @property()
   public name!: string;
 

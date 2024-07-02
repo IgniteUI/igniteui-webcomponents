@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 
 import { blazorDeepImport } from '../../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
-import { blazorSuppress } from '../../common/decorators/blazorSuppress.js';
 import { watch } from '../../common/decorators/watch.js';
 import { Calendar, type DateRangeDescriptor } from './calendar.model.js';
 import { getWeekDayNumber } from './utils.js';
@@ -22,11 +21,11 @@ export class IgcCalendarBaseComponent extends LitElement {
   private _activeDateSetFlag = false;
   protected calendarModel = new Calendar();
 
+  /* blazorSuppress */
   /**
    * The current value of the calendar.
    * Used when selection is set to single.
    */
-  @blazorSuppress()
   @property({
     converter: {
       fromAttribute: (value: string) => (value ? new Date(value) : undefined),
@@ -36,11 +35,11 @@ export class IgcCalendarBaseComponent extends LitElement {
   public value?: Date;
   //we suppress value for blazor since we need to expose it on the leaves with the events for now.
 
+  /* blazorSuppress */
   /**
    * The current values of the calendar.
    * Used when selection is set to multiple or range.
    */
-  @blazorSuppress()
   @property({
     converter: {
       fromAttribute: (value: string) =>
@@ -84,7 +83,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     this.requestUpdate('activeDate', oldVal);
   }
 
-  @blazorSuppress()
+  /* blazorSuppress */
   @property({
     attribute: 'active-date',
     converter: {
