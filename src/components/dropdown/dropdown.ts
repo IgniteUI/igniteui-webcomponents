@@ -66,8 +66,8 @@ export interface IgcDropdownEventMap {
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
  *
- * @csspart base - The dropdown list wrapper.
- * @csspart list - The dropdown list.
+ * @csspart base - The dropdown list wrapper container.
+ * @csspart list - The dropdown list element.
  */
 @themes(all)
 @blazorAdditionalDependencies(
