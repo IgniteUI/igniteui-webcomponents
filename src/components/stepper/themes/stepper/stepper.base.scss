@@ -117,7 +117,7 @@
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
-    --vertical-body-height: 0;
+    --vertical-body-height: #{rem(24px)};
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
 
@@ -137,6 +137,7 @@
     }
 
     ::slotted(igc-step:last-of-type) {
+        --vertical-body-height: 0;
         --hide-last-separator: none;
     }
 }
