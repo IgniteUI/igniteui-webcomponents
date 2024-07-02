@@ -107,7 +107,6 @@
 
 [part~='body'] {
     display: block;
-    opacity: 0;
     grid-row-start: var(--body-top, 2);
     grid-column: 1 / span var(--steps-count);
     padding-inline-start: calc(var(--body-indent--vertical) / 2);
@@ -138,6 +137,8 @@
     display: block;
     height: auto;
     overflow: auto;
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 
     > slot {
         display: block;
@@ -261,7 +262,6 @@
 :host([active]) {
     [part~='body'] {
         height: 100%;
-        opacity: 1;
     }
 
     [part~='body bottom'] {
@@ -272,6 +272,7 @@
 
     [part='content'] {
         pointer-events: all;
+        opacity: 1;
     }
 }
 

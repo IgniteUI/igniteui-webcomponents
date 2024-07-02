@@ -1,10 +1,33 @@
+import { EaseOut } from '../../animations/easings.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
-import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import {
   slideInHor,
   slideOutHor,
 } from '../../animations/presets/slide/index.js';
 import { animation } from '../../animations/types.js';
+
+const baseOptions: KeyframeAnimationOptions = {
+  duration: 350,
+  easing: EaseOut.Quad,
+};
+
+const growVerIn = (options = baseOptions) =>
+  animation(
+    [
+      { opacity: 1, height: '32px' },
+      { opacity: 1, height: 'auto' },
+    ],
+    options
+  );
+
+const growVerOut = (options = baseOptions) =>
+  animation(
+    [
+      { opacity: 1, height: 'auto' },
+      { opacity: 1, height: '32px' },
+    ],
+    options
+  );
 
 const noopAnimation = () => animation([], {});
 export type Animation = 'grow' | 'fade' | 'slide' | 'none';
@@ -18,8 +41,8 @@ export const animations = new Map(
     ),
     fade: new Map(
       Object.entries({
-        in: fadeIn,
-        out: fadeOut,
+        in: noopAnimation,
+        out: noopAnimation,
       })
     ),
     slide: new Map(
