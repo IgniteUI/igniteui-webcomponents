@@ -234,8 +234,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  protected formSubmitHandler = (e: Event) => {
-    if (e instanceof SubmitEvent && e.submitter) {
+  protected formSubmitHandler = (e: SubmitEvent) => {
+    if (e.submitter) {
       this.returnValue = (e.submitter as any)?.value || '';
     }
     if (!e.defaultPrevented) {
@@ -248,15 +248,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private handleContentChange() {
-    // Setup submit handling for supported forms
-    for (const form of this.querySelectorAll('igc-form, form')) {
+    // Setup submit handling for forms
+    for (const form of this.querySelectorAll('form')) {
       if (form.getAttribute('method') !== 'dialog') {
         continue;
       }
 
-      const eventName = form.matches('form') ? 'submit' : 'igcSubmit';
-      form.removeEventListener(eventName, this.formSubmitHandler);
-      form.addEventListener(eventName, this.formSubmitHandler);
+      form.removeEventListener('submit', this.formSubmitHandler);
+      form.addEventListener('submit', this.formSubmitHandler);
     }
 
     this.slotChanged();
