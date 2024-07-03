@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Updated
+ - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
+
+## [4.11.0] - 2024-07-03
+### Updated
+ - Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+
 ## [4.10.0] - 2024-07-01
 ### Added
 - Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
