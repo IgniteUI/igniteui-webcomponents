@@ -1,3 +1,4 @@
+import { ContextProvider } from '@lit/context';
 import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
@@ -13,6 +14,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
+import { carouselContext } from './context.js';
 import { styles } from './themes/carousel.base.css.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/carousel.common.css.js';
@@ -58,6 +60,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _lastInterval: any;
   private _playing = false;
   private _paused = false;
+
+  private _context = new ContextProvider(this, {
+    context: carouselContext,
+    initialValue: this,
+  });
 
   private _observerCallback({
     changes: { added, attributes },
@@ -177,9 +184,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   @watch('animationType', { waitUntilFirstUpdate: true })
   protected animationTypeChange() {
-    this.slides.forEach((slide: IgcCarouselSlideComponent) => {
-      slide.animation = this.animationType;
-    });
+    this._context.setValue(this, true);
   }
 
   @watch('interval', { waitUntilFirstUpdate: true })

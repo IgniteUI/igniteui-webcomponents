@@ -1,3 +1,4 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
@@ -6,8 +7,9 @@ import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { type Animation, animations } from '../stepper/animations.js';
-import IgcCarouselComponent from './carousel.js';
+import { animations } from '../stepper/animations.js';
+import type IgcCarouselComponent from './carousel.js';
+import { carouselContext } from './context.js';
 import { styles } from './themes/carousel-slide.base.css.js';
 import { styles as shared } from './themes/shared/slide/slide.common.css.js';
 
@@ -36,6 +38,21 @@ export default class IgcCarouselSlideComponent extends LitElement {
   private _slideRef: Ref<HTMLElement> = createRef();
   private _animationPlayer = addAnimationController(this, this._slideRef);
 
+  @consume({ context: carouselContext, subscribe: true })
+  private _carousel?: IgcCarouselComponent;
+
+  protected get _index() {
+    return this._carousel ? this._carousel.slides.indexOf(this) : 0;
+  }
+
+  protected get _total() {
+    return this._carousel ? this._carousel.slides.length : 0;
+  }
+
+  protected get _animation() {
+    return this._carousel?.animationType ?? 'slide';
+  }
+
   /**
    * The current active slide for the carousel component.
    * @attr
@@ -43,14 +60,11 @@ export default class IgcCarouselSlideComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
-  /** @hidden @internal @private */
-  public animation: Animation = 'slide';
-
   public async toggleAnimation(
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const animation = animations.get(this.animation)!.get(type)!;
+    const animation = animations.get(this._animation)!.get(type)!;
 
     const options: KeyframeAnimationOptions = {
       duration: 320,
@@ -75,24 +89,14 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   protected override willUpdate(): void {
-    const carousel = this.closest(IgcCarouselComponent.tagName);
-
-    let index = 0;
-    let total = 0;
-
-    if (carousel) {
-      index = carousel.slides.indexOf(this);
-      total = carousel.total;
-    }
-
-    this._internals.ariaLabel = `${index + 1} of ${total}`;
+    this._internals.ariaLabel = `${this._index + 1} of ${this._total}`;
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
+
     this.id =
-      this.getAttribute('id') ||
-      `igc-carousel-slide-${IgcCarouselSlideComponent.increment()}`;
+      this.id || `igc-carousel-slide-${IgcCarouselSlideComponent.increment()}`;
   }
 
   protected override render() {
