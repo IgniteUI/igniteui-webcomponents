@@ -14,9 +14,9 @@ import { styles as shared } from './themes/shared/item/dropdown-item.common.css.
  * @slot - Renders the item's main content.
  * @slot suffix - Renders content after the item's main content.
  *
- * @csspart prefix - The prefix wrapper.
- * @csspart content - The main content wrapper.
- * @csspart suffix - The suffix wrapper.
+ * @csspart prefix - The prefix wrapper of the igc-dropdown-item.
+ * @csspart content - The main content wrapper of the igc-dropdown-item.
+ * @csspart suffix - The suffix wrapper of the igc-dropdown-item.
  */
 @themes(all)
 export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent {
