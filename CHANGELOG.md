@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Dialog - closeOnEscape property. Use keepOpenOnEscape.
 - Combo, Select - positionStrategy, flip, sameWidth removed.
 - Dropdown - positionStrategy removed.
+- Input - readonly, inputmode, maxlength and minlength.
+  Use the native readOnly, inputMode, maxLength and minLength properties instead.
 
 ## [4.11.1] - 2024-07-03
 ### Changed

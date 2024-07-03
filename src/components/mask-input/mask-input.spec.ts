@@ -108,7 +108,7 @@ describe('Masked input', () => {
     });
 
     it('empty value and readonly on focus', async () => {
-      masked.readonly = true;
+      masked.readOnly = true;
       syncParser();
       await elementUpdated(masked);
 
