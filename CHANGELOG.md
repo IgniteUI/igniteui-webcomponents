@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Removed
 - igc-form - use the native form element instead
+- Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
 
 ## [4.11.1] - 2024-07-03
 ### Changed
