@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - igc-form - use the native form element instead.
 - Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
 - Rating - readonly property. Use readOnly instead.
+- Dialog - closeOnEscape property. Use keepOpenOnEscape.
 
 ## [4.11.1] - 2024-07-03
 ### Changed
