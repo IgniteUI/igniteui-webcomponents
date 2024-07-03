@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+### Removed
+
+## [Unreleased]
 ### Removed
 - igc-form - use the native form element instead.
 - Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
@@ -14,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Dropdown - positionStrategy removed.
 - Input - readonly, inputmode, maxlength and minlength.
   Use the native readOnly, inputMode, maxLength and minLength properties instead.
+- Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
 
 ## [4.11.1] - 2024-07-03
 ### Changed
