@@ -72,22 +72,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
-  /* blazorCSSuppress */
-  /**
-   * Makes the control a readonly field.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `readOnly` property instead.
-   */
-  @property({ attribute: false })
-  public set readonly(value: boolean) {
-    this.readOnly = value;
-  }
-
-  public get readonly() {
-    return this.readOnly;
-  }
-
   /**
    * The placeholder attribute of the control.
    * @attr

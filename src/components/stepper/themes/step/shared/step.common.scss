@@ -84,6 +84,18 @@ $theme: $material;
 }
 
 :host([complete]) {
+	[part~='header'] {
+		&:hover {
+			background: var-get($theme, 'complete-step-hover-background');
+		}
+
+		&:focus,
+		&:focus-within,
+		&:active {
+			background: var-get($theme, 'complete-step-focus-background');
+		}
+	}
+
     [part~='body'] {
         &::before {
             border-inline-start-style: var-get($theme, 'complete-step-separator-style');
@@ -113,13 +125,28 @@ $theme: $material;
         box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'invalid-indicator-outline');
     }
 
-    [part~='title'],
-    [part~='subtitle'] {
+    [part~='title'] {
         color: var-get($theme, 'invalid-title-color');
+    }
+
+    [part~='subtitle'] {
+        color: var-get($theme, 'invalid-subtitle-color')
     }
 }
 
 :host([active]) {
+	[part~='header'] {
+		&:hover {
+			background: var-get($theme, 'current-step-hover-background');
+		}
+
+		&:focus,
+		&:focus-within,
+		&:active {
+			background: var-get($theme, 'current-step-focus-background');
+		}
+	}
+
     [part~='indicator'] {
         background: var-get($theme, 'current-indicator-background');
         color: var-get($theme, 'current-indicator-color');
