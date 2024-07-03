@@ -22,19 +22,39 @@
 [part~='navigation'] {
     margin: 0 rem(16px);
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
     z-index: 3;
     outline: none;
     user-select: none;
 }
 
-[part='navigation previous'] {
-    inset-inline-start: 0;
+:host(:not([vertical])) {
+    [part~='navigation'] {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    [part='navigation previous'] {
+        inset-inline-start: 0;
+    }
+
+    [part='navigation next'] {
+        inset-inline-end: 0;
+    }
 }
 
-[part='navigation next'] {
-    inset-inline-end: 0;
+:host([vertical]) {
+    [part~='navigation'] {
+        right: 0;
+        margin-block: rem(16px);
+    }
+
+    [part='navigation previous'] {
+        inset-block-start: 0;
+    }
+
+    [part='navigation next'] {
+        inset-block-end: 0;
+    }
 }
 
 // :host([dir='rtl']) {

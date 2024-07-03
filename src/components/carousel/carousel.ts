@@ -349,38 +349,32 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private navigationTemplate() {
-    const prev_icon = this.vertical ? 'arrow_upward' : 'navigate_before';
-    const next_icon = this.vertical ? 'arrow_downward' : 'navigate_next';
+    const prev_icon = this.vertical ? 'arrow_upward' : 'arrow_back';
+    const next_icon = this.vertical ? 'arrow_downward' : 'arrow_forward';
 
     return html`
-      <button
+      <igc-icon-button
+        type="button"
         part="navigation previous"
+        name=${prev_icon}
+        collection="internal"
+        aria-hidden="true"
         aria-label="Previous slide"
         aria-controls=${this.carouselId}
         @click=${this.prev}
       >
-        <slot name="previous-button">
-          <igc-icon
-            name=${prev_icon}
-            collection="internal"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
-      </button>
-      <button
+      </igc-icon-button>
+      <igc-icon-button
+        type="button"
         part="navigation next"
+        name=${next_icon}
+        collection="internal"
+        aria-hidden="true"
         aria-label="Next slide"
         aria-controls=${this.carouselId}
         @click=${this.next}
       >
-        <slot name="next-button">
-          <igc-icon
-            name=${next_icon}
-            collection="internal"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
-      </button>
+      </igc-icon-button>
     `;
   }
 
