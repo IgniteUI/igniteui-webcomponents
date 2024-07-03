@@ -210,7 +210,6 @@ describe('Combo', () => {
       expect(combo.placeholder).to.be.undefined;
       expect(combo.placeholderSearch).to.equal('Search');
       expect(combo.outlined).to.be.false;
-      expect(combo.flip).to.be.true;
       expect(combo.valueKey).to.equal('id');
       expect(combo.displayKey).to.equal('name');
       expect(combo.groupKey).to.equal('country');

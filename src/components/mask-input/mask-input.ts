@@ -170,7 +170,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.focused = true;
     super.handleFocus();
 
-    if (this.readonly) {
+    if (this.readOnly) {
       return;
     }
 
@@ -212,7 +212,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}
-        ?readonly=${this.readonly}
+        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}

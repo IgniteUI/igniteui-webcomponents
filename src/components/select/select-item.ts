@@ -1,5 +1,5 @@
+import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
@@ -15,9 +15,9 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
  * @slot prefix - Renders content before the main content area.
  * @slot suffix - Renders content after the main content area.
  *
- * @csspart prefix - The prefix wrapper.
- * @csspart content - The main content wrapper.
- * @csspart suffix - The suffix wrapper.
+ * @csspart prefix - The prefix wrapper of the igc-select-item.
+ * @csspart content - The main content wrapper of the igc-select-item.
+ * @csspart suffix - The suffix wrapper of the igc-select-item.
  */
 @themes(all)
 export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
@@ -29,13 +29,18 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
     registerComponent(IgcSelectItemComponent);
   }
 
-  @watch('active')
-  protected activeChange() {
-    this.tabIndex = this.active ? 0 : -1;
+  /**
+   * Whether the item is disabled.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public override set active(value: boolean) {
+    this._active = Boolean(value);
+    this.tabIndex = this._active ? 0 : -1;
+  }
 
-    if (this.active) {
-      this.focus();
-    }
+  public override get active() {
+    return this._active;
   }
 }
 

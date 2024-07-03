@@ -40,7 +40,7 @@ describe('Input component', () => {
         expect(element.value).to.be.empty;
         expect(element.invalid).to.be.false;
         expect(element.required).to.be.false;
-        expect(element.readonly).to.be.false;
+        expect(element.readOnly).to.be.false;
         expect(element.disabled).to.be.false;
         expect(element.name).to.be.undefined;
         expect(element.pattern).to.be.undefined;

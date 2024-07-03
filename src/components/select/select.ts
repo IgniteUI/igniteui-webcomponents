@@ -89,13 +89,13 @@ export interface IgcSelectEventMap {
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart list - The list of options wrapper.
- * @csspart input - The encapsulated igc-input.
- * @csspart label - The encapsulated text label.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart toggle-icon - The toggle icon wrapper.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart list - The list wrapping container for the items of the igc-select.
+ * @csspart input - The encapsulated igc-input of the igc-select.
+ * @csspart label - The encapsulated text label of the igc-select.
+ * @csspart prefix - The prefix wrapper of the input of the igc-select.
+ * @csspart suffix - The suffix wrapper of the input of the igc-select.
+ * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
+ * @csspart helper-text - The helper text wrapper of the igc-select.
  */
 @themes(all, true)
 @blazorAdditionalDependencies(
@@ -240,36 +240,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public placement: IgcPlacement = 'bottom-start';
 
   /**
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
    * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr same-width
-   */
-  @property({ type: Boolean, attribute: 'same-width' })
-  public sameWidth = true;
-
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr
-   */
-  @property({ type: Boolean })
-  public flip = true;
 
   /** Returns the items of the igc-select component. */
   public get items() {
@@ -406,7 +381,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     if (item) {
       this.open ? this.activateItem(item) : this._selectItem(item);
+      this._activeItem.focus();
     }
+  }
+
+  protected override handleAnchorClick(): void {
+    super.handleAnchorClick();
+    this.focusItemOnOpen();
   }
 
   private onEnterKey() {
@@ -434,6 +415,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private altArrowDown() {
     if (!this.open) {
       this._show(true);
+      this.focusItemOnOpen();
     }
   }
 
@@ -518,6 +500,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _navigateToActiveItem(item?: IgcSelectItemComponent) {
     if (item) {
       this.activateItem(item);
+      this._activeItem.focus({ preventScroll: true });
       item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
@@ -534,6 +517,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this._selectedItem.selected = false;
     }
     this._selectedItem = null;
+  }
+
+  private async focusItemOnOpen() {
+    await this.updateComplete;
+    (this._selectedItem || this._activeItem)?.focus();
   }
 
   protected getItem(value: string) {

@@ -66,8 +66,8 @@ export interface IgcDropdownEventMap {
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
  *
- * @csspart base - The dropdown list wrapper.
- * @csspart list - The dropdown list.
+ * @csspart base - The dropdown list wrapper container.
+ * @csspart list - The dropdown list element.
  */
 @themes(all)
 @blazorAdditionalDependencies(
@@ -132,15 +132,6 @@ export default class IgcDropdownComponent extends SizableMixin(
    */
   @property()
   public placement: IgcPlacement = 'bottom-start';
-
-  /**
-   * Sets the component's positioning strategy.
-   * @attr position-strategy
-   *
-   * @deprecated since v4.9.0. Stacking context is now handled through the popover API.
-   */
-  @property({ attribute: 'position-strategy' })
-  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
   /**
    * Determines the behavior of the component during scrolling of the parent container.
