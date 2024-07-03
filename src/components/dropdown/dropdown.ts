@@ -131,15 +131,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public placement: IgcPlacement = 'bottom-start';
 
   /**
-   * Sets the component's positioning strategy.
-   * @attr position-strategy
-   *
-   * @deprecated since v4.9.0. Stacking context is now handled through the popover API.
-   */
-  @property({ attribute: 'position-strategy' })
-  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
-
-  /**
    * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */

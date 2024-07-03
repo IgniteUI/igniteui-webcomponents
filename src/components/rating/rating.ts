@@ -95,7 +95,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected hoverState = false;
 
   protected get isInteractive() {
-    return !(this.readonly || this.disabled);
+    return !(this.readOnly || this.disabled);
   }
 
   protected get hasProjectedSymbols() {
@@ -167,22 +167,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
-
-  /* blazorCSSuppress */
-  /**
-   * Sets the readonly state of the component
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `readOnly` property instead.
-   */
-  @property({ attribute: false })
-  public set readonly(value: boolean) {
-    this.readOnly = value;
-  }
-
-  public get readonly() {
-    return this.readOnly;
-  }
 
   /**
    * Toggles single selection visual mode.

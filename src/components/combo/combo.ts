@@ -227,10 +227,6 @@ export default class IgcComboComponent<
   @property({ type: Boolean })
   public open = false;
 
-  /** @hidden @internal */
-  @property({ type: Boolean })
-  public flip = true;
-
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -312,18 +308,6 @@ export default class IgcComboComponent<
   public groupHeaderTemplate: ComboItemTemplate<T> = ({ item }) => {
     return html`${this.groupKey && item[this.groupKey]}`;
   };
-
-  /**
-   * Sets the component's positioning strategy.
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal @private
-   */
-  public sameWidth = true;
 
   @state()
   protected dataState: Array<ComboRecord<T>> = [];
