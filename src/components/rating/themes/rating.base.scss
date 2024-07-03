@@ -17,6 +17,8 @@
 }
 
 [part~='symbols'] {
+    --symbol-size: #{sizable(rem(18px), rem(24px), rem(36px))};
+
     position: relative;
     display: flex;
     justify-content: center;
