@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
 - Rating - readonly property. Use readOnly instead.
 - Dialog - closeOnEscape property. Use keepOpenOnEscape.
+- Combo, Select - positionStrategy, flip, sameWidth removed.
+- Dropdown - positionStrategy removed.
 
 ## [4.11.1] - 2024-07-03
 ### Changed
