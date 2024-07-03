@@ -5,9 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-
 ### Removed
-- Rating - readonly property. Use readOnly instead
+- igc-form - use the native form element instead.
+- Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
+- Rating - readonly property. Use readOnly instead.
+
+## [4.11.1] - 2024-07-03
+### Changed
+ - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
+
+## [4.11.0] - 2024-07-03
+### Changed
+ - Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
 
 ## [4.10.0] - 2024-07-01
 ### Added
@@ -490,6 +501,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
+[4.11.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.10.0...4.11.0
 [4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0
 [4.9.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.2...4.9.0
 [4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
