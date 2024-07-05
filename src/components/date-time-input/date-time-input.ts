@@ -23,7 +23,6 @@ import {
   minDateValidator,
   requiredValidator,
 } from '../common/validators.js';
-import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
