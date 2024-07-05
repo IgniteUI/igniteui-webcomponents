@@ -243,36 +243,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public placement: IgcPlacement = 'bottom-start';
 
   /**
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
    * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr same-width
-   */
-  @property({ type: Boolean, attribute: 'same-width' })
-  public sameWidth = true;
-
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr
-   */
-  @property({ type: Boolean })
-  public flip = true;
 
   /** Returns the items of the igc-select component. */
   public get items() {

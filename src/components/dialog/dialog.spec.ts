@@ -8,7 +8,8 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcDialogComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcDialogComponent from './dialog.js';
 
 describe('Dialog component', () => {
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
@@ -25,9 +26,7 @@ describe('Dialog component', () => {
   describe('', () => {
     beforeEach(async () => {
       dialog = await createDialogComponent();
-      dialogEl = dialog.shadowRoot!.querySelector(
-        'dialog'
-      ) as HTMLDialogElement;
+      dialogEl = dialog.renderRoot.querySelector('dialog')!;
     });
 
     it('passes the a11y audit', async () => {
@@ -328,9 +327,9 @@ describe('Dialog component', () => {
     it('closes the dialog when form with method=dialog is submitted', async () => {
       dialog = await createDialogComponent(`
         <igc-dialog>
-          <igc-form id="form" method="dialog">
+          <form id="form" method="dialog">
             <igc-button type="submit">Confirm</igc-button>
-          </igc-form>
+          </form>
         </igc-dialog>
         `);
       await elementUpdated(dialog);
@@ -338,8 +337,7 @@ describe('Dialog component', () => {
       dialog.show();
       await elementUpdated(dialog);
 
-      const form = document.getElementById('form');
-      form?.dispatchEvent(new Event('igcSubmit'));
+      document.querySelector('form')?.requestSubmit();
       await waitUntil(() => !dialog.open);
 
       expect(dialog.open).to.eq(false);

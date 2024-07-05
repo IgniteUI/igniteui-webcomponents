@@ -4,16 +4,26 @@
 $theme: $indigo;
 
 :host {
-    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --default-size: 2;
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')}) !important;
 
-    gap: rem(5px);
+    gap: rem(4px);
 }
 
 [part='base'] {
     gap: rem(8px);
 }
 
-[part~='label'],
 [part~='value-label'] {
-    @include type-style('body-1');
+    @include type-style('caption');
+}
+
+[part~='label'] {
+    padding-inline-start: rem(2px);
+}
+
+[part~='symbols'] {
+    --symbol-size: #{sizable(rem(18px), rem(24px), rem(30px))};
+
+    padding-inline-end: 0;
 }

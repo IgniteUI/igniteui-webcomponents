@@ -13,6 +13,15 @@
     transform: translateX(calc(-50% + .5px));
     margin: rem(42px) auto;
     min-width: rem(52px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        inset-inline: 0;
+    }
 }
 
 :host([position='bottom']) {
