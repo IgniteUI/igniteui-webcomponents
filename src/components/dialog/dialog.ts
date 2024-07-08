@@ -69,20 +69,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @queryAssignedElements({ slot: 'footer' })
   private footerElements!: Array<HTMLElement>;
 
-  /* blazorSuppress */
-  /**
-   * Whether the dialog should be closed when pressing the 'ESCAPE' button.
-   * @deprecated since version 4.2.3. Use `keepOpenOnEscape` instead.
-   * @attr close-on-escape
-   */
-  @property({ type: Boolean, attribute: 'close-on-escape' })
-  public set closeOnEscape(value: boolean) {
-    this.keepOpenOnEscape = !value;
-  }
-  public get closeOnEscape(): boolean {
-    return !this.keepOpenOnEscape;
-  }
-
   /**
    * Whether the dialog should be kept open when pressing the 'ESCAPE' button.
    * @attr keep-open-on-escape
@@ -234,8 +220,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  protected formSubmitHandler = (e: Event) => {
-    if (e instanceof SubmitEvent && e.submitter) {
+  protected formSubmitHandler = (e: SubmitEvent) => {
+    if (e.submitter) {
       this.returnValue = (e.submitter as any)?.value || '';
     }
     if (!e.defaultPrevented) {
@@ -243,15 +229,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   };
 
-  private handleSlotChange() {
-    // Setup submit handling for supported forms
-    Array.from(this.querySelectorAll('igc-form, form'))
-      .filter((each) => each.getAttribute('method') === 'dialog')
-      .forEach((form) => {
-        const event = /igc-form/i.test(form.tagName) ? 'igcSubmit' : 'submit';
-        form.removeEventListener(event, this.formSubmitHandler);
-        form.addEventListener(event, this.formSubmitHandler);
-      });
+  private slotChanged() {
+    this.requestUpdate();
+  }
+
+  private handleContentChange() {
+    // Setup submit handling for forms
+    for (const form of this.querySelectorAll('form')) {
+      if (form.getAttribute('method') !== 'dialog') {
+        continue;
+      }
+
+      form.removeEventListener('submit', this.formSubmitHandler);
+      form.addEventListener('submit', this.formSubmitHandler);
+    }
+
+    this.slotChanged();
   }
 
   protected override render() {
@@ -274,13 +267,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         aria-labelledby=${ifDefined(labelledby)}
       >
         <header part="title" id=${this.titleId}>
-          <slot name="title"><span>${this.title}</span></slot>
+          <slot name="title" @slotchange=${this.slotChanged}
+            ><span>${this.title}</span></slot
+          >
         </header>
         <section part="content">
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot @slotchange=${this.handleContentChange}></slot>
         </section>
         <footer part="footer">
-          <slot name="footer">
+          <slot name="footer" @slotchange=${this.slotChanged}>
             ${this.hideDefaultAction
               ? nothing
               : html`<igc-button variant="flat" @click=${this.hideWithEvent}

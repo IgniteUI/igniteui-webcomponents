@@ -8,12 +8,10 @@ $theme: $indigo;
 }
 
 [part~='indicator'] {
+    --ig-size: 1;
+
     min-width: rem(14px);
     color: var-get($theme, 'icon-color');
-
-    igc-icon {
-        --ig-size: 1;
-    }
 }
 
 [part~='wrapper'] {
@@ -36,7 +34,7 @@ $theme: $indigo;
 
         &:hover {
             color: var-get($theme, 'foreground-active');
-            
+
             &::after {
                 background: var-get($theme, 'hover-color');
             }

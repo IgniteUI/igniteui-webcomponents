@@ -45,10 +45,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () => (this.required ? !!this._value : true),
-    },
+    requiredValidator,
     {
       key: 'badInput',
       message: messages.mask,
@@ -83,6 +80,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public set value(string: string) {
     this._value = string ?? '';
     this.maskedValue = this.parser.apply(this._value);
+    this.updateMaskedValue();
     this.updateFormValue();
   }
 
@@ -167,7 +165,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.focused = true;
     super.handleFocus();
 
-    if (this.readonly) {
+    if (this.readOnly) {
       return;
     }
 
@@ -209,7 +207,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}
-        ?readonly=${this.readonly}
+        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}

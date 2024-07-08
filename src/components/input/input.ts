@@ -140,21 +140,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
-  // TODO: Deprecate
   /**
    * The input mode attribute of the control.
-   * @attr
+   * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
+   * @attr inputmode
    */
-  @property()
-  public inputmode!:
-    | 'none'
-    | 'txt'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  @property({ attribute: 'inputmode' })
+  public override inputMode!: string;
 
   /**
    * The pattern attribute of the control.
@@ -170,44 +162,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
-  /* blazorCSSuppress */
-  /**
-   * The minlength attribute of the control.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `minLength` property instead.
-   */
-  @property({ attribute: false })
-  public set minlength(value: number) {
-    this.minLength = value;
-  }
-
-  public get minlength() {
-    return this.minLength;
-  }
-
   /**
    * The maximum string length of the control.
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
   public maxLength!: number;
-
-  /* blazorCSSuppress */
-  /**
-   * The maxlength attribute of the control.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `maxLength` property instead.
-   */
-  @property({ attribute: false })
-  public set maxlength(value: number) {
-    this.maxLength = value;
-  }
-
-  public get maxlength() {
-    return this.maxLength;
-  }
 
   /**
    * The min attribute of the control.
@@ -341,7 +301,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?autofocus=${this.autofocus}
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
-        inputmode=${ifDefined(this.inputmode)}
+        inputmode=${ifDefined(this.inputMode)}
         min=${ifDefined(this.validateOnly ? undefined : this.min)}
         max=${ifDefined(this.validateOnly ? undefined : this.max)}
         minlength=${ifDefined(this.minLength)}

@@ -44,6 +44,8 @@ export type IgcPlacement =
  *
  * @slot - Content of the popover.
  * @slot anchor - The element the popover will be anchored to.
+ *
+ * @csspart container - The container wrapping the slotted content in the popover.
  */
 export default class IgcPopoverComponent extends LitElement {
   public static readonly tagName = 'igc-popover';
@@ -248,7 +250,7 @@ export default class IgcPopoverComponent extends LitElement {
   protected override render() {
     return html`
       <slot name="anchor" @slotchange=${this._anchorSlotChange}></slot>
-      <div id="container" popover="manual">
+      <div id="container" part="container" popover="manual">
         <slot></slot>
       </div>
     `;

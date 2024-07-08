@@ -9,7 +9,11 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { type Animation, animations } from './animations.js';
+import {
+  type Animation,
+  bodyAnimations,
+  contentAnimations,
+} from './animations.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
@@ -55,8 +59,13 @@ export default class IgcStepComponent extends LitElement {
   }
 
   private bodyRef: Ref<HTMLElement> = createRef();
+  private contentRef: Ref<HTMLElement> = createRef();
 
-  private animationPlayer = addAnimationController(this, this.bodyRef);
+  private bodyAnimationPlayer = addAnimationController(this, this.bodyRef);
+  private contentAnimationPlayer = addAnimationController(
+    this,
+    this.contentRef
+  );
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -146,7 +155,11 @@ export default class IgcStepComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const animation = animations.get(this.animation)!.get(type)!;
+    const bodyAnimation = bodyAnimations.get(this.animation)!.get(type)!;
+    const contentAnimation = contentAnimations.get(this.animation)!.get(type)!;
+    const bodyHeight = window
+      .getComputedStyle(this)
+      .getPropertyValue('--vertical-body-height');
 
     const options: KeyframeAnimationOptions = {
       duration: this.animationDuration,
@@ -154,9 +167,17 @@ export default class IgcStepComponent extends LitElement {
       direction,
     };
 
+    const step = {
+      height: bodyHeight,
+    };
+
     const [_, event] = await Promise.all([
-      this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation(options)),
+      this.bodyAnimationPlayer.stopAll(),
+      this.bodyAnimationPlayer.play(bodyAnimation({ keyframe: options, step })),
+      this.contentAnimationPlayer.stopAll(),
+      this.contentAnimationPlayer.play(
+        contentAnimation({ keyframe: options, step })
+      ),
     ]);
 
     return event.type;
@@ -276,7 +297,7 @@ export default class IgcStepComponent extends LitElement {
       role="tabpanel"
       aria-labelledby="igc-step-header-${this.index}"
     >
-      <div part="content">
+      <div part="content" ${ref(this.contentRef)}>
         <slot></slot>
       </div>
     </div>`;

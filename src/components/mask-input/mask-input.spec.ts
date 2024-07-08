@@ -4,12 +4,11 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
-import IgcFormComponent from '../form/form.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
+  before(() => defineComponents(IgcMaskInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -109,7 +108,7 @@ describe('Masked input', () => {
     });
 
     it('empty value and readonly on focus', async () => {
-      masked.readonly = true;
+      masked.readOnly = true;
       syncParser();
       await elementUpdated(masked);
 
@@ -569,45 +568,6 @@ describe('Masked input', () => {
     });
   });
 
-  // TODO: Remove after igc-form removal
-  describe('igc-form interaction', async () => {
-    let form: IgcFormComponent;
-
-    beforeEach(async () => {
-      form = await fixture<IgcFormComponent>(html`
-        <igc-form>
-          <igc-mask-input></igc-mask-input>
-        </igc-form>
-      `);
-      masked = form.querySelector('igc-mask-input') as IgcMaskInputComponent;
-    });
-
-    it('empty non-required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(true);
-    });
-
-    it('empty required mask with required pattern position', async () => {
-      masked.mask = '&&&';
-      masked.required = true;
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
-    });
-
-    it('non-empty non-required mask with required pattern positions', async () => {
-      masked.mask = '&&CC';
-      masked.value = 'F';
-      await elementUpdated(masked);
-
-      expect(form.submit()).to.equal(false);
-      expect(masked.invalid).to.equal(true);
-    });
-  });
-
   describe('Form integration', () => {
     const spec = new FormAssociatedTestBed<IgcMaskInputComponent>(
       html`<igc-mask-input name="mask"></igc-mask-input>`
@@ -652,6 +612,34 @@ describe('Masked input', () => {
 
       spec.reset();
       expect(spec.element.value).to.equal('');
+    });
+
+    it('is with correct input value and placeholder after a form reset', async () => {
+      const input = spec.element.renderRoot.querySelector('input')!;
+      const placeholder = 'Type something';
+
+      // Empty mask pattern as placeholder
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(spec.element.mask);
+
+      spec.reset();
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(spec.element.mask);
+
+      // User provided placeholder
+
+      spec.element.placeholder = placeholder;
+      await elementUpdated(spec.element);
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(placeholder);
+
+      spec.reset();
+
+      expect(input.value).to.be.empty;
+      expect(input.placeholder).to.equal(placeholder);
     });
 
     it('is correctly reset on form reset with value formatting enabled', async () => {

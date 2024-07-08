@@ -25,7 +25,7 @@ describe('Input component', () => {
       expect(el.value).to.be.empty;
       expect(el.invalid).to.be.false;
       expect(el.required).to.be.false;
-      expect(el.readonly).to.be.false;
+      expect(el.readOnly).to.be.false;
       expect(el.disabled).to.be.false;
       expect(el.name).to.be.undefined;
       expect(el.pattern).to.be.undefined;
@@ -138,13 +138,13 @@ describe('Input component', () => {
     });
 
     it('sets the readonly property successfully', async () => {
-      el.readonly = true;
-      expect(el.readonly).to.be.true;
+      el.readOnly = true;
+      expect(el.readOnly).to.be.true;
       await elementUpdated(el);
       expect(input.readOnly).to.be.true;
 
-      el.readonly = false;
-      expect(el.readonly).to.be.false;
+      el.readOnly = false;
+      expect(el.readOnly).to.be.false;
       await elementUpdated(el);
       expect(input.readOnly).to.be.false;
     });
@@ -413,6 +413,19 @@ describe('Input component', () => {
       spec.submitFails();
 
       spec.element.value = '123@321';
+      await elementUpdated(spec.element);
+
+      spec.submitValidates();
+    });
+
+    it('validates schema types - url', async () => {
+      spec.element.type = 'url';
+      spec.element.value = '123';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = 'https://github.com/IgniteUI/igniteui-webcomponents';
       await elementUpdated(spec.element);
 
       spec.submitValidates();

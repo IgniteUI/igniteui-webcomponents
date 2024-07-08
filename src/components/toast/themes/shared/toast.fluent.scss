@@ -4,4 +4,6 @@
     @include type-style('caption');
 
     padding: rem(8px) rem(12px);
+    margin-block: rem(42px);
+    margin-inline: auto;
 }

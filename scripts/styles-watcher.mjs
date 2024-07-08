@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import watch from 'node-watch';
 import * as sass from 'sass-embedded';
-import report from './report.js';
+import report from './report.mjs';
 import { compileSass, fromTemplate } from './sass.mjs';
 
 const watchOptions = {
@@ -38,4 +38,4 @@ const watcher = watch(['src'], watchOptions, async (_, fileName) => {
 
 watcher.on('close', () => compiler.dispose());
 
-console.log('Styles watcher started...');
+report.info('Styles watcher started...');

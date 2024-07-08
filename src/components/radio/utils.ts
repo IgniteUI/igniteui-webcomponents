@@ -1,5 +1,5 @@
-import { isDefined, iterNodes } from '../common/util.js';
-import type IgcRadioComponent from './radio';
+import { iterNodes } from '../common/util.js';
+import type IgcRadioComponent from './radio.js';
 
 type RadioQueryResult = {
   /** Radio components under the same group name */
@@ -20,7 +20,19 @@ export function getGroup(member: IgcRadioComponent) {
     siblings: [],
   };
 
-  if (!isDefined(globalThis.document)) {
+  // No name property for the passed radio. Skip DOM search and return a group of one radio
+  // with appropriate states.
+  if (!member.name) {
+    result.radios.push(member);
+
+    if (member.checked) {
+      result.checked.push(member);
+    }
+
+    if (!member.disabled) {
+      result.active.push(member);
+    }
+
     return result;
   }
 

@@ -359,7 +359,7 @@ describe('Dropdown', () => {
       dropDown.select('Non-existent');
 
       expect(dropDown.selectedItem).to.be.null;
-      checkItemState(item, { selected: false, active: true });
+      checkItemState(item, { selected: false, active: false });
     });
 
     it('`navigateTo()` works', async () => {

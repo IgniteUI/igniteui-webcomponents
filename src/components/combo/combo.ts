@@ -227,10 +227,6 @@ export default class IgcComboComponent<
   @property({ type: Boolean })
   public open = false;
 
-  /** @hidden @internal */
-  @property({ type: Boolean })
-  public flip = true;
-
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -313,18 +309,6 @@ export default class IgcComboComponent<
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
-  /**
-   * Sets the component's positioning strategy.
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal @private
-   */
-  public sameWidth = true;
-
   @state()
   protected dataState: Array<ComboRecord<T>> = [];
 
@@ -362,6 +346,12 @@ export default class IgcComboComponent<
   @watch('open')
   protected toggleDirectiveChange() {
     this._rootClickController.update();
+  }
+
+  @watch('disableFiltering')
+  protected updateOnDisableFiltering() {
+    this.resetSearchTerm();
+    this.pipeline();
   }
 
   private _rootClickController = addRootClickHandler(this, {
@@ -509,6 +499,10 @@ export default class IgcComboComponent<
     this._displayValue = this.selectionController
       .getValue(selected, this.displayKey!)
       .join(', ');
+
+    if (this.target && this.singleSelect) {
+      this.target.value = this._displayValue;
+    }
 
     this.setFormValue();
     this.updateValidity();
@@ -758,6 +752,14 @@ export default class IgcComboComponent<
     this.updateValue();
   }
 
+  protected selectByIndex(index: number) {
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.selectByIndex(dataIndex);
+    this.navigationController.active = index;
+    this.updateValue();
+  }
+
   protected navigateTo(item: T) {
     this.navigationController.navigateTo(item, this.list);
   }
@@ -913,6 +915,7 @@ export default class IgcComboComponent<
       ?hidden=${this.disableFiltering || this.singleSelect}
     >
       <igc-input
+        .value=${this.dataController.searchTerm}
         part="search-input"
         placeholder=${this.placeholderSearch}
         exportparts="input: search-input"

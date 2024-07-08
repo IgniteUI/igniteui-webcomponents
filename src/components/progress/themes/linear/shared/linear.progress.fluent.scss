@@ -17,13 +17,20 @@ $track-color: color(gray, 200);
     }
 }
 
-[part~='track'] {
-    margin: rem(8px) 0;
+:host([label-align='top']),
+:host([label-align='top-start']),
+:host([label-align='top-end']) {
+    [part~='track'] {
+        margin-block-start: rem(2px);
+    }
 }
 
-[part~='label'] {
-    font-size: rem(14px);
-    font-weight: 400;
+:host([label-align='bottom']),
+:host([label-align='bottom-start']),
+:host([label-align='bottom-end']) {
+    [part~='track'] {
+        margin-block-end: rem(2px);
+    }
 }
 
 [part~='indeterminate']:not([part~='secondary']) {

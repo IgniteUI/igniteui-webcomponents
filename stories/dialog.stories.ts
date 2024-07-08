@@ -2,9 +2,14 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcDialogComponent, defineComponents } from '../src/index.js';
+import {
+  IgcDialogComponent,
+  IgcInputComponent,
+  IgcSelectComponent,
+  defineComponents,
+} from '../src/index.js';
 
-defineComponents(IgcDialogComponent);
+defineComponents(IgcDialogComponent, IgcInputComponent, IgcSelectComponent);
 
 // region default
 const metadata: Meta<IgcDialogComponent> = {
@@ -154,27 +159,33 @@ const Template = ({
       >
         <h3 slot="title">Your credentials</h3>
         <div>
-          <igc-form method="dialog">
+          <form method="dialog">
             <div style="display: flex; flex-flow: column; gap: 1rem">
-              <igc-input outlined label="Username"></igc-input>
-              <igc-input outlined label="Password" type="password"></igc-input>
-              <igc-dropdown flip same-width @igcChange=${authSelected}>
-                <igc-input
-                  style="width: 100%"
-                  outlined
-                  label="Method"
-                  slot="target"
-                ></igc-input>
+              <igc-input name="username" outlined label="Username"></igc-input>
+              <igc-input
+                name="password"
+                outlined
+                label="Password"
+                type="password"
+              ></igc-input>
+              <igc-select
+                name="auth-method"
+                outlined
+                label="Authentication method"
+              >
                 ${authMethods.map(
-                  (each) => html`<igc-dropdown-item>${each}</igc-dropdown-item>`
+                  (each) =>
+                    html`<igc-select-item value=${each}
+                      >${each}</igc-select-item
+                    >`
                 )}
-              </igc-dropdown>
+              </igc-select>
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1rem">
               <igc-button type="reset" variant="flat">Reset</igc-button>
               <igc-button type="submit" variant="flat">Confirm</igc-button>
             </div>
-          </igc-form>
+          </form>
         </div>
       </igc-dialog>
     </div>

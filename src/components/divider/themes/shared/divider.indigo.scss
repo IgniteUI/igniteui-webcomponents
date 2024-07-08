@@ -1,0 +1,28 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host(:not([vertical])[type='dashed']) {
+    &::after {
+        background: repeating-linear-gradient(
+            to right,
+            var-get($theme, 'color'),
+            var-get($theme, 'color') rem(3px),
+            transparent rem(3px),
+            transparent rem(6px)
+        );
+    }
+}
+
+:host([vertical][type='dashed']) {
+    &::after {
+        background: repeating-linear-gradient(
+            to bottom,
+            var-get($theme, 'color'),
+            var-get($theme, 'color') rem(3px),
+            transparent rem(3px),
+            transparent rem(6px)
+        );
+    }
+}

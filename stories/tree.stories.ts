@@ -94,11 +94,11 @@ const log = () => {
   const item = document.getElementById('parent2');
   item?.parentElement?.removeChild(item);
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.log(
+  console.info(
     'Selected items: ',
     (tree.selectionService as any).itemSelection.size
   );
-  console.log(
+  console.info(
     'Indeterminate items: ',
     (tree.selectionService as any).indeterminateItems.size
   );
@@ -111,11 +111,11 @@ const log1 = () => {
     item.removeChild(firstChild);
   }
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.log(
+  console.info(
     'Selected items: ',
     (tree.selectionService as any).itemSelection.size
   );
-  console.log(
+  console.info(
     'Indeterminate items: ',
     (tree.selectionService as any).indeterminateItems.size
   );
@@ -125,11 +125,11 @@ const log2 = () => {
   const item = document.getElementById('asd') as IgcTreeItemComponent;
   addChildren(item, 2, true);
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.log(
+  console.info(
     'Selected items: ',
     (tree.selectionService as any).itemSelection.size
   );
-  console.log(
+  console.info(
     'Indeterminate items: ',
     (tree.selectionService as any).indeterminateItems.size
   );
@@ -139,11 +139,11 @@ const log3 = () => {
   const item = document.getElementById('asd') as IgcTreeItemComponent;
   addChildren(item, 2);
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.log(
+  console.info(
     'Selected items: ',
     (tree.selectionService as any).itemSelection.size
   );
-  console.log(
+  console.info(
     'Indeterminate items: ',
     (tree.selectionService as any).indeterminateItems.size
   );
@@ -155,11 +155,11 @@ const log4 = () => {
   item1.parentNode?.removeChild(item1);
   item.appendChild(item1);
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.log(
+  console.info(
     'Selected items: ',
     (tree.selectionService as any).itemSelection.size
   );
-  console.log(
+  console.info(
     'Indeterminate items: ',
     (tree.selectionService as any).indeterminateItems.size
   );

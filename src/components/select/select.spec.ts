@@ -404,7 +404,7 @@ describe('Select', () => {
       select.value = 'testing';
       expect(select.selectedItem?.value).to.equal(select.value);
       checkItemState(select.selectedItem!, {
-        active: false,
+        active: true,
         disabled: true,
         selected: true,
       });
