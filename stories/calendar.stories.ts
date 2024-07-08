@@ -264,7 +264,7 @@ const Template = ({
       values=${ifDefined(values)}
       visible-months=${ifDefined(visibleMonths)}
       @igcChange=${(ev: Event) => {
-        console.log(ev);
+        console.info(ev);
       }}
     >
       ${title ? html`<span slot="title">${title}</span>` : ''}
