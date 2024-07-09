@@ -1,6 +1,7 @@
 import { exec as _exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import watch from 'node-watch';
+import report from './report.mjs';
 
 const exec = promisify(_exec);
 
@@ -21,19 +22,19 @@ async function addToQueue(fileName) {
   if (updating) {
     return;
   }
-  console.log(`Component change detected: ${fileName}`);
+  report.info(`Component change detected: ${fileName}`);
   updating = true;
-  console.log('Building documentation metadata and updating stories...');
+  report.info('Building documentation metadata and updating stories...');
 
   const buildDocsPromise = exec('npm run build:meta');
 
   try {
     await buildDocsPromise;
     updating = false;
-    console.log('Metadata build completed. Stories updated.');
+    report.info('Metadata build completed. Stories updated.');
   } catch (e) {
-    console.error('ERROR:', e);
+    report.error('ERROR:', e);
   }
 }
 
-console.log('Metadata watcher started...');
+report.info('Metadata watcher started...');

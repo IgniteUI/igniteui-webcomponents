@@ -779,8 +779,8 @@ describe('Slider component', () => {
       await expect(slider).shadowDom.not.to.be.accessible();
       await expect(slider).lightDom.not.to.be.accessible();
 
-      slider.ariaLabelUpper = 'Thumb upper';
-      slider.ariaLabelLower = 'Thumb lower';
+      slider.thumbLabelUpper = 'Thumb upper';
+      slider.thumbLabelLower = 'Thumb lower';
       await elementUpdated(slider);
 
       await expect(slider).shadowDom.to.be.accessible();
@@ -1039,8 +1039,8 @@ describe('Slider component', () => {
 
       slider.lower = 20;
       slider.upper = 70;
-      slider.ariaLabelLower = 'Price From';
-      slider.ariaLabelUpper = 'Price To';
+      slider.thumbLabelLower = 'Price From';
+      slider.thumbLabelUpper = 'Price To';
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
