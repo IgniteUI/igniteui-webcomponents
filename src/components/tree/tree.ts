@@ -79,18 +79,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     });
   }
 
-  @watch('size', { waitUntilFirstUpdate: true })
-  protected onSizeChange(): void {
-    this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.requestUpdate();
-    });
-    this.navService.activeItem?.wrapper?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
-    });
-  }
-
   @watch('selection', { waitUntilFirstUpdate: true })
   protected selectionModeChange(): void {
     this.selectionService.clearItemsSelection();

@@ -405,7 +405,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       ? html`<igc-icon-button
           tabindex="-1"
           aria-hidden="true"
-          size="large"
           variant="flat"
           collection="internal"
           part="${direction}-scroll-button"

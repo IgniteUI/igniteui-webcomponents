@@ -4,7 +4,7 @@ import type IgcStepComponent from './step.js';
 import type IgcStepperComponent from './stepper.js';
 
 export const DIFF_OPTIONS = {
-  ignoreAttributes: ['id', 'part', 'tabindex', 'role', 'size', 'style'],
+  ignoreAttributes: ['id', 'part', 'tabindex', 'role'],
 };
 
 export const SLOTS = {
