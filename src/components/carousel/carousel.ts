@@ -349,8 +349,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private navigationTemplate() {
-    const prev_icon = this.vertical ? 'arrow_upward' : 'arrow_back';
-    const next_icon = this.vertical ? 'arrow_downward' : 'arrow_forward';
+    const prev_icon = this.vertical
+      ? 'keyboard_arrow_up'
+      : 'keyboard_arrow_left';
+    const next_icon = this.vertical
+      ? 'keyboard_arrow_down'
+      : 'keyboard_arrow_right';
 
     return html`
       <igc-icon-button
@@ -388,14 +392,17 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         })}
       >
         ${this.slides.map((slide, index) => {
-          return html`<button
+          return html` <button
             role="tab"
+            part=${partNameMap({
+              dot: true,
+              active: slide.active,
+            })}
             aria-label="Slide ${index + 1}"
             aria-selected=${slide.active ? 'true' : 'false'}
             aria-controls="${slide.id}"
             @click=${() => this.handleClick(slide)}
           >
-            ${index + 1}
             <slot name="indicator"></slot>
           </button>`;
         })}

@@ -9,18 +9,31 @@
     margin: rem(16px) 0;
     list-style: none;
     z-index: 10;
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
-    bottom: 0;
+    gap: rem(8px);
+    padding: rem(4px) rem(6px);
+    border-radius: rem(24px);
 }
 
-[part='indicators start'] {
-    bottom: unset;
-    top: 0;
+[part~='dot'] {
+    position: relative;
+    width: rem(12px);
+    height: rem(12px);
+    text-indent: rem(-9999px);
+    border-radius: border-radius(50%);
+    transition: all .15s ease-out;
+    padding: 0;
+    background: initial;
+    cursor: pointer;
+
+    &::after {
+        content: '';
+        position: absolute;
+        border-radius: inherit;
+        inset: rem(1px);
+    }
 }
 
 [part~='navigation'] {
-    margin: 0 rem(16px);
     position: absolute;
     z-index: 3;
     outline: none;
@@ -35,31 +48,60 @@
 
     [part='navigation previous'] {
         inset-inline-start: 0;
+        margin-inline-start: rem(16px);
     }
 
     [part='navigation next'] {
         inset-inline-end: 0;
+        margin-inline-end: rem(16px);
+    }
+
+    [part~='indicators'] {
+        inset-inline-start: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+    }
+
+    [part='indicators start'] {
+        bottom: unset;
+        top: 0;
     }
 }
 
 :host([vertical]) {
     [part~='navigation'] {
         right: 0;
-        margin-block: rem(16px);
+        margin-inline-end: rem(16px);
     }
 
     [part='navigation previous'] {
         inset-block-start: 0;
+        margin-block-start: rem(16px);
     }
 
     [part='navigation next'] {
         inset-block-end: 0;
+        margin-block-end: rem(16px);
+    }
+
+    [part~='indicators'] {
+        right: 0;
+        flex-direction: column;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-block: 0;
+        margin-inline-end: rem(26px);
     }
 }
 
-// :host([dir='rtl']) {
-//     [part='navigation previous'],
-//     [part='navigation next'] {
-//         transform: scaleX(-1);
-//     }
-// }
+:host-context([dir='rtl']),
+:host([dir='rtl']) {
+    [part='navigation next'],
+    [part='navigation previous'] {
+        transform: scaleX(-1) translateY(-50%);
+    }
+
+    [part~='indicators'] {
+        transform: translateX(50%);
+    }
+}
