@@ -38,14 +38,14 @@ describe('Avatar', () => {
     el.shape = 'rounded';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="rounded"></igc-avatar>`,
+      `<igc-avatar shape="rounded"></igc-avatar>`,
       DIFF_OPTIONS
     );
 
     el.shape = 'circle';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="circle"></igc-avatar>`,
+      `<igc-avatar shape="circle"></igc-avatar>`,
       DIFF_OPTIONS
     );
   });

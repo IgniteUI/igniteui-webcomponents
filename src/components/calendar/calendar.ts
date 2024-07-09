@@ -143,13 +143,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     this.initFormatters();
   }
 
+  private yearPerPage = 15;
+
   constructor() {
     super();
     this.initFormatters();
-  }
-
-  private get yearPerPage() {
-    return this.size === 'small' ? 18 : 15;
   }
 
   private get previousButtonLabel() {

@@ -221,3 +221,15 @@ export function finishAnimationsFor(
     animation.finish();
   }
 }
+
+/**
+ * Checks if a given element is within the view of another element.
+ */
+export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
+  const { top, bottom, height } = el.getBoundingClientRect();
+  const { top: viewTop, bottom: viewBottom } = view.getBoundingClientRect();
+
+  return top <= viewTop
+    ? viewTop - top <= height
+    : bottom - viewBottom <= height;
+}

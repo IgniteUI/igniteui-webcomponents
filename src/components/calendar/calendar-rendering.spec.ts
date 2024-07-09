@@ -169,9 +169,6 @@ describe('Calendar Rendering', () => {
         }
       );
 
-      el.size = 'medium';
-      expect(el.size).to.equal('medium');
-
       await elementUpdated(el);
 
       expect(el).dom.to.equal(
@@ -185,9 +182,6 @@ describe('Calendar Rendering', () => {
           ],
         }
       );
-
-      el.size = 'small';
-      expect(el.size).to.equal('small');
 
       await elementUpdated(el);
 

@@ -123,11 +123,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
         <span part="prefix">
           ${this.selectable && this.selected
             ? html`<slot name="select">
-                <igc-icon
-                  size=${this.size}
-                  name="chip_select"
-                  collection="internal"
-                ></igc-icon>
+                <igc-icon name="chip_select" collection="internal"></igc-icon>
               </slot>`
             : nothing}
           <slot name="start"></slot>
@@ -144,7 +140,6 @@ export default class IgcChipComponent extends EventEmitterMixin<
                 name="remove"
               >
                 <igc-icon
-                  size=${this.size}
                   name="chip_cancel"
                   collection="internal"
                   tabindex="0"
