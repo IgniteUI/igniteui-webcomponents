@@ -9,13 +9,13 @@ interface ParsedIcon {
   title?: string;
 }
 enum ActionType {
-  SyncState,
-  UpdateState
+  SyncState = 0,
+  UpdateState = 1,
 }
 
 interface BroadcastIconsChangeMessage {
-  actionType: ActionType,
-  collections:  Map<string, IconCollection>
+  actionType: ActionType;
+  collections: Map<string, IconCollection>;
 }
 
 export class IconsRegistry {
@@ -29,21 +29,20 @@ export class IconsRegistry {
     this._parser = new DOMParser();
     this.collections.set('internal', internalIcons);
     // open broadcast channel for sync with angular icon service.
-    this.iconBroadcastChannel = new BroadcastChannel("ignite-ui-icon-channel");
+    this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
     this.iconBroadcastChannel.onmessage = (event) => {
       const message = event.data as BroadcastIconsChangeMessage;
-      console.log(event);
       if (message.actionType === ActionType.SyncState) {
         // send state
-        const userSetCollection: Map<string, IconCollection> = this.getUserSetCollection();
+        const userSetCollection: Map<string, IconCollection> =
+          this.getUserSetCollection();
         const message: BroadcastIconsChangeMessage = {
           actionType: ActionType.SyncState,
-          collections: userSetCollection
+          collections: userSetCollection,
         };
         this.iconBroadcastChannel.postMessage(message);
       }
     };
-
   }
 
   public subscribe(callback: IconCallback) {
@@ -78,20 +77,23 @@ export class IconsRegistry {
     for (const listener of this.listeners) {
       listener(name, collection);
     }
-    const userSetCollection: Map<string, IconCollection> = new Map<string, IconCollection>();
+    const userSetCollection: Map<string, IconCollection> = new Map<
+      string,
+      IconCollection
+    >();
     if (!userSetCollection.has(collection)) {
-        userSetCollection.set(collection, {});
+      userSetCollection.set(collection, {});
     }
     const internalValue = internalIcons[name];
     if (internalValue?.svg !== iconText) {
       const currCollection = userSetCollection.get(collection);
-      if (currCollection){
-          currCollection[name] = namespace[name];
+      if (currCollection) {
+        currCollection[name] = namespace[name];
       }
     }
     const message: BroadcastIconsChangeMessage = {
       actionType: ActionType.SyncState,
-      collections: userSetCollection
+      collections: userSetCollection,
     };
     this.iconBroadcastChannel.postMessage(message);
   }
@@ -111,7 +113,10 @@ export class IconsRegistry {
   }
 
   private getUserSetCollection() {
-    const userSetIcons: Map<string, IconCollection> = new Map<string, IconCollection>();
+    const userSetIcons: Map<string, IconCollection> = new Map<
+      string,
+      IconCollection
+    >();
     const collectionKeys = this.collections.keys();
     for (const collectionKey of collectionKeys) {
       const collection = this.collections.get(collectionKey);
@@ -122,7 +127,7 @@ export class IconsRegistry {
           if (!userSetIcons.has(collectionKey)) {
             userSetIcons.set(collectionKey, {});
           }
-          var userSetIconCollection = userSetIcons.get(collectionKey);
+          const userSetIconCollection = userSetIcons.get(collectionKey);
           if (userSetIconCollection) {
             userSetIconCollection[iconKey] = val;
           }
