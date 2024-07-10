@@ -144,6 +144,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public interval!: number;
 
   /**
+   * Controls the maximum picker controls (dots) that can be shown. Default value is `10`.
+   */
+  @property({
+    type: Number,
+    reflect: false,
+    attribute: 'maximum-indicators-count',
+  })
+  public maximumIndicatorsCount = 10;
+
+  /**
    * The total number of slides.
    */
   public get total(): number {
@@ -291,6 +301,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private getPrevIndex(): number {
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
+  }
+
+  private showIndicatorsLabel(): boolean {
+    return this.total > this.maximumIndicatorsCount;
   }
 
   private resetInterval() {
@@ -445,6 +459,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     `;
   }
 
+  private labelTemplate() {
+    return html`
+      <div>
+        <span>${this.current + 1} / ${this.total}</span>
+      </div>
+    `;
+  }
+
   protected override render() {
     return html`
       <section
@@ -452,7 +474,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         @pointerleave=${this.handlePointerLeave}
       >
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.withPicker ? this.pickerTemplate() : nothing}
+        ${this.withPicker && !this.showIndicatorsLabel()
+          ? this.pickerTemplate()
+          : nothing}
+        ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
         <div
           id=${this.carouselId}
           aria-live=${this.interval ? 'off' : 'polite'}
