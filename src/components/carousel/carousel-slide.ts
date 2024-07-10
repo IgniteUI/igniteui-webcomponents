@@ -7,7 +7,7 @@ import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { bodyAnimations } from '../stepper/animations.js';
+import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { carouselContext } from './context.js';
 import { styles } from './themes/carousel-slide.base.css.js';
@@ -64,7 +64,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const animation = bodyAnimations.get(this._animation)!.get(type)!;
+    const animation = animations.get(this._animation)!.get(type)!;
 
     const options: KeyframeAnimationOptions = {
       duration: 320,
@@ -74,7 +74,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
     const [_, event] = await Promise.all([
       this._animationPlayer.stopAll(),
-      this._animationPlayer.play(animation({ keyframe: options })),
+      this._animationPlayer.play(animation(options)),
     ]);
 
     return event.type === 'finish';
