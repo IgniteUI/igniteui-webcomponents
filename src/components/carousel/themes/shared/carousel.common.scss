@@ -3,9 +3,37 @@
 
 $theme: $material;
 
+:host {
+    border-radius: var-get($theme, 'border-radius');
+}
+
+[part~='navigation'] {
+    color: var-get($theme, 'button-arrow-color');
+    background: var-get($theme, 'button-background');
+    border: rem(1px) solid var-get($theme, 'button-border-color');
+    box-shadow: var-get($theme, 'button-elevation');
+
+    &:hover {
+        color: var-get($theme, 'button-hover-arrow-color');
+        background: var-get($theme, 'button-hover-background');
+        border-color: var-get($theme, 'button-hover-border-color');;
+    }
+}
+
+[part~='navigation'][disabled] {
+    color: var-get($theme, 'button-disabled-arrow-color');
+    background: var-get($theme, 'button-disabled-background');
+    border-color: var-get($theme, 'button-disabled-border-color');;
+    box-shadow: none;
+}
+
 [part~='indicators'] {
     background: var-get($theme, 'indicator-background');
     box-shadow: var-get($theme, 'button-elevation');
+
+    &:focus-visible {
+        border: rem(2px) solid var-get($theme, 'button-focus-color');
+    }
 }
 
 [part~='dot'] {
@@ -17,6 +45,11 @@ $theme: $material;
 
     &:hover {
         border-color: var-get($theme, 'indicator-active-border-color');
+    }
+
+    &:focus-visible {
+        border-color: var-get($theme, 'button-focus-color');
+        outline: none;
     }
 }
 
@@ -30,6 +63,12 @@ $theme: $material;
     &:hover {
         &::after {
             background: var-get($theme, 'indicator-active-hover-dot-color');
+        }
+    }
+
+    &:focus-visible {
+        &::after {
+            background: var-get($theme, 'button-focus-color');
         }
     }
 }

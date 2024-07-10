@@ -1,6 +1,17 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
+:host {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: inherit;
+    overflow: hidden;
+    outline-style: none;
+    min-height: rem(300px);
+    min-width: rem(300px);
+}
+
 [part~='indicators'] {
     position: absolute;
     display: flex;
@@ -38,11 +49,19 @@
     z-index: 3;
     outline: none;
     user-select: none;
+    width: rem(46px);
+    height: rem(46px);
+    border-radius: 50%;
+    transition: all .15s ease-in;
+
+    igc-icon {
+        --ig-size: 1;
+    }
 }
 
 :host(:not([vertical])) {
     [part~='navigation'] {
-        top: 50%;
+        inset-block-start: 50%;
         transform: translateY(-50%);
     }
 
@@ -59,18 +78,18 @@
     [part~='indicators'] {
         inset-inline-start: 50%;
         transform: translateX(-50%);
-        bottom: 0;
+        inset-block-end: 0;
     }
 
     [part='indicators start'] {
-        bottom: unset;
-        top: 0;
+        inset-block-end: unset;
+        inset-block-start: 0;
     }
 }
 
 :host([vertical]) {
     [part~='navigation'] {
-        right: 0;
+        inset-inline-end: 0;
         margin-inline-end: rem(16px);
     }
 
@@ -85,12 +104,19 @@
     }
 
     [part~='indicators'] {
-        right: 0;
+        inset-inline-end: 0;
         flex-direction: column;
-        top: 50%;
+        inset-block-start: 50%;
         transform: translateY(-50%);
         margin-block: 0;
         margin-inline-end: rem(26px);
+    }
+
+    [part='indicators start'] {
+        inset-inline-end: unset;
+        inset-inline-start: 0;
+        margin-inline-start: rem(26px);
+        margin-inline-end: unset;
     }
 }
 

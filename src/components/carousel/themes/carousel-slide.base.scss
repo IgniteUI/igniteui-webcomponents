@@ -1,11 +1,14 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host(:not([active])) [part~='base'] {
+:host {
     position: absolute;
     width: 100%;
     height: 100%;
     inset: 0;
+}
+
+:host(:not([active])) [part~='base'] {
     z-index: -1;
     visibility: hidden;
 }

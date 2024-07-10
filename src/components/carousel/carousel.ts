@@ -384,30 +384,36 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       : 'keyboard_arrow_right';
 
     return html`
-      <igc-icon-button
-        type="button"
+      <button
         part="navigation previous"
-        name=${prev_icon}
-        collection="internal"
-        aria-hidden="true"
         aria-label="Previous slide"
         aria-controls=${this.carouselId}
         ?disabled=${this.skipLoop && this.current === 0}
         @click=${this.handlePrev}
       >
-      </igc-icon-button>
-      <igc-icon-button
-        type="button"
+        <slot name="previous-button">
+          <igc-icon
+            name=${prev_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </button>
+      <button
         part="navigation next"
-        name=${next_icon}
-        collection="internal"
-        aria-hidden="true"
         aria-label="Next slide"
         aria-controls=${this.carouselId}
         ?disabled=${this.skipLoop && this.current === this.total - 1}
         @click=${this.handleNext}
       >
-      </igc-icon-button>
+        <slot name="next-button">
+          <igc-icon
+            name=${next_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </button>
     `;
   }
 
