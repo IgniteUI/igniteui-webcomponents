@@ -22,7 +22,6 @@
     z-index: 10;
     gap: rem(8px);
     padding: rem(4px) rem(6px);
-    border-radius: rem(24px);
 }
 
 [part~='dot'] {
@@ -45,14 +44,17 @@
 }
 
 [part~='navigation'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     z-index: 3;
     outline: none;
     user-select: none;
     width: rem(46px);
     height: rem(46px);
-    border-radius: 50%;
     transition: all .15s ease-in;
+    cursor: pointer;
 
     igc-icon {
         --ig-size: 1;

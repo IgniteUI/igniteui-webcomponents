@@ -14,19 +14,21 @@ import { styles as indigoLight } from './light/carousel.indigo.css.js';
 import { styles as materialLight } from './light/carousel.material.css.js';
 import { styles as sharedLight } from './light/carousel.shared.css.js';
 // Shared Styles
+import { styles as bootstrap } from './shared/carousel.bootstrap.css.js';
+import { styles as fluent } from './shared/carousel.fluent.css.js';
 
 const light = {
   shared: css`
     ${sharedLight}
   `,
   bootstrap: css`
-    ${bootstrapLight}
+    ${bootstrap} ${bootstrapLight}
   `,
   material: css`
     ${materialLight}
   `,
   fluent: css`
-    ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
     ${indigoLight}
@@ -38,13 +40,13 @@ const dark = {
     ${sharedDark}
   `,
   bootstrap: css`
-    ${bootstrapDark}
+    ${bootstrap} ${bootstrapDark}
   `,
   material: css`
     ${materialDark}
   `,
   fluent: css`
-    ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
     ${indigoDark}

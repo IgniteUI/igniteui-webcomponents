@@ -3,20 +3,22 @@
 
 $theme: $material;
 
-:host {
-    border-radius: var-get($theme, 'border-radius');
-}
-
 [part~='navigation'] {
     color: var-get($theme, 'button-arrow-color');
     background: var-get($theme, 'button-background');
     border: rem(1px) solid var-get($theme, 'button-border-color');
     box-shadow: var-get($theme, 'button-elevation');
+    border-radius: var-get($theme, 'border-radius');
 
     &:hover {
         color: var-get($theme, 'button-hover-arrow-color');
         background: var-get($theme, 'button-hover-background');
         border-color: var-get($theme, 'button-hover-border-color');;
+    }
+
+    &:focus-visible {
+        border: rem(2px) solid var-get($theme, 'button-focus-border-color');
+        color: var-get($theme, 'button-focus-border-color');
     }
 }
 
@@ -25,14 +27,17 @@ $theme: $material;
     background: var-get($theme, 'button-disabled-background');
     border-color: var-get($theme, 'button-disabled-border-color');;
     box-shadow: none;
+    cursor: default;
 }
 
 [part~='indicators'] {
     background: var-get($theme, 'indicator-background');
     box-shadow: var-get($theme, 'button-elevation');
+    border-radius: var-get($theme, 'border-radius');
 
+    // Should be fixed
     &:focus-visible {
-        border: rem(2px) solid var-get($theme, 'button-focus-color');
+        border: rem(2px) solid var-get($theme, 'indicator-focus-color');
     }
 }
 
@@ -48,7 +53,7 @@ $theme: $material;
     }
 
     &:focus-visible {
-        border-color: var-get($theme, 'button-focus-color');
+        border-color: var-get($theme, 'indicator-focus-color');
         outline: none;
     }
 }
@@ -68,7 +73,7 @@ $theme: $material;
 
     &:focus-visible {
         &::after {
-            background: var-get($theme, 'button-focus-color');
+            background: var-get($theme, 'indicator-focus-color');
         }
     }
 }
