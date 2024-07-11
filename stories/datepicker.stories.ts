@@ -325,7 +325,7 @@ type Story = StoryObj<IgcDatepickerArgs>;
 // endregion
 
 const onChange = (ev: CustomEvent<any>) => {
-  console.log(ev);
+  console.info(ev);
 };
 
 export const Default: Story = {

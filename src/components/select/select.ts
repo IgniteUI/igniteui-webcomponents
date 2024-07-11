@@ -129,11 +129,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _lastKeyTime = 0;
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private get isMaterialTheme() {
@@ -449,6 +449,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
   }
 
+  protected handleClosing() {
+    this._hide(true);
+  }
+
   private activateItem(item: IgcSelectItemComponent) {
     if (this._activeItem) {
       this._activeItem.active = false;
@@ -605,7 +609,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected renderToggleIcon() {
     const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
     const iconHidden = this.open && this.hasExpandedIcon;
-    const iconExpandedHidden = !this.hasExpandedIcon || !this.open;
+    const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
     const openIcon = this.isMaterialTheme
       ? 'keyboard_arrow_up'
