@@ -24,6 +24,13 @@
     padding: rem(4px) rem(6px);
 }
 
+[part='label indicators'],
+[part='label indicators start'] {
+    @include type-style('caption');
+
+    margin: rem(16px) 0;
+}
+
 [part~='dot'] {
     position: relative;
     width: rem(12px);
@@ -49,7 +56,7 @@
     justify-content: center;
     position: absolute;
     z-index: 3;
-    outline: none;
+    outline-style: none;
     user-select: none;
     width: rem(46px);
     height: rem(46px);
@@ -59,6 +66,12 @@
     igc-icon {
         --ig-size: 1;
     }
+}
+
+[part~='navigation'][disabled] {
+    box-shadow: none;
+    cursor: default;
+    pointer-events: none;
 }
 
 :host(:not([vertical])) {
@@ -83,7 +96,8 @@
         inset-block-end: 0;
     }
 
-    [part='indicators start'] {
+    [part='indicators start'],
+    [part='label indicators start'] {
         inset-block-end: unset;
         inset-block-start: 0;
     }
@@ -114,7 +128,8 @@
         margin-inline-end: rem(26px);
     }
 
-    [part='indicators start'] {
+    [part='indicators start'],
+    [part='label indicators start'] {
         inset-inline-end: unset;
         inset-inline-start: 0;
         margin-inline-start: rem(26px);
