@@ -14,7 +14,7 @@ import {
 } from '../common/validators.js';
 
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<{ checked: boolean; value: string | undefined }>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -110,7 +110,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleClick() {
     this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: { checked: this.checked, value: this.value },
+    });
   }
 
   protected handleBlur() {
