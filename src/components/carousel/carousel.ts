@@ -541,7 +541,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private labelTemplate() {
     return html`
-      <div>
+      <div
+        part=${partNameMap({
+          label: true,
+          indicators: true,
+          start: this.indicatorsOrientation === 'start',
+        })}
+      >
         <span>${this.current + 1} / ${this.total}</span>
       </div>
     `;

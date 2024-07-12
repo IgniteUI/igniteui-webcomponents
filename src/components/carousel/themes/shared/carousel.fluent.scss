@@ -2,7 +2,6 @@
 @use '../light/themes' as *;
 
 $theme: $fluent;
-
 $btn-indent: rem(2px);
 
 [part~='navigation'] {

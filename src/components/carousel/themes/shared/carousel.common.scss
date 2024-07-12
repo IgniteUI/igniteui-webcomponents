@@ -26,8 +26,6 @@ $theme: $material;
     color: var-get($theme, 'button-disabled-arrow-color');
     background: var-get($theme, 'button-disabled-background');
     border-color: var-get($theme, 'button-disabled-border-color');;
-    box-shadow: none;
-    cursor: default;
 }
 
 [part~='indicators'] {
@@ -39,6 +37,14 @@ $theme: $material;
     &:focus-visible {
         border: rem(2px) solid var-get($theme, 'indicator-focus-color');
     }
+}
+
+[part='label indicators'],
+[part='label indicators start'] {
+    box-shadow: none;
+    border-radius: rem(4px);
+    color: var-get($theme, 'indicator-color');
+    opacity: .8;
 }
 
 [part~='dot'] {

@@ -5,4 +5,11 @@ $theme: $material;
 
 :host [part~='base'] {
     background: var-get($theme, 'slide-background');
+
+    ::slotted(img) {
+        width: 100%;
+        object-fit: cover;
+        touch-action: none;
+        pointer-events: none;
+    }
 }
