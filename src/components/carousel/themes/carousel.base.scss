@@ -128,12 +128,20 @@
         margin-inline-end: rem(26px);
     }
 
+    [part='label indicators'] {
+        margin-inline-end: rem(20px);
+    }
+
     [part='indicators start'],
     [part='label indicators start'] {
         inset-inline-end: unset;
         inset-inline-start: 0;
         margin-inline-start: rem(26px);
         margin-inline-end: unset;
+    }
+
+    [part='label indicators start'] {
+        margin-inline-start: rem(20px);
     }
 }
 

@@ -37,8 +37,8 @@ $theme: $indigo;
     &::after {
         width: rem(8px);
         height: rem(8px);
-        top: 50%;
-        left: 50%;
+        inset-block-start: 50%;
+        inset-inline-start: 50%;
         transform: translate(-50%, -50%);
     }
 
@@ -69,5 +69,17 @@ $theme: $indigo;
         &::after {
             background: var-get($theme, 'indicator-active-dot-color');
         }
+    }
+}
+
+:host([vertical]) {
+    [part~='indicators'],
+    [part='label indicators'] {
+        margin-inline-end: rem(16px);
+    }
+
+    [part='indicators start'],
+    [part='label indicators start'] {
+        margin-inline-start: rem(16px);
     }
 }

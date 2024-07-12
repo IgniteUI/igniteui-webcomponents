@@ -166,61 +166,36 @@ const BasicTemplate = ({
   animationType,
 }: IgcCarouselArgs) => {
   return html`
-    <style>
-      .carousel-container {
-        width: 70vw;
-        height: 70vh;
-        margin: 16px auto;
-      }
-      .image-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      img {
-        object-fit: fill;
-        max-width: 90%;
-      }
-    </style>
-
-    <div class="carousel-container">
-      <igc-carousel
-        ?skip-loop=${skipLoop}
-        ?skip-pause-on-interaction=${skipPauseOnInteraction}
-        ?skip-navigation=${skipNavigation}
-        ?with-picker=${withPicker}
-        .interval=${interval}
-        .animationType=${animationType}
-        .vertical=${vertical}
-        .indicatorsOrientation=${indicatorsOrientation}
-        .maximumIndicatorsCount=${maximumIndicatorsCount}
-      >
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
-              alt="Red Ice Forest"
-            />
-          </div>
-        </igc-carousel-slide>
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
-              alt="Yosemite"
-            />
-          </div>
-        </igc-carousel-slide>
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
-              alt="New York"
-            />
-          </div>
-        </igc-carousel-slide>
-      </igc-carousel>
-    </div>
+    <igc-carousel
+      ?skip-loop=${skipLoop}
+      ?skip-pause-on-interaction=${skipPauseOnInteraction}
+      ?skip-navigation=${skipNavigation}
+      ?with-picker=${withPicker}
+      .interval=${interval}
+      .animationType=${animationType}
+      .vertical=${vertical}
+      .indicatorsOrientation=${indicatorsOrientation}
+      .maximumIndicatorsCount=${maximumIndicatorsCount}
+    >
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
+          alt="Red Ice Forest"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
+          alt="Yosemite"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
+          alt="New York"
+        />
+      </igc-carousel-slide>
+    </igc-carousel>
   `;
 };
 
@@ -235,75 +210,46 @@ const SlottedContentTemplate = ({
   animationType,
 }: IgcCarouselArgs) => {
   return html`
-    <style>
-      .carousel-container {
-        width: 70vw;
-        height: 70vh;
-        margin: 16px auto;
-      }
-      .image-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      img {
-        object-fit: fill;
-        max-width: 90%;
-      }
-    </style>
-
-    <div class="carousel-container">
-      <igc-carousel
-        ?skip-loop=${skipLoop}
-        ?skip-pause-on-interaction=${skipPauseOnInteraction}
-        ?skip-navigation=${skipNavigation}
-        ?with-picker=${withPicker}
-        .interval=${interval}
-        .animationType=${animationType}
-        .vertical=${vertical}
-        .indicatorsOrientation=${indicatorsOrientation}
-      >
-        <igc-icon
-          slot="previous-button"
-          name="previous"
-          collection="material"
-        ></igc-icon>
-        <igc-icon
-          slot="next-button"
-          name="next"
-          collection="material"
-        ></igc-icon>
-        <igc-icon
-          slot="indicator"
-          name="indicator"
-          collection="material"
-        ></igc-icon>
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
-              alt="Red Ice Forest"
-            />
-          </div>
-        </igc-carousel-slide>
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
-              alt="Yosemite"
-            />
-          </div>
-        </igc-carousel-slide>
-        <igc-carousel-slide>
-          <div class="image-container">
-            <img
-              src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
-              alt="New York"
-            />
-          </div>
-        </igc-carousel-slide>
-      </igc-carousel>
-    </div>
+    <igc-carousel
+      ?skip-loop=${skipLoop}
+      ?skip-pause-on-interaction=${skipPauseOnInteraction}
+      ?skip-navigation=${skipNavigation}
+      ?with-picker=${withPicker}
+      .interval=${interval}
+      .animationType=${animationType}
+      .vertical=${vertical}
+      .indicatorsOrientation=${indicatorsOrientation}
+    >
+      <igc-icon
+        slot="previous-button"
+        name="previous"
+        collection="material"
+      ></igc-icon>
+      <igc-icon slot="next-button" name="next" collection="material"></igc-icon>
+      <igc-icon
+        slot="indicator"
+        name="indicator"
+        collection="material"
+      ></igc-icon>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
+          alt="Red Ice Forest"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
+          alt="Yosemite"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
+          alt="New York"
+        />
+      </igc-carousel-slide>
+    </igc-carousel>
   `;
 };
 
