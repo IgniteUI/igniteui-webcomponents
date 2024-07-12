@@ -1,8 +1,16 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html, nothing } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAll, queryAssignedElements } from 'lit/decorators.js';
 
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowLeft,
+  arrowRight,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import {
   type MutationControllerParams,
   createMutationController,
@@ -67,6 +75,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     initialValue: this,
   });
 
+  private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
+
+  @queryAll('button[role="tab"]')
+  private _indicators!: NodeListOf<HTMLButtonElement>;
+
+  private _kbnIndicators = false;
+
   private _observerCallback({
     changes: { added, attributes },
   }: MutationControllerParams<IgcCarouselSlideComponent>) {
@@ -85,6 +100,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       if (slide.active && i !== idx) {
         slide.active = false;
       }
+    }
+
+    if (this._kbnIndicators) {
+      this._indicators[this.current].focus();
+      this._kbnIndicators = false;
     }
 
     this.requestUpdate();
@@ -119,8 +139,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * Whether the carousel should render the picker controls (dots).
    * @attr with-picker
    */
-  @property({ type: Boolean, reflect: true, attribute: 'with-picker' })
-  public withPicker = false;
+  @property({ type: Boolean, reflect: true, attribute: 'skip-picker' })
+  public skipPicker = false;
 
   /**
    * The carousel alignment.
@@ -133,7 +153,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * Sets the orientation of the picker controls (dots).
    * @attr
    */
-  @property({ reflect: true, attribute: 'indicators-orientation' })
+  @property({ reflect: false, attribute: 'indicators-orientation' })
   public indicatorsOrientation: 'start' | 'end' = 'end';
 
   /**
@@ -216,6 +236,36 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._internals.role = 'region';
     this._internals.ariaRoleDescription = 'carousel';
 
+    this.addEventListener('focus', () => this.handlePauseOnInteraction());
+    this.addEventListener('blur', () => this.handlePauseOnInteraction());
+    this.addEventListener('pointerenter', () =>
+      this.handlePauseOnInteraction()
+    );
+    this.addEventListener('pointerleave', () =>
+      this.handlePauseOnInteraction()
+    );
+
+    addKeybindings(this, {
+      ref: this._indicatorsContainerRef,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(arrowLeft, async () => {
+        this._kbnIndicators = true;
+        await this.prev();
+      })
+      .set(arrowRight, async () => {
+        this._kbnIndicators = true;
+        await this.next();
+      })
+      .set(homeKey, async () => {
+        this._kbnIndicators = true;
+        await this.select(this.slides[0]);
+      })
+      .set(endKey, async () => {
+        this._kbnIndicators = true;
+        await this.select(this.slides[this.total - 1]);
+      });
+
     createMutationController(this, {
       callback: this._observerCallback,
       filter: [IgcCarouselSlideComponent.tagName],
@@ -233,6 +283,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     if (this.total && index === -1) {
       this.slides[0].active = true;
     }
+
+    this.requestUpdate();
   }
 
   /**
@@ -295,16 +347,35 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return true;
   }
 
+  /**
+   * Switches the passed in slide running any animations and returns if the operation was a success.
+   */
+  public async select(
+    slide: IgcCarouselSlideComponent,
+    direction?: 'next' | 'prev'
+  ): Promise<boolean> {
+    const index = this.slides.indexOf(slide);
+
+    if (index === this.current) {
+      return false;
+    }
+
+    const dir = direction ?? index > this.current ? 'next' : 'prev';
+
+    await this.animateSlides(
+      this.slides[index],
+      this.slides[this.current],
+      dir
+    );
+    return true;
+  }
+
   private getNextIndex(): number {
     return (this.current + 1) % this.total;
   }
 
   private getPrevIndex(): number {
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
-  }
-
-  private showIndicatorsLabel(): boolean {
-    return this.total > this.maximumIndicatorsCount;
   }
 
   private resetInterval() {
@@ -330,6 +401,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
+  private handlePauseOnInteraction() {
+    if (!this.skipPauseOnInteraction && this.isPlaying) {
+      this.pause();
+    } else if (!this.isPlaying) {
+      this.play();
+    }
+  }
+
   private async animateSlides(
     nextSlide: IgcCarouselSlideComponent,
     currentSlide: IgcCarouselSlideComponent,
@@ -348,19 +427,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private handlePointerEnter() {
-    if (!this.skipPauseOnInteraction && this.isPlaying) {
-      this.pause();
-    }
-  }
-
-  private handlePointerLeave() {
-    if (!this.isPlaying) {
-      this.play();
-    }
-  }
-
-  private async handleClick(slide: IgcCarouselSlideComponent) {
+  private async handlePickerClick(slide: IgcCarouselSlideComponent) {
     const index = this.slides.indexOf(slide);
 
     if (index !== this.current) {
@@ -371,14 +438,20 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private async handlePrev() {
-    await this.prev();
+  private async handleNavigationClick(dir: 'next' | 'prev') {
+    dir === 'next' ? await this.next() : await this.prev();
     this.emitSlideChangedEvent();
   }
 
-  private async handleNext() {
-    await this.next();
-    this.emitSlideChangedEvent();
+  private async handleNavigationKeydown(
+    event: KeyboardEvent,
+    dir: 'next' | 'prev'
+  ) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      dir === 'next' ? await this.next() : await this.prev();
+      this.emitSlideChangedEvent();
+    }
   }
 
   private emitSlideChangedEvent() {
@@ -399,11 +472,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     return html`
       <button
+        type="button"
         part="navigation previous"
         aria-label="Previous slide"
         aria-controls=${this.carouselId}
         ?disabled=${this.skipLoop && this.current === 0}
-        @click=${this.handlePrev}
+        @click=${() => this.handleNavigationClick('prev')}
+        @keydown=${(event: KeyboardEvent) =>
+          this.handleNavigationKeydown(event, 'prev')}
       >
         <slot name="previous-button">
           <igc-icon
@@ -414,11 +490,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         </slot>
       </button>
       <button
+        type="button"
         part="navigation next"
         aria-label="Next slide"
         aria-controls=${this.carouselId}
         ?disabled=${this.skipLoop && this.current === this.total - 1}
-        @click=${this.handleNext}
+        @click=${() => this.handleNavigationClick('next')}
+        @keydown=${(event: KeyboardEvent) =>
+          this.handleNavigationKeydown(event, 'next')}
       >
         <slot name="next-button">
           <igc-icon
@@ -434,6 +513,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private pickerTemplate() {
     return html`
       <div
+        ${ref(this._indicatorsContainerRef)}
         role="tablist"
         part=${partNameMap({
           indicators: true,
@@ -441,19 +521,19 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         })}
       >
         ${this.slides.map((slide, index) => {
-          return html` <button
+          return html`<button
+            type="button"
             role="tab"
             part=${partNameMap({
               dot: true,
               active: slide.active,
             })}
+            tabindex=${slide.active ? '0' : '-1'}
             aria-label="Slide ${index + 1}"
             aria-selected=${slide.active}
             aria-controls="${slide.id}"
-            @click=${() => this.handleClick(slide)}
-          >
-            <slot name="indicator"></slot>
-          </button>`;
+            @click=${() => this.handlePickerClick(slide)}
+          ></button>`;
         })}
       </div>
     `;
@@ -469,15 +549,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <section
-        @pointerenter=${this.handlePointerEnter}
-        @pointerleave=${this.handlePointerLeave}
-      >
+      <section>
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.withPicker && !this.showIndicatorsLabel()
-          ? this.pickerTemplate()
+        ${this.skipPicker ? nothing : this.pickerTemplate()}
+        ${this.total > this.maximumIndicatorsCount
+          ? this.labelTemplate()
           : nothing}
-        ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
         <div
           id=${this.carouselId}
           aria-live=${this.interval ? 'off' : 'polite'}
