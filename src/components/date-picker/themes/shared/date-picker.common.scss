@@ -66,6 +66,11 @@ $input-theme: input-theme.$material;
     border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
 }
 
+igc-icon,
+::slotted(igc-icon) {
+    --component-size: var(--input-size);
+}
+
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
         color: var-get($input-theme, 'error-secondary-color');
