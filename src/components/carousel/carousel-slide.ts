@@ -50,7 +50,13 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   protected get _animation() {
-    return this._carousel?.animationType ?? 'slide';
+    const animation = this._carousel?.animationType ?? 'slide';
+
+    if (animation === 'slide') {
+      return this._carousel?.vertical ? 'slideVer' : 'slideHor';
+    }
+
+    return animation;
   }
 
   /**

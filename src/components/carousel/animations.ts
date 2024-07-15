@@ -1,7 +1,9 @@
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import {
   slideInHor,
+  slideInVer,
   slideOutHor,
+  slideOutVer,
 } from '../../animations/presets/slide/index.js';
 import { animation } from '../../animations/types.js';
 
@@ -15,10 +17,16 @@ export const animations = new Map(
         out: fadeOut,
       })
     ),
-    slide: new Map(
+    slideHor: new Map(
       Object.entries({
         in: slideInHor,
         out: slideOutHor,
+      })
+    ),
+    slideVer: new Map(
+      Object.entries({
+        in: slideInVer,
+        out: slideOutVer,
       })
     ),
     none: new Map(

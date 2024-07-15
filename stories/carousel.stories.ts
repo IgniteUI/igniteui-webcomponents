@@ -45,7 +45,7 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    withPicker: {
+    skipPicker: {
       type: 'boolean',
       description:
         'Whether the carousel should render the picker controls (dots).',
@@ -90,7 +90,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     skipLoop: false,
     skipPauseOnInteraction: false,
     skipNavigation: false,
-    withPicker: false,
+    skipPicker: false,
     vertical: false,
     indicatorsOrientation: 'end',
     maximumIndicatorsCount: 10,
@@ -108,7 +108,7 @@ interface IgcCarouselArgs {
   /** Whether the carousel should skip rendering of the default navigation buttons. */
   skipNavigation: boolean;
   /** Whether the carousel should render the picker controls (dots). */
-  withPicker: boolean;
+  skipPicker: boolean;
   /** The carousel alignment. */
   vertical: boolean;
   /** Sets the orientation of the picker controls (dots). */
@@ -158,7 +158,7 @@ const BasicTemplate = ({
   skipLoop,
   skipPauseOnInteraction,
   skipNavigation,
-  withPicker,
+  skipPicker,
   vertical,
   indicatorsOrientation,
   maximumIndicatorsCount,
@@ -170,7 +170,7 @@ const BasicTemplate = ({
       ?skip-loop=${skipLoop}
       ?skip-pause-on-interaction=${skipPauseOnInteraction}
       ?skip-navigation=${skipNavigation}
-      ?with-picker=${withPicker}
+      ?skip-picker=${skipPicker}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
@@ -203,7 +203,7 @@ const SlottedContentTemplate = ({
   skipLoop,
   skipPauseOnInteraction,
   skipNavigation,
-  withPicker,
+  skipPicker,
   vertical,
   indicatorsOrientation,
   interval,
@@ -214,7 +214,7 @@ const SlottedContentTemplate = ({
       ?skip-loop=${skipLoop}
       ?skip-pause-on-interaction=${skipPauseOnInteraction}
       ?skip-navigation=${skipNavigation}
-      ?with-picker=${withPicker}
+      ?skip-picker=${skipPicker}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
