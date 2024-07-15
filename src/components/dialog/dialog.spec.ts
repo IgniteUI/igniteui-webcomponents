@@ -55,7 +55,6 @@ describe('Dialog', () => {
       'aria-labelledby',
       'part',
       'role',
-      'size',
       'id',
       'hidden',
       'open',
