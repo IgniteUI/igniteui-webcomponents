@@ -69,6 +69,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _lastInterval: any;
   private _playing = false;
   private _paused = false;
+  private _kbnIndicators = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
@@ -77,10 +78,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
 
-  @queryAll('button[role="tab"]')
+  @queryAll('[role="tab"]')
   private _indicators!: NodeListOf<HTMLButtonElement>;
-
-  private _kbnIndicators = false;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -137,7 +136,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   /**
    * Whether the carousel should render the picker controls (dots).
-   * @attr with-picker
+   * @attr skip-picker
    */
   @property({ type: Boolean, reflect: true, attribute: 'skip-picker' })
   public skipPicker = false;
@@ -151,7 +150,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   /**
    * Sets the orientation of the picker controls (dots).
-   * @attr
+   * @attr indicators-orientation
    */
   @property({ reflect: false, attribute: 'indicators-orientation' })
   public indicatorsOrientation: 'start' | 'end' = 'end';
@@ -165,6 +164,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   /**
    * Controls the maximum picker controls (dots) that can be shown. Default value is `10`.
+   * @attr maximum-indicators-count
    */
   @property({
     type: Number,
@@ -172,6 +172,32 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     attribute: 'maximum-indicators-count',
   })
   public maximumIndicatorsCount = 10;
+
+  /**
+   * The animation type.
+   * @attr animation-type
+   */
+  @property({ attribute: 'animation-type' })
+  public animationType: 'slide' | 'fade' | 'none' = 'slide';
+
+  /**
+   * The template used for the content of each indicator (dot).
+   */
+  @property({ attribute: false })
+  public indicatorTemplate = (slide: IgcCarouselSlideComponent) => {
+    return html`<div
+      part=${partNameMap({
+        dot: true,
+        active: slide.active,
+      })}
+    ></div>`;
+  };
+
+  /**
+   * The slides of the carousel.
+   */
+  @queryAssignedElements({ selector: IgcCarouselSlideComponent.tagName })
+  public slides!: Array<IgcCarouselSlideComponent>;
 
   /**
    * The total number of slides.
@@ -189,31 +215,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   /**
-   * The slides of the carousel.
-   */
-  @queryAssignedElements({ selector: IgcCarouselSlideComponent.tagName })
-  public slides!: Array<IgcCarouselSlideComponent>;
-
-  /**
    * Whether the carousel is in playing state.
    */
-  public get isPlaying() {
+  public get isPlaying(): boolean {
     return this._playing;
   }
 
   /**
    * Whether the carousel in in paused state.
    */
-  public get isPaused() {
+  public get isPaused(): boolean {
     return this._paused;
   }
-
-  /**
-   * The animation type.
-   * @attr animation-type
-   */
-  @property({ attribute: 'animation-type' })
-  public animationType: 'slide' | 'fade' | 'none' = 'slide';
 
   @watch('animationType', { waitUntilFirstUpdate: true })
   protected animationTypeChange() {
@@ -382,14 +395,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this.total > this.maximumIndicatorsCount;
   }
 
-  private resetInterval() {
+  private resetInterval(): void {
     if (this._lastInterval) {
       clearInterval(this._lastInterval);
       this._lastInterval = null;
     }
   }
 
-  private restartInterval() {
+  private restartInterval(): void {
     this.resetInterval();
 
     if (!Number.isNaN(this.interval) && this.interval > 0) {
@@ -405,7 +418,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private handlePauseOnInteraction() {
+  private handlePauseOnInteraction(): void {
     if (!this.skipPauseOnInteraction && this.isPlaying) {
       this.pause();
     } else if (!this.isPlaying) {
@@ -525,19 +538,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         })}
       >
         ${this.slides.map((slide, index) => {
-          return html`<button
-            type="button"
+          return html`<div
             role="tab"
-            part=${partNameMap({
-              dot: true,
-              active: slide.active,
-            })}
             tabindex=${slide.active ? '0' : '-1'}
             aria-label="Slide ${index + 1}"
             aria-selected=${slide.active}
             aria-controls="${slide.id}"
             @click=${() => this.handlePickerClick(slide)}
-          ></button>`;
+          >
+            ${this.indicatorTemplate(slide)}
+          </div>`;
         })}
       </div>
     `;
