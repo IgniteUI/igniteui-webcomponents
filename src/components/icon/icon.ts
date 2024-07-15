@@ -6,7 +6,6 @@ import { themes } from '../../theming/theming-decorator.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   getIconRegistry,
   registerIconFromText as registerIconFromText_impl,
@@ -24,7 +23,7 @@ import { all } from './themes/themes.js';
  *
  */
 @themes(all)
-export default class IgcIconComponent extends SizableMixin(LitElement) {
+export default class IgcIconComponent extends LitElement {
   public static readonly tagName = 'igc-icon';
   public static override styles = [styles, shared];
 
@@ -65,7 +64,6 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     super();
     this.__internals = this.attachInternals();
     this.__internals.role = 'img';
-    this.size = 'medium';
   }
 
   public override connectedCallback() {
