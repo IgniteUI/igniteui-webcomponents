@@ -378,6 +378,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
   }
 
+  private showIndicatorsLabel(): boolean {
+    return this.total > this.maximumIndicatorsCount;
+  }
+
   private resetInterval() {
     if (this._lastInterval) {
       clearInterval(this._lastInterval);
@@ -557,10 +561,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return html`
       <section>
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.skipPicker ? nothing : this.pickerTemplate()}
-        ${this.total > this.maximumIndicatorsCount
-          ? this.labelTemplate()
-          : nothing}
+        ${this.skipPicker || this.showIndicatorsLabel()
+          ? nothing
+          : this.pickerTemplate()}
+        ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
         <div
           id=${this.carouselId}
           aria-live=${this.interval ? 'off' : 'polite'}
