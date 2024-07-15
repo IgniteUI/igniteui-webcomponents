@@ -150,10 +150,14 @@ export function simulatePointerMove(
   }
 }
 
-export function simulateClick(node: Element, times = 1) {
+export function simulateClick(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+) {
   for (let i = 0; i < times; i++) {
     node.dispatchEvent(
-      new MouseEvent('click', { bubbles: true, composed: true })
+      new PointerEvent('click', { bubbles: true, composed: true, ...options })
     );
   }
 }
@@ -327,4 +331,16 @@ export async function checkValidationSlots(
   for (const slot of slots) {
     expect(hasSlotContent(container.renderRoot, slot)).to.be.true;
   }
+}
+
+/**
+ * Checks if a given element is within the view of another element.
+ */
+export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
+  const { top, bottom, height } = el.getBoundingClientRect();
+  const { top: viewTop, bottom: viewBottom } = view.getBoundingClientRect();
+
+  return top <= viewTop
+    ? viewTop - top <= height
+    : bottom - viewBottom <= height;
 }

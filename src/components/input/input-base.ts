@@ -8,7 +8,6 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
@@ -27,9 +26,7 @@ export interface IgcInputEventMap {
 @themes(all, true)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-  )
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   private declare readonly [themeSymbol]: Theme;
 
@@ -83,11 +80,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public label!: string;
-
-  constructor() {
-    super();
-    this.size = 'medium';
-  }
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();

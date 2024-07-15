@@ -35,7 +35,6 @@ describe('Input component', () => {
       it('is initialized with the proper default values', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 
-        expect(element.size).to.equal('medium');
         expect(element.type).to.equal('text');
         expect(element.value).to.be.empty;
         expect(element.invalid).to.be.false;
