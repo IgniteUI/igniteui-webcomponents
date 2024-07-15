@@ -58,23 +58,23 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedNodes({ slot: 'icon', flatten: true })
   protected navdrawerIcon!: Array<Node>;
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.shadowRoot?.addEventListener('slotchange', (_) => {
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
       this._textLength = this._text.length;
     });
-  }
 
-  protected resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      mini: this._textLength < 1,
-    };
+    return root;
   }
 
   protected override render() {
+    const parts = partNameMap({
+      base: true,
+      mini: this._textLength < 1,
+    });
+
     return html`
-      <div part="${partNameMap(this.resolvePartNames('base'))}">
+      <div part=${parts}>
         <span part="icon" .hidden="${this.navdrawerIcon.length === 0}">
           <slot name="icon"></slot>
         </span>
