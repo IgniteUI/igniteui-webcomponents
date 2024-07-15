@@ -142,10 +142,14 @@ export function simulatePointerMove(
   }
 }
 
-export function simulateClick(node: Element, times = 1) {
+export function simulateClick(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+) {
   for (let i = 0; i < times; i++) {
     node.dispatchEvent(
-      new MouseEvent('click', { bubbles: true, composed: true })
+      new PointerEvent('click', { bubbles: true, composed: true, ...options })
     );
   }
 }
