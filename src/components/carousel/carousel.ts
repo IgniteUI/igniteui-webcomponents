@@ -19,7 +19,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { createCounter, isLTR, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { carouselContext } from './context.js';
@@ -41,6 +41,8 @@ export interface IgcCarouselComponentEventMap {
  * @slot Default slot for the carousel. Any projected `igc-carousel-slide` components should be projected here.
  *
  * @fires igcSlideChanged - Emitted when the current active slide is changed either by user interaction or by the interval callback.
+ * @fires igcPlaying - Emitted when the carousel enters playing state by a user interaction.
+ * @fires igcPaused - Emitted when the carousel enters paused state by a user interaction.
  *
  * @csspart
  */
@@ -249,8 +251,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._internals.role = 'region';
     this._internals.ariaRoleDescription = 'carousel';
 
-    this.addEventListener('focus', () => this.handlePauseOnInteraction());
-    this.addEventListener('blur', () => this.handlePauseOnInteraction());
+    this.addEventListener('focusin', (event: FocusEvent) => {
+      if (this.contains(event.relatedTarget as Node)) {
+        return;
+      }
+      this.handlePauseOnInteraction();
+    });
+    this.addEventListener('focusout', (event: FocusEvent) => {
+      if (this.contains(event.relatedTarget as Node)) {
+        return;
+      }
+      this.handlePauseOnInteraction();
+    });
     this.addEventListener('pointerenter', () =>
       this.handlePauseOnInteraction()
     );
@@ -264,19 +276,23 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     })
       .set(arrowLeft, async () => {
         this._kbnIndicators = true;
-        await this.prev();
+        isLTR(this) ? await this.prev() : await this.next();
       })
       .set(arrowRight, async () => {
         this._kbnIndicators = true;
-        await this.next();
+        isLTR(this) ? await this.next() : await this.prev();
       })
       .set(homeKey, async () => {
         this._kbnIndicators = true;
-        await this.select(this.slides[0]);
+        isLTR(this)
+          ? await this.select(this.slides[0])
+          : await this.select(this.slides[this.total - 1]);
       })
       .set(endKey, async () => {
         this._kbnIndicators = true;
-        await this.select(this.slides[this.total - 1]);
+        isLTR(this)
+          ? await this.select(this.slides[this.total - 1])
+          : await this.select(this.slides[0]);
       });
 
     createMutationController(this, {
@@ -419,10 +435,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private handlePauseOnInteraction(): void {
+    if (!this.interval) {
+      return;
+    }
+
     if (!this.skipPauseOnInteraction && this.isPlaying) {
       this.pause();
+      this.emitEvent('igcPaused');
     } else if (!this.isPlaying) {
       this.play();
+      this.emitEvent('igcPlaying');
     }
   }
 

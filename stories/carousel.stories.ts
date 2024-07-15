@@ -22,7 +22,7 @@ const metadata: Meta<IgcCarouselComponent> = {
           'The `igc-carousel` presents a set of `igc-carousel-slide`s by sequentially displaying a subset of one or more slides.',
       },
     },
-    actions: { handles: ['igcSlideChanged'] },
+    actions: { handles: ['igcSlideChanged', 'igcPlaying', 'igcPaused'] },
   },
   argTypes: {
     skipLoop: {
