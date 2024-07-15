@@ -5,6 +5,7 @@ import {
   IgcAvatarComponent,
   IgcButtonComponent,
   IgcDropdownComponent,
+  IgcIconButtonComponent,
   IgcIconComponent,
   IgcInputComponent,
   IgcNavbarComponent,
@@ -17,6 +18,7 @@ defineComponents(
   IgcAvatarComponent,
   IgcInputComponent,
   IgcIconComponent,
+  IgcIconButtonComponent,
   IgcButtonComponent,
   IgcDropdownComponent
 );
@@ -77,18 +79,18 @@ const Template = ({ content }: NavbarStoryArgs) => {
         style="align-self: center"
         type="search"
         placeholder="search"
-        size="small"
         outlined
       >
         <igc-icon name="search" slot="suffix"></igc-icon>
       </igc-input>
-      <igc-icon slot="end" name="favorite"></igc-icon>
+      <igc-icon-button slot="end" variant="flat">
+        <igc-icon name="search"></igc-icon>
+      </igc-icon-button>
+      <igc-icon-button slot="end" variant="flat">
+        <igc-icon name="favorite"></igc-icon>
+      </igc-icon-button>
       <igc-dropdown slot="end">
-        <igc-avatar
-          slot="target"
-          size="small"
-          shape="circle"
-          src="https://i.pravatar.cc/200"
+        <igc-avatar slot="target" shape="circle" src="https://i.pravatar.cc/200"
           >MP</igc-avatar
         >
         <igc-dropdown-item>Settings</igc-dropdown-item>

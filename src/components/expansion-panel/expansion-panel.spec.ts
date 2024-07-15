@@ -114,8 +114,7 @@ describe('Expansion Panel', () => {
         >
           <slot></slot>
         </div>
-      `,
-        { ignoreAttributes: ['style', 'size'] }
+      `
       );
     });
 
