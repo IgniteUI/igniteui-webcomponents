@@ -63,11 +63,9 @@ describe('Dialog component', () => {
             'aria-labelledby',
             'part',
             'role',
-            'size',
             'id',
             'hidden',
             'open',
-            'style',
           ],
         }
       );
@@ -87,7 +85,7 @@ describe('Dialog component', () => {
           </slot>
         </footer>`,
         {
-          ignoreAttributes: ['part', 'variant', 'size', 'style'],
+          ignoreAttributes: ['part', 'variant'],
         }
       );
 
@@ -134,10 +132,8 @@ describe('Dialog component', () => {
             'aria-labelledby',
             'part',
             'role',
-            'size',
             'id',
             'hidden',
-            'style',
           ],
         }
       );

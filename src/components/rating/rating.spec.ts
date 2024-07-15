@@ -56,7 +56,6 @@ describe('Rating component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('large');
       expect(el.max).to.equal(5);
       expect(el.hasAttribute('disabled')).to.be.false;
       expect(el.hasAttribute('hover')).to.be.false;
@@ -70,12 +69,10 @@ describe('Rating component', () => {
       const max = 10;
       const name = 'rating';
       const label = 'Test rating';
-      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating
           value=${value}
-          size=${size}
           max=${max}
           name=${name}
           label=${label}
@@ -86,7 +83,6 @@ describe('Rating component', () => {
       expect(el.max).to.equal(max);
       expect(el.name).to.equal(name);
       expect(el.label).to.equal(label);
-      expect(el.size).to.equals(size);
     });
 
     it('value is truncated if greater than `max` attribute', async () => {
@@ -94,12 +90,10 @@ describe('Rating component', () => {
       const max = 10;
       const name = 'rating';
       const label = 'Test rating';
-      const size = 'small';
 
       el = await fixture<IgcRatingComponent>(
         html`<igc-rating
           value=${value}
-          size=${size}
           max=${max}
           name=${name}
           label=${label}
@@ -111,7 +105,6 @@ describe('Rating component', () => {
       expect(el.max).to.equal(max);
       expect(el.name).to.equal(name);
       expect(el.label).to.equal(label);
-      expect(el.size).to.equals(size);
     });
 
     it('out of bounds value is normalized', async () => {

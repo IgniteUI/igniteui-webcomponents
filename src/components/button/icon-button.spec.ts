@@ -36,8 +36,6 @@ describe('IconButton component', () => {
             'aria-hidden',
             'part',
             'role',
-            'size',
-            'style',
           ],
         }
       );
@@ -56,9 +54,7 @@ describe('IconButton component', () => {
           'aria-hidden',
           'part',
           'role',
-          'size',
           'href',
-          'style',
         ],
       });
     });
@@ -93,8 +89,6 @@ describe('IconButton component', () => {
             'aria-hidden',
             'part',
             'role',
-            'size',
-            'style',
           ],
         }
       );
@@ -117,8 +111,6 @@ describe('IconButton component', () => {
             'aria-hidden',
             'part',
             'role',
-            'size',
-            'style',
           ],
         }
       );
@@ -179,9 +171,7 @@ describe('IconButton component', () => {
             'aria-hidden',
             'part',
             'role',
-            'size',
             'variant',
-            'style',
           ],
         }
       );
@@ -194,7 +184,6 @@ describe('IconButton component', () => {
       name="biking"
       collection="default"
       variant="contained"
-      size="medium"
       href="https://test.com"
       target="_blank"
       download="test"
