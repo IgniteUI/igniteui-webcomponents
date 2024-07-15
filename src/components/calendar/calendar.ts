@@ -12,7 +12,6 @@ import {
 } from '../common/i18n/calendar.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
@@ -63,12 +62,10 @@ export const focusActiveDate = Symbol();
  * @csspart days-view-container - The days view container.
  */
 @themes(all)
-export default class IgcCalendarComponent extends SizableMixin(
-  EventEmitterMixin<
-    IgcCalendarBaseEventMap,
-    Constructor<IgcCalendarBaseComponent>
-  >(IgcCalendarBaseComponent)
-) {
+export default class IgcCalendarComponent extends EventEmitterMixin<
+  IgcCalendarBaseEventMap,
+  Constructor<IgcCalendarBaseComponent>
+>(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
   public static styles = styles;
 
@@ -146,13 +143,11 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.initFormatters();
   }
 
+  private yearPerPage = 15;
+
   constructor() {
     super();
     this.initFormatters();
-  }
-
-  private get yearPerPage() {
-    return this.size === 'small' ? 18 : 15;
   }
 
   private get previousButtonLabel() {

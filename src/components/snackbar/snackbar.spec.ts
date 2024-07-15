@@ -70,8 +70,7 @@ describe('Snackbar', () => {
             </igc-button>
           </slot>
         </div>
-      `,
-        { ignoreAttributes: ['style', 'size'] }
+      `
       );
     });
 
