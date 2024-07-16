@@ -53,6 +53,12 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /* blazorSuppress */
+  /**
+   * The current value of the calendar.
+   * Used when selection is set to single
+   *
+   * @attr value
+   */
   @property({ converter: dateFromISOString })
   public set value(value) {
     this._value = value ? CalendarDay.from(value) : undefined;
@@ -63,6 +69,12 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /* blazorSuppress */
+  /**
+   * The current values of the calendar.
+   * Used when selection is set to multiple of range.
+   *
+   * @attr values
+   */
   @property({ converter: datesFromISOStrings })
   public set values(values) {
     this._values = values ? values.map((v) => CalendarDay.from(v)) : [];
@@ -73,6 +85,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /* blazorSuppress */
+  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
   @property({ attribute: 'active-date', converter: dateFromISOString })
   public set activeDate(value) {
     this._initialActiveDateSet = true;

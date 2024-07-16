@@ -62,22 +62,42 @@ export const focusActiveDate = Symbol();
  *
  * @fires igcChange - Emitted when calendar changes its value.
  *
- * @csspart content - The content container.
- * @csspart days-view - The days view container.
- * @csspart months-view - The months view container.
- * @csspart years-view - The years view container.
- * @csspart header - The header container.
- * @csspart header-title - The header title container.
- * @csspart header-date - The header date container.
- * @csspart navigation - The navigation container.
- * @csspart months-navigation - The months navigation container.
- * @csspart years-navigation - The years navigation container.
- * @csspart years-range - The years range container.
- * @csspart navigation-buttons - The navigation buttons container.
- * @csspart navigation-button - The navigation button container.
- * @csspart navigation-button vertical - The navigation button container
- * when calendar orientation is vertical.
- * @csspart days-view-container - The days view container.
+ * @csspart header - The header element of the calendar.
+ * @csspart header-title - The header title element of the calendar.
+ * @csspart header-date - The header date element of the calendar.
+ * @csspart content - The content element which contains the views and navigation elements of the calendar.
+ * @csspart navigation - The navigation container element of the calendar.
+ * @csspart months-navigation - The months navigation button element of the calendar.
+ * @csspart years-navigation - The years navigation button element of the calendar.
+ * @csspart years-range - The years range element of the calendar.
+ * @csspart navigation-buttons - The navigation buttons container of the calendar.
+ * @csspart navigation-button - Previous/next navigation button of the calendar.
+ * @csspart days-view-container - The days view container element of the calendar.
+ * @csspart days-view - Days view element of the calendar.
+ * @csspart months-view - The months view element of the calendar.
+ * @csspart years-view - The years view element of the calendar.
+ * @csspart days-row - Days row element of the calendar.
+ * @csspart label - Week header label element of the calendar.
+ * @csspart week-number - Week number element of the calendar.
+ * @csspart week-number-inner - Week number inner element of the calendar.
+ * @csspart date - Date element of the calendar.
+ * @csspart date-inner - Date inner element of the calendar.
+ * @csspart first - The first selected date element of the calendar in range selection.
+ * @csspart last - The last selected date element of the calendar in range selection.
+ * @csspart inactive - Inactive date element of the calendar.
+ * @csspart hidden - Hidden date element of the calendar.
+ * @csspart weekend - Weekend date element of the calendar.
+ * @csspart range - Range selected element of the calendar.
+ * @csspart special - Special date element of the calendar.
+ * @csspart disabled - Disabled date element of the calendar.
+ * @csspart single - Single selected date element of the calendar.
+ * @csspart preview - Range selection preview date element of the calendar.
+ * @csspart month - Month element of the calendar.
+ * @csspart month-inner - Month inner element of the calendar.
+ * @csspart year - Year element of the calendar.
+ * @csspart year-inner - Year inner element of the calendar.
+ * @csspart selected - Indicates selected state. Applies to date, month and year elements of the calendar.
+ * @csspart current - Indicates current state. Applies to date, month and year elements of the calendar.
  */
 @themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
@@ -193,9 +213,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   @property({ attribute: 'active-view' })
   public activeView: 'days' | 'months' | 'years' = 'days';
 
-  /**
-   * The
-   */
+  /** The options used to format the months and the weekdays in the calendar views. */
   @property({ attribute: false })
   public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
     { month: 'long', weekday: 'narrow' };

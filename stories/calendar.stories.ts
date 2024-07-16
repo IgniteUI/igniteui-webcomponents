@@ -67,8 +67,18 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'days' } },
     },
-    value: { type: 'Date', control: 'date' },
-    activeDate: { type: 'Date', control: 'date' },
+    value: {
+      type: 'Date',
+      description:
+        'The current value of the calendar.\nUsed when selection is set to single',
+      control: 'date',
+    },
+    activeDate: {
+      type: 'Date',
+      description:
+        'Sets the date which is shown in view and is highlighted. By default it is the current date.',
+      control: 'date',
+    },
     selection: {
       type: '"single" | "multiple" | "range"',
       description: 'Sets the type of selection in the component.',
@@ -140,7 +150,12 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The current active view of the component. */
   activeView: 'days' | 'months' | 'years';
+  /**
+   * The current value of the calendar.
+   * Used when selection is set to single
+   */
   value: Date;
+  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
   activeDate: Date;
   /** Sets the type of selection in the component. */
   selection: 'single' | 'multiple' | 'range';
