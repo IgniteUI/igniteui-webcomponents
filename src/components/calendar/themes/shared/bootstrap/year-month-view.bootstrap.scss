@@ -42,7 +42,7 @@ $theme: $bootstrap;
         }
 
         &:hover {
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-focus-color');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-hover-color');
         }
     }
 
