@@ -71,7 +71,7 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
     expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
 
-    simulateClick(next, 2);
+    simulateClick(next, {}, 2);
     await elementUpdated(calendar);
     expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
   });
@@ -89,7 +89,7 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
     expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
 
-    simulateClick(next, 2);
+    simulateClick(next, {}, 2);
     await elementUpdated(calendar);
     expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
   });
@@ -107,7 +107,7 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
     expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
 
-    simulateClick(next, 2);
+    simulateClick(next, {}, 2);
     await elementUpdated(calendar);
     expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
   });

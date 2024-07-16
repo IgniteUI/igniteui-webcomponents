@@ -24,7 +24,6 @@ import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.j
 import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   clamp,
   findElementFromEventPath,
@@ -101,6 +100,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private declare readonly [themeSymbol]: Theme;
 
+  private yearPerPage = 15;
+
   private get _isDayView() {
     return this.activeView === 'days';
   }
@@ -111,10 +112,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private get _isYearView() {
     return this.activeView === 'years';
-  }
-
-  private get yearPerPage() {
-    return this.size === 'small' ? 18 : 15;
   }
 
   private get previousButtonLabel() {

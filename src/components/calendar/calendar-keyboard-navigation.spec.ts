@@ -74,7 +74,6 @@ describe('Calendar keyboard interaction', () => {
       calendar = await fixture<IgcCalendarComponent>(html`
         <igc-calendar
           active-view="days"
-          size="large"
           .activeDate=${activeDate}
         ></igc-calendar>
       `);
@@ -298,7 +297,7 @@ describe('Calendar keyboard interaction', () => {
 
     beforeEach(async () => {
       calendar = await fixture<IgcCalendarComponent>(html`
-        <igc-calendar active-view="months" size="large"></igc-calendar>
+        <igc-calendar active-view="months"></igc-calendar>
       `);
       monthsView = getCalendarDOM(calendar).views.months;
     });
@@ -422,7 +421,7 @@ describe('Calendar keyboard interaction', () => {
 
     beforeEach(async () => {
       calendar = await fixture<IgcCalendarComponent>(html`
-        <igc-calendar size="large" active-view="years"></igc-calendar>
+        <igc-calendar active-view="years"></igc-calendar>
       `);
       yearsView = getCalendarDOM(calendar).views.years;
     });
