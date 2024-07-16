@@ -81,12 +81,10 @@ export const focusActiveDate = Symbol();
  * @csspart days-view-container - The days view container.
  */
 @themes(all)
-export default class IgcCalendarComponent extends SizableMixin(
-  EventEmitterMixin<
-    IgcCalendarBaseEventMap,
-    Constructor<IgcCalendarBaseComponent>
-  >(IgcCalendarBaseComponent)
-) {
+export default class IgcCalendarComponent extends EventEmitterMixin<
+  IgcCalendarBaseEventMap,
+  Constructor<IgcCalendarBaseComponent>
+>(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
   public static styles = styles;
 

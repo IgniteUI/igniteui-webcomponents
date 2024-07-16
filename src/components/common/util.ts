@@ -15,6 +15,14 @@ export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
 
+export function numberInRangeInclusive(
+  value: number,
+  min: number,
+  max: number
+) {
+  return value >= min && value <= max;
+}
+
 /**
  *
  * Returns an element's offset relative to its parent. Similar to element.offsetTop and element.offsetLeft, except the
