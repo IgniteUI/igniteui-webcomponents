@@ -557,8 +557,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return valid;
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcSelectItemComponent | null;
   /* blazorSuppress */
@@ -574,8 +576,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcSelectItemComponent | null;
   /* blazorSuppress */

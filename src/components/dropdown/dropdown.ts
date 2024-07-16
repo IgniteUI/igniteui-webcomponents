@@ -363,8 +363,10 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     return this.open ? this.hide() : this.show(target);
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcDropdownItemComponent | null;
   /* blazorSuppress */
@@ -380,8 +382,10 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcDropdownItemComponent | null;
   /* blazorSuppress */

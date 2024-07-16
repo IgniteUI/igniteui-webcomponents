@@ -75,15 +75,8 @@ export class IgcCalendarBaseComponent extends LitElement {
     | 'friday'
     | 'saturday' = 'sunday';
 
-  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
-  public set activeDate(val: Date) {
-    const oldVal = this._activeDate;
-    this._activeDate = val;
-    this._activeDateSetFlag = true;
-    this.requestUpdate('activeDate', oldVal);
-  }
-
   /* blazorSuppress */
+  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   @property({
     attribute: 'active-date',
     converter: {
@@ -91,6 +84,13 @@ export class IgcCalendarBaseComponent extends LitElement {
       toAttribute: (value: Date) => value.toISOString(),
     },
   })
+  public set activeDate(val: Date) {
+    const oldVal = this._activeDate;
+    this._activeDate = val;
+    this._activeDateSetFlag = true;
+    this.requestUpdate('activeDate', oldVal);
+  }
+
   public get activeDate(): Date {
     return this._activeDate;
   }
