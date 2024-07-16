@@ -91,8 +91,11 @@ export default class IgcIconComponent extends LitElement {
   };
 
   private getIcon() {
-    const { svg, title } =
-      getIconRegistry().get(this.name, this.collection) ?? {};
+    const { name, collection } = getIconRegistry().getIconRef(
+      this.name,
+      this.collection
+    );
+    const { svg, title } = getIconRegistry().get(name, collection) ?? {};
 
     this.svg = svg ?? '';
     this.__internals.ariaLabel = title ?? null;

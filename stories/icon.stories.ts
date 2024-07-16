@@ -2,14 +2,17 @@ import { all } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
+import { getIconRegistry } from '../src/components/icon/icon.registry.js';
 import {
+  IgcButtonComponent,
   IgcIconComponent,
   defineComponents,
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from '../src/index.js';
 
-defineComponents(IgcIconComponent);
+defineComponents(IgcIconComponent, IgcButtonComponent);
 
 const icons = all.map((icon) => icon.name);
 
@@ -110,4 +113,86 @@ const Template = ({
   `;
 };
 
+setIconRef('aliased', 'example', {
+  name: 'bacteria',
+  collection: 'default',
+});
+
+const IconReference = () => {
+  const updateRef = () => {
+    setIconRef('aliased', 'example', {
+      name: 'syringe',
+      collection: 'default',
+    });
+  };
+  return html`
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <style>
+      .ref {
+        display: flex;
+        padding: 1rem;
+        border: 1px solid hsl(var(--ig-gray-300));
+        width: max-content;
+        color: hsl(var(--ig-gray-800));
+
+        igc-icon {
+          --size: 2.5rem;
+        }
+      }
+
+      p,
+      h5 {
+        color: hsl(var(--ig-gray-700));
+      }
+
+      pre[class*='language-'] {
+        padding: unset;
+        margin-block: 1rem;
+        font-size: 0.75rem;
+        background: hsl(var(--ig-surface-500));
+        border: 1px solid hsl(var(--ig-gray-100));
+
+        code {
+          text-shadow: none;
+        }
+      }
+
+      .token.operator {
+        background: none;
+      }
+    </style>
+    <h3>Icon References</h3>
+    <p>
+      This sample showcases how icons can be declared and used by reference.
+    </p>
+    <h5>JavaScript:</h5>
+    <pre>
+      <code class="language-js">
+  setIconRef('aliased', 'example', {
+    name: 'bacteria',
+    collection: 'default',
+  });</code>
+    </pre>
+    <h5>Markup:</h5>
+    <pre><code class="language-markup">
+  &lt;igc-icon name="aliased" collection="example">&lt;igc-icon>
+    </code></pre>
+
+    <p>This results the following icon when rendered:</p>
+
+    <div class="ref">
+      <igc-icon name="aliased" collection="example"></igc-icon>
+    </div>
+
+    <br />
+
+    <igc-button @click=${updateRef}>Change Source Icon</igc-button>
+  `;
+};
+
 export const Basic: Story = Template.bind({});
+export const Reference: Story = IconReference.bind({});

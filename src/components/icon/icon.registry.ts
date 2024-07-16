@@ -1,6 +1,12 @@
 import { internalIcons } from './internal-icons-lib.js';
 
 export type IconCollection = { [name: string]: ParsedIcon };
+export type IconMeta = { name: string; collection: string };
+export type IconRefs = Map<string, IconMeta>;
+export type IconRefOptions = {
+  alias: IconMeta;
+  target: IconMeta;
+};
 
 type IconCallback = (name: string, collection: string) => void;
 
@@ -13,6 +19,7 @@ export class IconsRegistry {
   private _parser: DOMParser;
 
   private collections = new Map<string, IconCollection>();
+  private references = new Map<string, IconRefs>();
   private listeners = new Set<IconCallback>();
 
   constructor() {
@@ -54,6 +61,25 @@ export class IconsRegistry {
     }
   }
 
+  public setIconRef(options: IconRefOptions) {
+    const { alias, target } = options;
+    const reference = this.getOrCreateReference(alias.collection);
+    reference.set(alias.name, { ...target });
+
+    for (const listener of this.listeners) {
+      listener(alias.name, alias.collection);
+    }
+  }
+
+  public getIconRef(name: string, collection: string): IconMeta {
+    const icon = this.references.get(collection)?.get(name);
+
+    return {
+      name: icon?.name ?? name,
+      collection: icon?.collection ?? collection,
+    };
+  }
+
   public get(name: string, collection = 'default') {
     return this.collections.has(collection)
       ? this.collections.get(collection)![name]
@@ -66,6 +92,14 @@ export class IconsRegistry {
     }
 
     return this.collections.get(name) as IconCollection;
+  }
+
+  private getOrCreateReference(collection: string) {
+    if (!this.references.has(collection)) {
+      this.references.set(collection, new Map<string, IconMeta>());
+    }
+
+    return this.references.get(collection) as IconRefs;
   }
 }
 
@@ -104,4 +138,11 @@ export function registerIconFromText(
   collection = 'default'
 ) {
   getIconRegistry().register(name, iconText, collection);
+}
+
+export function setIconRef(name: string, collection: string, icon: IconMeta) {
+  getIconRegistry().setIconRef({
+    alias: { name, collection },
+    target: icon,
+  });
 }
