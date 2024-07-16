@@ -2,7 +2,6 @@ import { all } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { getIconRegistry } from '../src/components/icon/icon.registry.js';
 import {
   IgcButtonComponent,
   IgcIconComponent,
@@ -114,17 +113,21 @@ const Template = ({
 };
 
 setIconRef('aliased', 'example', {
-  name: 'bacteria',
+  name: 'biking',
   collection: 'default',
 });
 
-const IconReference = () => {
+const IconReference = ({
+  name = 'bacteria',
+  collection = 'default',
+}: IgcIconArgs) => {
   const updateRef = () => {
     setIconRef('aliased', 'example', {
-      name: 'syringe',
-      collection: 'default',
+      name,
+      collection,
     });
   };
+
   return html`
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
@@ -134,13 +137,18 @@ const IconReference = () => {
     <style>
       .ref {
         display: flex;
-        padding: 1rem;
+        align-items: center;
+        gap: 1rem;
+        padding-block: 1rem;
         border: 1px solid hsl(var(--ig-gray-300));
-        width: max-content;
         color: hsl(var(--ig-gray-800));
 
         igc-icon {
           --size: 2.5rem;
+          color: hsl(var(--ig-primary-500));
+
+          padding-inline: 1rem;
+          border-inline-end: 1px solid hsl(var(--ig-gray-300));
         }
       }
 
@@ -173,7 +181,7 @@ const IconReference = () => {
     <pre>
       <code class="language-js">
   setIconRef('aliased', 'example', {
-    name: 'bacteria',
+    name: 'biking',
     collection: 'default',
   });</code>
     </pre>
@@ -182,15 +190,23 @@ const IconReference = () => {
   &lt;igc-icon name="aliased" collection="example">&lt;igc-icon>
     </code></pre>
 
-    <p>This results the following icon when rendered:</p>
+    <p>
+      <small>
+        <i>The code above results in following icon when rendered:</i>
+      </small>
+    </p>
 
     <div class="ref">
       <igc-icon name="aliased" collection="example"></igc-icon>
+      <small>
+        To see how this will affect the icon in runtime, choose an icon name
+        from the dropdown list in the <b>Controls</b> section bellow and press
+        the <b>Update Reference</b> button.
+      </small>
     </div>
-
     <br />
 
-    <igc-button @click=${updateRef}>Change Source Icon</igc-button>
+    <igc-button @click=${updateRef}>Update Reference</igc-button>
   `;
 };
 
