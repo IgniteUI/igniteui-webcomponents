@@ -38,7 +38,7 @@ $theme: $bootstrap;
         }
 
         &:focus {
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-hover-color');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-focus-color');
         }
 
         &:hover {
