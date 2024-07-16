@@ -27,6 +27,7 @@
     flex-flow: row nowrap;
     flex-grow: 1;
     align-items: center;
+    gap: rem(16px);
 }
 
 [part='middle'] {
@@ -47,12 +48,12 @@
     overflow: visible;
 }
 
-[name='start']::slotted(*) {
-    margin-inline: rem(1px) rem(16px);
+[part='end'] {
+    gap: rem(16px);
 }
 
-[name='end']::slotted(*) {
-    margin-inline: rem(16px) rem(1px);
+[name='start']::slotted(*) {
+    margin-inline-end: rem(16px);
 }
 
 ::slotted(igc-icon) {

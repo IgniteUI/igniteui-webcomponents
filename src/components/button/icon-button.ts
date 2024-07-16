@@ -69,7 +69,6 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
               name=${ifDefined(this.name)}
               collection=${ifDefined(this.collection)}
               .mirrored=${this.mirrored}
-              size="small"
               aria-hidden="true"
             ></igc-icon>
             <slot></slot>

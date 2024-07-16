@@ -20,7 +20,6 @@ describe('Input component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
       expect(el.value).to.be.empty;
       expect(el.invalid).to.be.false;
@@ -177,20 +176,6 @@ describe('Input component', () => {
       expect(el.disabled).to.be.false;
       await elementUpdated(el);
       expect(input.disabled).to.be.false;
-    });
-
-    it('changes size property values successfully', async () => {
-      el.size = 'medium';
-      expect(el.size).to.equal('medium');
-      await elementUpdated(el);
-
-      el.size = 'small';
-      expect(el.size).to.equal('small');
-      await elementUpdated(el);
-
-      el.size = 'large';
-      expect(el.size).to.equal('large');
-      await elementUpdated(el);
     });
 
     it('should increment/decrement the value by calling the stepUp and stepDown methods', async () => {

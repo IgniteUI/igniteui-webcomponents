@@ -123,11 +123,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _lastKeyTime = 0;
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private get isMaterialTheme() {
@@ -302,6 +302,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('focusout', this.handleFocusOut);
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
@@ -444,9 +450,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
   }
 
-  /** Monitor input slot changes and request update */
-  protected inputSlotChanged() {
-    this.requestUpdate();
+  protected handleClosing() {
+    this._hide(true);
   }
 
   private activateItem(item: IgcSelectItemComponent) {
@@ -593,11 +598,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot=${prefixName}>
-        <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="prefix"></slot>
       </span>
 
       <span slot=${suffixName}>
-        <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="suffix"></slot>
       </span>
     `;
   }
@@ -605,7 +610,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected renderToggleIcon() {
     const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
     const iconHidden = this.open && this.hasExpandedIcon;
-    const iconExpandedHidden = !this.hasExpandedIcon || !this.open;
+    const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
     const openIcon = this.isMaterialTheme
       ? 'keyboard_arrow_up'
@@ -616,21 +621,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
-        <slot
-          name="toggle-icon"
-          ?hidden=${iconHidden}
-          @slotchange=${this.inputSlotChanged}
-        >
+        <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
             name=${this.open ? openIcon : closeIcon}
             collection="internal"
           ></igc-icon>
         </slot>
-        <slot
-          name="toggle-icon-expanded"
-          ?hidden=${iconExpandedHidden}
-          @slotchange=${this.inputSlotChanged}
-        ></slot>
+        <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>
       </span>
     `;
   }
@@ -643,7 +640,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         slot="anchor"
         ?hidden=${!this.hasHelperText}
       >
-        <slot name="helper-text" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="helper-text"></slot>
       </div>
     `;
   }

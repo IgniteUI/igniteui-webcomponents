@@ -6,7 +6,6 @@ import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 
 export interface IgcButtonEventMap {
@@ -15,9 +14,10 @@ export interface IgcButtonEventMap {
 }
 
 @blazorDeepImport
-export abstract class IgcButtonBaseComponent extends SizableMixin(
-  EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
-) {
+export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
+  IgcButtonEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly formAssociated = true;
 
   protected static shadowRootOptions = {
@@ -92,8 +92,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   constructor() {
     super();
     this.__internals = this.attachInternals();
-
-    this.size = 'medium';
   }
 
   /* alternateName: focusComponent */

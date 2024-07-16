@@ -30,7 +30,6 @@ import {
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   findElementFromEventPath,
   getElementByIdFromRoot,
@@ -72,12 +71,10 @@ export interface IgcDropdownEventMap {
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
-export default class IgcDropdownComponent extends SizableMixin(
-  EventEmitterMixin<
-    IgcDropdownEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
-) {
+export default class IgcDropdownComponent extends EventEmitterMixin<
+  IgcDropdownEventMap,
+  AbstractConstructor<IgcBaseComboBoxLikeComponent>
+>(IgcBaseComboBoxLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
   public static styles = [styles, shared];
 
@@ -95,11 +92,11 @@ export default class IgcDropdownComponent extends SizableMixin(
   private _keyBindings: ReturnType<typeof addKeybindings>;
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   @state()
@@ -220,8 +217,6 @@ export default class IgcDropdownComponent extends SizableMixin(
       .set(enterKey, this.onEnterKey)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
-
-    this.size = 'medium';
   }
 
   protected override async firstUpdated() {
@@ -290,6 +285,10 @@ export default class IgcDropdownComponent extends SizableMixin(
     this._selectItem(this._activeItem);
   }
 
+  protected handleClosing() {
+    this._hide(true);
+  }
+
   private activateItem(item: IgcDropdownItemComponent) {
     if (this._activeItem) {
       this._activeItem.active = false;
@@ -349,17 +348,19 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   /* blazorSuppress */
   /** Shows the component. */
-  public override show(target?: HTMLElement | string) {
+  public override async show(target?: HTMLElement | string): Promise<boolean> {
     if (target) {
       this._setTarget(target);
     }
-    super.show();
+    return super.show();
   }
 
   /* blazorSuppress */
   /** Toggles the open state of the component. */
-  public override toggle(target?: HTMLElement | string) {
-    this.open ? this.hide() : this.show(target);
+  public override async toggle(
+    target?: HTMLElement | string
+  ): Promise<boolean> {
+    return this.open ? this.hide() : this.show(target);
   }
 
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */

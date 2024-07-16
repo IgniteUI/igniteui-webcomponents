@@ -7,7 +7,6 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -32,9 +31,10 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  */
 @themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
-export default class IgcTreeComponent extends SizableMixin(
-  EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcTreeComponent extends EventEmitterMixin<
+  IgcTreeEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-tree';
   public static styles = styles;
 
@@ -76,18 +76,6 @@ export default class IgcTreeComponent extends SizableMixin(
   protected onDirChange(): void {
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.requestUpdate();
-    });
-  }
-
-  @watch('size', { waitUntilFirstUpdate: true })
-  protected onSizeChange(): void {
-    this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.requestUpdate();
-    });
-    this.navService.activeItem?.wrapper?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
     });
   }
 

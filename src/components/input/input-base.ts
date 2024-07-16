@@ -7,7 +7,6 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
@@ -25,9 +24,7 @@ export interface IgcInputEventMap {
 @themes(all, true)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-  )
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   private declare readonly [themeSymbol]: Theme;
 
@@ -85,19 +82,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  constructor() {
-    super();
-    this.size = 'medium';
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
-  }
-
-  public override disconnectedCallback() {
-    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
-    super.disconnectedCallback();
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   /* alternateName: focusComponent */
@@ -113,7 +101,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected abstract renderInput(): TemplateResult;
-  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {
