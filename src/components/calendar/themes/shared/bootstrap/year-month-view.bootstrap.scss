@@ -58,7 +58,7 @@ $theme: $bootstrap;
         }
 
         &:focus {
-            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-hover-outline-color');
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-focus-outline-color');
         }
 
         &:hover {
