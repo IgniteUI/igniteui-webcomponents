@@ -43,11 +43,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   public navService!: IgcTreeNavigationService;
 

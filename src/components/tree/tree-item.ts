@@ -75,14 +75,12 @@ export default class IgcTreeItemComponent extends LitElement {
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   public init = false;
 
   @queryAssignedElements({ slot: 'label', flatten: true })
   private contentList!: Array<HTMLElement>;
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   @query('#wrapper')
   public wrapper!: HTMLElement;
@@ -90,7 +88,6 @@ export default class IgcTreeItemComponent extends LitElement {
   @state()
   private isFocused = false;
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   @state()
   public hasChildren = false;
@@ -99,7 +96,6 @@ export default class IgcTreeItemComponent extends LitElement {
   @state()
   public level = 0;
 
-  /* blazorSuppress */
   /** @private @hidden @internal */
   @state()
   public indeterminate = false;
