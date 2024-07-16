@@ -2,29 +2,73 @@
 
 # Current Milestone
 
-## Milestone 6 (Due Jun, 2023)
+## Milestone 13 (Due Aug, 2024)
 
-1. Data Grid Documentation & Samples improvments
+1. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170) 
 
 ## Going down the road
 
 1. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
-2. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
-3. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
-4. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+2. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
 
 # Previous Milestone
 
-## Milestone 5 (Released 31st Jan , 2023)
+## Milestone 12, version [4.10.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0) (Released 01st Jul, 2024)
+
+1.  **[DONE]** Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
+2.  **[DONE]** Divider component [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
+3.  **[DONE]** Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+4.  **[DONE]** Radio group - Bind underlying radio components name and checked state through the radio group [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
+
+## Milestone 12, version [4.9.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.9.0) (Released 30th Apr, 2024)
+
+1.  **[DONE]** Button group component now allows resetting the selection state via the selectedItems property [#1168](https://github.com/IgniteUI/igniteui-webcomponents/issues/1168)
+2.  **[DONE]** Input, Textarea - exposed validateOnly to enable validation rules being enforced without restricting user input [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1178)
+
+## Milestone 11, version [4.8.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.7.0...4.8.0) (Released 20th Mar, 2024)
+
+1.  **[DONE]** Combo component can now set groupSorting to none which shows the groups in the order of the provided data [#1026](https://github.com/IgniteUI/igniteui-webcomponents/issues/1026)
+2.  **[DONE]** Button/Icon button - updated visual looks across themes, new states [#1050](https://github.com/IgniteUI/igniteui-webcomponents/issues/1050)
+3.  **[DONE]** Navigation bar - added border in Bootstrap theme [#1060](https://github.com/IgniteUI/igniteui-webcomponents/issues/1060)
+
+## Milestone 10, version [4.7.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0) (Released 05th Jan, 2024)
+
+1.  **[DONE]** Tree - Added toggleNodeOnClick property that determines whether clicking over a node will change its expanded state or not. Defaults to false [#1003](https://github.com/IgniteUI/igniteui-webcomponents/issues/1003)
+2.  **[DONE]** Rating - allowReset added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014)
+3.  **[DONE]** Toggle-icon-expanded slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/issues/983)
+
+## Milestone 9, version [4.6.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0) (Released 05th Dec, 2023)
+
+1.  **[DONE]** Action slot added to Snackbar [#974](https://github.com/IgniteUI/igniteui-webcomponents/issues/974)
+2.  **[DONE]** Indicator-expanded slot added to Expansion panel [#982](https://github.com/IgniteUI/igniteui-webcomponents/issues/982)
+3.  **[DONE]** Toggle-icon-expanded slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/issues/983)
+
+## Milestone 8, version [4.5.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.4.0...4.5.0) (Released 9th Oct, 2023)
+
+1.  **[DONE]** Text area component [#764](https://github.com/IgniteUI/igniteui-webcomponents/issues/764)
+2.  **[DONE]** Button group component [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827)
+3.  **[DONE]** Toggle button component [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+4.  **[DONE]** Navigation drawer now supports CSS transitions [#922](https://github.com/IgniteUI/igniteui-webcomponents/issues/922)
+5.  **[DONE]** Position attribute for toast and snackbar [#934](https://github.com/IgniteUI/igniteui-webcomponents/issues/934)
+
+## Milestone 7, version [4.4.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.0...4.4.0) (Released 30th Aug, 2023)
+
+1.  **[DONE]** Stepper now supports animations [#861](https://github.com/IgniteUI/igniteui-webcomponents/issues/861)
+
+## Milestone 6, version [4.3.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.3.0) (Released 28th Jun, 2023)
+
+1.  **[DONE]** Data Grid Documentation & Samples improvments
+
+## Milestone 5, version [4.2.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0) (Released 31st Jan , 2023)
 
 1. **[DONE]** Simple Combo component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
 
-## Milestone 4 (Released 12th Dec, 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-december-release-2022)
+## Milestone 4, version [4.1.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0) (Released 12th Dec, 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-december-release-2022)
 
 1. **[DONE]** Pivot Data Grid
 2. **[DONE]** Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
 
-## Milestone 3 (Released 03rd November. 2022) [Blog](https://www.infragistics.com/community/blogs/b/blagunas/posts/ignite-ui-for-web-components-what-s-new-in-22-2)
+## Milestone 3, version [4.0.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...4.0.0) (Released 02nd November. 2022) [Blog](https://www.infragistics.com/community/blogs/b/blagunas/posts/ignite-ui-for-web-components-what-s-new-in-22-2)
 
 1. **[DONE]** Data Grid - [docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview)
 2. **[DONE]** Tree Grid - [docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview)
@@ -37,7 +81,7 @@
 9. **[DONE]** Expansion panel component [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
 10. **[DONE]** Masked input component [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
 
-## Milestone 2 (Released March. 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-for-web-components---what-s-new-in-22-1)
+## Milestone 2, version [3.0.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0) (Released 12th Apr. 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-for-web-components---what-s-new-in-22-1)
 
 1. **[DONE]** Toast component [#186](https://github.com/IgniteUI/igniteui-webcomponents/issues/186)
 2. **[DONE]** Chip component [#171](https://github.com/IgniteUI/igniteui-webcomponents/issues/171) 
@@ -48,7 +92,7 @@
 7. **[DONE]** Tree component [#188](https://github.com/IgniteUI/igniteui-webcomponents/issues/188)
 
 
-## Milestone 1 (Released November, 2021)
+## Milestone 1, version [1.0.0] (Released 22nd Nov, 2021)
 
 1. **[DONE]** Avatar component [#7](https://github.com/IgniteUI/igniteui-webcomponents/issues/7)
 2. **[DONE]** Badge component
