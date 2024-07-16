@@ -92,7 +92,6 @@
 
     [part~='indicators'] {
         inset-inline-start: 50%;
-        transform: translateX(-50%);
         inset-block-end: 0;
     }
 
@@ -145,14 +144,23 @@
     }
 }
 
-:host-context([dir='rtl']),
-:host([dir='rtl']) {
+:host(:not([vertical])),
+:host([dir='rtl'][vertical]) {
+    --dir: #{direction($rtl: false)};
+}
+
+:host([vertical]),
+:host([dir='rtl']:not([vertical])) {
+    --dir: #{direction($rtl: true)};
+}
+
+:host(:not([vertical])) {
     [part='navigation next'],
     [part='navigation previous'] {
-        transform: scaleX(-1) translateY(-50%);
+        transform: scaleX(var(--dir)) translateY(-50%);
     }
 
     [part~='indicators'] {
-        transform: translateX(50%);
+        transform: translateX(calc(-50% * var(--dir)));
     }
 }
