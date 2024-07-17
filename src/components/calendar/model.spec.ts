@@ -32,20 +32,93 @@ describe('Calendar day model', () => {
     });
 
     describe('Deltas', () => {
-      it('day', () => {
-        expect(firstOfJan.add('day', 0).equalTo(firstOfJan)).to.be.true;
-        expect(firstOfJan.add('day', 1).greaterThan(firstOfJan)).to.be.true;
-        expect(firstOfJan.add('day', -1).lessThan(firstOfJan)).to.be.true;
+      it('year', () => {
+        expect(
+          firstOfJan
+            .add('year', 1)
+            .equalTo(new CalendarDay({ year: 2025, month: 0, date: 1 }))
+        ).to.be.true;
+
+        expect(
+          firstOfJan
+            .add('year', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 0, date: 1 }))
+        ).to.be.true;
+      });
+
+      it('year (leap to non-leap)', () => {
+        const leapFebruary = new CalendarDay({
+          year: 2024,
+          month: 1,
+          date: 29,
+        });
+
+        expect(
+          leapFebruary
+            .add('year', 1)
+            .equalTo(new CalendarDay({ year: 2025, month: 1, date: 28 }))
+        );
+
+        expect(
+          leapFebruary
+            .add('year', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 1, date: 28 }))
+        );
       });
 
       it('quarters', () => {
-        for (let i = 1; i < 5; i++) {
-          console.log(firstOfJan.add('quarter', i).toString());
-        }
+        expect(
+          firstOfJan
+            .add('quarter', 1)
+            .equalTo(new CalendarDay({ year: 2024, month: 3, date: 1 }))
+        ).to.be.true;
+        expect(
+          firstOfJan
+            .add('quarter', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 9, date: 1 }))
+        ).to.be.true;
+      });
 
-        for (let i = -1; i > -5; i--) {
-          console.log(firstOfJan.add('quarter', i).toString());
-        }
+      it('month', () => {
+        expect(
+          firstOfJan
+            .add('month', 1)
+            .equalTo(new CalendarDay({ year: 2024, month: 1, date: 1 }))
+        ).to.be.true;
+        expect(
+          firstOfJan
+            .add('month', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 11, date: 1 }))
+        ).to.be.true;
+      });
+
+      it('week', () => {
+        expect(
+          firstOfJan
+            .add('week', 1)
+            .equalTo(new CalendarDay({ year: 2024, month: 0, date: 8 }))
+        ).to.be.true;
+        expect(firstOfJan.add('week', 1).week).to.equal(2);
+
+        expect(
+          firstOfJan
+            .add('week', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 11, date: 25 }))
+        ).to.be.true;
+        expect(firstOfJan.add('week', -1).week).to.equal(52);
+      });
+
+      it('day', () => {
+        expect(
+          firstOfJan
+            .add('day', 1)
+            .equalTo(new CalendarDay({ year: 2024, month: 0, date: 2 }))
+        ).to.be.true;
+        expect(
+          firstOfJan
+            .add('day', -1)
+            .equalTo(new CalendarDay({ year: 2023, month: 11, date: 31 }))
+        );
       });
     });
 
@@ -111,14 +184,6 @@ describe('Calendar day model', () => {
 
       expect(first(weekPast).date).to.equal(start.date);
       expect(last(weekPast).date).to.equal(endPast.date + 1);
-    });
-  });
-
-  describe('Month generation', () => {
-    it('works', () => {
-      // const old = new Calendar(0);
-      // const oldMonth = old.monthdates(1987, 6, true);
-      // const newMonth = Array.from(generateFullMonth(start, 0));
     });
   });
 

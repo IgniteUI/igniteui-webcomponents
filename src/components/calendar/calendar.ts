@@ -37,6 +37,7 @@ import { IgcCalendarBaseComponent } from './base.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import {
   MONTHS_PER_ROW,
+  YEARS_PER_PAGE,
   YEARS_PER_ROW,
   areSameMonth,
   getYearRange,
@@ -120,8 +121,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private declare readonly [themeSymbol]: Theme;
 
-  private yearPerPage = 15;
-
   private get _isDayView() {
     return this.activeView === 'days';
   }
@@ -141,7 +140,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     if (this._isMonthView) {
       return this.resourceStrings.previousYear;
     }
-    return formatString(this.resourceStrings.previousYears, this.yearPerPage);
+    return formatString(this.resourceStrings.previousYears, YEARS_PER_PAGE);
   }
 
   private get nextButtonLabel() {
@@ -151,7 +150,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     if (this._isMonthView) {
       return this.resourceStrings.nextYear;
     }
-    return formatString(this.resourceStrings.nextYears, this.yearPerPage);
+    return formatString(this.resourceStrings.nextYears, YEARS_PER_PAGE);
   }
 
   private contentRef: Ref<HTMLDivElement> = createRef();
@@ -248,6 +247,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     });
   }
 
+  /** @private @hidden @internal */
   public async [focusActiveDate]() {
     await this.updateComplete;
 
@@ -280,7 +280,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private getSubsequentActiveDate(start: CalendarDay, delta: number) {
-    const disabled = this.disabledDates;
+    const disabled = this._disabledDates;
     let beginning = start.clone();
 
     while (isDateInRanges(beginning, disabled)) {
@@ -317,7 +317,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private onPageKeys(delta: -1 | 1) {
     const unit = this._isDayView ? 'month' : 'year';
-    const increment = (this._isYearView ? this.yearPerPage : 1) * delta;
+    const increment = (this._isYearView ? YEARS_PER_PAGE : 1) * delta;
 
     this._activeDate = this.getSubsequentActiveDate(
       this._activeDate.add(unit, increment),
@@ -357,7 +357,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     if (this._isYearView) {
       this._activeDate = this.getSubsequentActiveDate(
         this._activeDate.set({
-          year: getYearRange(this._activeDate, this.yearPerPage).start,
+          year: getYearRange(this._activeDate, YEARS_PER_PAGE).start,
         }),
         1
       );
@@ -387,7 +387,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     if (this._isYearView) {
       this._activeDate = this.getSubsequentActiveDate(
         this._activeDate.set({
-          year: getYearRange(this._activeDate, this.yearPerPage).end,
+          year: getYearRange(this._activeDate, YEARS_PER_PAGE).end,
         }),
         -1
       );
@@ -498,7 +498,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected renderYearRangeNavigation(active: CalendarDay) {
-    const { start, end } = getYearRange(active, this.yearPerPage);
+    const { start, end } = getYearRange(active, YEARS_PER_PAGE);
 
     return html`
       <span part="years-range" aria-live="polite"> ${start} - ${end} </span>
@@ -614,7 +614,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             .resourceStrings=${this.resourceStrings}
             .selection=${this.selection}
             .showWeekNumbers=${this.showWeekNumbers}
-            .specialDates=${this.specialDates}
+            .specialDates=${this._specialDates}
             .value=${this.value}
             .values=${this.values}
             .weekDayFormat=${format!}
@@ -650,7 +650,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         exportparts="year, selected, year-inner, current"
         @igcChange=${this.changeYear}
         .value=${this.activeDate}
-        .yearsPerPage=${this.yearPerPage}
+        .yearsPerPage=${YEARS_PER_PAGE}
       ></igc-years-view>
     `;
   }
@@ -742,13 +742,13 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private navigatePrevious() {
     const unit = this._isDayView ? 'month' : 'year';
-    const delta = this._isYearView ? this.yearPerPage : 1;
+    const delta = this._isYearView ? YEARS_PER_PAGE : 1;
     this._activeDate = this._activeDate.add(unit, -delta);
   }
 
   private navigateNext() {
     const unit = this._isDayView ? 'month' : 'year';
-    const delta = this._isYearView ? this.yearPerPage : 1;
+    const delta = this._isYearView ? YEARS_PER_PAGE : 1;
     this._activeDate = this._activeDate.add(unit, delta);
   }
 

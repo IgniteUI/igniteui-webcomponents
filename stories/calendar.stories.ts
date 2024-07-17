@@ -76,7 +76,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     activeDate: {
       type: 'Date',
       description:
-        'Sets the date which is shown in view and is highlighted. By default it is the current date.',
+        'Get/Set the date which is shown in view and is highlighted. By default it is the current date.',
       control: 'date',
     },
     selection: {
@@ -155,7 +155,7 @@ interface IgcCalendarArgs {
    * Used when selection is set to single
    */
   value: Date;
-  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
+  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   activeDate: Date;
   /** Sets the type of selection in the component. */
   selection: 'single' | 'multiple' | 'range';

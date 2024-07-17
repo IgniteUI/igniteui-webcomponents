@@ -22,6 +22,7 @@ import {
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
+export const YEARS_PER_PAGE = 15;
 
 const DaysMap = {
   sunday: 0,
@@ -123,10 +124,8 @@ export function isDateInRanges(
   ranges: DateRangeDescriptor[]
 ) {
   const value = toCalendarDay(date);
-  // TODO: Fix `ranges` being passed as undefined from the date-picker
-  const _ranges = ranges ?? [];
 
-  return _ranges.some((range) => {
+  return ranges.some((range) => {
     const days = (range.dateRange ?? []).map((day) => toCalendarDay(day));
 
     switch (range.type) {

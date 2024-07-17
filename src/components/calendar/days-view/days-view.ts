@@ -202,11 +202,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       values.push(last(values).add('day', 1));
     }
 
-    this._values = values.filter((v) => !isDateInRanges(v, this.disabledDates));
+    this._values = values.filter(
+      (v) => !isDateInRanges(v, this._disabledDates)
+    );
   }
 
   private selectDate(value: CalendarDay) {
-    if (isDateInRanges(value, this.disabledDates)) {
+    if (isDateInRanges(value, this._disabledDates)) {
       return false;
     }
 
@@ -229,7 +231,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isSelected(day: CalendarDay) {
-    if (isDateInRanges(day, this.disabledDates)) {
+    if (isDateInRanges(day, this._disabledDates)) {
       return false;
     }
 
@@ -369,7 +371,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private getDayProperties(day: CalendarDay, today: CalendarDay) {
     const isRange = this._isRange;
-    const disabled = isDateInRanges(day, this.disabledDates);
+    const disabled = isDateInRanges(day, this._disabledDates);
 
     const hiddenLeading =
       this.hideLeadingDays && isPreviousMonth(day, this._activeDate);
@@ -391,7 +393,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       weekend: day.weekend,
       single: !isRange,
       selected: !disabled && this.isSelected(day),
-      special: isDateInRanges(day, this.specialDates),
+      special: isDateInRanges(day, this._specialDates),
     };
   }
 

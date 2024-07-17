@@ -48,6 +48,12 @@ export class IgcCalendarBaseComponent extends LitElement {
   @state()
   protected _values: CalendarDay[] = [];
 
+  @state()
+  protected _specialDates: DateRangeDescriptor[] = [];
+
+  @state()
+  protected _disabledDates: DateRangeDescriptor[] = [];
+
   public get value(): Date | undefined {
     return this._value ? this._value.native : undefined;
   }
@@ -85,7 +91,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /* blazorSuppress */
-  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
+  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   @property({ attribute: 'active-date', converter: dateFromISOString })
   public set activeDate(value) {
     this._initialActiveDateSet = true;
@@ -129,11 +135,23 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   /** Gets/Sets the special dates for the component. */
   @property({ attribute: false })
-  public specialDates: DateRangeDescriptor[] = [];
+  public set specialDates(value: DateRangeDescriptor[]) {
+    this._specialDates = value ?? [];
+  }
+
+  public get specialDates(): DateRangeDescriptor[] | undefined {
+    return this._specialDates.length ? this._specialDates : undefined;
+  }
 
   /** Gets/Sets the disabled dates for the component. */
   @property({ attribute: false })
-  public disabledDates: DateRangeDescriptor[] = [];
+  public set disabledDates(value: DateRangeDescriptor[]) {
+    this._disabledDates = value ?? [];
+  }
+
+  public get disabledDates(): DateRangeDescriptor[] | undefined {
+    return this._disabledDates.length ? this._disabledDates : undefined;
+  }
 
   @watch('weekStart')
   protected weekStartChanged() {
