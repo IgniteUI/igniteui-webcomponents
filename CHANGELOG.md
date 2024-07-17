@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Input - readonly, inputmode, maxlength and minlength.
   Use the native readOnly, inputMode, maxLength and minLength properties instead.
 - Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
+- Removed size property from components.
 
 ## [4.11.1] - 2024-07-03
 ### Changed
