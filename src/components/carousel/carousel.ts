@@ -21,6 +21,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, isLTR, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { carouselContext } from './context.js';
 import { styles } from './themes/carousel.base.css.js';
@@ -59,6 +60,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(
       IgcCarouselComponent,
+      IgcCarouselIndicatorComponent,
       IgcCarouselSlideComponent,
       IgcIconComponent
     );
@@ -81,7 +83,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
 
   @queryAll('[role="tab"]')
-  private _indicators!: NodeListOf<HTMLButtonElement>;
+  private _indicators!: NodeListOf<HTMLDivElement>;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -486,7 +488,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     event: KeyboardEvent,
     dir: 'next' | 'prev'
   ) {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       dir === 'next' ? await this.next() : await this.prev();
       this.emitSlideChangedEvent();
@@ -510,68 +512,74 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       : 'keyboard_arrow_right';
 
     return html`
-      <button
-        type="button"
-        part="navigation previous"
-        aria-label="Previous slide"
-        aria-controls=${this.carouselId}
-        ?disabled=${this.skipLoop && this.current === 0}
-        @click=${() => this.handleNavigationClick('prev')}
-        @keydown=${(event: KeyboardEvent) =>
-          this.handleNavigationKeydown(event, 'prev')}
-      >
-        <slot name="previous-button">
-          <igc-icon
-            name=${prev_icon}
-            collection="internal"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
-      </button>
-      <button
-        type="button"
-        part="navigation next"
-        aria-label="Next slide"
-        aria-controls=${this.carouselId}
-        ?disabled=${this.skipLoop && this.current === this.total - 1}
-        @click=${() => this.handleNavigationClick('next')}
-        @keydown=${(event: KeyboardEvent) =>
-          this.handleNavigationKeydown(event, 'next')}
-      >
-        <slot name="next-button">
-          <igc-icon
-            name=${next_icon}
-            collection="internal"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
-      </button>
+      <igc-carousel-indicator>
+        <button
+          type="button"
+          part="navigation previous"
+          aria-label="Previous slide"
+          aria-controls=${this.carouselId}
+          ?disabled=${this.skipLoop && this.current === 0}
+          @click=${() => this.handleNavigationClick('prev')}
+          @keydown=${(event: KeyboardEvent) =>
+            this.handleNavigationKeydown(event, 'prev')}
+        >
+          <slot name="previous-button">
+            <igc-icon
+              name=${prev_icon}
+              collection="internal"
+              aria-hidden="true"
+            ></igc-icon>
+          </slot>
+        </button>
+      </igc-carousel-indicator>
+      <igc-carousel-indicator>
+        <button
+          type="button"
+          part="navigation next"
+          aria-label="Next slide"
+          aria-controls=${this.carouselId}
+          ?disabled=${this.skipLoop && this.current === this.total - 1}
+          @click=${() => this.handleNavigationClick('next')}
+          @keydown=${(event: KeyboardEvent) =>
+            this.handleNavigationKeydown(event, 'next')}
+        >
+          <slot name="next-button">
+            <igc-icon
+              name=${next_icon}
+              collection="internal"
+              aria-hidden="true"
+            ></igc-icon>
+          </slot>
+        </button>
+      </igc-carousel-indicator>
     `;
   }
 
   private pickerTemplate() {
     return html`
-      <div
-        ${ref(this._indicatorsContainerRef)}
-        role="tablist"
-        part=${partNameMap({
-          indicators: true,
-          start: this.indicatorsOrientation === 'start',
-        })}
-      >
-        ${this.slides.map((slide, index) => {
-          return html`<div
-            role="tab"
-            tabindex=${slide.active ? '0' : '-1'}
-            aria-label="Slide ${index + 1}"
-            aria-selected=${slide.active}
-            aria-controls="${slide.id}"
-            @click=${() => this.handlePickerClick(slide)}
-          >
-            ${this.indicatorTemplate(slide)}
-          </div>`;
-        })}
-      </div>
+      <igc-carousel-indicator>
+        <div
+          ${ref(this._indicatorsContainerRef)}
+          role="tablist"
+          part=${partNameMap({
+            indicators: true,
+            start: this.indicatorsOrientation === 'start',
+          })}
+        >
+          ${this.slides.map((slide, index) => {
+            return html`<div
+              role="tab"
+              tabindex=${slide.active ? 0 : -1}
+              aria-label="Slide ${index + 1}"
+              aria-selected=${slide.active}
+              aria-controls="${slide.id}"
+              @click=${() => this.handlePickerClick(slide)}
+            >
+              ${this.indicatorTemplate(slide)}
+            </div>`;
+          })}
+        </div>
+      </igc-carousel-indicator>
     `;
   }
 
