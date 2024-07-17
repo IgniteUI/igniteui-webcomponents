@@ -1,4 +1,4 @@
-import type { IconReferences } from './icon.registry';
+import type { IconReferences } from './icon.registry.js';
 
 export const iconReferences: IconReferences = new Set([
   {

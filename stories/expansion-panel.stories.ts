@@ -5,6 +5,7 @@ import {
   IgcExpansionPanelComponent,
   defineComponents,
   registerIconFromText,
+  setIconRef,
 } from '../src/index.js';
 
 defineComponents(IgcExpansionPanelComponent);
@@ -142,6 +143,17 @@ registerIconFromText(
 </g>
 </svg>`
 );
+
+// Replace internal icons by icon reference
+//setIconRef('expand', 'default', {
+//  name: 'ferris',
+//  collection: 'default',
+//});
+//
+//setIconRef('collapse', 'default', {
+//  name: 'ferris-greet',
+//  collection: 'default',
+//});
 
 function onOpening({ detail }: CustomEvent<IgcExpansionPanelComponent>) {
   detail.querySelector('[slot="indicator"]')!.textContent = '💥';

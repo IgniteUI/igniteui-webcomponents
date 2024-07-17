@@ -3,7 +3,7 @@ import { iconReferences } from './icon-references.js';
 import { internalIcons } from './internal-icons-lib.js';
 
 export type IconCollection = { [name: string]: ParsedIcon };
-export type IconMeta = { name: string; collection: string };
+export type IconMeta = { name: string; collection: string; external?: boolean };
 export type RefCollection = Map<string, IconMeta>;
 export type IconReferences = Set<{
   alias: IconMeta;
@@ -48,12 +48,14 @@ export class IconsRegistry {
       this.theme = theme;
 
       for (const { alias, target } of iconReferences) {
-        const ref = this.references.get(alias.collection)?.has(alias.name);
+        const external = this.references
+          .get(alias.collection)
+          ?.get(alias.name)?.external;
 
         this.setIconRef({
           alias,
           target: target.get(this.theme) ?? target.get('default')!,
-          overwrite: !ref,
+          overwrite: !external,
         });
       }
     }
@@ -170,7 +172,7 @@ export function registerIconFromText(
 export function setIconRef(name: string, collection: string, icon: IconMeta) {
   getIconRegistry().setIconRef({
     alias: { name, collection },
-    target: icon,
+    target: { ...icon, external: true },
     overwrite: true,
   });
 }
