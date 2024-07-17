@@ -130,10 +130,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     hideCallback: this.handleClosing,
   });
 
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
-  }
-
   private get _activeItems() {
     return Array.from(
       getActiveItems<IgcSelectItemComponent>(

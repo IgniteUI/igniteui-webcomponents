@@ -26,7 +26,7 @@ import IgcDatePickerComponent from './date-picker.js';
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
 
-  const pickerShowIcon = 'calendar_today';
+  const pickerShowIcon = 'today';
   const pickerClearIcon = 'clear';
 
   function getIcon(name: string) {
