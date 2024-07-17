@@ -6,6 +6,6 @@ $theme: $bootstrap;
 [part~='navigation'] {
     &:focus-visible {
         border: rem(4px) solid var-get($theme, 'button-focus-border-color');
-        color: var-get($theme, 'button-hover-arrow-color');
+        color: var-get($theme, 'button-arrow-color');
     }
 }
