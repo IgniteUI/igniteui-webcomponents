@@ -10,7 +10,6 @@ import {
   homeKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
@@ -32,7 +31,9 @@ export default class IgcAccordionComponent extends LitElement {
     registerComponent(IgcAccordionComponent, IgcExpansionPanelComponent);
   }
 
-  @queryAssignedElements({ selector: 'igc-expansion-panel:not([disabled])' })
+  @queryAssignedElements({
+    selector: `${IgcExpansionPanelComponent.tagName}:not([disabled])`,
+  })
   private enabledPanels!: Array<IgcExpansionPanelComponent>;
 
   private get firstEnabled() {
@@ -50,9 +51,9 @@ export default class IgcAccordionComponent extends LitElement {
   @property({ attribute: 'single-expand', reflect: true, type: Boolean })
   public singleExpand = false;
 
+  /* blazorSuppress */
   /** Returns all of the accordions's direct igc-expansion-panel children. */
-  @queryAssignedElements({ selector: 'igc-expansion-panel' })
-  @blazorSuppress()
+  @queryAssignedElements({ selector: IgcExpansionPanelComponent.tagName })
   public panels!: Array<IgcExpansionPanelComponent>;
 
   constructor() {
