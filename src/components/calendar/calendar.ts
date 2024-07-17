@@ -426,6 +426,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     }
   };
 
+  /** @private @hidden @internal */
   public async [focusActiveDate]() {
     await this.updateComplete;
 
