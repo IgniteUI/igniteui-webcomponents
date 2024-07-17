@@ -635,7 +635,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
             <slot name="clear-icon">
               <igc-icon
                 name="clear"
-                collection="internal"
+                collection="default"
                 aria-hidden="true"
               ></igc-icon>
             </slot>
@@ -645,11 +645,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private renderCalendarIcon() {
     const defaultIcon = html`
-      <igc-icon
-        name="calendar_today"
-        collection="internal"
-        aria-hidden="true"
-      ></igc-icon>
+      <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';

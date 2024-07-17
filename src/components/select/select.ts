@@ -616,19 +616,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const iconHidden = this.open && this.hasExpandedIcon;
     const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
-    const openIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_up'
-      : 'arrow_drop_up';
-    const closeIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_down'
-      : 'arrow_drop_down';
-
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'collapse' : 'expand'}
+            collection="combo"
           ></igc-icon>
         </slot>
         <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>

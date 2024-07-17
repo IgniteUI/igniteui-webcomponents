@@ -536,11 +536,11 @@ export default class IgcTreeItemComponent extends LitElement {
                     ? html`
                         <igc-icon
                           name=${this.expanded
-                            ? 'keyboard_arrow_down'
+                            ? 'collapse'
                             : !ltr
-                              ? 'navigate_before'
-                              : 'keyboard_arrow_right'}
-                          collection="internal"
+                              ? 'expand_rtl'
+                              : 'expand'}
+                          collection="tree"
                         >
                         </igc-icon>
                       `

@@ -816,13 +816,6 @@ export default class IgcComboComponent<
   }
 
   private renderToggleIcon() {
-    const openIcon =
-      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
-    const closeIcon =
-      this[themeSymbol] === 'material'
-        ? 'keyboard_arrow_down'
-        : 'arrow_drop_down';
-
     return html`
       <span
         slot="suffix"
@@ -833,8 +826,8 @@ export default class IgcComboComponent<
       >
         <slot name="toggle-icon">
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'collapse' : 'expand'}
+            collection="combo"
             aria-hidden="true"
           ></igc-icon>
         </slot>
@@ -844,7 +837,6 @@ export default class IgcComboComponent<
 
   private renderClearIcon() {
     const { selected } = this.selectionController;
-    const icon = this[themeSymbol] === 'material' ? 'chip_cancel' : 'clear';
 
     return html`<span
       slot="suffix"
@@ -854,8 +846,8 @@ export default class IgcComboComponent<
     >
       <slot name="clear-icon">
         <igc-icon
-          name="${icon}"
-          collection="internal"
+          name="clear"
+          collection="default"
           aria-hidden="true"
         ></igc-icon>
       </slot>
@@ -926,8 +918,8 @@ export default class IgcComboComponent<
       >
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}
-          name="case_sensitive"
-          collection="internal"
+          name="case-sensitive"
+          collection="combo"
           part=${partNameMap({
             'case-icon': true,
             active: this.filteringOptions.caseSensitive ?? false,

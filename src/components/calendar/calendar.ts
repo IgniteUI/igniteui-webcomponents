@@ -593,10 +593,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   ) {
     let startYear = undefined;
     let endYear = undefined;
-    const prev_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_upward' : 'navigate_before';
-    const next_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_downward' : 'navigate_next';
 
     if (this.activeView === 'years') {
       startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
@@ -649,8 +645,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             >
               <igc-icon
                 aria-hidden="true"
-                name=${prev_icon}
-                collection="internal"
+                name="arrow_prev"
+                collection="default"
               ></igc-icon>
             </button>
             <button
@@ -663,8 +659,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             >
               <igc-icon
                 aria-hidden="true"
-                name=${next_icon}
-                collection="internal"
+                name="arrow_next"
+                collection="default"
               ></igc-icon>
             </button>
           </div>`
