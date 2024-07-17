@@ -209,8 +209,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
           @slotchange=${this.handleSlotChange}
         >
           <igc-icon
-            name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-            collection="internal"
+            name=${this.open ? 'collapse' : 'expand'}
+            collection="default"
           >
           </igc-icon>
         </slot>

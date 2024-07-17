@@ -1,11 +1,18 @@
+import type { Theme } from '../../theming/types.js';
+import { iconReferences } from './icon-references.js';
 import { internalIcons } from './internal-icons-lib.js';
 
 export type IconCollection = { [name: string]: ParsedIcon };
 export type IconMeta = { name: string; collection: string };
-export type IconRefs = Map<string, IconMeta>;
-export type IconRefOptions = {
+export type RefCollection = Map<string, IconMeta>;
+export type IconReferences = Set<{
+  alias: IconMeta;
+  target: Map<Theme | 'default', IconMeta>;
+}>;
+export type IconRefPair = {
   alias: IconMeta;
   target: IconMeta;
+  overwrite: boolean;
 };
 
 type IconCallback = (name: string, collection: string) => void;
@@ -19,8 +26,9 @@ export class IconsRegistry {
   private _parser: DOMParser;
 
   private collections = new Map<string, IconCollection>();
-  private references = new Map<string, IconRefs>();
+  private references = new Map<string, RefCollection>();
   private listeners = new Set<IconCallback>();
+  private theme!: Theme;
 
   constructor() {
     this._parser = new DOMParser();
@@ -33,6 +41,22 @@ export class IconsRegistry {
 
   public unsubscribe(callback: IconCallback) {
     this.listeners.delete(callback);
+  }
+
+  public setRefsByTheme(theme: Theme) {
+    if (this.theme !== theme) {
+      this.theme = theme;
+
+      for (const { alias, target } of iconReferences) {
+        const ref = this.references.get(alias.collection)?.has(alias.name);
+
+        this.setIconRef({
+          alias,
+          target: target.get(this.theme) ?? target.get('default')!,
+          overwrite: !ref,
+        });
+      }
+    }
   }
 
   private parseSVG(svgString: string): ParsedIcon {
@@ -61,10 +85,13 @@ export class IconsRegistry {
     }
   }
 
-  public setIconRef(options: IconRefOptions) {
-    const { alias, target } = options;
+  public setIconRef(options: IconRefPair) {
+    const { alias, target, overwrite } = options;
     const reference = this.getOrCreateReference(alias.collection);
-    reference.set(alias.name, { ...target });
+
+    if (overwrite) {
+      reference.set(alias.name, { ...target });
+    }
 
     for (const listener of this.listeners) {
       listener(alias.name, alias.collection);
@@ -99,7 +126,7 @@ export class IconsRegistry {
       this.references.set(collection, new Map<string, IconMeta>());
     }
 
-    return this.references.get(collection) as IconRefs;
+    return this.references.get(collection) as RefCollection;
   }
 }
 
@@ -144,5 +171,6 @@ export function setIconRef(name: string, collection: string, icon: IconMeta) {
   getIconRegistry().setIconRef({
     alias: { name, collection },
     target: icon,
+    overwrite: true,
   });
 }
