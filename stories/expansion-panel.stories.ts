@@ -5,7 +5,6 @@ import {
   IgcExpansionPanelComponent,
   defineComponents,
   registerIconFromText,
-  setIconRef,
 } from '../src/index.js';
 
 defineComponents(IgcExpansionPanelComponent);
