@@ -5,9 +5,10 @@ import { internalIcons } from './internal-icons-lib.js';
 export type IconCollection = { [name: string]: ParsedIcon };
 export type IconMeta = { name: string; collection: string; external?: boolean };
 export type RefCollection = Map<string, IconMeta>;
+export type Themes = Theme | 'default';
 export type IconReferences = Set<{
   alias: IconMeta;
-  target: Map<Theme | 'default', IconMeta>;
+  target: Map<Themes, IconMeta>;
 }>;
 export type IconRefPair = {
   alias: IconMeta;
