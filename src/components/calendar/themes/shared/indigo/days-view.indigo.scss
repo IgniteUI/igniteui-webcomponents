@@ -462,6 +462,11 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         &:focus {
             border-color: var-get($theme, 'date-current-focus-border-color');
         }
+
+        &::after {
+            width: calc(var-get($theme, 'inner-size') - #{rem(4px)});
+            height: calc(var-get($theme, 'inner-size') - #{rem(4px)});
+        }
     }
 
     &[part~='special'][part~='current']:not([part~='selected']) {
@@ -489,8 +494,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &::after {
-            width: var-get($theme, 'inner-size');
-            height: var-get($theme, 'inner-size');
             border-color: var-get($theme, 'date-special-border-color');
         }
     }
