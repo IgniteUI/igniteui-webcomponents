@@ -11,8 +11,13 @@ import {
   requiredBooleanValidator,
 } from '../common/validators.js';
 
+export interface CheckboxChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
+
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<{ checked: boolean; value: string | undefined }>;
+  igcChange: CustomEvent<CheckboxChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
