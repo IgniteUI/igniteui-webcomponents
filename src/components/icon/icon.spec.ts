@@ -102,6 +102,13 @@ describe('Icon registry', () => {
       await elementUpdated(icon);
       verifySvg(icon, coronaVirusSvgContent);
     });
+
+    it('returns the underlying icon for a given reference', async () => {
+      const icon = getIconRegistry().getIconRef('insect', 'test');
+
+      expect(icon.name).to.equal('bug');
+      expect(icon.collection).to.equal('internal');
+    });
   });
 
   afterEach(() => {
