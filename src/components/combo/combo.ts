@@ -8,8 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
@@ -146,7 +145,6 @@ export default class IgcComboComponent<
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
-  private declare readonly [themeSymbol]: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;

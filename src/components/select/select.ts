@@ -7,8 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   altKey,
@@ -91,7 +90,7 @@ export interface IgcSelectEventMap {
  * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
  * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all, true)
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -117,7 +116,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private declare readonly [themeSymbol]: Theme;
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
