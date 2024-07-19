@@ -9,17 +9,17 @@
     position: relative;
     box-sizing: border-box;
 
-    *,
-    *::before,
-    *::after {
-        box-sizing: border-box;
-    }
-
     @include ig-scrollbar(
         var(--ig-scrollbar-size),
         var(--ig-scrollbar-track-background),
         var(--ig-scrollbar-thumb-background)
     );
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
 }
 
 :host([hidden]),
