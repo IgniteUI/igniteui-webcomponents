@@ -1,24 +1,26 @@
-import type { IconMeta, IconReferences, Themes } from './icon.registry.js';
+import type {
+  IconMeta,
+  IconReference,
+  IconThemeKey,
+} from './registry/types.js';
 
-type Icon = {
-  [THEME in Themes]?: IconMeta;
-};
+type Icon = { [key in IconThemeKey]?: IconMeta };
 
-const iconRefs = (icons: Icon) => {
+const makeIconRefs = (icons: Icon) => {
   return new Map(
     Object.entries(icons).map((icon) => {
-      return icon as [theme: Themes, IconMeta];
+      return icon as [theme: IconThemeKey, IconMeta];
     })
   );
 };
 
-export const iconReferences: IconReferences = new Set([
+export const iconReferences: IconReference[] = [
   {
     alias: {
       name: 'expand',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'keyboard_arrow_down',
         collection: 'internal',
@@ -34,7 +36,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'collapse',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'keyboard_arrow_up',
         collection: 'internal',
@@ -50,7 +52,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'arrow_prev',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'navigate_before',
         collection: 'internal',
@@ -66,7 +68,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'arrow_next',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'navigate_next',
         collection: 'internal',
@@ -82,7 +84,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'selected',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'chip_select',
         collection: 'internal',
@@ -94,7 +96,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'remove',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'chip_cancel',
         collection: 'internal',
@@ -106,7 +108,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'clear',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'clear',
         collection: 'internal',
@@ -122,7 +124,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'expand',
       collection: 'combo',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'arrow_drop_down',
         collection: 'internal',
@@ -138,7 +140,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'collapse',
       collection: 'combo',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'arrow_drop_up',
         collection: 'internal',
@@ -154,7 +156,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'expand',
       collection: 'tree',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'keyboard_arrow_right',
         collection: 'internal',
@@ -166,7 +168,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'expand_rtl',
       collection: 'tree',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'navigate_before',
         collection: 'internal',
@@ -178,7 +180,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'collapse',
       collection: 'tree',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'keyboard_arrow_down',
         collection: 'internal',
@@ -190,7 +192,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'case-sensitive',
       collection: 'combo',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'case_sensitive',
         collection: 'internal',
@@ -202,7 +204,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'today',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'calendar_today',
         collection: 'internal',
@@ -214,7 +216,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'star-filled',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'star',
         collection: 'internal',
@@ -226,7 +228,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'star-outlined',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'star_border',
         collection: 'internal',
@@ -238,7 +240,7 @@ export const iconReferences: IconReferences = new Set([
       name: 'prev',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'navigate_before',
         collection: 'internal',
@@ -250,11 +252,11 @@ export const iconReferences: IconReferences = new Set([
       name: 'next',
       collection: 'default',
     },
-    target: iconRefs({
+    target: makeIconRefs({
       default: {
         name: 'navigate_next',
         collection: 'internal',
       },
     }),
   },
-]);
+];

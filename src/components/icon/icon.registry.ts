@@ -2,44 +2,37 @@ import type { Theme } from '../../theming/types.js';
 import { iconReferences } from './icon-references.js';
 import { internalIcons } from './internal-icons-lib.js';
 import { DefaultMap } from './registry/default-map.js';
-import { type SvgIcon, SvgIconParser } from './registry/parser.js';
-
-export type IconCollection = Record<string, SvgIcon>;
-export type IconMeta = { name: string; collection: string; external?: boolean };
-export type RefCollection = Map<string, IconMeta>;
-export type Themes = Theme | 'default';
-export type IconReferences = Set<{
-  alias: IconMeta;
-  target: Map<Themes, IconMeta>;
-}>;
-export type IconRefPair = {
-  alias: IconMeta;
-  target: IconMeta;
-  overwrite: boolean;
-};
-
-type IconCallback = (name: string, collection: string) => void;
+import { SvgIconParser } from './registry/parser.js';
+import type {
+  Collection,
+  IconCallback,
+  IconMeta,
+  IconReferencePair,
+  SvgIcon,
+} from './registry/types.js';
 
 export class IconsRegistry {
   private parser: SvgIconParser;
-
-  private collections = new DefaultMap<string, IconCollection>(() => ({}));
-  private references = new Map<string, RefCollection>();
-  private listeners = new Set<IconCallback>();
+  private collections: Collection<string, Map<string, SvgIcon>>;
+  private references: Collection<string, Map<string, IconMeta>>;
+  private listeners: Set<IconCallback>;
   private theme!: Theme;
 
   constructor() {
     this.parser = new SvgIconParser();
+    this.listeners = new Set();
+    this.collections = new DefaultMap(() => new Map());
+    this.references = new DefaultMap(() => new Map());
+
     this.collections.set('internal', internalIcons);
   }
 
   public register(name: string, iconText: string, collection = 'default') {
-    const _collection = this.collections.getOrCreate(collection);
-    _collection[name] = this.parser.parse(iconText);
+    this.collections
+      .getOrCreate(collection)
+      .set(name, this.parser.parse(iconText));
 
-    for (const listener of this.listeners) {
-      listener(name, collection);
-    }
+    this.notifyAll(name, collection);
   }
 
   public subscribe(callback: IconCallback) {
@@ -68,17 +61,15 @@ export class IconsRegistry {
     }
   }
 
-  public setIconRef(options: IconRefPair) {
+  public setIconRef(options: IconReferencePair) {
     const { alias, target, overwrite } = options;
-    const reference = this.getOrCreateReference(alias.collection);
+    const reference = this.references.getOrCreate(alias.collection);
 
     if (overwrite) {
       reference.set(alias.name, { ...target });
     }
 
-    for (const listener of this.listeners) {
-      listener(alias.name, alias.collection);
-    }
+    this.notifyAll(alias.name, alias.collection);
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
@@ -91,15 +82,13 @@ export class IconsRegistry {
   }
 
   public get(name: string, collection = 'default') {
-    return this.collections.get(collection)?.[name];
+    return this.collections.get(collection)?.get(name);
   }
 
-  private getOrCreateReference(collection: string) {
-    if (!this.references.has(collection)) {
-      this.references.set(collection, new Map<string, IconMeta>());
+  private notifyAll(name: string, collection: string) {
+    for (const listener of this.listeners) {
+      listener(name, collection);
     }
-
-    return this.references.get(collection) as RefCollection;
   }
 }
 

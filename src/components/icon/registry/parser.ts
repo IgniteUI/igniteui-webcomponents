@@ -1,7 +1,4 @@
-export type SvgIcon = {
-  svg: string;
-  title?: string;
-};
+import type { SvgIcon } from './types.js';
 
 /* blazorSuppress */
 export class SvgIconParser {

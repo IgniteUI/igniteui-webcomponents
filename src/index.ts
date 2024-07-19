@@ -95,4 +95,4 @@ export type {
   ComboItemTemplate,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
-export type { IconMeta } from './components/icon/icon.registry.js';
+export type { IconMeta } from './components/icon/registry/types.js';
