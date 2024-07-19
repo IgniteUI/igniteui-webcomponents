@@ -3,7 +3,6 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -87,14 +86,14 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     return root;
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }
