@@ -2,8 +2,6 @@ import type { Theme, ThemeVariant } from './types.js';
 
 export const CHANGE_THEME_EVENT = 'igc-change-theme';
 
-// Misfiring eslint rule
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare global {
   interface WindowEventMap {
     [CHANGE_THEME_EVENT]: CustomEvent<ChangeThemeEventDetail>;
