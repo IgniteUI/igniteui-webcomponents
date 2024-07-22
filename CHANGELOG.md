@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
 - Removed size property from components.
 
+### Fixed
+- Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
+
 ## [4.11.1] - 2024-07-03
 ### Changed
  - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
