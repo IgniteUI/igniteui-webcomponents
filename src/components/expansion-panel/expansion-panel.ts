@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
@@ -51,7 +51,6 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-
 @themes(all)
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
@@ -67,6 +66,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
 
+  private _panelId!: string;
   private headerRef: Ref<HTMLDivElement> = createRef();
   private contentRef: Ref<HTMLDivElement> = createRef();
 
@@ -96,13 +96,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' | 'none' = 'start';
 
-  private panelId!: string;
-
   constructor() {
     super();
 
     addKeybindings(this, {
       ref: this.headerRef,
+      skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
     })
       .setActivateHandler(this.toggleWithEvent)
@@ -110,20 +109,25 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       .set([altKey, arrowUp], this.closeWithEvent);
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
-    this.panelId =
-      this.getAttribute('id') ||
+    this._panelId =
+      this.id ||
       `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
   }
 
-  private handleClicked() {
+  private handleClick() {
     this.headerRef.value!.focus();
     this.toggleWithEvent();
   }
 
   private toggleWithEvent() {
-    if (this.disabled) return;
     this.open ? this.closeWithEvent() : this.openWithEvent();
   }
 
@@ -155,8 +159,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private async closeWithEvent() {
     if (
-      !this.open ||
-      !this.emitEvent('igcClosing', { cancelable: true, detail: this })
+      !(
+        this.open &&
+        this.emitEvent('igcClosing', { cancelable: true, detail: this })
+      )
     ) {
       return;
     }
@@ -168,34 +174,34 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  /** Toggles panel open state. */
-  public toggle(): void {
-    this.open ? this.hide() : this.show();
+  /** Toggles the panel open/close state. */
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
   }
 
   /** Hides the panel content. */
-  public hide(): void {
-    if (this.open) {
-      this.toggleAnimation('close');
+  public async hide(): Promise<boolean> {
+    if (!this.open) {
+      return false;
     }
 
     this.open = false;
+    await this.toggleAnimation('close');
+    return true;
   }
 
   /** Shows the panel content. */
-  public show(): void {
-    if (!this.open) {
-      this.toggleAnimation('open');
+  public async show(): Promise<boolean> {
+    if (this.open) {
+      return false;
     }
 
     this.open = true;
+    await this.toggleAnimation('open');
+    return true;
   }
 
-  private handleSlotChange() {
-    this.requestUpdate();
-  }
-
-  private indicatorTemplate() {
+  private renderIndicatorTemplate() {
     const indicatorHidden =
       this.open && this._indicatorExpandedElements.length > 0;
     const indicatorExpandedHidden =
@@ -203,11 +209,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     return html`
       <div part="indicator" aria-hidden="true">
-        <slot
-          name="indicator"
-          ?hidden=${indicatorHidden}
-          @slotchange=${this.handleSlotChange}
-        >
+        <slot name="indicator" ?hidden=${indicatorHidden}>
           <igc-icon
             name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
             collection="internal"
@@ -217,26 +219,25 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         <slot
           name="indicator-expanded"
           ?hidden=${indicatorExpandedHidden}
-          @slotchange=${this.handleSlotChange}
         ></slot>
       </div>
     `;
   }
 
-  private headerTemplate() {
+  private renderHeaderTemplate() {
     return html`
       <div
         ${ref(this.headerRef)}
         part="header"
-        id="${this.panelId!}-header"
+        id="${this._panelId}-header"
         role="button"
-        aria-expanded="${this.open}"
-        aria-disabled="${this.disabled}"
-        aria-controls="${this.panelId!}-content"
+        aria-expanded=${this.open}
+        aria-disabled=${this.disabled}
+        aria-controls="${this._panelId}-content"
         tabindex=${this.disabled ? '-1' : '0'}
-        @click=${this.handleClicked}
+        @click=${this.disabled ? nothing : this.handleClick}
       >
-        ${this.indicatorTemplate()}
+        ${this.renderIndicatorTemplate()}
         <div>
           <slot name="title" part="title"></slot>
           <slot name="subtitle" part="subtitle"></slot>
@@ -245,14 +246,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     `;
   }
 
-  private contentTemplate() {
+  private renderContentTemplate() {
     return html`
       <div
         ${ref(this.contentRef)}
         part="content"
         role="region"
-        id="${this.panelId!}-content"
-        aria-labelledby="${this.panelId!}-header"
+        id="${this._panelId}-content"
+        aria-labelledby="${this._panelId}-header"
         .inert=${!this.open}
         aria-hidden=${!this.open}
       >
@@ -262,7 +263,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    return html`${this.headerTemplate()}${this.contentTemplate()}`;
+    return html`${this.renderHeaderTemplate()}${this.renderContentTemplate()}`;
   }
 }
 

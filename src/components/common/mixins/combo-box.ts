@@ -74,10 +74,10 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
     if (emitEvent) {
       await this.updateComplete;
-      return this.emitClosed();
+      this.emitClosed();
     }
 
-    return false;
+    return true;
   }
 
   protected async _show(emitEvent = false) {
@@ -89,25 +89,25 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
     if (emitEvent) {
       await this.updateComplete;
-      return this.emitOpened();
+      this.emitOpened();
     }
 
-    return false;
+    return true;
   }
 
   /** Shows the component. */
-  public show() {
-    this._show();
+  public async show(): Promise<boolean> {
+    return this._show();
   }
 
   /** Hides the component. */
-  public hide() {
-    this._hide();
+  public async hide(): Promise<boolean> {
+    return this._hide();
   }
 
   /** Toggles the open state of the component. */
-  public toggle() {
-    this.open ? this.hide() : this.show();
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
   }
 }
 

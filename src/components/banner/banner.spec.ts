@@ -43,7 +43,7 @@ describe('Banner', () => {
     ignoreAttributes: ['inert'],
   };
 
-  const BUTTON_DIFF_OPTIONS = ['variant', 'size', 'style'];
+  const BUTTON_DIFF_OPTIONS = ['variant'];
 
   async function clickHideComplete() {
     finishAnimationsFor(banner.shadowRoot!);

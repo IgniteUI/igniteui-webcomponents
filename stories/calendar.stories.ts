@@ -103,7 +103,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     activeDate: {
       type: 'Date',
       description:
-        'Sets the date which is shown in view and is highlighted. By default it is the current date.',
+        'Get/Set the date which is shown in view and is highlighted. By default it is the current date.',
       control: 'date',
     },
     locale: {
@@ -161,7 +161,7 @@ interface IgcCalendarArgs {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
+  /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   activeDate: Date;
   /** Sets the locale used for formatting and displaying the dates in the calendar. */
   locale: string;
@@ -272,7 +272,7 @@ const Template = ({
       values=${ifDefined(values)}
       visible-months=${ifDefined(visibleMonths)}
       @igcChange=${(ev: Event) => {
-        console.log(ev);
+        console.info(ev);
       }}
     >
       ${title ? html`<span slot="title">${title}</span>` : ''}

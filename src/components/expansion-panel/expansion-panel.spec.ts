@@ -15,7 +15,7 @@ import {
   spaceBar,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
+import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import type IgcIconComponent from '../icon/icon.js';
 import IgcExpansionPanelComponent from './expansion-panel.js';
 
@@ -114,8 +114,7 @@ describe('Expansion Panel', () => {
         >
           <slot></slot>
         </div>
-      `,
-        { ignoreAttributes: ['style', 'size'] }
+      `
       );
     });
 
@@ -254,28 +253,24 @@ describe('Expansion Panel', () => {
     });
 
     it('should toggle open state on `show()/hide()` methods', async () => {
-      panel.show();
-      await elementUpdated(panel);
+      await panel.show();
 
       expect(panel.open).to.be.true;
       expect(getDOMPart('content')).to.not.have.attribute('inert');
 
-      panel.hide();
-      await elementUpdated(panel);
+      await panel.hide();
 
       expect(panel.open).to.be.false;
       expect(getDOMPart('content')).to.have.attribute('inert');
     });
 
     it('should toggle open state on `toggle()`', async () => {
-      panel.toggle();
-      await elementUpdated(panel);
+      await panel.toggle();
 
       expect(panel.open).to.be.true;
       expect(getDOMPart('content')).to.not.have.attribute('inert');
 
-      panel.toggle();
-      await elementUpdated(panel);
+      await panel.toggle();
 
       expect(panel.open).to.be.false;
       expect(getDOMPart('content')).to.have.attribute('inert');
@@ -291,14 +286,14 @@ describe('Expansion Panel', () => {
     it('should expand/collapse on header click', async () => {
       const header = getDOMPart('header');
 
-      header.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(header);
       await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       verifyStateAndEventSequence({ open: true });
 
       eventSpy.resetHistory();
 
-      header.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(header);
       await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       verifyStateAndEventSequence({ open: false });
@@ -348,7 +343,7 @@ describe('Expansion Panel', () => {
       expect(panel.open).to.be.false;
       expect(eventSpy.callCount).to.equal(0);
 
-      header.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(header);
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;

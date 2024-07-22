@@ -1,5 +1,4 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
 // STEPPER
 :host {
@@ -9,5 +8,4 @@
 
 :host([orientation='horizontal']) {
     --separator-min-width : #{rem(40px)};
-    --horizontal-body-padding: #{rem(16px)};
 }

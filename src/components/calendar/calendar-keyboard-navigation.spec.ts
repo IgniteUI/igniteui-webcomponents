@@ -61,7 +61,6 @@ describe('Calendar Rendering', () => {
     beforeEach(async () => {
       el = await createCalendarElement();
       el.activeView = 'days';
-      el.size = 'large';
       el.activeDate = new Date(2021, 6, 17);
 
       await elementUpdated(el);
@@ -253,7 +252,6 @@ describe('Calendar Rendering', () => {
     beforeEach(async () => {
       el = await createCalendarElement();
       el.activeView = 'months';
-      el.size = 'large';
 
       await elementUpdated(el);
 
@@ -390,7 +388,6 @@ describe('Calendar Rendering', () => {
     beforeEach(async () => {
       el = await createCalendarElement();
       el.activeView = 'years';
-      el.size = 'large';
 
       await elementUpdated(el);
 

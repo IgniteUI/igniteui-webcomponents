@@ -25,9 +25,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -125,11 +123,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _lastKeyTime = 0;
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private get isMaterialTheme() {
@@ -304,6 +302,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('focusout', this.handleFocusOut);
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
@@ -446,9 +450,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
   }
 
-  /** Monitor input slot changes and request update */
-  protected inputSlotChanged() {
-    this.requestUpdate();
+  protected handleClosing() {
+    this._hide(true);
   }
 
   private activateItem(item: IgcSelectItemComponent) {
@@ -534,14 +537,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     e.stopPropagation();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
     super.blur();
@@ -554,12 +557,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return valid;
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -571,12 +576,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public select(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -595,11 +602,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot=${prefixName}>
-        <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="prefix"></slot>
       </span>
 
       <span slot=${suffixName}>
-        <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="suffix"></slot>
       </span>
     `;
   }
@@ -607,7 +614,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected renderToggleIcon() {
     const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
     const iconHidden = this.open && this.hasExpandedIcon;
-    const iconExpandedHidden = !this.hasExpandedIcon || !this.open;
+    const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
     const openIcon = this.isMaterialTheme
       ? 'keyboard_arrow_up'
@@ -618,21 +625,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
-        <slot
-          name="toggle-icon"
-          ?hidden=${iconHidden}
-          @slotchange=${this.inputSlotChanged}
-        >
+        <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
             name=${this.open ? openIcon : closeIcon}
             collection="internal"
           ></igc-icon>
         </slot>
-        <slot
-          name="toggle-icon-expanded"
-          ?hidden=${iconExpandedHidden}
-          @slotchange=${this.inputSlotChanged}
-        ></slot>
+        <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>
       </span>
     `;
   }
@@ -645,7 +644,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         slot="anchor"
         ?hidden=${!this.hasHelperText}
       >
-        <slot name="helper-text" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="helper-text"></slot>
       </div>
     `;
   }

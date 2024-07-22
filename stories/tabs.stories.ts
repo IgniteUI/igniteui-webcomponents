@@ -84,7 +84,6 @@ const removableTabs = Array.from(
           Item ${i + 1}
           <igc-icon-button
             @click=${remove}
-            size="small"
             slot="suffix"
             collection="internal"
             name="chip_cancel"
