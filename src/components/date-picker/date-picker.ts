@@ -52,7 +52,7 @@ import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcDatepickerEventMap {
+export interface IgcDatepickerComponentEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
@@ -143,7 +143,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
 )
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
-    IgcDatepickerEventMap,
+    IgcDatepickerComponentEventMap,
     AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
