@@ -25,10 +25,6 @@ export const iconReferences: IconReference[] = [
         name: 'keyboard_arrow_down',
         collection: 'internal',
       },
-      indigo: {
-        name: 'arrow_downward',
-        collection: 'internal',
-      },
     }),
   },
   {
@@ -121,8 +117,8 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'expand',
-      collection: 'combo',
+      name: 'input_expand',
+      collection: 'default',
     },
     target: makeIconRefs({
       default: {
@@ -137,8 +133,8 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'collapse',
-      collection: 'combo',
+      name: 'input_collapse',
+      collection: 'default',
     },
     target: makeIconRefs({
       default: {
@@ -153,8 +149,8 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'expand',
-      collection: 'tree',
+      name: 'chevron_right',
+      collection: 'default',
     },
     target: makeIconRefs({
       default: {
@@ -165,8 +161,8 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'expand_rtl',
-      collection: 'tree',
+      name: 'chevron_left',
+      collection: 'default',
     },
     target: makeIconRefs({
       default: {
@@ -177,20 +173,8 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'collapse',
-      collection: 'tree',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'keyboard_arrow_down',
-        collection: 'internal',
-      },
-    }),
-  },
-  {
-    alias: {
       name: 'case-sensitive',
-      collection: 'combo',
+      collection: 'default',
     },
     target: makeIconRefs({
       default: {

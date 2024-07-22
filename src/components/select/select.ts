@@ -614,8 +614,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       <span slot="suffix" part=${parts} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
-            name=${this.open ? 'collapse' : 'expand'}
-            collection="combo"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
           ></igc-icon>
         </slot>
         <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>

@@ -832,8 +832,8 @@ export default class IgcComboComponent<
       >
         <slot name="toggle-icon">
           <igc-icon
-            name=${this.open ? 'collapse' : 'expand'}
-            collection="combo"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
             aria-hidden="true"
           ></igc-icon>
         </slot>
@@ -925,7 +925,7 @@ export default class IgcComboComponent<
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}
           name="case-sensitive"
-          collection="combo"
+          collection="default"
           part=${partNameMap({
             'case-icon': true,
             active: this.filteringOptions.caseSensitive ?? false,
