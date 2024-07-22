@@ -4,6 +4,8 @@ import { property, queryAll, queryAssignedElements } from 'lit/decorators.js';
 
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { themes } from '../../theming/theming-decorator.js';
+import IgcButtonComponent from '../button/button.js';
+import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
   arrowLeft,
@@ -62,9 +64,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       IgcCarouselComponent,
       IgcCarouselIndicatorComponent,
       IgcCarouselSlideComponent,
-      IgcIconComponent
+      IgcIconComponent,
+      IgcButtonComponent
     );
   }
+
+  private _kbFocus = addKeyboardFocusRing(this);
 
   private static readonly increment = createCounter();
   private carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
@@ -74,6 +79,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _playing = false;
   private _paused = false;
   private _kbnIndicators = false;
+  private _mouseStop = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
@@ -253,24 +259,21 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._internals.role = 'region';
     this._internals.ariaRoleDescription = 'carousel';
 
-    this.addEventListener('focusin', (event: FocusEvent) => {
-      if (this.contains(event.relatedTarget as Node)) {
-        return;
+    this.addEventListener('pointerdown', () => {
+      if (this._kbFocus.focused) {
+        this._kbFocus.reset();
       }
+    });
+    this.addEventListener('pointerenter', () => {
+      this._mouseStop = true;
+      if (this._kbFocus.focused) return;
       this.handlePauseOnInteraction();
     });
-    this.addEventListener('focusout', (event: FocusEvent) => {
-      if (this.contains(event.relatedTarget as Node)) {
-        return;
-      }
+    this.addEventListener('pointerleave', () => {
+      this._mouseStop = false;
+      if (this._kbFocus.focused) return;
       this.handlePauseOnInteraction();
     });
-    this.addEventListener('pointerenter', () =>
-      this.handlePauseOnInteraction()
-    );
-    this.addEventListener('pointerleave', () =>
-      this.handlePauseOnInteraction()
-    );
 
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
@@ -314,8 +317,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     if (this.total && index === -1) {
       this.slides[0].active = true;
     }
-
-    this.requestUpdate();
   }
 
   /**
@@ -391,7 +392,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return false;
     }
 
-    const dir = direction ?? index > this.current ? 'next' : 'prev';
+    const dir = (direction ?? index > this.current) ? 'next' : 'prev';
 
     await this.animateSlides(
       this.slides[index],
@@ -436,17 +437,42 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
+  private handleSlotChange(): void {
+    this.requestUpdate();
+  }
+
   private handlePauseOnInteraction(): void {
-    if (!this.interval) {
+    if (!this.interval || this.skipPauseOnInteraction) return;
+
+    if (this.isPlaying) {
+      this.pause();
+      this.emitEvent('igcPaused');
+    } else {
+      this.play();
+      this.emitEvent('igcPlaying');
+    }
+    this.requestUpdate();
+  }
+
+  private handleFocusIn(): void {
+    if (this._kbFocus.focused || this._mouseStop) return;
+    this.handlePauseOnInteraction();
+  }
+
+  private handleFocusOut(event: FocusEvent): void {
+    if (
+      this.contains(event.relatedTarget as Node) ||
+      this.shadowRoot?.contains(event.relatedTarget as Node)
+    ) {
       return;
     }
 
-    if (!this.skipPauseOnInteraction && this.isPlaying) {
-      this.pause();
-      this.emitEvent('igcPaused');
-    } else if (!this.isPlaying) {
-      this.play();
-      this.emitEvent('igcPlaying');
+    if (this._kbFocus.focused) {
+      this._kbFocus.reset();
+
+      if (!this._mouseStop) {
+        this.handlePauseOnInteraction();
+      }
     }
   }
 
@@ -512,46 +538,42 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       : 'keyboard_arrow_right';
 
     return html`
-      <igc-carousel-indicator>
-        <button
-          type="button"
-          part="navigation previous"
-          aria-label="Previous slide"
-          aria-controls=${this.carouselId}
-          ?disabled=${this.skipLoop && this.current === 0}
-          @click=${() => this.handleNavigationClick('prev')}
-          @keydown=${(event: KeyboardEvent) =>
-            this.handleNavigationKeydown(event, 'prev')}
-        >
-          <slot name="previous-button">
-            <igc-icon
-              name=${prev_icon}
-              collection="internal"
-              aria-hidden="true"
-            ></igc-icon>
-          </slot>
-        </button>
-      </igc-carousel-indicator>
-      <igc-carousel-indicator>
-        <button
-          type="button"
-          part="navigation next"
-          aria-label="Next slide"
-          aria-controls=${this.carouselId}
-          ?disabled=${this.skipLoop && this.current === this.total - 1}
-          @click=${() => this.handleNavigationClick('next')}
-          @keydown=${(event: KeyboardEvent) =>
-            this.handleNavigationKeydown(event, 'next')}
-        >
-          <slot name="next-button">
-            <igc-icon
-              name=${next_icon}
-              collection="internal"
-              aria-hidden="true"
-            ></igc-icon>
-          </slot>
-        </button>
-      </igc-carousel-indicator>
+      <igc-button
+        type="button"
+        part="navigation previous"
+        aria-label="Previous slide"
+        aria-controls=${this.carouselId}
+        ?disabled=${this.skipLoop && this.current === 0}
+        @click=${() => this.handleNavigationClick('prev')}
+        @keydown=${(event: KeyboardEvent) =>
+          this.handleNavigationKeydown(event, 'prev')}
+      >
+        <slot name="previous-button">
+          <igc-icon
+            name=${prev_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </igc-button>
+      <igc-button
+        type="button"
+        part="navigation next"
+        aria-label="Next slide"
+        aria-controls=${this.carouselId}
+        ?disabled=${this.skipLoop && this.current === this.total - 1}
+        @click=${() => this.handleNavigationClick('next')}
+        @keydown=${(event: KeyboardEvent) =>
+          this.handleNavigationKeydown(event, 'next')}
+      >
+        <slot name="next-button">
+          <igc-icon
+            name=${next_icon}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </igc-button>
     `;
   }
 
@@ -599,7 +621,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <section>
+      <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
         ${this.skipPicker || this.showIndicatorsLabel()
           ? nothing
@@ -607,9 +629,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
         <div
           id=${this.carouselId}
-          aria-live=${this.interval ? 'off' : 'polite'}
+          aria-live=${this.interval && this.isPlaying ? 'off' : 'polite'}
         >
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </div>
       </section>
     `;
