@@ -199,7 +199,7 @@ const IconReference = ({
     <div class="ref">
       <igc-icon name="aliased" collection="example"></igc-icon>
       <small>
-        To see how this will affect the icon in runtime, choose an icon name
+        To see how this will affect the icon at runtime, choose an icon name
         from the dropdown list in the <b>Controls</b> section bellow and press
         the <b>Update Reference</b> button.
       </small>
