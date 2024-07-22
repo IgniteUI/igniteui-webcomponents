@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -44,11 +43,10 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
 
-  /** @private */
-  @blazorSuppress()
+  /** @private @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
-  /** @private */
-  @blazorSuppress()
+
+  /** @private @hidden @internal */
   public navService!: IgcTreeNavigationService;
 
   /**
@@ -128,8 +126,8 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     }
   }
 
+  /* blazorSuppress */
   /** Returns all of the tree's items. */
-  @blazorSuppress()
   public get items(): Array<IgcTreeItemComponent> {
     return Array.from(this.querySelectorAll('igc-tree-item'));
   }
@@ -149,8 +147,8 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     }
   }
 
+  /* blazorSuppress */
   /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
-  @blazorSuppress()
   public select(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -166,8 +164,8 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     }
   }
 
+  /* blazorSuppress */
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
-  @blazorSuppress()
   public deselect(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -175,11 +173,11 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     this.selectionService.deselectItemsWithNoEvent(items);
   }
 
+  /* blazorSuppress */
   /**
    * Expands all of the passed items.
    * If no items are passed, expands ALL items.
    */
-  @blazorSuppress()
   public expand(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -190,11 +188,11 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     });
   }
 
+  /* blazorSuppress */
   /**
    * Collapses all of the passed items.
    * If no items are passed, collapses ALL items.
    */
-  @blazorSuppress()
   public collapse(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]

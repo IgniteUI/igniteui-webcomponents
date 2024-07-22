@@ -25,9 +25,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -539,14 +537,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     e.stopPropagation();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
     super.blur();
@@ -559,12 +557,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return valid;
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -576,12 +576,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public select(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];

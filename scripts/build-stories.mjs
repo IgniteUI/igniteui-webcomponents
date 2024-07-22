@@ -1,6 +1,7 @@
 // @ts-check
 import { exec } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { format } from 'prettier';
@@ -79,6 +80,9 @@ class StoriesBuilder {
   /** @type {Map<string, CustomElementDeclaration>} */
   #cache = new Map();
 
+  /** @type string */
+  #tempDir;
+
   /**
    *
    * @param {string} parentName
@@ -97,8 +101,8 @@ class StoriesBuilder {
   #resolveType(property) {
     const type = property.type
       ? property.type.text
-      : this.#getMemberFrom(property.inheritedFrom.name, property.name)?.type
-          ?.text ?? 'string';
+      : (this.#getMemberFrom(property.inheritedFrom.name, property.name)?.type
+          ?.text ?? 'string');
 
     const result = [];
 
@@ -217,12 +221,23 @@ class StoriesBuilder {
     }
   }
 
+  async #createTmpDir() {
+    this.#tempDir = await mkdtemp(join(tmpdir(), 'igc-'));
+  }
+
+  async #clearTmpDir() {
+    rm(this.#tempDir, { recursive: true, force: true });
+  }
+
   async #createDefinitions() {
-    for (const element of this.#cache.values()) {
-      if (element.tagName) {
-        await this.#writeStory(element.name, this.#makeDefinition(element));
-      }
-    }
+    await this.#createTmpDir();
+    await Promise.all(
+      Array.from(this.#cache.values())
+        .filter((element) => element.tagName)
+        .map((element) =>
+          this.#writeStory(element.name, this.#makeDefinition(element))
+        )
+    );
   }
 
   /**
@@ -317,6 +332,7 @@ class StoriesBuilder {
 
   async #writeStory(name, definition) {
     const file = this.#getFilePath(definition.component);
+    const tmpFile = join(this.#tempDir, `${name}.ts`);
     let data = '';
 
     try {
@@ -333,16 +349,22 @@ class StoriesBuilder {
     ).trim();
 
     await writeFile(
-      file,
+      tmpFile,
       data.replace(/\/\/ region default.*\/\/ endregion/gs, storyMeta),
-      'utf8'
+      {
+        encoding: 'utf8',
+        flush: true,
+      }
     );
+
+    await copyFile(tmpFile, file);
   }
 
   async build() {
     const { modules } = await this.#parseManifest();
     this.#makeCache(modules);
-    this.#createDefinitions();
+    await this.#createDefinitions();
+    await this.#clearTmpDir();
   }
 }
 
