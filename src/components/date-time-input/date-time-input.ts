@@ -616,11 +616,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     this._oldValue = this.value;
+    const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
     if (!this._value) {
       this.maskedValue = this.emptyMask;
       await this.updateComplete;
       this.select();
+    } else if (areFormatsDifferent) {
+      this.updateMask();
     }
   }
 
