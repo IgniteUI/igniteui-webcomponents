@@ -58,7 +58,7 @@ export class ThemingController implements ReactiveController, ThemeController {
   }
 
   public hostConnected() {
-    this.adoptStyles();
+    this.themeChanged();
     _themeListeners.add(this.themeChanged);
   }
 
