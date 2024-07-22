@@ -1,12 +1,5 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 import {
   altKey,
   arrowDown,
@@ -15,391 +8,312 @@ import {
   homeKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcAccordionComponent from './accordion.js';
 
 describe('Accordion', () => {
   before(() => {
-    defineComponents(IgcAccordionComponent, IgcExpansionPanelComponent);
+    defineComponents(IgcAccordionComponent);
   });
 
   let accordion: IgcAccordionComponent;
+  let panels: IgcExpansionPanelComponent[];
 
-  beforeEach(async () => {
-    accordion = await createAccordionComponent(testTemplate);
-  });
+  function getPanelHeader(panel: IgcExpansionPanelComponent) {
+    return panel.renderRoot.querySelector<HTMLDivElement>(
+      'div[part="header"]'
+    )!;
+  }
 
-  describe('Basic', () => {
-    it('Passes the a11y audit', async () => {
+  function verifyPanelsOpenState(state: boolean[]) {
+    expect(panels.map(({ open }) => open)).to.eql(state);
+  }
+
+  describe('Nested', () => {
+    beforeEach(async () => {
+      accordion = await fixture<IgcAccordionComponent>(createNestedAccordion());
+    });
+
+    it('is accessible', async () => {
+      await expect(accordion).to.be.accessible();
       await expect(accordion).shadowDom.to.be.accessible();
     });
 
-    it('Should render accordion w/ expansion panels and calculate them properly', async () => {
-      expect(accordion.panels.length).to.equal(3);
-      expect(accordion).to.contain('igc-expansion-panel');
+    it('should support rendering nested accordions', async () => {
+      expect(accordion.panels).lengthOf(2);
+      const panel = accordion.panels[0];
+
+      await panel.show();
+
+      const content = panel.renderRoot
+        .querySelector<HTMLSlotElement>('slot:not([name])')!
+        .assignedElements();
+      expect(content[0].matches(IgcAccordionComponent.tagName)).to.be.true;
     });
 
-    it('Should be able to render nested accordions', async () => {
-      accordion = await createAccordionComponent(nestedAccTemplate);
-      expect(accordion.panels.length).to.equal(2);
+    it('should navigate between direct child panels', async () => {
+      const [first, last] = accordion.panels;
 
-      accordion.panels[0].show();
+      simulateKeyboard(first, arrowDown);
       await elementUpdated(accordion);
+      expect(last).to.equal(document.activeElement);
 
-      const contentSlot = accordion.panels[0].shadowRoot!.querySelector(
-        'slot:not([name])'
-      ) as HTMLSlotElement;
-      const contentElements = contentSlot.assignedElements();
-      expect(contentElements[0].tagName.toLowerCase()).to.equal(
-        'igc-accordion'
-      );
+      simulateKeyboard(last, arrowUp);
+      await elementUpdated(accordion);
+      expect(first).to.equal(document.activeElement);
     });
   });
 
-  describe('Expand/Collapse', () => {
-    it('Should update the current expansion state when hideAll is invoked', async () => {
-      accordion.hideAll();
-      await elementUpdated(accordion);
-
-      accordion.panels.forEach((p) => expect(p.open).to.be.false);
+  describe('Default', () => {
+    beforeEach(async () => {
+      accordion = await fixture<IgcAccordionComponent>(createAccordion());
     });
 
-    it('Should update the current expansion state when showAll is invoked', async () => {
-      accordion.showAll();
-      await elementUpdated(accordion);
-
-      accordion.panels.forEach((p) => expect(p.open).to.be.true);
+    it('is accessible', async () => {
+      await expect(accordion).to.be.accessible();
+      await expect(accordion).shadowDom.to.be.accessible();
     });
 
-    it('Should be able to expand only one panel when singleExpand is set to true', async () => {
+    it('should render accordion w/ expansion panels and calculate them properly', async () => {
+      expect(accordion.panels).lengthOf(3);
+      expect(accordion).to.contain(IgcExpansionPanelComponent.tagName);
+    });
+  });
+
+  describe('Expand & Collapse', () => {
+    beforeEach(async () => {
+      accordion = await fixture<IgcAccordionComponent>(createAccordion());
+      panels = accordion.panels;
+    });
+
+    it('should update the current expansion state when `hideAll` is invoked', async () => {
+      await accordion.hideAll();
+      expect(panels.every((panel) => !panel.open)).to.be.true;
+    });
+
+    it('should update the current expansion state when `showAll` is invoked', async () => {
+      await accordion.showAll();
+      expect(panels.every((panel) => panel.open)).to.be.true;
+    });
+
+    it('should expand only one panel when `singleExpand` is set', async () => {
       accordion.singleExpand = true;
       await elementUpdated(accordion);
 
-      const header3 =
-        accordion.panels[2].shadowRoot?.querySelector('div[part="header"]');
-      header3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(getPanelHeader(panels[2]));
       await elementUpdated(accordion);
+      verifyPanelsOpenState([false, false, true]);
 
-      expect(accordion.panels[0].open).to.be.false;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.true;
-
-      const header1 =
-        accordion.panels[0].shadowRoot?.querySelector('div[part="header"]');
-      header1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(getPanelHeader(panels[0]));
       await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.false;
+      verifyPanelsOpenState([true, false, false]);
     });
 
-    it('Should be able to expand multiple panels when singleExpand is set to false', async () => {
-      expect(accordion.singleExpand).to.be.false;
-      expect(accordion.panels[2].open).to.be.false;
-
-      const header3 =
-        accordion.panels[2].shadowRoot?.querySelector('div[part="header"]');
-      header3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    it('should expand multiple panels when `singleExpand` is not set', async () => {
+      simulateClick(getPanelHeader(panels[2]));
       await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.true;
-      expect(accordion.panels[2].open).to.be.true;
+      verifyPanelsOpenState([true, true, true]);
     });
 
-    it('Should preserve expanded panel when singleExpand is changed from false to true', async () => {
-      expect(accordion.singleExpand).to.be.false;
+    it('should preserve expanded panel when `singleExpand` is changed', async () => {
       accordion.singleExpand = true;
+      simulateClick(getPanelHeader(panels[2]));
       await elementUpdated(accordion);
 
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.true;
-      expect(accordion.panels[2].open).to.be.false;
-    });
-
-    it('Should preserve expanded panel when singleExpand is changed from true to false', async () => {
-      accordion.singleExpand = true;
-      await elementUpdated(accordion);
-
-      const header3 =
-        accordion.panels[2].shadowRoot?.querySelector('div[part="header"]');
-      header3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.false;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.true;
+      verifyPanelsOpenState([false, false, true]);
 
       accordion.singleExpand = false;
       await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.false;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.true;
+      verifyPanelsOpenState([false, false, true]);
     });
   });
 
-  describe('Keyboard navigation', () => {
-    it('Should navigate to the panel below on ArrowDown key press', async () => {
-      simulateKeyboard(accordion.panels[0], arrowDown);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[1]).to.equal(document.activeElement);
-
-      // Should not navigate to a disabled panel
-      accordion.panels[2].disabled = true;
-      await elementUpdated(accordion);
-
-      simulateKeyboard(accordion.panels[1], arrowDown);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[1]).to.equal(document.activeElement);
+  describe('Keyboard Navigation', () => {
+    beforeEach(async () => {
+      accordion = await fixture<IgcAccordionComponent>(createAccordion());
+      panels = accordion.panels;
     });
 
-    it('Should navigate to the panel above on Arrow Up key press', async () => {
-      simulateKeyboard(accordion.panels[2], arrowUp);
+    it('should not navigate to a disabled panel', async () => {
+      panels[1].disabled = true;
+      await elementUpdated(panels[1]);
+
+      simulateKeyboard(panels[0], arrowDown);
       await elementUpdated(accordion);
 
-      expect(accordion.panels[1]).to.equal(document.activeElement);
-
-      // Should not navigate to a disabled panel
-      accordion.panels[0].disabled = true;
-      await elementUpdated(accordion);
-
-      simulateKeyboard(accordion.panels[1], arrowUp);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[1]).to.equal(document.activeElement);
+      expect(panels[1].matches(':focus')).to.be.false;
+      expect(panels[2].matches(':focus')).to.be.true;
     });
 
-    it('Should navigate between direct child panels only (nested accordion scenario)', async () => {
-      accordion = await createAccordionComponent(nestedAccTemplate);
-
-      simulateKeyboard(accordion.panels[0], arrowDown);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[1]).to.equal(document.activeElement);
-      let titleSlot = accordion.panels[1].shadowRoot!.querySelector(
-        'slot[name="title"]'
-      ) as HTMLSlotElement;
-
-      let elements = titleSlot.assignedElements();
-      expect((elements[0] as HTMLElement).innerText).to.equal(
-        'Expansion panel 2 title'
-      );
-
-      simulateKeyboard(accordion.panels[1], arrowUp);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0]).to.equal(document.activeElement);
-      titleSlot = accordion.panels[0].shadowRoot!.querySelector(
-        'slot[name="title"]'
-      ) as HTMLSlotElement;
-
-      elements = titleSlot.assignedElements();
-      expect((elements[0] as HTMLElement).innerText).to.equal(
-        'Expansion panel 1 title'
-      );
+    it('should navigate to the panel below on ArrowDown keypress', async () => {
+      for (let i = 0; i < panels.length; i++) {
+        simulateKeyboard(panels[i], arrowDown);
+        await elementUpdated(accordion);
+        expect(panels[Math.min(i + 1, 2)].matches(':focus')).to.be.true;
+      }
     });
 
-    it('Should expand the focused panel on ALT + Arrow Down key press', async () => {
-      const header1 = accordion.panels[0].shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as HTMLElement;
-      header1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0]).to.equal(document.activeElement);
-      expect(accordion.panels[0].open).to.be.false;
-
-      simulateKeyboard(header1, [altKey, arrowDown]);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.true;
+    it('should navigate to the panel above on ArrowUp keypress', async () => {
+      for (let i = 2; i > 0; i--) {
+        simulateKeyboard(panels[i], arrowUp);
+        await elementUpdated(accordion);
+        expect(panels[Math.max(i - 1, 0)].matches(':focus')).to.be.true;
+      }
     });
 
-    it('Should collapse the focused panel on ALT + Arrow Up key press', async () => {
-      const header3 = accordion.panels[2].shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as HTMLElement;
-      header3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    it('should expand the focused panel on Alt+ArrowDown keypress', async () => {
+      simulateClick(getPanelHeader(panels[0]));
       await elementUpdated(accordion);
 
-      expect(accordion.panels[2]).to.equal(document.activeElement);
-      expect(accordion.panels[2].open).to.be.true;
+      expect(panels[0].matches(':focus')).to.be.true;
+      expect(panels[0].open).to.be.false;
 
-      simulateKeyboard(header3, [altKey, arrowUp]);
+      simulateKeyboard(getPanelHeader(panels[0]), [altKey, arrowDown]);
       await elementUpdated(accordion);
 
-      expect(accordion.panels[2].open).to.be.false;
+      expect(panels[0].matches(':focus')).to.be.true;
+      expect(panels[0].open).to.be.true;
     });
 
-    it('Should expand all panels when singleExpand is false on Shift + Alt + Arrow Down key press', async () => {
-      expect(accordion.singleExpand).to.be.false;
-      expect(accordion.panels[2].open).to.be.false;
-
-      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowDown]);
+    it('should collapse the focused panel on Alt+ArrowUp keypress', async () => {
+      simulateClick(getPanelHeader(panels[2]));
       await elementUpdated(accordion);
 
-      accordion.panels.forEach((p) => expect(p.open).to.be.true);
+      expect(panels[2].matches(':focus')).to.be.true;
+      expect(panels[2].open).to.be.true;
 
-      // Should not expand disabled panels on Shift + Alt + Arrow Down
-      accordion.panels[1].hide();
-      accordion.panels[1].disabled = true;
+      simulateKeyboard(getPanelHeader(panels[2]), [altKey, arrowUp]);
       await elementUpdated(accordion);
 
-      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowDown]);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.true;
+      expect(panels[2].matches(':focus')).to.be.true;
+      expect(panels[2].open).to.be.false;
     });
 
-    it('Should expand only the focused panel when singleExpand is true on Shift + Alt + Arrow Down key press', async () => {
+    it('should expand all non-disabled panels on Shift+Alt+ArrowDown keypress', async () => {
+      await accordion.hideAll();
+      verifyPanelsOpenState([false, false, false]);
+
+      simulateKeyboard(panels[2], [shiftKey, altKey, arrowDown]);
+      await elementUpdated(accordion);
+      verifyPanelsOpenState([true, true, true]);
+    });
+
+    it('should not expand any disabled panels on Shift+Alt+ArrowDown keypress', async () => {
+      panels[1].disabled = true;
+      await panels[1].hide();
+
+      simulateKeyboard(panels[2], [shiftKey, altKey, arrowDown]);
+      await elementUpdated(accordion);
+      verifyPanelsOpenState([true, false, true]);
+    });
+
+    it('should expand only the focused panel when `singleExpand` is set on Shift+Alt+ArrowDown keypress', async () => {
       accordion.singleExpand = true;
+      simulateClick(getPanelHeader(panels[0]));
+      await accordion.hideAll();
 
-      const header1 = accordion.panels[0].shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as HTMLElement;
-      header1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(panels[0].matches(':focus')).to.be.true;
+      verifyPanelsOpenState([false, false, false]);
+
+      simulateKeyboard(panels[0], [shiftKey, altKey, arrowDown]);
       await elementUpdated(accordion);
-
-      accordion.hideAll();
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0]).to.equal(document.activeElement);
-      expect(accordion.panels[0].open).to.be.false;
-
-      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowDown]);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.false;
-      expect(accordion.panels[2].open).to.be.false;
+      verifyPanelsOpenState([true, false, false]);
     });
 
-    it('Should collapse all panels on Shift + Alt + Arrow Up key press', async () => {
-      expect(accordion.panels[0].open).to.be.true;
-      expect(accordion.panels[1].open).to.be.true;
+    it('should collapse all non-disabled panels on Shift+Alt+ArrowUp keypress', async () => {
+      await accordion.showAll();
+      verifyPanelsOpenState([true, true, true]);
 
-      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowUp]);
+      simulateKeyboard(panels[2], [shiftKey, altKey, arrowUp]);
       await elementUpdated(accordion);
-
-      accordion.panels.forEach((p) => expect(p.open).to.be.false);
-
-      accordion.singleExpand = true;
-      accordion.panels[0].show();
-      await elementUpdated(accordion);
-
-      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowUp]);
-      await elementUpdated(accordion);
-
-      accordion.panels.forEach((p) => expect(p.open).to.be.false);
-
-      // Should not collapse disabled panels on Shift + Alt + Arrow Up
-      accordion.panels[1].show();
-      accordion.panels[1].disabled = true;
-      await elementUpdated(accordion);
-
-      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowUp]);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[0].open).to.be.false;
-      expect(accordion.panels[1].open).to.be.true;
-      expect(accordion.panels[2].open).to.be.false;
+      verifyPanelsOpenState([false, false, false]);
     });
 
-    it('Should navigate to the first panel on Home key press', async () => {
-      simulateKeyboard(accordion.panels[2], homeKey);
+    it('should not collapse any disabled panels on Shift+Alt+ArrowUp keypress', async () => {
+      panels[1].disabled = true;
+      await accordion.showAll();
+      verifyPanelsOpenState([true, true, true]);
+
+      simulateKeyboard(panels[2], [shiftKey, altKey, arrowUp]);
       await elementUpdated(accordion);
-
-      expect(accordion.panels[0]).to.equal(document.activeElement);
-
-      // Should navigate to the first enabled panel in case there are disabled ones
-      accordion.panels[0].disabled = true;
-      await elementUpdated(accordion);
-
-      simulateKeyboard(accordion.panels[2], homeKey);
-      await elementUpdated(accordion);
-
-      expect(accordion.panels[1]).to.equal(document.activeElement);
+      verifyPanelsOpenState([false, true, false]);
     });
 
-    it('Should navigate to the last panel on End key press', async () => {
-      simulateKeyboard(accordion.panels[0], endKey);
+    it('should navigate to first non-disabled panel on Home keypress', async () => {
+      panels[0].disabled = true;
       await elementUpdated(accordion);
 
-      expect(accordion.panels[2]).to.equal(document.activeElement);
+      simulateClick(getPanelHeader(panels[2]));
+      await elementUpdated(accordion);
+      expect(panels[2].matches(':focus')).to.be.true;
 
-      // Should navigate to the last enabled panel in case there are disabled ones
-      accordion.panels[2].disabled = true;
+      simulateKeyboard(panels[2], homeKey);
       await elementUpdated(accordion);
 
-      simulateKeyboard(accordion.panels[0], endKey);
+      expect(panels[1].matches(':focus')).to.be.true;
+      expect(panels[0].matches(':focus')).to.be.false;
+    });
+
+    it('should navigate to last non-disabled panel on End keypress', async () => {
+      panels[2].disabled = true;
       await elementUpdated(accordion);
 
-      expect(accordion.panels[1]).to.equal(document.activeElement);
+      simulateClick(getPanelHeader(panels[0]));
+      await elementUpdated(accordion);
+      expect(panels[0].matches(':focus')).to.be.true;
+
+      simulateKeyboard(panels[0], endKey);
+      await elementUpdated(accordion);
+
+      expect(panels[1].matches(':focus')).to.be.true;
+      expect(panels[2].matches(':focus')).to.be.false;
     });
   });
-
-  const createAccordionComponent = (
-    template = '<igc-accordion></igc-accordion>'
-  ) => {
-    return fixture<IgcAccordionComponent>(html`${unsafeStatic(template)}`);
-  };
 });
 
-const testTemplate = `
-<igc-accordion>
-    <igc-expansion-panel open>
-        <h1 slot="title">
-            Expansion panel 1 title
-        </h1>
+function createAccordion() {
+  return html`
+    <igc-accordion>
+      <igc-expansion-panel open>
+        <h1 slot="title">Expansion panel 1 title</h1>
         <h2 slot="subtitle">Expansion panel 1 subtitle</h2>
-        <p>Sample content 1</p>
-    </igc-expansion-panel>
-    <igc-expansion-panel open>
-        <h1 slot="title">
-            Expansion panel 2 title
-        </h1>
+        <p>Sample content</p>
+      </igc-expansion-panel>
+      <igc-expansion-panel open>
+        <h1 slot="title">Expansion panel 2 title</h1>
         <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-        <p>Sample content 2</p>
-    </igc-expansion-panel>
-    <igc-expansion-panel>
-        <h1 slot="title">
-            Expansion panel 3 title
-        </h1>
+        <p>Sample content</p>
+      </igc-expansion-panel>
+      <igc-expansion-panel>
+        <h1 slot="title">Expansion panel 3 title</h1>
         <h2 slot="subtitle">Expansion panel 3 subtitle</h2>
-        <p>Sample content 3</p>
-    </igc-expansion-panel>
-</igc-accordion>
-`;
+        <p>Sample content</p>
+      </igc-expansion-panel>
+    </igc-accordion>
+  `;
+}
 
-const nestedAccTemplate = `
-<igc-accordion>
-    <igc-expansion-panel open>
-        <h1 slot="title">
-            Expansion panel 1 title
-        </h1>
+function createNestedAccordion() {
+  return html`
+    <igc-accordion>
+      <igc-expansion-panel open>
+        <h1 slot="title">Expansion panel 1 title</h1>
         <h2 slot="subtitle">Expansion panel 1 subtitle</h2>
         <igc-accordion>
           <igc-expansion-panel>
-              <h1 slot="title">
-                  Expansion panel 1.1 title
-              </h1>
-              <h2 slot="subtitle">Expansion panel 1.1 subtitle</h2>
-              <p>Sample content 1.1</p>
+            <h1 slot="title">Expansion panel 1.1 title</h1>
+            <h2 slot="subtitle">Expansion panel 1.1 subtitle</h2>
+            <p>Sample content 1.1</p>
           </igc-expansion-panel>
         </igc-accordion>
-    </igc-expansion-panel>
-    <igc-expansion-panel open>
-      <h1 slot="title">
-          Expansion panel 2 title
-      </h1>
-      <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-      <p>Sample content 2</p>
-    </igc-expansion-panel>
-</igc-accordion>
-`;
+      </igc-expansion-panel>
+      <igc-expansion-panel open>
+        <h1 slot="title">Expansion panel 2 title</h1>
+        <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
+        <p>Sample content 2</p>
+      </igc-expansion-panel>
+    </igc-accordion>
+  `;
+}
