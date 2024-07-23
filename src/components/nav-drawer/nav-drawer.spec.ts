@@ -1,72 +1,74 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 
-import { IgcNavDrawerComponent, defineComponents } from '../../index.js';
-import type { IgcNavDrawerItemComponent } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(IgcNavDrawerComponent);
+    defineComponents(IgcNavDrawerComponent, IgcIconComponent);
   });
 
-  let el: IgcNavDrawerComponent;
+  let navDrawer: IgcNavDrawerComponent;
 
-  describe('', async () => {
+  // Workaround since transitionend is not emitted in the tests
+  async function runWithTransition(awaitable: Promise<boolean>) {
+    navDrawer.renderRoot.dispatchEvent(new Event('transitionend'));
+    return await awaitable;
+  }
+
+  describe('Accessibility', () => {
     beforeEach(async () => {
-      el = await createNavDrawerElement();
+      navDrawer = await createNavDrawer();
     });
 
-    it('passes the a11y audit', async () => {
-      await expect(el).shadowDom.to.be.accessible();
+    it('passes the a11y audit (closed state)', async () => {
+      await expect(navDrawer).dom.to.be.accessible();
+      await expect(navDrawer).shadowDom.to.be.accessible();
     });
 
-    it('renders nav drawer with items', async () => {
-      el = await createNavDrawerElement(`<igc-nav-drawer>
-              <igc-nav-drawer-item></igc-nav-drawer-item>
-              <igc-nav-drawer-item></igc-nav-drawer-item>
-            </igc-nav-drawer>`);
+    it('passes the a11y audit (open state)', async () => {
+      await runWithTransition(navDrawer.show());
+      expect(navDrawer.open).to.be.true;
 
-      expect(el.children.length).to.equals(2);
+      await expect(navDrawer).dom.to.be.accessible();
+      await expect(navDrawer).shadowDom.to.be.accessible();
+    });
+  });
+
+  describe('DOM', () => {
+    it('renders navigation items', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+
+      expect(navDrawer.children).lengthOf(2);
     });
 
-    it('renders nav drawer with items and header', async () => {
-      el = await createNavDrawerElement(`<igc-nav-drawer>
-              <igc-nav-drawer-header-item></igc-nav-drawer-header-item>
-              <igc-nav-drawer-item></igc-nav-drawer-item>
-              <igc-nav-drawer-item></igc-nav-drawer-item>
-            </igc-nav-drawer>`);
+    it('renders items and header', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <igc-nav-drawer-header-item></igc-nav-drawer-header-item>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
 
-      expect(el).to.contain('igc-nav-drawer-header-item');
-      expect(el).to.contain('igc-nav-drawer-item');
+      expect(navDrawer.children).lengthOf(3);
+      expect(navDrawer).to.contain('igc-nav-drawer-header-item');
+      expect(navDrawer).to.contain('igc-nav-drawer-item');
     });
 
-    it('render nav drawer item slots successfully', async () => {
-      expect(el.children[0]).shadowDom.equal(
-        `
-        <div part="base">
-          <span part="icon">
-            <slot name="icon"></slot>
-          </span>
-          <span part="content">
-            <slot name="content"></slot>
-          </span>
-        </div>
-      `,
-        {
-          ignoreAttributes: ['hidden'],
-        }
-      );
-    });
+    it('render navigation drawer slots', async () => {
+      navDrawer = await createNavDrawer();
 
-    it('render nav drawer slots successfully', async () => {
-      expect(el).shadowDom.equal(`
+      expect(navDrawer).shadowDom.equal(`
         <div part="overlay"></div>
-        <div part="base">
+        <div inert part="base">
           <div part="main">
             <slot></slot>
           </div>
@@ -77,80 +79,79 @@ describe('Navigation Drawer', () => {
       `);
     });
 
-    it('successfully changes nav drawer position', async () => {
-      expect(el.position).to.equal('start');
+    it('render navigation drawer item slots', async () => {
+      navDrawer = await createNavDrawer();
 
-      el.position = 'end';
-      expect(el.position).to.equal('end');
-      await elementUpdated(el);
-
-      el.position = 'top';
-      expect(el.position).to.equal('top');
-      await elementUpdated(el);
-
-      el.position = 'bottom';
-      expect(el.position).to.equal('bottom');
-      await elementUpdated(el);
+      expect(navDrawer.children.item(0)).shadowDom.equal(
+        `
+        <div part="base">
+          <span hidden part="icon">
+            <slot name="icon"></slot>
+          </span>
+          <span part="content">
+            <slot name="content"></slot>
+          </span>
+        </div>
+      `
+      );
     });
 
-    it('successfully toggles nav drawer', async () => {
-      el.toggle();
-      expect(el.open).to.equal(true);
-
-      el.toggle();
-      expect(el.open).to.equal(false);
-    });
-
-    it('successfully sets active to drawer item', async () => {
-      const item = el.children[0] as IgcNavDrawerItemComponent;
-      item.active = true;
-      expect(item.active).to.equal(true);
-    });
-
-    it('successfully sets disabled to drawer item', async () => {
-      const item = el.children[0] as IgcNavDrawerItemComponent;
-      item.disabled = true;
-      expect(item.disabled).to.equal(true);
-    });
-
-    it('displays the elements defined in the slots', async () => {
-      el = await createNavDrawerElement(`
+    it('initial render of a navbar with mini slot', async () => {
+      navDrawer = await createNavDrawer(html`
         <igc-nav-drawer>
-          <igc-nav-drawer-header-item>Header</igc-nav-drawer-header-item>
-
-          <igc-nav-drawer-item>
-            <igc-icon slot="icon" name="home"></igc-icon>
-            <h2 name="content">Item Content</h2>
-          </igc-nav-drawer-item>
-
           <div slot="mini">
             <igc-nav-drawer-item>
               <igc-icon slot="icon" name="home"></igc-icon>
+            </igc-nav-drawer-item>
+
             <igc-nav-drawer-item>
+              <igc-icon slot="icon" name="search"></igc-icon>
+            </igc-nav-drawer-item>
           </div>
+        </igc-nav-drawer>
+      `);
 
-        </igc-nav-drawer>`);
-
-      el.open = true;
-
-      await elementUpdated(el);
-
-      const mini = el.shadowRoot?.querySelector('div[part=mini]') as Element;
-      let computedStyles = window.getComputedStyle(mini);
-      expect(computedStyles.getPropertyValue('display')).to.equal('none');
-
-      el.open = false;
-
-      await elementUpdated(el);
-
-      computedStyles = window.getComputedStyle(mini);
-      expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
+      expect(navDrawer.open).to.be.false;
+      expect(navDrawer.renderRoot.querySelector<Element>('[part="mini"]')).to
+        .exist;
     });
   });
 
-  const createNavDrawerElement = (
-    template = '<igc-nav-drawer/><igc-nav-drawer-item/>'
-  ) => {
-    return fixture<IgcNavDrawerComponent>(html`${unsafeStatic(template)}`);
-  };
+  describe('API', () => {
+    beforeEach(async () => {
+      navDrawer = await createNavDrawer();
+    });
+
+    it('`show`', async () => {
+      await runWithTransition(navDrawer.show());
+      expect(navDrawer.open).to.be.true;
+      expect(await runWithTransition(navDrawer.show())).to.be.false;
+    });
+
+    it('`hide`', async () => {
+      await runWithTransition(navDrawer.toggle());
+      await runWithTransition(navDrawer.hide());
+      expect(navDrawer.open).to.be.false;
+      expect(await runWithTransition(navDrawer.hide())).to.be.false;
+    });
+
+    it('`toggle`', async () => {
+      await runWithTransition(navDrawer.toggle());
+      expect(navDrawer.open).to.be.true;
+
+      await runWithTransition(navDrawer.toggle());
+      expect(navDrawer.open).to.be.false;
+    });
+  });
+
+  async function createNavDrawer(template?: TemplateResult) {
+    return await fixture<IgcNavDrawerComponent>(
+      template ??
+        html`
+          <igc-nav-drawer>
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+          </igc-nav-drawer>
+        `
+    );
+  }
 });

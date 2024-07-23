@@ -220,10 +220,6 @@ export default class IgcComboComponent<
   @property({ type: Boolean })
   public open = false;
 
-  /** @hidden @internal */
-  @property({ type: Boolean })
-  public flip = true;
-
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -306,18 +302,6 @@ export default class IgcComboComponent<
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
-  /**
-   * Sets the component's positioning strategy.
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal @private
-   */
-  public sameWidth = true;
-
   @state()
   protected dataState: Array<ComboRecord<T>> = [];
 
@@ -355,6 +339,12 @@ export default class IgcComboComponent<
   @watch('open')
   protected toggleDirectiveChange() {
     this._rootClickController.update();
+  }
+
+  @watch('disableFiltering')
+  protected updateOnDisableFiltering() {
+    this.resetSearchTerm();
+    this.pipeline();
   }
 
   private _rootClickController = addRootClickHandler(this, {
@@ -503,6 +493,10 @@ export default class IgcComboComponent<
       .getValue(selected, this.displayKey!)
       .join(', ');
 
+    if (this.target && this.singleSelect) {
+      this.target.value = this._displayValue;
+    }
+
     this.setFormValue();
     this.updateValidity();
     this.setInvalidState();
@@ -618,22 +612,24 @@ export default class IgcComboComponent<
   }
 
   protected handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
+    return this.emitEvent('igcOpening', { cancelable: true });
   }
 
   protected handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
+    return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  protected async _show(emit = true) {
-    if (this.open) return;
-    if (emit && !this.handleOpening()) return;
-    this.open = true;
+  protected async _show(emitEvent = true) {
+    if (this.open || (emitEvent && !this.handleOpening())) {
+      return false;
+    }
 
+    this.open = true;
     await this.updateComplete;
-    emit && this.emitEvent('igcOpened');
+
+    if (emitEvent) {
+      this.emitEvent('igcOpened');
+    }
 
     if (!this.singleSelect) {
       this.list.focus();
@@ -642,36 +638,42 @@ export default class IgcComboComponent<
     if (!this.autofocusList) {
       this.input.focus();
     }
+
+    return true;
   }
 
   /** Shows the list of options. */
-  public show() {
-    this._show(false);
+  public async show(): Promise<boolean> {
+    return this._show(false);
   }
 
-  protected async _hide(emit = true) {
-    if (!this.open) return;
-    if (emit && !this.handleClosing()) return;
-    this.open = false;
+  protected async _hide(emitEvent = true) {
+    if (!this.open || (emitEvent && !this.handleClosing())) {
+      return false;
+    }
 
+    this.open = false;
     await this.updateComplete;
-    emit && this.emitEvent('igcClosed');
+
+    if (emitEvent) {
+      this.emitEvent('igcClosed');
+    }
     this.navigationController.active = -1;
+    return true;
   }
 
   /** Hides the list of options. */
-  public hide() {
-    this._hide(false);
+  public async hide(): Promise<boolean> {
+    return this._hide(false);
   }
 
-  /** @hidden @internal */
-  public _toggle(emit = true) {
-    this.open ? this._hide(emit) : this._show(emit);
+  protected _toggle(emit = true) {
+    return this.open ? this._hide(emit) : this._show(emit);
   }
 
   /** Toggles the list of options. */
-  public toggle() {
-    this._toggle(false);
+  public async toggle(): Promise<boolean> {
+    return this._toggle(false);
   }
 
   protected itemRenderer: ComboRenderFunction<T> = (
@@ -747,6 +749,14 @@ export default class IgcComboComponent<
     const { dataIndex } = this.dataState.at(index)!;
 
     this.selectionController.changeSelection(dataIndex);
+    this.navigationController.active = index;
+    this.updateValue();
+  }
+
+  protected selectByIndex(index: number) {
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.selectByIndex(dataIndex);
     this.navigationController.active = index;
     this.updateValue();
   }
@@ -906,6 +916,7 @@ export default class IgcComboComponent<
       ?hidden=${this.disableFiltering || this.singleSelect}
     >
       <igc-input
+        .value=${this.dataController.searchTerm}
         part="search-input"
         placeholder=${this.placeholderSearch}
         exportparts="input: search-input"

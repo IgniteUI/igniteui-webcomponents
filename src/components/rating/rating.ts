@@ -25,7 +25,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, formatString, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
@@ -63,9 +62,7 @@ export interface IgcRatingEventMap {
  */
 @themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
-  SizableMixin(
-    EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
-  )
+  EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles, shared];
@@ -98,7 +95,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected hoverState = false;
 
   protected get isInteractive() {
-    return !(this.readonly || this.disabled);
+    return !(this.readOnly || this.disabled);
   }
 
   protected get hasProjectedSymbols() {
@@ -170,22 +167,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
-
-  /* blazorCSSuppress */
-  /**
-   * Sets the readonly state of the component
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `readOnly` property instead.
-   */
-  @property({ attribute: false })
-  public set readonly(value: boolean) {
-    this.readOnly = value;
-  }
-
-  public get readonly() {
-    return this.readOnly;
-  }
 
   /**
    * Toggles single selection visual mode.

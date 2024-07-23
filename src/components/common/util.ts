@@ -8,10 +8,20 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .join(' ');
 };
 
+export function noop() {}
+
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
+
+export function numberInRangeInclusive(
+  value: number,
+  min: number,
+  max: number
+) {
+  return value >= min && value <= max;
+}
 
 /**
  *
@@ -49,8 +59,11 @@ export function createCounter() {
   };
 }
 
+/**
+ * Returns whether an element has a Left-to-Right directionality.
+ */
 export function isLTR(element: HTMLElement) {
-  return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
+  return element.matches(':dir(ltr)');
 }
 
 /**

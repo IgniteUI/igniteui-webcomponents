@@ -8,7 +8,7 @@ export const radioValidators: Validator<IgcRadioComponent>[] = [
     message: messages.required,
     isValid: (host) => {
       // @ts-expect-error - protected access
-      const { radios, checked } = host.group;
+      const [radios, checked] = [host._radios, host._checkedRadios];
       return radios.some((radio) => radio.required) ? checked.length > 0 : true;
     },
   },

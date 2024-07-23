@@ -3,12 +3,10 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
@@ -26,9 +24,7 @@ export interface IgcInputEventMap {
 @themes(all, true)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-  )
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   private declare readonly [themeSymbol]: Theme;
 
@@ -72,22 +68,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
-  /* blazorCSSuppress */
-  /**
-   * Makes the control a readonly field.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `readOnly` property instead.
-   */
-  @property({ attribute: false })
-  public set readonly(value: boolean) {
-    this.readOnly = value;
-  }
-
-  public get readonly() {
-    return this.readOnly;
-  }
-
   /**
    * The placeholder attribute of the control.
    * @attr
@@ -102,35 +82,25 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  constructor() {
-    super();
-    this.size = 'medium';
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
-  }
-
-  public override disconnectedCallback() {
-    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
-    super.disconnectedCallback();
-  }
-
+  /* alternateName: focusComponent */
   /** Sets focus on the control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }
 
   protected abstract renderInput(): TemplateResult;
-  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {

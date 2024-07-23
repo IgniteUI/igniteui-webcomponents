@@ -1,5 +1,4 @@
 import {
-  aTimeout,
   elementUpdated,
   expect,
   fixture,
@@ -7,119 +6,121 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
+import { type SinonFakeTimers, useFakeTimers } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { finishAnimationsFor, getAnimationsFor } from '../common/utils.spec.js';
+import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcToastComponent from './toast.js';
 
 describe('Toast', () => {
   before(() => defineComponents(IgcToastComponent));
 
-  beforeEach(async () => {
-    toast = await fixture<IgcToastComponent>(
-      html`<igc-toast>Hello world</igc-toast>`
-    );
-  });
-
   let toast: IgcToastComponent;
+  let clock: SinonFakeTimers;
 
-  const checkOpenState = (state = false) => {
-    if (state) {
-      expect(toast).dom.to.have.attribute('open');
-      expect(toast).shadowDom.to.equal('<slot></slot>');
-    } else {
-      expect(toast).dom.not.to.have.attribute('open');
-      expect(toast).shadowDom.to.equal('<slot inert></slot>');
-    }
-  };
+  describe('ARIA', () => {
+    beforeEach(async () => {
+      toast = await fixture<IgcToastComponent>(
+        html`<igc-toast>Hello world</igc-toast>`
+      );
+    });
 
-  const showSkipAnimation = () => {
-    const show = toast.show();
-    finishAnimationsFor(toast);
-    return show;
-  };
-
-  it('is accessible', async () => {
-    await expect(toast).dom.to.be.accessible();
-    await expect(toast).shadowDom.to.be.accessible();
+    it('is accessible', async () => {
+      await expect(toast).dom.to.be.accessible();
+      await expect(toast).shadowDom.to.be.accessible();
+    });
   });
 
-  it('`open` property', async () => {
-    checkOpenState(false);
+  describe('API', () => {
+    beforeEach(async () => {
+      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      toast = await fixture<IgcToastComponent>(
+        html`<igc-toast>Hello world</igc-toast>`
+      );
+    });
 
-    toast.open = true;
-    await elementUpdated(toast);
-    checkOpenState(true);
+    afterEach(() => {
+      clock.restore();
+    });
 
-    toast.open = false;
-    await elementUpdated(toast);
-    checkOpenState(false);
-  });
+    const checkOpenState = (state = false) => {
+      if (state) {
+        expect(toast).dom.to.have.attribute('open');
+        expect(toast).shadowDom.to.equal('<slot></slot>');
+      } else {
+        expect(toast).dom.not.to.have.attribute('open');
+        expect(toast).shadowDom.to.equal('<slot inert></slot>');
+      }
+    };
 
-  it('`displayTime` property', async () => {
-    toast.displayTime = 400;
-    await showSkipAnimation();
-    checkOpenState(true);
+    it('`open` property', async () => {
+      checkOpenState(false);
 
-    await aTimeout(400);
-    checkOpenState(true);
-    finishAnimationsFor(toast);
+      toast.open = true;
+      await elementUpdated(toast);
+      checkOpenState(true);
 
-    await aTimeout(50);
-    expect(toast.open).to.be.false;
-    checkOpenState(false);
-  });
+      toast.open = false;
+      await elementUpdated(toast);
+      checkOpenState(false);
+    });
 
-  it('`keepOpen` overrides `displayTime`', async () => {
-    toast.displayTime = 200;
-    toast.keepOpen = true;
+    it('`displayTime` property', async () => {
+      toast.displayTime = 400;
+      await toast.show();
+      checkOpenState(true);
 
-    await showSkipAnimation();
-    checkOpenState(true);
+      await clock.tickAsync(399);
+      expect(toast.open).to.be.true;
+      checkOpenState(true);
 
-    await aTimeout(400);
-    expect(toast.open).to.be.true;
-    checkOpenState(true);
-  });
+      await clock.tickAsync(1);
+      finishAnimationsFor(toast);
+      await nextFrame();
 
-  it('`show()` and `hide()`', async () => {
-    await toast.show();
-    checkOpenState(true);
+      expect(toast.open).to.be.false;
+      checkOpenState(false);
+    });
 
-    await toast.hide();
-    checkOpenState(false);
-  });
+    it('`keepOpen` overrides `displayTime`', async () => {
+      toast.displayTime = 200;
+      toast.keepOpen = true;
 
-  it('`show()` and `hide()` are no-op in their respective states', async () => {
-    toast.open = true;
-    await elementUpdated(toast);
+      await toast.show();
+      checkOpenState(true);
 
-    toast.show();
-    checkOpenState(true);
-    expect(getAnimationsFor(toast).length).to.equal(0);
+      await clock.tickAsync(400);
+      expect(toast.open).to.be.true;
+      checkOpenState(true);
+    });
 
-    toast.open = false;
-    await elementUpdated(toast);
+    it('`show()` and `hide()`', async () => {
+      await toast.show();
+      checkOpenState(true);
 
-    toast.hide();
-    checkOpenState(false);
-    expect(getAnimationsFor(toast).length).to.equal(0);
-  });
+      await toast.hide();
+      checkOpenState(false);
+    });
 
-  it('`toggle()`', async () => {
-    // close -> open
-    toast.toggle();
-    finishAnimationsFor(toast);
-    await nextFrame();
+    it('`show()` and `hide()` are no-op in their respective states', async () => {
+      toast.open = true;
+      expect(await toast.show()).to.be.false;
+      checkOpenState(true);
 
-    expect(toast.open).to.be.true;
-    checkOpenState(true);
+      toast.open = false;
+      expect(await toast.hide()).to.be.false;
+      checkOpenState(false);
+    });
 
-    // open -> close
-    toast.toggle();
-    finishAnimationsFor(toast);
-    await nextFrame();
+    it('`toggle()`', async () => {
+      // close -> open
+      await toast.toggle();
+      expect(toast.open).to.be.true;
+      checkOpenState(true);
 
-    expect(toast.open).to.be.false;
-    checkOpenState(false);
+      // open -> close
+      await toast.toggle();
+      expect(toast.open).to.be.false;
+      checkOpenState(false);
+    });
   });
 });

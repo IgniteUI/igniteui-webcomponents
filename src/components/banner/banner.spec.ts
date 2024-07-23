@@ -9,11 +9,12 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
   before(() => {
-    defineComponents(IgcBannerComponent);
+    defineComponents(IgcBannerComponent, IgcIconComponent);
   });
 
   const createDefaultBanner = () => html`
@@ -42,7 +43,7 @@ describe('Banner', () => {
     ignoreAttributes: ['inert'],
   };
 
-  const BUTTON_DIFF_OPTIONS = ['variant', 'size', 'style'];
+  const BUTTON_DIFF_OPTIONS = ['variant'];
 
   async function clickHideComplete() {
     finishAnimationsFor(banner.shadowRoot!);

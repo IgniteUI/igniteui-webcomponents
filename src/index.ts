@@ -16,8 +16,10 @@ export { default as IgcCircularProgressComponent } from './components/progress/c
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
 export { default as IgcComboComponent } from './components/combo/combo.js';
+export { default as IgcDatePickerComponent } from './components/date-picker/date-picker.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
+export { default as IgcDividerComponent } from './components/divider/divider.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
@@ -30,7 +32,6 @@ export { default as IgcExpansionPanelComponent } from './components/expansion-pa
 export { default as IgcIconComponent } from './components/icon/icon.js';
 export { default as IgcIconButtonComponent } from './components/button/icon-button.js';
 export { default as IgcInputComponent } from './components/input/input.js';
-export { default as IgcFormComponent } from './components/form/form.js';
 export { default as IgcLinearProgressComponent } from './components/progress/linear-progress.js';
 export { default as IgcListComponent } from './components/list/list.js';
 export { default as IgcListHeaderComponent } from './components/list/list-header.js';

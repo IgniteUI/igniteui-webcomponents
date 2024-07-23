@@ -38,4 +38,4 @@ const watcher = watch(['src'], watchOptions, async (_, fileName) => {
 
 watcher.on('close', () => compiler.dispose());
 
-console.log('Styles watcher started...');
+report.info('Styles watcher started...');

@@ -1,0 +1,86 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
+
+$theme: $material;
+$input-theme: input-theme.$material;
+
+:host {
+    igc-dialog {
+        box-shadow: none;
+        border: none;
+
+        [part='actions'] {
+            border: none;
+        }
+
+        igc-calendar {
+            box-shadow: none;
+        }
+    }
+
+    igc-dialog[open]::part(base) {
+        box-shadow: var(--ig-elevation-24);
+    }
+
+    igc-dialog::part(content),
+    igc-dialog::part(footer) {
+        padding: 0;
+    }
+
+    igc-dialog::part(footer) {
+        background: var-get($theme, 'content-background');
+        border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+    }
+
+    igc-focus-trap {
+        @include sizable();
+
+        --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+        border-radius: var-get($theme, 'border-radius');
+        background: var-get($theme, 'content-background');
+    }
+
+    igc-popover::part(container) {
+        box-shadow: var(--ig-elevation-3);
+        border-radius: var-get($theme, 'border-radius');
+    }
+
+    [part~='label'] {
+        color: var-get($input-theme, 'idle-secondary-color');
+    }
+
+    [part='helper-text'] {
+        margin-top: rem(4px);
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+    }
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
+    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+}
+
+igc-icon,
+::slotted(igc-icon) {
+    --component-size: var(--input-size);
+}
+
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    [part='label'],
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'disabled-text-color');
+    }
+}

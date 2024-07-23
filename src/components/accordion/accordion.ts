@@ -10,7 +10,6 @@ import {
   homeKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
@@ -32,7 +31,9 @@ export default class IgcAccordionComponent extends LitElement {
     registerComponent(IgcAccordionComponent, IgcExpansionPanelComponent);
   }
 
-  @queryAssignedElements({ selector: 'igc-expansion-panel:not([disabled])' })
+  @queryAssignedElements({
+    selector: `${IgcExpansionPanelComponent.tagName}:not([disabled])`,
+  })
   private enabledPanels!: Array<IgcExpansionPanelComponent>;
 
   private get firstEnabled() {
@@ -50,9 +51,9 @@ export default class IgcAccordionComponent extends LitElement {
   @property({ attribute: 'single-expand', reflect: true, type: Boolean })
   public singleExpand = false;
 
+  /* blazorSuppress */
   /** Returns all of the accordions's direct igc-expansion-panel children. */
-  @queryAssignedElements({ selector: 'igc-expansion-panel' })
-  @blazorSuppress()
+  @queryAssignedElements({ selector: IgcExpansionPanelComponent.tagName })
   public panels!: Array<IgcExpansionPanelComponent>;
 
   constructor() {
@@ -102,37 +103,35 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private collapseAll() {
-    const panels = this.enabledPanels;
-    for (const panel of panels) {
+    for (const panel of this.enabledPanels) {
       this.closePanel(panel);
     }
   }
 
   private expandAll(event: KeyboardEvent) {
     const current = event.target as IgcExpansionPanelComponent;
-    const panels = this.enabledPanels;
 
-    if (this.singleExpand) {
-      for (const panel of panels) {
+    for (const panel of this.enabledPanels) {
+      if (this.singleExpand) {
         current === panel ? this.openPanel(panel) : this.closePanel(panel);
-      }
-    } else {
-      for (const panel of panels) {
+      } else {
         this.openPanel(panel);
       }
     }
   }
 
   private handlePanelOpening(event: Event) {
-    const panel = event.target as IgcExpansionPanelComponent;
-    if (!this.singleExpand || !this.panels.includes(panel)) {
+    const current = event.target as IgcExpansionPanelComponent;
+
+    if (!(this.singleExpand && this.panels.includes(current))) {
       return;
     }
-    this.enabledPanels.forEach((p) => {
-      if (p.open && p !== panel) {
-        this.closePanel(p);
+
+    for (const panel of this.enabledPanels) {
+      if (panel.open && panel !== current) {
+        this.closePanel(panel);
       }
-    });
+    }
   }
 
   private getNextPanel(panel: IgcExpansionPanelComponent, dir: 1 | -1 = 1) {
@@ -141,44 +140,43 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private getPanelHeader(panel: IgcExpansionPanelComponent) {
-    return panel.shadowRoot?.querySelector('div[part="header"]') as HTMLElement;
+    return panel.renderRoot.querySelector('div[part="header"]') as HTMLElement;
   }
 
   private async closePanel(panel: IgcExpansionPanelComponent) {
-    if (!panel.open) {
+    if (
+      !(
+        panel.open &&
+        panel.emitEvent('igcClosing', { cancelable: true, detail: panel })
+      )
+    ) {
       return;
     }
-    if (!panel.emitEvent('igcClosing', { cancelable: true, detail: panel })) {
-      return;
-    }
-    panel.hide();
-    await panel.updateComplete;
 
+    await panel.hide();
     panel.emitEvent('igcClosed', { detail: panel });
   }
 
   private async openPanel(panel: IgcExpansionPanelComponent) {
-    if (panel.open) {
-      return;
-    }
-    if (!panel.emitEvent('igcOpening', { cancelable: true, detail: panel })) {
+    if (
+      panel.open ||
+      !panel.emitEvent('igcOpening', { cancelable: true, detail: panel })
+    ) {
       return;
     }
 
-    panel.show();
-    await panel.updateComplete;
-
+    await panel.show();
     panel.emitEvent('igcOpened', { detail: panel });
   }
 
   /** Hides all of the child expansion panels' contents. */
-  public hideAll() {
-    this.panels.forEach((p) => p.hide());
+  public async hideAll(): Promise<void> {
+    await Promise.all(this.panels.map((panel) => panel.hide()));
   }
 
   /** Shows all of the child expansion panels' contents. */
-  public showAll() {
-    this.panels.forEach((p) => p.show());
+  public async showAll(): Promise<void> {
+    await Promise.all(this.panels.map((panel) => panel.show()));
   }
 
   protected override render() {
