@@ -52,7 +52,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.6.7",
+    "@floating-ui/dom": "^1.6.8",
     "@lit-labs/virtualizer": "^2.0.13",
     "@lit/context": "^1.1.2",
     "lit": "^3.1.4"
@@ -85,7 +85,7 @@
     "lit-analyzer": "^2.0.3",
     "madge": "^7.0.0",
     "node-watch": "^0.7.4",
-    "playwright": "^1.45.2",
+    "playwright": "^1.45.3",
     "postcss": "^8.4.39",
     "prettier": "^3.3.3",
     "rimraf": "^5.0.9",
@@ -101,7 +101,7 @@
     "tslib": "^2.6.3",
     "typedoc": "^0.26.5",
     "typedoc-plugin-localization": "^3.0.5",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "vite": "^5.3.4"
   },
   "lint-staged": {
