@@ -51,27 +51,29 @@
 }
 
 [part~='navigation'] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: absolute;
     z-index: 3;
-    outline-style: none;
-    user-select: none;
-    width: rem(46px);
-    height: rem(46px);
     transition: all .15s ease-in;
-    cursor: pointer;
 
     igc-icon {
         --ig-size: 1;
     }
 }
 
-[part~='navigation'][disabled] {
-    box-shadow: none;
-    cursor: default;
-    pointer-events: none;
+igc-button::part(base) {
+    width: rem(46px);
+    height: rem(46px);
+    min-width: initial;
+}
+
+:host(:not([vertical])),
+:host([dir='rtl'][vertical]) {
+    --dir: #{direction($rtl: false)};
+}
+
+:host([vertical]),
+:host([dir='rtl']:not([vertical])) {
+    --dir: #{direction($rtl: true)};
 }
 
 :host(:not([vertical])) {
@@ -90,9 +92,15 @@
         margin-inline-end: rem(16px);
     }
 
+    [part='navigation next'],
+    [part='navigation previous'] {
+        transform: scaleX(var(--dir)) translateY(-50%);
+    }
+
     [part~='indicators'] {
         inset-inline-start: 50%;
         inset-block-end: 0;
+        transform: translateX(calc(-50% * var(--dir)));
     }
 
     [part='indicators start'],
@@ -141,26 +149,5 @@
 
     [part='label indicators start'] {
         margin-inline-start: rem(20px);
-    }
-}
-
-:host(:not([vertical])),
-:host([dir='rtl'][vertical]) {
-    --dir: #{direction($rtl: false)};
-}
-
-:host([vertical]),
-:host([dir='rtl']:not([vertical])) {
-    --dir: #{direction($rtl: true)};
-}
-
-:host(:not([vertical])) {
-    [part='navigation next'],
-    [part='navigation previous'] {
-        transform: scaleX(var(--dir)) translateY(-50%);
-    }
-
-    [part~='indicators'] {
-        transform: translateX(calc(-50% * var(--dir)));
     }
 }

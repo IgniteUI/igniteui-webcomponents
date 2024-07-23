@@ -3,18 +3,22 @@
 
 $theme: $indigo;
 
-[part~='navigation'] {
+igc-button::part(base) {
     width: rem(28px);
     height: rem(28px);
     border-width: rem(2px);
+    padding: initial;
+}
 
+igc-button::part(focused),
+igc-button::part(focused):hover {
+    box-shadow: 0 0 0 rem(3px) var-get($theme, 'indicator-focus-color');
+    color: var-get($theme, 'button-arrow-color');
+}
+
+[part~='navigation'] {
     igc-icon {
         --ig-size: 2;
-    }
-
-    &:focus-visible {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'indicator-focus-color');
-        color: var-get($theme, 'button-arrow-color');
     }
 }
 
