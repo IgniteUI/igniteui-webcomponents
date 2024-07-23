@@ -631,7 +631,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <span slot="suffix" part="clear-icon" @click=${this.clear}>
             <slot name="clear-icon">
               <igc-icon
-                name="clear"
+                name="input_clear"
                 collection="default"
                 aria-hidden="true"
               ></igc-icon>

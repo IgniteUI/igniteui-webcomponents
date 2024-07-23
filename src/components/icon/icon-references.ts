@@ -101,7 +101,7 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'clear',
+      name: 'input_clear',
       collection: 'default',
     },
     target: makeIconRefs({
@@ -173,7 +173,7 @@ export const iconReferences: IconReference[] = [
   },
   {
     alias: {
-      name: 'case-sensitive',
+      name: 'case_sensitive',
       collection: 'default',
     },
     target: makeIconRefs({

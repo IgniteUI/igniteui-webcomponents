@@ -27,7 +27,7 @@ describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
 
   const pickerShowIcon = 'today';
-  const pickerClearIcon = 'clear';
+  const pickerClearIcon = 'input_clear';
 
   function getIcon(name: string) {
     return picker.renderRoot.querySelector(`[name='${name}']`)!;

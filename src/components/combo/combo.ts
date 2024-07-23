@@ -852,7 +852,7 @@ export default class IgcComboComponent<
     >
       <slot name="clear-icon">
         <igc-icon
-          name="clear"
+          name="input_clear"
           collection="default"
           aria-hidden="true"
         ></igc-icon>
@@ -924,7 +924,7 @@ export default class IgcComboComponent<
       >
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}
-          name="case-sensitive"
+          name="case_sensitive"
           collection="default"
           part=${partNameMap({
             'case-icon': true,
