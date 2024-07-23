@@ -9,7 +9,6 @@ import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
-  isDateInRanges,
 } from '../calendar/common/calendar.model.js';
 import {
   addKeybindings,
@@ -26,22 +25,11 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
-import messages from '../common/localization/validation-en.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import {
-  createCounter,
-  findElementFromEventPath,
-  formatString,
-} from '../common/util.js';
-import {
-  type Validator,
-  maxDateValidator,
-  minDateValidator,
-  requiredValidator,
-} from '../common/validators.js';
+import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DatePart } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
@@ -51,6 +39,7 @@ import IgcPopoverComponent from '../popover/popover.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
+import { datePickerValidators } from './validators.js';
 
 export interface IgcDatepickerEventMap {
   igcOpening: CustomEvent<void>;
@@ -160,19 +149,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private declare readonly [themeSymbol]: Theme;
 
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-    minDateValidator,
-    maxDateValidator,
-    {
-      key: 'badInput',
-      message: () => formatString(messages.disabledDate, this.value),
-      isValid: () =>
-        this.value
-          ? !isDateInRanges(this.value, this.disabledDates ?? [])
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return datePickerValidators;
+  }
 
   /* blazorSuppress */
   public static register() {
