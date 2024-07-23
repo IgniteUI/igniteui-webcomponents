@@ -13,8 +13,9 @@ import {
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  /// REVIEW:
+  // igcFocus: CustomEvent<void>;
+  // igcBlur: CustomEvent<void>;
 }
 
 @blazorDeepImport
@@ -112,12 +113,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
   }
 
   protected handleFocus() {
     this._dirty = true;
-    this.emitEvent('igcFocus');
   }
 }
