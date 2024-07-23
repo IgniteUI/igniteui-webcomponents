@@ -18,13 +18,13 @@ import { all } from './themes/icon-button/themes.js';
 /**
  * @element igc-icon-button
  *
- * @csspart base - The wrapping element.
- * @csspart icon - The icon element.
+ * @csspart base - The wrapping element of the icon button.
+ * @csspart icon - The icon element of the icon button.
  */
 @themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-  protected static styles = [styles, shared];
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {

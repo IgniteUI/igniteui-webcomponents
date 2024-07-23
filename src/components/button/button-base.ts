@@ -2,25 +2,21 @@ import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import type { Constructor } from '../common/mixins/constructor.js';
 import { partNameMap } from '../common/util.js';
 
-export interface IgcButtonEventMap {
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
-}
+// REVIEW
+// export interface IgcButtonEventMap {
+//   igcFocus: CustomEvent<void>;
+//   igcBlur: CustomEvent<void>;
+// }
 
 @blazorDeepImport
-export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
-  IgcButtonEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export abstract class IgcButtonBaseComponent extends LitElement {
   public static readonly formAssociated = true;
 
-  protected static shadowRootOptions = {
+  public static override shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
@@ -111,12 +107,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     this._nativeButton.blur();
   }
 
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
   }
 
@@ -148,7 +139,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
         @click=${this.handleClick}
-        @focus=${this.handleFocus}
         @blur=${this.handleBlur}
       >
         ${this.renderContent()}
@@ -170,7 +160,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        @focus=${this.disabled ? nothing : this.handleFocus}
         @blur=${this.disabled ? nothing : this.handleBlur}
       >
         ${this.renderContent()}
