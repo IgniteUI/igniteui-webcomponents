@@ -3,8 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   type DateRangeDescriptor,
@@ -126,7 +125,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, true)
+@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
@@ -146,8 +145,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private static readonly increment = createCounter();
   protected inputId = `date-picker-${IgcDatePickerComponent.increment()}`;
-
-  private declare readonly [themeSymbol]: Theme;
 
   protected override get __validators() {
     return datePickerValidators;
@@ -183,10 +180,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     return this.mode === 'dropdown';
   }
 
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
-  }
-
   @query(IgcDateTimeInputComponent.tagName)
   private _input!: IgcDateTimeInputComponent;
 
@@ -204,6 +197,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'helper-text' })
   private helperText!: Array<HTMLElement>;
+
+  protected get _isMaterialTheme(): boolean {
+    return getThemeController(this)?.theme === 'material';
+  }
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -613,8 +610,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <span slot="suffix" part="clear-icon" @click=${this.clear}>
             <slot name="clear-icon">
               <igc-icon
-                name="clear"
-                collection="internal"
+                name="input_clear"
+                collection="default"
                 aria-hidden="true"
               ></igc-icon>
             </slot>
@@ -624,11 +621,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private renderCalendarIcon() {
     const defaultIcon = html`
-      <igc-icon
-        name="calendar_today"
-        collection="internal"
-        aria-hidden="true"
-      ></igc-icon>
+      <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
@@ -750,7 +743,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(this.isMaterialTheme ? this.label : undefined)}
+        label=${ifDefined(this._isMaterialTheme ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -787,7 +780,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const id = this.id || this.inputId;
 
     return html`
-      ${!this.isMaterialTheme ? this.renderLabel(id) : nothing}
+      ${!this._isMaterialTheme ? this.renderLabel(id) : nothing}
       ${this.renderInput(id)}${this.renderPicker(id)}${this.renderHelperText()}
     `;
   }

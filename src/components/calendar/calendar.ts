@@ -2,8 +2,7 @@ import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -83,7 +82,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
-  private declare readonly [themeSymbol]: Theme;
 
   @state()
   private rangePreviewDate?: Date;
@@ -593,10 +591,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   ) {
     let startYear = undefined;
     let endYear = undefined;
-    const prev_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_upward' : 'navigate_before';
-    const next_icon =
-      this[themeSymbol] === 'fluent' ? 'arrow_downward' : 'navigate_next';
 
     if (this.activeView === 'years') {
       startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
@@ -649,8 +643,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             >
               <igc-icon
                 aria-hidden="true"
-                name=${prev_icon}
-                collection="internal"
+                name="arrow_prev"
+                collection="default"
               ></igc-icon>
             </button>
             <button
@@ -663,8 +657,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             >
               <igc-icon
                 aria-hidden="true"
-                name=${next_icon}
-                collection="internal"
+                name="arrow_next"
+                collection="default"
               ></igc-icon>
             </button>
           </div>`

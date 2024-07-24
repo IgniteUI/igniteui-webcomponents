@@ -8,8 +8,13 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { checkBoxValidators } from './validators.js';
 
+export interface CheckboxChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
+
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<CheckboxChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -107,7 +112,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleClick() {
     this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: { checked: this.checked, value: this.value },
+    });
   }
 
   protected handleBlur() {
