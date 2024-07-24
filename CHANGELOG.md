@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
+- Radio - do not emit change event on already checked radio
 
 ## [4.11.1] - 2024-07-03
 ### Changed

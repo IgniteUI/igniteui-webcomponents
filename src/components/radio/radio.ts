@@ -272,6 +272,10 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleClick() {
+    if (this.checked) {
+      return;
+    }
+
     this.checked = true;
     this.emitEvent('igcChange', {
       detail: {
