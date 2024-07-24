@@ -6,7 +6,6 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -43,7 +42,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     registerComponent(IgcMaskInputComponent);
   }
 
-  protected override get __validators(): Validator<this>[] {
+  protected override get __validators() {
     return maskValidators;
   }
 

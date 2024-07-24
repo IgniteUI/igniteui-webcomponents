@@ -18,7 +18,6 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -58,7 +57,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   private static readonly increment = createCounter();
 
-  protected override get __validators(): Validator<this>[] {
+  protected override get __validators() {
     return radioValidators;
   }
 

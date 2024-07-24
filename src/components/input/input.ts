@@ -6,7 +6,6 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import { IgcInputBaseComponent } from './input-base.js';
 import { numberValidators, stringValidators } from './validators.js';
 
@@ -41,7 +40,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number';
   }
 
-  protected override get __validators(): Validator<this>[] {
+  protected override get __validators() {
     return this.isStringType ? stringValidators : numberValidators;
   }
 
