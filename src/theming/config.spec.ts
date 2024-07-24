@@ -2,7 +2,7 @@ import { aTimeout, expect, oneEvent } from '@open-wc/testing';
 
 import { configureTheme, getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import { getAllCSSVariables } from './utils.js';
+import { getAllCssVariables } from './utils.js';
 
 describe('Theming Config', () => {
   it('parses CSS variables from the document style sheets', async () => {
@@ -10,7 +10,7 @@ describe('Theming Config', () => {
     sheet.textContent = ':root { --igc-size: 1; --my-custom-size: 2rem }';
     document.head.append(sheet);
 
-    expect(getAllCSSVariables()).to.eql({
+    expect(getAllCssVariables()).to.eql({
       igcSize: '1',
       myCustomSize: '2rem',
     });
@@ -28,7 +28,7 @@ describe('Theming Config', () => {
     document.head.append(link);
     await aTimeout(1000);
 
-    expect(() => getAllCSSVariables()).not.to.throw();
+    expect(() => getAllCssVariables()).not.to.throw();
 
     link.remove();
   });

@@ -73,6 +73,7 @@ export { defineAllComponents } from './components/common/definitions/defineAllCo
 export {
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from './components/icon/icon.registry.js';
 
 // theming configuration
@@ -97,3 +98,4 @@ export type {
   ComboItemTemplate,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
+export type { IconMeta } from './components/icon/registry/types.js';

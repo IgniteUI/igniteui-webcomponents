@@ -122,7 +122,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
         <span part="prefix">
           ${this.selectable && this.selected
             ? html`<slot name="select">
-                <igc-icon name="chip_select" collection="internal"></igc-icon>
+                <igc-icon name="selected" collection="default"></igc-icon>
               </slot>`
             : nothing}
           <slot name="start"></slot>
@@ -139,8 +139,8 @@ export default class IgcChipComponent extends EventEmitterMixin<
                 name="remove"
               >
                 <igc-icon
-                  name="chip_cancel"
-                  collection="internal"
+                  name="remove"
+                  collection="default"
                   tabindex="0"
                   role="button"
                   aria-label="remove"
