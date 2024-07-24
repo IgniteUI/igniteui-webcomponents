@@ -197,6 +197,18 @@ describe('Radio Component', () => {
       expect(eventSpy).calledWithExactly('igcChange', { detail: true });
     });
 
+    it('it should not emit igcChange event on already checked radio', async () => {
+      const eventSpy = spy(radio, 'emitEvent');
+
+      radio.click();
+      await elementUpdated(radio);
+      expect(eventSpy.getCalls()).lengthOf(2); // [igcFocus, igcChange]
+
+      radio.click();
+      await elementUpdated(radio);
+      expect(eventSpy.getCalls()).lengthOf(2);
+    });
+
     it('should be able to use external elements as label', async () => {
       const labelId = 'my-label';
       const radio = await fixture<IgcRadioComponent>(
