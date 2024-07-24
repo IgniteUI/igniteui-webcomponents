@@ -238,7 +238,9 @@ describe('Checkbox', () => {
       element.click();
 
       await elementUpdated(element);
-      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
+      expect(eventSpy).calledWithExactly('igcChange', {
+        detail: { checked: true, value: undefined },
+      });
     });
 
     const createCheckboxComponent = (

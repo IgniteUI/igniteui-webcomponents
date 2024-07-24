@@ -157,6 +157,22 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('12.10 12:00 n');
     });
 
+    it('should update the mask according to the inputFormat on focus when value is set - issue #1320', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.inputFormat = 'dd-MM-yyyy';
+      el.displayFormat = 'yyyy-MM-dd';
+      el.value = new Date(2024, 6, 22);
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2024-07-22');
+
+      input.click();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcFocus');
+      expect(input.value).to.equal('22-07-2024');
+    });
+
     it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 
