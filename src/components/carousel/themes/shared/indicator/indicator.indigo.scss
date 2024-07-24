@@ -1,0 +1,13 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+[part='base focused'] {
+    ::slotted(div) {
+        &::after {
+            border: none;
+            box-shadow: 0 0 0 rem(3px) var-get($theme, 'indicator-focus-color');
+        }
+    }
+}

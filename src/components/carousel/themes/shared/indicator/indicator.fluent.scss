@@ -1,0 +1,18 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $fluent;
+$btn-indent: rem(2px);
+
+[part='base focused'] {
+    ::slotted(div) {
+        &::after {
+            border: none;
+            inset-block-start: $btn-indent;
+            inset-inline-start: $btn-indent;
+            width: calc(100% - (#{$btn-indent} * 2));
+            height: calc(100% - (#{$btn-indent} * 2));
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'button-focus-border-color');
+        }
+    }
+}

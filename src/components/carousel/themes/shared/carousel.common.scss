@@ -41,9 +41,8 @@ igc-button[disabled]::part(base) {
     box-shadow: var-get($theme, 'button-elevation');
     border-radius: var-get($theme, 'border-radius');
 
-    // Should be fixed
-    &:focus-visible {
-        border: rem(2px) solid var-get($theme, 'indicator-focus-color');
+    div:focus-visible {
+        outline-style: none;
     }
 }
 
@@ -65,29 +64,20 @@ igc-button[disabled]::part(base) {
     &:hover {
         border-color: var-get($theme, 'indicator-active-border-color');
     }
-
-    &:focus-visible {
-        border-color: var-get($theme, 'indicator-focus-color');
-        outline: none;
-    }
 }
 
 [part='dot active'] {
-    border: rem(2px) solid var-get($theme, 'indicator-active-border-color');
+    border: rem(2px) solid var(--indicator-active-color);
 
     &::after {
-        background: var-get($theme, 'indicator-active-dot-color');
+        background: var(--indicator-active-color);
     }
 
     &:hover {
-        &::after {
-            background: var-get($theme, 'indicator-active-hover-dot-color');
-        }
-    }
+        border-color: var(--indicator-active-color);
 
-    &:focus-visible {
         &::after {
-            background: var-get($theme, 'indicator-focus-color');
+            background: var(--indicator-active-color);
         }
     }
 }

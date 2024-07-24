@@ -1,0 +1,24 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='base'] {
+    --indicator-active-color: #{var-get($theme, 'indicator-active-border-color')};
+}
+
+[part='base focused'] {
+    --indicator-active-color: #{var-get($theme, 'indicator-focus-color')};
+
+    ::slotted(div) {
+        &::after {
+            position: absolute;
+            content: '';
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            border: rem(2px) solid var-get($theme, 'indicator-focus-color');
+        }
+    }
+}
