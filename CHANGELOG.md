@@ -20,17 +20,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
 
+
+- **BREAKING**: Radio `igcChange` event.
+
+  Before:
+  ```ts
+  CustomEvent<boolean>
+  ```
+
+  Now:
+  ```ts
+  CustomEvent<{ checked: boolean; value: string | undefined }>
+  ```
+
+
+
 ### Removed
-- igc-form - use the native form element instead.
-- Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
-- Rating - readonly property. Use readOnly instead.
-- Dialog - closeOnEscape property. Use keepOpenOnEscape.
-- Combo, Select - positionStrategy, flip, sameWidth removed.
-- Dropdown - positionStrategy removed.
-- Input - readonly, inputmode, maxlength and minlength.
-  Use the native readOnly, inputMode, maxLength and minLength properties instead.
-- Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
-- Removed size property from components.
+- **BREAKING**: igc-form - use the native form element instead.
+- **BREAKING**: Range slider - `ariaThumbLower/ariaThumbUpper`. Use `thumbLabelLower/thumbLabelUpper` instead.
+- **BREAKING**: Rating - `readonly` property. Use `readOnly` instead.
+- **BREAKING**: Dialog - `closeOnEscape` property. Use `keepOpenOnEscape`.
+- **BREAKING**: Combo, Select - `positionStrategy`, `flip`, `sameWidth` removed.
+- **BREAKING**: Dropdown - `positionStrategy` removed.
+- **BREAKING**: Input - `readonly`, `inputmode`, `maxlength` and `minlength`.
+  Use the native `readOnly`, `inputMode`, `maxLength` and `minLength` properties instead.
+- **BREAKING**: Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
+- **BREAKING**: Removed `size` property from components.
 
 ### Fixed
 - Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
