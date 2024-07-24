@@ -194,7 +194,12 @@ describe('Radio Component', () => {
       radio.click();
 
       await elementUpdated(radio);
-      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
+      expect(eventSpy).calledWithExactly('igcChange', {
+        detail: {
+          checked: true,
+          value: undefined,
+        },
+      });
     });
 
     it('it should not emit igcChange event on already checked radio', async () => {
