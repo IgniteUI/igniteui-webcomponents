@@ -4,7 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
 ## [Unreleased]
+
+### Changed
+- **BREAKING**: Checkbox, Switch `igcChange` event.
+
+  Before:
+  ```ts
+  CustomEvent<boolean>
+  ```
+
+  Now:
+  ```ts
+  CustomEvent<{ checked: boolean; value: string | undefined }>
+  ```
+
 ### Removed
 - igc-form - use the native form element instead.
 - Range slider - ariaThumbLower/ariaThumbUpper. Use thumbLabelLower/thumbLabelUpper instead.
