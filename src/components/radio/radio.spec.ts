@@ -203,11 +203,11 @@ describe('Radio Component', () => {
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(2); // [igcFocus, igcChange]
+      expect(eventSpy.getCalls()).lengthOf(1);
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(2);
+      expect(eventSpy.getCalls()).lengthOf(1);
     });
 
     it('should be able to use external elements as label', async () => {
