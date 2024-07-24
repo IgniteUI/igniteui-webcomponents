@@ -25,8 +25,13 @@ import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
 
+export interface RadioChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
+
 export interface IgcRadioEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<RadioChangeEventArgs>;
   // REVIEW
   // igcFocus: CustomEvent<void>;
   // igcBlur: CustomEvent<void>;
@@ -266,8 +271,17 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleClick() {
+    if (this.checked) {
+      return;
+    }
+
     this.checked = true;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: {
+        checked: this.checked,
+        value: this.value,
+      },
+    });
   }
 
   protected handleBlur() {
@@ -281,7 +295,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
     radio.focus();
     radio.checked = true;
-    radio.emitEvent('igcChange', { detail: radio.checked });
+    radio.emitEvent('igcChange', {
+      detail: { checked: radio.checked, value: radio.value },
+    });
   }
 
   protected override render() {

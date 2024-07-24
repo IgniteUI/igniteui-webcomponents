@@ -190,7 +190,9 @@ describe('Switch', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
+      expect(eventSpy).calledWithExactly('igcChange', {
+        detail: { checked: true, value: undefined },
+      });
     });
 
     const createSwitchComponent = (
