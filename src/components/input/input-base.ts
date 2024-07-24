@@ -1,8 +1,7 @@
 import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -22,13 +21,11 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes(all, true)
 @blazorDeepImport
+@themes(all, { exposeController: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  private declare readonly [themeSymbol]: Theme;
-
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -51,6 +48,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
+
+  protected get _isMaterial() {
+    return getThemeController(this)?.theme === 'material';
+  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -185,10 +186,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return html`
-      ${this[themeSymbol] === 'material'
-        ? this.renderMaterial()
-        : this.renderStandard()}
-    `;
+    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
   }
 }

@@ -7,8 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   altKey,
@@ -95,7 +94,7 @@ export interface IgcSelectEventMap {
  * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
  * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all, true)
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -121,7 +120,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private declare readonly [themeSymbol]: Theme;
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
@@ -133,10 +131,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,
   });
-
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
-  }
 
   private get _activeItems() {
     return Array.from(
@@ -613,19 +607,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const iconHidden = this.open && this.hasExpandedIcon;
     const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
-    const openIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_up'
-      : 'arrow_drop_up';
-    const closeIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_down'
-      : 'arrow_drop_down';
-
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
           ></igc-icon>
         </slot>
         <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>

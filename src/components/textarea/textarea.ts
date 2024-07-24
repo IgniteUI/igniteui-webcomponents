@@ -9,8 +9,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -64,7 +63,7 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(all, true)
+@themes(all, { exposeController: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {
@@ -76,7 +75,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
-  private declare readonly [themeSymbol]: Theme;
   protected override validators: Validator<this>[] = [
     requiredValidator,
     minLengthValidator,
@@ -110,6 +108,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return {
       resize: this.resize === 'auto' ? 'none' : this.resize,
     };
+  }
+
+  protected get _isMaterial() {
+    return getThemeController(this)?.theme === 'material';
   }
 
   /**
@@ -492,8 +494,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    const isMaterial = this[themeSymbol] === 'material';
-    return isMaterial ? this.renderMaterial() : this.renderStandard();
+    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
   }
 }
 
