@@ -23,8 +23,8 @@ import IgcDatePickerComponent from './date-picker.js';
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
 
-  const pickerShowIcon = 'calendar_today';
-  const pickerClearIcon = 'clear';
+  const pickerShowIcon = 'today';
+  const pickerClearIcon = 'input_clear';
 
   function getIcon(name: string) {
     return picker.renderRoot.querySelector(`[name='${name}']`)!;

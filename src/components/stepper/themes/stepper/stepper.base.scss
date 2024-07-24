@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 // STEPPER
 :host {
@@ -37,7 +37,7 @@
 :host([orientation='horizontal']) {
     --horizontal-content-disply: block;
     --vertical-separator-visibility: none;
-    --horizontal-body-padding: #{rem(8px)};
+    --horizontal-body-padding: #{rem(16px)};
 
     display: grid;
     /* stylelint-disable */

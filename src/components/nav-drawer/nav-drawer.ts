@@ -60,27 +60,41 @@ export default class IgcNavDrawerComponent extends LitElement {
     return root;
   }
 
+  private _waitTransitions() {
+    return new Promise<Event>((resolve) => {
+      this.renderRoot.addEventListener('transitionend', resolve, {
+        once: true,
+      });
+    });
+  }
+
   /** Opens the drawer. */
-  public show() {
+  public async show(): Promise<boolean> {
     if (this.open) {
-      return;
+      return false;
     }
 
     this.open = true;
+    await this._waitTransitions();
+
+    return true;
   }
 
   /** Closes the drawer. */
-  public hide() {
+  public async hide(): Promise<boolean> {
     if (!this.open) {
-      return;
+      return false;
     }
 
     this.open = false;
+    await this._waitTransitions();
+
+    return true;
   }
 
   /** Toggles the open state of the drawer. */
-  public toggle() {
-    this.open ? this.hide() : this.show();
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
   }
 
   protected override render() {
@@ -92,7 +106,7 @@ export default class IgcNavDrawerComponent extends LitElement {
     return html`
       <div part="overlay" @click=${this.hide}></div>
 
-      <div part="base">
+      <div part="base" .inert=${!this.open}>
         <div part="main">
           <slot></slot>
         </div>

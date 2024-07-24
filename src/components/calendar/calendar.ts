@@ -4,8 +4,7 @@ import { choose } from 'lit/directives/choose.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   arrowDown,
@@ -118,8 +117,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       IgcYearsViewComponent
     );
   }
-
-  private declare readonly [themeSymbol]: Theme;
 
   private get _isDayView() {
     return this.activeView === 'days';
@@ -424,9 +421,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected renderNavigationButtons() {
-    const isFluent = this[themeSymbol] === 'fluent';
-    const prevIcon = isFluent ? 'arrow_upward' : 'navigate_before';
-    const nextIcon = isFluent ? 'arrow_downward' : 'navigate_next';
     const parts = partNameMap({
       'navigation-button': true,
       vertical: this.orientation === 'vertical',
@@ -441,8 +435,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         >
           <igc-icon
             aria-hidden="true"
-            name=${prevIcon}
-            collection="internal"
+            name="arrow_prev"
+            collection="default"
           ></igc-icon>
         </button>
 
@@ -453,8 +447,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         >
           <igc-icon
             aria-hidden="true"
-            name=${nextIcon}
-            collection="internal"
+            name="arrow_next"
+            collection="default"
           ></igc-icon>
         </button>
       </div>

@@ -7,6 +7,7 @@ import {
   getIconRegistry,
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from './icon.registry.js';
 
 const bugSvgContent =
@@ -63,6 +64,51 @@ describe('Icon registry', () => {
   it('register icons from text', async () => {
     registerIconFromText(name, bugSvg, collection);
     expect(getIconRegistry().get(name, collection)?.svg).to.not.be.undefined;
+  });
+
+  describe('Referential Icons', () => {
+    before(() => {
+      defineComponents(IgcIconComponent);
+    });
+
+    beforeEach(() => {
+      registerIconFromText('bug', bugSvg, 'internal');
+      registerIconFromText('virus', coronaVirusSvg, 'internal');
+
+      setIconRef('insect', 'test', {
+        name: 'bug',
+        collection: 'internal',
+      });
+    });
+
+    it('renders icons by reference', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="insect" collection="test"></igc-icon>`
+      );
+
+      verifySvg(icon, bugSvgContent);
+    });
+
+    it('swaps the SVG icon at runtime when the reference changes', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="insect" collection="test"></igc-icon>`
+      );
+
+      setIconRef('insect', 'test', {
+        name: 'virus',
+        collection: 'internal',
+      });
+
+      await elementUpdated(icon);
+      verifySvg(icon, coronaVirusSvgContent);
+    });
+
+    it('returns the underlying icon for a given reference', async () => {
+      const icon = getIconRegistry().getIconRef('insect', 'test');
+
+      expect(icon.name).to.equal('bug');
+      expect(icon.collection).to.equal('internal');
+    });
   });
 
   afterEach(() => {
