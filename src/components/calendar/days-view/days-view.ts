@@ -379,6 +379,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       this.hideTrailingDays && isNextMonth(day, this._activeDate);
 
     const hidden = hiddenLeading || hiddenTrailing;
+    const inactive = !areSameMonth(day, this._activeDate);
 
     return {
       date: true,
@@ -387,13 +388,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       last: this.isLastInRange(day),
       range: isRange && this.isRangeDate(day),
       preview: isRange && this.isRangePreview(day),
-      current: day.equalTo(today),
-      inactive: !areSameMonth(day, this._activeDate),
+      current: !inactive && day.equalTo(today),
+      inactive,
       hidden,
       weekend: day.weekend,
       single: !isRange,
       selected: !disabled && this.isSelected(day),
-      special: isDateInRanges(day, this._specialDates),
+      special: isDateInRanges(day, this._specialDates) && !inactive,
     };
   }
 
