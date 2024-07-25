@@ -32,8 +32,8 @@ export class TreeTestFunctions {
   ): void => {
     expect(slot).lightDom.to.equal(
       `<igc-icon name=${
-        expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
-      } collection="internal"></igc-icon>`,
+        expanded ? 'expand' : 'chevron_right'
+      } collection="default"></igc-icon>`,
       DIFF_OPTIONS
     );
   };
@@ -161,7 +161,7 @@ export const activeItemsTree = `<igc-tree>
                                          </igc-tree-item>
                                       </igc-tree>`;
 
-export const selectedItemsTree = `<igc-tree selection='multiple' style="height: 400px;">
+export const selectedItemsTree = `<igc-tree selection='multiple' style="height: 400px; --ig-size: 3;">
                                          <igc-tree-item expanded label="Tree Item 1" selected>
                                            <igc-tree-item label="Tree Item 1.1" expanded selected>
                                             <igc-tree-item label="Tree Item 1.1.1" expanded></igc-tree-item>
@@ -257,7 +257,7 @@ export const disabledItemsTree = `<igc-tree selection='multiple'>
                                          <igc-tree-item label="Tree Item 4"></igc-tree-item>
                                        </igc-tree>`;
 
-export const navigationTree = `<igc-tree selection='none' style="height: 400px;">
+export const navigationTree = `<igc-tree selection='none' style="height: 400px; --ig-size: 3;">
                                        <igc-tree-item label="Tree Item 1">
                                          <igc-tree-item label="Tree Item 1.1" expanded>
                                            <igc-tree-item label="Tree Item 1.1.1"></igc-tree-item>

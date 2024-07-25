@@ -71,13 +71,9 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
         <slot name="action" part="action-container" @click=${this.handleClick}>
           ${this.actionText
-            ? html`<igc-button
-                type="button"
-                part="action"
-                variant="flat"
-                size="small"
-                >${this.actionText}</igc-button
-              >`
+            ? html`<igc-button type="button" part="action" variant="flat">
+                ${this.actionText}
+              </igc-button>`
             : nothing}
         </slot>
       </div>

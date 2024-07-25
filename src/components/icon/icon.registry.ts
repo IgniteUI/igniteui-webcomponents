@@ -1,48 +1,80 @@
+import type { Theme } from '../../theming/types.js';
+import { iconReferences } from './icon-references.js';
 import { internalIcons } from './internal-icons-lib.js';
+import { DefaultMap } from './registry/default-map.js';
+import { SvgIconParser } from './registry/parser.js';
+import type {
+  Collection,
+  IconCallback,
+  IconMeta,
+  IconReferencePair,
+  SvgIcon,
+} from './registry/types.js';
 
-export type IconCollection = { [name: string]: ParsedIcon };
-
-type IconCallback = (name: string, collection: string) => void;
-
-interface ParsedIcon {
-  svg: string;
-  title?: string;
-}
 enum ActionType {
   SyncState = 0,
-  UpdateState = 1,
+  RegisterIcon = 1,
+  UpdateIconReference = 2,
 }
 
 interface BroadcastIconsChangeMessage {
   actionType: ActionType;
-  collections: Map<string, IconCollection>;
+  collections?: Collection<string, Map<string, SvgIcon>>;
+  references?: Collection<string, Map<string, IconMeta>>;
 }
-
 export class IconsRegistry {
-  private _parser: DOMParser;
-
-  private collections = new Map<string, IconCollection>();
-  private listeners = new Set<IconCallback>();
+  private parser: SvgIconParser;
+  private collections: Collection<string, Map<string, SvgIcon>>;
+  private references: Collection<string, Map<string, IconMeta>>;
+  private listeners: Set<IconCallback>;
+  private theme!: Theme;
   private iconBroadcastChannel: BroadcastChannel;
 
   constructor() {
-    this._parser = new DOMParser();
+    this.parser = new SvgIconParser();
+    this.listeners = new Set();
+    this.collections = new DefaultMap(() => new Map());
+    this.references = new DefaultMap(() => new Map());
+
     this.collections.set('internal', internalIcons);
-    // open broadcast channel for sync with angular icon service.
     this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
     this.iconBroadcastChannel.onmessage = (event) => {
       const message = event.data as BroadcastIconsChangeMessage;
       if (message.actionType === ActionType.SyncState) {
         // send state
-        const userSetCollection: Map<string, IconCollection> =
-          this.getUserSetCollection();
+        const userSetCollection: Collection<
+          string,
+          Map<string, SvgIcon>
+        > = this.getUserSetCollection();
         const message: BroadcastIconsChangeMessage = {
           actionType: ActionType.SyncState,
           collections: userSetCollection,
+          //TODO
+          // references:
         };
         this.iconBroadcastChannel.postMessage(message);
       }
     };
+  }
+
+  public register(name: string, iconText: string, collection = 'default') {
+    this.collections
+      .getOrCreate(collection)
+      .set(name, this.parser.parse(iconText));
+
+    this.notifyAll(name, collection);
+    const userSetCollection: Collection<
+      string,
+      Map<string, SvgIcon>
+    > = new DefaultMap(() => new Map());
+    userSetCollection
+      .getOrCreate(collection)
+      .set(name, this.parser.parse(iconText));
+    const message: BroadcastIconsChangeMessage = {
+      actionType: ActionType.SyncState,
+      collections: userSetCollection,
+    };
+    this.iconBroadcastChannel.postMessage(message);
   }
 
   public subscribe(callback: IconCallback) {
@@ -53,84 +85,69 @@ export class IconsRegistry {
     this.listeners.delete(callback);
   }
 
-  private parseSVG(svgString: string): ParsedIcon {
-    const parsed = this._parser.parseFromString(svgString, 'image/svg+xml');
-    const svg = parsed.querySelector('svg');
+  public setRefsByTheme(theme: Theme) {
+    if (this.theme !== theme) {
+      this.theme = theme;
 
-    if (parsed.querySelector('parsererror') || !svg) {
-      throw new Error('SVG element not found or malformed SVG string.');
-    }
+      for (const { alias, target } of iconReferences) {
+        const external = this.references
+          .get(alias.collection)
+          ?.get(alias.name)?.external;
 
-    svg.setAttribute('fit', '');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-    return {
-      svg: svg.outerHTML,
-      title: svg.querySelector('title')?.textContent ?? '',
-    };
-  }
-
-  public register(name: string, iconText: string, collection = 'default') {
-    const namespace = this.getOrCreateCollection(collection);
-    namespace[name] = this.parseSVG(iconText);
-
-    for (const listener of this.listeners) {
-      listener(name, collection);
-    }
-    const userSetCollection: Map<string, IconCollection> = new Map<
-      string,
-      IconCollection
-    >();
-    if (!userSetCollection.has(collection)) {
-      userSetCollection.set(collection, {});
-    }
-    const internalValue = internalIcons[name];
-    if (internalValue?.svg !== iconText) {
-      const currCollection = userSetCollection.get(collection);
-      if (currCollection) {
-        currCollection[name] = namespace[name];
+        this.setIconRef({
+          alias,
+          target: target.get(this.theme) ?? target.get('default')!,
+          overwrite: !external,
+        });
       }
     }
-    const message: BroadcastIconsChangeMessage = {
-      actionType: ActionType.SyncState,
-      collections: userSetCollection,
+  }
+
+  public setIconRef(options: IconReferencePair) {
+    const { alias, target, overwrite } = options;
+    const reference = this.references.getOrCreate(alias.collection);
+
+    if (overwrite) {
+      reference.set(alias.name, { ...target });
+    }
+
+    this.notifyAll(alias.name, alias.collection);
+  }
+
+  public getIconRef(name: string, collection: string): IconMeta {
+    const icon = this.references.get(collection)?.get(name);
+
+    return {
+      name: icon?.name ?? name,
+      collection: icon?.collection ?? collection,
     };
-    this.iconBroadcastChannel.postMessage(message);
   }
 
   public get(name: string, collection = 'default') {
-    return this.collections.has(collection)
-      ? this.collections.get(collection)![name]
-      : undefined;
+    return this.collections.get(collection)?.get(name);
   }
 
-  private getOrCreateCollection(name: string) {
-    if (!this.collections.has(name)) {
-      this.collections.set(name, {});
+  private notifyAll(name: string, collection: string) {
+    for (const listener of this.listeners) {
+      listener(name, collection);
     }
-
-    return this.collections.get(name) as IconCollection;
   }
 
   private getUserSetCollection() {
-    const userSetIcons: Map<string, IconCollection> = new Map<
+    const userSetIcons: Collection<
       string,
-      IconCollection
-    >();
+      Map<string, SvgIcon>
+    > = new DefaultMap(() => new Map());
     const collectionKeys = this.collections.keys();
     for (const collectionKey of collectionKeys) {
       const collection = this.collections.get(collectionKey);
       for (const iconKey in collection) {
-        const val = collection[iconKey];
-        const internalValue = internalIcons[iconKey];
-        if (val !== internalValue) {
-          if (!userSetIcons.has(collectionKey)) {
-            userSetIcons.set(collectionKey, {});
-          }
-          const userSetIconCollection = userSetIcons.get(collectionKey);
-          if (userSetIconCollection) {
-            userSetIconCollection[iconKey] = val;
-          }
+        const val = collection.get(iconKey)?.svg;
+        const internalValue = internalIcons.get(iconKey)?.svg;
+        if (val && val !== internalValue) {
+          userSetIcons
+            .getOrCreate(collectionKey)
+            .set(iconKey, this.parser.parse(val));
         }
       }
     }
@@ -173,4 +190,12 @@ export function registerIconFromText(
   collection = 'default'
 ) {
   getIconRegistry().register(name, iconText, collection);
+}
+
+export function setIconRef(name: string, collection: string, icon: IconMeta) {
+  getIconRegistry().setIconRef({
+    alias: { name, collection },
+    target: { ...icon, external: true },
+    overwrite: true,
+  });
 }

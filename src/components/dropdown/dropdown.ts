@@ -18,7 +18,6 @@ import {
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -31,7 +30,6 @@ import {
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import {
   findElementFromEventPath,
   getElementByIdFromRoot,
@@ -73,12 +71,10 @@ export interface IgcDropdownEventMap {
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
-export default class IgcDropdownComponent extends SizableMixin(
-  EventEmitterMixin<
-    IgcDropdownEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
-) {
+export default class IgcDropdownComponent extends EventEmitterMixin<
+  IgcDropdownEventMap,
+  AbstractConstructor<IgcBaseComboBoxLikeComponent>
+>(IgcBaseComboBoxLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
   public static styles = [styles, shared];
 
@@ -96,11 +92,11 @@ export default class IgcDropdownComponent extends SizableMixin(
   private _keyBindings: ReturnType<typeof addKeybindings>;
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   @state()
@@ -221,8 +217,6 @@ export default class IgcDropdownComponent extends SizableMixin(
       .set(enterKey, this.onEnterKey)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
-
-    this.size = 'medium';
   }
 
   protected override async firstUpdated() {
@@ -291,6 +285,10 @@ export default class IgcDropdownComponent extends SizableMixin(
     this._selectItem(this._activeItem);
   }
 
+  protected handleClosing() {
+    this._hide(true);
+  }
+
   private activateItem(item: IgcDropdownItemComponent) {
     if (this._activeItem) {
       this._activeItem.active = false;
@@ -350,25 +348,29 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   /* blazorSuppress */
   /** Shows the component. */
-  public override show(target?: HTMLElement | string) {
+  public override async show(target?: HTMLElement | string): Promise<boolean> {
     if (target) {
       this._setTarget(target);
     }
-    super.show();
+    return super.show();
   }
 
   /* blazorSuppress */
   /** Toggles the open state of the component. */
-  public override toggle(target?: HTMLElement | string) {
-    this.open ? this.hide() : this.show(target);
+  public override async toggle(
+    target?: HTMLElement | string
+  ): Promise<boolean> {
+    return this.open ? this.hide() : this.show(target);
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -380,12 +382,14 @@ export default class IgcDropdownComponent extends SizableMixin(
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcDropdownItemComponent | null;
+  /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public select(value: string | number): IgcDropdownItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];

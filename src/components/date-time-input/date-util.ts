@@ -1,4 +1,3 @@
-import { isDate } from '../calendar/common/utils.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
 export enum FormatDesc {
@@ -43,6 +42,10 @@ export interface DatePartDeltas {
   hours?: number;
   minutes?: number;
   seconds?: number;
+}
+
+function isDate(value: unknown): value is Date {
+  return value instanceof Date;
 }
 
 export abstract class DateTimeUtil {

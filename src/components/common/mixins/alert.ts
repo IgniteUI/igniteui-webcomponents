@@ -81,29 +81,31 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   /** Opens the component. */
-  public async show() {
+  public async show(): Promise<boolean> {
     if (this.open) {
-      return;
+      return false;
     }
 
     this.open = true;
     await this.toggleAnimation('open');
     this.setAutoHideTimer();
+    return true;
   }
 
   /** Closes the component. */
-  public async hide() {
+  public async hide(): Promise<boolean> {
     if (!this.open) {
-      return;
+      return false;
     }
 
     clearTimeout(this._autoHideTimeout);
     await this.toggleAnimation('close');
     this.open = false;
+    return true;
   }
 
   /** Toggles the open state of the component. */
-  public toggle() {
-    this.open ? this.hide() : this.show();
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
   }
 }

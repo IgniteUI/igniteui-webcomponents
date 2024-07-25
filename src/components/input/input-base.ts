@@ -1,14 +1,11 @@
 import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
-import { alternateName } from '../common/decorators/alternateName.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
@@ -23,15 +20,11 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes(all, true)
 @blazorDeepImport
+@themes(all, { exposeController: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-  )
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  private declare readonly [themeSymbol]: Theme;
-
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -57,6 +50,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
+
+  protected get _isMaterial() {
+    return getThemeController(this)?.theme === 'material';
+  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -86,35 +83,25 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  constructor() {
-    super();
-    this.size = 'medium';
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
-  }
-
-  public override disconnectedCallback() {
-    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
-    super.disconnectedCallback();
-  }
-
+  /* alternateName: focusComponent */
   /** Sets focus on the control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }
 
   protected abstract renderInput(): TemplateResult;
-  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {
@@ -201,10 +188,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return html`
-      ${this[themeSymbol] === 'material'
-        ? this.renderMaterial()
-        : this.renderStandard()}
-    `;
+    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
   }
 }

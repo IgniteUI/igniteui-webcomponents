@@ -1,14 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import type IgcMonthsViewComponent from './months-view/months-view.js';
 
 describe('Calendar Rendering', () => {
-  const DIFF_OPTIONS = {
-    ignoreAttributes: ['size', 'style'],
-  };
-
   before(() => {
     defineComponents(IgcCalendarComponent);
   });
@@ -66,7 +63,6 @@ describe('Calendar Rendering', () => {
             'collection',
             'name',
             'role',
-            'size',
             'exportparts',
           ],
           ignoreChildren: ['span', 'button'],
@@ -137,10 +133,7 @@ describe('Calendar Rendering', () => {
 
     it('successfully changes header orientation', async () => {
       expect(el).dom.to.equal(
-        `
-      <igc-calendar header-orientation="horizontal"></igc-calendar>
-      `,
-        DIFF_OPTIONS
+        '<igc-calendar header-orientation="horizontal"></igc-calendar>'
       );
 
       el.headerOrientation = 'vertical';
@@ -149,58 +142,7 @@ describe('Calendar Rendering', () => {
       await elementUpdated(el);
 
       expect(el).dom.to.equal(
-        `
-      <igc-calendar header-orientation="vertical"></igc-calendar>
-      `,
-        DIFF_OPTIONS
-      );
-    });
-
-    it('successfully changes size', async () => {
-      expect(el).dom.to.equal(
-        `
-      <igc-calendar size="large"></igc-calendar>
-      `,
-        {
-          ignoreAttributes: [
-            'header-orientation',
-            ...DIFF_OPTIONS.ignoreAttributes,
-          ],
-        }
-      );
-
-      el.size = 'medium';
-      expect(el.size).to.equal('medium');
-
-      await elementUpdated(el);
-
-      expect(el).dom.to.equal(
-        `
-      <igc-calendar size="medium"></igc-calendar>
-      `,
-        {
-          ignoreAttributes: [
-            'header-orientation',
-            ...DIFF_OPTIONS.ignoreAttributes,
-          ],
-        }
-      );
-
-      el.size = 'small';
-      expect(el.size).to.equal('small');
-
-      await elementUpdated(el);
-
-      expect(el).dom.to.equal(
-        `
-      <igc-calendar size="small"></igc-calendar>
-      `,
-        {
-          ignoreAttributes: [
-            'header-orientation',
-            ...DIFF_OPTIONS.ignoreAttributes,
-          ],
-        }
+        '<igc-calendar header-orientation="vertical"></igc-calendar>'
       );
     });
 
@@ -403,16 +345,8 @@ describe('Calendar Rendering', () => {
       await elementUpdated(el);
 
       expect(el).dom.to.equal(
-        `
-      <igc-calendar title="New Title"></igc-calendar>
-      `,
-        {
-          ignoreAttributes: [
-            'header-orientation',
-            'size',
-            ...DIFF_OPTIONS.ignoreAttributes,
-          ],
-        }
+        '<igc-calendar title="New Title"></igc-calendar>',
+        { ignoreAttributes: ['header-orientation'] }
       );
     });
 

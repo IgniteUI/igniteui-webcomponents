@@ -405,11 +405,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       ? html`<igc-icon-button
           tabindex="-1"
           aria-hidden="true"
-          size="large"
           variant="flat"
-          collection="internal"
+          collection="default"
           part="${direction}-scroll-button"
-          name="navigate_${start ? 'before' : 'next'}"
+          name="${start ? 'prev' : 'next'}"
           .disabled=${start
             ? this.disableStartScrollButton
             : this.disableEndScrollButton}

@@ -3,6 +3,7 @@ import { spy } from 'sinon';
 
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { scrolledIntoView } from '../common/utils.spec.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
   DIFF_OPTIONS,
@@ -76,48 +77,6 @@ describe('Tree', () => {
       const treeItem1GrandChildren = treeItem1Chidlren[0].getChildren();
       expect(treeItem1GrandChildren.length).to.equal(2);
       expect(treeItem1Chidlren[0]).dom.to.have.descendants('igc-tree-item');
-    });
-
-    it('Should render items correctly depending on size settings', async () => {
-      tree = await TreeTestFunctions.createTreeElement(simpleTree);
-      const indentationSize = {
-        small: 12,
-        medium: 16,
-        large: 24,
-      };
-
-      expect(tree.size).to.equal('large');
-      tree.items.forEach((item) => {
-        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        const indentationDiv = wrapperDiv?.firstElementChild;
-        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          `${item.level * indentationSize.large * 1}px`
-        );
-      });
-
-      tree.size = 'medium';
-      await elementUpdated(tree);
-
-      expect(tree.size).to.equal('medium');
-      tree.items.forEach((item) => {
-        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        const indentationDiv = wrapperDiv?.firstElementChild;
-        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          `${(item.level * indentationSize.medium * 2) / 3}px`
-        );
-      });
-
-      tree.size = 'small';
-      await elementUpdated(tree);
-
-      expect(tree.size).to.equal('small');
-      tree.items.forEach((item) => {
-        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        const indentationDiv = wrapperDiv?.firstElementChild;
-        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          `${(item.level * indentationSize.large * 1) / 2}px`
-        );
-      });
     });
 
     it("Should calculate items' path and level correctly, depending on data hierarchy", async () => {
@@ -348,7 +307,7 @@ describe('Tree', () => {
       els = indSlot2.assignedElements({ flatten: true });
       expect(els.length).to.equal(1);
       expect(els[0]).dom.to.equal(
-        `<igc-icon collection="internal" name="keyboard_arrow_down">
+        `<igc-icon collection="default" name="expand">
         </igc-icon>`,
         DIFF_OPTIONS
       );
@@ -476,39 +435,26 @@ describe('Tree', () => {
 
     it('Initially active item should be in view if the tree has scrollbar', async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
-      expect(tree.items[13].active).to.be.true;
+      const item = tree.querySelector(
+        'igc-tree-item[active]'
+      ) as IgcTreeItemComponent;
+      expect(item.active).to.be.true;
 
-      await aTimeout(200);
-      const treeRect = tree.getBoundingClientRect();
-      const itemRect = tree.items[13].getBoundingClientRect();
-      const item1Rect = tree.items[0].getBoundingClientRect();
-
-      expect(
-        treeRect.top <= item1Rect.top && treeRect.bottom >= item1Rect.bottom
-      ).to.be.false;
-      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
-        .to.be.true;
+      await aTimeout(500);
+      expect(scrolledIntoView(item, tree)).to.be.true;
     });
 
     it('Should scroll bottom to top to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
-      await aTimeout(200);
+      await aTimeout(500);
 
-      let treeRect = tree.getBoundingClientRect();
-      let itemRect = tree.items[0].getBoundingClientRect();
-
-      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
-        .to.be.false;
+      expect(scrolledIntoView(tree.items[0], tree)).to.be.false;
 
       tree.items[0].active = true;
       await elementUpdated(tree);
-      await aTimeout(200);
+      await aTimeout(500);
 
-      treeRect = tree.getBoundingClientRect();
-      itemRect = tree.items[0].getBoundingClientRect();
-
-      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
-        .to.be.true;
+      expect(scrolledIntoView(tree.items[0], tree)).to.be.true;
     });
 
     it('Should scroll top to bottom to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
@@ -521,20 +467,13 @@ describe('Tree', () => {
 
       // Expect that the last top item is initially out of view
       const targetItem = topLevelItems[3];
-      let treeRect = tree.getBoundingClientRect();
-      let itemRect = targetItem.getBoundingClientRect();
-
-      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
-        .to.be.false;
+      expect(scrolledIntoView(targetItem, tree)).to.be.false;
 
       targetItem.active = true;
       await elementUpdated(tree);
 
-      await aTimeout(200);
-      treeRect = tree.getBoundingClientRect();
-      itemRect = targetItem.getBoundingClientRect();
-      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
-        .to.be.true;
+      await aTimeout(500);
+      expect(scrolledIntoView(targetItem, tree)).to.be.true;
     });
 
     it('When an item is added/deleted the visible tree items collection should be calculated properly', async () => {
