@@ -544,12 +544,13 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected renderHeaderDateSingle() {
-    const date = this.value;
+    const date = this.value ?? CalendarDay.today.native;
     const weekDayFmt = this._intl.get('weekday').format;
     const monthDayFmt = this._intl.get('monthDay').format;
     const separator =
       this.headerOrientation === 'vertical' ? html`<br />` : ' ';
 
+    // REVIEW
     return date
       ? html`${weekDayFmt(date)},${separator}${monthDayFmt(date)}`
       : this.resourceStrings.selectedDate;
