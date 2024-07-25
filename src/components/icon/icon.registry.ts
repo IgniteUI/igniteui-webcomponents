@@ -19,8 +19,8 @@ enum ActionType {
 
 interface BroadcastIconsChangeMessage {
   actionType: ActionType;
-  collections?: Collection<string, Map<string, SvgIcon>>;
-  references?: Collection<string, Map<string, IconMeta>>;
+  collections?: Map<string, Map<string, SvgIcon>>;
+  references?: Map<string, Map<string, IconMeta>>;
 }
 export class IconsRegistry {
   private parser: SvgIconParser;
@@ -42,15 +42,12 @@ export class IconsRegistry {
       const message = event.data as BroadcastIconsChangeMessage;
       if (message.actionType === ActionType.SyncState) {
         // send state
-        const userSetCollection: Collection<
-          string,
-          Map<string, SvgIcon>
-        > = this.getUserSetCollection();
+        const userSetCollection: Map<string, Map<string, SvgIcon>> = this.getUserSetCollection();
+        const refs: Map<string, Map<string, IconMeta>> = this.getUserSetRefs();
         const message: BroadcastIconsChangeMessage = {
           actionType: ActionType.SyncState,
           collections: userSetCollection,
-          //TODO
-          // references:
+          references: refs
         };
         this.iconBroadcastChannel.postMessage(message);
       }
@@ -63,15 +60,17 @@ export class IconsRegistry {
       .set(name, this.parser.parse(iconText));
 
     this.notifyAll(name, collection);
-    const userSetCollection: Collection<
-      string,
-      Map<string, SvgIcon>
-    > = new DefaultMap(() => new Map());
-    userSetCollection
-      .getOrCreate(collection)
-      .set(name, this.parser.parse(iconText));
+    const userSetCollection: Map<string, Map<string, SvgIcon>> = new Map();
+    let icons = userSetCollection.get(collection);
+    if (!icons) {
+      userSetCollection.set(collection, new Map<string, SvgIcon>());
+      icons = userSetCollection.get(collection);
+    }
+    if (icons) {
+      icons.set(name, this.parser.parse(iconText));
+    }
     const message: BroadcastIconsChangeMessage = {
-      actionType: ActionType.SyncState,
+      actionType: ActionType.RegisterIcon,
       collections: userSetCollection,
     };
     this.iconBroadcastChannel.postMessage(message);
@@ -112,6 +111,26 @@ export class IconsRegistry {
     }
 
     this.notifyAll(alias.name, alias.collection);
+
+    const userSetRefs: Map<string, Map<string, IconMeta>> = new Map();
+    let collection = userSetRefs.get(alias.collection);
+    if (!collection) {
+      userSetRefs.set(alias.collection, new Map<string, IconMeta>());
+      collection = userSetRefs.get(alias.collection);
+    }
+
+    if (collection) {
+        collection.set(alias.name, {
+          collection: target.collection,
+          name: target.name
+        });
+    }
+
+    const message: BroadcastIconsChangeMessage = {
+      actionType: ActionType.UpdateIconReference,
+      references: userSetRefs,
+    };
+    this.iconBroadcastChannel.postMessage(message);
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
@@ -133,11 +152,17 @@ export class IconsRegistry {
     }
   }
 
+  private getUserSetRefs() {
+    const refs: Map<string, Map<string, IconMeta>> = new Map();
+    const refKeys = this.references.keys();
+    for (const collectionKey of refKeys) {
+      refs.set(collectionKey, this.references.get(collectionKey) || new Map());
+    }
+    return refs;
+  }
+
   private getUserSetCollection() {
-    const userSetIcons: Collection<
-      string,
-      Map<string, SvgIcon>
-    > = new DefaultMap(() => new Map());
+    const userSetIcons: Map<string, Map<string, SvgIcon>> = new Map();
     const collectionKeys = this.collections.keys();
     for (const collectionKey of collectionKeys) {
       const collection = this.collections.get(collectionKey);
@@ -145,9 +170,14 @@ export class IconsRegistry {
         const val = collection.get(iconKey)?.svg;
         const internalValue = internalIcons.get(iconKey)?.svg;
         if (val && val !== internalValue) {
-          userSetIcons
-            .getOrCreate(collectionKey)
-            .set(iconKey, this.parser.parse(val));
+          let icons = userSetIcons.get(collectionKey);
+          if (!icons) {
+            userSetIcons.set(collectionKey, new Map<string, SvgIcon>());
+            icons = userSetIcons.get(collectionKey);
+          }
+          if (icons) {
+            icons.set(iconKey, this.parser.parse(val));
+          }
         }
       }
     }
