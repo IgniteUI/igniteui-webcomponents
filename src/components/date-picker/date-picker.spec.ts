@@ -3,11 +3,8 @@ import { spy } from 'sinon';
 
 import type { TemplateResult } from 'lit';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import {
-  type DateRangeDescriptor,
-  DateRangeType,
-} from '../calendar/common/calendar.model.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import {
   altKey,
   arrowDown,
