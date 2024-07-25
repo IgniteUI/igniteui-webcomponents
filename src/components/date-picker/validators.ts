@@ -1,4 +1,4 @@
-import { isDateInRanges } from '../calendar/common/calendar.model';
+import { isDateInRanges } from '../calendar/helpers.js';
 import messages from '../common/localization/validation-en.js';
 import { formatString } from '../common/util.js';
 import {
