@@ -41,11 +41,9 @@ describe('Form associated mixin tests', () => {
   before(() => {
     tag = defineCE(
       class Foo extends FormAssociatedRequiredMixin(LitElement) {
-        protected override validators: Validator<this>[] = [
-          requiredValidator,
-          minLengthValidator,
-          maxLengthValidator,
-        ];
+        protected override get __validators(): Validator<this>[] {
+          return [requiredValidator, minLengthValidator, maxLengthValidator];
+        }
 
         static override properties = {
           value: { type: String },
