@@ -27,8 +27,8 @@
 
 [part~='label'],
 [part~='value'] {
-    font-size: rem(12px);
-    line-height: rem(16px);
+    font-size: calc(var(--diameter) / 2.3 - var(--stroke-thickness));
+    line-height: normal;
     font-weight: 600;
     letter-spacing: rem(0.15px);
 }

@@ -9,6 +9,11 @@
     @include type-style('subtitle-1');
 }
 
+[part~='label'],
+[part~='value'] {
+    font-size: calc(var(--diameter) / 2.8 - var(--stroke-thickness));
+}
+
 [part~='svg'][part~='indeterminate'] {
     animation-duration: .75s;
 }
