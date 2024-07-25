@@ -1,14 +1,14 @@
 import messages from '../common/localization/validation-en.js';
 import type { Validator } from '../common/validators.js';
 import type IgcRadioComponent from './radio.js';
+import { getGroup } from './utils.js';
 
 export const radioValidators: Validator<IgcRadioComponent>[] = [
   {
     key: 'valueMissing',
     message: messages.required,
     isValid: (host) => {
-      // @ts-expect-error - protected access
-      const [radios, checked] = [host._radios, host._checkedRadios];
+      const { radios, checked } = getGroup(host);
       return radios.some((radio) => radio.required) ? checked.length > 0 : true;
     },
   },
