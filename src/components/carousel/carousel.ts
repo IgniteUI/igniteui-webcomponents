@@ -352,12 +352,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return false;
     }
 
-    await this.animateSlides(
-      this.slides[index],
-      this.slides[this.current],
-      'next'
-    );
-    return true;
+    return await this.select(this.slides[index], 'next');
   }
 
   /**
@@ -371,12 +366,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return false;
     }
 
-    await this.animateSlides(
-      this.slides[index],
-      this.slides[this.current],
-      'prev'
-    );
-    return true;
+    return await this.select(this.slides[index], 'prev');
   }
 
   /**
@@ -392,13 +382,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return false;
     }
 
-    const dir = (direction ?? index > this.current) ? 'next' : 'prev';
+    const dir = direction ?? (index > this.current ? 'next' : 'prev');
 
-    await this.animateSlides(
-      this.slides[index],
-      this.slides[this.current],
-      dir
-    );
+    await this.animateSlides(slide, this.slides[this.current], dir);
     return true;
   }
 
@@ -499,7 +485,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     if (index !== this.current) {
       const dir = index > this.current ? 'next' : 'prev';
-      await this.animateSlides(slide, this.slides[this.current], dir);
+      await this.select(slide, dir);
 
       this.emitSlideChangedEvent();
     }
