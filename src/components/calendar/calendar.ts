@@ -59,6 +59,7 @@ export const focusActiveDate = Symbol();
  *
  * @slot - The default slot for the calendar.
  * @slot title - Renders the title of the calendar header.
+ * @slot header-date - Renders content instead of the current date/range in the calendar header.
  *
  * @fires igcChange - Emitted when calendar changes its value.
  *
@@ -545,15 +546,14 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   protected renderHeaderDateSingle() {
     const date = this.value ?? CalendarDay.today.native;
-    const weekDayFmt = this._intl.get('weekday').format;
-    const monthDayFmt = this._intl.get('monthDay').format;
+    const day = this._intl.get('weekday').format(date);
+    const month = this._intl.get('monthDay').format(date);
     const separator =
       this.headerOrientation === 'vertical' ? html`<br />` : ' ';
 
-    // REVIEW
-    return date
-      ? html`${weekDayFmt(date)},${separator}${monthDayFmt(date)}`
-      : this.resourceStrings.selectedDate;
+    const formatted = html`${day},${separator}${month}`;
+
+    return html`<slot name="header-date">${formatted}</slot>`;
   }
 
   protected renderHeaderDateRange() {
@@ -566,9 +566,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       this._hasValues && values.length > 1 ? fmt(last(values)) : endDate;
 
     return html`
-      <span>${start}</span>
-      <span> - </span>
-      <span>${end}</span>
+      <slot name="header-date">
+        <span>${start}</span>
+        <span> - </span>
+        <span>${end}</span>
+      </slot>
     `;
   }
 
