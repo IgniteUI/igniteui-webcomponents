@@ -5,10 +5,8 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import {
-  type DateRangeDescriptor,
-  DateRangeType,
-} from '../calendar/common/calendar.model.js';
+import { isDateInRanges } from '../calendar/helpers.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
