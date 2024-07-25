@@ -1,22 +1,54 @@
 @use 'igniteui-theming' as *;
 
-.ig-scrollbar {
-    --size: var(--ig-scrollbar-size, #{rem(16px)});
-    --thumb-background: var(--ig-scrollbar-thumb-background, #{color($color: gray, $variant: 400)});
-    --track-background: var(--ig-scrollbar-track-background, #{color($color: gray, $variant: 100)});
+@mixin ig-scrollbar-vars($schema) {
+    $theme: digest-schema($schema);
 
-    scrollbar-width: var(--size);
-    scrollbar-color: var(--thumb-background) var(--track-background);
+    .ig-scrollbar {
+        @include css-vars-from-theme($theme, 'ig-scrollbar');
+    }
 }
 
-.ig-scrollbar ::-webkit-scrollbar {
-    width: var(--size);
-    height: var(--size);
-    background: var(--track-background);
-}
+@mixin ig-scrollbar() {
+    // The @-moz-document rule is specifically for Firefox because it does not support the WebKit pseudo-selectors for scrollbar styling.
+    /* stylelint-disable-next-line at-rule-no-vendor-prefix */
+    @-moz-document url-prefix() {
+        scrollbar-width: var(--sb-size, initial);
+        scrollbar-color: var(--sb-thumb-bg-color, initial) var(--sb-track-bg-color, initial);
+    }
 
-.ig-scrollbar ::-webkit-scrollbar-thumb {
-    background: var(--thumb-background);
+    ::-webkit-scrollbar {
+        width: var(--sb-size, initial);
+        height: var(--sb-size, initial);
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--sb-track-bg-color, initial);
+    }
+
+    ::-webkit-scrollbar-track:hover,
+    ::-webkit-scrollbar-track:active {
+        background: var(--sb-track-bg-color-hover, initial);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        min-height: var(--sb-thumb-min-height, initial);
+        border-radius: var(--sb-thumb-border-radius, initial);
+        border: var(--sb-thumb-border-size, initial) solid var(--sb-thumb-border-color, initial);
+        background-color: var(--sb-thumb-bg-color, initial);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--sb-thumb-bg-color-hover, initial);
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: var(--sb-corner-bg, initial);
+        border: var(--sb-corner-border-sizem, initial) solid var(--sb-corner-border-color, initial);
+    }
+
+    ::-webkit-scrollbar-track-piece {
+        border: var(--sb-track-border-size, initial) solid var(--sb-track-border-color, initial);
+    }
 }
 
 @media (hover: none) {
