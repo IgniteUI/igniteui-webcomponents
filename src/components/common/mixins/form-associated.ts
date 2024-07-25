@@ -8,7 +8,7 @@ export declare class FormAssociatedElementInterface {
   public static readonly formAssociated: boolean;
 
   private __internals: ElementInternals;
-  protected validators: Validator[];
+  protected get __validators(): Validator[];
   protected _disabled: boolean;
   protected _invalid: boolean;
   protected _dirty: boolean;
@@ -128,10 +128,13 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public static readonly formAssociated = true;
 
     private __internals: ElementInternals;
-    protected validators: Validator[] = [];
     protected _disabled = false;
     protected _invalid = false;
     protected _dirty = false;
+
+    protected get __validators(): Validator[] {
+      return [];
+    }
 
     /**
      * The default value of the control at "creation" time.
@@ -287,7 +290,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       const validity: ValidityStateFlags = {};
       let message = '';
 
-      for (const validator of this.validators) {
+      for (const validator of this.__validators) {
         const isValid = validator.isValid(this);
 
         validity[validator.key] = !isValid;
