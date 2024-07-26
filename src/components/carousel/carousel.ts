@@ -530,13 +530,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private navigationTemplate() {
-    const prev_icon = this.vertical
-      ? 'keyboard_arrow_up'
-      : 'keyboard_arrow_left';
-    const next_icon = this.vertical
-      ? 'keyboard_arrow_down'
-      : 'keyboard_arrow_right';
-
     return html`
       <igc-button
         type="button"
@@ -550,8 +543,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       >
         <slot name="previous-button">
           <igc-icon
-            name=${prev_icon}
-            collection="internal"
+            name="carousel_prev"
+            collection="default"
             aria-hidden="true"
           ></igc-icon>
         </slot>
@@ -568,8 +561,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       >
         <slot name="next-button">
           <igc-icon
-            name=${next_icon}
-            collection="internal"
+            name="carousel_next"
+            collection="default"
             aria-hidden="true"
           ></igc-icon>
         </slot>
