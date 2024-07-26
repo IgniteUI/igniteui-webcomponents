@@ -307,7 +307,7 @@ describe('Tree', () => {
       els = indSlot2.assignedElements({ flatten: true });
       expect(els.length).to.equal(1);
       expect(els[0]).dom.to.equal(
-        `<igc-icon collection="internal" name="keyboard_arrow_down">
+        `<igc-icon collection="default" name="expand">
         </igc-icon>`,
         DIFF_OPTIONS
       );

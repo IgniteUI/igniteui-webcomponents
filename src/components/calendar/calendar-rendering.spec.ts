@@ -1,8 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
-import type IgcDaysViewComponent from './days-view/days-view.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcCalendarComponent from './calendar.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import { getCalendarDOM, getDOMDate } from './helpers.spec.js';
+import { CalendarDay } from './model.js';
 import type IgcMonthsViewComponent from './months-view/months-view.js';
+import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar Rendering', () => {
   before(() => {
@@ -15,9 +19,7 @@ describe('Calendar Rendering', () => {
   describe('', async () => {
     beforeEach(async () => {
       el = await createCalendarElement();
-      daysView = el.shadowRoot?.querySelector(
-        'igc-days-view'
-      ) as IgcDaysViewComponent;
+      daysView = el.renderRoot.querySelector(IgcDaysViewComponent.tagName)!;
     });
 
     it('passes the a11y audit', async () => {
@@ -493,6 +495,58 @@ describe('Calendar Rendering', () => {
         ?.querySelector('[part=navigation]')
         ?.querySelector('button[part=months-navigation]') as Element;
       expect(buttonMonthsNav.textContent).to.contain('August');
+    });
+
+    it('issue #1278', async () => {
+      const today = new CalendarDay({ year: 2024, month: 6, date: 25 });
+      const calendarDOM = getCalendarDOM(el);
+
+      const julySpecials = [
+        new CalendarDay({ year: 2024, month: 6, date: 22 }),
+        new CalendarDay({ year: 2024, month: 6, date: 23 }),
+      ];
+      const augustSpecials = [
+        new CalendarDay({ year: 2024, month: 7, date: 1 }),
+        new CalendarDay({ year: 2024, month: 7, date: 2 }),
+      ];
+
+      const specialDates: DateRangeDescriptor[] = [
+        {
+          type: DateRangeType.Specific,
+          dateRange: [
+            ...julySpecials.map((d) => d.native),
+            ...augustSpecials.map((d) => d.native),
+          ],
+        },
+      ];
+
+      el.specialDates = specialDates;
+      await elementUpdated(el);
+
+      for (const date of julySpecials) {
+        const dateDOM = getDOMDate(date, calendarDOM.views.days);
+
+        expect(dateDOM.part.contains('special')).to.be.true;
+        expect(dateDOM.part.contains('inactive')).to.be.false;
+      }
+
+      for (const date of augustSpecials) {
+        const dateDOM = getDOMDate(date, calendarDOM.views.days);
+
+        expect(dateDOM.part.contains('special')).to.be.false;
+        expect(dateDOM.part.contains('inactive')).to.be.true;
+      }
+
+      // Move active date to August
+      el.activeDate = today.set({ month: 7 }).native;
+      await elementUpdated(el);
+
+      for (const date of augustSpecials) {
+        const dateDOM = getDOMDate(date, calendarDOM.views.days);
+
+        expect(dateDOM.part.contains('special')).to.be.true;
+        expect(dateDOM.part.contains('inactive')).to.be.false;
+      }
     });
   });
 });

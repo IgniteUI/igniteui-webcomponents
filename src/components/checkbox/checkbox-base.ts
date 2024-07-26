@@ -6,13 +6,15 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import {
-  type Validator,
-  requiredBooleanValidator,
-} from '../common/validators.js';
+import { checkBoxValidators } from './validators.js';
+
+export interface CheckboxChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
 
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<CheckboxChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -21,7 +23,9 @@ export interface IgcCheckboxEventMap {
 export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  protected override validators: Validator<this>[] = [requiredBooleanValidator];
+  protected override get __validators() {
+    return checkBoxValidators;
+  }
 
   protected _kbFocus = addKeyboardFocusRing(this);
   protected _value!: string;
@@ -108,7 +112,9 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected handleClick() {
     this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: { checked: this.checked, value: this.value },
+    });
   }
 
   protected handleBlur() {

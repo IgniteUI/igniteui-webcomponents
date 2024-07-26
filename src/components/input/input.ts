@@ -6,20 +6,8 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  emailValidator,
-  maxLengthValidator,
-  maxValidator,
-  minLengthValidator,
-  minValidator,
-  patternValidator,
-  requiredNumberValidator,
-  requiredValidator,
-  stepValidator,
-  urlValidator,
-} from '../common/validators.js';
 import { IgcInputBaseComponent, type IgcInputEventMap } from './input-base.js';
+import { numberValidators, stringValidators } from './validators.js';
 
 export interface IgcInputComponentEventMap extends IgcInputEventMap {}
 
@@ -54,59 +42,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number';
   }
 
-  protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () =>
-        this.isStringType
-          ? requiredValidator.isValid(this)
-          : requiredNumberValidator.isValid(this),
-    },
-    {
-      ...minLengthValidator,
-      isValid: () =>
-        this.isStringType ? minLengthValidator.isValid(this) : true,
-    },
-    {
-      ...maxLengthValidator,
-      isValid: () =>
-        this.isStringType ? maxLengthValidator.isValid(this) : true,
-    },
-    {
-      ...minValidator,
-      isValid: () => (this.isStringType ? true : minValidator.isValid(this)),
-    },
-    {
-      ...maxValidator,
-      isValid: () => (this.isStringType ? true : maxValidator.isValid(this)),
-    },
-    {
-      ...stepValidator,
-      isValid: () => (this.isStringType ? true : stepValidator.isValid(this)),
-    },
-    {
-      ...patternValidator,
-      isValid: () =>
-        this.isStringType ? patternValidator.isValid(this) : true,
-    },
-    {
-      key: 'typeMismatch',
-      isValid: () => {
-        switch (this.type) {
-          case 'email':
-            return emailValidator.isValid(this);
-          case 'url':
-            return urlValidator.isValid(this);
-          default:
-            return true;
-        }
-      },
-      message: () =>
-        (this.type === 'email'
-          ? emailValidator.message
-          : urlValidator.message) as string,
-    },
-  ];
+  protected override get __validators() {
+    return this.isStringType ? stringValidators : numberValidators;
+  }
 
   protected _value = '';
 

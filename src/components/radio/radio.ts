@@ -14,19 +14,23 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
+import { radioValidators } from './validators.js';
+
+export interface RadioChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
 
 export interface IgcRadioComponentEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<RadioChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -60,19 +64,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   private static readonly increment = createCounter();
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () => {
-        const radios = this._radios;
-        const checked = this._checkedRadios;
-        return radios.some((radio) => radio.required)
-          ? checked.length > 0
-          : true;
-      },
-    },
-  ];
+  protected override get __validators() {
+    return radioValidators;
+  }
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
@@ -269,8 +263,17 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleClick() {
+    if (this.checked) {
+      return;
+    }
+
     this.checked = true;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: {
+        checked: this.checked,
+        value: this.value,
+      },
+    });
   }
 
   protected handleBlur() {
@@ -289,7 +292,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
     radio.focus();
     radio.checked = true;
-    radio.emitEvent('igcChange', { detail: radio.checked });
+    radio.emitEvent('igcChange', {
+      detail: { checked: radio.checked, value: radio.value },
+    });
   }
 
   protected override render() {

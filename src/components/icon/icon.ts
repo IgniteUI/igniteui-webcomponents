@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -22,7 +22,7 @@ import { all } from './themes/themes.js';
  *
  *
  */
-@themes(all)
+@themes(all, { exposeController: true })
 export default class IgcIconComponent extends LitElement {
   public static readonly tagName = 'igc-icon';
   public static override styles = [styles, shared];
@@ -64,6 +64,9 @@ export default class IgcIconComponent extends LitElement {
     super();
     this.__internals = this.attachInternals();
     this.__internals.role = 'img';
+
+    getThemeController(this)!.onThemeChanged = (theme) =>
+      getIconRegistry().setRefsByTheme(theme);
   }
 
   public override connectedCallback() {
@@ -91,8 +94,11 @@ export default class IgcIconComponent extends LitElement {
   };
 
   private getIcon() {
-    const { svg, title } =
-      getIconRegistry().get(this.name, this.collection) ?? {};
+    const { name, collection } = getIconRegistry().getIconRef(
+      this.name,
+      this.collection
+    );
+    const { svg, title } = getIconRegistry().get(name, collection) ?? {};
 
     this.svg = svg ?? '';
     this.__internals.ariaLabel = title ?? null;

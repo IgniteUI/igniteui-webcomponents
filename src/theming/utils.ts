@@ -2,7 +2,7 @@ import { isServer } from 'lit';
 
 import { isDefined } from '../components/common/util.js';
 
-function isAStyleRule(rule: CSSRule): rule is CSSStyleRule {
+function isStyleRule(rule: CSSRule): rule is CSSStyleRule {
   return !!rule && 'style' in rule;
 }
 
@@ -10,9 +10,10 @@ function cssKeyToJsKey(key: string): string {
   return key.replace('--', '').replace(/-./g, (x) => x.toUpperCase()[1]);
 }
 
-function getAllCSSVariableNames(): Set<string> {
+function getAllCssVariableNames(): Set<string> {
   const cssVars = new Set<string>();
 
+  /* c8 ignore next 3 */
   if (isServer || !isDefined(globalThis.document)) {
     return cssVars;
   }
@@ -22,14 +23,14 @@ function getAllCSSVariableNames(): Set<string> {
     (sheet) => {
       try {
         return sheet.cssRules;
-      } catch (e) {
+      } catch {
         return false;
       }
     }
   );
 
   for (const sheet of styleSheets) {
-    const rules = Array.from(sheet.cssRules).filter(isAStyleRule);
+    const rules = Array.from(sheet.cssRules).filter(isStyleRule);
 
     for (const rule of rules) {
       Array.from(rule.style).forEach((style) => {
@@ -43,20 +44,21 @@ function getAllCSSVariableNames(): Set<string> {
   return cssVars;
 }
 
-function getElementCSSVariables(
-  allCSSVars: Set<string>,
+function getElementCssVariables(
+  allCssVars: Set<string>,
   element: HTMLElement,
   pseudo?: string
 ): Record<string, string> {
   const cssVars: Record<string, string> = {};
 
+  /* c8 ignore next 3 */
   if (!isDefined(globalThis.getComputedStyle)) {
     return cssVars;
   }
 
   const styles = globalThis.getComputedStyle(element, pseudo);
 
-  for (const key of allCSSVars) {
+  for (const key of allCssVars) {
     const value = styles.getPropertyValue(key);
 
     if (value) {
@@ -67,11 +69,12 @@ function getElementCSSVariables(
   return cssVars;
 }
 
-export function getAllCSSVariables(): Record<string, string> {
+export function getAllCssVariables(): Record<string, string> {
+  /* c8 ignore next 2 */
   return isServer || !isDefined(globalThis.document)
     ? {}
-    : getElementCSSVariables(
-        getAllCSSVariableNames(),
+    : getElementCssVariables(
+        getAllCssVariableNames(),
         globalThis.document.documentElement
       );
 }

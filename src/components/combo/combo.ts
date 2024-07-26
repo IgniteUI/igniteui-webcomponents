@@ -8,19 +8,16 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -44,6 +41,7 @@ import type {
   Item,
   Keys,
 } from './types.js';
+import { comboValidators } from './validators.js';
 
 export interface IgcComboComponentEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
@@ -144,21 +142,13 @@ export default class IgcComboComponent<
     matchDiacritics: false,
   };
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () =>
-        this.required
-          ? Array.isArray(this.value) && this.value.length > 0
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return comboValidators;
+  }
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
-  private declare readonly [themeSymbol]: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
@@ -631,22 +621,24 @@ export default class IgcComboComponent<
   }
 
   protected handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
+    return this.emitEvent('igcOpening', { cancelable: true });
   }
 
   protected handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
+    return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  protected async _show(emit = true) {
-    if (this.open) return;
-    if (emit && !this.handleOpening()) return;
-    this.open = true;
+  protected async _show(emitEvent = true) {
+    if (this.open || (emitEvent && !this.handleOpening())) {
+      return false;
+    }
 
+    this.open = true;
     await this.updateComplete;
-    emit && this.emitEvent('igcOpened');
+
+    if (emitEvent) {
+      this.emitEvent('igcOpened');
+    }
 
     if (!this.singleSelect) {
       this.list.focus();
@@ -655,36 +647,42 @@ export default class IgcComboComponent<
     if (!this.autofocusList) {
       this.input.focus();
     }
+
+    return true;
   }
 
   /** Shows the list of options. */
-  public show() {
-    this._show(false);
+  public async show(): Promise<boolean> {
+    return this._show(false);
   }
 
-  protected async _hide(emit = true) {
-    if (!this.open) return;
-    if (emit && !this.handleClosing()) return;
-    this.open = false;
+  protected async _hide(emitEvent = true) {
+    if (!this.open || (emitEvent && !this.handleClosing())) {
+      return false;
+    }
 
+    this.open = false;
     await this.updateComplete;
-    emit && this.emitEvent('igcClosed');
+
+    if (emitEvent) {
+      this.emitEvent('igcClosed');
+    }
     this.navigationController.active = -1;
+    return true;
   }
 
   /** Hides the list of options. */
-  public hide() {
-    this._hide(false);
+  public async hide(): Promise<boolean> {
+    return this._hide(false);
   }
 
-  /** @hidden @internal */
-  public _toggle(emit = true) {
-    this.open ? this._hide(emit) : this._show(emit);
+  protected _toggle(emit = true) {
+    return this.open ? this._hide(emit) : this._show(emit);
   }
 
   /** Toggles the list of options. */
-  public toggle() {
-    this._toggle(false);
+  public async toggle(): Promise<boolean> {
+    return this._toggle(false);
   }
 
   protected itemRenderer: ComboRenderFunction<T> = (
@@ -830,13 +828,6 @@ export default class IgcComboComponent<
   }
 
   private renderToggleIcon() {
-    const openIcon =
-      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
-    const closeIcon =
-      this[themeSymbol] === 'material'
-        ? 'keyboard_arrow_down'
-        : 'arrow_drop_down';
-
     return html`
       <span
         slot="suffix"
@@ -847,8 +838,8 @@ export default class IgcComboComponent<
       >
         <slot name="toggle-icon">
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
             aria-hidden="true"
           ></igc-icon>
         </slot>
@@ -858,7 +849,6 @@ export default class IgcComboComponent<
 
   private renderClearIcon() {
     const { selected } = this.selectionController;
-    const icon = this[themeSymbol] === 'material' ? 'chip_cancel' : 'clear';
 
     return html`<span
       slot="suffix"
@@ -868,8 +858,8 @@ export default class IgcComboComponent<
     >
       <slot name="clear-icon">
         <igc-icon
-          name="${icon}"
-          collection="internal"
+          name="input_clear"
+          collection="default"
           aria-hidden="true"
         ></igc-icon>
       </slot>
@@ -941,7 +931,7 @@ export default class IgcComboComponent<
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}
           name="case_sensitive"
-          collection="internal"
+          collection="default"
           part=${partNameMap({
             'case-icon': true,
             active: this.filteringOptions.caseSensitive ?? false,

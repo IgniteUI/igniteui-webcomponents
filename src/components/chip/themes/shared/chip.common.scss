@@ -5,6 +5,7 @@ $theme: $material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --chip-size: var(--component-size);
 }
 
 :host button {
@@ -27,5 +28,9 @@ $theme: $material;
     &[disabled] {
         background: var-get($theme, 'disabled-background');
         color: var-get($theme, 'disabled-text-color');
+    }
+
+    igc-icon {
+        --component-size: var(--chip-size);
     }
 }
