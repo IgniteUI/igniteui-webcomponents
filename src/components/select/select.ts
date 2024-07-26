@@ -39,7 +39,6 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { findElementFromEventPath, partNameMap } from '../common/util.js';
-import { type Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
@@ -49,6 +48,7 @@ import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
 import { styles as shared } from './themes/shared/select.common.css.js';
 import { all } from './themes/themes.js';
+import { selectValidators } from './validators.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
@@ -143,7 +143,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @state()
   protected _activeItem!: IgcSelectItemComponent;
 
-  protected override validators: Validator<this>[] = [requiredValidator];
+  protected override get __validators() {
+    return selectValidators;
+  }
 
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;
