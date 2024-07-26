@@ -13,5 +13,5 @@ export default {
       .filter((sf) => globs.find((glob) => sf.fileName.includes(glob)));
   },
 
-  plugins: [expandTypesPlugin({ hideLogs: false })],
+  plugins: [expandTypesPlugin({ hideLogs: true })],
 };

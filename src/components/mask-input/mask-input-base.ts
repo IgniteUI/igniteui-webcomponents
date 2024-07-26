@@ -2,6 +2,7 @@ import { property, state } from 'lit/decorators.js';
 
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
+import type { SelectionRangeDirection } from '../types.js';
 import { MaskParser } from './mask-parser.js';
 
 export type MaskRange = {
@@ -138,7 +139,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   public override setSelectionRange(
     start: number,
     end: number,
-    direction?: 'backward' | 'forward' | 'none'
+    direction?: SelectionRangeDirection
   ): void {
     super.setSelectionRange(start, end, direction);
     this.selection = { start, end };

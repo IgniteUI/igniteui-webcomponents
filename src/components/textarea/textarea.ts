@@ -16,6 +16,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
@@ -304,7 +305,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public setSelectionRange(
     start: number,
     end: number,
-    direction: 'backward' | 'forward' | 'none' = 'none'
+    direction: SelectionRangeDirection = 'none'
   ) {
     this.input.setSelectionRange(start, end, direction);
   }
@@ -314,7 +315,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+    selectMode: RangeTextSelectMode = 'preserve'
   ) {
     this.input.setRangeText(replacement, start, end, selectMode);
     this.value = this.input.value;
