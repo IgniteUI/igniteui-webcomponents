@@ -32,7 +32,7 @@ import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import type { SelectionRangeDirection } from '../types.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
@@ -487,7 +487,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    mode?: 'select' | 'start' | 'end' | 'preserve'
+    mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);
     this.value = this._input.value;
