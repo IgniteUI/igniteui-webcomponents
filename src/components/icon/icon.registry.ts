@@ -11,9 +11,7 @@ import type {
   IconReferencePair,
   SvgIcon,
 } from './registry/types.js';
-import {
-  ActionType
-} from './registry/types.js';
+import { ActionType } from './registry/types.js';
 
 export class IconsRegistry {
   private parser: SvgIconParser;
@@ -29,7 +27,10 @@ export class IconsRegistry {
     this.collections = new DefaultMap(() => new Map());
     this.references = new DefaultMap(() => new Map());
     this.collections.set('internal', internalIcons);
-    this.stateBroadcast = new IconsStateBroadcast(this.collections, this.references);
+    this.stateBroadcast = new IconsStateBroadcast(
+      this.collections,
+      this.references
+    );
   }
 
   public register(name: string, iconText: string, collection = 'default') {
@@ -39,7 +40,9 @@ export class IconsRegistry {
 
     this.notifyAll(name, collection);
 
-    const icons: Collection<string, Map<string, SvgIcon>> = new DefaultMap(() => new Map());
+    const icons: Collection<string, Map<string, SvgIcon>> = new DefaultMap(
+      () => new Map()
+    );
     icons.getOrCreate(collection).set(name, this.parser.parse(iconText));
     this.stateBroadcast.broadcastState(ActionType.RegisterIcon, icons);
   }
@@ -80,12 +83,18 @@ export class IconsRegistry {
 
     this.notifyAll(alias.name, alias.collection);
 
-    const refs: Collection<string, Map<string, IconMeta>> = new DefaultMap(() => new Map());
+    const refs: Collection<string, Map<string, IconMeta>> = new DefaultMap(
+      () => new Map()
+    );
     refs.getOrCreate(alias.collection).set(alias.name, {
       collection: target.collection,
-      name: target.name
+      name: target.name,
     });
-    this.stateBroadcast.broadcastState(ActionType.UpdateIconReference, undefined, refs);
+    this.stateBroadcast.broadcastState(
+      ActionType.UpdateIconReference,
+      undefined,
+      refs
+    );
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
@@ -106,7 +115,6 @@ export class IconsRegistry {
       listener(name, collection);
     }
   }
-
 }
 
 const registry = Symbol.for('igc.icons-registry.instance');

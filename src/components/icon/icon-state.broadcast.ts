@@ -1,32 +1,48 @@
-import { SvgIconParser } from "./registry/parser.js";
-import type { BroadcastIconsChangeMessage, Collection, IconMeta, SvgIcon } from "./registry/types.js";
-import { ActionType } from "./registry/types.js";
 import { internalIcons } from './internal-icons-lib.js';
-
+import { SvgIconParser } from './registry/parser.js';
+import type {
+  BroadcastIconsChangeMessage,
+  Collection,
+  IconMeta,
+  SvgIcon,
+} from './registry/types.js';
+import { ActionType } from './registry/types.js';
 
 export class IconsStateBroadcast {
   private parser: SvgIconParser;
   private iconBroadcastChannel: BroadcastChannel;
-  constructor(collections: Collection<string, Map<string, SvgIcon>>, refsCollection: Collection<string, Map<string, IconMeta>>) {
+  constructor(
+    collections: Collection<string, Map<string, SvgIcon>>,
+    refsCollection: Collection<string, Map<string, IconMeta>>
+  ) {
     this.parser = new SvgIconParser();
     this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
     this.iconBroadcastChannel.onmessage = (event) => {
       const message = event.data as BroadcastIconsChangeMessage;
       if (message.actionType === ActionType.SyncState) {
         // send state
-        const userSetCollection: Map<string, Map<string, SvgIcon>> = this.getUserSetCollection(collections);
-        const refs: Map<string, Map<string, IconMeta>> = this.getMapCollection(refsCollection);
+        const userSetCollection: Map<
+          string,
+          Map<string, SvgIcon>
+        > = this.getUserSetCollection(collections);
+        const refs: Map<string, Map<string, IconMeta>> = this.getMapCollection(
+          refsCollection
+        );
         const message: BroadcastIconsChangeMessage = {
           actionType: ActionType.SyncState,
           collections: userSetCollection,
-          references: refs
+          references: refs,
         };
         this.iconBroadcastChannel.postMessage(message);
       }
     };
   }
 
-  public broadcastState(actionType: ActionType, collections?: Collection<string, Map<string, SvgIcon>>, refs?: Collection<string, Map<string, IconMeta>> ) {
+  public broadcastState(
+    actionType: ActionType,
+    collections?: Collection<string, Map<string, SvgIcon>>,
+    refs?: Collection<string, Map<string, IconMeta>>
+  ) {
     const message: BroadcastIconsChangeMessage = {
       actionType: actionType,
       references: refs ? this.getMapCollection(refs) : undefined,
@@ -35,7 +51,9 @@ export class IconsStateBroadcast {
     this.iconBroadcastChannel.postMessage(message);
   }
 
-  private getUserSetCollection(collections: Collection<string, Map<string, SvgIcon>>) {
+  private getUserSetCollection(
+    collections: Collection<string, Map<string, SvgIcon>>
+  ) {
     const userSetIcons: Map<string, Map<string, SvgIcon>> = new Map();
     const collectionKeys = collections.keys();
     for (const collectionKey of collectionKeys) {
@@ -58,7 +76,9 @@ export class IconsStateBroadcast {
     return userSetIcons;
   }
 
-  private getMapCollection(collection: Collection<string, Map<string, any>>) : Map<string, Map<string, any>>{
+  private getMapCollection(
+    collection: Collection<string, Map<string, any>>
+  ): Map<string, Map<string, any>> {
     const refs: Map<string, Map<string, any>> = new Map();
     const refKeys = collection.keys();
     for (const collectionKey of refKeys) {
