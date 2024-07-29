@@ -17,12 +17,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { noop, partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  maxDateValidator,
-  minDateValidator,
-  requiredValidator,
-} from '../common/validators.js';
 import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -35,6 +29,7 @@ import {
   DateParts,
   DateTimeUtil,
 } from './date-util.js';
+import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -80,34 +75,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     registerComponent(IgcDateTimeInputComponent);
   }
 
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-
-    {
-      ...minDateValidator,
-      isValid: () =>
-        this.min
-          ? !DateTimeUtil.lessThanMinValue(
-              this.value || new Date(),
-              this.min,
-              this.hasTimeParts,
-              this.hasDateParts
-            )
-          : true,
-    },
-    {
-      ...maxDateValidator,
-      isValid: () =>
-        this.max
-          ? !DateTimeUtil.greaterThanMaxValue(
-              this.value || new Date(),
-              this.max,
-              this.hasTimeParts,
-              this.hasDateParts
-            )
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return dateTimeInputValidators;
+  }
 
   protected _defaultMask!: string;
   protected _value: Date | null = null;
@@ -249,7 +219,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.updateValidity();
   }
 
-  private get hasDateParts(): boolean {
+  protected get hasDateParts(): boolean {
     const parts =
       this._inputDateParts ||
       DateTimeUtil.parseDateTimeFormat(this.inputFormat);
@@ -262,7 +232,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     );
   }
 
-  private get hasTimeParts(): boolean {
+  protected get hasTimeParts(): boolean {
     const parts =
       this._inputDateParts ||
       DateTimeUtil.parseDateTimeFormat(this.inputFormat);
