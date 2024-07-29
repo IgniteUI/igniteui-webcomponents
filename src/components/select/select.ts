@@ -7,8 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   altKey,
@@ -40,7 +39,6 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { findElementFromEventPath, partNameMap } from '../common/util.js';
-import { type Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
@@ -50,6 +48,7 @@ import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
 import { styles as shared } from './themes/shared/select.common.css.js';
 import { all } from './themes/themes.js';
+import { selectValidators } from './validators.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
@@ -90,7 +89,7 @@ export interface IgcSelectEventMap {
  * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
  * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all, true)
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -116,7 +115,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private declare readonly [themeSymbol]: Theme;
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
@@ -128,10 +126,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,
   });
-
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
-  }
 
   private get _activeItems() {
     return Array.from(
@@ -148,7 +142,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @state()
   protected _activeItem!: IgcSelectItemComponent;
 
-  protected override validators: Validator<this>[] = [requiredValidator];
+  protected override get __validators() {
+    return selectValidators;
+  }
 
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;
@@ -608,19 +604,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const iconHidden = this.open && this.hasExpandedIcon;
     const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
-    const openIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_up'
-      : 'arrow_drop_up';
-    const closeIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_down'
-      : 'arrow_drop_down';
-
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
           ></igc-icon>
         </slot>
         <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>
