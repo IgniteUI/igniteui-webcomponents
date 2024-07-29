@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    --nav-btn-border-radius: #{var-get($theme, 'border-radius')};
+}
+
 igc-button::part(base) {
     --icon-color: var-get($theme, 'button-arrow-color');
 
@@ -10,7 +14,7 @@ igc-button::part(base) {
     background: var-get($theme, 'button-background');
     border: rem(1px) solid var-get($theme, 'button-border-color');
     box-shadow: var-get($theme, 'button-elevation');
-    border-radius: var-get($theme, 'border-radius');
+    border-radius: var(--nav-btn-border-radius);
 
     &:hover {
         --icon-color-hover: var-get($theme, 'button-hover-arrow-color');

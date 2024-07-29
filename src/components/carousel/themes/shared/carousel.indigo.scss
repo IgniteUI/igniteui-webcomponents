@@ -57,6 +57,7 @@ igc-button::part(focused):hover {
 
 [part='dot active'] {
     border: rem(2px) solid var-get($theme, 'indicator-active-dot-color');
+    box-shadow: 0 0 0 rem(3px) var(--dot-shadow-color);
 
     &::after {
         background: var-get($theme, 'indicator-active-dot-color');

@@ -1,15 +1,22 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host {
+:host { 
     display: block;
-    position: relative;
     width: 100%;
-    height: inherit;
-    overflow: hidden;
-    outline-style: none;
-    min-height: rem(300px);
-    min-width: rem(300px);
+    height: 100%;
+    position: relative;
+
+    section {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: inherit;
+        overflow: hidden;
+        outline-style: none;
+        min-height: rem(300px);
+        min-width: rem(300px);
+    }
 }
 
 [part~='indicators'] {
