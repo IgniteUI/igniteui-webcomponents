@@ -243,4 +243,36 @@ export const iconReferences: IconReference[] = [
       },
     }),
   },
+  {
+    alias: {
+      name: 'carousel_prev',
+      collection: 'default',
+    },
+    target: makeIconRefs({
+      default: {
+        name: 'keyboard_arrow_left',
+        collection: 'internal',
+      },
+      indigo: {
+        name: 'indigo_chevron_left',
+        collection: 'internal',
+      },
+    }),
+  },
+  {
+    alias: {
+      name: 'carousel_next',
+      collection: 'default',
+    },
+    target: makeIconRefs({
+      default: {
+        name: 'keyboard_arrow_right',
+        collection: 'internal',
+      },
+      indigo: {
+        name: 'indigo_chevron_right',
+        collection: 'internal',
+      },
+    }),
+  },
 ];
