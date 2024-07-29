@@ -46,10 +46,10 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    skipPicker: {
+    skipIndicator: {
       type: 'boolean',
       description:
-        'Whether the carousel should render the picker controls (dots).',
+        'Whether the carousel should render the indicator controls (dots).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -61,7 +61,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     },
     indicatorsOrientation: {
       type: '"start" | "end"',
-      description: 'Sets the orientation of the picker controls (dots).',
+      description: 'Sets the orientation of the indicator controls (dots).',
       options: ['start', 'end'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
@@ -75,7 +75,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     maximumIndicatorsCount: {
       type: 'number',
       description:
-        'Controls the maximum picker controls (dots) that can be shown. Default value is `10`.',
+        'Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.',
       control: 'number',
       table: { defaultValue: { summary: 10 } },
     },
@@ -91,7 +91,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     skipLoop: false,
     skipPauseOnInteraction: false,
     skipNavigation: false,
-    skipPicker: false,
+    skipIndicator: false,
     vertical: false,
     indicatorsOrientation: 'end',
     maximumIndicatorsCount: 10,
@@ -108,15 +108,15 @@ interface IgcCarouselArgs {
   skipPauseOnInteraction: boolean;
   /** Whether the carousel should skip rendering of the default navigation buttons. */
   skipNavigation: boolean;
-  /** Whether the carousel should render the picker controls (dots). */
-  skipPicker: boolean;
+  /** Whether the carousel should render the indicator controls (dots). */
+  skipIndicator: boolean;
   /** The carousel alignment. */
   vertical: boolean;
-  /** Sets the orientation of the picker controls (dots). */
+  /** Sets the orientation of the indicator controls (dots). */
   indicatorsOrientation: 'start' | 'end';
   /** The duration in milliseconds between changing the active slide. */
   interval: number;
-  /** Controls the maximum picker controls (dots) that can be shown. Default value is `10`. */
+  /** Controls the maximum indicator controls (dots) that can be shown. Default value is `10`. */
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
@@ -156,7 +156,7 @@ const BasicTemplate = ({
   skipLoop,
   skipPauseOnInteraction,
   skipNavigation,
-  skipPicker,
+  skipIndicator,
   vertical,
   indicatorsOrientation,
   maximumIndicatorsCount,
@@ -168,7 +168,7 @@ const BasicTemplate = ({
       ?skip-loop=${skipLoop}
       ?skip-pause-on-interaction=${skipPauseOnInteraction}
       ?skip-navigation=${skipNavigation}
-      ?skip-picker=${skipPicker}
+      ?skip-indicator=${skipIndicator}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
@@ -201,7 +201,7 @@ const SlottedContentTemplate = ({
   skipLoop,
   skipPauseOnInteraction,
   skipNavigation,
-  skipPicker,
+  skipIndicator,
   vertical,
   indicatorsOrientation,
   interval,
@@ -213,7 +213,7 @@ const SlottedContentTemplate = ({
       ?skip-loop=${skipLoop}
       ?skip-pause-on-interaction=${skipPauseOnInteraction}
       ?skip-navigation=${skipNavigation}
-      ?skip-picker=${skipPicker}
+      ?skip-indicator=${skipIndicator}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}

@@ -145,11 +145,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public skipNavigation = false;
 
   /**
-   * Whether the carousel should render the picker controls (dots).
-   * @attr skip-picker
+   * Whether the carousel should render the indicator controls (dots).
+   * @attr skip-indicator
    */
-  @property({ type: Boolean, reflect: true, attribute: 'skip-picker' })
-  public skipPicker = false;
+  @property({ type: Boolean, reflect: true, attribute: 'skip-indicator' })
+  public skipIndicator = false;
 
   /**
    * The carousel alignment.
@@ -159,7 +159,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public vertical = false;
 
   /**
-   * Sets the orientation of the picker controls (dots).
+   * Sets the orientation of the indicator controls (dots).
    * @attr indicators-orientation
    */
   @property({ reflect: false, attribute: 'indicators-orientation' })
@@ -173,7 +173,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public interval!: number;
 
   /**
-   * Controls the maximum picker controls (dots) that can be shown. Default value is `10`.
+   * Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.
    * @attr maximum-indicators-count
    */
   @property({
@@ -282,22 +282,26 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       .set(arrowLeft, async () => {
         this._kbnIndicators = true;
         isLTR(this) ? await this.prev() : await this.next();
+        this.emitSlideChangedEvent();
       })
       .set(arrowRight, async () => {
         this._kbnIndicators = true;
         isLTR(this) ? await this.next() : await this.prev();
+        this.emitSlideChangedEvent();
       })
       .set(homeKey, async () => {
         this._kbnIndicators = true;
         isLTR(this)
           ? await this.select(this.slides[0])
           : await this.select(this.slides[this.total - 1]);
+        this.emitSlideChangedEvent();
       })
       .set(endKey, async () => {
         this._kbnIndicators = true;
         isLTR(this)
           ? await this.select(this.slides[this.total - 1])
           : await this.select(this.slides[0]);
+        this.emitSlideChangedEvent();
       });
 
     createMutationController(this, {
@@ -378,7 +382,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   ): Promise<boolean> {
     const index = this.slides.indexOf(slide);
 
-    if (index === this.current) {
+    if (index === this.current || index === -1) {
       return false;
     }
 
@@ -480,7 +484,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private async handlePickerClick(slide: IgcCarouselSlideComponent) {
+  private async handleIndicatorClick(slide: IgcCarouselSlideComponent) {
     const index = this.slides.indexOf(slide);
 
     if (index !== this.current) {
@@ -574,7 +578,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
               aria-label="Slide ${index + 1}"
               aria-selected=${slide.active}
               aria-controls="${slide.id}"
-              @click=${() => this.handlePickerClick(slide)}
+              @click=${() => this.handleIndicatorClick(slide)}
             >
               ${this.indicatorTemplate(slide)}
             </div>`;
@@ -602,7 +606,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return html`
       <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.skipPicker || this.showIndicatorsLabel()
+        ${this.skipIndicator || this.showIndicatorsLabel()
           ? nothing
           : this.pickerTemplate()}
         ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
