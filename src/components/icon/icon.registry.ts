@@ -1,57 +1,32 @@
 import type { Theme } from '../../theming/types.js';
 import { iconReferences } from './icon-references.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
 import { DefaultMap } from './registry/default-map.js';
 import { SvgIconParser } from './registry/parser.js';
-import type {
+import {
+  ActionType,
   Collection,
   IconCallback,
   IconMeta,
   IconReferencePair,
   SvgIcon,
 } from './registry/types.js';
-
-enum ActionType {
-  SyncState = 0,
-  RegisterIcon = 1,
-  UpdateIconReference = 2,
-}
-
-interface BroadcastIconsChangeMessage {
-  actionType: ActionType;
-  collections?: Map<string, Map<string, SvgIcon>>;
-  references?: Map<string, Map<string, IconMeta>>;
-}
 export class IconsRegistry {
   private parser: SvgIconParser;
   private collections: Collection<string, Map<string, SvgIcon>>;
   private references: Collection<string, Map<string, IconMeta>>;
   private listeners: Set<IconCallback>;
   private theme!: Theme;
-  private iconBroadcastChannel: BroadcastChannel;
+  private stateBroadcast: IconsStateBroadcast;
 
   constructor() {
     this.parser = new SvgIconParser();
     this.listeners = new Set();
     this.collections = new DefaultMap(() => new Map());
     this.references = new DefaultMap(() => new Map());
-
     this.collections.set('internal', internalIcons);
-    this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
-    this.iconBroadcastChannel.onmessage = (event) => {
-      const message = event.data as BroadcastIconsChangeMessage;
-      if (message.actionType === ActionType.SyncState) {
-        // send state
-        const userSetCollection: Map<string, Map<string, SvgIcon>> = this.getUserSetCollection();
-        const refs: Map<string, Map<string, IconMeta>> = this.getUserSetRefs();
-        const message: BroadcastIconsChangeMessage = {
-          actionType: ActionType.SyncState,
-          collections: userSetCollection,
-          references: refs
-        };
-        this.iconBroadcastChannel.postMessage(message);
-      }
-    };
+    this.stateBroadcast = new IconsStateBroadcast(this.collections, this.references);
   }
 
   public register(name: string, iconText: string, collection = 'default') {
@@ -60,20 +35,10 @@ export class IconsRegistry {
       .set(name, this.parser.parse(iconText));
 
     this.notifyAll(name, collection);
-    const userSetCollection: Map<string, Map<string, SvgIcon>> = new Map();
-    let icons = userSetCollection.get(collection);
-    if (!icons) {
-      userSetCollection.set(collection, new Map<string, SvgIcon>());
-      icons = userSetCollection.get(collection);
-    }
-    if (icons) {
-      icons.set(name, this.parser.parse(iconText));
-    }
-    const message: BroadcastIconsChangeMessage = {
-      actionType: ActionType.RegisterIcon,
-      collections: userSetCollection,
-    };
-    this.iconBroadcastChannel.postMessage(message);
+
+    const icons: Collection<string, Map<string, SvgIcon>> = new DefaultMap(() => new Map());
+    icons.getOrCreate(collection).set(name, this.parser.parse(iconText));
+    this.stateBroadcast.broadcastState(ActionType.RegisterIcon, icons);
   }
 
   public subscribe(callback: IconCallback) {
@@ -112,25 +77,12 @@ export class IconsRegistry {
 
     this.notifyAll(alias.name, alias.collection);
 
-    const userSetRefs: Map<string, Map<string, IconMeta>> = new Map();
-    let collection = userSetRefs.get(alias.collection);
-    if (!collection) {
-      userSetRefs.set(alias.collection, new Map<string, IconMeta>());
-      collection = userSetRefs.get(alias.collection);
-    }
-
-    if (collection) {
-        collection.set(alias.name, {
-          collection: target.collection,
-          name: target.name
-        });
-    }
-
-    const message: BroadcastIconsChangeMessage = {
-      actionType: ActionType.UpdateIconReference,
-      references: userSetRefs,
-    };
-    this.iconBroadcastChannel.postMessage(message);
+    const refs: Collection<string, Map<string, IconMeta>> = new DefaultMap(() => new Map());
+    refs.getOrCreate(alias.collection).set(alias.name, {
+      collection: target.collection,
+      name: target.name
+    });
+    this.stateBroadcast.broadcastState(ActionType.UpdateIconReference, undefined, refs);
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
@@ -152,37 +104,6 @@ export class IconsRegistry {
     }
   }
 
-  private getUserSetRefs() {
-    const refs: Map<string, Map<string, IconMeta>> = new Map();
-    const refKeys = this.references.keys();
-    for (const collectionKey of refKeys) {
-      refs.set(collectionKey, this.references.get(collectionKey) || new Map());
-    }
-    return refs;
-  }
-
-  private getUserSetCollection() {
-    const userSetIcons: Map<string, Map<string, SvgIcon>> = new Map();
-    const collectionKeys = this.collections.keys();
-    for (const collectionKey of collectionKeys) {
-      const collection = this.collections.get(collectionKey);
-      for (const iconKey in collection) {
-        const val = collection.get(iconKey)?.svg;
-        const internalValue = internalIcons.get(iconKey)?.svg;
-        if (val && val !== internalValue) {
-          let icons = userSetIcons.get(collectionKey);
-          if (!icons) {
-            userSetIcons.set(collectionKey, new Map<string, SvgIcon>());
-            icons = userSetIcons.get(collectionKey);
-          }
-          if (icons) {
-            icons.set(iconKey, this.parser.parse(val));
-          }
-        }
-      }
-    }
-    return userSetIcons;
-  }
 }
 
 const registry = Symbol.for('igc.icons-registry.instance');

@@ -31,3 +31,15 @@ export interface IconMeta {
   collection: string;
   external?: boolean;
 }
+
+export enum ActionType {
+  SyncState = 0,
+  RegisterIcon = 1,
+  UpdateIconReference = 2,
+}
+
+export interface BroadcastIconsChangeMessage {
+  actionType: ActionType;
+  collections?: Map<string, Map<string, SvgIcon>>;
+  references?: Map<string, Map<string, IconMeta>>;
+}
