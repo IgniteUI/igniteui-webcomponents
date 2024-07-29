@@ -1,5 +1,6 @@
-import { SvgIconParser } from "./registry/parser";
-import { ActionType, BroadcastIconsChangeMessage, Collection, IconMeta, SvgIcon } from "./registry/types";
+import { SvgIconParser } from "./registry/parser.js";
+import type { BroadcastIconsChangeMessage, Collection, IconMeta, SvgIcon } from "./registry/types.js";
+import { ActionType } from "./registry/types.js";
 import { internalIcons } from './internal-icons-lib.js';
 
 

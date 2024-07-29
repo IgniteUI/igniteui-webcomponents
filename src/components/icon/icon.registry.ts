@@ -4,14 +4,17 @@ import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
 import { DefaultMap } from './registry/default-map.js';
 import { SvgIconParser } from './registry/parser.js';
-import {
-  ActionType,
+import type {
   Collection,
   IconCallback,
   IconMeta,
   IconReferencePair,
   SvgIcon,
 } from './registry/types.js';
+import {
+  ActionType
+} from './registry/types.js';
+
 export class IconsRegistry {
   private parser: SvgIconParser;
   private collections: Collection<string, Map<string, SvgIcon>>;
