@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
+import { range } from 'lit/directives/range.js';
 import {
+  IgcButtonComponent,
   IgcIconComponent,
   IgcNavDrawerComponent,
   type IgcNavDrawerItemComponent,
@@ -9,7 +11,7 @@ import {
   registerIcon,
 } from '../src/index.js';
 
-defineComponents(IgcIconComponent, IgcNavDrawerComponent);
+defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
 // region default
 const metadata: Meta<IgcNavDrawerComponent> = {
@@ -115,81 +117,6 @@ const handleToggle = () => {
   drawer?.toggle();
 };
 
-const navbarItems = [
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-  {
-    icon: 'home',
-    text: 'Navbar item text',
-  },
-];
-
 const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
   return html`
     <style>
@@ -214,14 +141,19 @@ const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 
-        ${navbarItems.map((items) => {
-          return html`
+        ${Array.from(range(15)).map(
+          (i) => html`
             <igc-nav-drawer-item>
-              <igc-icon slot="icon" name="${items.icon}"></igc-icon>
-              <span slot="content">${items.text}</span>
+              <igc-icon slot="icon" name="home"></igc-icon>
+              <span slot="content">Navbar item ${i + 1}</span>
             </igc-nav-drawer-item>
-          `;
-        })}
+          `
+        )}
+
+        <igc-nav-drawer-item disabled>
+          <igc-icon slot="icon" name="home"></igc-icon>
+          <span slot="content">Disabled item</span>
+        </igc-nav-drawer-item>
 
         <div slot="mini">
           <igc-nav-drawer-item>

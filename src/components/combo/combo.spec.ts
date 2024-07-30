@@ -207,7 +207,6 @@ describe('Combo', () => {
       expect(combo.placeholder).to.be.undefined;
       expect(combo.placeholderSearch).to.equal('Search');
       expect(combo.outlined).to.be.false;
-      expect(combo.flip).to.be.true;
       expect(combo.valueKey).to.equal('id');
       expect(combo.displayKey).to.equal('name');
       expect(combo.groupKey).to.equal('country');
@@ -240,28 +239,20 @@ describe('Combo', () => {
     });
 
     it('should open the menu upon calling the show method', async () => {
-      combo.show();
-      await elementUpdated(combo);
-
+      await combo.show();
       expect(combo.open).to.be.true;
     });
 
     it('should close the menu upon calling the hide method', async () => {
-      combo.hide();
-      await elementUpdated(combo);
-
+      await combo.hide();
       expect(combo.open).to.be.false;
     });
 
     it('should toggle the menu upon calling the toggle method', async () => {
-      combo.toggle();
-      await elementUpdated(combo);
-
+      await combo.toggle();
       expect(combo.open).to.be.true;
 
-      combo.toggle();
-      await elementUpdated(combo);
-
+      await combo.toggle();
       expect(combo.open).to.be.false;
     });
 
@@ -278,9 +269,9 @@ describe('Combo', () => {
 
     it('should hide the menu upon clicking on the input', async () => {
       const eventSpy = spy(combo, 'emitEvent');
-      combo.show();
-      input.click();
+      await combo.show();
 
+      input.click();
       await elementUpdated(combo);
 
       expect(eventSpy).calledWith('igcClosing');
@@ -585,8 +576,7 @@ describe('Combo', () => {
         { once: true }
       );
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       items(combo)[0].click();
@@ -634,8 +624,7 @@ describe('Combo', () => {
     });
 
     it('closes the list of options when search input is on focus and the Up key is pressed', async () => {
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       expect(combo.open).to.be.true;
 
       pressKey(searchInput, 'ArrowUp', 1, { altKey: false });
@@ -643,8 +632,7 @@ describe('Combo', () => {
     });
 
     it('activates the first list item when clicking pressing ArrowDown when the search input is on focus', async () => {
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       expect(items(combo)[0].active).to.be.false;
@@ -659,8 +647,7 @@ describe('Combo', () => {
       combo.autofocusList = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       expect(items(combo)[0].active).to.be.false;
@@ -680,8 +667,7 @@ describe('Combo', () => {
       combo.autofocusList = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       pressKey(options, 'Home', 1, { altKey: false });
@@ -695,8 +681,7 @@ describe('Combo', () => {
       combo.autofocusList = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       pressKey(options, 'End', 1, { altKey: false });
@@ -711,8 +696,7 @@ describe('Combo', () => {
       combo.autofocusList = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       pressKey(options, 'ArrowDown', 2, { altKey: false });
@@ -726,22 +710,39 @@ describe('Combo', () => {
       expect(combo.open).to.be.true;
     });
 
-    it('should select the active item and close the menu by pressing the Enter key', async () => {
-      combo.autofocusList = true;
+    it('should select the active item and close the menu by pressing Enter in single selection', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
-      pressKey(options, 'ArrowDown', 2, { altKey: false });
+      pressKey(options, 'ArrowDown', 1, { altKey: false });
       pressKey(options, 'Enter', 1, { altKey: false });
 
       await elementUpdated(combo);
 
-      const itms = items(combo);
-      expect(itms[1].active).to.be.false;
-      expect(itms[1].selected).to.be.true;
+      expect(combo.value).to.eql(['BG01']);
+      expect(combo.open).to.be.false;
+    });
+
+    it("shouldn't deselect an item if it's already selected on Enter in single selection", async () => {
+      const selection = 'BG01';
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.select(selection);
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      pressKey(options, 'ArrowDown', 1, { altKey: false });
+      pressKey(options, 'Enter', 1, { altKey: false });
+
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG01']);
       expect(combo.open).to.be.false;
     });
 
@@ -759,8 +760,8 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await Promise.all([elementUpdated(combo), list.layoutComplete]);
+      await combo.show();
+      await list.layoutComplete;
 
       await filterCombo('Sao');
       expect(items(combo).length).to.equal(1);
@@ -778,8 +779,8 @@ describe('Combo', () => {
       combo.filteringOptions = { matchDiacritics: true };
       await elementUpdated(combo);
 
-      combo.show();
-      await Promise.all([elementUpdated(combo), list.layoutComplete]);
+      await combo.show();
+      await list.layoutComplete;
 
       await filterCombo('Sao');
       expect(items(combo).length).to.equal(0);
@@ -793,8 +794,7 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       expect(filter!.getAttribute('hidden')).to.exist;
@@ -811,8 +811,7 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       await filterCombo('sof');
@@ -829,8 +828,7 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       input.dispatchEvent(new CustomEvent('igcInput', { detail: 'v' }));
@@ -859,12 +857,30 @@ describe('Combo', () => {
       expect(items(combo)[2].selected).to.be.true;
     });
 
+    it('should maintain value with repeated selection via input in single selection mode', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+      await elementUpdated(combo);
+
+      pressKey(input, 'Enter');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+      expect(combo.value).to.deep.equal(['BG01']);
+    });
+
     it('should clear selection upon changing the search term via input', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       input.dispatchEvent(new CustomEvent('igcInput', { detail: 'v' }));
@@ -894,8 +910,7 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       combo.select();
@@ -943,8 +958,7 @@ describe('Combo', () => {
     });
 
     it('should select a single item using valueKey as argument with the Selection API', async () => {
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       const selection = 'BG01';
@@ -964,8 +978,7 @@ describe('Combo', () => {
     it('should deselect a single item using valueKey as argument with the Selection API', async () => {
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       const selection = 'BG01';
@@ -987,8 +1000,8 @@ describe('Combo', () => {
 
     it('should select the item passed as argument with the Selection API', async () => {
       combo.valueKey = undefined;
-      combo.show();
-      await elementUpdated(combo);
+
+      await combo.show();
       await list.layoutComplete;
 
       const item = cities[0];
@@ -1008,8 +1021,7 @@ describe('Combo', () => {
       combo.valueKey = undefined;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       const item = cities[0];
@@ -1030,8 +1042,7 @@ describe('Combo', () => {
     });
 
     it('should select item(s) even if the list of items has been filtered', async () => {
-      combo.show();
-      await elementUpdated(combo);
+      await combo.show();
       await list.layoutComplete;
 
       // Filter the list of items
@@ -1072,8 +1083,8 @@ describe('Combo', () => {
       // Select an item via the API
       const selection = 'US01';
       combo.select(selection);
-      combo.show();
-      await elementUpdated(combo);
+
+      await combo.show();
       await list.layoutComplete;
 
       // Get a list of all selected items
@@ -1207,6 +1218,21 @@ describe('Combo', () => {
 
       comboHeadersLabel = headerItems(combo).map((header) => header.innerText);
       expect(comboHeadersLabel).to.eql(['Méxícó', 'Ángel', 'México']);
+    });
+
+    it('should clear the search term upon toggling disableFiltering', async () => {
+      await combo.show();
+      await list.layoutComplete;
+      expect(items(combo).length).to.equal(cities.length);
+
+      await filterCombo('sof');
+      expect(items(combo).length).to.equal(1);
+
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo).length).to.equal(cities.length);
     });
   });
 

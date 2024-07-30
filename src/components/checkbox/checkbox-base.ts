@@ -2,20 +2,19 @@ import { LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
-import { watch } from '../common/decorators/watch.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import {
-  type Validator,
-  requiredBooleanValidator,
-} from '../common/validators.js';
+import { checkBoxValidators } from './validators.js';
+
+export interface CheckboxChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
 
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<boolean>;
+  igcChange: CustomEvent<CheckboxChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -24,13 +23,15 @@ export interface IgcCheckboxEventMap {
 export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  protected override validators: Validator<this>[] = [requiredBooleanValidator];
+  protected override get __validators() {
+    return checkBoxValidators;
+  }
 
   protected _kbFocus = addKeyboardFocusRing(this);
   protected _value!: string;
   protected _checked = false;
 
-  @query('input[type="checkbox"]', true)
+  @query('input', true)
   protected input!: HTMLInputElement;
 
   @queryAssignedNodes({ flatten: true })
@@ -55,20 +56,17 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The checked state of the control.
    * @attr
    */
   @property({ type: Boolean })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set checked(value: boolean) {
     this._checked = Boolean(value);
     this.setFormValue(this._checked ? this.value || 'on' : null);
     this.updateValidity();
-
-    if (this.hasUpdated) {
-      this.setInvalidState();
-    }
+    this.setInvalidState();
   }
 
   public get checked(): boolean {
@@ -82,15 +80,17 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
+      this.hideLabel = this.label.length < 1;
+    });
+    return root;
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
     this.updateValidity();
-  }
-
-  @watch('focused', { waitUntilFirstUpdate: true })
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    this.invalid = !this.checkValidity();
   }
 
   /** Simulates a click on the control. */
@@ -98,21 +98,23 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     this.input.click();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }
 
   protected handleClick() {
     this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: { checked: this.checked, value: this.value },
+    });
   }
 
   protected handleBlur() {
@@ -123,9 +125,5 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   protected handleFocus() {
     this._dirty = true;
     this.emitEvent('igcFocus');
-  }
-
-  protected handleSlotChange() {
-    this.hideLabel = this.label.length < 1;
   }
 }

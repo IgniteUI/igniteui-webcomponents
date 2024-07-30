@@ -74,7 +74,6 @@ const Template = ({ elevated = false }: IgcCardArgs) => {
           <igc-card-header>
             <igc-avatar
               slot="thumbnail"
-              size="small"
               shape="rounded"
               src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
             >
@@ -107,7 +106,6 @@ const Template = ({ elevated = false }: IgcCardArgs) => {
           <igc-card-header>
             <igc-avatar
               slot="thumbnail"
-              size="small"
               shape="rounded"
               src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
             >
@@ -145,7 +143,6 @@ const Template = ({ elevated = false }: IgcCardArgs) => {
             <igc-card-header>
               <igc-avatar
                 slot="thumbnail"
-                size="small"
                 shape="rounded"
                 src="https://www.infragistics.com/angular-demos/assets/images/card/media/ROZES-Under-the-Grave.jpg"
               >
@@ -172,7 +169,6 @@ const Template = ({ elevated = false }: IgcCardArgs) => {
               <igc-card-header>
                 <igc-avatar
                   slot="thumbnail"
-                  size="small"
                   shape="rounded"
                   src="https://www.infragistics.com/angular-demos/assets/images/card/media/here_media.jpg"
                 >

@@ -78,6 +78,11 @@ export class NavigationController<T extends object>
     this.host.toggleSelect(index);
   }
 
+  public select(index: number) {
+    // @ts-expect-error protected access
+    this.host.selectByIndex(index);
+  }
+
   protected get currentItem() {
     const item = this.active;
     return item === START_INDEX ? START_INDEX : item;
@@ -148,7 +153,12 @@ export class NavigationController<T extends object>
       return;
     }
 
-    this.space();
+    const item = this.dataState[this.active];
+
+    if (!item.header && this.host.singleSelect) {
+      this.select(this.active);
+    }
+
     this.hide();
     requestAnimationFrame(() => this.input.select());
     this.host.focus();

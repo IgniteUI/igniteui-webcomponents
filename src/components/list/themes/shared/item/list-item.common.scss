@@ -16,6 +16,26 @@ $theme: $material;
 :host(:hover),
 :host(:focus-within) {
     background: var-get($theme, 'item-background-hover');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-action-color-hover');
+    }
+
+    [part='title'] {
+        color: var-get($theme, 'item-text-color-hover');
+    }
+
+    [part='subtitle'] {
+        color: var-get($theme, 'item-subtitle-color-hover');
+    }
+
+    [part='start'] {
+        color: var-get($theme, 'item-thumbnail-color-hover');
+    }
+
+    [part='end'] {
+        color: var-get($theme, 'item-action-color-hover');
+    }
 }
 
 [part='title'] {
@@ -24,4 +44,20 @@ $theme: $material;
 
 [part='subtitle'] {
     color: var-get($theme, 'item-subtitle-color');
+}
+
+[part='start'] {
+    color: var-get($theme, 'item-thumbnail-color');
+}
+
+[part='end'] {
+    color: var-get($theme, 'item-action-color');
+}
+
+[name='start']::slotted(*) {
+    margin-inline-end: pad(rem(16px));
+}
+
+[name='end']::slotted(*) {
+    margin-inline-start: pad(rem(16px));
 }

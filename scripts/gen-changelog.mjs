@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parser } from 'keep-a-changelog';
-import report from './report.js';
+import report from './report.mjs';
 
 async function createChangelog() {
   if (process.argv.length < 3) {

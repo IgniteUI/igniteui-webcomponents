@@ -7,8 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   altKey,
@@ -25,9 +24,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -42,7 +39,6 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { findElementFromEventPath, partNameMap } from '../common/util.js';
-import { type Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
@@ -52,6 +48,7 @@ import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css.js';
 import { styles as shared } from './themes/shared/select.common.css.js';
 import { all } from './themes/themes.js';
+import { selectValidators } from './validators.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
@@ -85,15 +82,15 @@ export interface IgcSelectEventMap {
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart list - The list of options wrapper.
- * @csspart input - The encapsulated igc-input.
- * @csspart label - The encapsulated text label.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart toggle-icon - The toggle icon wrapper.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart list - The list wrapping container for the items of the igc-select.
+ * @csspart input - The encapsulated igc-input of the igc-select.
+ * @csspart label - The encapsulated text label of the igc-select.
+ * @csspart prefix - The prefix wrapper of the input of the igc-select.
+ * @csspart suffix - The suffix wrapper of the input of the igc-select.
+ * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
+ * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all, true)
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -119,22 +116,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private declare readonly [themeSymbol]: Theme;
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
 
   private _rootClickController = addRootClickHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: () => this._hide(true),
+    hideCallback: this.handleClosing,
   });
-
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
-  }
 
   private get _activeItems() {
     return Array.from(
@@ -151,7 +143,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @state()
   protected _activeItem!: IgcSelectItemComponent;
 
-  protected override validators: Validator<this>[] = [requiredValidator];
+  protected override get __validators() {
+    return selectValidators;
+  }
 
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;
@@ -243,36 +237,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public placement: IgcPlacement = 'bottom-start';
 
   /**
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   */
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
-
-  /**
    * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
-
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr same-width
-   */
-  @property({ type: Boolean, attribute: 'same-width' })
-  public sameWidth = true;
-
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   * @deprecated since version 4.3.0
-   * @hidden @internal @private
-   * @attr
-   */
-  @property({ type: Boolean })
-  public flip = true;
 
   /** Returns the items of the igc-select component. */
   public get items() {
@@ -327,6 +296,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('keydown', this.handleSearch);
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('focusout', this.handleFocusOut);
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   protected override async firstUpdated() {
@@ -403,7 +378,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     if (item) {
       this.open ? this.activateItem(item) : this._selectItem(item);
+      this._activeItem.focus();
     }
+  }
+
+  protected override handleAnchorClick(): void {
+    super.handleAnchorClick();
+    this.focusItemOnOpen();
   }
 
   private onEnterKey() {
@@ -431,6 +412,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private altArrowDown() {
     if (!this.open) {
       this._show(true);
+      this.focusItemOnOpen();
     }
   }
 
@@ -464,9 +446,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
   }
 
-  /** Monitor input slot changes and request update */
-  protected inputSlotChanged() {
-    this.requestUpdate();
+  protected handleClosing() {
+    this._hide(true);
   }
 
   private activateItem(item: IgcSelectItemComponent) {
@@ -520,6 +501,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _navigateToActiveItem(item?: IgcSelectItemComponent) {
     if (item) {
       this.activateItem(item);
+      this._activeItem.focus({ preventScroll: true });
       item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
@@ -538,6 +520,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._selectedItem = null;
   }
 
+  private async focusItemOnOpen() {
+    await this.updateComplete;
+    (this._selectedItem || this._activeItem)?.focus();
+  }
+
   protected getItem(value: string) {
     return this.items.find((item) => item.value === value);
   }
@@ -546,14 +533,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     e.stopPropagation();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
     super.blur();
@@ -566,12 +553,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return valid;
   }
 
+  /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -583,12 +572,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return item ?? null;
   }
 
+  /* blazorSuppress */
   /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public select(value: string): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcSelectItemComponent | null;
+  /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
   public select(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
@@ -607,11 +598,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot=${prefixName}>
-        <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="prefix"></slot>
       </span>
 
       <span slot=${suffixName}>
-        <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="suffix"></slot>
       </span>
     `;
   }
@@ -619,32 +610,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected renderToggleIcon() {
     const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
     const iconHidden = this.open && this.hasExpandedIcon;
-    const iconExpandedHidden = !this.hasExpandedIcon || !this.open;
-
-    const openIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_up'
-      : 'arrow_drop_up';
-    const closeIcon = this.isMaterialTheme
-      ? 'keyboard_arrow_down'
-      : 'arrow_drop_down';
+    const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
 
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
-        <slot
-          name="toggle-icon"
-          ?hidden=${iconHidden}
-          @slotchange=${this.inputSlotChanged}
-        >
+        <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
           ></igc-icon>
         </slot>
-        <slot
-          name="toggle-icon-expanded"
-          ?hidden=${iconExpandedHidden}
-          @slotchange=${this.inputSlotChanged}
-        ></slot>
+        <slot name="toggle-icon-expanded" ?hidden=${iconExpandedHidden}></slot>
       </span>
     `;
   }
@@ -657,7 +633,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         slot="anchor"
         ?hidden=${!this.hasHelperText}
       >
-        <slot name="helper-text" @slotchange=${this.inputSlotChanged}></slot>
+        <slot name="helper-text"></slot>
       </div>
     `;
   }

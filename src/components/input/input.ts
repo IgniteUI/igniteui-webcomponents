@@ -6,20 +6,8 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  emailValidator,
-  maxLengthValidator,
-  maxValidator,
-  minLengthValidator,
-  minValidator,
-  patternValidator,
-  requiredNumberValidator,
-  requiredValidator,
-  stepValidator,
-  urlValidator,
-} from '../common/validators.js';
 import { IgcInputBaseComponent } from './input-base.js';
+import { numberValidators, stringValidators } from './validators.js';
 
 /**
  * @element igc-input
@@ -52,59 +40,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number';
   }
 
-  protected override validators: Validator<this>[] = [
-    {
-      ...requiredValidator,
-      isValid: () =>
-        this.isStringType
-          ? requiredValidator.isValid(this)
-          : requiredNumberValidator.isValid(this),
-    },
-    {
-      ...minLengthValidator,
-      isValid: () =>
-        this.isStringType ? minLengthValidator.isValid(this) : true,
-    },
-    {
-      ...maxLengthValidator,
-      isValid: () =>
-        this.isStringType ? maxLengthValidator.isValid(this) : true,
-    },
-    {
-      ...minValidator,
-      isValid: () => (this.isStringType ? true : minValidator.isValid(this)),
-    },
-    {
-      ...maxValidator,
-      isValid: () => (this.isStringType ? true : maxValidator.isValid(this)),
-    },
-    {
-      ...stepValidator,
-      isValid: () => (this.isStringType ? true : stepValidator.isValid(this)),
-    },
-    {
-      ...patternValidator,
-      isValid: () =>
-        this.isStringType ? patternValidator.isValid(this) : true,
-    },
-    {
-      key: 'typeMismatch',
-      isValid: () => {
-        switch (this.type) {
-          case 'email':
-            return emailValidator.isValid(this);
-          case 'url':
-            return urlValidator.isValid(this);
-          default:
-            return true;
-        }
-      },
-      message: () =>
-        (this.type === 'email'
-          ? emailValidator.message
-          : urlValidator.message) as string,
-    },
-  ];
+  protected override get __validators() {
+    return this.isStringType ? stringValidators : numberValidators;
+  }
 
   protected _value = '';
 
@@ -142,21 +80,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
-  // TODO: Deprecate
   /**
    * The input mode attribute of the control.
-   * @attr
+   * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
+   * @attr inputmode
    */
-  @property()
-  public inputmode!:
-    | 'none'
-    | 'txt'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  @property({ attribute: 'inputmode' })
+  public override inputMode!: string;
 
   /**
    * The pattern attribute of the control.
@@ -172,44 +102,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
-  /* blazorCSSuppress */
-  /**
-   * The minlength attribute of the control.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `minLength` property instead.
-   */
-  @property({ attribute: false })
-  public set minlength(value: number) {
-    this.minLength = value;
-  }
-
-  public get minlength() {
-    return this.minLength;
-  }
-
   /**
    * The maximum string length of the control.
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
   public maxLength!: number;
-
-  /* blazorCSSuppress */
-  /**
-   * The maxlength attribute of the control.
-   * @prop
-   *
-   * @deprecated since v4.4.0. Use the `maxLength` property instead.
-   */
-  @property({ attribute: false })
-  public set maxlength(value: number) {
-    this.maxLength = value;
-  }
-
-  public get maxlength() {
-    return this.maxLength;
-  }
 
   /**
    * The min attribute of the control.
@@ -343,7 +241,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?autofocus=${this.autofocus}
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
-        inputmode=${ifDefined(this.inputmode)}
+        inputmode=${ifDefined(this.inputMode)}
         min=${ifDefined(this.validateOnly ? undefined : this.min)}
         max=${ifDefined(this.validateOnly ? undefined : this.max)}
         minlength=${ifDefined(this.minLength)}

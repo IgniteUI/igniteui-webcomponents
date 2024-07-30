@@ -4,6 +4,9 @@
 $theme: $material;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --dialog-size: var(--component-size);
+
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }

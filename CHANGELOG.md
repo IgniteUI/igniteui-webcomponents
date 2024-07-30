@@ -4,9 +4,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
 ## [Unreleased]
+
+### Changed
+- **BREAKING**: Checkbox, Switch `igcChange` event.
+
+  Before:
+  ```ts
+  CustomEvent<boolean>
+  ```
+
+  Now:
+  ```ts
+  CustomEvent<{ checked: boolean; value: string | undefined }>
+  ```
+
+
+- **BREAKING**: Radio `igcChange` event.
+
+  Before:
+  ```ts
+  CustomEvent<boolean>
+  ```
+
+  Now:
+  ```ts
+  CustomEvent<{ checked: boolean; value: string | undefined }>
+  ```
+
+
+
+### Removed
+- **BREAKING**: igc-form - use the native form element instead.
+- **BREAKING**: Range slider - `ariaThumbLower/ariaThumbUpper`. Use `thumbLabelLower/thumbLabelUpper` instead.
+- **BREAKING**: Rating - `readonly` property. Use `readOnly` instead.
+- **BREAKING**: Dialog - `closeOnEscape` property. Use `keepOpenOnEscape`.
+- **BREAKING**: Combo, Select - `positionStrategy`, `flip`, `sameWidth` removed.
+- **BREAKING**: Dropdown - `positionStrategy` removed.
+- **BREAKING**: Input - `readonly`, `inputmode`, `maxlength` and `minlength`.
+  Use the native `readOnly`, `inputMode`, `maxLength` and `minLength` properties instead.
+- **BREAKING**: Date-time-input - `minValue`/`mavValue` are removed. Use `min`/`max` instead.
+- **BREAKING**: Removed `size` property from components.
+
+### Fixed
+- Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
+- Radio - do not emit change event on already checked radio
+- Calendar - add correct dates DOM parts based on active view [[#1278](https://github.com/IgniteUI/igniteui-webcomponents/issues/1278)]
+
+## [4.11.1] - 2024-07-03
+### Changed
+ - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
+
+## [4.11.0] - 2024-07-03
+### Changed
+ - Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+ - Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+
+## [4.10.0] - 2024-07-01
+### Added
+- Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
+- Divider component [#1237](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
+- Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+- Radio group - Bind underlying radio components name and checked state through the radio group [#315](https://github.com/IgniteUI/igniteui-webcomponents/issues/315)
+- VSCode custom data intellisense (both HTML and CSS)
+- JetBrains editors WebTypes intellisense
+
+### Deprecated
+- Input `inputmode` property. Aligned with the native `inputMode` DOM property instead.
+
 ### Fixed
 - Input, Textarea - passing `undefined` to **value** sets the underlying input value to undefined [#1206](https://github.com/IgniteUI/igniteui-webcomponents/issues/1206)
+- Mask input - after a form `reset` call correctly update underlying input value and placeholder state
+- Tree - setting `--ig-size` on the item `indicator` CSS Part will now change the size of the icon
+- Date-time input - double emit of `igcChange` in certain scenarios
+- Navigation drawer - mini variant is not initially rendered when not in an open state [#1266](https://github.com/IgniteUI/igniteui-webcomponents/issues/1266)
+- Combo:
+  - Selecting an entry using the Enter key now correctly works in single selection mode [#1229](https://github.com/IgniteUI/igniteui-webcomponents/issues/1229)
+  - Turning on the `disableFiltering` option now clears any previously entered search term [#1238](https://github.com/IgniteUI/igniteui-webcomponents/issues/1238)
+  - Entering a search term in single selection mode that already matches the selected item now works correctly [#1260](https://github.com/IgniteUI/igniteui-webcomponents/issues/1260)
 
 ## [4.9.0] - 2024-04-30
 ### Added
@@ -466,6 +543,9 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
+[4.11.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.10.0...4.11.0
+[4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0
 [4.9.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.2...4.9.0
 [4.8.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.1...4.8.2
 [4.8.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.8.0...4.8.1

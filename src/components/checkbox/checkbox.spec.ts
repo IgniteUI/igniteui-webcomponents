@@ -234,7 +234,9 @@ describe('Checkbox', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
+      expect(eventSpy).calledWithExactly('igcChange', {
+        detail: { checked: true, value: undefined },
+      });
     });
 
     const createCheckboxComponent = (
@@ -307,6 +309,20 @@ describe('Checkbox', () => {
     it('fulfils required constraint', async () => {
       spec.element.required = true;
       await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils required constraint with indeterminate', async () => {
+      // See the Note mention at
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#indeterminate_state_checkboxes
+      spec.element.required = true;
+      spec.element.indeterminate = true;
+      await elementUpdated(spec.element);
+
       spec.submitFails();
 
       spec.element.checked = true;

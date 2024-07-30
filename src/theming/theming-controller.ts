@@ -9,7 +9,13 @@ import {
 
 import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, ThemeController, ThemeVariant, Themes } from './types.js';
+import type {
+  Theme,
+  ThemeChangedCallback,
+  ThemeController,
+  ThemeVariant,
+  Themes,
+} from './types.js';
 
 type ThemeCallback = () => void;
 
@@ -28,20 +34,23 @@ class ThemeEventListeners {
     }
   }
 
-  public handleEvent = () => {
+  public handleEvent() {
     for (const listener of this.listeners) {
       listener();
     }
-  };
+  }
 }
 
-const _themingEventListeners = new ThemeEventListeners();
+const _themeListeners = new ThemeEventListeners();
 
-class ThemingController implements ReactiveController, ThemeController {
+/* blazorSuppress */
+export class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
+
   public theme!: Theme;
   public themeVariant!: ThemeVariant;
+  public onThemeChanged?: ThemeChangedCallback;
 
   constructor(host: ReactiveControllerHost & ReactiveElement, themes: Themes) {
     this.host = host;
@@ -49,12 +58,28 @@ class ThemingController implements ReactiveController, ThemeController {
   }
 
   public hostConnected() {
-    this.adoptStyles();
-    _themingEventListeners.add(this.themeChanged);
+    this.themeChanged();
+    _themeListeners.add(this.themeChanged);
   }
 
   public hostDisconnected() {
-    _themingEventListeners.remove(this.themeChanged);
+    _themeListeners.remove(this.themeChanged);
+  }
+
+  private getStyles() {
+    const styleSheets = Object.entries(this.themes[this.themeVariant]);
+    const styles = { shared: css``, theme: css`` };
+
+    for (const [name, sheet] of styleSheets) {
+      if (name === 'shared') {
+        styles.shared = sheet;
+      }
+      if (name === this.theme) {
+        styles.theme = sheet;
+      }
+    }
+
+    return styles;
   }
 
   protected adoptStyles() {
@@ -63,49 +88,14 @@ class ThemingController implements ReactiveController, ThemeController {
     this.themeVariant = themeVariant;
 
     const ctor = this.host.constructor as typeof LitElement;
-    const stylesheets = Object.entries(this.themes[themeVariant]);
+    const { shared, theme: _theme } = this.getStyles();
 
-    const [_unused, sharedStyles] =
-      stylesheets.find(([name]) => name === 'shared') ?? [];
-    const [_, themeStyles] =
-      stylesheets.find(([name]) => name === this.theme) ?? [];
-
-    adoptStyles(this.host.shadowRoot as ShadowRoot, [
-      ...ctor.elementStyles,
-      sharedStyles ?? css``,
-      themeStyles ?? css``,
-    ]);
+    adoptStyles(this.host.shadowRoot!, [...ctor.elementStyles, shared, _theme]);
   }
 
   private themeChanged: ThemeCallback = () => {
     this.adoptStyles();
+    this.onThemeChanged?.call(this.host, this.theme);
     this.host.requestUpdate();
   };
 }
-
-const _updateWhenThemeChanges = (
-  host: ReactiveControllerHost & ReactiveElement,
-  themes: Themes,
-  exposeTheme?: boolean
-) => {
-  const controller = new ThemingController(host, themes);
-  host.addController(controller);
-
-  if (exposeTheme) {
-    Object.defineProperty(host, themeSymbol, {
-      get() {
-        return controller.theme;
-      },
-      configurable: true,
-      enumerable: false,
-    });
-  }
-
-  return controller;
-};
-
-export const updateWhenThemeChanges: typeof _updateWhenThemeChanges & {
-  _THEMING_CONTROLLER_FN_?: never;
-} = _updateWhenThemeChanges;
-
-export const themeSymbol = Symbol('Current active theme');

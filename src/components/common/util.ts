@@ -8,10 +8,20 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .join(' ');
 };
 
+export function noop() {}
+
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
+
+export function numberInRangeInclusive(
+  value: number,
+  min: number,
+  max: number
+) {
+  return value >= min && value <= max;
+}
 
 /**
  *
@@ -49,8 +59,11 @@ export function createCounter() {
   };
 }
 
+/**
+ * Returns whether an element has a Left-to-Right directionality.
+ */
 export function isLTR(element: HTMLElement) {
-  return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
+  return element.matches(':dir(ltr)');
 }
 
 /**
@@ -184,4 +197,58 @@ export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   }
 
   return result;
+}
+
+export function first<T>(arr: T[]) {
+  return arr.at(0) as T;
+}
+
+export function last<T>(arr: T[]) {
+  return arr.at(-1) as T;
+}
+
+export function modulo(n: number, d: number) {
+  return ((n % d) + d) % d;
+}
+
+/**
+ * Creates an array of `n` elements from a given iterator.
+ *
+ */
+export function take<T>(iterable: IterableIterator<T>, n: number) {
+  const result: T[] = [];
+  let i = 0;
+  let current = iterable.next();
+
+  while (i < n && !current.done) {
+    result.push(current.value);
+    current = iterable.next();
+    i++;
+  }
+
+  return result;
+}
+
+/**
+ * Splits an array into chunks of length `size` and returns a generator
+ * yielding each chunk.
+ * The last chunk may contain less than `size` elements.
+ *
+ * @example
+ * ```typescript
+ * const arr = [0,1,2,3,4,5,6,7,8,9];
+ *
+ * Array.from(chunk(arr, 2)) // [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
+ * Array.from(chunk(arr, 3)) // [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
+ * Array.from(chunk([], 3)) // []
+ * Array.from(chunk(arr, -3)) // Error
+ * ```
+ */
+export function* chunk<T>(arr: T[], size: number) {
+  if (size < 1) {
+    throw new Error('size must be an integer >= 1');
+  }
+  for (let i = 0; i < arr.length; i += size) {
+    yield arr.slice(i, i + size);
+  }
 }

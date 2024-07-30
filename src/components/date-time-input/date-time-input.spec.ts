@@ -8,6 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import {
+  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -153,6 +154,22 @@ describe('Date Time Input component', () => {
       el.displayFormat = 'd.MM hh:mm ttttt';
       await elementUpdated(el);
       expect(input.value).to.equal('12.10 12:00 n');
+    });
+
+    it('should update the mask according to the inputFormat on focus when value is set - issue #1320', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.inputFormat = 'dd-MM-yyyy';
+      el.displayFormat = 'yyyy-MM-dd';
+      el.value = new Date(2024, 6, 22);
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('2024-07-22');
+
+      input.click();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcFocus');
+      expect(input.value).to.equal('22-07-2024');
     });
 
     it('should correctly switch between different pre-defined date formats', async () => {
@@ -495,17 +512,58 @@ describe('Date Time Input component', () => {
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
     });
 
-    it('Up/Down arrow readonly', async () => {
+    it('Up/Down arrow readonly is a no-op', async () => {
       const value = new Date(2020, 2, 3);
       el.readOnly = true;
       el.value = value;
       el.focus();
       await elementUpdated(el);
 
-      simulateKeyboard(input, arrowDown);
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateKeyboard(input, [altKey, arrowUp]);
       await elementUpdated(el);
 
-      expect(el.value.getFullYear()).to.equal(value.getFullYear());
+      expect(eventSpy).not.to.have.been.called;
+
+      simulateKeyboard(input, [altKey, arrowDown]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+    });
+
+    it('Alt + ArrowUp/Down is a no-op', async () => {
+      const value = new Date(202, 2, 3);
+      el.value = value;
+      el.focus();
+      await elementUpdated(el);
+
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateKeyboard(input, [altKey, arrowUp]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+
+      simulateKeyboard(input, [altKey, arrowDown]);
+      await elementUpdated(el);
+
+      expect(eventSpy).not.to.have.been.called;
+    });
+
+    it('should not emit change event when readonly', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+
+      el.value = new Date(2023, 5, 1);
+      el.readOnly = true;
+      el.focus();
+      await elementUpdated(el);
+
+      el.blur();
+      await elementUpdated(el);
+
+      // -> [igcFocus, igcBlur]
+      expect(eventSpy.getCalls()).lengthOf(2);
     });
 
     it('should not move input selection (caret) from a focused part when stepUp/stepDown are invoked', async () => {
@@ -765,29 +823,6 @@ describe('Date Time Input component', () => {
       expect(el.invalid).to.be.true;
 
       el.value = new Date(2020, 1, 3);
-      expect(el.checkValidity()).to.be.true;
-      expect(el.invalid).to.be.false;
-    });
-
-    it('should correctly set min/maxValue with ISO string', async () => {
-      const minValue = new Date(2020, 2, 3).toISOString();
-      const maxValue = new Date(2020, 3, 3).toISOString();
-
-      el.setAttribute('min-value', minValue);
-      el.setAttribute('max-value', maxValue);
-
-      el.value = new Date(2019, 3, 3);
-      await elementUpdated(el);
-      expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
-
-      el.value = new Date(2021, 3, 3);
-      await elementUpdated(el);
-      expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
-
-      el.value = new Date(2020, 2, 14);
-      await elementUpdated(el);
       expect(el.checkValidity()).to.be.true;
       expect(el.invalid).to.be.false;
     });

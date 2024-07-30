@@ -16,12 +16,12 @@ import { styles as shared } from './themes/shared/container/nav-drawer.common.cs
  *
  * @element igc-nav-drawer
  *
- * @slot - The default slot for the drawer.
- * @slot mini - The slot for the mini variant of the drawer.
+ * @slot - The default slot for the igc-navigation-drawer.
+ * @slot mini - The slot for the mini variant of the igc-navigation-drawer.
  *
- * @csspart base - The base wrapper of the navigation drawer.
- * @csspart main - The main container.
- * @csspart mini - The mini container.
+ * @csspart base - The base wrapper of the igc-navigation-drawer.
+ * @csspart main - The main container of the igc-navigation-drawer.
+ * @csspart mini - The mini container of the igc-navigation-drawer.
  */
 @themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
@@ -54,51 +54,65 @@ export default class IgcNavDrawerComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public open = false;
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
+  private _waitTransitions() {
+    return new Promise<Event>((resolve) => {
+      this.renderRoot.addEventListener('transitionend', resolve, {
+        once: true,
+      });
+    });
+  }
+
   /** Opens the drawer. */
-  public show() {
+  public async show(): Promise<boolean> {
     if (this.open) {
-      return;
+      return false;
     }
 
     this.open = true;
+    await this._waitTransitions();
+
+    return true;
   }
 
   /** Closes the drawer. */
-  public hide() {
+  public async hide(): Promise<boolean> {
     if (!this.open) {
-      return;
+      return false;
     }
 
     this.open = false;
+    await this._waitTransitions();
+
+    return true;
   }
 
   /** Toggles the open state of the drawer. */
-  public toggle() {
-    if (this.open) {
-      this.hide();
-    } else {
-      this.show();
-    }
-  }
-
-  private resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      hidden: this._miniSlotElements.length < 1,
-    };
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
   }
 
   protected override render() {
+    const parts = partNameMap({
+      mini: true,
+      hidden: this._miniSlotElements.length < 1,
+    });
+
     return html`
       <div part="overlay" @click=${this.hide}></div>
 
-      <div part="base">
+      <div part="base" .inert=${!this.open}>
         <div part="main">
           <slot></slot>
         </div>
       </div>
 
-      <div part="${partNameMap(this.resolvePartNames('mini'))}">
+      <div part=${parts}>
         <slot name="mini"></slot>
       </div>
     `;

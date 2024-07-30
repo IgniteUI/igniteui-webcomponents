@@ -2,6 +2,7 @@
 export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
 export { default as IgcAccordionComponent } from './components/accordion/accordion.js';
 export { default as IgcBadgeComponent } from './components/badge/badge.js';
+export { default as IgcBannerComponent } from './components/banner/banner.js';
 export { default as IgcButtonComponent } from './components/button/button.js';
 export { default as IgcButtonGroupComponent } from './components/button-group/button-group.js';
 export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
@@ -15,8 +16,10 @@ export { default as IgcCircularProgressComponent } from './components/progress/c
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
 export { default as IgcComboComponent } from './components/combo/combo.js';
+export { default as IgcDatePickerComponent } from './components/date-picker/date-picker.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
+export { default as IgcDividerComponent } from './components/divider/divider.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
@@ -29,7 +32,6 @@ export { default as IgcExpansionPanelComponent } from './components/expansion-pa
 export { default as IgcIconComponent } from './components/icon/icon.js';
 export { default as IgcIconButtonComponent } from './components/button/icon-button.js';
 export { default as IgcInputComponent } from './components/input/input.js';
-export { default as IgcFormComponent } from './components/form/form.js';
 export { default as IgcLinearProgressComponent } from './components/progress/linear-progress.js';
 export { default as IgcListComponent } from './components/list/list.js';
 export { default as IgcListHeaderComponent } from './components/list/list-header.js';
@@ -68,6 +70,7 @@ export { defineAllComponents } from './components/common/definitions/defineAllCo
 export {
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from './components/icon/icon.registry.js';
 
 // theming configuration
@@ -77,8 +80,8 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export type { DateRangeDescriptor } from './components/calendar/common/calendar.model.js';
-export { DateRangeType } from './components/calendar/common/calendar.model.js';
+export type { DateRangeDescriptor } from './components/calendar/types.js';
+export { DateRangeType } from './components/calendar/types.js';
 export type {
   DatePart,
   DatePartDeltas,
@@ -92,3 +95,4 @@ export type {
   ComboItemTemplate,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
+export type { IconMeta } from './components/icon/registry/types.js';

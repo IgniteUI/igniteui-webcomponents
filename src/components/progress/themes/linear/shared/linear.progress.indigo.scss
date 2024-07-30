@@ -7,6 +7,22 @@ $theme: $indigo;
 $stripe-size: rem(6px);
 $stripe-space: rem(14px);
 
+:host([label-align='top']),
+:host([label-align='top-start']),
+:host([label-align='top-end']) {
+    [part~='track'] {
+        margin-block-start: rem(4px);
+    }
+}
+
+:host([label-align='bottom']),
+:host([label-align='bottom-start']),
+:host([label-align='bottom-end']) {
+    [part~='track'] {
+        margin-block-end: rem(4px);
+    }
+}
+
 [part~='striped']:not([part~='indeterminate']) {
     /* stylelint-disable */
     background: var-get($theme, 'fill-color-default') repeating-linear-gradient(
