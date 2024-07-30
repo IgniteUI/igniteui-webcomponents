@@ -3,7 +3,13 @@
 
 $theme: $indigo;
 
+[part~='base'] {
+    --dot-shadow-color: transparent;
+}
+
 [part='base focused'] {
+    --dot-shadow-color: #{var-get($theme, 'indicator-focus-color')};
+
     ::slotted(div) {
         &::after {
             border: none;
