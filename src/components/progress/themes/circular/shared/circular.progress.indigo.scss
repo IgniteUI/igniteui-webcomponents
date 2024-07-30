@@ -8,15 +8,6 @@ $theme: $indigo;
     --diameter: 46px;
 }
 
-[part~='label'] {
-    @include type-style('subtitle-2');
-}
-
-[part~='label'],
-[part~='value'] {
-    font-size: calc(var(--diameter) / 3.3 - var(--stroke-thickness));
-}
-
 [part~='fill'] {
     stroke-width: calc(var(--stroke-thickness) + rem(1px));
 }

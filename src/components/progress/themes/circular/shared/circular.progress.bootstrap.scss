@@ -5,13 +5,9 @@
     --diameter: 50px;
 }
 
-[part~='label'] {
-    @include type-style('subtitle-1');
-}
-
 [part~='label'],
 [part~='value'] {
-    font-size: calc(var(--diameter) / 2.8 - var(--stroke-thickness));
+    font-weight: 700;
 }
 
 [part~='svg'][part~='indeterminate'] {

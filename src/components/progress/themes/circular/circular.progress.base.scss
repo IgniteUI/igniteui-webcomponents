@@ -27,10 +27,9 @@
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(var(--diameter) / 2.3 - var(--stroke-thickness));
+    font-size: calc(var(--diameter) / 3 - var(--stroke-thickness));
     line-height: normal;
     font-weight: 600;
-    letter-spacing: rem(0.15px);
 }
 
 [part='svg indeterminate'] {

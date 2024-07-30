@@ -8,9 +8,7 @@
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(var(--diameter) / 2.15 - var(--stroke-thickness));
     font-weight: 700;
-    letter-spacing: normal;
 }
 
 [part~='fill'] {
