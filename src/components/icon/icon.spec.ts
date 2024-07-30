@@ -1,14 +1,27 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first } from '../common/util.js';
 import IgcIconComponent from './icon.js';
 import {
+  IconsRegistry,
   getIconRegistry,
   registerIcon,
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import {
+  ActionType,
+  type BroadcastIconsChangeMessage,
+  type SvgIcon,
+} from './registry/types.js';
 
 const bugSvgContent =
   '<title id="brbug-title">Bug Icon</title><desc id="brbug-desc">A picture showing an insect.</desc><path d="M21 9h-3.54a7.251 7.251 0 00-2.56-2.271 2.833 2.833 0 00-.2-2.015l1.007-1.007-1.414-1.414L13.286 3.3a2.906 2.906 0 00-2.572 0L9.707 2.293 8.293 3.707 9.3 4.714a2.833 2.833 0 00-.2 2.015A7.251 7.251 0 006.54 9H3v2h2.514a8.879 8.879 0 00-.454 2H3v2h2.06a8.879 8.879 0 00.454 2H3v2h3.54A6.7 6.7 0 0012 22a6.7 6.7 0 005.46-3H21v-2h-2.514a8.879 8.879 0 00.454-2H21v-2h-2.06a8.879 8.879 0 00-.454-2H21zm-10 7H9v-2h2zm0-4v-2h2v2zm4 4h-2v-2h2z"/>';
@@ -113,6 +126,91 @@ describe('Icon registry', () => {
 
   afterEach(() => {
     (globalThis.fetch as any).restore();
+  });
+});
+
+describe('Icon broadcast service', () => {
+  let channel: BroadcastChannel;
+  let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
+  let peerRegistry!: IconsRegistry;
+  const collectionName = 'broadcast-test';
+
+  const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
+    events.push(message);
+
+  beforeEach(async () => {
+    channel = new BroadcastChannel('ignite-ui-icon-channel');
+    channel.addEventListener('message', handler);
+  });
+
+  afterEach(async () => {
+    // @ts-expect-error - protected access
+    peerRegistry?.stateBroadcast.iconBroadcastChannel.close();
+    channel.close();
+    events = [];
+  });
+
+  describe('Broadcast Events', () => {
+    function getIconFromCollection(
+      name: string,
+      collectionName: string,
+      collection: Map<string, Map<string, SvgIcon>>
+    ) {
+      return collection.get(collectionName)?.get(name);
+    }
+
+    it('correct event state when registering an icon', async () => {
+      const iconName = 'bug';
+
+      registerIconFromText(iconName, bugSvg, collectionName);
+      await aTimeout(0);
+
+      const { actionType, collections } = first(events).data;
+      expect(actionType).to.equal(ActionType.RegisterIcon);
+      expect(collections?.has(collectionName)).to.be.true;
+      expect(
+        getIconFromCollection(iconName, collectionName, collections!)
+      ).to.eql(getIconRegistry().get(iconName, collectionName));
+    });
+
+    it('correct events state when registering several icons', async () => {
+      const icons = [
+        ['bug', bugSvg],
+        ['virus', virusSvg],
+        ['search', searchSvg],
+      ] as const;
+
+      for (const each of icons) {
+        registerIconFromText(each[0], each[1], collectionName);
+      }
+      await aTimeout(0);
+
+      expect(events).lengthOf(icons.length);
+      for (const [idx, event] of events.entries()) {
+        expect(
+          getIconFromCollection(
+            icons[idx][0],
+            collectionName,
+            event.data.collections!
+          )
+        ).to.eql(getIconRegistry().get(icons[idx][0], collectionName));
+      }
+    });
+  });
+
+  describe('Peer registry', () => {
+    it('registering an icon is correctly reflected in the state of the peer', async () => {
+      const iconName = 'bug';
+      peerRegistry = new IconsRegistry();
+
+      registerIconFromText(iconName, bugSvg, collectionName);
+      await aTimeout(0);
+
+      expect(peerRegistry.get(iconName, collectionName)).not.to.be.undefined;
+      expect(getIconRegistry().get(iconName, collectionName)).to.eql(
+        peerRegistry.get(iconName, collectionName)
+      );
+    });
   });
 });
 
