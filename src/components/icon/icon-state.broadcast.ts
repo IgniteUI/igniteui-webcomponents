@@ -22,6 +22,8 @@ export class IconsStateBroadcast {
     this.refsCollection = refsCollection;
     this.parser = new SvgIconParser();
     this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
+    this.onBroadcastMessageReceived =
+      this.onBroadcastMessageReceived.bind(this);
     this.iconBroadcastChannel.addEventListener(
       'message',
       this.onBroadcastMessageReceived
@@ -70,7 +72,7 @@ export class IconsStateBroadcast {
         const val = icon.svg;
         const internalVal = internalIcons.get(iconKey)?.svg;
 
-        if (val && val !== internalVal) {
+        if (val && (val !== internalVal || collectionKey !== 'internal')) {
           if (!userSetIcons.has(collectionKey)) {
             userSetIcons.set(collectionKey, new Map<string, SvgIcon>());
           }

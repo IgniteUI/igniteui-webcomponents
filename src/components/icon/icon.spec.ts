@@ -199,17 +199,30 @@ describe('Icon broadcast service', () => {
   });
 
   describe('Peer registry', () => {
-    it('registering an icon is correctly reflected in the state of the peer', async () => {
+    it('registered icon is correctly sent when a peer requests a sync states', async () => {
       const iconName = 'bug';
       peerRegistry = new IconsRegistry();
 
       registerIconFromText(iconName, bugSvg, collectionName);
       await aTimeout(0);
 
-      expect(peerRegistry.get(iconName, collectionName)).not.to.be.undefined;
-      expect(getIconRegistry().get(iconName, collectionName)).to.eql(
-        peerRegistry.get(iconName, collectionName)
+      // a peer is requesting a state sync
+      (peerRegistry as any).stateBroadcast.broadcastState(ActionType.SyncState);
+      await aTimeout(0);
+      const evt = events.findLast(
+        (x) =>
+          x.data.actionType === ActionType.SyncState &&
+          x.data?.collections?.get(collectionName)?.get(iconName)
       );
+      expect(evt).not.to.be.undefined;
+      if (evt) {
+        // should receive a response with the updated state
+        const { actionType, collections } = evt.data;
+        expect(actionType).to.eql(ActionType.SyncState);
+        expect(collections).not.to.be.undefined;
+        expect(collections?.get(collectionName)?.get(iconName)).not.to.be
+          .undefined;
+      }
     });
   });
 });
