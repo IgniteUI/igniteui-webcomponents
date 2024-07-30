@@ -2,14 +2,22 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
+  IgcButtonComponent,
   IgcCarouselComponent,
-  type IgcCarouselSlideComponent,
   IgcIconComponent,
+  IgcInputComponent,
+  IgcTextareaComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcCarouselComponent, IgcIconComponent);
+defineComponents(
+  IgcCarouselComponent,
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcButtonComponent,
+  IgcTextareaComponent
+);
 
 // region default
 const metadata: Meta<IgcCarouselComponent> = {
@@ -149,9 +157,6 @@ icons.forEach((icon) => {
   registerIconFromText(icon.name, icon.text, 'material');
 });
 
-const indicatorTemplate = (slide: IgcCarouselSlideComponent) =>
-  html`${slide.active ? html`<span>❤️</span>` : html`<span>🤍</span>`}`;
-
 const BasicTemplate = ({
   skipLoop,
   skipPauseOnInteraction,
@@ -219,7 +224,6 @@ const SlottedContentTemplate = ({
       .vertical=${vertical}
       .indicatorsOrientation=${indicatorsOrientation}
       .maximumIndicatorsCount=${maximumIndicatorsCount}
-      .indicatorTemplate=${indicatorTemplate}
     >
       <igc-icon
         slot="previous-button"
@@ -227,6 +231,22 @@ const SlottedContentTemplate = ({
         collection="material"
       ></igc-icon>
       <igc-icon slot="next-button" name="next" collection="material"></igc-icon>
+
+      <igc-carousel-indicator>
+        <span>🤍</span>
+        <span slot="active">❤️</span>
+      </igc-carousel-indicator>
+
+      <igc-carousel-indicator>
+        <span>🤍</span>
+        <span slot="active">❤️</span>
+      </igc-carousel-indicator>
+
+      <igc-carousel-indicator>
+        <span>🤍</span>
+        <span slot="active">❤️</span>
+      </igc-carousel-indicator>
+
       <igc-carousel-slide>
         <img
           src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
@@ -249,5 +269,228 @@ const SlottedContentTemplate = ({
   `;
 };
 
+const SlottedInputsTemplate = ({
+  skipLoop,
+  skipPauseOnInteraction,
+  skipNavigation,
+  skipIndicator,
+  vertical,
+  indicatorsOrientation,
+  interval,
+  animationType,
+  maximumIndicatorsCount,
+}: IgcCarouselArgs) => {
+  return html`
+    <style>
+      igc-carousel-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      igc-carousel-slide * {
+        margin: 8px 0px;
+      }
+      igc-carousel-slide div {
+        text-align: center;
+      }
+      igc-carousel {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        width: 50%;
+      }
+    </style>
+    <igc-carousel
+      id="carousel"
+      ?skip-loop=${skipLoop}
+      ?skip-pause-on-interaction=${skipPauseOnInteraction}
+      ?skip-navigation=${skipNavigation}
+      ?skip-indicator=${skipIndicator}
+      .interval=${interval}
+      .animationType=${animationType}
+      .vertical=${vertical}
+      .indicatorsOrientation=${indicatorsOrientation}
+      .maximumIndicatorsCount=${maximumIndicatorsCount}
+    >
+      <igc-carousel-slide>
+        <igc-input type="text" placeholder="Username">
+          <span slot="prefix">🐱‍💻</span>
+        </igc-input>
+        <igc-textarea label="Leave your comment">
+          <span slot="prefix">💬</span>
+        </igc-textarea>
+        <igc-button>Comment</igc-button>
+        <div>
+          <span>Not a member? 🙀</span>
+          <igc-button onclick="carousel.next()">Sign up</igc-button>
+        </div>
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <span>Registration</span>
+        <igc-input type="text" placeholder="Enter your name">
+          <span slot="prefix">😄</span>
+        </igc-input>
+        <igc-input type="email" placeholder="Enter your email">
+          <span slot="prefix">✉️</span>
+        </igc-input>
+        <igc-input type="password" placeholder="Create a password">
+          <span slot="prefix">🔒</span>
+        </igc-input>
+        <igc-button>Sign up</igc-button>
+        <div>
+          <span>Already a member?</span>
+          <igc-button onclick="carousel.prev()">Comment</igc-button>
+        </div>
+      </igc-carousel-slide>
+    </igc-carousel>
+  `;
+};
+
+const SlottedThumbnailTemplate = ({
+  skipLoop,
+  skipPauseOnInteraction,
+  skipNavigation,
+  skipIndicator,
+  vertical,
+  indicatorsOrientation,
+  interval,
+  animationType,
+  maximumIndicatorsCount,
+}: IgcCarouselArgs) => {
+  return html`
+    <style>
+      .blurred {
+        filter: blur(2px);
+        opacity: 0.5;
+      }
+    </style>
+    <igc-carousel
+      ?skip-loop=${skipLoop}
+      ?skip-pause-on-interaction=${skipPauseOnInteraction}
+      ?skip-navigation=${skipNavigation}
+      ?skip-indicator=${skipIndicator}
+      .interval=${interval}
+      .animationType=${animationType}
+      .vertical=${vertical}
+      .indicatorsOrientation=${indicatorsOrientation}
+      .maximumIndicatorsCount=${maximumIndicatorsCount}
+    >
+      <igc-carousel-indicator>
+        <img
+          class="blurred"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoastThumb.png"
+          alt="Wonderful Coast Thumb"
+          width="50"
+          height="60"
+        />
+        <img
+          slot="active"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoastThumb.png"
+          alt="Wonderful Coast Thumb Active"
+          width="50"
+          height="60"
+        />
+      </igc-carousel-indicator>
+      <igc-carousel-indicator>
+        <img
+          class="blurred"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDipThumb.png"
+          alt="Cultural Dip Thumb"
+          width="50"
+          height="60"
+        />
+        <img
+          slot="active"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDipThumb.png"
+          alt="Cultural Dip Thumb Active"
+          width="50"
+          height="60"
+        />
+      </igc-carousel-indicator>
+      <igc-carousel-indicator>
+        <img
+          class="blurred"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeachesThumb.png"
+          alt="Golden Beaches Thumb"
+          width="50"
+          height="60"
+        />
+        <img
+          slot="active"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeachesThumb.png"
+          alt="Golden Beaches Thumb Active"
+          width="50"
+          height="60"
+        />
+      </igc-carousel-indicator>
+      <igc-carousel-indicator>
+        <img
+          class="blurred"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistoryThumb.png"
+          alt="Island Of History Thumb"
+          width="50"
+          height="60"
+        />
+        <img
+          slot="active"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistoryThumb.png"
+          alt="Island Of History Thumb Active"
+          width="50"
+          height="60"
+        />
+      </igc-carousel-indicator>
+      <igc-carousel-indicator>
+        <img
+          class="blurred"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridgeThumb.png"
+          alt="Amazing Bridge Thumb"
+          width="50"
+          height="60"
+        />
+        <img
+          slot="active"
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridgeThumb.png"
+          alt="Amazing Bridge Thumb Active"
+          width="50"
+          height="60"
+        />
+      </igc-carousel-indicator>
+
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoast.png"
+          alt="Wonderful Coast"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDip.png"
+          alt="Cultural Dip"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeaches.png"
+          alt="Golden Beaches"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistory.png"
+          alt="Island Of History"
+        />
+      </igc-carousel-slide>
+      <igc-carousel-slide>
+        <img
+          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridge.png"
+          alt="Amazing Bridge"
+        />
+      </igc-carousel-slide>
+    </igc-carousel>
+  `;
+};
+
 export const Basic: Story = BasicTemplate.bind({});
 export const SlottedContent: Story = SlottedContentTemplate.bind({});
+export const InputsTemplate: Story = SlottedInputsTemplate.bind({});
+export const ThumbnailTemplate: Story = SlottedThumbnailTemplate.bind({});

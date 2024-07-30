@@ -21,8 +21,14 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, isLTR, partNameMap } from '../common/util.js';
+import {
+  createCounter,
+  findElementFromEventPath,
+  isLTR,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { carouselContext } from './context.js';
@@ -63,6 +69,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     registerComponent(
       IgcCarouselComponent,
       IgcCarouselIndicatorComponent,
+      IgcCarouselIndicatorContainerComponent,
       IgcCarouselSlideComponent,
       IgcIconComponent,
       IgcButtonComponent
@@ -89,7 +96,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
 
   @queryAll('[role="tab"]')
-  private _indicators!: NodeListOf<HTMLDivElement>;
+  private _defaultIndicators!: NodeListOf<HTMLDivElement>;
+
+  @queryAssignedElements({
+    selector: IgcCarouselIndicatorComponent.tagName,
+    slot: 'indicator',
+  })
+  private _projectedIndicators!: Array<IgcCarouselIndicatorComponent>;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -108,11 +121,25 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     for (const [i, slide] of carouselSlides.entries()) {
       if (slide.active && i !== idx) {
         slide.active = false;
+        if (this.hasProjectedIndicators) {
+          const indicator = this._projectedIndicators[i];
+          indicator.ariaSelected = 'false';
+          this.clipIndicator(indicator, false);
+        }
       }
     }
 
+    if (this.hasProjectedIndicators) {
+      const indicator = this._projectedIndicators[this.current];
+      indicator.ariaSelected = 'true';
+      this.clipIndicator(indicator, true);
+    }
+
     if (this._kbnIndicators) {
-      this._indicators[this.current].focus();
+      this.hasProjectedIndicators
+        ? this._projectedIndicators[this.current].focus()
+        : this._defaultIndicators[this.current].focus();
+
       this._kbnIndicators = false;
     }
 
@@ -189,19 +216,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'animation-type' })
   public animationType: 'slide' | 'fade' | 'none' = 'slide';
-
-  /**
-   * The template used for the content of each indicator (dot).
-   */
-  @property({ attribute: false })
-  public indicatorTemplate = (slide: IgcCarouselSlideComponent) => {
-    return html`<div
-      part=${partNameMap({
-        dot: true,
-        active: slide.active,
-      })}
-    ></div>`;
-  };
 
   /**
    * The slides of the carousel.
@@ -392,16 +406,20 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return true;
   }
 
+  private get hasProjectedIndicators(): boolean {
+    return this._projectedIndicators.length > 0;
+  }
+
+  private get showIndicatorsLabel(): boolean {
+    return this.total > this.maximumIndicatorsCount;
+  }
+
   private getNextIndex(): number {
     return (this.current + 1) % this.total;
   }
 
   private getPrevIndex(): number {
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
-  }
-
-  private showIndicatorsLabel(): boolean {
-    return this.total > this.maximumIndicatorsCount;
   }
 
   private resetInterval(): void {
@@ -429,6 +447,44 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handleSlotChange(): void {
     this.requestUpdate();
+  }
+
+  private handleIndicatorSlotChange(): void {
+    if (this.hasProjectedIndicators) {
+      this.slides.forEach((slide, i) => {
+        const indicator = this._projectedIndicators[i];
+        if (indicator) {
+          indicator.role = 'tab';
+          indicator.tabIndex = slide.active ? 0 : -1;
+          indicator.ariaLabel = `Slide ${i + 1}`;
+          indicator.ariaSelected = slide.active ? 'true' : 'false';
+          indicator.setAttribute('aria-controls', slide.id);
+          this.clipIndicator(indicator, slide.active);
+        }
+      });
+    }
+  }
+
+  private clipIndicator(
+    indicator: IgcCarouselIndicatorComponent,
+    isActive: boolean
+  ): void {
+    if (!indicator) {
+      return;
+    }
+    const forward = `inset(0 ${isActive ? 0 : 100}% 0 0)`;
+    const backward = `inset(0 0 0 ${isActive ? 100 : 0}%)`;
+
+    const active = indicator.shadowRoot?.querySelector(
+      '[part="indicator active"]'
+    ) as HTMLElement;
+
+    const inactive = indicator.shadowRoot?.querySelector(
+      '[part="indicator inactive"]'
+    ) as HTMLElement;
+
+    active.style.clipPath = forward;
+    inactive.style.clipPath = backward;
   }
 
   private handlePauseOnInteraction(): void {
@@ -484,12 +540,24 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private async handleIndicatorClick(slide: IgcCarouselSlideComponent) {
-    const index = this.slides.indexOf(slide);
+  private async handleIndicatorClick(event: MouseEvent) {
+    const indicator = findElementFromEventPath<IgcCarouselIndicatorComponent>(
+      IgcCarouselIndicatorComponent.tagName,
+      event
+    ) as IgcCarouselIndicatorComponent;
 
-    if (index !== this.current) {
+    const dot = findElementFromEventPath<HTMLDivElement>(
+      'div[role="tab"]',
+      event
+    ) as HTMLDivElement;
+
+    const index = dot
+      ? Array.from(this._defaultIndicators).indexOf(dot)
+      : this._projectedIndicators.indexOf(indicator);
+
+    if (index !== this.current && this.slides[index]) {
       const dir = index > this.current ? 'next' : 'prev';
-      await this.select(slide, dir);
+      await this.select(this.slides[index], dir);
 
       this.emitSlideChangedEvent();
     }
@@ -560,9 +628,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     `;
   }
 
-  private pickerTemplate() {
+  private indicatorTemplate() {
     return html`
-      <igc-carousel-indicator>
+      <igc-carousel-indicator-container>
         <div
           ${ref(this._indicatorsContainerRef)}
           role="tablist"
@@ -571,20 +639,30 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
             start: this.indicatorsOrientation === 'start',
           })}
         >
-          ${this.slides.map((slide, index) => {
-            return html`<div
-              role="tab"
-              tabindex=${slide.active ? 0 : -1}
-              aria-label="Slide ${index + 1}"
-              aria-selected=${slide.active}
-              aria-controls="${slide.id}"
-              @click=${() => this.handleIndicatorClick(slide)}
-            >
-              ${this.indicatorTemplate(slide)}
-            </div>`;
-          })}
+          <slot
+            name="indicator"
+            @slotchange=${this.handleIndicatorSlotChange}
+            @click=${this.handleIndicatorClick}
+          >
+            ${this.slides.map((slide, index) => {
+              return html`<div
+                role="tab"
+                tabindex=${slide.active ? 0 : -1}
+                aria-label="Slide ${index + 1}"
+                aria-selected=${slide.active}
+                aria-controls="${slide.id}"
+              >
+                <div
+                  part=${partNameMap({
+                    dot: true,
+                    active: slide.active,
+                  })}
+                ></div>
+              </div>`;
+            })}
+          </slot>
         </div>
-      </igc-carousel-indicator>
+      </igc-carousel-indicator-container>
     `;
   }
 
@@ -606,10 +684,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return html`
       <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
         ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.skipIndicator || this.showIndicatorsLabel()
+        ${this.skipIndicator || this.showIndicatorsLabel
           ? nothing
-          : this.pickerTemplate()}
-        ${this.showIndicatorsLabel() ? this.labelTemplate() : nothing}
+          : this.indicatorTemplate()}
+        ${this.showIndicatorsLabel ? this.labelTemplate() : nothing}
         <div
           id=${this.carouselId}
           aria-live=${this.interval && this.isPlaying ? 'off' : 'polite'}
