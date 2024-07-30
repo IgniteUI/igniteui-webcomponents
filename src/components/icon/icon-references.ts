@@ -6,6 +6,7 @@ import type {
 
 type Icon = { [key in IconThemeKey]?: IconMeta };
 
+export const iconReferences: IconReference[] = [];
 const makeIconRefs = (icons: Icon) => {
   return new Map(
     Object.entries(icons).map((icon) => {
@@ -14,233 +15,149 @@ const makeIconRefs = (icons: Icon) => {
   );
 };
 
-export const iconReferences: IconReference[] = [
-  {
+const addIcon = (name: string, target: Icon) => {
+  const icon = {
     alias: {
-      name: 'expand',
+      name,
       collection: 'default',
     },
-    target: makeIconRefs({
-      default: {
-        name: 'keyboard_arrow_down',
-        collection: 'internal',
-      },
-    }),
+    target: makeIconRefs(target),
+  };
+
+  iconReferences.push(icon as IconReference);
+};
+
+addIcon('expand', {
+  default: {
+    name: 'keyboard_arrow_down',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'collapse',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'keyboard_arrow_up',
-        collection: 'internal',
-      },
-      indigo: {
-        name: 'arrow_upward',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('collapse', {
+  default: {
+    name: 'keyboard_arrow_up',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'arrow_prev',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'navigate_before',
-        collection: 'internal',
-      },
-      fluent: {
-        name: 'arrow_upward',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('arrow_prev', {
+  default: {
+    name: 'navigate_before',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'arrow_next',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'navigate_next',
-        collection: 'internal',
-      },
-      fluent: {
-        name: 'arrow_downward',
-        collection: 'internal',
-      },
-    }),
+  fluent: {
+    name: 'arrow_upward',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'selected',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'chip_select',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('arrow_next', {
+  default: {
+    name: 'navigate_next',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'remove',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'chip_cancel',
-        collection: 'internal',
-      },
-    }),
+  fluent: {
+    name: 'arrow_downward',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'input_clear',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'clear',
-        collection: 'internal',
-      },
-      material: {
-        name: 'chip_cancel',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('selected', {
+  default: {
+    name: 'chip_select',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'input_expand',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'arrow_drop_down',
-        collection: 'internal',
-      },
-      material: {
-        name: 'keyboard_arrow_down',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('remove', {
+  default: {
+    name: 'chip_cancel',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'input_collapse',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'arrow_drop_up',
-        collection: 'internal',
-      },
-      material: {
-        name: 'keyboard_arrow_up',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('input_clear', {
+  default: {
+    name: 'clear',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'chevron_right',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'keyboard_arrow_right',
-        collection: 'internal',
-      },
-    }),
+  material: {
+    name: 'chip_cancel',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'chevron_left',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'navigate_before',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('input_expand', {
+  default: {
+    name: 'arrow_drop_down',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'case_sensitive',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'case_sensitive',
-        collection: 'internal',
-      },
-    }),
+  material: {
+    name: 'keyboard_arrow_down',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'today',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'calendar_today',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('input_collapse', {
+  default: {
+    name: 'arrow_drop_up',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'star-filled',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'star',
-        collection: 'internal',
-      },
-    }),
+  material: {
+    name: 'keyboard_arrow_up',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'star-outlined',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'star_border',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('chevron_right', {
+  default: {
+    name: 'keyboard_arrow_right',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'prev',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'navigate_before',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('chevron_left', {
+  default: {
+    name: 'navigate_before',
+    collection: 'internal',
   },
-  {
-    alias: {
-      name: 'next',
-      collection: 'default',
-    },
-    target: makeIconRefs({
-      default: {
-        name: 'navigate_next',
-        collection: 'internal',
-      },
-    }),
+});
+addIcon('case_sensitive', {
+  default: {
+    name: 'case_sensitive',
+    collection: 'internal',
   },
-];
+});
+addIcon('today', {
+  default: {
+    name: 'calendar_today',
+    collection: 'internal',
+  },
+});
+addIcon('star_filled', {
+  default: {
+    name: 'star',
+    collection: 'internal',
+  },
+});
+addIcon('star_outlined', {
+  default: {
+    name: 'star_border',
+    collection: 'internal',
+  },
+});
+addIcon('prev', {
+  default: {
+    name: 'navigate_before',
+    collection: 'internal',
+  },
+});
+addIcon('next', {
+  default: {
+    name: 'navigate_next',
+    collection: 'internal',
+  },
+});
+addIcon('tree_expand', {
+  default: {
+    name: 'keyboard_arrow_right',
+    collection: 'internal',
+  },
+});
+addIcon('tree_collapse', {
+  default: {
+    name: 'keyboard_arrow_down',
+    collection: 'internal',
+  },
+});
