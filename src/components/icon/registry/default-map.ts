@@ -27,7 +27,7 @@ export class DefaultMap<T, U> {
     return this._map.has(key);
   }
 
-  public keys() {
-    return this._map.keys();
+  forEach(callback: (value: U, key: T, map: Map<T, U>) => void) {
+    this._map.forEach(callback);
   }
 }

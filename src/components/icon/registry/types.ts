@@ -24,14 +24,6 @@ export type IconReferencePair = {
   overwrite: boolean;
 };
 
-// Exported public types
-
-export interface IconMeta {
-  name: string;
-  collection: string;
-  external?: boolean;
-}
-
 export enum ActionType {
   SyncState = 0,
   RegisterIcon = 1,
@@ -42,4 +34,12 @@ export interface BroadcastIconsChangeMessage {
   actionType: ActionType;
   collections?: Map<string, Map<string, SvgIcon>>;
   references?: Map<string, Map<string, IconMeta>>;
+}
+
+// Exported public types
+
+export interface IconMeta {
+  name: string;
+  collection: string;
+  external?: boolean;
 }
