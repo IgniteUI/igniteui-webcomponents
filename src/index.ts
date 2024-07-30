@@ -80,7 +80,10 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export type { DateRangeDescriptor } from './components/calendar/types.js';
+export type {
+  DateRangeDescriptor,
+  WeekDays,
+} from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
 export type {
   DatePart,

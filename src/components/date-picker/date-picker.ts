@@ -5,7 +5,11 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
+import {
+  type DateRangeDescriptor,
+  DateRangeType,
+  type WeekDays,
+} from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
@@ -417,14 +421,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })
-  public weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday' = 'sunday';
+  public weekStart: WeekDays = 'sunday';
 
   constructor() {
     super();
