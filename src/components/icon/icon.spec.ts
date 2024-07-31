@@ -8,7 +8,7 @@ import {
 import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { first, last } from '../common/util.js';
 import IgcIconComponent from './icon.js';
 import {
   IconsRegistry,
@@ -132,7 +132,7 @@ describe('Icon registry', () => {
 describe('Icon broadcast service', () => {
   let channel: BroadcastChannel;
   let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
-  let peerRegistry!: IconsRegistry;
+  let peerRegistry: IconsRegistry | null;
   const collectionName = 'broadcast-test';
 
   const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
@@ -144,21 +144,20 @@ describe('Icon broadcast service', () => {
   });
 
   afterEach(async () => {
-    // @ts-expect-error - protected access
-    peerRegistry?.stateBroadcast.iconBroadcastChannel.close();
+    peerRegistry = null;
     channel.close();
     events = [];
   });
 
-  describe('Broadcast Events', () => {
-    function getIconFromCollection(
-      name: string,
-      collectionName: string,
-      collection: Map<string, Map<string, SvgIcon>>
-    ) {
-      return collection.get(collectionName)?.get(name);
-    }
+  function getIconFromCollection(
+    name: string,
+    collectionName: string,
+    collection: Map<string, Map<string, SvgIcon>>
+  ) {
+    return collection.get(collectionName)?.get(name);
+  }
 
+  describe('Broadcast Events', () => {
     it('correct event state when registering an icon', async () => {
       const iconName = 'bug';
 
@@ -196,6 +195,27 @@ describe('Icon broadcast service', () => {
         ).to.eql(getIconRegistry().get(icons[idx][0], collectionName));
       }
     });
+
+    it('correct event state when setting an icon reference', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+
+      registerIconFromText('reference-test', bugSvg, collectionName);
+
+      setIconRef(refName, refCollectionName, {
+        name: 'reference-test',
+        collection: collectionName,
+      });
+      await aTimeout(0);
+
+      const { actionType, collections, references } = last(events).data;
+
+      expect(actionType).to.equal(ActionType.UpdateIconReference);
+      expect(collections).to.be.undefined;
+      expect(references?.get(refCollectionName)?.get(refName)).to.eql(
+        getIconRegistry().getIconRef(refName, refCollectionName)
+      );
+    });
   });
 
   describe('Peer registry', () => {
@@ -209,20 +229,13 @@ describe('Icon broadcast service', () => {
       // a peer is requesting a state sync
       (peerRegistry as any).stateBroadcast.broadcastState(ActionType.SyncState);
       await aTimeout(0);
-      const evt = events.findLast(
-        (x) =>
-          x.data.actionType === ActionType.SyncState &&
-          x.data?.collections?.get(collectionName)?.get(iconName)
-      );
-      expect(evt).not.to.be.undefined;
-      if (evt) {
-        // should receive a response with the updated state
-        const { actionType, collections } = evt.data;
-        expect(actionType).to.eql(ActionType.SyncState);
-        expect(collections).not.to.be.undefined;
-        expect(collections?.get(collectionName)?.get(iconName)).not.to.be
-          .undefined;
-      }
+
+      const { actionType, collections } = last(events).data;
+      expect(actionType).to.equal(ActionType.SyncState);
+      expect(collections).not.to.be.undefined;
+      expect(
+        getIconFromCollection(iconName, collectionName, collections!)
+      ).to.eql(getIconRegistry().get(iconName, collectionName));
     });
   });
 });

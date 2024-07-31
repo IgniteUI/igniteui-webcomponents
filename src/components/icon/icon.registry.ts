@@ -87,8 +87,8 @@ export class IconsRegistry {
       () => new Map()
     );
     refs.getOrCreate(alias.collection).set(alias.name, {
-      collection: target.collection,
       name: target.name,
+      collection: target.collection,
     });
     this.stateBroadcast.broadcastState(
       ActionType.UpdateIconReference,

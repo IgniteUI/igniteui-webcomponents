@@ -132,8 +132,8 @@ export default class IgcIconComponent extends LitElement {
 
   /* c8 ignore next 4 */
   @blazorInclude()
-  protected async setIconRef(name: string, collection: string, icon: IconMeta) {
-    await setIconRef_impl(name, collection, icon);
+  protected setIconRef(name: string, collection: string, icon: IconMeta) {
+    setIconRef_impl(name, collection, icon);
   }
 }
 
