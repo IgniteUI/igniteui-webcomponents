@@ -9,7 +9,7 @@ $theme: $indigo;
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(var(--diameter) / 3.4 - var(--stroke-thickness));
+    font-size: calc(#{var-get($theme, 'diameter')} / 3.4 - var(--stroke-thickness));
 }
 
 [part~='fill'] {
