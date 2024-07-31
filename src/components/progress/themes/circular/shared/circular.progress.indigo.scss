@@ -5,7 +5,11 @@ $theme: $indigo;
 
 :host {
     --stroke-thickness: 2px;
-    --diameter: 46px;
+}
+
+[part~='label'],
+[part~='value'] {
+    font-size: calc(var(--diameter) / 3.4 - var(--stroke-thickness));
 }
 
 [part~='fill'] {

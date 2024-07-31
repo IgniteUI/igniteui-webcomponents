@@ -3,6 +3,19 @@
 
 $theme: $material;
 
+:host {
+    // Do not use rem values here
+    // This will break the component in Safari
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
+    --stroke-thickness: 1.3px;
+    --diameter: var-get($theme, 'diameter');
+}
+
+[part~='label'],
+[part~='value'] {
+    font-size: calc(var(--diameter) / 3 - var(--stroke-thickness));
+}
+
 [part~='label'] {
     color: var-get($theme, 'text-color');
 }
