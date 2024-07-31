@@ -29,7 +29,6 @@ For Firefox users, we provide limited scrollbar styling options through the foll
 - `--sb-thumb-bg-color`: Sets the background color of the scrollbar thumb.
 - `--sb-track-bg-color`: Sets the background color of the scrollbar track.
 
-
 ### Changed
 - **BREAKING**: Checkbox, Switch `igcChange` event.
 
