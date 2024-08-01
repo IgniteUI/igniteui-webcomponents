@@ -13,10 +13,8 @@ import IgcButtonComponent from '../button/button.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
-  arrowDown,
   arrowLeft,
   arrowRight,
-  arrowUp,
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
@@ -294,8 +292,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     })
       .set(arrowLeft, async () => await this.handleArrowLeft())
       .set(arrowRight, async () => await this.handleArrowRight())
-      .set(arrowUp, async () => await this.handleArrowUp())
-      .set(arrowDown, async () => await this.handleArrowDown())
       .set(homeKey, async () => await this.handleHomeKey())
       .set(endKey, async () => await this.handleEndKey());
 
@@ -392,30 +388,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private async handleArrowLeft(): Promise<void> {
-    if (this.vertical) return;
     this._hasKeyboardInteractionOnIndicators = true;
     isLTR(this) ? await this.prev() : await this.next();
     this.emitSlideChangedEvent();
   }
 
   private async handleArrowRight(): Promise<void> {
-    if (this.vertical) return;
     this._hasKeyboardInteractionOnIndicators = true;
     isLTR(this) ? await this.next() : await this.prev();
-    this.emitSlideChangedEvent();
-  }
-
-  private async handleArrowUp(): Promise<void> {
-    if (!this.vertical) return;
-    this._hasKeyboardInteractionOnIndicators = true;
-    await this.prev();
-    this.emitSlideChangedEvent();
-  }
-
-  private async handleArrowDown(): Promise<void> {
-    if (!this.vertical) return;
-    this._hasKeyboardInteractionOnIndicators = true;
-    await this.next();
     this.emitSlideChangedEvent();
   }
 
