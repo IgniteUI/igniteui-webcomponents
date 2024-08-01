@@ -27,7 +27,15 @@ export class DefaultMap<T, U> {
     return this._map.has(key);
   }
 
-  forEach(callback: (value: U, key: T, map: Map<T, U>) => void) {
-    this._map.forEach(callback);
+  public toMap() {
+    return this._map;
   }
+
+  public entries() {
+    return this._map.entries();
+  }
+}
+
+export function createIconDefaultMap<T, U>() {
+  return new DefaultMap<T, Map<T, U>>(() => new Map());
 }

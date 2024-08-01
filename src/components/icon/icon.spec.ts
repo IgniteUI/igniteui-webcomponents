@@ -11,7 +11,6 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import IgcIconComponent from './icon.js';
 import {
-  IconsRegistry,
   getIconRegistry,
   registerIcon,
   registerIconFromText,
@@ -132,7 +131,6 @@ describe('Icon registry', () => {
 describe('Icon broadcast service', () => {
   let channel: BroadcastChannel;
   let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
-  let peerRegistry: IconsRegistry | null;
   const collectionName = 'broadcast-test';
 
   const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
@@ -144,7 +142,6 @@ describe('Icon broadcast service', () => {
   });
 
   afterEach(async () => {
-    peerRegistry = null;
     channel.close();
     events = [];
   });
@@ -221,18 +218,18 @@ describe('Icon broadcast service', () => {
   describe('Peer registry', () => {
     it('registered icon is correctly sent when a peer requests a sync states', async () => {
       const iconName = 'bug';
-      peerRegistry = new IconsRegistry();
-
       registerIconFromText(iconName, bugSvg, collectionName);
-      await aTimeout(0);
 
       // a peer is requesting a state sync
-      (peerRegistry as any).stateBroadcast.broadcastState(ActionType.SyncState);
+      channel.postMessage({ actionType: ActionType.SyncState });
       await aTimeout(0);
+
+      expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
       const { actionType, collections } = last(events).data;
       expect(actionType).to.equal(ActionType.SyncState);
       expect(collections).not.to.be.undefined;
+
       expect(
         getIconFromCollection(iconName, collectionName, collections!)
       ).to.eql(getIconRegistry().get(iconName, collectionName));

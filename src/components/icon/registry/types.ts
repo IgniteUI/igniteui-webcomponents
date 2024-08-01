@@ -3,7 +3,7 @@ import type { DefaultMap } from './default-map.js';
 
 // Exported internal types
 
-export type Collection<T, U> = DefaultMap<T, U>;
+export type IconsCollection<T> = DefaultMap<string, Map<string, T>>;
 
 export type IconCallback = (name: string, collection: string) => void;
 export type IconThemeKey = Theme | 'default';
