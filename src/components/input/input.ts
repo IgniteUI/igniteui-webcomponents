@@ -48,6 +48,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   protected _value = '';
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* blazorGenericType */
+  /* blazorAlternateType: object */
   /**
    * The value of the control.
    * @attr
