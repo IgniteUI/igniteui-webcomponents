@@ -62,6 +62,10 @@
     min-width: rem(24px);
 }
 
+[part='indicator rtl'] {
+    transform: scaleX(-1);
+}
+
 [part~='label'] {
     @include type-style('body-2');
 
