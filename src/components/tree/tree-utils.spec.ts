@@ -32,7 +32,7 @@ export class TreeTestFunctions {
   ): void => {
     expect(slot).lightDom.to.equal(
       `<igc-icon name=${
-        expanded ? 'expand' : 'chevron_right'
+        expanded ? 'tree_collapse' : 'tree_expand'
       } collection="default"></igc-icon>`,
       DIFF_OPTIONS
     );
