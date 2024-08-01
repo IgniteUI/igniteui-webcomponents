@@ -33,7 +33,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
 
-
+### Added
+- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
+    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
+    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Removed
 - **BREAKING**: igc-form - use the native form element instead.
