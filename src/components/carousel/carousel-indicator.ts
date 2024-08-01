@@ -1,6 +1,15 @@
 import { LitElement, html } from 'lit';
 import { registerComponent } from '../common/definitions/register.js';
 
+/**
+ * Used when a custom indicator needs to be passed to the `igc-carousel` component.
+ *
+ * @element igc-carousel-indicator
+ *
+ * @slot - Default slot for projected inactive indicator.
+ * @slot active - Default slot for projected active indicator.
+ *
+ */
 export default class IgcCarouselIndicatorComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator';
 
