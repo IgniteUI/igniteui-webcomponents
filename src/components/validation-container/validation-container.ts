@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { FormAssociatedElementInterface } from '../common/mixins/form-associated.js';
-import { toKebabCase } from '../common/util.js';
+import { partNameMap, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/validator.base.css.js';
 
@@ -16,39 +16,32 @@ interface ValidationContainerConfig {
   hasHelperText?: boolean;
 }
 
-function getSlots(element: LitElement) {
+function getValidationSlots(element: IgcValidationContainerComponent) {
   return element.renderRoot.querySelectorAll<HTMLSlotElement>(
     "slot:not([name='helper-text'])"
   );
 }
 
-function* renderValidationSlots(validity: ValidityState, projected = false) {
-  for (const key in validity) {
-    if (key === 'valid' && !validity[key]) {
-      yield projected
-        ? html`<slot name="invalid" slot="invalid"></slot>`
-        : html`<slot name="invalid"></slot>`;
-    } else if (validity[key as keyof ValidityState]) {
-      const name = toKebabCase(key);
-
-      yield projected
-        ? html`<slot name=${name} slot=${name}></slot>`
-        : html`<div part="validation-message">
-            <igc-icon
-              aria-hidden="true"
-              name="validation_error"
-              collection="default"
-              part="validation-icon"
-            ></igc-icon>
-            <slot name=${name}></slot>
-          </div>`;
-    }
-  }
+function hasProjectedValidation(
+  element: IgcValidationContainerComponent,
+  slotName?: string
+) {
+  const config: AssignedNodesOptions = { flatten: true };
+  const slots = Array.from(getValidationSlots(element));
+  return slotName
+    ? slots
+        .filter((slot) => slot.name === slotName)
+        .some((slot) => slot.assignedElements(config).length > 0)
+    : slots.some((slot) => slot.assignedElements(config).length > 0);
 }
 
 /* blazorSuppress */
 /**
  * @element - igc-validator
+ *
+ * @csspart helper-text - The base wrapper
+ * @csspart validation-message - The validation error message container
+ * @csspart validation-icon - The validation error icon
  */
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
@@ -66,6 +59,8 @@ export default class IgcValidationContainerComponent extends LitElement {
       hasHelperText: true,
     }
   ): TemplateResult {
+    /// XXX: Yeah, don't like this
+    const renderer = IgcValidationContainerComponent.prototype;
     return html`
       <igc-validator
         id=${ifDefined(config.id)}
@@ -78,7 +73,7 @@ export default class IgcValidationContainerComponent extends LitElement {
         ${config.hasHelperText
           ? html`<slot name="helper-text" slot="helper-text"></slot>`
           : nothing}
-        ${renderValidationSlots(host.validity, true)}
+        ${renderer.renderValidationSlots(host.validity, true)}
       </igc-validator>
     `;
   }
@@ -112,29 +107,57 @@ export default class IgcValidationContainerComponent extends LitElement {
     return root;
   }
 
-  private hasSlottedElements() {
-    const slots = getSlots(this);
+  public handleEvent({ type }: Event) {
+    const isInvalid = type === 'invalid';
+    const isSlotChange = type === 'slotchange';
 
-    for (const slot of slots) {
-      if (slot.assignedElements({ flatten: true }).length > 0) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  public handleEvent(event: Event) {
-    if (event.type === 'slotchange') {
-      this._hasSlottedContent = this.hasSlottedElements();
-    }
-
-    if (event.type === 'invalid') {
-      this.invalid = true;
-      this._hasSlottedContent = this.hasSlottedElements();
+    if (isInvalid || isSlotChange) {
+      this.invalid = isInvalid ? true : this.invalid;
+      this._hasSlottedContent = hasProjectedValidation(this);
     }
 
     this.requestUpdate();
+  }
+
+  protected renderValidationMessage(slotName: string) {
+    const icon = hasProjectedValidation(this, slotName)
+      ? html`
+          <igc-icon
+            aria-hidden="true"
+            name="validation_error"
+            collection="default"
+            part="validation-icon"
+          ></igc-icon>
+        `
+      : null;
+
+    const parts = partNameMap({
+      'validation-message': true,
+      empty: !icon,
+    });
+
+    return html`
+      <div part=${parts}>
+        ${icon}
+        <slot name=${slotName}></slot>
+      </div>
+    `;
+  }
+
+  protected *renderValidationSlots(validity: ValidityState, projected = false) {
+    for (const key in validity) {
+      if (key === 'valid' && !validity[key]) {
+        yield projected
+          ? html`<slot name="invalid" slot="invalid"></slot>`
+          : html`<slot name="invalid"></slot>`;
+      } else if (validity[key as keyof ValidityState]) {
+        const name = toKebabCase(key);
+
+        yield projected
+          ? html`<slot name=${name} slot=${name}></slot>`
+          : this.renderValidationMessage(name);
+      }
+    }
   }
 
   protected renderHelper() {
@@ -146,7 +169,9 @@ export default class IgcValidationContainerComponent extends LitElement {
   protected override render() {
     return html`
       <div part="helper-text">
-        ${this.invalid ? renderValidationSlots(this.target.validity) : nothing}
+        ${this.invalid
+          ? this.renderValidationSlots(this.target.validity)
+          : nothing}
         ${this.renderHelper()}
       </div>
     `;
