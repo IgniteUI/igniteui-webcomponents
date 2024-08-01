@@ -728,7 +728,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
           start: this.indicatorsOrientation === 'start',
         })}
       >
-        <span>${this.current + 1} / ${this.total}</span>
+        <span>${this.current + 1}/${this.total}</span>
       </div>
     `;
   }

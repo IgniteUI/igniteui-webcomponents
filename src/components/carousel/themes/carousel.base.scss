@@ -14,7 +14,7 @@
         height: inherit;
         overflow: hidden;
         outline-style: none;
-        min-height: rem(300px);
+        min-height: rem(240px);
         min-width: rem(300px);
     }
 }
@@ -36,6 +36,7 @@
     @include type-style('caption');
 
     margin: rem(16px) 0;
+    min-width: rem(46px);
 }
 
 [part~='dot'] {
@@ -140,22 +141,24 @@ igc-button::part(base) {
         inset-block-start: 50%;
         transform: translateY(-50%);
         margin-block: 0;
-        margin-inline-end: rem(26px);
+        margin-inline-end: rem(29px);
+        padding: rem(6px) rem(4px);
     }
 
     [part='label indicators'] {
-        margin-inline-end: rem(20px);
+        margin-inline-end: rem(16px);
     }
 
     [part='indicators start'],
     [part='label indicators start'] {
         inset-inline-end: unset;
         inset-inline-start: 0;
-        margin-inline-start: rem(26px);
+        margin-inline-start: rem(16px);
         margin-inline-end: unset;
     }
 
+    [part='label indicators'],
     [part='label indicators start'] {
-        margin-inline-start: rem(20px);
+        padding: rem(4px) rem(6px);
     }
 }
