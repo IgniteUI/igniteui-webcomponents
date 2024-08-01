@@ -344,12 +344,12 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       yield html`<igc-rating-symbol exportparts="symbol, full, empty">
         <igc-icon
           collection="default"
-          name="star-filled"
+          name="star_filled"
           style=${styleMap({ clipPath: forward })}
         ></igc-icon>
         <igc-icon
           collection="default"
-          name="star-outlined"
+          name="star_outlined"
           style=${styleMap({ clipPath: backward })}
           slot="empty"
         ></igc-icon>
