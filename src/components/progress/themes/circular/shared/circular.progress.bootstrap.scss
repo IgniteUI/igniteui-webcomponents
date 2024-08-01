@@ -1,7 +1,11 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
 
 :host {
     --stroke-thickness: 2px;
+    --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
 [part~='label'],

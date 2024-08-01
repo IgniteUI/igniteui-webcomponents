@@ -1,9 +1,13 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
 
 // TODO If possible make the animation the same as the MS fluent
 
 :host {
     --stroke-thickness: 2px;
+    --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
 [part~='label'],

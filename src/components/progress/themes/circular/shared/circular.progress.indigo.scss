@@ -5,6 +5,7 @@ $theme: $indigo;
 
 :host {
     --stroke-thickness: 2px;
+    --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
 [part~='label'],
