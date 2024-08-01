@@ -1,4 +1,5 @@
 import type { Theme } from '../../theming/types.js';
+import { sameObject } from '../common/util.js';
 import { iconReferences } from './icon-references.js';
 import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
@@ -64,10 +65,13 @@ export class IconsRegistry {
           .get(alias.collection)
           ?.get(alias.name)?.external;
 
+        const _ref = this.references.get('default')?.get(alias.name) ?? {};
+        const _target = target.get(this.theme) ?? target.get('default')!;
+
         this.setIconRef({
           alias,
-          target: target.get(this.theme) ?? target.get('default')!,
-          overwrite: !external,
+          target: _target,
+          overwrite: !external && !sameObject(_ref, _target),
         });
       }
     }
@@ -79,9 +83,8 @@ export class IconsRegistry {
 
     if (overwrite) {
       reference.set(alias.name, { ...target });
+      this.notifyAll(alias.name, alias.collection);
     }
-
-    this.notifyAll(alias.name, alias.collection);
 
     const refs: Collection<string, Map<string, IconMeta>> = new DefaultMap(
       () => new Map()
