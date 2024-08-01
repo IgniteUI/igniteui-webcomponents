@@ -6,8 +6,23 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
+import { spy } from 'sinon';
+import type IgcButtonComponent from '../button/button.js';
+import {
+  arrowLeft,
+  arrowRight,
+  endKey,
+  enterKey,
+  homeKey,
+  spaceBar,
+  tabKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { finishAnimationsFor } from '../common/utils.spec.js';
+import {
+  finishAnimationsFor,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import IgcCarouselComponent from './carousel.js';
 
@@ -24,7 +39,7 @@ describe('Carousel', () => {
     ignoreAttributes: ['type', 'variant', 'part'],
   };
 
-  async function clickComplete(
+  async function slideChangeComplete(
     current: IgcCarouselSlideComponent,
     next: IgcCarouselSlideComponent
   ) {
@@ -51,12 +66,24 @@ describe('Carousel', () => {
 
   let carousel: IgcCarouselComponent;
   let slides: IgcCarouselSlideComponent[];
+  let nextButton: IgcButtonComponent;
+  let prevButton: IgcButtonComponent;
+  let defaultIndicators: HTMLDivElement[];
 
   beforeEach(async () => {
     carousel = await fixture<IgcCarouselComponent>(createCarouselComponent());
     slides = carousel.querySelectorAll(
       IgcCarouselSlideComponent.tagName
     ) as unknown as IgcCarouselSlideComponent[];
+    nextButton = carousel.shadowRoot?.querySelectorAll(
+      'igc-button'
+    )[1] as IgcButtonComponent;
+    prevButton = carousel.shadowRoot?.querySelectorAll(
+      'igc-button'
+    )[0] as IgcButtonComponent;
+    defaultIndicators = carousel.shadowRoot?.querySelectorAll(
+      'div[role="tab"]'
+    ) as unknown as HTMLDivElement[];
   });
 
   describe('Initialization', () => {
@@ -223,7 +250,7 @@ describe('Carousel', () => {
         'div[part="label indicators"]'
       );
       expect(label).to.not.be.null;
-      expect(label?.textContent?.trim()).to.equal('1 / 3');
+      expect(label?.textContent?.trim()).to.equal('1/3');
     });
 
     it('should not render indicators label if `skipIndicator` is true', async () => {
@@ -239,7 +266,7 @@ describe('Carousel', () => {
         'div[part="label indicators"]'
       );
       expect(label).to.not.be.null;
-      expect(label?.textContent?.trim()).to.equal('1 / 3');
+      expect(label?.textContent?.trim()).to.equal('1/3');
 
       carousel.skipIndicator = true;
       await elementUpdated(carousel);
@@ -381,18 +408,18 @@ describe('Carousel', () => {
           <igc-carousel-slide>
             <span>1</span>
           </igc-carousel-slide>
-          <igc-carousel-slide>
-            <span>2</span>
-          </igc-carousel-slide>
-          <igc-carousel-slide>
-            <span>2</span>
-          </igc-carousel-slide>
         </igc-carousel>`
       );
+
+      nextButton = carousel.shadowRoot?.querySelectorAll(
+        'igc-button'
+      )[1] as IgcButtonComponent;
+      prevButton = carousel.shadowRoot?.querySelectorAll(
+        'igc-button'
+      )[0] as IgcButtonComponent;
     });
 
     it('it should slot previous button icon', async () => {
-      const prevButton = carousel.shadowRoot?.querySelectorAll('igc-button')[0];
       const slottedContent = prevButton
         ?.querySelector('slot')
         ?.assignedNodes()[0];
@@ -401,7 +428,6 @@ describe('Carousel', () => {
     });
 
     it('it should slot next button icon', async () => {
-      const nextButton = carousel.shadowRoot?.querySelectorAll('igc-button')[1];
       const slottedContent = nextButton
         ?.querySelector('slot')
         ?.assignedNodes()[0];
@@ -443,70 +469,250 @@ describe('Carousel', () => {
   describe('Interactions', () => {
     describe('Click', () => {
       it('it should change slide when clicking next button', async () => {
-        const indicators = carousel.shadowRoot?.querySelectorAll(
-          'div[role="tab"]'
-        ) as NodeListOf<HTMLDivElement>;
-
         expect(carousel.current).to.equal(0);
-        expect(indicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
-        const nextButton =
-          carousel.shadowRoot?.querySelectorAll('igc-button')[1];
-
-        nextButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-
-        await clickComplete(slides[0], slides[1]);
+        simulateClick(nextButton!);
+        await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
-        expect(indicators[0].ariaSelected).to.equal('false');
-        expect(indicators[1].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('false');
+        expect(defaultIndicators[1].ariaSelected).to.equal('true');
       });
 
       it('it should change slide when clicking previous button', async () => {
-        const indicators = carousel.shadowRoot?.querySelectorAll(
-          'div[role="tab"]'
-        ) as NodeListOf<HTMLDivElement>;
-
         expect(carousel.current).to.equal(0);
-        expect(indicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
-        const prevButton =
-          carousel.shadowRoot?.querySelectorAll('igc-button')[0];
-
-        prevButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-
-        await clickComplete(slides[0], slides[2]);
+        simulateClick(prevButton!);
+        await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(2);
-        expect(indicators[0].ariaSelected).to.equal('false');
-        expect(indicators[2].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('false');
+        expect(defaultIndicators[2].ariaSelected).to.equal('true');
       });
 
       it('it should change slide when clicking indicators', async () => {
-        const indicators = carousel.shadowRoot?.querySelectorAll(
-          'div[role="tab"]'
-        ) as NodeListOf<HTMLDivElement>;
-
         expect(carousel.current).to.equal(0);
-        expect(indicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
         // select second slide
-        indicators[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-
-        await clickComplete(slides[0], slides[1]);
+        simulateClick(defaultIndicators[1]);
+        await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
-        expect(indicators[0].ariaSelected).to.equal('false');
-        expect(indicators[1].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].ariaSelected).to.equal('false');
+        expect(defaultIndicators[1].ariaSelected).to.equal('true');
 
         // select first slide
-        indicators[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-
-        await clickComplete(slides[1], slides[0]);
+        simulateClick(defaultIndicators[0]);
+        await slideChangeComplete(slides[1], slides[0]);
 
         expect(carousel.current).to.equal(0);
-        expect(indicators[0].ariaSelected).to.equal('true');
-        expect(indicators[1].ariaSelected).to.equal('false');
+        expect(defaultIndicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[1].ariaSelected).to.equal('false');
+      });
+    });
+
+    describe('Keyboard', () => {
+      it('it should change to next slide on Enter/Space keys', async () => {
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(nextButton!, spaceBar);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(1);
+
+        simulateKeyboard(nextButton!, enterKey);
+        await slideChangeComplete(slides[1], slides[2]);
+
+        expect(carousel.current).to.equal(2);
+      });
+
+      it('it should change to previous slide on Enter/Space keys', async () => {
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(prevButton!, spaceBar);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(2);
+
+        simulateKeyboard(prevButton!, enterKey);
+        await slideChangeComplete(slides[2], slides[1]);
+
+        expect(carousel.current).to.equal(1);
+      });
+
+      it('it should change slides on ArrowLeft/ArrowRight/Home/End keys (LTR)', async () => {
+        const indicatorsContainer = carousel.shadowRoot?.querySelector(
+          'div[role="tablist"]'
+        ) as HTMLDivElement;
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(indicatorsContainer, arrowRight);
+        await slideChangeComplete(slides[0], slides[1]);
+        expect(carousel.current).to.equal(1);
+
+        simulateKeyboard(indicatorsContainer, arrowLeft);
+        await slideChangeComplete(slides[1], slides[0]);
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(indicatorsContainer, endKey);
+        await slideChangeComplete(slides[0], slides[2]);
+        expect(carousel.current).to.equal(2);
+
+        simulateKeyboard(indicatorsContainer, homeKey);
+        await slideChangeComplete(slides[2], slides[0]);
+        expect(carousel.current).to.equal(0);
+      });
+
+      it('it should change slides on ArrowLeft/ArrowRight/Home/End keys (RTL)', async () => {
+        carousel.dir = 'rtl';
+        await elementUpdated(carousel);
+        const indicatorsContainer = carousel.shadowRoot?.querySelector(
+          'div[role="tablist"]'
+        ) as HTMLDivElement;
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(indicatorsContainer, arrowRight);
+        await slideChangeComplete(slides[0], slides[2]);
+        expect(carousel.current).to.equal(2);
+
+        simulateKeyboard(indicatorsContainer, arrowLeft);
+        await slideChangeComplete(slides[2], slides[0]);
+        expect(carousel.current).to.equal(0);
+
+        simulateKeyboard(indicatorsContainer, homeKey);
+        await slideChangeComplete(slides[0], slides[2]);
+        expect(carousel.current).to.equal(2);
+
+        simulateKeyboard(indicatorsContainer, endKey);
+        await slideChangeComplete(slides[2], slides[0]);
+        expect(carousel.current).to.equal(0);
+      });
+    });
+
+    describe('Automatic rotation', () => {
+      it('it should pause/play on pointerenter/pointerleave', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
+        const divContainer = carousel.shadowRoot?.querySelector(
+          'div[aria-live]'
+        ) as HTMLDivElement;
+
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        carousel.interval = 2000;
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        expect(eventSpy.callCount).to.equal(2);
+        expect(eventSpy.firstCall).calledWith('igcPaused');
+        expect(eventSpy.secondCall).calledWith('igcPlaying');
+      });
+
+      it('it should pause/play on keyboard interaction', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
+        const divContainer = carousel.shadowRoot?.querySelector(
+          'div[aria-live]'
+        ) as HTMLDivElement;
+
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        carousel.interval = 2000;
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        // hover carousel
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        // focus with keyboard
+        simulateKeyboard(prevButton, tabKey);
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        // keyboard focus/interaction is present
+        // -> should not start rotation on pointerleave
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        // loose keyboard focus
+        carousel.dispatchEvent(new PointerEvent('pointerdown'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        // hover out of the carousel
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        expect(eventSpy.callCount).to.equal(2);
+        expect(eventSpy.firstCall).calledWith('igcPaused');
+        expect(eventSpy.secondCall).calledWith('igcPlaying');
+      });
+
+      it('it should not pause on interaction if `skipPauseOnInteraction` is true', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
+        const divContainer = carousel.shadowRoot?.querySelector(
+          'div[aria-live]'
+        ) as HTMLDivElement;
+
+        expect(divContainer.ariaLive).to.equal('polite');
+
+        carousel.interval = 2000;
+        carousel.skipPauseOnInteraction = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(divContainer.ariaLive).to.equal('off');
+
+        expect(eventSpy.callCount).to.equal(0);
       });
     });
   });
