@@ -66,7 +66,10 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 
     [part='helper-text'] {
+        @include type-style('caption');
+
         padding: 0;
+        grid-auto-rows: minmax(rem(18px), auto);
         margin-top: rem(5px);
     }
 }
@@ -143,4 +146,17 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     [part~='input'] {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    igc-validator[invalid] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+igc-validator {
+    @include type-style('caption');
+
+    margin-block-start: rem(5px);
 }

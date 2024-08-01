@@ -52,12 +52,6 @@ $theme: $base;
     }
 }
 
-:host([invalid]) {
-    [part='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 /* stylelint-disable */
 :host([type='search']) {
     input[type='search']::-webkit-search-cancel-button,

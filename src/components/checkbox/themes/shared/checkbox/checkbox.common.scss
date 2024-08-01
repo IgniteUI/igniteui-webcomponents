@@ -19,6 +19,8 @@ $theme: $base;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
+    color: var-get($theme, 'error-color');
+
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }

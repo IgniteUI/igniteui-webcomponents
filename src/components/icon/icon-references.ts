@@ -243,4 +243,16 @@ export const iconReferences: IconReference[] = [
       },
     }),
   },
+  {
+    alias: {
+      name: 'validation_error',
+      collection: 'default',
+    },
+    target: makeIconRefs({
+      default: {
+        name: 'chip_cancel',
+        collection: 'internal',
+      },
+    }),
+  },
 ];

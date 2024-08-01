@@ -3,6 +3,10 @@
 
 $theme: $indigo;
 
+:host {
+    gap: rem(16px);
+}
+
 [part~='base'] {
     gap: rem(8px);
 
@@ -59,7 +63,7 @@ $theme: $indigo;
         &::after {
             border-color: var-get($theme, 'fill-hover-border-color');
         }
-    
+
         &::before {
             background: var-get($theme, 'fill-color-hover');
             border-color: var-get($theme, 'fill-hover-border-color');

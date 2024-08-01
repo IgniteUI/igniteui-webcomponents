@@ -4,6 +4,8 @@
 $theme: $bootstrap;
 
 :host {
+    gap: rem(16px);
+
     &::part(base) {
         transition: none;
     }

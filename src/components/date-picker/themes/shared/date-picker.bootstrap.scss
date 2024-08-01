@@ -9,7 +9,7 @@ $theme: $bootstrap;
             border: none;
         }
     }
-    
+
     igc-dialog::part(base) {
         border: rem(1px) solid var-get($theme, 'border-color');
     }
@@ -18,7 +18,7 @@ $theme: $bootstrap;
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
-    [part='helper-text'] {
+    igc-validator {
         padding-inline: 0;
 
         ::slotted([slot='helper-text']) {
@@ -30,7 +30,7 @@ $theme: $bootstrap;
         @include type-style('body-1');
 
         margin-bottom: rem(4px);
-    
+
         &:empty {
             display: none;
         }

@@ -30,14 +30,8 @@
     }
 }
 
-[part='helper-text'] {
-    line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
-    }
+igc-validator {
+    @include type-style('caption');
 }
 
 [part='label'] {

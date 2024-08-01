@@ -1,9 +1,11 @@
-import { LitElement, type TemplateResult, css, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { FormAssociatedElementInterface } from '../common/mixins/form-associated.js';
 import { toKebabCase } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import { styles } from './themes/validator.base.css.js';
 
 type IgcFormControl = LitElement & FormAssociatedElementInterface;
 
@@ -28,9 +30,18 @@ function* renderValidationSlots(validity: ValidityState, projected = false) {
         : html`<slot name="invalid"></slot>`;
     } else if (validity[key as keyof ValidityState]) {
       const name = toKebabCase(key);
+
       yield projected
         ? html`<slot name=${name} slot=${name}></slot>`
-        : html`<slot name=${name}></slot>`;
+        : html`<div part="validation-message">
+            <igc-icon
+              aria-hidden="true"
+              name="validation_error"
+              collection="default"
+              part="validation-icon"
+            ></igc-icon>
+            <slot name=${name}></slot>
+          </div>`;
     }
   }
 }
@@ -41,16 +52,11 @@ function* renderValidationSlots(validity: ValidityState, projected = false) {
  */
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
-
-  public static override styles = css`
-    :host {
-      display: contents;
-    }
-  `;
+  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcValidationContainerComponent);
+    registerComponent(IgcValidationContainerComponent, IgcIconComponent);
   }
 
   public static create(
@@ -67,7 +73,7 @@ export default class IgcValidationContainerComponent extends LitElement {
         slot=${ifDefined(config.slot)}
         .target=${host}
         ?invalid=${host.invalid}
-        exportparts="helper-text"
+        exportparts="helper-text validation-message validation-icon"
       >
         ${config.hasHelperText
           ? html`<slot name="helper-text" slot="helper-text"></slot>`

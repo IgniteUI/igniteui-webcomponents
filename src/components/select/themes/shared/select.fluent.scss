@@ -18,12 +18,9 @@ $focused-border-width: rem(2px);
     box-shadow: var(--ig-elevation-4);
 }
 
-[part='helper-text'] {
+igc-validator {
     margin-top: rem(5px);
-
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'helper-text-color');
-    }
+    color: var-get($theme, 'helper-text-color');
 }
 
 [part~='toggle-icon'] {
@@ -57,14 +54,14 @@ $focused-border-width: rem(2px);
 }
 
 :host([invalid]) {
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
-    [part='helper-text'] ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($fluent, 'disabled-text-color');
     }
 

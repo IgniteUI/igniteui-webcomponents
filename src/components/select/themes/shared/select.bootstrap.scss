@@ -10,13 +10,10 @@ $input-theme: input-theme.$bootstrap;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    [part='helper-text'] {
-        margin-top: rem(4px);
-    }
-
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         @include type-style('body-2');
 
+        margin-top: rem(4px);
         color: var-get($theme, 'helper-text-color');
     }
 }
@@ -42,14 +39,14 @@ $input-theme: input-theme.$bootstrap;
 }
 
 :host([invalid]) {
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host([disabled]),
 :host(:disabled) {
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'disabled-text-color');
     }
 

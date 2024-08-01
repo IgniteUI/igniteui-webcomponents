@@ -12,6 +12,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
     font-weight: 600;
+    gap: rem(16px);
 }
 
 [part~='control'] {

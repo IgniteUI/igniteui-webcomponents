@@ -61,10 +61,6 @@
     }
 }
 
-[part='helper-text'] {
-    @include type-style('caption');
-}
-
 :host([disabled]) {
     pointer-events: none;
 }

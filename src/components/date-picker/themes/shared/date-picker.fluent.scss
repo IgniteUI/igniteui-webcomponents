@@ -12,7 +12,7 @@ $theme: $fluent;
         @include type-style('subtitle-2');
     }
 
-    [part='helper-text'] {
+    igc-validator {
         margin-top: rem(5px);
         padding-inline: 0;
     }

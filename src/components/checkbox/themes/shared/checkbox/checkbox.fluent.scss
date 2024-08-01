@@ -37,6 +37,10 @@ $disabled-color: var-get($theme, 'disabled-color');
     transform: scale(.8);
 }
 
+:host {
+    gap: rem(16px);
+}
+
 :host(:hover) {
     [part~='indicator'] {
         opacity: 1;
@@ -185,7 +189,7 @@ $disabled-color: var-get($theme, 'disabled-color');
         &::before {
             background: $invalid-hover-color;
         }
- 
+
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;
             background: transparent;

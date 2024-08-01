@@ -13,6 +13,7 @@ $border-width: rem(1px);
     --label-gap: #{rem(8px)};
 
     font-weight: 600;
+    gap: rem(16px);
 }
 
 [part~='label'] {
