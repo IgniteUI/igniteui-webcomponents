@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
 - Radio - do not emit change event on already checked radio
 - Calendar - add correct dates DOM parts based on active view [[#1278](https://github.com/IgniteUI/igniteui-webcomponents/issues/1278)]
+- Date-picker, Dropdown & Select - showing the component programmatically in response to an outside click event closes the dropdown popover [#1339](https://github.com/IgniteUI/igniteui-webcomponents/issues/1339)
 
 ## [4.11.1] - 2024-07-03
 ### Changed

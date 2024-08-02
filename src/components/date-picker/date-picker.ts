@@ -13,7 +13,6 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -168,10 +167,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _dateConstraints?: DateRangeDescriptor[];
   private _displayFormat?: string;
   private _inputFormat?: string;
-
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: this.handleClosing,
-  });
 
   private get isDropDown() {
     return this.mode === 'dropdown';
@@ -430,6 +425,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('focusout', this.handleFocusOut);
+
+    this._rootClickController.update({ hideCallback: this.handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled,
