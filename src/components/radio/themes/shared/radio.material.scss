@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    gap: rem(8px);
+}
+
 [part~='ripple'] {
     border-radius: var(--size);
     display: block;

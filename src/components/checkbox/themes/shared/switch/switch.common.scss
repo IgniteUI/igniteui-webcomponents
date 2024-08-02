@@ -42,6 +42,8 @@ $theme: $material;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
+    color: var-get($theme, 'label-invalid-color');
+
     [part~='label'] {
         color: var-get($theme, 'label-invalid-color');
     }

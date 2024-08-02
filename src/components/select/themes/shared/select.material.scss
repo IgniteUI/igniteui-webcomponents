@@ -132,15 +132,14 @@ $active-border-width: rem(2px) !default;
     color: var-get($theme, 'toggle-button-foreground-filled');
 }
 
-
-[part='helper-text'] {
+igc-validator {
     color: var-get($theme, 'helper-text-color');
-    margin-top: rem(5px);
-    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+    margin-top: rem(4px);
+    padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
 }
 
 :host([invalid]) {
-    [part='helper-text'] {
+    igc-validator {
         color: var-get($theme, 'error-secondary-color');
     }
 }
@@ -160,7 +159,7 @@ $active-border-width: rem(2px) !default;
         }
     }
 
-    [part='helper-text'] {
+    igc-validator {
         color: var-get($theme, 'disabled-text-color');
     }
 }

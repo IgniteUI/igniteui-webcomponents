@@ -23,15 +23,6 @@ export const requiredValidator: Validator<{
   isValid: ({ required, value }) => (required ? !!value : true),
 };
 
-export const requiredNumberValidator: Validator<{
-  required: boolean;
-  value?: number | string;
-}> = {
-  key: 'valueMissing',
-  message: validatorMessages.required,
-  isValid: ({ required, value }) => (required ? isDefined(value) : true),
-};
-
 export const requiredBooleanValidator: Validator<{
   required: boolean;
   checked: boolean;

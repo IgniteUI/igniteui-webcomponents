@@ -130,6 +130,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='helper-text'] {
     @include type-style('caption');
 
+    grid-auto-rows: minmax(rem(18px), auto);
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     margin-top: rem(5px);
 }
@@ -509,4 +510,18 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    igc-validator[invalid] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+igc-validator {
+    @include type-style('caption');
+
+    margin-block-start: rem(4px);
+    padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
 }

@@ -6,7 +6,6 @@ import {
   minLengthValidator,
   minValidator,
   patternValidator,
-  requiredNumberValidator,
   requiredValidator,
   stepValidator,
   urlValidator,
@@ -38,7 +37,7 @@ export const stringValidators: Validator<IgcInputComponent>[] = [
 ];
 
 export const numberValidators: Validator<IgcInputComponent>[] = [
-  requiredNumberValidator,
+  requiredValidator,
   minValidator,
   maxValidator,
   stepValidator,

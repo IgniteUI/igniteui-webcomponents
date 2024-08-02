@@ -256,3 +256,14 @@ export function* chunk<T>(arr: T[], size: number) {
     yield arr.slice(i, i + size);
   }
 }
+
+export function splitToWords(text: string) {
+  const input = text.replaceAll(/[^a-zA-Z0-9\s-_]/g, '');
+  if (/[\s-_]+/.test(input)) return input.split(/[\s-_]+/);
+  return input.split(/(?=[A-Z])+/);
+}
+
+export function toKebabCase(text: string): string {
+  const input = text.trim();
+  return splitToWords(input).join('-').toLocaleLowerCase();
+}

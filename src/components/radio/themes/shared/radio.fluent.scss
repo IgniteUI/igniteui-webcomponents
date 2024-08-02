@@ -3,6 +3,10 @@
 
 $theme: $fluent;
 
+:host {
+    gap: rem(16px);
+}
+
 [part~='label'] {
     @include type-style('body-2');
 }

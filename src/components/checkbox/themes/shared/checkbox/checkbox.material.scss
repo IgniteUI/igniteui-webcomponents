@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    gap: rem(8px);
+}
+
 [part~='label'] {
     @include type-style('subtitle-1');
 }

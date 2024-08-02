@@ -12,8 +12,10 @@ $input-theme: input-theme.$indigo;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'helper-text-color');
+        margin-top: rem(4px);
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     }
 
     igc-input::part(input) {
@@ -22,11 +24,6 @@ $input-theme: input-theme.$indigo;
 
     igc-input::part(container) {
         padding-inline: 0;
-    }
-
-    [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     }
 }
 
@@ -49,7 +46,7 @@ $input-theme: input-theme.$indigo;
 }
 
 :host([invalid]) {
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'error-secondary-color');
     }
 }
@@ -66,7 +63,7 @@ $input-theme: input-theme.$indigo;
         color: var-get($theme, 'disabled-text-color');
     }
 
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'disabled-text-color');
     }
 

@@ -187,3 +187,9 @@ addIcon('tree_collapse', {
     collection: 'internal',
   },
 });
+addIcon('validation_error', {
+  default: {
+    name: 'chip_cancel',
+    collection: 'internal',
+  },
+});

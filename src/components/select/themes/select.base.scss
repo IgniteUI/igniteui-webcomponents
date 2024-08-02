@@ -31,14 +31,10 @@ igc-input::part(input) {
     }
 }
 
-[part='helper-text'] {
+igc-validator {
+    @include type-style('caption');
+
     line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
-    }
 }
 
 [name='prefix']::slotted(*),

@@ -21,7 +21,8 @@ $input-theme: input-theme.$indigo;
         @include type-style('caption');
     }
 
-    [part='helper-text'] {
+    igc-validator {
+        margin-top: rem(4px);
         padding: 0;
     }
 }

@@ -110,6 +110,9 @@ $transition-duration: .25s;
     }
 
     [part='helper-text'] {
+        @include type-style('caption');
+
+        grid-auto-rows: minmax(rem(15px), auto);
         margin-top: rem(4px);
     }
 }
@@ -176,7 +179,7 @@ $transition-duration: .25s;
         }
     }
 
-    [part='helper-text'] {
+    [part='validation-icon'] {
         color: var-get($theme, 'helper-text-color');
     }
 }
@@ -212,4 +215,17 @@ $transition-duration: .25s;
     [part='helper-text'] {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    igc-validator[invalid] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+igc-validator {
+    @include type-style('caption');
+
+    margin-block-start: rem(4px);
 }
