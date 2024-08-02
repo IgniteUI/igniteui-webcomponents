@@ -400,6 +400,9 @@ describe('Calendar Rendering', () => {
 
     it('issue #1278', async () => {
       const today = new CalendarDay({ year: 2024, month: 6, date: 25 });
+      calendar.activeDate = today.native;
+      await elementUpdated(calendar);
+
       const calendarDOM = getCalendarDOM(calendar);
 
       const julySpecials = [

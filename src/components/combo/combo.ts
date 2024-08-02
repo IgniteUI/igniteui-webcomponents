@@ -14,12 +14,10 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -43,6 +41,7 @@ import type {
   Item,
   Keys,
 } from './types.js';
+import { comboValidators } from './validators.js';
 
 /* blazorSupportsVisualChildren */
 /**
@@ -131,16 +130,9 @@ export default class IgcComboComponent<
     matchDiacritics: false,
   };
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () =>
-        this.required
-          ? Array.isArray(this.value) && this.value.length > 0
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return comboValidators;
+  }
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -448,6 +440,7 @@ export default class IgcComboComponent<
    */
   /* blazorPrimitiveValue */
   /* blazorByValueArray */
+  /* blazorGenericType */
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
