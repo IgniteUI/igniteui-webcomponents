@@ -8,6 +8,7 @@ import {
 } from 'lit/decorators.js';
 
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
@@ -116,8 +117,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
   }
 
-  @queryAll('[role="tab"]')
-  private _defaultIndicators!: NodeListOf<HTMLDivElement>;
+  @queryAll(IgcCarouselIndicatorComponent.tagName)
+  private _defaultIndicators!: NodeListOf<IgcCarouselIndicatorComponent>;
 
   @queryAssignedElements({
     selector: IgcCarouselIndicatorComponent.tagName,
@@ -421,14 +422,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       event
     ) as IgcCarouselIndicatorComponent;
 
-    const dot = findElementFromEventPath<HTMLDivElement>(
-      'div[role="tab"]',
-      event
-    ) as HTMLDivElement;
-
-    const index = dot
-      ? Array.from(this._defaultIndicators).indexOf(dot)
-      : this._projectedIndicators.indexOf(indicator);
+    const index = this.hasProjectedIndicators
+      ? this._projectedIndicators.indexOf(indicator)
+      : Array.from(this._defaultIndicators).indexOf(indicator);
 
     if (index !== this.current && this.slides[index]) {
       const dir = index > this.current ? 'next' : 'prev';
@@ -682,6 +678,28 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     `;
   }
 
+  protected *renderIndicators() {
+    for (let i = 0; i < this.slides.length; i++) {
+      const slide = this.slides[i];
+      const forward = `inset(0 ${slide.active ? 0 : 100}% 0 0)`;
+      const backward = `inset(0 0 0 ${slide.active ? 100 : 0}%)`;
+      yield html`<igc-carousel-indicator
+        exportparts="indicator, active, inactive"
+        role="tab"
+        tabindex=${slide.active ? 0 : -1}
+        aria-label="Slide ${i + 1}"
+        aria-selected=${slide.active}
+      >
+        <div part="dot" style=${styleMap({ clipPath: backward })}></div>
+        <div
+          part="dot active"
+          slot="active"
+          style=${styleMap({ clipPath: forward })}
+        ></div>
+      </igc-carousel-indicator>`;
+    }
+  }
+
   private indicatorTemplate() {
     return html`
       <igc-carousel-indicator-container>
@@ -698,21 +716,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
             @slotchange=${this.handleIndicatorSlotChange}
             @click=${this.handleIndicatorClick}
           >
-            ${this.slides.map((slide, index) => {
-              return html`<div
-                role="tab"
-                tabindex=${slide.active ? 0 : -1}
-                aria-label="Slide ${index + 1}"
-                aria-selected=${slide.active}
-              >
-                <div
-                  part=${partNameMap({
-                    dot: true,
-                    active: slide.active,
-                  })}
-                ></div>
-              </div>`;
-            })}
+            ${this.renderIndicators()}
           </slot>
         </div>
       </igc-carousel-indicator-container>

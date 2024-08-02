@@ -23,6 +23,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
+import type IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import IgcCarouselComponent from './carousel.js';
 
@@ -33,10 +34,6 @@ describe('Carousel', () => {
 
   const DIFF_OPTIONS = {
     ignoreAttributes: ['id'],
-  };
-
-  const BUTTON_DIFF_OPTIONS = {
-    ignoreAttributes: ['type', 'variant', 'part'],
   };
 
   async function slideChangeComplete(
@@ -68,7 +65,7 @@ describe('Carousel', () => {
   let slides: IgcCarouselSlideComponent[];
   let nextButton: IgcButtonComponent;
   let prevButton: IgcButtonComponent;
-  let defaultIndicators: HTMLDivElement[];
+  let defaultIndicators: IgcCarouselIndicatorComponent[];
 
   beforeEach(async () => {
     carousel = await fixture<IgcCarouselComponent>(createCarouselComponent());
@@ -82,8 +79,8 @@ describe('Carousel', () => {
       'igc-button'
     )[0] as IgcButtonComponent;
     defaultIndicators = carousel.shadowRoot?.querySelectorAll(
-      'div[role="tab"]'
-    ) as unknown as HTMLDivElement[];
+      'igc-carousel-indicator'
+    ) as unknown as IgcCarouselIndicatorComponent[];
   });
 
   describe('Initialization', () => {
@@ -142,15 +139,39 @@ describe('Carousel', () => {
           <igc-carousel-indicator-container>
             <div role="tablist">
               <slot name="indicator">
-                <div aria-label="Slide 1" aria-selected="true" role="tab" tabindex="0">
+                <igc-carousel-indicator
+                  aria-label="Slide 1"
+                  aria-selected="true"
+                  role="tab"
+                  tabindex="0"
+                  slot="indicator"
+                  exportparts="indicator, active, inactive"
+                >
                   <div></div>
-                </div>
-                <div aria-label="Slide 2" aria-selected="false" role="tab" tabindex="-1">
+                  <div slot="active"></div>
+                </igc-carousel-indicator>
+                <igc-carousel-indicator
+                  aria-label="Slide 2"
+                  aria-selected="false"
+                  role="tab"
+                  tabindex="-1"
+                  slot="indicator"
+                  exportparts="indicator, active, inactive"
+                >
                   <div></div>
-                </div>
-                <div aria-label="Slide 3" aria-selected="false" role="tab" tabindex="-1">
+                  <div slot="active"></div>
+                </igc-carousel-indicator>
+                <igc-carousel-indicator
+                  aria-label="Slide 3"
+                  aria-selected="false"
+                  role="tab"
+                  tabindex="-1"
+                  slot="indicator"
+                  exportparts="indicator, active, inactive"
+                >
                   <div></div>
-                </div>
+                  <div slot="active"></div>
+                </igc-carousel-indicator>
               </slot>
             </div>
           </igc-carousel-indicator-container>
@@ -158,7 +179,9 @@ describe('Carousel', () => {
             <slot></slot>
           </div>
         </section>`,
-        BUTTON_DIFF_OPTIONS
+        {
+          ignoreAttributes: ['type', 'variant', 'part', 'style'],
+        }
       );
     });
 

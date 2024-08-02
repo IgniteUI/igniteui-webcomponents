@@ -24,22 +24,4 @@ const slideOutHor = (options = baseOptions) =>
     options
   );
 
-const slideInVer = (options = baseOptions) =>
-  animation(
-    [
-      { transform: 'translateY(100%)', opacity: 0 },
-      { transform: 'translateY(0)', opacity: 1 },
-    ],
-    options
-  );
-
-const slideOutVer = (options = baseOptions) =>
-  animation(
-    [
-      { transform: 'translateY(0)', opacity: 1 },
-      { transform: 'translateY(-100%)', opacity: 0 },
-    ],
-    options
-  );
-
-export { slideInHor, slideOutHor, slideInVer, slideOutVer };
+export { slideInHor, slideOutHor };
