@@ -51,7 +51,7 @@ igc-button[disabled]::part(base) {
     box-shadow: none;
     border-radius: rem(4px);
     color: var-get($theme, 'indicator-color');
-    opacity: .8;
+    background: var-get($theme, 'label-indicator-background');
 }
 
 [part~='dot'] {
