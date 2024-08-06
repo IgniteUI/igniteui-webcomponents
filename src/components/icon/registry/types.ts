@@ -3,7 +3,7 @@ import type { DefaultMap } from './default-map.js';
 
 // Exported internal types
 
-export type Collection<T, U> = DefaultMap<T, U>;
+export type IconsCollection<T> = DefaultMap<string, Map<string, T>>;
 
 export type IconCallback = (name: string, collection: string) => void;
 export type IconThemeKey = Theme | 'default';
@@ -23,6 +23,18 @@ export type IconReferencePair = {
   target: IconMeta;
   overwrite: boolean;
 };
+
+export enum ActionType {
+  SyncState = 0,
+  RegisterIcon = 1,
+  UpdateIconReference = 2,
+}
+
+export interface BroadcastIconsChangeMessage {
+  actionType: ActionType;
+  collections?: Map<string, Map<string, SvgIcon>>;
+  references?: Map<string, Map<string, IconMeta>>;
+}
 
 // Exported public types
 

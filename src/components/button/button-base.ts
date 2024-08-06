@@ -9,8 +9,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { partNameMap } from '../common/util.js';
 
 export interface IgcButtonEventMap {
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport
@@ -111,12 +112,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     this._nativeButton.blur();
   }
 
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
   }
 
@@ -148,7 +144,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
         @click=${this.handleClick}
-        @focus=${this.handleFocus}
         @blur=${this.handleBlur}
       >
         ${this.renderContent()}
@@ -170,7 +165,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        @focus=${this.disabled ? nothing : this.handleFocus}
         @blur=${this.disabled ? nothing : this.handleBlur}
       >
         ${this.renderContent()}

@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- **BREAKING**: Removed `igcFocus` and `igcBlur` events from buttons and inputs - Button, Icon Button, Checkbox, Switch, Combo, Date Time Input, Input, Mask Input, Radios, Select, Textarea.
+
+  Use the native `focus` & `blur` events instead.
+
+  Before:
+  ```ts
+  const input = document.createElement('igc-input');
+  input.addEventListener('igcFocus', focusHandler);
+  ```
+
+  Now:
+  ```ts
+  input.addEventListener('focus', focusHandler);
+  ```
+
 - **BREAKING**: Checkbox, Switch `igcChange` event.
 
   Before:
