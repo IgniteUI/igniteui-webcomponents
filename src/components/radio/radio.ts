@@ -31,9 +31,9 @@ export interface RadioChangeEventArgs {
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<RadioChangeEventArgs>;
-  // REVIEW
-  // igcFocus: CustomEvent<void>;
-  // igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 /**

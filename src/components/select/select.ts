@@ -52,9 +52,9 @@ import { selectValidators } from './validators.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
-  // REVIEW
-  // igcBlur: CustomEvent<void>;
-  // igcFocus: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;

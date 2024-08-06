@@ -15,9 +15,9 @@ export interface CheckboxChangeEventArgs {
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<CheckboxChangeEventArgs>;
-  /// REVIEW:
-  // igcFocus: CustomEvent<void>;
-  // igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport

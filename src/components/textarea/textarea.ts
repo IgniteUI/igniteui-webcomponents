@@ -24,9 +24,9 @@ import { textAreaValidators } from './validators.js';
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
-  // REVIEW
-  // igcFocus: CustomEvent<void>;
-  // igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 /**

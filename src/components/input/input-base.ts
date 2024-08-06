@@ -16,9 +16,9 @@ export interface IgcInputEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  // REVIEW
-  // igcFocus: CustomEvent<void>;
-  // igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport

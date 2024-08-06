@@ -2,21 +2,26 @@ import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
+import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { partNameMap } from '../common/util.js';
 
-// REVIEW
-// export interface IgcButtonEventMap {
-//   igcFocus: CustomEvent<void>;
-//   igcBlur: CustomEvent<void>;
-// }
+export interface IgcButtonEventMap {
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
+}
 
 @blazorDeepImport
-export abstract class IgcButtonBaseComponent extends LitElement {
+export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
+  IgcButtonEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly formAssociated = true;
 
-  public static override shadowRootOptions = {
+  protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };

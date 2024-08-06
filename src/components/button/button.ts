@@ -25,7 +25,7 @@ import { all } from './themes/button/themes.js';
 @themes(all)
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
-  public static override styles = [styles, shared];
+  protected static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
