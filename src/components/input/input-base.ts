@@ -16,8 +16,9 @@ export interface IgcInputEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport
@@ -110,14 +111,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       suffixed: this.suffixes.length > 0,
       filled: !!this.value,
     };
-  }
-
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
-  protected handleBlur() {
-    this.emitEvent('igcBlur');
   }
 
   /** Sets the text selection range of the control */

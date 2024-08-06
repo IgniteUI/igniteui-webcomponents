@@ -12,7 +12,7 @@ const metadata: Meta<IgcRadioComponent> = {
   component: 'igc-radio',
   parameters: {
     docs: { description: { component: '' } },
-    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
     value: {

@@ -24,7 +24,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
           'A date time input is an input field that lets you set and edit the date and time in a chosen input element\nusing customizable display and input formats.',
       },
     },
-    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
     inputFormat: {
