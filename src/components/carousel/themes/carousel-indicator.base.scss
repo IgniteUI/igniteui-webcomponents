@@ -1,0 +1,16 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    min-width: rem(12px);
+    min-height: rem(12px);
+    outline-style: none;
+}
+
+[part~='indicator'] {
+    position: absolute;
+    display: flex;
+    color: inherit;
+    align-items: center;
+    justify-content: center;
+}

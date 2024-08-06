@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { registerComponent } from '../common/definitions/register.js';
+import { styles } from './themes/carousel-indicator.base.css.js';
 
 /**
  * Used when a custom indicator needs to be passed to the `igc-carousel` component.
@@ -12,6 +13,7 @@ import { registerComponent } from '../common/definitions/register.js';
  */
 export default class IgcCarouselIndicatorComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator';
+  public static override styles = styles;
 
   /* blazorSuppress */
   public static register() {

@@ -100,3 +100,8 @@ igc-button::part(focused):hover {
         }
     }
 }
+
+igc-carousel-indicator {
+    min-width: rem(16px);
+    min-height: rem(16px);
+}
