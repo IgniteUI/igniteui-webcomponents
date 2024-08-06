@@ -11,6 +11,7 @@ $theme: $bootstrap;
 [part~='label'],
 [part~='value'] {
     font-weight: 700;
+    font-size: calc(#{var-get($theme, 'diameter')} / 3.4 - var(--stroke-thickness));
 }
 
 [part~='svg'][part~='indeterminate'] {
