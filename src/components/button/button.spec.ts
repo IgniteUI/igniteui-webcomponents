@@ -1,8 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
 import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
@@ -194,26 +193,23 @@ describe('Button tests', () => {
   });
 
   describe('Events', () => {
+    let nativeButton: HTMLButtonElement;
+
     beforeEach(async () => {
       button = await fixture<IgcButtonComponent>(
         html`<igc-button>Click</igc-button>`
       );
+      nativeButton = button.renderRoot.querySelector('button')!;
     });
 
-    it('focus/blur events are emitted from corresponding methods', async () => {
-      const eventSpy = spy(button, 'emitEvent');
-
+    it('should have correct focus states between Light/Shadow DOM', async () => {
       button.focus();
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
-      expect(button.shadowRoot?.activeElement).to.equal(
-        button.shadowRoot?.querySelector('button')
-      );
-
-      eventSpy.resetHistory();
+      expect(isFocused(button)).to.be.true;
+      expect(isFocused(nativeButton)).to.be.true;
 
       button.blur();
-      expect(eventSpy).calledOnceWithExactly('igcBlur');
-      expect(button.shadowRoot?.activeElement).to.be.null;
+      expect(isFocused(button)).to.be.false;
+      expect(isFocused(nativeButton)).to.be.false;
     });
   });
 

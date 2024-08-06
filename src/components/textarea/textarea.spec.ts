@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
@@ -135,21 +135,19 @@ describe('Textarea component', () => {
     });
 
     it('focus()', async () => {
-      const eventSpy = spy(element, 'emitEvent');
-
       element.focus();
-      expect(textArea.matches(':focus')).to.be.true;
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(element)).to.be.true;
+      expect(isFocused(textArea)).to.be.true;
     });
 
     it('blur()', async () => {
       element.focus();
-
-      const eventSpy = spy(element, 'emitEvent');
+      expect(isFocused(element)).to.be.true;
+      expect(isFocused(textArea)).to.be.true;
 
       element.blur();
-      expect(textArea.matches(':focus')).to.be.false;
-      expect(eventSpy).calledOnceWithExactly('igcBlur');
+      expect(isFocused(element)).to.be.false;
+      expect(isFocused(textArea)).to.be.false;
     });
 
     it('scroll()', async () => {

@@ -25,8 +25,9 @@ import { textAreaValidators } from './validators.js';
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 /**
@@ -43,15 +44,13 @@ export interface IgcTextareaEventMap {
  *
  * @fires igcInput - Emitted when the control receives user input.
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
- * @csspart container - The main wrapper that holds all main input elements.
- * @csspart input - The native input element.
- * @csspart label - The native label element.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart container - The main wrapper that holds all main input elements of the textarea.
+ * @csspart input - The native input element of the igc-textarea.
+ * @csspart label - The native label element of the igc-textarea.
+ * @csspart prefix - The prefix wrapper of the igc-textarea.
+ * @csspart suffix - The suffix wrapper of the igc-textarea.
+ * @csspart helper-text - The helper text wrapper of the igc-textarea.
  */
 @themes(all, { exposeController: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
@@ -271,12 +270,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     super();
     this.addEventListener('focus', () => {
       this._dirty = true;
-      this.emitEvent('igcFocus');
     });
     this.addEventListener('blur', () => {
       this.updateValidity();
       this.setInvalidState();
-      this.emitEvent('igcBlur');
     });
   }
 

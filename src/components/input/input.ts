@@ -19,8 +19,6 @@ import { numberValidators, stringValidators } from './validators.js';
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
@@ -216,14 +214,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected override handleFocus(): void {
+  protected handleFocus(): void {
     this._dirty = true;
-    super.handleFocus();
   }
 
-  protected override handleBlur(): void {
+  protected handleBlur(): void {
     this.checkValidity();
-    super.handleBlur();
   }
 
   protected renderInput() {
