@@ -22,7 +22,6 @@ import {
   spaceBar,
   tabKey,
 } from '../common/controllers/key-bindings.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
@@ -118,10 +117,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
-
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: this.handleClosing,
-  });
 
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,
@@ -274,6 +269,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
+
+    this._rootClickController.update({ hideCallback: this.handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled,

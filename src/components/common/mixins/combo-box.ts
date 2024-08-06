@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
+import { addRootClickHandler } from '../controllers/root-click.js';
 import { iterNodes } from '../util.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
 
@@ -19,6 +20,8 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
     event: K,
     eventInitDict?: CustomEventInit<D>
   ) => boolean;
+
+  protected _rootClickController = addRootClickHandler(this);
 
   /**
    * Whether the component dropdown should be kept open on selection.
@@ -97,6 +100,10 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
   /** Shows the component. */
   public async show(): Promise<boolean> {
+    this._rootClickController.disabled = true;
+    requestAnimationFrame(() => {
+      this._rootClickController.disabled = false;
+    });
     return this._show();
   }
 
