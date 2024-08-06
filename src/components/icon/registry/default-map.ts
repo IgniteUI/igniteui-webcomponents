@@ -26,4 +26,16 @@ export class DefaultMap<T, U> {
   public has(key: T) {
     return this._map.has(key);
   }
+
+  public toMap() {
+    return this._map;
+  }
+
+  public entries() {
+    return this._map.entries();
+  }
+}
+
+export function createIconDefaultMap<T, U>() {
+  return new DefaultMap<T, Map<T, U>>(() => new Map());
 }
