@@ -8,7 +8,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcIconComponent from '../icon/icon.js';
-import type { Variant } from '../types.js';
+import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
 import { all } from './themes/themes.js';
@@ -82,7 +82,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ reflect: true })
-  public variant!: Variant;
+  public variant!: StyleVariant;
 
   constructor() {
     super();

@@ -4,7 +4,7 @@ import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { Variant } from '../types.js';
+import type { StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
 import { all } from './themes/themes.js';
@@ -36,7 +36,7 @@ export default class IgcBadgeComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public variant: Variant = 'primary';
+  public variant: StyleVariant = 'primary';
 
   /**
    * Sets whether to draw an outlined version of the badge.

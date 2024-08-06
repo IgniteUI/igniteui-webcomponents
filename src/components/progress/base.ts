@@ -8,7 +8,7 @@ import {
 
 import { watch } from '../common/decorators/watch.js';
 import { asPercent, clamp, formatString } from '../common/util.js';
-import type { Variant } from '../types.js';
+import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   private __internals: ElementInternals;
@@ -45,7 +45,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public variant: Variant = 'primary';
+  public variant: StyleVariant = 'primary';
 
   /**
    * Animation duration in milliseconds.
