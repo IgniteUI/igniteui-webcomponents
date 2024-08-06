@@ -18,12 +18,9 @@ import { all } from './themes/button/themes.js';
  * @slot prefix - Renders content before the label of the button.
  * @slot suffix - Renders content after the label of the button.
  *
- * @fires igcFocus - Emitted when the button gains focus.
- * @fires igcBlur - Emitted when the button loses focus.
- *
- * @csspart base - The native button element.
- * @csspart prefix - The prefix container.
- * @csspart suffix - The suffix container.
+ * @csspart base - The native button element of the igc-button component.
+ * @csspart prefix - The prefix container of the igc-button component.
+ * @csspart suffix - The suffix container of the igc-button component.
  */
 @themes(all)
 export default class IgcButtonComponent extends IgcButtonBaseComponent {

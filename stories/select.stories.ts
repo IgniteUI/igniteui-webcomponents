@@ -37,8 +37,6 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     actions: {
       handles: [
-        'igcFocus',
-        'igcBlur',
         'igcChange',
         'igcOpening',
         'igcOpened',

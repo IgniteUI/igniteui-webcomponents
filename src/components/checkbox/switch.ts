@@ -18,11 +18,9 @@ import { styles } from './themes/switch.base.css.js';
  * @slot - The switch label.
  *
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart base - The base wrapper of the switch.
- * @csspart control - The switch control.
+ * @csspart control - The switch input element.
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */

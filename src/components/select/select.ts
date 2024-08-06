@@ -52,8 +52,9 @@ import { selectValidators } from './validators.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
-  igcBlur: CustomEvent<void>;
-  igcFocus: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
@@ -74,8 +75,6 @@ export interface IgcSelectEventMap {
  * @slot toggle-icon - Renders content inside the suffix container.
  * @slot toggle-icon-expanded - Renders content for the toggle icon when the component is in open state.
  *
- * @fires igcFocus - Emitted when the select gains focus.
- * @fires igcBlur - Emitted when the select loses focus.
  * @fires igcChange - Emitted when the control's checked state changes.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
@@ -330,8 +329,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     if (this.contains(relatedTarget as Node) || this.open) {
       return;
     }
-
-    this.emitEvent('igcFocus');
   }
 
   private handleFocusOut({ relatedTarget }: FocusEvent) {
@@ -340,7 +337,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     this.checkValidity();
-    this.emitEvent('igcBlur');
   }
 
   private handleClick(event: MouseEvent) {
@@ -529,10 +525,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return this.items.find((item) => item.value === value);
   }
 
-  private _stopPropagation(e: Event) {
-    e.stopPropagation();
-  }
-
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
@@ -660,8 +652,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         .invalid=${this.invalid}
         .outlined=${this.outlined}
         @click=${this.handleAnchorClick}
-        @igcFocus=${this._stopPropagation}
-        @igcBlur=${this._stopPropagation}
       >
         ${this.renderInputSlots()} ${this.renderToggleIcon()}
       </igc-input>
