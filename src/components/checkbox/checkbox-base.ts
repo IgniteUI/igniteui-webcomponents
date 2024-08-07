@@ -57,7 +57,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
    * The checked state of the control.
    * @attr

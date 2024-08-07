@@ -2,6 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { isElement } from '../util.js';
 
+/** @ignore */
 export interface MutationControllerConfig<T> {
   /** The callback function to run when a mutation occurs. */
   callback: MutationControllerCallback<T>;
