@@ -690,7 +690,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         aria-label="Slide ${i + 1}"
         aria-selected=${slide.active}
       >
-        <div part="dot" style=${styleMap({ clipPath: backward })}></div>
+        <div
+          part="dot"
+          style=${styleMap({ clipPath: backward, zIndex: 100 })}
+        ></div>
         <div
           part="dot active"
           slot="active"

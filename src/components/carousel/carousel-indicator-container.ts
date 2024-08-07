@@ -4,8 +4,8 @@ import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
-import { all } from './themes/indicator.js';
-import { styles as shared } from './themes/shared/indicator/indicator.common.css.js';
+import { all } from './themes/indicator-container.js';
+import { styles as shared } from './themes/shared/indicator-container/indicator-container.common.css.js';
 
 @themes(all)
 export default class IgcCarouselIndicatorContainerComponent extends LitElement {

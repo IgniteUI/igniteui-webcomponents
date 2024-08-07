@@ -3,17 +3,26 @@
 
 $theme: $indigo;
 
-[part~='base'] {
-    --dot-shadow-color: transparent;
+[part='indicator active'] {
+    &:hover {
+        ::slotted(div) {
+            border-color: var-get($theme, 'indicator-active-hover-dot-color')!important;
+
+            &::after {
+                background: var-get($theme, 'indicator-active-hover-dot-color')!important;
+            }
+        }
+    };
 }
 
-[part='base focused'] {
-    --dot-shadow-color: #{var-get($theme, 'indicator-focus-color')};
-
-    ::slotted(div) {
-        &::after {
-            border: none;
-            box-shadow: 0 0 0 rem(3px) var-get($theme, 'indicator-focus-color');
+[part='indicator inactive'] {
+    &:hover {
+        ::slotted(div) {
+            border: rem(2px) solid var-get($theme, 'indicator-hover-dot-color')!important;
         }
-    }
+
+        &::after {
+            background: var-get($theme, 'indicator-hover-dot-color')!important;
+        }
+    };
 }

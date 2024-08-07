@@ -282,22 +282,26 @@ const SlottedInputsTemplate = ({
 }: IgcCarouselArgs) => {
   return html`
     <style>
+      igc-carousel {
+        border-radius: 10px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        max-width: 75%;
+        margin-inline: auto;
+        height: 350px;
+      }
       igc-carousel-slide {
         display: flex;
         align-items: center;
         justify-content: center;
+        max-width: 75%;
+        margin-inline: auto;
+        padding-block: 8px;
       }
-      igc-carousel-slide * {
-        margin: 8px 0px;
+      igc-carousel-slide > * {
+        margin-block: 8px;
       }
       igc-carousel-slide div {
         text-align: center;
-      }
-      igc-carousel {
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-        width: 50%;
       }
     </style>
     <igc-carousel
@@ -359,6 +363,12 @@ const SlottedThumbnailTemplate = ({
 }: IgcCarouselArgs) => {
   return html`
     <style>
+      igc-carousel {
+        height: 450px;
+      }
+      igc-carousel::part(indicators) {
+        border-radius: 0;
+      }
       .blurred {
         filter: blur(2px);
         opacity: 0.5;

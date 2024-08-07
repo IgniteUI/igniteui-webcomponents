@@ -61,9 +61,9 @@ igc-button[disabled]::part(base) {
         background: var-get($theme, 'indicator-dot-color');
     }
 
-    &:hover {
-        border-color: var-get($theme, 'indicator-active-border-color');
-    }
+    // &:hover {
+    //     border-color: var-get($theme, 'indicator-active-border-color');
+    // }
 }
 
 [part='dot active'] {
@@ -73,11 +73,11 @@ igc-button[disabled]::part(base) {
         background: var(--indicator-active-color);
     }
 
-    &:hover {
-        border-color: var(--indicator-active-color);
+    // &:hover {
+    //     border-color: var(--indicator-active-color);
 
-        &::after {
-            background: var(--indicator-active-color);
-        }
-    }
+    //     &::after {
+    //         background: var(--indicator-active-color);
+    //     }
+    // }
 }

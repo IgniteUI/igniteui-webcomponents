@@ -2,15 +2,18 @@
 @use 'styles/utilities' as *;
 
 :host {
-    min-width: rem(12px);
-    min-height: rem(12px);
+    display: grid;
+    grid-template-rows: minmax(rem(12px), auto);
     outline-style: none;
 }
 
 [part~='indicator'] {
-    position: absolute;
+    grid-row: 1;
+    grid-column: 1;
+    position: relative;
     display: flex;
     color: inherit;
     align-items: center;
     justify-content: center;
+    cursor: pointer; 
 }

@@ -1,6 +1,9 @@
 import { LitElement, html } from 'lit';
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
+import { all } from './themes/indicator.js';
+import { styles as shared } from './themes/shared/indicator/indicator.common.css.js';
 
 /**
  * Used when a custom indicator needs to be passed to the `igc-carousel` component.
@@ -11,9 +14,10 @@ import { styles } from './themes/carousel-indicator.base.css.js';
  * @slot active - Default slot for projected active indicator.
  *
  */
+@themes(all)
 export default class IgcCarouselIndicatorComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {

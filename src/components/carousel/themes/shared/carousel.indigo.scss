@@ -48,13 +48,13 @@ igc-button::part(focused):hover {
         transform: translateX(calc(-50% * var(--dir))) translateY(-50%);
     }
 
-    &:hover {
-        border: rem(2px) solid var-get($theme, 'indicator-hover-dot-color');
+    // &:hover {
+    //     border: rem(2px) solid var-get($theme, 'indicator-hover-dot-color');
 
-        &::after {
-            background: var-get($theme, 'indicator-hover-dot-color');
-        }
-    }
+    //     &::after {
+    //         background: var-get($theme, 'indicator-hover-dot-color');
+    //     }
+    // }
 }
 
 [part='dot active'] {
@@ -65,13 +65,13 @@ igc-button::part(focused):hover {
         background: var-get($theme, 'indicator-active-dot-color');
     }
 
-    &:hover {
-        border-color: var-get($theme, 'indicator-active-hover-dot-color');
+    // &:hover {
+    //     border-color: var-get($theme, 'indicator-active-hover-dot-color');
 
-        &::after {
-            background: var-get($theme, 'indicator-active-hover-dot-color');
-        }
-    }
+    //     &::after {
+    //         background: var-get($theme, 'indicator-active-hover-dot-color');
+    //     }
+    // }
 }
 
 :host([vertical]) {
