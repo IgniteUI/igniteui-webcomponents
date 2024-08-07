@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { findElementFromEventPath } from '../util.js';
 
 type RootClickControllerConfig = {
   hideCallback?: () => void;
@@ -12,7 +13,10 @@ type RootClickControllerHost = ReactiveControllerHost &
     hide(): void;
   };
 
-class RootClickController implements ReactiveController {
+/* blazorSuppress */
+export class RootClickController implements ReactiveController {
+  public disabled = false;
+
   constructor(
     private readonly host: RootClickControllerHost,
     private config?: RootClickControllerConfig
@@ -34,18 +38,24 @@ class RootClickController implements ReactiveController {
     this.host.open ? this.addEventListeners() : this.removeEventListeners();
   }
 
-  public handleEvent(event: MouseEvent) {
-    if (this.host.keepOpenOnOutsideClick) {
+  private shouldHide(event: PointerEvent) {
+    const targets = new Set<Element>([this.host]);
+
+    if (this.config?.target) {
+      targets.add(this.config.target);
+    }
+
+    return !findElementFromEventPath((node) => targets.has(node), event);
+  }
+
+  public handleEvent(event: PointerEvent) {
+    if (this.host.keepOpenOnOutsideClick || this.disabled) {
       return;
     }
 
-    const path = event.composed ? event.composedPath() : [event.target];
-    const target = this.config?.target || null;
-    if (path.includes(this.host) || path.includes(target)) {
-      return;
+    if (this.shouldHide(event)) {
+      this.hide();
     }
-
-    this.hide();
   }
 
   private hide() {
