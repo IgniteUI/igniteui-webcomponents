@@ -6,6 +6,7 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import type { RangeTextSelectMode } from '../types.js';
 import { IgcInputBaseComponent } from './input-base.js';
 import { numberValidators, stringValidators } from './validators.js';
 
@@ -180,7 +181,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     replacement: string,
     start: number,
     end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+    selectMode: RangeTextSelectMode = 'preserve'
   ) {
     super.setRangeText(replacement, start, end, selectMode);
     this.value = this.input.value;

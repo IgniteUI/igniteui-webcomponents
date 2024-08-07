@@ -5,7 +5,11 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
+import {
+  type DateRangeDescriptor,
+  DateRangeType,
+  type WeekDays,
+} from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
@@ -31,6 +35,7 @@ import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
@@ -411,14 +416,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })
-  public weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday' = 'sunday';
+  public weekStart: WeekDays = 'sunday';
 
   constructor() {
     super();
@@ -473,7 +471,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public setSelectionRange(
     start: number,
     end: number,
-    direction?: 'none' | 'backward' | 'forward'
+    direction?: SelectionRangeDirection
   ): void {
     this._input.setSelectionRange(start, end, direction);
   }
@@ -483,7 +481,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    mode?: 'select' | 'start' | 'end' | 'preserve'
+    mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);
     this.value = this._input.value;
