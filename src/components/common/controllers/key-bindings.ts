@@ -52,6 +52,7 @@ export type KeyBindingTrigger = 'keydown' | 'keyup' | 'keydownRepeat';
 
 /**
  * Configuration object for the controller.
+ * @ignore
  */
 export interface KeyBindingControllerOptions {
   /**

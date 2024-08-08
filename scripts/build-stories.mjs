@@ -33,7 +33,8 @@ const execAsync = promisify(exec);
  * @property {string=} attribute
  * @property {string=} default
  * @property {{ text: string }=} type
- * @property {{ name: string }} inheritedFrom
+ * @property {{ text: string }=} expandedType
+ * @property {{ name: string }=} inheritedFrom
  * @property {boolean=} static
  * @property {boolean=} readonly
  * @property {boolean=} deprecated
@@ -87,6 +88,7 @@ class StoriesBuilder {
    *
    * @param {string} parentName
    * @param {string} name
+   * @returns {CustomElementProperty=}
    */
   #getMemberFrom(parentName, name) {
     return this.#cache
@@ -99,10 +101,19 @@ class StoriesBuilder {
    * @param {CustomElementProperty} property
    */
   #resolveType(property) {
-    const type = property.type
-      ? property.type.text
-      : (this.#getMemberFrom(property.inheritedFrom.name, property.name)?.type
-          ?.text ?? 'string');
+    let type = 'string';
+
+    if (property.expandedType) {
+      type = property.expandedType.text;
+    } else if (property.type) {
+      type = property.type.text;
+    } else if (property.inheritedFrom) {
+      const parentProperty = this.#getMemberFrom(
+        property.inheritedFrom.name,
+        property.name
+      );
+      type = parentProperty ? this.#resolveType(parentProperty) : 'string';
+    }
 
     const result = [];
 

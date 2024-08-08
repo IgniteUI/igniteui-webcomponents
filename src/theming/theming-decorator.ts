@@ -1,7 +1,7 @@
 import type { LitElement } from 'lit';
 
-import { ThemingController } from './theming-controller.js';
-import type { Themes } from './types.js';
+import { createThemeController } from './theming-controller.js';
+import type { ThemeController, Themes } from './types.js';
 
 /**
  * Class decorator to enable multiple theme support for a component.
@@ -38,8 +38,7 @@ import type { Themes } from './types.js';
 export function themes(themes: Themes, options?: ThemeOptions) {
   return (proto: unknown) => {
     (proto as typeof LitElement).addInitializer((instance) => {
-      const controller = new ThemingController(instance, themes);
-      instance.addController(controller);
+      const controller = createThemeController(instance, themes);
 
       if (options?.exposeController) {
         Object.defineProperty(instance, themeSymbol, {
@@ -63,7 +62,7 @@ export function getThemeController(host: LitElement) {
 
 function isControllerExposed(
   host: LitElement
-): host is LitElement & { [themeSymbol]: ThemingController } {
+): host is LitElement & { [themeSymbol]: ThemeController } {
   return Object.getOwnPropertySymbols(host).includes(themeSymbol);
 }
 

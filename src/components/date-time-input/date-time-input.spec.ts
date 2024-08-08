@@ -18,6 +18,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  isFocused,
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
@@ -157,7 +158,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should update the mask according to the inputFormat on focus when value is set - issue #1320', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      // const eventSpy = spy(el, 'emitEvent');
       el.inputFormat = 'dd-MM-yyyy';
       el.displayFormat = 'yyyy-MM-dd';
       el.value = new Date(2024, 6, 22);
@@ -168,7 +169,7 @@ describe('Date Time Input component', () => {
       input.click();
       await elementUpdated(el);
 
-      expect(eventSpy).calledWith('igcFocus');
+      expect(isFocused(el)).to.be.true;
       expect(input.value).to.equal('22-07-2024');
     });
 
@@ -562,8 +563,7 @@ describe('Date Time Input component', () => {
       el.blur();
       await elementUpdated(el);
 
-      // -> [igcFocus, igcBlur]
-      expect(eventSpy.getCalls()).lengthOf(2);
+      expect(eventSpy.getCalls()).empty;
     });
 
     it('should not move input selection (caret) from a focused part when stepUp/stepDown are invoked', async () => {
@@ -849,8 +849,7 @@ describe('Date Time Input component', () => {
 
       el.focus();
       await elementUpdated(el);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
-      eventSpy.resetHistory();
+      expect(isFocused(el)).to.be.true;
 
       simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
@@ -873,8 +872,8 @@ describe('Date Time Input component', () => {
 
       el.blur();
       await elementUpdated(el);
+      expect(isFocused(el)).to.be.false;
       expect(eventSpy).calledWith('igcChange');
-      expect(eventSpy).calledWith('igcBlur');
 
       el.clear();
       await elementUpdated(el);
@@ -887,8 +886,8 @@ describe('Date Time Input component', () => {
 
       el.blur();
       await elementUpdated(el);
+      expect(isFocused(el)).to.be.false;
       expect(eventSpy).calledWith('igcChange');
-      expect(eventSpy).calledWith('igcBlur');
     });
   });
 
