@@ -1,7 +1,7 @@
-@use '../utilities/mixins' as *;
 @use 'igniteui-theming/sass/themes/mixins' as *;
 @use 'igniteui-theming/sass/color/functions' as *;
 @use 'igniteui-theming/sass/typography/functions' as *;
+@use 'styles/themes/base/scrollbars' as *;
 
 :host {
     @include sizable();
@@ -9,17 +9,13 @@
     position: relative;
     box-sizing: border-box;
 
-    @include ig-scrollbar(
-        var(--ig-scrollbar-size),
-        var(--ig-scrollbar-track-background),
-        var(--ig-scrollbar-thumb-background)
-    );
-
     *,
     *::before,
     *::after {
         box-sizing: border-box;
     }
+
+    @include ig-scrollbar();
 }
 
 :host([hidden]),
