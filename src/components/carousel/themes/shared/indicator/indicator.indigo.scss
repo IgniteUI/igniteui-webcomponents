@@ -19,10 +19,10 @@ $theme: $indigo;
     &:hover {
         ::slotted(div) {
             border: rem(2px) solid var-get($theme, 'indicator-hover-dot-color')!important;
-        }
 
-        &::after {
-            background: var-get($theme, 'indicator-hover-dot-color')!important;
+            &::after {
+                background: var-get($theme, 'indicator-hover-dot-color')!important;
+            }
         }
     };
 }
