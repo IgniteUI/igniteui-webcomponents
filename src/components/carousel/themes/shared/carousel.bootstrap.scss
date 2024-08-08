@@ -9,3 +9,11 @@ igc-button::part(focused):hover {
     border-color: var-get($theme, 'button-border-color');
     color: var-get($theme, 'button-arrow-color');
 }
+
+:host {
+    igc-button::part(base) {
+        &:active {
+            --active-foreground: var-get($theme, 'button-hover-arrow-color');
+        }
+    }
+}
