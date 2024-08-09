@@ -273,11 +273,37 @@ $row-gap: rem(6px);
         &:hover {
             color: var-get($theme, 'date-hover-foreground');
             background: var-get($theme, 'date-hover-background');
+
+            &::after {
+                border-color: var-get($theme, 'date-special-hover-border-color')
+            }
         }
 
         &:focus {
             color: var-get($theme, 'date-focus-foreground');
             background: var-get($theme, 'date-focus-background');
+
+            &::after {
+                border-color: var-get($theme, 'date-special-hover-border-color')
+            }
+        }
+    }
+
+    &[part~='selected'][part~='special'] {
+        &::after {
+            border-color: var-get($theme, 'date-selected-special-border-color');
+        }
+
+        &:hover {
+            &::after {
+                border-color: var-get($theme, 'date-selected-special-hover-border-color');
+            }
+        }
+
+        &:focus {
+            &::after {
+                border-color: var-get($theme, 'date-selected-special-focus-border-color');
+            }
         }
     }
 

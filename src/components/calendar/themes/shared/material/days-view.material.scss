@@ -191,22 +191,27 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
                 color: var-get($theme, 'date-selected-hover-foreground');
                 background: var-get($theme, 'date-selected-hover-background');
 
+
+                /* stylelint-disable max-nesting-depth */
                 &::after {
-                    border-color: var-get($theme, 'date-selected-foreground');
+                    border-color: var-get($theme, 'date-selected-special-hover-border-color');
                 }
+                /* stylelint-enable max-nesting-depth */
             }
 
             &:focus {
                 color: var-get($theme, 'date-selected-focus-foreground');
                 background: var-get($theme, 'date-selected-focus-background');
 
+                /* stylelint-disable max-nesting-depth */
                 &::after {
-                    border-color: var-get($theme, 'date-selected-foreground');
+                    border-color: var-get($theme, 'date-selected-special-focus-border-color');
                 }
+                /* stylelint-enable max-nesting-depth */
             }
 
             &::after {
-                border-color: var-get($theme, 'date-selected-foreground');
+                border-color: var-get($theme, 'date-selected-special-border-color');
             }
         }
     }
