@@ -7,12 +7,14 @@
 
     ::slotted(*) {
         margin-block: 0;
+        line-height: 1;
     }
 }
 
 [part~='helper-text'] {
     display: grid;
     row-gap: rem(8px);
+    align-items: center;
 }
 
 [part~='validation-icon'] {
@@ -22,5 +24,9 @@
 [part~='validation-message'] {
     display: flex;
     align-items: center;
-    gap: rem(4px);
+
+}
+
+[part~='empty'] {
+    display: none !important;
 }

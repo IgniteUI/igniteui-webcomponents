@@ -12,10 +12,11 @@ $input-theme: input-theme.$indigo;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    igc-validator {
-        color: var-get($theme, 'helper-text-color');
-        margin-top: rem(4px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(15px), auto);
     }
 
     igc-input::part(input) {
@@ -45,14 +46,19 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-:host([invalid]) {
-    igc-validator {
+:host([invalid]:focus-within) {
+    igc-input::part(label) {
         color: var-get($theme, 'error-secondary-color');
     }
 }
 
-:host([invalid]:focus-within) {
-    igc-input::part(label) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
+
+    ::part(validation-icon) {
         color: var-get($theme, 'error-secondary-color');
     }
 }
@@ -60,10 +66,6 @@ $input-theme: input-theme.$indigo;
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    igc-validator {
         color: var-get($theme, 'disabled-text-color');
     }
 

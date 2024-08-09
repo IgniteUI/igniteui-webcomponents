@@ -1,10 +1,13 @@
 import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { FormAssociatedElementInterface } from '../common/mixins/form-associated.js';
 import { partNameMap, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import { styles as shared } from './themes/shared/validator.common.css';
+import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
 type IgcFormControl = LitElement & FormAssociatedElementInterface;
@@ -20,6 +23,12 @@ function getValidationSlots(element: IgcValidationContainerComponent) {
   return element.renderRoot.querySelectorAll<HTMLSlotElement>(
     "slot:not([name='helper-text'])"
   );
+}
+
+function hasProjection(element: IgcValidationContainerComponent) {
+  return Array.from(
+    element.renderRoot.querySelectorAll<HTMLSlotElement>('slot')
+  ).every((slot) => slot.assignedElements({ flatten: true }).length < 1);
 }
 
 function hasProjectedValidation(
@@ -43,9 +52,10 @@ function hasProjectedValidation(
  * @csspart validation-message - The validation error message container
  * @csspart validation-icon - The validation error icon
  */
+@themes(all)
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -167,8 +177,12 @@ export default class IgcValidationContainerComponent extends LitElement {
   }
 
   protected override render() {
+    const parts = partNameMap({
+      'helper-text': true,
+      empty: hasProjection(this),
+    });
     return html`
-      <div part="helper-text">
+      <div part=${parts}>
         ${this.invalid
           ? this.renderValidationSlots(this.target.validity)
           : nothing}

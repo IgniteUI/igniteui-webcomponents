@@ -9,8 +9,6 @@ $theme: $fluent;
     --border-size: #{rem(2px)};
     --thumb-offset: calc(var(--thumb-size) / 2 - #{rem(3px)});
     --label-gap: #{rem(8px)};
-
-    gap: rem(16px);
 }
 
 [part~='control'] {

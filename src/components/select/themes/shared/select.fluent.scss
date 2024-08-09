@@ -12,15 +12,18 @@ $focused-border-width: rem(2px);
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(5px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
 }
 
 [part='base'] {
     box-shadow: var(--ig-elevation-4);
-}
-
-igc-validator {
-    margin-top: rem(5px);
-    color: var-get($theme, 'helper-text-color');
 }
 
 [part~='toggle-icon'] {
@@ -53,8 +56,9 @@ igc-validator {
     }
 }
 
-:host([invalid]) {
-    igc-validator {
+:host([invalid]:not([disabled])),
+:host([invalid]:not(:disabled)) {
+    ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
 }

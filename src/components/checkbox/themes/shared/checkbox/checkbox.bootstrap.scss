@@ -3,6 +3,15 @@
 
 $theme: $bootstrap;
 
+:host {
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='label'] {
     @include type-style('body-1');
 
@@ -46,7 +55,7 @@ $theme: $bootstrap;
     }
 }
 
-:host {
+[part~='base'] {
     gap: rem(16px);
 }
 

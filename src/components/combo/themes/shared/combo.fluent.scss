@@ -9,12 +9,11 @@ $dropdown-theme: dropdown-theme.$fluent;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
 
-    igc-validator {
+    ::part(helper-text) {
         @include type-style('caption');
 
-        display: block;
-        padding: 0;
-        margin-top: rem(5px);
+        margin-block-start: rem(5px);
+        grid-auto-rows: minmax(rem(18px), auto);
     }
 }
 

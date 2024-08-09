@@ -8,7 +8,7 @@ $input-theme: input-theme.$material;
 $dropdown-theme: dropdown-theme.$material;
 
 :host {
-    igc-validator {
+    ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }
 
@@ -59,19 +59,13 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-:host([invalid]) {
-    igc-validator {
-        color: var-get($input-theme, 'error-secondary-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     igc-input::part(label),
     igc-input::part(input)::placeholder,
-    igc-validator {
+    ::part(helper-text) {
         color: var-get($input-theme, 'disabled-text-color');
     }
 

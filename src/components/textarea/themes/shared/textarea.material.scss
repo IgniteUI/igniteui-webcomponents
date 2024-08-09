@@ -10,6 +10,15 @@ $input-bottom-padding: rem(6px);
     @include type-style('subtitle-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(4px);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
 }
 
 textarea {
@@ -190,13 +199,6 @@ textarea {
     color: var-get($theme, 'input-prefix-color--filled');
 }
 
-[part~='helper-text'] {
-    @include type-style('caption');
-
-    padding-block-start: rem(5px);
-    padding-inline-start: rem(16px);
-}
-
 // Outlined Textarea
 :host([outlined]) {
     align-items: initial;
@@ -375,5 +377,12 @@ textarea {
     [part='notch'],
     [part='end'] {
         border-color: var-get($theme, 'disabled-border-color');
+    }
+}
+
+:host([invalid]:not([disabled])),
+:host([invalid]:not(:disabled)) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
     }
 }

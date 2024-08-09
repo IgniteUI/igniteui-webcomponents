@@ -33,6 +33,15 @@ $fs: rem(16px) !default;
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
     }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(18px), auto);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
 }
 
 [part='prefix'],
@@ -125,14 +134,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     min-width: sizable(rem(10px), rem(12px), rem(14px));
     height: var(--size);
     overflow: hidden;
-}
-
-[part='helper-text'] {
-    @include type-style('caption');
-
-    grid-auto-rows: minmax(rem(18px), auto);
-    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
-    margin-top: rem(5px);
 }
 
 :host(:focus-within) {
@@ -496,7 +497,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='label'],
     [part='prefix'],
     [part='suffix'],
-    [part='helper-text'] {
+    ::part(helper-text) {
         color: var-get($theme, 'disabled-text-color');
     }
 
@@ -510,18 +511,4 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
-}
-
-:host(:not([disabled])),
-:host(:not(:disabled)) {
-    igc-validator[invalid] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
-igc-validator {
-    @include type-style('caption');
-
-    margin-block-start: rem(4px);
-    padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
 }

@@ -11,13 +11,12 @@ $dropdown-theme: dropdown-theme.$material;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
 
-    igc-validator {
+    ::part(helper-text) {
         @include type-style('caption');
 
-        color: var-get($theme, 'helper-text-color');
-        margin-top: rem(4px);
-        line-height: 1;
-        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(18px), auto);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 
     ::slotted([slot='prefix']),
@@ -116,3 +115,4 @@ $dropdown-theme: dropdown-theme.$material;
         border-top-color: transparent;
     }
 }
+
