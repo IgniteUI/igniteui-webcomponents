@@ -14,6 +14,7 @@
     grid-template-columns: repeat(var(--layout-count), minmax(min-content, max-content));
     grid-template-rows: auto auto;
     column-gap: rem(8px);
+    align-items: start;
 
     > * {
         grid-row: 1;
