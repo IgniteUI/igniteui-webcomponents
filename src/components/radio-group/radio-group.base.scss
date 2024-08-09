@@ -8,10 +8,10 @@
 }
 
 :host([alignment='horizontal']) {
-    --radio-base-display: 'contents';
+    --radio-base-display: contents;
 
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+    grid-template-columns: repeat(var(--layout-count), minmax(min-content, max-content));
     grid-template-rows: auto auto;
-    gap: rem(8px);
+    column-gap: rem(8px);
 }

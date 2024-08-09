@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
@@ -92,6 +92,8 @@ export default class IgcRadioGroupComponent extends LitElement {
     if (allRadiosUnchecked && this._value) {
       this._setSelectedRadio();
     }
+
+    this._childrenCount();
   }
 
   private _setRadiosName() {
@@ -108,8 +110,40 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   }
 
+  private _childrenCount() {
+    if (this.shadowRoot) {
+      const slot = this.shadowRoot.querySelector('slot');
+      if (slot) {
+        // Retrieve and filter nodes to include only visible elements
+        const visibleNodes = Array.from(
+          slot.assignedNodes({ flatten: true })
+        ).filter(
+          (node) =>
+            node instanceof HTMLElement &&
+            window.getComputedStyle(node).display !== 'none'
+        );
+
+        // Count visible igc-radio buttons
+        const radioCount = visibleNodes.filter(
+          (node) => node instanceof IgcRadioComponent
+        ).length;
+
+        // Count other visible elements
+        const nonRadioCount = visibleNodes.filter(
+          (node) => !(node instanceof IgcRadioComponent)
+        ).length;
+
+        // Update CSS variable with the total count of visible elements
+        this.style.setProperty(
+          '--layout-count',
+          (radioCount + nonRadioCount).toString()
+        );
+      }
+    }
+  }
+
   protected override render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this._childrenCount}></slot>`;
   }
 }
 

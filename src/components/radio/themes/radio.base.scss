@@ -2,7 +2,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: inline-flex;
+    display: var(--radio-base-display, inline-flex);
     flex-direction: column;
     font-family: var(--ig-font-family);
 }
@@ -22,6 +22,7 @@ input[type='radio'] {
     align-items: center;
     cursor: pointer;
     transition: color .15s ease-in;
+    grid-row: 1;
 }
 
 [part~='label'] {
