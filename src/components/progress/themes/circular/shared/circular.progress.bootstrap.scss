@@ -1,12 +1,17 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
 
 :host {
     --stroke-thickness: 2px;
-    --diameter: 50px;
+    --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
-[part~='label'] {
-    @include type-style('subtitle-1');
+[part~='label'],
+[part~='value'] {
+    font-weight: 700;
+    font-size: calc(#{var-get($theme, 'diameter')} / 3.4 - var(--stroke-thickness));
 }
 
 [part~='svg'][part~='indeterminate'] {

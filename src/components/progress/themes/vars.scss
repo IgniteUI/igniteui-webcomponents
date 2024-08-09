@@ -4,6 +4,6 @@ $background-size: #{rem(40px)} #{rem(40px)};
 $stripe-size: rem(16px);
 $animation-direction: normal;
 $animation-direction-rtl: reverse;
-$diameter: calc(var(--diameter) + var(--stroke-thickness));
-$radius: calc(var(--diameter) / 2 - var(--stroke-thickness) * .5);
+$diameter: calc(var(--circular-size) + var(--stroke-thickness));
+$radius: calc(var(--circular-size) / 2 - var(--stroke-thickness) * .5);
 $circumference: calc(#{$radius} * 2 * 3.1416);
