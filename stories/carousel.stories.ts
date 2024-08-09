@@ -367,7 +367,7 @@ const SlottedThumbnailTemplate = ({
         height: 450px;
       }
       igc-carousel::part(indicators) {
-        border-radius: 0;
+        border-radius: 2px;
       }
       .blurred {
         filter: blur(2px);

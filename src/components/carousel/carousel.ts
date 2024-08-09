@@ -529,8 +529,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     if (!indicator) {
       return;
     }
-    const forward = `inset(0 ${isActive ? 0 : 100}% 0 0)`;
-    const backward = `inset(0 0 0 ${isActive ? 100 : 0}%)`;
+    const forward = `${isActive ? 'visible' : 'hidden'}`;
+    const backward = `${isActive ? 'hidden' : 'visible'}`;
 
     const active = indicator.shadowRoot?.querySelector(
       '[part="indicator active"]'
@@ -540,8 +540,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       '[part="indicator inactive"]'
     ) as HTMLElement;
 
-    active.style.clipPath = forward;
-    inactive.style.clipPath = backward;
+    active.style.visibility = forward;
+    inactive.style.visibility = backward;
   }
 
   private handlePauseOnInteraction(): void {
@@ -681,8 +681,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   protected *renderIndicators() {
     for (let i = 0; i < this.slides.length; i++) {
       const slide = this.slides[i];
-      const forward = `inset(0 ${slide.active ? 0 : 100}% 0 0)`;
-      const backward = `inset(0 0 0 ${slide.active ? 100 : 0}%)`;
+      const forward = `${slide.active ? 'visible' : 'hidden'}`;
+      const backward = `${slide.active ? 'hidden' : 'visible'}`;
       yield html`<igc-carousel-indicator
         exportparts="indicator, active, inactive"
         role="tab"
@@ -692,12 +692,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       >
         <div
           part="dot"
-          style=${styleMap({ clipPath: backward, zIndex: 100 })}
+          style=${styleMap({ visibility: backward, zIndex: 1 })}
         ></div>
         <div
           part="dot active"
           slot="active"
-          style=${styleMap({ clipPath: forward })}
+          style=${styleMap({ visibility: forward })}
         ></div>
       </igc-carousel-indicator>`;
     }
