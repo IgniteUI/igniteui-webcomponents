@@ -8,6 +8,12 @@ export const internalIcons = new Map<string, SvgIcon>(
     navigate_next: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10.02 6L8.61 7.41 13.19 12l-4.58 4.59L10.02 18l6-6-6-6z"/></svg>`,
     },
+    indigo_chevron_left: {
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 12c0-.463.19-.907.526-1.234l5.386-5.233c.165-.167.363-.3.583-.391a1.84 1.84 0 0 1 1.979.37c.168.163.302.358.392.573a1.703 1.703 0 0 1-.012 1.35 1.746 1.746 0 0 1-.402.566L11.336 12l4.116 3.999c.171.16.308.353.402.566a1.703 1.703 0 0 1-.38 1.924 1.842 1.842 0 0 1-2.562-.022l-5.386-5.233a1.731 1.731 0 0 1-.39-.566A1.691 1.691 0 0 1 7 12Z"/></svg>`,
+    },
+    indigo_chevron_right: {
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 12c0 .465-.19.911-.529 1.24l-5.414 5.268c-.34.32-.796.496-1.269.492a1.83 1.83 0 0 1-1.26-.514A1.73 1.73 0 0 1 8 17.261c-.004-.46.178-.903.506-1.234L12.646 12l-4.14-4.027A1.729 1.729 0 0 1 8 6.739c.004-.46.194-.9.528-1.225A1.83 1.83 0 0 1 9.788 5c.473-.004.929.173 1.269.492l5.414 5.268c.339.329.529.775.529 1.24Z"/></svg>`,
+    },
     keyboard_arrow_up: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>`,
     },
@@ -16,6 +22,9 @@ export const internalIcons = new Map<string, SvgIcon>(
     },
     keyboard_arrow_right: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>`,
+    },
+    keyboard_arrow_left: {
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>`,
     },
     chip_cancel: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>`,
@@ -40,6 +49,12 @@ export const internalIcons = new Map<string, SvgIcon>(
     },
     arrow_drop_down: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M7 10l5 5 5-5z"/></svg>`,
+    },
+    arrow_back: {
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>`,
+    },
+    arrow_forward: {
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>`,
     },
     arrow_downward: {
       svg: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`,

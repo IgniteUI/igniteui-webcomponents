@@ -1,0 +1,19 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: grid;
+    grid-template-rows: minmax(rem(12px), auto);
+    outline-style: none;
+}
+
+[part~='indicator'] {
+    grid-row: 1;
+    grid-column: 1;
+    position: relative;
+    display: flex;
+    color: inherit;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; 
+}

@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
+
+:host {
+    @include css-vars-from-theme(diff($base, $theme), 'ig-carousel');
+
+    --navigation-border-radius: #{var-get($theme, 'border-radius')};
+}
