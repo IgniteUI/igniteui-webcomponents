@@ -140,7 +140,7 @@ const Template = ({
       <span>${value}</span>
     </igc-circular-progress>
     <igc-circular-progress
-      style="--diameter: 75px;"
+      style="--diameter: 72px; --stroke-thickness: 12px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       value=${ifDefined(value)}
