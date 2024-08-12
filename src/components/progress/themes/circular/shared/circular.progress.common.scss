@@ -2,7 +2,6 @@
 @use '../light/themes' as *;
 
 $theme: $material;
-$scale-factor: 2.95;
 
 :host {
     // Do not use rem values here
@@ -10,11 +9,13 @@ $scale-factor: 2.95;
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     --stroke-thickness: 1.3px;
     --circular-size: calc(#{var-get($theme, 'diameter')} - 1.3px);
+    --scale-factor: 2.95;
 }
 
 [part~='label'],
 [part~='value'] {
-    font-size: round(calc(#{var-get($theme, 'diameter')} / $scale-factor - var(--stroke-thickness)), 1px);
+    // stylelint-disable-next-line
+    font-size: round(calc(#{var-get($theme, 'diameter')} / var(--scale-factor) - var(--stroke-thickness)), 1px);
 }
 
 [part~='label'] {

@@ -2,17 +2,16 @@
 @use '../light/themes' as *;
 
 $theme: $bootstrap;
-$scale-factor: 3.05;
 
 :host {
     --stroke-thickness: 2px;
+    --scale-factor: 3.05;
     --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
 [part~='label'],
 [part~='value'] {
     font-weight: 700;
-    font-size: round(calc(#{var-get($theme, 'diameter')} / $scale-factor - var(--stroke-thickness)), 1px);
 }
 
 [part~='svg'][part~='indeterminate'] {
