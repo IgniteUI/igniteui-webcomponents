@@ -2,6 +2,7 @@
 @use '../light/themes' as *;
 
 $theme: $indigo;
+$scale-factor: 3.4;
 
 :host {
     --stroke-thickness: 2px;
@@ -10,7 +11,7 @@ $theme: $indigo;
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(#{var-get($theme, 'diameter')} / 3.4 - var(--stroke-thickness));
+    font-size: round(calc(#{var-get($theme, 'diameter')} / $scale-factor - var(--stroke-thickness)), 1px);
 }
 
 [part~='fill'] {

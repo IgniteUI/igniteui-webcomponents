@@ -2,6 +2,7 @@
 @use '../light/themes' as *;
 
 $theme: $material;
+$scale-factor: 2.95;
 
 :host {
     // Do not use rem values here
@@ -13,7 +14,7 @@ $theme: $material;
 
 [part~='label'],
 [part~='value'] {
-    font-size: calc(#{var-get($theme, 'diameter')} / 3 - var(--stroke-thickness));
+    font-size: round(calc(#{var-get($theme, 'diameter')} / $scale-factor - var(--stroke-thickness)), 1px);
 }
 
 [part~='label'] {
