@@ -8,7 +8,7 @@ $theme: $material;
     // This will break the component in Safari
     // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     --stroke-thickness: 1.3px;
-    --circular-size: calc(#{var-get($theme, 'diameter')} - 1.3px);
+    --circular-size: calc(#{var-get($theme, 'diameter')} - var(--stroke-thickness));
     --scale-factor: 2.95;
 }
 

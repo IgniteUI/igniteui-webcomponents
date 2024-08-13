@@ -8,7 +8,6 @@ $theme: $fluent;
 :host {
     --stroke-thickness: 2px;
     --scale-factor: 2.75;
-    --circular-size: calc(#{var-get($theme, 'diameter')} - 2px);
 }
 
 [part~='label'],
