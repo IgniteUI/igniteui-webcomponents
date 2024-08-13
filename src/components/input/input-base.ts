@@ -7,6 +7,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
 import { all } from './themes/themes.js';
@@ -16,8 +17,9 @@ export interface IgcInputEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport
@@ -112,19 +114,11 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     };
   }
 
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
-  protected handleBlur() {
-    this.emitEvent('igcBlur');
-  }
-
   /** Sets the text selection range of the control */
   public setSelectionRange(
     start: number,
     end: number,
-    direction: 'backward' | 'forward' | 'none' = 'none'
+    direction: SelectionRangeDirection = 'none'
   ) {
     this.input.setSelectionRange(start, end, direction);
   }
@@ -134,7 +128,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+    selectMode: RangeTextSelectMode = 'preserve'
   ) {
     this.input.setRangeText(replacement, start, end, selectMode);
   }

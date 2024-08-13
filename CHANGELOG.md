@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- **BREAKING**: Removed `igcFocus` and `igcBlur` events from buttons and inputs - Button, Icon Button, Checkbox, Switch, Combo, Date Time Input, Input, Mask Input, Radios, Select, Textarea.
+
+  Use the native `focus` & `blur` events instead.
+
+  Before:
+  ```ts
+  const input = document.createElement('igc-input');
+  input.addEventListener('igcFocus', focusHandler);
+  ```
+
+  Now:
+  ```ts
+  input.addEventListener('focus', focusHandler);
+  ```
+
 - **BREAKING**: Checkbox, Switch `igcChange` event.
 
   Before:
@@ -33,7 +48,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
 
-
+### Added
+- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
+    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
+    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Removed
 - **BREAKING**: igc-form - use the native form element instead.
@@ -51,6 +69,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Date-time input - update masked value according to the input format on focus when value is set [#1320](https://github.com/IgniteUI/igniteui-webcomponents/issues/1320)
 - Radio - do not emit change event on already checked radio
 - Calendar - add correct dates DOM parts based on active view [[#1278](https://github.com/IgniteUI/igniteui-webcomponents/issues/1278)]
+- Date-picker, Dropdown & Select - showing the component programmatically in response to an outside click event closes the dropdown popover [#1339](https://github.com/IgniteUI/igniteui-webcomponents/issues/1339)
 
 ## [4.11.1] - 2024-07-03
 ### Changed
