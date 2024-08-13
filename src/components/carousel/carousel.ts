@@ -341,7 +341,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         const indicator = this._projectedIndicators[i];
         if (indicator) {
           this.setIndicatorAttributes(indicator, slide, i);
-          this.clipIndicator(indicator, slide.active);
+          this.setIndicatorVisibility(indicator, slide.active);
         }
       });
     }
@@ -483,8 +483,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private updateProjectedIndicatorState(isActive: boolean): void {
     const index = this.slides.indexOf(this._activeSlide);
     const indicator = this._projectedIndicators[index];
+    indicator.tabIndex = isActive ? 0 : -1;
     indicator.ariaSelected = isActive ? 'true' : 'false';
-    this.clipIndicator(indicator, isActive);
+    this.setIndicatorVisibility(indicator, isActive);
   }
 
   private resetInterval(): void {
@@ -522,7 +523,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     indicator.setAttribute('aria-controls', slide.id);
   }
 
-  private clipIndicator(
+  private setIndicatorVisibility(
     indicator: IgcCarouselIndicatorComponent,
     isActive: boolean
   ): void {

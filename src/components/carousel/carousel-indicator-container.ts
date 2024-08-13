@@ -3,6 +3,7 @@ import { themes } from '../../theming/theming-decorator.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';
 import { styles as shared } from './themes/shared/indicator-container/indicator-container.common.css.js';
@@ -20,7 +21,11 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   private _kbFocus = addKeyboardFocusRing(this);
 
   private handleFocusOut(event: FocusEvent) {
-    if (this.contains(event.relatedTarget as Node)) {
+    const target = event.relatedTarget as HTMLElement;
+    if (
+      target &&
+      target.tagName.toLowerCase() === IgcCarouselIndicatorComponent.tagName
+    ) {
       return;
     }
     this._kbFocus.reset();

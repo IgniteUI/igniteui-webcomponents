@@ -4,10 +4,14 @@ import { tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 
 describe('Carousel Indicator Container', () => {
   before(() => {
-    defineComponents(IgcCarouselIndicatorContainerComponent);
+    defineComponents(
+      IgcCarouselIndicatorContainerComponent,
+      IgcCarouselIndicatorComponent
+    );
   });
 
   const createIndicatorContainerComponent = () => html`
@@ -102,7 +106,7 @@ describe('Carousel Indicator Container', () => {
     );
   });
 
-  it('it should not remove `focused` part if a slotted element loses focus and a sibling element gains focus', async () => {
+  it('it should not remove `focused` part on focusout if the target receiving focus is an `igc-carousel-indicator`', async () => {
     simulateKeyboard(buttons[0], tabKey);
     await elementUpdated(container);
 
@@ -112,8 +116,15 @@ describe('Carousel Indicator Container', () => {
       </div>`
     );
 
+    const indicator = await fixture<IgcCarouselIndicatorComponent>(
+      html`<igc-carousel-indicator>
+        <span>0</span>
+        <span slot="active">1</span>
+      </igc-carousel-indicator>`
+    );
+
     buttons[0].dispatchEvent(
-      new FocusEvent('focusout', { bubbles: true, relatedTarget: buttons[1] })
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: indicator })
     );
     await elementUpdated(container);
 

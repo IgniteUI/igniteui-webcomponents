@@ -193,7 +193,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[0]).shadowDom.to.equal(
-        `<div part="base" tabindex="0">
+        `<div part="base">
           <slot></slot>
         </div>`
       );
@@ -204,7 +204,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[1]).shadowDom.to.equal(
-        `<div part="base" tabindex="-1">
+        `<div part="base">
           <slot></slot>
         </div>`
       );
@@ -219,7 +219,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[0]).shadowDom.to.equal(
-        `<div part="base" tabindex="-1">
+        `<div part="base">
           <slot></slot>
         </div>`
       );
@@ -230,7 +230,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[1]).shadowDom.to.equal(
-        `<div part="base" tabindex="0">
+        `<div part="base">
           <slot></slot>
         </div>`
       );

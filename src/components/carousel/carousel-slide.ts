@@ -107,11 +107,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div
-        ${ref(this._slideRef)}
-        tabindex=${this.active ? '0' : '-1'}
-        part="base"
-      >
+      <div ${ref(this._slideRef)} part="base">
         <slot></slot>
       </div>
     `;
