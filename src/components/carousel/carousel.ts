@@ -262,12 +262,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this._paused;
   }
 
-  @watch('animationType', { waitUntilFirstUpdate: true })
+  @watch('animationType')
   protected animationTypeChange() {
     this._context.setValue(this, true);
   }
 
-  @watch('interval', { waitUntilFirstUpdate: true })
+  @watch('interval')
   protected intervalChange() {
     if (!this.isPlaying) {
       this._playing = true;
@@ -321,18 +321,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     });
   }
 
-  protected override firstUpdated() {
+  private handleSlotChange(): void {
     const index = this.slides.findIndex((slide) => slide.active);
 
     if (this.total) {
       index === -1
-        ? this.activateSlide(this.slides[0], true)
-        : this.activateSlide(this.slides[index], true);
+        ? this.activateSlide(this.slides[0])
+        : this.activateSlide(this.slides[index]);
     }
-  }
-
-  private handleSlotChange(): void {
-    this.requestUpdate();
   }
 
   private handleIndicatorSlotChange(): void {
@@ -452,10 +448,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
   }
 
-  private activateSlide(
-    slide: IgcCarouselSlideComponent,
-    firstUpdate = false
-  ): void {
+  private activateSlide(slide: IgcCarouselSlideComponent): void {
     if (this._activeSlide) {
       this._activeSlide.active = false;
 
@@ -467,7 +460,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._activeSlide = slide;
     this._activeSlide.active = true;
 
-    if (this.hasProjectedIndicators && !firstUpdate) {
+    if (this.hasProjectedIndicators) {
       this.updateProjectedIndicatorState(true);
     }
 
