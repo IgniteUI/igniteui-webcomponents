@@ -53,7 +53,6 @@ import IgcSliderComponent from '../../slider/slider.js';
 import IgcSnackbarComponent from '../../snackbar/snackbar.js';
 import IgcStepComponent from '../../stepper/step.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
-import IgcTabPanelComponent from '../../tabs/tab-panel.js';
 import IgcTabComponent from '../../tabs/tab.js';
 import IgcTabsComponent from '../../tabs/tabs.js';
 import IgcTextareaComponent from '../../textarea/textarea.js';
@@ -117,7 +116,6 @@ const allComponents: IgniteComponent[] = [
   IgcRangeSliderComponent,
   IgcTabsComponent,
   IgcTabComponent,
-  IgcTabPanelComponent,
   IgcCircularProgressComponent,
   IgcLinearProgressComponent,
   IgcCircularGradientComponent,

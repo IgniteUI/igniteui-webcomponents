@@ -1,115 +1,219 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'tabs.common' as *;
+@use 'sass:map';
 
 $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
+$arrow-start: 0;
 
 :host {
-    display: flex;
-    flex-direction: column;
+    // Header idle
+    --header-background: #{color(surface, 500)};
+    --header-foreground: #{color(gray, 700)};
+    --header-background--hover: #{color(gray, 200)};
+    --header-foreground--hover: var(--header-foreground);
+    --header-foreground--focus-within: #{color(primary, 500)};
+
+    // Header Selected
+    --header-background--selected: var(--header-background);
+    --header-foreground--selected: #{color(primary, 500)};
+    --header-background--selected--hover: var(--header-background--hover);
+    --header-foreground--selected--hover: var(--header-foreground--selected);
+
+    // Header Disabled
+    --header-background--disabled: #{color(primary, 500, .5)};
+    --header-foreground--disabled: #{color(gray, 500)};
+
+    // Body
+    --body-background: transparent;
+    --body-foreground: #{contrast-color(gray, 50)};
+
+    // Scroll buttons
+    --scroll-btn-size: #{rem(48px)};
+    --tabs-width: 100%;
+    --tab-max-width: #{rem(360px)};
+    --tab-min-width: #{rem(90px)};
+
+    // Icon color
+    --scroll-btn-background: #{color(surface, 500)};
+    --scroll-btn-foreground: #{color(gray, 700)};
+    --scroll-btn-background--hover: #{color(gray, 100)};
+    --scroll-btn-foreground--hover: #{color(gray, 700)};
+    --scroll-btn-background--disabled: #{color(surface, 500)};
+    --scroll-btn-foreground--disabled: #{color(gray, 500)};
+
+    display: block;
     overflow: hidden;
-}
-
-:host([alignment='start']) [part='headers-scroll'] {
-    ::slotted(igc-tab:last-of-type) {
-        margin-inline-end: auto;
-    }
-}
-
-:host([alignment='end']) [part='headers-scroll'] {
-    ::slotted(igc-tab:first-of-type) {
-        margin-inline-start: auto;
-    }
-}
-
-:host([alignment='center']) [part='headers-scroll'] {
-    ::slotted(igc-tab:first-of-type) {
-        margin-inline-start: auto;
-    }
-
-    ::slotted(igc-tab:last-of-type) {
-        margin-inline-end: auto;
-    }
-}
-
-:host([alignment='justify']) [part='headers-scroll'] {
-    ::slotted(igc-tab) {
-        flex-basis: 100px;
-        flex-grow: 1;
-        max-width: 100%;
-    }
-}
-
-[part='headers'] {
-    display: flex;
-    overflow: hidden;
-    min-height: rem(42px);
-    flex: none;
-}
-
-[part='headers-content'] {
-    display: flex;
-    flex: 1 1 auto;
-    scroll-behavior: smooth;
-    overflow: hidden;
-}
-
-[part='headers-wrapper'] {
     position: relative;
-    flex-grow: 1;
-}
-
-[part='headers-scroll'] {
-    display: flex;
     height: 100%;
 }
 
-[part='content'] {
+%fake-column {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: var(--header-background);
+    grid-row: 1;
+}
+
+[part~='tabs'] {
     display: flex;
-    flex-direction: column;
-    flex-grow: 1;
     overflow: hidden;
+    height: 100%;
+
+    /* stylelint-disable */
+    -ms-overflow-style: none;
+    /* stylelint-enable */
+
+    overscroll-behavior: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    scrollbar-width: none;
 }
 
-[part='selected-indicator'] {
-    position: absolute;
-    inset-inline-start: 0;
-    bottom: 0;
-    transform: translateX(0);
-    height: rem(2px);
-    min-width: rem(90px);
-    transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
+// TODO: Move this in part tabs when scroll-padding is fixed.
+// TODO: Add reference to the chromium browsers issue.
+[part~='focused'] {
+    scroll-padding-inline: var(--scroll-btn-size);
 }
 
-[part='start-scroll-button'],
-[part='end-scroll-button'] {
-    display: flex;
+[part~='inner'] {
+    display: grid;
     align-items: center;
-    justify-content: center;
-    z-index: 1;
-    border: none;
-    padding: 0;
-    min-width: rem(48px);
-    width: rem(48px);
-    height: inherit;
-    cursor: pointer;
     position: relative;
+    grid-template-rows: auto auto 1fr;
 
-    ::slotted(*) {
-        box-shadow: none;
+    ::slotted(igc-tab) {
+        display: contents;
+        pointer-events: none;
     }
 }
 
-igc-icon-button::part(base) {
-    &:hover,
-    &:focus-within {
-        background: transparent;
-        box-shadow: none;
+[part~='scrollable'] {
+    /* stylelint-disable */
+    grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
+    /* stylelint-enable */
+}
+
+[part~='inner']:not([part~='scrollable']) {
+    grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content));
+    min-width: var(--tab-min-width);
+}
+
+:host([alignment='start']) {
+    [part~='inner']:not([part~='scrollable']) {
+        grid-template-columns: repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
+
+        &::after {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='center']) {
+    [part~='inner']:not([part~='scrollable']) {
+        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
+
+        &::before,
+        &::after {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='end']) {
+    [part~='inner']:not([part~='scrollable']) {
+        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto));
+
+        &::before {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='justify']) {
+    --tab-max-width--justify: 100%;
+
+    [part~='scrollable'] {
+        /* stylelint-disable */
+        grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
+        /* stylelint-enable */
     }
 }
 
 :host([dir='rtl']) {
-    [part='start-scroll-button'],
-    [part='end-scroll-button'] {
+    [part~='start-scroll-button'],
+    [part~='end-scroll-button'] {
         transform: scaleX(-1);
+    }
+}
+
+[part~='start-scroll-button'],
+[part~='end-scroll-button'] {
+    grid-row: 1;
+    position: sticky;
+    top: 0;
+    height: 100%;
+    min-width: var(--scroll-btn-size);
+    width: var(--scroll-btn-size);
+    z-index: map.get($tabs-z-index, 'scroll-button');
+}
+
+[part~='start-scroll-button'] {
+    inset-inline-start: $arrow-start;
+}
+
+[part~='end-scroll-button'] {
+    inset-inline-end: $arrow-start;
+}
+
+igc-icon-button::part(base) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+    color: var(--scroll-btn-foreground);
+    background: var(--scroll-btn-background);
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+        color: var(--scroll-btn-foreground--hover);
+        background: var(--scroll-btn-background--hover);
+    }
+
+    &:focus-within {
+        box-shadow: none;
+    }
+}
+
+igc-icon-button[disabled]::part(base) {
+    color: var(--scroll-btn-foreground--disabled);
+    background: var(--scroll-btn-background--disabled);
+}
+
+[part='selected-indicator'] {
+    $indicator-height: rem(2px);
+
+    height: $indicator-height;
+    position: relative;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    margin-block-start: calc(#{$indicator-height} * -1);
+    z-index: map.get($tabs-z-index, 'selected-indicator');
+
+    span {
+        content: '';
+        position: absolute;
+        height: $indicator-height;
+        background: color(primary, 500);
+        transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
     }
 }

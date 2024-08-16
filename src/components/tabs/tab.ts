@@ -3,7 +3,6 @@ import { property, query } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter } from '../common/util.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
@@ -13,13 +12,16 @@ import { styles } from './themes/tab.base.css.js';
  *
  * @element igc-tab
  *
- * @slot prefix - Renders before the tab header content.
- * @slot - Renders the tab header content.
- * @slot suffix - Renders after the tab header content.
+ * @slot - Renders the tab's content.
+ * @slot label - Renders the tab header's label.
+ * @slot prefix - Renders the tab header's prefix.
+ * @slot suffix - Renders the tab header's suffix.
  *
- * @csspart content - The content wrapper.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
+ * @csspart header - The header of a single tab.
+ * @csspart prefix - Holds the header's label prefix.
+ * @csspart content - Holds the header's label.
+ * @csspart suffix - Holds the header's label suffix.
+ * @csspart body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
 
 @themes(all)
@@ -32,17 +34,18 @@ export default class IgcTabComponent extends LitElement {
     registerComponent(IgcTabComponent);
   }
 
-  private static readonly increment = createCounter();
+  @query('[part~="header"]')
+  public header!: HTMLElement;
 
-  @query('[part="base"]', true)
-  private tab!: HTMLElement;
+  @query('[part~="body"]')
+  public contentBody!: HTMLElement;
 
   /**
-   * The id of the tab panel which will be controlled by the tab.
+   * The tab item label.
    * @attr
    */
   @property()
-  public panel = '';
+  public label = '';
 
   /**
    * Determines whether the tab is selected.
@@ -58,36 +61,37 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.id =
-      this.getAttribute('id') || `igc-tab-${IgcTabComponent.increment()}`;
-  }
-
-  /** Sets focus to the tab. */
-  public override focus(options?: FocusOptions) {
-    this.tab.focus(options);
-  }
-
-  /** Removes focus from the tab. */
-  public override blur() {
-    this.tab.blur();
-  }
+  /** @private */
+  @property({ attribute: false })
+  public index = -1;
 
   protected override render() {
     return html`
       <div
-        part="base"
+        part="header"
         role="tab"
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-selected=${this.selected ? 'true' : 'false'}
-        tabindex=${this.disabled || !this.selected ? -1 : 0}
+        id="igc-tab-header-${this.index}"
+        aria-disabled=${this.disabled}
+        aria-selected=${this.selected}
+        aria-controls="igc-tab-content-${this.index}"
+        aria-posinset=${this.index + 1}
+        tabindex=${this.selected ? '0' : '-1'}
       >
-        <slot name="prefix" part="prefix"></slot>
-        <div part="content">
-          <slot></slot>
+        <div part="base">
+          <slot name="prefix" part="prefix"></slot>
+          <div part="content">
+            <slot name="label">${this.label}</slot>
+          </div>
+          <slot name="suffix" part="suffix"></slot>
         </div>
-        <slot name="suffix" part="suffix"></slot>
+      </div>
+      <div
+        id="igc-tab-content-${this.index}"
+        part="body"
+        role="tabpanel"
+        aria-labelledby="igc-tab-header-${this.index}"
+      >
+        <slot></slot>
       </div>
     `;
   }

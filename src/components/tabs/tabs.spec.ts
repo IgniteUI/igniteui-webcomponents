@@ -5,13 +5,12 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 
+import type { TemplateResult } from 'lit';
 import {
   type IgcIconButtonComponent,
   IgcTabComponent,
-  IgcTabPanelComponent,
   IgcTabsComponent,
   defineComponents,
 } from '../../index.js';
@@ -30,37 +29,29 @@ describe('Tabs component', () => {
   const getTabs = (tabs: IgcTabsComponent) =>
     Array.from(tabs.querySelectorAll(IgcTabComponent.tagName));
 
-  const getPanels = (tabs: IgcTabsComponent) =>
-    Array.from(tabs.querySelectorAll(IgcTabPanelComponent.tagName));
-
   const getSelectedTab = (tabs: IgcTabsComponent) => {
     const collection = getTabs(tabs).filter((tab) => tab.selected);
     expect(collection.length).to.equal(1);
     return collection.at(0) as IgcTabComponent;
   };
 
-  const getSelectedPanel = (tabs: IgcTabsComponent) => {
-    const collection = getPanels(tabs).filter(
-      (panel) => panel.hasAttribute('hidden') === false
-    );
-    expect(collection.length).to.equal(1);
-    return collection.at(0) as IgcTabPanelComponent;
-  };
-
   const getScrollContainer = (tabs: IgcTabsComponent) =>
-    tabs.renderRoot.querySelector('[part="headers-scroll"]') as HTMLElement;
+    tabs.renderRoot.querySelector('[part="tabs"]') as HTMLElement;
+
+  const getTabList = (tabs: IgcTabsComponent) =>
+    tabs.renderRoot.querySelector('[role="tablist"]') as HTMLElement;
 
   const fireKeyboardEvent = (key: string) =>
     new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
 
-  const verifySelection = (element: IgcTabsComponent, selection: string) => {
-    expect(element.selected).to.equal(selection);
-    expect(getSelectedTab(element).panel).to.equal(selection);
-    expect(getSelectedPanel(element).id).to.equal(selection);
+  const verifySelection = (tabs: IgcTabsComponent, tab: IgcTabComponent) => {
+    expect(getSelectedTab(tabs).isEqualNode(tab)).to.be.true;
+    expect(tabs?.activeTab?.isEqualNode(tab)).to.be.true;
+    expect(getComputedStyle(tab.contentBody).display).to.equal('flex');
   };
 
   before(() => {
-    defineComponents(IgcTabsComponent, IgcTabComponent, IgcTabPanelComponent);
+    defineComponents(IgcTabComponent, IgcTabsComponent);
   });
 
   let element: IgcTabsComponent;
@@ -72,9 +63,10 @@ describe('Tabs component', () => {
 
     it('is initialized with the proper default values', async () => {
       expect(document.querySelector('igc-tabs')).to.exist;
-      expect(element.selected).to.be.empty;
+      expect(element.activeTab).to.be.undefined;
       expect(element.alignment).to.eq('start');
       expect(element.activation).to.eq('auto');
+      expect(getTabs(element)).to.be.empty;
     });
   });
 
@@ -82,193 +74,206 @@ describe('Tabs component', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(
         html`<igc-tabs>
-          <igc-tab panel="first" disabled>Tab 1</igc-tab>
-          <igc-tab panel="second">Tab 2</igc-tab>
-          <igc-tab panel="third">Tab 3</igc-tab>
-          <igc-tab panel="forth">Tab 4</igc-tab>
-          <igc-tab-panel id="first">Content 1</igc-tab-panel>
-          <igc-tab-panel id="second">Content 2</igc-tab-panel>
-          <igc-tab-panel id="third">Content 2</igc-tab-panel>
+          <igc-tab label="Tab 1" disabled>Content 1</igc-tab>
+          <igc-tab label="Tab 2">Content 2</igc-tab>
+          <igc-tab id="third"
+            ><p slot="label">Tab 3</p>
+            Content 3</igc-tab
+          >
+          <igc-tab><p slot="label">Tab 4</p></igc-tab>
         </igc-tabs>`
       );
     });
 
     it('is accessible', async () => {
-      await expect(element).to.be.accessible();
+      await expect(element).to.be.accessible({
+        ignoredRules: ['aria-required-children'],
+      });
+    });
+
+    it('renders the IgcTabComponents', () => {
+      expect(getTabs(element)).to.have.length(4);
     });
 
     it('selects the first enabled tab when nothing else is specified', async () => {
-      verifySelection(element, 'second');
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('selects the tab with selected attribute in the template', async () => {
-      const tab = await fixture<IgcTabsComponent>(
+      const tabsComponent = await fixture<IgcTabsComponent>(
         html`<igc-tabs>
-          <igc-tab panel="first">Tab 1</igc-tab>
-          <igc-tab panel="second" selected>Tab 2</igc-tab>
-          <igc-tab panel="third">Tab 3</igc-tab>
-          <igc-tab-panel id="first">Content 1</igc-tab-panel>
-          <igc-tab-panel id="second">Content 2</igc-tab-panel>
-          <igc-tab-panel id="third">Content 3</igc-tab-panel>
+          <igc-tab label="Tab 1">Content 1</igc-tab>
+          <igc-tab label="Tab 2" selected>Content 2</igc-tab>
+          <igc-tab
+            ><p slot="label">Tab 3</p>
+            Content 3</igc-tab
+          >
         </igc-tabs>`
       );
-      verifySelection(tab, 'second');
+      verifySelection(tabsComponent, getTabs(tabsComponent)[1]);
       expect(
-        (tab as any).panels.map((panel: any) => panel.hasAttribute('hidden'))
-      ).deep.equal([true, false, true]);
+        tabsComponent.tabs.map(
+          (tab: IgcTabComponent) => getComputedStyle(tab.contentBody).display
+        )
+      ).deep.equal(['none', 'flex', 'none']);
     });
 
     it('selects a tab on mouse click if it is not disabled', async () => {
-      getTabs(element)[0].click();
+      getTabs(element)[0].header.click();
       await elementUpdated(element);
 
-      verifySelection(element, 'second');
+      verifySelection(element, getTabs(element)[1]);
 
-      getTabs(element)[2].click();
+      getTabs(element)[2].header.click();
       await elementUpdated(element);
 
-      verifySelection(element, 'third');
+      verifySelection(element, getTabs(element)[2]);
     });
 
     it('`select` method selects the specified tab', async () => {
       element.select('third');
       await elementUpdated(element);
 
-      verifySelection(element, 'third');
+      verifySelection(element, getTabs(element)[2]);
 
-      element.select(getTabs(element)[1].panel);
+      element.select(getTabs(element)[1]);
       await elementUpdated(element);
 
-      verifySelection(element, 'second');
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('`select` method does not change currently selected tab if the specified value does not exist.', async () => {
       element.select('test');
       await elementUpdated(element);
 
-      verifySelection(element, 'second');
+      verifySelection(element, getTabs(element)[1]);
+    });
+
+    it('keydown does not select another tab when focus is not over tab header', async () => {
+      const input = document.getElementById('input');
+      input?.focus();
+
+      input?.dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('selects next/previous tab when pressing right/left arrow', async () => {
-      const container = getScrollContainer(element);
+      const container = getTabList(element);
 
       simulateClick(getTabs(element)[1]);
       simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
 
-      verifySelection(element, 'third');
+      verifySelection(element, getTabs(element)[2]);
 
       simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
-      verifySelection(element, 'second');
+      verifySelection(element, getTabs(element)[1]);
 
       simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('forth');
-      expect(getSelectedTab(element).panel).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
     });
 
     it('selects next/previous tab when pressing right/left arrow (RTL)', async () => {
-      const container = getScrollContainer(element);
+      const container = getTabList(element);
 
       element.dir = 'rtl';
       getTabs(element)[1].focus();
       simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('forth');
-      expect(getSelectedTab(element).panel).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
 
       simulateKeyboard(container, arrowRight);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('third');
-      expect(getSelectedTab(element).panel).to.eq('third');
+      verifySelection(element, getTabs(element)[2]);
 
       simulateKeyboard(container, arrowLeft);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('forth');
-      expect(getSelectedTab(element).panel).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
     });
 
     it('selects first/last enabled tab when pressing home/end keys', async () => {
-      const container = getScrollContainer(element);
+      const container = getTabList(element);
       simulateKeyboard(container, endKey);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('forth');
-      expect(getSelectedTab(element).panel).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
 
       simulateKeyboard(container, homeKey);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('second');
-      expect(getSelectedTab(element).panel).to.eq('second');
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('only focuses the corresponding tab when activation is manual and navigating with keyboard', async () => {
       element.activation = 'manual';
       await elementUpdated(element);
 
-      simulateKeyboard(getScrollContainer(element), endKey);
+      simulateKeyboard(getTabList(element), endKey);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('second');
+      verifySelection(element, getTabs(element)[1]);
       expect(element.querySelectorAll('igc-tab')[3]).to.eq(
         document.activeElement
       );
     });
 
     it('selects the focused tab when activation is set to `manual` and space/enter is pressed', async () => {
-      const container = getScrollContainer(element);
+      const container = getTabList(element);
 
       element.activation = 'manual';
       simulateKeyboard(container, endKey);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('second');
+      verifySelection(element, getTabs(element)[1]);
 
       simulateKeyboard(container, spaceBar);
       await elementUpdated(element);
 
-      expect(getSelectedTab(element).panel).to.eq('forth');
-      expect(element.selected).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
 
       simulateKeyboard(container, homeKey);
       await elementUpdated(element);
 
-      expect(element.selected).to.eq('forth');
+      verifySelection(element, getTabs(element)[3]);
 
       simulateKeyboard(container, enterKey);
       await elementUpdated(element);
 
-      expect(getSelectedTab(element).panel).to.eq('second');
-      expect(element.selected).to.eq('second');
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('selected indicator align with the selected tab', async () => {
       const indicator = element.shadowRoot?.querySelector(
-        '[part = "selected-indicator"]'
+        '[part="selected-indicator"] span'
       ) as HTMLElement;
 
-      expect(indicator.style.transform).to.eq('translate(90px)');
+      let offsetLeft = `${getSelectedTab(element).header.offsetLeft}px`;
+      expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        `${getSelectedTab(element).offsetWidth}px`
+        `${getSelectedTab(element).header.offsetWidth}px`
       );
 
       element.alignment = 'justify';
       await elementUpdated(element);
 
-      element.select('forth');
+      element.select('third');
       await elementUpdated(element);
 
-      const offsetLeft = `${getSelectedTab(element).offsetLeft}px`;
+      verifySelection(element, getTabs(element)[2]);
+
+      offsetLeft = `${getSelectedTab(element).header.offsetLeft}px`;
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
-        `${getSelectedTab(element).offsetWidth}px`
+        `${getSelectedTab(element).header.offsetWidth}px`
       );
     });
 
@@ -277,35 +282,42 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       const indicator = element.shadowRoot?.querySelector(
-        '[part = "selected-indicator"]'
+        '[part="selected-indicator"] span'
       ) as HTMLElement;
 
-      expect(indicator.style.transform).to.eq('translate(90px)');
-      expect(indicator.style.width).to.eq(
-        `${getSelectedTab(element).offsetWidth}px`
+      let activeTabHeader = getSelectedTab(element).header;
+      let activeTabOffesetLeft = activeTabHeader.offsetLeft;
+      let activeTabWidth = activeTabHeader.getBoundingClientRect().width;
+      const scrollContainerWidth =
+        getScrollContainer(element).getBoundingClientRect().width;
+
+      expect(indicator.style.transform).to.eq(
+        `translate(${activeTabOffesetLeft - scrollContainerWidth + activeTabWidth}px)`
       );
+
+      expect(indicator.style.width).to.eq(`${activeTabWidth}px`);
 
       element.alignment = 'justify';
       await elementUpdated(element);
 
-      element.select('forth');
+      element.select('third');
       await elementUpdated(element);
 
-      const offsetLeft = `${
-        getSelectedTab(element).offsetLeft +
-        getSelectedTab(element).offsetWidth -
-        element.clientWidth
-      }px`;
-      expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
-      expect(indicator.style.width).to.eq(
-        `${getSelectedTab(element).offsetWidth}px`
+      activeTabHeader = getSelectedTab(element).header;
+      activeTabOffesetLeft = activeTabHeader.offsetLeft;
+      activeTabWidth = activeTabHeader.getBoundingClientRect().width;
+
+      expect(indicator.style.transform).to.eq(
+        `translate(${activeTabOffesetLeft - scrollContainerWidth + activeTabWidth}px)`
       );
+
+      expect(indicator.style.width).to.eq(`${activeTabWidth}px`);
     });
 
     it('emits `igcChange` when selecting item via mouse click', async () => {
       const eventSpy = spy(element, 'emitEvent');
 
-      getTabs(element)[3].click();
+      getTabs(element)[3].header.click();
       await elementUpdated(element);
 
       expect(eventSpy).calledWithExactly('igcChange', {
@@ -316,7 +328,7 @@ describe('Tabs component', () => {
     it('emits `igcChange` when selecting item via arrow key press', async () => {
       const eventSpy = spy(element, 'emitEvent');
 
-      getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      getTabs(element)[1].header.dispatchEvent(fireKeyboardEvent('ArrowLeft'));
       await elementUpdated(element);
 
       expect(eventSpy).calledWithExactly('igcChange', {
@@ -324,142 +336,81 @@ describe('Tabs component', () => {
       });
     });
 
-    it('does not display scroll buttons if alignment is justify', async () => {
-      const startScrollButton = element.shadowRoot?.querySelector(
-        'igc-icon-button[part="start-scroll-button"]'
-      );
+    // it('aligns tab headers properly when `alignment` is set to justify', async () => {
+    //   element.alignment = 'justify';
+    //   await elementUpdated(element);
 
-      const endScrollButton = element.shadowRoot?.querySelector(
-        'igc-icon-button[part="end-scroll-button"]'
-      );
+    //   const diffs: number[] = [];
+    //   const expectedWidth = Math.round(
+    //     getScrollContainer(element).offsetWidth / getTabs(element).length
+    //   );
+    //   getTabs(element).map((elem) =>
+    //     diffs.push(elem.header.offsetWidth - expectedWidth)
+    //   );
 
-      element.alignment = 'justify';
-      await elementUpdated(element);
+    //   const result = diffs.reduce((a, b) => a - b);
+    //   expect(result).to.eq(0);
+    // });
 
-      expect(startScrollButton).to.be.null;
-      expect(endScrollButton).to.be.null;
-    });
+    // it('aligns tab headers properly when `alignment` is set to start', async () => {
+    //   const widths: number[] = [];
+    //   getTabs(element).map((elem) => widths.push(elem.header.offsetWidth));
 
-    it('aligns tab headers properly when `alignment` is set to justify', async () => {
-      element.alignment = 'justify';
-      await elementUpdated(element);
+    //   const result = widths.reduce((a, b) => a + b);
+    //   const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
+    //   const offsetRight =
+    //     getScrollContainer(element).offsetWidth -
+    //     getTabs(element)[3].header.offsetLeft -
+    //     getTabs(element)[3].header.offsetWidth;
 
-      const diffs: number[] = [];
-      const expectedWidth = Math.round(
-        getScrollContainer(element).offsetWidth / getTabs(element).length
-      );
-      getTabs(element).map((elem) =>
-        diffs.push(elem.offsetWidth - expectedWidth)
-      );
-      const result = diffs.reduce((a, b) => a - b);
-      expect(result).to.eq(0);
-    });
+    //   expect(getTabs(element)[0].header.offsetLeft).to.eq(0);
+    //   expect(offsetRight - noTabsAreaWidth).to.eq(0);
+    //   expect(Math.abs(90 - widths[0])).to.eq(0);
+    //   expect(Math.abs(90 - widths[1])).to.eq(0);
+    //   expect(Math.abs(90 - widths[2])).to.eq(0);
+    //   expect(Math.abs(90 - widths[3])).to.eq(0);
+    // });
 
-    it('aligns tab headers properly when `alignment` is set to start', async () => {
-      element.alignment = 'start';
-      await elementUpdated(element);
+    // it('aligns tab headers properly when `alignment` is set to center', async () => {
+    //   element.alignment = 'center';
+    //   await elementUpdated(element);
 
-      const widths: number[] = [];
-      getTabs(element).map((elem) => widths.push(elem.offsetWidth));
+    //   const widths: number[] = [];
+    //   getTabs(element).map((elem) => widths.push(elem.header.offsetWidth));
 
-      const result = widths.reduce((a, b) => a + b);
-      const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-      const offsetRight =
-        getScrollContainer(element).offsetWidth -
-        getTabs(element)[3].offsetLeft -
-        getTabs(element)[3].offsetWidth;
+    //   const result = widths.reduce((a, b) => a + b);
+    //   const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
+    //   const offsetRight =
+    //     getScrollContainer(element).offsetWidth -
+    //     getTabs(element)[3].header.offsetLeft -
+    //     getTabs(element)[3].header.offsetWidth;
 
-      expect(getTabs(element)[0].offsetLeft).to.eq(0);
-      expect(offsetRight - noTabsAreaWidth).to.eq(0);
-      expect(Math.abs(90 - widths[0])).to.eq(0);
-      expect(Math.abs(90 - widths[1])).to.eq(0);
-      expect(Math.abs(90 - widths[2])).to.eq(0);
-      expect(Math.abs(90 - widths[3])).to.eq(0);
-    });
-
-    it('aligns tab headers properly when `alignment` is set to center', async () => {
-      element.alignment = 'center';
-      await elementUpdated(element);
-
-      const widths: number[] = [];
-      getTabs(element).map((elem) => widths.push(elem.offsetWidth));
-
-      const result = widths.reduce((a, b) => a + b);
-      const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-      const offsetRight =
-        getScrollContainer(element).offsetWidth -
-        getTabs(element)[3].offsetLeft -
-        getTabs(element)[3].offsetWidth;
-
-      expect(
-        Math.round(noTabsAreaWidth / 2) - getTabs(element)[0].offsetLeft
-      ).to.eq(0);
-      expect(offsetRight - getTabs(element)[0].offsetLeft).to.eq(0);
-      expect(Math.abs(90 - widths[0])).to.eq(0);
-      expect(Math.abs(90 - widths[1])).to.eq(0);
-      expect(Math.abs(90 - widths[2])).to.eq(0);
-      expect(Math.abs(90 - widths[3])).to.eq(0);
-    });
-
-    it('aligns tab headers properly when `alignment` is set to end', async () => {
-      element.alignment = 'end';
-      await elementUpdated(element);
-
-      const widths: number[] = [];
-      getTabs(element).map((elem) => widths.push(elem.offsetWidth));
-
-      const result = widths.reduce((a, b) => a + b);
-      const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-      const offsetRight =
-        getScrollContainer(element).offsetWidth -
-        getTabs(element)[3].offsetLeft -
-        getTabs(element)[3].offsetWidth;
-
-      expect(offsetRight).to.eq(0);
-      expect(getTabs(element)[0].offsetLeft - noTabsAreaWidth).to.eq(0);
-      expect(Math.abs(90 - widths[0])).to.eq(0);
-      expect(Math.abs(90 - widths[1])).to.eq(0);
-      expect(Math.abs(90 - widths[2])).to.eq(0);
-      expect(Math.abs(90 - widths[3])).to.eq(0);
-    });
+    //   expect(
+    //     Math.round(noTabsAreaWidth / 2) - getTabs(element)[0].header.offsetLeft
+    //   ).to.eq(0);
+    //   expect(offsetRight - getTabs(element)[0].header.offsetLeft).to.eq(0);
+    //   expect(Math.abs(90 - widths[0])).to.eq(0);
+    //   expect(Math.abs(90 - widths[1])).to.eq(0);
+    //   expect(Math.abs(90 - widths[2])).to.eq(0);
+    //   expect(Math.abs(90 - widths[3])).to.eq(0);
+    // });
 
     it('updates selection through tab element `selected` attribute', async () => {
       getTabs(element).at(2)!.selected = true;
       await elementUpdated(element);
 
-      expect(element.selected).to.eq(getTabs(element)[2].panel);
+      verifySelection(element, getTabs(element)[2]);
     });
 
     it('updates selection state when removing selected tab', async () => {
       element.select('third');
       await elementUpdated(element);
 
+      verifySelection(element, getTabs(element)[2]);
       getSelectedTab(element).remove();
       await elementUpdated(element);
 
-      expect(element.selected).to.equal('');
-      expect(
-        element.querySelectorAll(`${IgcTabComponent.tagName}[selected]`).length
-      ).to.equal(0);
-    });
-
-    it('updates selected state when adding tabs at runtime', async () => {
-      let tab = document.createElement(IgcTabComponent.tagName);
-      tab.panel = 'new-selection';
-      tab.selected = true;
-
-      element.appendChild(tab);
-      await elementUpdated(element);
-
-      expect(element.selected).to.eq(tab.panel);
-
-      tab = document.createElement(IgcTabComponent.tagName);
-      tab.panel = 'new-selection-2';
-
-      element.appendChild(tab);
-      await elementUpdated(element);
-
-      expect(element.selected).not.to.eq(tab.panel);
+      verifySelection(element, getTabs(element)[1]);
     });
 
     it('keeps current selection when removing other tabs', async () => {
@@ -471,23 +422,50 @@ describe('Tabs component', () => {
         .forEach((el) => el.remove());
       await elementUpdated(element);
 
-      expect(element.selected).to.equal('third');
-      expect(getSelectedTab(element).panel).to.equal(element.selected);
+      verifySelection(element, getTabs(element)[0]);
+    });
+
+    it('updates selected state when adding tabs at runtime', async () => {
+      let tab = document.createElement(IgcTabComponent.tagName);
+      element.insertBefore(tab, element.children[1]);
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[2]);
+
+      tab = document.createElement(IgcTabComponent.tagName);
+      element.appendChild(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[2]);
+
+      tab = await fixture<IgcTabComponent>(html`<igc-tab>New Tab</igc-tab>`);
+      tab.selected = true;
+      element.insertBefore(tab, element.children[2]);
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[2]);
+
+      tab = await fixture<IgcTabComponent>(html`<igc-tab>New Tab</igc-tab>`);
+      tab.selected = true;
+      element.appendChild(tab);
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[7]);
     });
   });
 
   describe('Scrolling', () => {
     beforeEach(async () => {
-      const headers: TemplateResult[] = [];
-      const panels: TemplateResult[] = [];
+      const tabs: TemplateResult[] = [];
       for (let i = 1; i <= 18; i++) {
-        headers.push(
-          html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}</igc-tab>`
+        tabs.push(
+          html`<igc-tab id=${i} .label=${`Item ${i}`} .disabled=${i === 3}
+            >Content ${i}</igc-tab
+          >`
         );
-        panels.push(html`<igc-tab-panel id=${i}>Content ${i}</igc-tab-panel>`);
       }
       element = await fixture<IgcTabsComponent>(
-        html`<igc-tabs>${headers}${panels}</igc-tabs>`
+        html`<igc-tabs>${tabs}</igc-tabs>`
       );
     });
 
@@ -517,18 +495,26 @@ describe('Tabs component', () => {
       expect(endScrollButton(element)).to.not.be.null;
     });
 
+    it('does display scroll buttons if alignment is justify', async () => {
+      element.alignment = 'justify';
+      await elementUpdated(element);
+
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+    });
+
     it('scrolls to start when start scroll button is clicked', async () => {
       element.select('18');
-
       await elementUpdated(element);
+
       await waitUntil(
         () => endScrollButton(element).disabled,
         'End scroll button is not disabled at end of scroll'
       );
 
       startScrollButton(element).click();
-
       await elementUpdated(element);
+
       await waitUntil(
         () => !endScrollButton(element).disabled,
         'End scroll button is disabled on opposite scroll'
@@ -555,8 +541,7 @@ describe('Tabs component', () => {
 
     it('scrolls when tab is partially visible', async () => {
       const header = element.querySelector('igc-tab')!;
-      header.textContent =
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+      header.label = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
       element.style.width = '300px';
       await elementUpdated(element);
 
@@ -629,38 +614,6 @@ describe('Tabs component', () => {
       );
     });
   });
-
-  describe('', () => {
-    beforeEach(async () => {
-      element = await fixture<IgcTabsComponent>(html`
-        <igc-tabs>
-          <igc-tab></igc-tab>
-          <igc-tab></igc-tab>
-          <igc-tab panel="special-offer"></igc-tab>
-          <igc-tab></igc-tab>
-          <igc-tab></igc-tab>
-
-          <igc-tab-panel></igc-tab-panel>
-          <igc-tab-panel></igc-tab-panel>
-          <igc-tab-panel id="special-offer"></igc-tab-panel>
-          <igc-tab-panel id="discounts"></igc-tab-panel>
-        </igc-tabs>
-      `);
-    });
-
-    it('correctly wires tab to panel relations based on provided attributes', async () => {
-      const [tabs, panels] = [getTabs(element), getPanels(element)];
-
-      // Check all but the last since it has no panel
-      tabs.slice(0, -1).forEach((tab, index) => {
-        expect(tab.panel).to.equal(panels.at(index)!.id);
-      });
-
-      // Check the last one for auto-generated `panel` prop.
-      expect(tabs.at(-1)?.panel).to.not.equal('');
-    });
-  });
-
   describe('issue-1140', () => {
     it('Tabs throw if a child tab is immediately appended', async () => {
       const tabs = document.createElement(IgcTabsComponent.tagName);

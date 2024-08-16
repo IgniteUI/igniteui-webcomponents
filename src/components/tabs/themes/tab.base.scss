@@ -1,41 +1,58 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'tabs.common' as *;
+@use 'sass:map';
 
-:host {
-    display: inline-flex;
-    flex-shrink: 0;
-    justify-content: center;
+[part~='header'] {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    min-width: rem(90px);
-    max-width: rem(360px);
-    word-wrap: break-word;
-    padding: rem(12px) rem(16px);
-    overflow: hidden;
+    flex-shrink: 0;
+    text-align: center;
+    justify-content: center;
+    height: 100%;
+    pointer-events: all;
+    min-height: rem(42px);
+    padding-block: rem(12px);
+    padding-inline: rem(16px);
+    max-width: var(--tab-max-width--justify, var(--tab-max-width));
+    min-width: var(--tab-min-width);
     cursor: pointer;
     position: relative;
-    transition: all .3s cubic-bezier(.35, 0, .25, 1);
-    user-select: none;
+    background: var(--header-background);
+    color: var(--header-foreground);
+    z-index: map.get($tabs-z-index, 'header');
+    grid-row: 1;
+    word-break: break-word;
 
-    ::slotted(igc-icon) {
-        --ig-size: 3;
+    &:hover,
+    &:focus-within {
+        background: var(--header-background--hover);
     }
-}
 
-:host([disabled]) {
-    pointer-events: none;
-    cursor: initial;
+    &:hover {
+        color: var(--header-foreground--hover);
+    }
+
+    &:focus-within {
+        outline: none;
+        color: var(--header-foreground--focus-within);
+    }
 }
 
 [part='base'] {
     display: flex;
+    grid-row: var(--header-bottom, 1);
     align-items: center;
-    justify-content: space-between;
-    outline-style: none;
+    justify-content: center;
     gap: rem(8px);
+    user-select: none;
+    outline-style: none;
 }
 
-[part='content'] {
+[part~='content'] {
     @include type-style('button');
+    @include line-clamp(2, true, true);
 
     display: flex;
     align-items: center;
@@ -43,9 +60,57 @@
     flex-direction: column;
     text-align: center;
     outline-style: none;
-    gap: rem(8px);
+    flex: 1;
 
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
+}
+
+[part~='body'] {
+    display: none;
+    position: sticky;
+    inset-inline-start: 0;
+    background: var(--body-background);
+    color: var(--body-foreground);
+    width: var(--tabs-width);
+    grid-row: 3;
+    grid-column: 1 / -1;
+    transition: transform 250ms ease-in-out;
+    height: 100%;
+    pointer-events: all;
+}
+
+:host([selected]) {
+    [part='header'] {
+        background: var(--header-background--selected);
+        color: var(--header-foreground--selected);
+
+        ::slotted(igc-icon) {
+            color: var(--header-foreground--selected);
+        }
+
+        &:hover,
+        &:focus-within {
+            background: var(--header-background--selected--hover);
+            color: var(--header-foreground--selected--hover);
+        }
+    }
+
+    [part~='body'] {
+        display: flex;
+        transform: translateX(0);
+    }
+}
+
+:host([disabled]) {
+    [part='header'] {
+        pointer-events: none;
+        cursor: initial;
+        color: var(--header-foreground--disabled);
+    }
+}
+
+::slotted(igc-icon) {
+    --size: #{rem(24px)};
 }
