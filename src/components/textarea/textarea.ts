@@ -9,29 +9,25 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  maxLengthValidator,
-  minLengthValidator,
-  requiredValidator,
-} from '../common/validators.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
+import { textAreaValidators } from './validators.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 /**
@@ -48,17 +44,15 @@ export interface IgcTextareaEventMap {
  *
  * @fires igcInput - Emitted when the control receives user input.
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
- * @csspart container - The main wrapper that holds all main input elements.
- * @csspart input - The native input element.
- * @csspart label - The native label element.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart helper-text - The helper text wrapper.
+ * @csspart container - The main wrapper that holds all main input elements of the textarea.
+ * @csspart input - The native input element of the igc-textarea.
+ * @csspart label - The native label element of the igc-textarea.
+ * @csspart prefix - The prefix wrapper of the igc-textarea.
+ * @csspart suffix - The suffix wrapper of the igc-textarea.
+ * @csspart helper-text - The helper text wrapper of the igc-textarea.
  */
-@themes(all, true)
+@themes(all, { exposeController: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {
@@ -70,12 +64,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     registerComponent(IgcTextareaComponent);
   }
 
-  private declare readonly [themeSymbol]: Theme;
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-    minLengthValidator,
-    maxLengthValidator,
-  ];
+  protected override get __validators() {
+    return textAreaValidators;
+  }
 
   private static readonly increment = createCounter();
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
@@ -107,6 +98,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return {
       resize: this.resize === 'auto' ? 'none' : this.resize,
     };
+  }
+
+  protected get _isMaterial() {
+    return getThemeController(this)?.theme === 'material';
   }
 
   /**
@@ -275,12 +270,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     super();
     this.addEventListener('focus', () => {
       this._dirty = true;
-      this.emitEvent('igcFocus');
     });
     this.addEventListener('blur', () => {
       this.updateValidity();
       this.setInvalidState();
-      this.emitEvent('igcBlur');
     });
   }
 
@@ -309,7 +302,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public setSelectionRange(
     start: number,
     end: number,
-    direction: 'backward' | 'forward' | 'none' = 'none'
+    direction: SelectionRangeDirection = 'none'
   ) {
     this.input.setSelectionRange(start, end, direction);
   }
@@ -319,7 +312,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+    selectMode: RangeTextSelectMode = 'preserve'
   ) {
     this.input.setRangeText(replacement, start, end, selectMode);
     this.value = this.input.value;
@@ -493,8 +486,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    const isMaterial = this[themeSymbol] === 'material';
-    return isMaterial ? this.renderMaterial() : this.renderStandard();
+    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
   }
 }
 

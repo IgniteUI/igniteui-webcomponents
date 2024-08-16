@@ -1,23 +1,46 @@
+import type { Theme } from '../../theming/types.js';
+import { sameObject } from '../common/util.js';
+import { iconReferences } from './icon-references.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
+import { createIconDefaultMap } from './registry/default-map.js';
+import { SvgIconParser } from './registry/parser.js';
+import type {
+  IconCallback,
+  IconMeta,
+  IconReferencePair,
+  SvgIcon,
+} from './registry/types.js';
+import { ActionType } from './registry/types.js';
 
-export type IconCollection = { [name: string]: ParsedIcon };
-
-type IconCallback = (name: string, collection: string) => void;
-
-interface ParsedIcon {
-  svg: string;
-  title?: string;
-}
-
-export class IconsRegistry {
-  private _parser: DOMParser;
-
-  private collections = new Map<string, IconCollection>();
+class IconsRegistry {
+  private parser: SvgIconParser;
+  private collections = createIconDefaultMap<string, SvgIcon>();
+  private references = createIconDefaultMap<string, IconMeta>();
   private listeners = new Set<IconCallback>();
+  private theme!: Theme;
+  private broadcast: IconsStateBroadcast;
 
   constructor() {
-    this._parser = new DOMParser();
+    this.parser = new SvgIconParser();
+    this.broadcast = new IconsStateBroadcast(this.collections, this.references);
+
     this.collections.set('internal', internalIcons);
+  }
+
+  public register(name: string, iconText: string, collection = 'default') {
+    const svgIcon = this.parser.parse(iconText);
+    this.collections.getOrCreate(collection).set(name, svgIcon);
+
+    const icons = createIconDefaultMap<string, SvgIcon>();
+    icons.getOrCreate(collection).set(name, svgIcon);
+
+    this.broadcast.send({
+      actionType: ActionType.RegisterIcon,
+      collections: icons.toMap(),
+    });
+
+    this.notifyAll(name, collection);
   }
 
   public subscribe(callback: IconCallback) {
@@ -28,44 +51,65 @@ export class IconsRegistry {
     this.listeners.delete(callback);
   }
 
-  private parseSVG(svgString: string): ParsedIcon {
-    const parsed = this._parser.parseFromString(svgString, 'image/svg+xml');
-    const svg = parsed.querySelector('svg');
+  public setRefsByTheme(theme: Theme) {
+    if (this.theme !== theme) {
+      this.theme = theme;
 
-    if (parsed.querySelector('parsererror') || !svg) {
-      throw new Error('SVG element not found or malformed SVG string.');
+      for (const { alias, target } of iconReferences) {
+        const external = this.references
+          .get(alias.collection)
+          ?.get(alias.name)?.external;
+
+        const _ref = this.references.get('default')?.get(alias.name) ?? {};
+        const _target = target.get(this.theme) ?? target.get('default')!;
+
+        this.setIconRef({
+          alias,
+          target: _target,
+          overwrite: !external && !sameObject(_ref, _target),
+        });
+      }
+    }
+  }
+
+  public setIconRef(options: IconReferencePair) {
+    const { alias, target, overwrite } = options;
+    const reference = this.references.getOrCreate(alias.collection);
+
+    if (overwrite) {
+      reference.set(alias.name, { ...target });
+      this.notifyAll(alias.name, alias.collection);
     }
 
-    svg.setAttribute('fit', '');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const refs = createIconDefaultMap<string, IconMeta>();
+    refs.getOrCreate(alias.collection).set(alias.name, {
+      name: target.name,
+      collection: target.collection,
+    });
+
+    this.broadcast.send({
+      actionType: ActionType.UpdateIconReference,
+      references: refs.toMap(),
+    });
+  }
+
+  public getIconRef(name: string, collection: string): IconMeta {
+    const icon = this.references.get(collection)?.get(name);
 
     return {
-      svg: svg.outerHTML,
-      title: svg.querySelector('title')?.textContent ?? '',
+      name: icon?.name ?? name,
+      collection: icon?.collection ?? collection,
     };
   }
 
-  public register(name: string, iconText: string, collection = 'default') {
-    const namespace = this.getOrCreateCollection(collection);
-    namespace[name] = this.parseSVG(iconText);
+  public get(name: string, collection = 'default') {
+    return this.collections.get(collection)?.get(name);
+  }
 
+  private notifyAll(name: string, collection: string) {
     for (const listener of this.listeners) {
       listener(name, collection);
     }
-  }
-
-  public get(name: string, collection = 'default') {
-    return this.collections.has(collection)
-      ? this.collections.get(collection)![name]
-      : undefined;
-  }
-
-  private getOrCreateCollection(name: string) {
-    if (!this.collections.has(name)) {
-      this.collections.set(name, {});
-    }
-
-    return this.collections.get(name) as IconCollection;
   }
 }
 
@@ -104,4 +148,12 @@ export function registerIconFromText(
   collection = 'default'
 ) {
   getIconRegistry().register(name, iconText, collection);
+}
+
+export function setIconRef(name: string, collection: string, icon: IconMeta) {
+  getIconRegistry().setIconRef({
+    alias: { name, collection },
+    target: { ...icon, external: true },
+    overwrite: true,
+  });
 }

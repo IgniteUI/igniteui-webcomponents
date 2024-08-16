@@ -343,13 +343,13 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       const { forward, backward } = this.clipSymbol(i, ltr);
       yield html`<igc-rating-symbol exportparts="symbol, full, empty">
         <igc-icon
-          collection="internal"
-          name="star"
+          collection="default"
+          name="star_filled"
           style=${styleMap({ clipPath: forward })}
         ></igc-icon>
         <igc-icon
-          collection="internal"
-          name="star_border"
+          collection="default"
+          name="star_outlined"
           style=${styleMap({ clipPath: backward })}
           slot="empty"
         ></igc-icon>

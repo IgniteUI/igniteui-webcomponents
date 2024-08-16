@@ -64,7 +64,7 @@ describe('Select', () => {
 
   const openSelect = async () => {
     select.show();
-    await elementUpdated(select);
+    await Promise.all([elementUpdated(select), nextFrame()]);
   };
 
   const Items = [
@@ -1130,8 +1130,7 @@ describe('Select', () => {
     it('does not emit events on API calls', async () => {
       const eventSpy = spy(select, 'emitEvent');
 
-      select.show();
-      await elementUpdated(select);
+      await openSelect();
       expect(eventSpy).not.to.be.called;
 
       select.hide();
@@ -1163,8 +1162,7 @@ describe('Select', () => {
       });
 
       // No selection
-      select.show();
-      await elementUpdated(select);
+      await openSelect();
 
       simulateKeyboard(select, escapeKey);
       await elementUpdated(select);
@@ -1180,8 +1178,7 @@ describe('Select', () => {
         once: true,
       });
 
-      select.show();
-      await elementUpdated(select);
+      await openSelect();
 
       simulateKeyboard(select, arrowDown, 2);
       simulateKeyboard(select, enterKey);
@@ -1199,8 +1196,7 @@ describe('Select', () => {
         once: true,
       });
 
-      select.show();
-      await elementUpdated(select);
+      await openSelect();
 
       simulateClick(document.body);
       await elementUpdated(select);

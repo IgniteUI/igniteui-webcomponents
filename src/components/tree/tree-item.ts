@@ -507,7 +507,10 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const ltr = this.tree ? isLTR(this.tree) : true;
+    const indicatorParts = {
+      indicator: true,
+      rtl: !(this.tree ? isLTR(this.tree) : true),
+    };
 
     return html`
       <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
@@ -518,7 +521,7 @@ export default class IgcTreeItemComponent extends LitElement {
         >
           <slot name="indentation"></slot>
         </div>
-        <div part="indicator" aria-hidden="true">
+        <div part="${partNameMap(indicatorParts)}" aria-hidden="true">
           ${this.loading
             ? html`
                 <slot name="loading">
@@ -536,11 +539,9 @@ export default class IgcTreeItemComponent extends LitElement {
                     ? html`
                         <igc-icon
                           name=${this.expanded
-                            ? 'keyboard_arrow_down'
-                            : !ltr
-                              ? 'navigate_before'
-                              : 'keyboard_arrow_right'}
-                          collection="internal"
+                            ? 'tree_collapse'
+                            : 'tree_expand'}
+                          collection="default"
                         >
                         </igc-icon>
                       `

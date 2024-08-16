@@ -23,6 +23,10 @@ export function numberInRangeInclusive(
   return value >= min && value <= max;
 }
 
+export function sameObject(a: object, b: object) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  *
  * Returns an element's offset relative to its parent. Similar to element.offsetTop and element.offsetLeft, except the
@@ -197,4 +201,58 @@ export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   }
 
   return result;
+}
+
+export function first<T>(arr: T[]) {
+  return arr.at(0) as T;
+}
+
+export function last<T>(arr: T[]) {
+  return arr.at(-1) as T;
+}
+
+export function modulo(n: number, d: number) {
+  return ((n % d) + d) % d;
+}
+
+/**
+ * Creates an array of `n` elements from a given iterator.
+ *
+ */
+export function take<T>(iterable: IterableIterator<T>, n: number) {
+  const result: T[] = [];
+  let i = 0;
+  let current = iterable.next();
+
+  while (i < n && !current.done) {
+    result.push(current.value);
+    current = iterable.next();
+    i++;
+  }
+
+  return result;
+}
+
+/**
+ * Splits an array into chunks of length `size` and returns a generator
+ * yielding each chunk.
+ * The last chunk may contain less than `size` elements.
+ *
+ * @example
+ * ```typescript
+ * const arr = [0,1,2,3,4,5,6,7,8,9];
+ *
+ * Array.from(chunk(arr, 2)) // [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
+ * Array.from(chunk(arr, 3)) // [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
+ * Array.from(chunk([], 3)) // []
+ * Array.from(chunk(arr, -3)) // Error
+ * ```
+ */
+export function* chunk<T>(arr: T[], size: number) {
+  if (size < 1) {
+    throw new Error('size must be an integer >= 1');
+  }
+  for (let i = 0; i < arr.length; i += size) {
+    yield arr.slice(i, i + size);
+  }
 }

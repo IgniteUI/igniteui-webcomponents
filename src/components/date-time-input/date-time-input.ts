@@ -17,12 +17,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { noop, partNameMap } from '../common/util.js';
-import {
-  type Validator,
-  maxDateValidator,
-  minDateValidator,
-  requiredValidator,
-} from '../common/validators.js';
 import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -35,6 +29,7 @@ import {
   DateParts,
   DateTimeUtil,
 } from './date-util.js';
+import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -59,8 +54,6 @@ const converter: ComplexAttributeConverter<Date | null> = {
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
@@ -80,34 +73,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     registerComponent(IgcDateTimeInputComponent);
   }
 
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-
-    {
-      ...minDateValidator,
-      isValid: () =>
-        this.min
-          ? !DateTimeUtil.lessThanMinValue(
-              this.value || new Date(),
-              this.min,
-              this.hasTimeParts,
-              this.hasDateParts
-            )
-          : true,
-    },
-    {
-      ...maxDateValidator,
-      isValid: () =>
-        this.max
-          ? !DateTimeUtil.greaterThanMaxValue(
-              this.value || new Date(),
-              this.max,
-              this.hasTimeParts,
-              this.hasDateParts
-            )
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return dateTimeInputValidators;
+  }
 
   protected _defaultMask!: string;
   protected _value: Date | null = null;
@@ -249,7 +217,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.updateValidity();
   }
 
-  private get hasDateParts(): boolean {
+  protected get hasDateParts(): boolean {
     const parts =
       this._inputDateParts ||
       DateTimeUtil.parseDateTimeFormat(this.inputFormat);
@@ -262,7 +230,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     );
   }
 
-  private get hasTimeParts(): boolean {
+  protected get hasTimeParts(): boolean {
     const parts =
       this._inputDateParts ||
       DateTimeUtil.parseDateTimeFormat(this.inputFormat);
@@ -607,9 +575,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return part?.start ?? value.length;
   }
 
-  protected override async handleFocus() {
+  protected async handleFocus() {
     this.focused = true;
-    super.handleFocus();
 
     if (this.readOnly) {
       return;
@@ -627,7 +594,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected override handleBlur() {
+  protected handleBlur() {
     const isEmptyMask = this.maskedValue === this.emptyMask;
     const isSameValue = this._oldValue === this.value;
 
@@ -651,7 +618,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     this.checkValidity();
-    super.handleBlur();
   }
 
   protected navigateParts(delta: number) {

@@ -8,7 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import { IgcSwitchComponent, defineComponents } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
 
 describe('Switch', () => {
   before(() => {
@@ -175,18 +175,14 @@ describe('Switch', () => {
       );
     });
 
-    it('should emit igcFocus/igcBlur events when the switch gains/loses focus', () => {
-      const eventSpy = spy(el, 'emitEvent');
+    it('should have correct focus states between Light/Shadow DOM', () => {
       el.focus();
-
-      expect(el.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(el)).to.be.true;
+      expect(isFocused(input)).to.be.true;
 
       el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
+      expect(isFocused(el)).to.be.false;
+      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when the switch checked state changes', async () => {
@@ -194,7 +190,9 @@ describe('Switch', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
+      expect(eventSpy).calledWithExactly('igcChange', {
+        detail: { checked: true, value: undefined },
+      });
     });
 
     const createSwitchComponent = (

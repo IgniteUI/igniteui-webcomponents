@@ -4,7 +4,7 @@ import {
   type ChangeThemeEventDetail,
 } from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
-import { getAllCSSVariables } from './utils.js';
+import { getAllCssVariables } from './utils.js';
 
 let theme: Theme;
 let themeVariant: ThemeVariant;
@@ -30,9 +30,9 @@ export const getTheme: () => {
   theme: Theme;
   themeVariant: ThemeVariant;
 } = () => {
-  if (!theme || !themeVariant) {
+  if (!(theme && themeVariant)) {
     const [_theme, _variant] =
-      Object.entries(getAllCSSVariables()).filter(
+      Object.entries(getAllCssVariables()).filter(
         ([v]) => v === 'igTheme' || v === 'igThemeVariant'
       ) || [];
 

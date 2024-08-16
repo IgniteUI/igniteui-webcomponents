@@ -8,19 +8,16 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { partNameMap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -44,6 +41,7 @@ import type {
   Item,
   Keys,
 } from './types.js';
+import { comboValidators } from './validators.js';
 
 /* blazorSupportsVisualChildren */
 /**
@@ -55,44 +53,42 @@ import type {
  *
  * @element igc-combo
  *
- * @slot prefix - Renders content before the input.
- * @slot suffix - Renders content after input.
- * @slot header - Renders a container before the list of options.
- * @slot footer - Renders a container after the list of options.
- * @slot helper-text - Renders content below the input.
- * @slot toggle-icon - Renders content inside the suffix container.
- * @slot clear-icon - Renders content inside the suffix container.
+ * @slot prefix - Renders content before the input of the combo.
+ * @slot suffix - Renders content after the input of the combo.
+ * @slot header - Renders a container before the list of options of the combo.
+ * @slot footer - Renders a container after the list of options of the combo.
+ * @slot helper-text - Renders content below the input of the combo.
+ * @slot toggle-icon - Renders content inside the suffix container of the combo.
+ * @slot clear-icon - Renders content inside the suffix container of the combo.
  *
- * @fires igcFocus - Emitted when the select gains focus.
- * @fires igcBlur - Emitted when the select loses focus.
  * @fires igcChange - Emitted when the control's selection has changed.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart label - The encapsulated text label.
- * @csspart input - The main input field.
- * @csspart native-input - The native input of the main input field.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
- * @csspart toggle-icon - The toggle icon wrapper.
- * @csspart clear-icon - The clear icon wrapper.
- * @csspart case-icon - The case icon wrapper.
- * @csspart helper-text - The helper text wrapper.
- * @csspart search-input - The search input field.
- * @csspart list-wrapper - The list of options wrapper.
- * @csspart list - The list of options box.
- * @csspart item - Represents each item in the list of options.
- * @csspart group-header - Represents each header in the list of options.
- * @csspart active - Appended to the item parts list when the item is active.
- * @csspart selected - Appended to the item parts list when the item is selected.
- * @csspart checkbox - Represents each checkbox of each list item.
- * @csspart checkbox-indicator - Represents the checkbox indicator of each list item.
- * @csspart checked - Appended to checkbox parts list when checkbox is checked.
- * @csspart header - The container holding the header content.
- * @csspart footer - The container holding the footer content.
- * @csspart empty - The container holding the empty content.
+ * @csspart label - The encapsulated text label of the combo.
+ * @csspart input - The main input field of the combo.
+ * @csspart native-input - The native input of the main input field of the combo.
+ * @csspart prefix - The prefix wrapper of the combo.
+ * @csspart suffix - The suffix wrapper of the combo.
+ * @csspart toggle-icon - The toggle icon wrapper of the combo.
+ * @csspart clear-icon - The clear icon wrapper of the combo.
+ * @csspart case-icon - The case icon wrapper of the combo.
+ * @csspart helper-text - The helper text wrapper of the combo.
+ * @csspart search-input - The search input field of the combo.
+ * @csspart list-wrapper - The list of options wrapper of the combo.
+ * @csspart list - The list of options box of the combo.
+ * @csspart item - Represents each item in the list of options of the combo.
+ * @csspart group-header - Represents each header in the list of options of the combo.
+ * @csspart active - Appended to the item parts list when the item is active of the combo.
+ * @csspart selected - Appended to the item parts list when the item is selected of the combo.
+ * @csspart checkbox - Represents each checkbox of each list item of the combo.
+ * @csspart checkbox-indicator - Represents the checkbox indicator of each list item of the combo.
+ * @csspart checked - Appended to checkbox parts list when checkbox is checked in the combo.
+ * @csspart header - The container holding the header content of the combo.
+ * @csspart footer - The container holding the footer content of the combo.
+ * @csspart empty - The container holding the empty content of the combo.
  */
 @themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
@@ -132,21 +128,13 @@ export default class IgcComboComponent<
     matchDiacritics: false,
   };
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () =>
-        this.required
-          ? Array.isArray(this.value) && this.value.length > 0
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return comboValidators;
+  }
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
-  private declare readonly [themeSymbol]: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
@@ -367,10 +355,6 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    this.addEventListener('focus', () => {
-      this.emitEvent('igcFocus');
-    });
-
     this.addEventListener('blur', () => {
       const { selected } = this.selectionController;
 
@@ -380,7 +364,6 @@ export default class IgcComboComponent<
       }
 
       this.invalid = !this.checkValidity();
-      this.emitEvent('igcBlur');
     });
 
     this.addEventListener(
@@ -450,6 +433,7 @@ export default class IgcComboComponent<
    */
   /* blazorPrimitiveValue */
   /* blazorByValueArray */
+  /* blazorGenericType */
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
@@ -824,13 +808,6 @@ export default class IgcComboComponent<
   }
 
   private renderToggleIcon() {
-    const openIcon =
-      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
-    const closeIcon =
-      this[themeSymbol] === 'material'
-        ? 'keyboard_arrow_down'
-        : 'arrow_drop_down';
-
     return html`
       <span
         slot="suffix"
@@ -841,8 +818,8 @@ export default class IgcComboComponent<
       >
         <slot name="toggle-icon">
           <igc-icon
-            name=${this.open ? openIcon : closeIcon}
-            collection="internal"
+            name=${this.open ? 'input_collapse' : 'input_expand'}
+            collection="default"
             aria-hidden="true"
           ></igc-icon>
         </slot>
@@ -852,7 +829,6 @@ export default class IgcComboComponent<
 
   private renderClearIcon() {
     const { selected } = this.selectionController;
-    const icon = this[themeSymbol] === 'material' ? 'chip_cancel' : 'clear';
 
     return html`<span
       slot="suffix"
@@ -862,8 +838,8 @@ export default class IgcComboComponent<
     >
       <slot name="clear-icon">
         <igc-icon
-          name="${icon}"
-          collection="internal"
+          name="input_clear"
+          collection="default"
           aria-hidden="true"
         ></igc-icon>
       </slot>
@@ -888,14 +864,11 @@ export default class IgcComboComponent<
       placeholder=${ifDefined(this.placeholder)}
       label=${ifDefined(this.label)}
       @igcChange=${this._stopPropagation}
-      @igcFocus=${(e: Event) => {
-        e.stopPropagation();
-
+      @focus=${() => {
         requestAnimationFrame(() => {
           this.target.select();
         });
       }}
-      @igcBlur=${this._stopPropagation}
       @igcInput=${this.handleMainInput}
       @keydown=${this.handleMainInputKeydown}
       .value=${this._displayValue}
@@ -927,15 +900,13 @@ export default class IgcComboComponent<
         part="search-input"
         placeholder=${this.placeholderSearch}
         exportparts="input: search-input"
-        @igcFocus=${this._stopPropagation}
-        @igcBlur=${this._stopPropagation}
         @igcInput=${this.handleSearchInput}
         @keydown=${this.handleSearchInputKeydown}
       >
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}
           name="case_sensitive"
-          collection="internal"
+          collection="default"
           part=${partNameMap({
             'case-icon': true,
             active: this.filteringOptions.caseSensitive ?? false,
