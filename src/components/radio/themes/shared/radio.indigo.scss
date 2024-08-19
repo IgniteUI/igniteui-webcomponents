@@ -4,7 +4,12 @@
 $theme: $indigo;
 
 :host {
-    gap: rem(16px);
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
 }
 
 [part~='base'] {

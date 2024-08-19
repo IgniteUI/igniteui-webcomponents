@@ -15,10 +15,11 @@ $dropdown-theme: dropdown-theme.$indigo;
         padding-inline: 0;
     }
 
-    igc-validator {
+    ::part(helper-text) {
         @include type-style('caption');
 
         margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(15px), auto);
     }
 }
 

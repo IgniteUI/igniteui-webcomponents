@@ -9,9 +9,6 @@ $theme: $bootstrap;
     --border-size: #{rem(1px)};
     --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
-
-
-    gap: rem(16px);
 }
 
 [part~='label'] {

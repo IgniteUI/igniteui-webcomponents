@@ -51,8 +51,13 @@ $input-theme: input-theme.$material;
         color: var-get($input-theme, 'idle-secondary-color');
     }
 
-    igc-validator {
-        color: var-get($input-theme, 'helper-text-color');
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(4px);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -64,12 +69,6 @@ $input-theme: input-theme.$material;
 igc-icon,
 ::slotted(igc-icon) {
     --component-size: var(--input-size);
-}
-
-:host([invalid]) {
-    igc-validator {
-        color: var-get($input-theme, 'error-secondary-color');
-    }
 }
 
 :host(:disabled),

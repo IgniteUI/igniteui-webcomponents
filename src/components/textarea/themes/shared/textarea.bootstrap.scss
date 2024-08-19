@@ -7,6 +7,15 @@ $theme: $bootstrap;
     @include type-style('body-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: rem(4px);
+        padding-inline-start: pad-inline(8px, 12px, 16px);
+    }
 }
 
 [part~='label'] {
@@ -19,13 +28,6 @@ $theme: $bootstrap;
     margin-block: 0 rem(4px);
     height: auto;
     font-size: rem(16px);
-}
-
-[part~='helper-text'] {
-    @include type-style('body-2');
-
-    padding-block-start: rem(4px);
-    padding-inline-start: 0;
 }
 
 [part~='prefixed'] {
@@ -122,6 +124,10 @@ textarea {
     textarea {
         border: rem(1px) solid var-get($theme, 'error-secondary-color');
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 

@@ -2,7 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: inline-flex;
+    display: var(--radio-base-display, inline-flex);
+    flex-direction: column;
     font-family: var(--ig-font-family);
 }
 

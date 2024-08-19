@@ -4,7 +4,12 @@
 $theme: $material;
 
 :host {
-    gap: rem(8px);
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(8px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
 }
 
 [part~='ripple'] {

@@ -7,6 +7,14 @@ $theme: $fluent;
     @include type-style('body-2');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(5px);
+    }
 }
 
 :host(:hover) {
@@ -71,13 +79,6 @@ textarea {
     padding: rem(8px);
 }
 
-[part~='helper-text'] {
-    @include type-style('caption');
-
-    padding-block-start: rem(5px);
-    padding-inline-start: 0;
-}
-
 :host([required]:not(:disabled)),
 :host([required]:not([disabled])) {
     [part~='label'] {
@@ -89,6 +90,10 @@ textarea {
 
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
     }

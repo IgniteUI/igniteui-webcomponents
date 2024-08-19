@@ -11,8 +11,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     --thumb-size: #{rem(20px)};
     --thumb-offset: #{rem(-1px)};
     --label-gap: #{rem(12px)};
-
-    gap: rem(8px);
 }
 
 [part~='base'] {

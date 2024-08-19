@@ -10,11 +10,13 @@ $input-theme: input-theme.$bootstrap;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    igc-validator {
+    ::part(helper-text) {
         @include type-style('body-2');
 
-        margin-top: rem(4px);
         color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: rem(4px);
+        padding-inline-start: pad-inline(8px, 12px, 16px);
     }
 }
 
@@ -35,12 +37,6 @@ $input-theme: input-theme.$bootstrap;
     igc-input[readonly]:not([disabled])::part(input) {
         box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'error-shadow-color');
         border-color: var-get($input-theme, 'error-secondary-color');
-    }
-}
-
-:host([invalid]) {
-    igc-validator {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
 

@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-[part='helper-text'] {
-    color: var-get($theme, 'helper-text-color');
-}
-
 [part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
     background: var-get($theme, 'input-prefix-background');
@@ -66,4 +62,8 @@ $theme: $base;
     [part~='input']::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+::part(helper-text) {
+    display: grid;
 }

@@ -329,22 +329,26 @@ export const Validation: Story = {
     setMaxChars();
   },
   render: () => html`
-    <igc-textarea label="Required" required>
-      <p slot="value-missing">This field is required!</p>
-    </igc-textarea>
+    <fieldset>
+      <igc-textarea label="Required" required>
+        <p slot="value-missing">This field is required!</p>
+      </igc-textarea>
+    </fieldset>
 
-    <igc-textarea
-      resize="auto"
-      @igcInput=${getInput}
-      label="Max characters"
-      required
-      maxlength="255"
-      validate-only
-    >
-      <p id="max-chars" slot="helper-text"></p>
-      <p slot="value-missing">This field is required!</p>
-      <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
-    </igc-textarea>
+    <fieldset>
+      <igc-textarea
+        resize="auto"
+        @igcInput=${getInput}
+        label="Max characters"
+        required
+        maxlength="255"
+        validate-only
+      >
+        <p id="max-chars" slot="helper-text"></p>
+        <p slot="value-missing">This field is required!</p>
+        <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
+      </igc-textarea>
+    </fieldset>
   `,
 };
 

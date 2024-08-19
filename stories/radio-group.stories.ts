@@ -153,13 +153,13 @@ export const Form: Story = {
               (e) => html`
                 <igc-radio name="required-fruit" required value=${e}>
                   ${titleCase(e)}
-                  <div slot="value-missing">Please select a value!</div>
                 </igc-radio>
               `
             )}
-            <igc-radio name="required-fruit" disabled value="tomato"
-              >Tomato</igc-radio
-            >
+            <igc-radio name="required-fruit" value="tomato"
+              >Tomato
+              <div slot="value-missing">Please select a value!</div>
+            </igc-radio>
           </igc-radio-group>
         </fieldset>
         ${formControls()}
