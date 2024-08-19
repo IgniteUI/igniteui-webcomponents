@@ -31,7 +31,7 @@ export class RootClickController implements ReactiveController {
     document.removeEventListener('click', this, { capture: true });
   }
 
-  private async configureListeners() {
+  private configureListeners() {
     this.host.open ? this.addEventListeners() : this.removeEventListeners();
   }
 
