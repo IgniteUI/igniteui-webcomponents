@@ -154,8 +154,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &[part~='current'][part~='range'] {
-            color: var-get($theme, 'date-current-foreground');
-            background: var-get($theme, 'date-current-background');
+            color: var-get($theme, 'date-selected-current-range-foreground');
+            background: var-get($theme, 'date-selected-current-range-background');
             border-color: var-get($theme, 'date-current-border-color');
 
             &:hover {
