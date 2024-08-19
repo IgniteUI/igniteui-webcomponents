@@ -1,12 +1,16 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
 
 :host {
     --stroke-thickness: 2px;
-    --diameter: 50px;
+    --scale-factor: 3.05;
 }
 
-[part~='label'] {
-    @include type-style('subtitle-1');
+[part~='label'],
+[part~='value'] {
+    font-weight: 700;
 }
 
 [part~='svg'][part~='indeterminate'] {

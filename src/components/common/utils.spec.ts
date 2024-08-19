@@ -344,3 +344,7 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
     ? viewTop - top <= height
     : bottom - viewBottom <= height;
 }
+
+export function isFocused(element?: Element) {
+  return element ? element.matches(':focus') : false;
+}

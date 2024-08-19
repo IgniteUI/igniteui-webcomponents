@@ -24,13 +24,11 @@ import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.j
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart base - The base wrapper of the checkbox.
- * @csspart control - The checkbox control.
+ * @csspart control - The checkbox input element.
  * @csspart label - The checkbox label.
- * @csspart indicator - The checkbox icon.
+ * @csspart indicator - The checkbox indicator icon.
  */
 @themes(all)
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {

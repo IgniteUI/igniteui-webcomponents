@@ -42,7 +42,7 @@ describe('Dropdown', () => {
 
   const openDropdown = async (target?: HTMLElement | string) => {
     dropDown.show(target);
-    await elementUpdated(dropDown);
+    await Promise.all([elementUpdated(dropDown), nextFrame()]);
   };
 
   const closeDropdown = async () => {

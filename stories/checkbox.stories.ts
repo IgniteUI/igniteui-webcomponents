@@ -22,7 +22,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
           'A check box allowing single values to be selected/deselected.',
       },
     },
-    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
     indeterminate: {

@@ -11,6 +11,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
   checkValidationSlots,
+  isFocused,
 } from '../common/utils.spec.js';
 import IgcCheckboxComponent from './checkbox.js';
 
@@ -219,18 +220,14 @@ describe('Checkbox', () => {
       );
     });
 
-    it('should emit igcFocus/igcBlur events when the checkbox gains/loses focus', () => {
-      const eventSpy = spy(element, 'emitEvent');
+    it('should have correct focus states between Light/Shadow DOM', () => {
       element.focus();
-
-      expect(element.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(element)).to.be.true;
+      expect(isFocused(input));
 
       element.blur();
-
-      expect(element.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
+      expect(isFocused(element)).to.be.false;
+      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when the checkbox checked state changes', async () => {

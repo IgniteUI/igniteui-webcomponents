@@ -47,8 +47,9 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
 
 export interface IgcComboEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;

@@ -58,7 +58,7 @@ type Story = StoryObj<IgcRadioGroupArgs>;
 
 Object.assign(metadata.parameters!, {
   actions: {
-    handles: ['igcChange', 'igcFocus', 'igcBlur'],
+    handles: ['igcChange'],
   },
 });
 

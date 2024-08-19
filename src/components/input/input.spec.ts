@@ -13,6 +13,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
   checkValidationSlots,
+  isFocused,
   simulateInput,
 } from '../common/utils.spec.js';
 import IgcInputComponent from './input.js';
@@ -271,33 +272,18 @@ describe('Input component', () => {
         await createFixture(html`<igc-input></igc-input>`);
 
         element.focus();
-        expect(element.matches(':focus')).to.be.true;
-        expect(input.matches(':focus')).to.be.true;
+        expect(isFocused(element)).to.be.true;
+        expect(isFocused(input)).to.be.true;
 
         element.blur();
-        expect(element.matches(':focus')).to.be.false;
-        expect(input.matches(':focus')).to.be.false;
+        expect(isFocused(element)).to.be.false;
+        expect(isFocused(input)).to.be.false;
       });
     });
 
     describe('Events', () => {
       beforeEach(async () => {
         await createFixture(html`<igc-input></igc-input>`);
-      });
-
-      it('emits igcFocus on focus', async () => {
-        const eventSpy = spy(element, 'emitEvent');
-
-        element.focus();
-        expect(eventSpy).calledWithExactly('igcFocus');
-      });
-
-      it('emits igcBlur on blur', async () => {
-        element.focus();
-        const eventSpy = spy(element, 'emitEvent');
-
-        element.blur();
-        expect(eventSpy).calledOnceWithExactly('igcBlur');
       });
 
       it('emits igcInput', async () => {

@@ -32,8 +32,9 @@ export interface RadioChangeEventArgs {
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<RadioChangeEventArgs>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 /**
@@ -46,11 +47,9 @@ export interface IgcRadioEventMap {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart base - The radio control base wrapper.
- * @csspart control - The radio control.
+ * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
 @themes(all)
@@ -130,7 +129,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
    * The checked state of the control.
    * @attr
@@ -280,12 +279,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
-  }
-
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
   }
 
   protected navigate(idx: number) {
@@ -332,7 +326,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
         />
         <span part=${partNameMap({ control: true, checked })}>
           <span

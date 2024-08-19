@@ -60,8 +60,6 @@ const converter: ComplexAttributeConverter<Date | null> = {
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
@@ -586,9 +584,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return part?.start ?? value.length;
   }
 
-  protected override async handleFocus() {
+  protected async handleFocus() {
     this.focused = true;
-    super.handleFocus();
 
     if (this.readOnly) {
       return;
@@ -606,7 +603,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected override handleBlur() {
+  protected handleBlur() {
     const isEmptyMask = this.maskedValue === this.emptyMask;
     const isSameValue = this._oldValue === this.value;
 
@@ -630,7 +627,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     this.checkValidity();
-    super.handleBlur();
   }
 
   protected navigateParts(delta: number) {
