@@ -100,10 +100,6 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
   /** Shows the component. */
   public async show(): Promise<boolean> {
-    this._rootClickController.disabled = true;
-    requestAnimationFrame(() => {
-      this._rootClickController.disabled = false;
-    });
     return this._show();
   }
 

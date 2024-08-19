@@ -6,17 +6,14 @@ type RootClickControllerConfig = {
   target?: HTMLElement;
 };
 
-type RootClickControllerHost = ReactiveControllerHost &
-  HTMLElement & {
-    open: boolean;
-    keepOpenOnOutsideClick?: boolean;
-    hide(): void;
-  };
+interface RootClickControllerHost extends ReactiveControllerHost, HTMLElement {
+  open: boolean;
+  keepOpenOnOutsideClick?: boolean;
+  hide(): void;
+}
 
 /* blazorSuppress */
 export class RootClickController implements ReactiveController {
-  public disabled = false;
-
   constructor(
     private readonly host: RootClickControllerHost,
     private config?: RootClickControllerConfig
@@ -26,15 +23,15 @@ export class RootClickController implements ReactiveController {
 
   private addEventListeners() {
     if (!this.host.keepOpenOnOutsideClick) {
-      document.addEventListener('click', this);
+      document.addEventListener('click', this, { capture: true });
     }
   }
 
   private removeEventListeners() {
-    document.removeEventListener('click', this);
+    document.removeEventListener('click', this, { capture: true });
   }
 
-  private configureListeners() {
+  private async configureListeners() {
     this.host.open ? this.addEventListeners() : this.removeEventListeners();
   }
 
@@ -49,7 +46,7 @@ export class RootClickController implements ReactiveController {
   }
 
   public handleEvent(event: PointerEvent) {
-    if (this.host.keepOpenOnOutsideClick || this.disabled) {
+    if (this.host.keepOpenOnOutsideClick) {
       return;
     }
 
