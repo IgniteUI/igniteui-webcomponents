@@ -4,6 +4,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
