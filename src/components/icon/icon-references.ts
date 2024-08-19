@@ -102,10 +102,6 @@ addIcon('input_clear', {
     name: 'clear',
     collection: 'internal',
   },
-  material: {
-    name: 'chip_cancel',
-    collection: 'internal',
-  },
 });
 addIcon('input_expand', {
   default: {
