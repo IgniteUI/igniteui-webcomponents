@@ -159,7 +159,7 @@ export default class IgcValidationContainerComponent extends LitElement {
       if (key === 'valid' && !validity[key]) {
         yield projected
           ? html`<slot name="invalid" slot="invalid"></slot>`
-          : html`<slot name="invalid"></slot>`;
+          : this.renderValidationMessage('invalid');
       } else if (validity[key as keyof ValidityState]) {
         const name = toKebabCase(key);
 
