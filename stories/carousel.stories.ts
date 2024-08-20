@@ -364,7 +364,10 @@ const SlottedThumbnailTemplate = ({
   return html`
     <style>
       igc-carousel {
-        height: 450px;
+        height: 550px;
+      }
+      igc-carousel[vertical]::part(indicators) {
+        margin-inline-end: 16px;
       }
       igc-carousel::part(indicators) {
         border-radius: 2px;

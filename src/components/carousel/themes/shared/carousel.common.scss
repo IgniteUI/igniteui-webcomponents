@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    background: var-get($theme, 'slide-background');
+}
+
 igc-button::part(base) {
     --icon-color: var-get($theme, 'button-arrow-color');
 
