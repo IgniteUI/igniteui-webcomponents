@@ -145,7 +145,7 @@ describe('Date picker', () => {
           slot: 'calendar-icon-open',
           tagName: 'span',
           content: 'v',
-          prerequisite: () => picker.show(),
+          prerequisite: async () => await picker.show(),
           parent: picker,
         },
         {
@@ -161,13 +161,13 @@ describe('Date picker', () => {
           slot: 'actions',
           tagName: 'button',
           content: 'Custom action',
-          prerequisite: () => picker.show(),
+          prerequisite: async () => await picker.show(),
           parent: picker,
         },
       ];
 
       for (let i = 0; i < slotTests.length; i++) {
-        slotTests[i].prerequisite?.();
+        await slotTests[i].prerequisite?.();
         await elementUpdated(picker);
 
         const slot = slotTests[i].parent.shadowRoot!.querySelector(
@@ -229,8 +229,7 @@ describe('Date picker', () => {
       )!;
 
       expect(picker.mode).to.equal('dropdown');
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       const popover = picker.shadowRoot?.querySelector('igc-popover');
       expect(popover).not.to.be.undefined;
@@ -247,8 +246,7 @@ describe('Date picker', () => {
       )!;
 
       expect(picker.mode).to.equal('dialog');
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       const dialog = picker.shadowRoot?.querySelector('igc-dialog');
       expect(dialog).not.to.be.undefined;
@@ -300,8 +298,7 @@ describe('Date picker', () => {
       picker.keepOpenOnSelect = true;
       await elementUpdated(picker);
 
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       const eventSpy = spy(picker, 'emitEvent');
 
@@ -321,8 +318,7 @@ describe('Date picker', () => {
       picker.keepOpenOnOutsideClick = true;
       await elementUpdated(picker);
 
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       simulateClick(document.body);
       await elementUpdated(picker);
@@ -337,8 +333,7 @@ describe('Date picker', () => {
       picker.nonEditable = true;
       await elementUpdated(picker);
 
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       const eventSpy = spy(picker, 'emitEvent');
 
@@ -363,8 +358,7 @@ describe('Date picker', () => {
       picker.readOnly = true;
       await elementUpdated(picker);
 
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       const eventSpy = spy(picker, 'emitEvent');
       const calendarEventSpy = spy(calendar, 'emitEvent');
@@ -599,26 +593,22 @@ describe('Date picker', () => {
       const eventSpy = spy(picker, 'emitEvent');
 
       expect(picker.open).to.be.false;
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       expect(eventSpy).not.called;
       expect(picker.open).to.be.true;
 
-      picker.hide();
-      await elementUpdated(picker);
+      await picker.hide();
 
       expect(eventSpy).not.called;
       expect(picker.open).to.be.false;
 
-      picker.toggle();
-      await elementUpdated(picker);
+      await picker.toggle();
 
       expect(eventSpy).not.called;
       expect(picker.open).to.be.true;
 
-      picker.toggle();
-      await elementUpdated(picker);
+      await picker.toggle();
 
       expect(eventSpy).not.called;
       expect(picker.open).to.be.false;
@@ -706,8 +696,7 @@ describe('Date picker', () => {
 
       expect(eventSpy).not.called;
 
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
@@ -719,9 +708,7 @@ describe('Date picker', () => {
 
       // dialog mode
       picker.mode = 'dialog';
-      await elementUpdated(picker);
-      picker.show();
-      await elementUpdated(picker);
+      await picker.show();
 
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);

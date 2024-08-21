@@ -15,8 +15,9 @@ export interface CheckboxChangeEventArgs {
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<CheckboxChangeEventArgs>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  focus: FocusEvent;
+  blur: FocusEvent;
 }
 
 @blazorDeepImport
@@ -56,7 +57,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
    * The checked state of the control.
    * @attr
@@ -118,12 +119,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
   }
 
   protected handleFocus() {
     this._dirty = true;
-    this.emitEvent('igcFocus');
   }
 }
