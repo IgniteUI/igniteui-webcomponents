@@ -47,13 +47,11 @@ describe('Dropdown', () => {
   ];
 
   const openDropdown = async (target?: HTMLElement | string) => {
-    dropDown.show(target);
-    await Promise.all([elementUpdated(dropDown), nextFrame()]);
+    await dropDown.show(target);
   };
 
   const closeDropdown = async () => {
-    dropDown.hide();
-    await elementUpdated(dropDown);
+    await dropDown.hide();
   };
 
   const getTarget = () =>
@@ -317,14 +315,10 @@ describe('Dropdown', () => {
     });
 
     it('`toggle()` controls open state', async () => {
-      dropDown.toggle();
-      await elementUpdated(dropDown);
-
+      await dropDown.toggle();
       expect(dropDown.open).to.be.true;
 
-      dropDown.toggle();
-      await elementUpdated(dropDown);
-
+      await dropDown.toggle();
       expect(dropDown.open).to.be.false;
     });
 

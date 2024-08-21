@@ -66,8 +66,7 @@ describe('Select', () => {
   };
 
   const openSelect = async () => {
-    select.show();
-    await Promise.all([elementUpdated(select), nextFrame()]);
+    await select.show();
   };
 
   const Items = [
@@ -374,14 +373,10 @@ describe('Select', () => {
     });
 
     it('`toggle()` controls the open state', async () => {
-      select.toggle();
-      await elementUpdated(select);
-
+      await select.toggle();
       expect(select.open).to.be.true;
 
-      select.toggle();
-      await elementUpdated(select);
-
+      await select.toggle();
       expect(select.open).to.be.false;
     });
 
@@ -1129,8 +1124,7 @@ describe('Select', () => {
       await openSelect();
       expect(eventSpy).not.to.be.called;
 
-      select.hide();
-      await elementUpdated(select);
+      await select.hide();
       expect(eventSpy).not.to.be.called;
 
       select.select('testing');
