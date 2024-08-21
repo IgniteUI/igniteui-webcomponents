@@ -63,7 +63,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     },
     vertical: {
       type: 'boolean',
-      description: 'The carousel alignment.',
+      description: 'Whether the carousel has vertical alignment.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -118,7 +118,7 @@ interface IgcCarouselArgs {
   skipNavigation: boolean;
   /** Whether the carousel should render the indicator controls (dots). */
   skipIndicator: boolean;
-  /** The carousel alignment. */
+  /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** Sets the orientation of the indicator controls (dots). */
   indicatorsOrientation: 'start' | 'end';

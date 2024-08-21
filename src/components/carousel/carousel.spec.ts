@@ -539,6 +539,9 @@ describe('Carousel', () => {
 
     describe('Keyboard', () => {
       it('it should change to next slide on Enter/Space keys', async () => {
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
         expect(carousel.current).to.equal(0);
 
         simulateKeyboard(nextButton!, spaceBar);
@@ -553,6 +556,9 @@ describe('Carousel', () => {
       });
 
       it('it should change to previous slide on Enter/Space keys', async () => {
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
         expect(carousel.current).to.equal(0);
 
         simulateKeyboard(prevButton!, spaceBar);
