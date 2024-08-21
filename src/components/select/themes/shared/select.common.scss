@@ -31,6 +31,7 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
+:host(:hover),
 :host(:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus--border');
