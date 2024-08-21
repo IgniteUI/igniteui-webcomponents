@@ -77,7 +77,11 @@ class IconsRegistry {
     const reference = this.references.getOrCreate(alias.collection);
 
     if (overwrite) {
-      reference.set(alias.name, { ...target });
+      reference.set(alias.name, {
+        name: target.name,
+        collection: target.collection,
+        external: target.external,
+      });
       this.notifyAll(alias.name, alias.collection);
     }
 
@@ -153,7 +157,11 @@ export function registerIconFromText(
 export function setIconRef(name: string, collection: string, icon: IconMeta) {
   getIconRegistry().setIconRef({
     alias: { name, collection },
-    target: { ...icon, external: true },
+    target: {
+      name: icon.name,
+      collection: icon.collection,
+      external: true,
+    },
     overwrite: true,
   });
 }
