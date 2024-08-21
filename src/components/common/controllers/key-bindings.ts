@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 
-import { isElement } from '../util.js';
+import { findElementFromEventPath } from '../util.js';
 
 /* Common keys */
 export const arrowLeft = 'ArrowLeft' as const;
@@ -121,8 +121,8 @@ interface KeyBinding {
   modifiers?: string[];
 }
 
-const __modifiers = new Set<string>(
-  [altKey, ctrlKey, metaKey, shiftKey].map((key) => key.toLowerCase())
+const __modifiers = [altKey, ctrlKey, metaKey, shiftKey].map((key) =>
+  key.toLowerCase()
 );
 
 const defaultOptions: KeyBindingControllerOptions = {
@@ -133,8 +133,8 @@ function normalizeKeys(keys: string | string[]) {
   return (Array.isArray(keys) ? keys : [keys]).map((key) => key.toLowerCase());
 }
 
-function isModifier(key: string) {
-  return __modifiers.has(key);
+function isModifierKey(key: string) {
+  return __modifiers.includes(key) || key === 'control';
 }
 
 function isKeydown(event: Event) {
@@ -162,9 +162,16 @@ function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]) {
 export function parseKeys(keys: string | string[]) {
   const parsed = normalizeKeys(keys);
   return {
-    keys: parsed.filter((key) => !isModifier(key)),
-    modifiers: parsed.filter((key) => isModifier(key)),
+    keys: parsed.filter((key) => !isModifierKey(key)),
+    modifiers: parsed.filter((key) => isModifierKey(key)),
   };
+}
+
+function createCombinationKey(keys: string[], modifiers: string[]) {
+  return __modifiers
+    .filter((mod) => modifiers.includes(mod))
+    .concat(keys)
+    .join('+');
 }
 
 class KeyBindingController implements ReactiveController {
@@ -172,7 +179,7 @@ class KeyBindingController implements ReactiveController {
   protected _ref?: Ref;
   protected _observedElement?: Element;
   protected _options?: KeyBindingControllerOptions;
-  private bindings = new Set<KeyBinding>();
+  private bindings = new Map<string, KeyBinding>();
   private pressedKeys = new Set<string>();
 
   protected get _element() {
@@ -226,20 +233,8 @@ class KeyBindingController implements ReactiveController {
     }
   }
 
-  private keysMatch(binding: KeyBinding, event: KeyboardEvent) {
-    const modifiers = binding.modifiers ?? [];
-    return (
-      binding.keys.every((key) => this.pressedKeys.has(key)) &&
-      modifiers.every((mod) => !!event[`${mod}Key` as keyof KeyboardEvent])
-    );
-  }
-
   private bindingMatches(binding: KeyBinding, event: KeyboardEvent) {
     const triggers = binding.options?.triggers ?? ['keydown'];
-
-    if (!this.keysMatch(binding, event)) {
-      return false;
-    }
 
     if (isKeydown(event) && isKeydownTrigger(triggers)) {
       return true;
@@ -252,50 +247,49 @@ class KeyBindingController implements ReactiveController {
     return false;
   }
 
-  public handleEvent(event: KeyboardEvent) {
-    const key = event.key.toLowerCase();
-    const path = event.composedPath();
+  private shouldSkip(event: KeyboardEvent) {
     const skip = this._options?.skip;
 
-    if (!this._element || !path.includes(this._element)) {
+    if (!findElementFromEventPath((e) => e === this._element, event)) {
+      return true;
+    }
+
+    if (!skip) {
+      return false;
+    }
+
+    return Array.isArray(skip)
+      ? findElementFromEventPath(skip.join(), event)
+      : skip.call(this._host, event.target as Element, event);
+  }
+
+  public handleEvent(event: KeyboardEvent) {
+    if (this.shouldSkip(event)) {
       return;
     }
 
-    if (skip) {
-      const shouldSkip = Array.isArray(skip)
-        ? path.some(
-            (target) =>
-              isElement(target) &&
-              skip.some((selector) => target.matches(selector))
-          )
-        : skip.call(this._host, event.target as Element, event);
+    const key = event.key.toLowerCase();
+    isModifierKey(key) ? this.pressedKeys.clear() : this.pressedKeys.add(key);
 
-      if (shouldSkip) {
-        return;
+    const pendingKeys = Array.from(this.pressedKeys);
+    const modifiers = __modifiers.filter(
+      (mod) => event[`${mod}Key` as keyof KeyboardEvent]
+    );
+
+    const binding = this.bindings.get(
+      createCombinationKey(pendingKeys, modifiers)
+    );
+
+    if (binding && this.bindingMatches(binding, event)) {
+      this.eventModifiersMatch(binding, event);
+      binding.handler.call(this._host, event);
+
+      if (isKeydownRepeatTrigger(binding.options?.triggers)) {
+        this.pressedKeys.delete(key);
       }
     }
 
-    if (isModifier(key)) {
-      this.pressedKeys.clear();
-    }
-
-    if (isKeydown(event) && !isModifier(key)) {
-      this.pressedKeys.add(key);
-    }
-
-    for (const binding of this.bindings) {
-      if (this.bindingMatches(binding, event)) {
-        this.eventModifiersMatch(binding, event);
-
-        binding.handler.call(this._host, event);
-
-        if (isKeydownRepeatTrigger(binding.options?.triggers)) {
-          this.pressedKeys.delete(key);
-        }
-      }
-    }
-
-    if (isKeyup(event) && !isModifier(key)) {
+    if (isKeyup(event) && !isModifierKey(key)) {
       this.pressedKeys.delete(key);
     }
   }
@@ -305,13 +299,18 @@ class KeyBindingController implements ReactiveController {
    */
   public set(
     key: string | string[],
-    fn: KeyBindingHandler,
+    handler: KeyBindingHandler,
     options?: KeyBindingOptions
   ) {
-    this.bindings.add({
-      ...parseKeys(key),
-      handler: fn,
-      options: { ...this._options?.bindingDefaults, ...options },
+    const { keys, modifiers } = parseKeys(key);
+    const combination = createCombinationKey(keys, modifiers);
+    const _options = { ...this._options?.bindingDefaults, ...options };
+
+    this.bindings.set(combination, {
+      keys,
+      handler,
+      options: _options,
+      modifiers,
     });
 
     return this;
@@ -324,11 +323,11 @@ class KeyBindingController implements ReactiveController {
    * In the browser context this is usually either an Enter and/or Space keypress.
    */
   public setActivateHandler(
-    fn: KeyBindingHandler,
+    handler: KeyBindingHandler,
     options?: KeyBindingOptions
   ) {
     for (const key of [enterKey, spaceBar]) {
-      this.set(key, fn, options);
+      this.set(key, handler, options);
     }
 
     return this;
