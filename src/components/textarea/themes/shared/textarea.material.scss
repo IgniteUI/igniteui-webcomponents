@@ -96,6 +96,10 @@ textarea {
     [part~='label'] {
         color: var-get($theme, 'error-secondary-color');
     }
+
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
 }
 
 :host(:focus-within) {
@@ -377,12 +381,5 @@ textarea {
     [part='notch'],
     [part='end'] {
         border-color: var-get($theme, 'disabled-border-color');
-    }
-}
-
-:host([invalid]:not([disabled])),
-:host([invalid]:not(:disabled)) {
-    ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
