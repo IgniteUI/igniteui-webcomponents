@@ -80,17 +80,18 @@ class IconsRegistry {
       reference.set(alias.name, { ...target });
       this.notifyAll(alias.name, alias.collection);
     }
+    if (target.external) {
+      const refs = createIconDefaultMap<string, IconMeta>();
+      refs.getOrCreate(alias.collection).set(alias.name, {
+        name: target.name,
+        collection: target.collection,
+      });
 
-    const refs = createIconDefaultMap<string, IconMeta>();
-    refs.getOrCreate(alias.collection).set(alias.name, {
-      name: target.name,
-      collection: target.collection,
-    });
-
-    this.broadcast.send({
-      actionType: ActionType.UpdateIconReference,
-      references: refs.toMap(),
-    });
+      this.broadcast.send({
+        actionType: ActionType.UpdateIconReference,
+        references: refs.toMap(),
+      });
+    }
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
