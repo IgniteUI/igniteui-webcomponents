@@ -18,7 +18,7 @@ import {
 } from './icon.registry.js';
 import {
   ActionType,
-  IconMeta,
+  type IconMeta,
   type BroadcastIconsChangeMessage,
   type SvgIcon,
 } from './registry/types.js';
@@ -333,7 +333,7 @@ function verifySvg(icon: IgcIconComponent, svgContent: string) {
   expect(svg).lightDom.to.equal(svgContent);
 }
 
-export class IconMetaClass implements IconMeta {
+class IconMetaClass implements IconMeta {
 	private _name?: string;
 	get name(): string {
 		return this._name || "";
