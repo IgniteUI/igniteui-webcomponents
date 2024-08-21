@@ -79,7 +79,7 @@
     "globby": "^14.0.2",
     "husky": "^9.1.4",
     "ig-typedoc-theme": "^5.0.4",
-    "igniteui-theming": "v11.1.0-beta.4",
+    "igniteui-theming": "^11.1.0-beta.6",
     "keep-a-changelog": "^2.5.3",
     "lint-staged": "^15.2.9",
     "lit-analyzer": "^2.0.3",
