@@ -334,18 +334,18 @@ function verifySvg(icon: IgcIconComponent, svgContent: string) {
 }
 
 class IconMetaClass implements IconMeta {
-	private _name?: string;
-	get name(): string {
-		return this._name || "";
-	}
-	set name(value: string) {
-		this._name = value;
-	}
-	private _collection?: string;
-	get collection(): string {
-		return this._collection || "";
-	}
-	set collection(value: string) {
-		this._collection = value;
-	}
+  private _name?: string;
+  get name(): string {
+    return this._name || '';
+  }
+  set name(value: string) {
+    this._name = value;
+  }
+  private _collection?: string;
+  get collection(): string {
+    return this._collection || '';
+  }
+  set collection(value: string) {
+    this._collection = value;
+  }
 }
