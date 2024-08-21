@@ -169,9 +169,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-
-    this._checked = this === this._checkedRadios[0];
     this.updateValidity();
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this._checked && this === this._checkedRadios[0]
+      ? this._updateCheckedState()
+      : this.updateValidity();
   }
 
   /** Simulates a click on the radio control. */
