@@ -18,6 +18,7 @@ import {
 } from './icon.registry.js';
 import {
   ActionType,
+  type IconMeta,
   type BroadcastIconsChangeMessage,
   type SvgIcon,
 } from './registry/types.js';
@@ -213,6 +214,26 @@ describe('Icon broadcast service', () => {
         getIconRegistry().getIconRef(refName, refCollectionName)
       );
     });
+
+    it('correct event state when setting an icon reference via class', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+
+      registerIconFromText('reference-test', bugSvg, collectionName);
+      const meta = new IconMetaClass();
+      meta.name = 'reference-test';
+      meta.collection = collectionName;
+      setIconRef(refName, refCollectionName, meta);
+      await aTimeout(0);
+
+      const { actionType, collections, references } = last(events).data;
+
+      expect(actionType).to.equal(ActionType.UpdateIconReference);
+      expect(collections).to.be.undefined;
+      expect(references?.get(refCollectionName)?.get(refName)).to.eql(
+        getIconRegistry().getIconRef(refName, refCollectionName)
+      );
+    });
   });
 
   describe('Peer registry', () => {
@@ -310,4 +331,21 @@ function verifySvg(icon: IgcIconComponent, svgContent: string) {
   const svg = icon.shadowRoot?.querySelector('svg');
   expect(svg).to.exist;
   expect(svg).lightDom.to.equal(svgContent);
+}
+
+class IconMetaClass implements IconMeta {
+  private _name?: string;
+  get name(): string {
+    return this._name || '';
+  }
+  set name(value: string) {
+    this._name = value;
+  }
+  private _collection?: string;
+  get collection(): string {
+    return this._collection || '';
+  }
+  set collection(value: string) {
+    this._collection = value;
+  }
 }

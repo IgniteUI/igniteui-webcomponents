@@ -16,7 +16,9 @@ export interface CheckboxChangeEventArgs {
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<CheckboxChangeEventArgs>;
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 
