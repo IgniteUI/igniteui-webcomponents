@@ -55,7 +55,8 @@ $theme: $bootstrap;
 }
 
 [part~='label'] {
-    line-height: rem(24px);
+    @include type-style('body-1');
+
     margin-bottom: rem(4px);
     color: var-get($theme, 'idle-secondary-color');
 
