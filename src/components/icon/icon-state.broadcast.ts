@@ -34,11 +34,11 @@ export class IconsStateBroadcast {
     this.send({
       actionType: ActionType.SyncState,
       collections: this.getUserSetCollection(this.collections).toMap(),
-      references: this.getRefsSetCollection(this.refsCollection).toMap(),
+      references: this.getUserRefsCollection(this.refsCollection).toMap(),
     });
   }
 
-  private getRefsSetCollection(collections: IconsCollection<IconMeta>) {
+  private getUserRefsCollection(collections: IconsCollection<IconMeta>) {
     const userSetIcons = createIconDefaultMap<string, IconMeta>();
     for (const [collectionKey, collection] of collections.entries()) {
       for (const [iconKey, icon] of collection.entries()) {
