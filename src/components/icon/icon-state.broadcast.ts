@@ -34,8 +34,20 @@ export class IconsStateBroadcast {
     this.send({
       actionType: ActionType.SyncState,
       collections: this.getUserSetCollection(this.collections).toMap(),
-      references: this.refsCollection.toMap(),
+      references: this.getUserRefsCollection(this.refsCollection).toMap(),
     });
+  }
+
+  private getUserRefsCollection(collections: IconsCollection<IconMeta>) {
+    const userSetIcons = createIconDefaultMap<string, IconMeta>();
+    for (const [collectionKey, collection] of collections.entries()) {
+      for (const [iconKey, icon] of collection.entries()) {
+        if (icon.external) {
+          userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
+        }
+      }
+    }
+    return userSetIcons;
   }
 
   private getUserSetCollection(collections: IconsCollection<SvgIcon>) {
