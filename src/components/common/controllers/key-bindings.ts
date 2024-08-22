@@ -121,8 +121,11 @@ interface KeyBinding {
   modifiers?: string[];
 }
 
-const __modifiers = [altKey, ctrlKey, metaKey, shiftKey].map((key) =>
-  key.toLowerCase()
+const Modifiers: Map<string, string> = new Map(
+  [altKey, ctrlKey, metaKey, shiftKey].map((key) => {
+    const mod = key.toLowerCase();
+    return key === ctrlKey ? ['control', mod] : [mod, mod];
+  })
 );
 
 const defaultOptions: KeyBindingControllerOptions = {
@@ -131,10 +134,6 @@ const defaultOptions: KeyBindingControllerOptions = {
 
 function normalizeKeys(keys: string | string[]) {
   return (Array.isArray(keys) ? keys : [keys]).map((key) => key.toLowerCase());
-}
-
-function isModifierKey(key: string) {
-  return __modifiers.includes(key) || key === 'control';
 }
 
 function isKeydown(event: Event) {
@@ -162,13 +161,13 @@ function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]) {
 export function parseKeys(keys: string | string[]) {
   const parsed = normalizeKeys(keys);
   return {
-    keys: parsed.filter((key) => !isModifierKey(key)),
-    modifiers: parsed.filter((key) => isModifierKey(key)),
+    keys: parsed.filter((key) => !Modifiers.has(key)),
+    modifiers: parsed.filter((key) => Modifiers.has(key)),
   };
 }
 
 function createCombinationKey(keys: string[], modifiers: string[]) {
-  return __modifiers
+  return Array.from(Modifiers.values())
     .filter((mod) => modifiers.includes(mod))
     .concat(keys)
     .join('+');
@@ -269,10 +268,10 @@ class KeyBindingController implements ReactiveController {
     }
 
     const key = event.key.toLowerCase();
-    isModifierKey(key) ? this.pressedKeys.clear() : this.pressedKeys.add(key);
+    Modifiers.has(key) ? this.pressedKeys.clear() : this.pressedKeys.add(key);
 
     const pendingKeys = Array.from(this.pressedKeys);
-    const modifiers = __modifiers.filter(
+    const modifiers = Array.from(Modifiers.values()).filter(
       (mod) => event[`${mod}Key` as keyof KeyboardEvent]
     );
 
@@ -289,7 +288,7 @@ class KeyBindingController implements ReactiveController {
       }
     }
 
-    if (isKeyup(event) && !isModifierKey(key)) {
+    if (isKeyup(event) && !Modifiers.has(key)) {
       this.pressedKeys.delete(key);
     }
   }
