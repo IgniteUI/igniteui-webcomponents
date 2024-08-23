@@ -134,7 +134,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-    this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    if (this.hasUpdated) {
+      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    }
   }
 
   public get checked(): boolean {
