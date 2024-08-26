@@ -26,7 +26,9 @@ export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 
