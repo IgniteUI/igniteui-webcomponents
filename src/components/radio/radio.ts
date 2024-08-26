@@ -33,7 +33,9 @@ export interface RadioChangeEventArgs {
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<RadioChangeEventArgs>;
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 

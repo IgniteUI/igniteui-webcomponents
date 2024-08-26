@@ -19,7 +19,9 @@ export interface IgcInputEventMap {
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 

@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -30,7 +30,7 @@ import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.j
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox indicator icon.
  */
-@themes(all)
+@themes(all, { exposeController: true })
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = [styles, shared];
@@ -51,6 +51,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 
+  protected get _isIndigo(): boolean {
+    return getThemeController(this)?.theme === 'indigo';
+  }
+
   protected override handleClick() {
     this.indeterminate = false;
     super.handleClick();
@@ -58,6 +62,25 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   protected renderValidatorContainer(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
+  }
+
+  protected renderStandard() {
+    return html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M4.1,12.7 9,17.6 20.3,6.3" />
+      </svg>
+    `;
+  }
+
+  protected renderIndigo() {
+    return html`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <rect width="18" height="4" x="3" y="10" rx="1.85" />
+        <path
+          d="M19.033 5a1.966 1.966 0 0 0-1.418.586l-8.479 8.577-2.753-2.77a1.971 1.971 0 0 0-2.8 0 1.998 1.998 0 0 0 0 2.822l4.155 4.196a1.955 1.955 0 0 0 2.8 0l9.879-9.99a1.998 1.998 0 0 0 0-2.821 1.966 1.966 0 0 0-1.384-.6Z"
+        />
+      </svg>
+    `;
   }
 
   protected override render() {
@@ -92,9 +115,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         />
         <span part=${partNameMap({ control: true, checked })}>
           <span part=${partNameMap({ indicator: true, checked })}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M4.1,12.7 9,17.6 20.3,6.3" />
-            </svg>
+            ${this._isIndigo ? this.renderIndigo() : this.renderStandard()}
           </span>
         </span>
         <span

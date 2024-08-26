@@ -10,7 +10,9 @@ import { partNameMap } from '../common/util.js';
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 

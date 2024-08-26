@@ -45,7 +45,18 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='indicator'] {
+    stroke: unset;
+    stroke-linecap: unset;
+    stroke-width: unset;
+    stroke-dasharray: unset;
+    stroke-dashoffset: unset;
+    fill: var-get($theme, 'tick-color');
+    transition: none;
     transform: scale(.8);
+
+    rect {
+        fill: none;
+    }
 }
 
 [part='indicator checked'] {
@@ -87,7 +98,14 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]) {
     [part~='indicator'] {
-        transform: rotate(45deg) translateX(-.1rem) scale(.8);
+        fill: none;
+        stroke-dashoffset: unset;
+        transform: scale(.8);
+
+        rect {
+            fill: var-get($theme, 'tick-color');
+            opacity: 1;
+        }
     }
 
     [part~='control'] {
