@@ -10,7 +10,10 @@ function stringifyOptions(options: Intl.DateTimeFormatOptions) {
     .join('::');
 }
 
-function getFormatter(locale: string, options: Intl.DateTimeFormatOptions) {
+export function getFormatter(
+  locale: string,
+  options: Intl.DateTimeFormatOptions
+) {
   const key = `${locale}#${stringifyOptions(options)}`;
 
   if (!_cache.has(key)) {

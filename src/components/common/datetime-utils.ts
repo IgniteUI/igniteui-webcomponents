@@ -1,264 +1,189 @@
-// const createIntlFormatterWith = (
-//   options: FormatOptions
-// ): Intl.DateTimeFormat[] =>
-//   intlFormattersOptions.map(
-//     (intlFormatterOptions) =>
-//       new Intl.DateTimeFormat(options.locale, {
-//         ...intlFormatterOptions,
-//         timeZone: options.timezone,
-//       } as Intl.DateTimeFormatOptions)
-//   );
+import { getFormatter } from './localization/intl-formatters.js';
 
-// const longTokensTransformer = (token: Token) =>
-//   (token.type !== 'literal'
-//     ? { type: `l${token.type}`, value: token.value }
-//     : token) as Token;
+// Types
 
-// const datePartsReducer = (parts: DateParts, token: Token): DateParts => {
-//   parts[token.type as DatePartName] = token.value;
-//   return parts;
-// };
-
-// const tokenize = (intlFormatter: Intl.DateTimeFormat, date: Date) =>
-//   intlFormatter
-//     .formatToParts(date)
-//     .filter((token) => token.type !== 'literal') as Token[];
-
-// const createParser = (options: FormatOptions) => {
-//   const [intlFormatter, intlFormatterLong] = createIntlFormatterWith(options);
-
-//   return function parseDateImpl(date: Date): DateParts {
-//     const tokens = tokenize(intlFormatter, date);
-//     const longTokens = tokenize(intlFormatterLong, date).map(
-//       longTokensTransformer
-//     );
-//     const allTokens = [...tokens, ...longTokens];
-//     return allTokens.reduce(datePartsReducer, {} as DateParts);
-//   };
-// };
-
-// function parseDate(date: Date, options: FormatOptions = {}) {
-//   const key = `${options.locale}${options.timezone}`;
-//   let parser = parsers.get(key);
-//   if (!parser) {
-//     parser = createParser(options);
-//     parsers.set(key, parser);
-//   }
-
-//   return parser(date);
-// }
-
-// const createCustomPattern = (customFormatters: CustomFormatters) =>
-//   Object.keys(customFormatters).reduce((_, key) => `|${key}`, '');
-
-// export function formatDate(
-//   customFormatters: CustomFormatters,
-//   format: string,
-//   parts: DateParts,
-//   date: Date
-// ) {
-//   const literalPattern = `\\[([^\\]]+)\\]|`;
-//   const customPattern = createCustomPattern(customFormatters);
-//   const patternRegexp = new RegExp(
-//     `${literalPattern}${defaultPattern}${customPattern}`,
-//     'g'
-//   );
-
-//   const allFormatters = { ...formatters, ...customFormatters };
-//   return format.replace(
-//     patternRegexp,
-//     (mask: FormatterMask, literal: string) => {
-//       return literal || allFormatters[mask](parts, date);
-//     }
-//   );
-// }
-
-// function createDateFormatter(
-//   customFormatters: CustomFormatters
-// ): FormatFunction {
-//   return function intlFormatDate(
-//     date: Date,
-//     format: string,
-//     options?: FormatOptions
-//   ): string {
-//     const tokens = parseDate(date, options);
-//     const output = formatDate(customFormatters, format, tokens, date);
-//     return output;
-//   };
-// }
-
-type Enumerate<
-  N extends number,
-  Acc extends number[] = []
-> = Acc['length'] extends N
-  ? Acc[number]
-  : Enumerate<N, [...Acc, Acc['length']]>;
-
-type Range<F extends number, T extends number> = Exclude<
-  Enumerate<T>,
-  Enumerate<F>
->;
-
-type Year = number;
-type Month = Range<1, 13>;
-type Day = Range<1, 32>;
-type Hour = Range<0, 24>;
-type Minute = Range<0, 60>;
-type Second = Minute;
-
-type DateObjectParams = {
-  year?: Year;
-  month?: Month;
-  day?: Day;
-  hours?: Hour;
-  minutes?: Minute;
-  seconds?: Second;
+type DatePartInfo = {
+  type: DateParts;
+  start: number;
+  end: number;
+  value: string;
 };
 
-type DatePartName =
-  | 'weekday'
-  | 'year'
-  | 'month'
-  | 'monthLong'
-  | 'day'
-  | 'dayPeriod'
-  | 'hour'
-  | 'hourLong'
-  | 'minute'
-  | 'second';
-
-type DateParts = { [k in DatePartName]: string };
-type Token = { type: DatePartName | 'literal'; value: string };
-type Parser = (date: Date) => DateParts;
-type Formatter = (tokens: DateParts, date: Date) => string;
-type Formatters = { [k in FormatterMask]: Formatter };
-// type CustomFormatters = { [k: string]: Formatter };
-type FormatFunction = (
-  date: Date,
-  format: string,
-  options?: FormatOptions
-) => string;
-type FormatOptions = {
-  locale?: string;
-  timezone?: string;
-};
-
-type FormatterMask =
-  | 'YYYY'
-  | 'YY'
-  | 'MMMM'
-  | 'MMM'
-  | 'MM'
-  | 'DD'
-  | 'dddd'
-  | 'ddd'
-  | 'A'
-  | 'a'
-  | 'HH'
-  | 'hh'
-  | 'mm'
-  | 'ss';
-
-const defaultPattern = '[YMDdAaHhms]+';
-const parsers: Map<string, Parser> = new Map();
-const intlFormattersOptions: Intl.DateTimeFormatOptions[] = [
-  {
-    weekday: 'long',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  },
-  {
-    month: 'long',
-    hour: '2-digit',
-    hour12: false,
-  },
-];
-
-const formatters: Formatters = {
-  YYYY: (parts) => parts.year,
-  YY: (parts) => parts.year.slice(-2),
-  MMMM: (parts) => parts.monthLong,
-  MMM: (parts) => parts.monthLong.slice(0, 3),
-  MM: (parts) => parts.month,
-  DD: (parts) => parts.day,
-  dddd: (parts) => parts.weekday,
-  ddd: (parts) => parts.weekday.slice(0, 3),
-  A: (parts) => parts.dayPeriod,
-  a: (parts) => parts.dayPeriod.toLowerCase(),
-  HH: (parts) => parts.hourLong.slice(-2),
-  hh: (parts) => parts.hour,
-  mm: (parts) => parts.minute,
-  ss: (parts) => parts.second,
-};
-
-export const create = {
-  now: () => new Date(),
-  fromMilliseconds: (ms: number) => new Date(ms),
-  fromDatestring: (datestring: string) => new Date(datestring),
-  fromParams: (params: DateObjectParams) => {
-    const year: Year = params.year || 2023;
-    const month: Month = params?.month || 1;
-    const day: Day = params?.day || 1;
-    const hour: Hour = params?.hours ?? 0;
-    const minute: Minute = params?.minutes ?? 0;
-    const second: Second = params?.seconds ?? 0;
-    return new Date(year, month - 1, day, hour, minute, second);
-  },
-};
-
-function tokenize(intlFormatter: Intl.DateTimeFormat, date: Date) {
-  return intlFormatter
-    .formatToParts(date)
-    .filter((part) => part.type !== 'literal') as Token[];
+enum DateParts {
+  Day = 'day',
+  Month = 'month',
+  Year = 'year',
+  Date = 'date',
+  Hours = 'hours',
+  Minutes = 'minutes',
+  Seconds = 'seconds',
+  Microseconds = 'microseconds',
+  AmPm = 'amPm',
+  Literal = 'literal',
 }
 
-function longTokenTransformer(token: Token) {
-  return (
-    token.type !== 'literal'
-      ? { type: `${token.type}Long`, value: token.value }
-      : token
-  ) as Token;
+export enum DatePart {
+  Month = 'month',
+  Year = 'year',
+  Date = 'date',
+  Hours = 'hours',
+  Minutes = 'minutes',
+  Seconds = 'seconds',
+  Microseconds = 'microseconds',
+  AmPm = 'amPm',
 }
 
-function parseDate(date: Date, options: FormatOptions = {}) {
-  const key = `${options.locale}${options.timezone}`;
-  let parser = parsers.get(key);
-  if (!parser) {
-    parser = createParser(options);
-    parsers.set(key, parser);
+// Internal mapping
+
+const TokensMap = new Map(
+  Object.entries({
+    Y: DateParts.Year,
+    y: DateParts.Year,
+    M: DateParts.Month,
+    D: DateParts.Date,
+    d: DateParts.Date,
+    H: DateParts.Hours,
+    h: DateParts.Hours,
+    m: DateParts.Minutes,
+    s: DateParts.Seconds,
+    S: DateParts.Microseconds,
+    T: DateParts.AmPm,
+    t: DateParts.AmPm,
+    a: DateParts.AmPm,
+  })
+);
+
+const TokensToOptions = new Map(
+  Object.entries({
+    [DateParts.Year]: 'year',
+    [DateParts.Month]: 'month',
+    [DateParts.Date]: 'day',
+    [DateParts.Hours]: 'hour',
+    [DateParts.Minutes]: 'minute',
+    [DateParts.Seconds]: 'second',
+    [DateParts.Microseconds]: 'fractionalSecondDigits',
+    [DateParts.AmPm]: 'dayPeriod',
+  })
+);
+
+const TokensToValues = new Map(
+  Object.entries({
+    y: 'numeric',
+    yy: '2-digit',
+    yyy: 'numeric',
+    yyyy: 'numeric',
+    Y: 'numeric',
+    YY: '2-digit',
+    YYY: 'numeric',
+    YYYY: 'numeric',
+    M: 'numeric',
+    MM: '2-digit',
+    MMM: 'short',
+    MMMM: 'long',
+    MMMMM: 'narrow',
+    d: 'numeric',
+    dd: '2-digit',
+    D: 'numeric',
+    DD: '2-digit',
+    h: 'numeric',
+    hh: '2-digit',
+    H: 'numeric',
+    HH: '2-digit',
+    m: 'numeric',
+    mm: '2-digit',
+    s: 'numeric',
+    ss: '2-digit',
+    S: 1,
+    SS: 2,
+    SSS: 3,
+  })
+);
+
+export function parseToDateParts(format: string) {
+  const parts: DatePartInfo[] = [];
+  const tokens = Array.from(format).entries();
+  let part!: DatePartInfo;
+
+  for (const [pos, token] of tokens) {
+    const type = TokensMap.get(token) ?? DateParts.Literal;
+    if (part && part.type === type) {
+      part.value += token;
+      part.end += token.length;
+      continue;
+    }
+
+    part = { type, start: pos, end: pos + token.length, value: token };
+    parts.push(part);
   }
 
-  return parser(date);
-}
-
-function datePartsReducer(parts: DateParts, token: Token) {
-  parts[token.type as DatePartName] = token.value;
   return parts;
 }
 
-function createIntlFormatter(options?: FormatOptions) {
-  return intlFormattersOptions.map(
-    (opts) =>
-      new Intl.DateTimeFormat(options?.locale, {
-        ...opts,
-        timeZone: options?.timezone,
-      })
+export function formatterFromParts(parts: DatePartInfo[], locale = 'en') {
+  const options: Intl.DateTimeFormatOptions = {};
+
+  for (const part of parts) {
+    const option = TokensToOptions.get(part.type);
+    const value = TokensToValues.get(part.value);
+
+    if (option && value) {
+      options[option] = value;
+    }
+  }
+
+  return getFormatter(locale, options);
+}
+
+type FormatDateOptions = {
+  format: string;
+  locale?: string;
+};
+
+export function formatDate(
+  date: Date,
+  config: FormatDateOptions = {
+    format: 'yyyy/MM/dd',
+    locale: 'en',
+  }
+) {
+  const parts = parseToDateParts(config.format);
+
+  const formattedParts = formatterFromParts(parts, config.locale).formatToParts(
+    date
   );
+
+  const formatted = new Map(
+    formattedParts.map((each) => [each.type, each.value])
+  );
+
+  const result: string[] = [];
+
+  // console.log(Array.from(formatted.entries()));
+  // console.log(parts);
+
+  for (const part of parts) {
+    if (part.type === DateParts.Literal) {
+      result.push(part.value);
+      continue;
+    }
+
+    if (
+      part.type === DateParts.Microseconds &&
+      formatted.get('fractionalSecond')
+    ) {
+      result.push(formatted.get('fractionalSecond')!);
+      continue;
+    }
+
+    const type = TokensToOptions.get(part.type) ?? part.type;
+
+    if (formatted.has(type)) {
+      result.push(formatted.get(type)!);
+    }
+  }
+
+  return result.join('');
 }
 
-function createParser(options: FormatOptions) {
-  const [intlFormatter, intlFormatterLong] = createIntlFormatter(options);
-
-  return function parseDate(date: Date) {
-    const tokens = tokenize(intlFormatter, date);
-    const tokensLong = tokenize(intlFormatterLong, date).map(
-      longTokenTransformer
-    );
-    const allTokens = [...tokens, ...tokensLong];
-    return allTokens.reduce(datePartsReducer, {} as DateParts);
-  };
-}
+// TODO: Try to unify the Intl options keys to the internal types to skip intermediate map creation
+// TODO: All the rest... :)

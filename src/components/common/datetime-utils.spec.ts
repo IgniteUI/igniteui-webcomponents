@@ -1,16 +1,19 @@
 import { expect } from '@open-wc/testing';
-import { create } from './datetime-utils.js';
+import { formatDate, parseToDateParts } from './datetime-utils.js';
 
-describe('Date utilities', () => {
-  describe('create date', () => {
-    it('now', () => {
-      expect(create.now()).to.eql(new Date());
+describe('Date-time utils', () => {
+  describe('parse to date parts', () => {
+    it('basic', () => {
+      const parts = parseToDateParts('yyyy/MM/dd');
+      expect(1).to.equal(1);
     });
+  });
 
-    it('creates new date from params', () => {
-      expect(create.fromParams({ year: 2023, month: 3, day: 17 })).to.eql(
-        new Date(2023, 2, 17)
-      );
+  describe('Display format', () => {
+    const date = new Date(2024, 6, 17, 7, 7, 7, 700);
+
+    it('create', () => {
+      // console.log(formatDate(date, { format: 'yy/MM/dd hh:mm:ss.SSS aa' }));
     });
   });
 });
