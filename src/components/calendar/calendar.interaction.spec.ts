@@ -2,627 +2,545 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { IgcCalendarComponent, defineComponents } from '../../index.js';
-import {
-  Calendar,
-  type DateRangeDescriptor,
-  DateRangeType,
-  type ICalendarDate,
-  isDateInRanges,
-} from './common/calendar.model.js';
+import { first, last } from '../common/util.js';
+import { simulateClick } from '../common/utils.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
+import {
+  calendarRange,
+  generateMonth,
+  getWeekDayNumber,
+  isDateInRanges,
+} from './helpers.js';
+import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
+import { CalendarDay } from './model.js';
+import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
-function createCalendarElement() {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
-}
-
-describe('Calendar Interaction', () => {
-  before(() => {
-    defineComponents(IgcCalendarComponent);
-  });
-
-  const calendarModel = new Calendar();
+describe('Calendar interactions', () => {
   let calendar: IgcCalendarComponent;
-  let dates: any;
-  let weekDays: any;
   let daysView: IgcDaysViewComponent;
-  let calendarDates: ICalendarDate[];
 
-  describe('', () => {
-    beforeEach(async () => {
-      calendar = await createCalendarElement();
-      calendar.value = new Date(2021, 8, 29, 12, 0, 0);
-      calendar.activeDate = new Date(2021, 8, 29, 12, 0, 0);
-      await elementUpdated(calendar);
+  before(() => defineComponents(IgcCalendarComponent));
 
-      daysView = calendar.shadowRoot?.querySelector(
-        'igc-days-view'
-      ) as IgcDaysViewComponent;
-      const weeks = daysView?.shadowRoot?.querySelectorAll('div');
-      weekDays = weeks?.item(5);
-      dates = weekDays?.querySelectorAll('span');
+  beforeEach(async () => {
+    const value = new CalendarDay({ year: 2021, month: 8, date: 29 });
 
-      calendarDates = calendarModel.monthdates(2021, 8);
-    });
+    calendar = await fixture<IgcCalendarComponent>(html`
+      <igc-calendar
+        .value=${value.native}
+        .activeDate=${value.native}
+      ></igc-calendar>
+    `);
 
-    it('Calendar selection - single', async () => {
-      const currentDate = calendar.value;
-      const prevDay = new Date(2021, 8, 28);
-
-      const eventSpy = spy(calendar, 'emitEvent');
-      dates?.item(4).querySelector('span')?.click();
-      await elementUpdated(calendar);
-
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: prevDay });
-      expect(isSelected(currentDate as Date)).to.be.false;
-      expect(isSelected(prevDay)).to.be.true;
-      expect((calendar.value as Date).toDateString()).to.equal(
-        prevDay.toDateString()
-      );
-    });
-
-    it('Set value attribute', async () => {
-      const value = new Date(2022, 0, 19).toISOString();
-      calendar.setAttribute('value', value);
-      await elementUpdated(calendar);
-
-      expect(calendar.value?.toISOString()).to.equal(value);
-    });
-
-    it('Set values attribute', async () => {
-      const date1 = new Date(2022, 0, 19).toISOString();
-      const date2 = new Date(2022, 0, 22).toISOString();
-      calendar.selection = 'multiple';
-      calendar.setAttribute('values', `${date1}, ${date2}`);
-      await elementUpdated(calendar);
-
-      expect(calendar.values).not.to.be.undefined;
-      expect(calendar.values?.length).to.equal(2);
-      expect(calendar.values![0].toISOString()).to.equal(date1);
-      expect(calendar.values![1].toISOString()).to.equal(date2);
-    });
-
-    it('Calendar selection - outside of the current month - 1', async () => {
-      const expectedDate = new Date(2021, 9, 2);
-
-      dates?.item(12).querySelector('span').click();
-      await elementUpdated(calendar);
-
-      expect(isSelected(expectedDate)).to.be.true;
-    });
-
-    it('Calendar selection - multiple', async () => {
-      calendar.selection = 'multiple';
-      await elementUpdated(calendar);
-
-      calendar.values = [];
-      await elementUpdated(calendar);
-
-      expect(calendar.values.length).to.equal(0);
-
-      weekDays?.querySelectorAll('span').forEach((d: HTMLSpanElement) => {
-        d.click();
-      });
-      const selectedDates = [...calendar.values];
-
-      expect(calendar.values.length).to.equal(7);
-
-      for (const date of calendar.values) {
-        expect(isSelected(date)).to.be.true;
-      }
-
-      dates = weekDays?.querySelectorAll('span');
-      dates?.item(dates.length - 1).click();
-      await elementUpdated(calendar);
-
-      expect(calendar.values.length).to.equal(6);
-      expect(isSelected(selectedDates[selectedDates.length - 1])).to.be.false;
-    });
-
-    it('Calendar toggle and cancel range selection', async () => {
-      calendar.selection = 'range';
-      await elementUpdated(calendar);
-
-      // Toggle range selection...
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-
-      expect(calendar.values?.length).to.equal(1);
-      expect(isSelected(calendar.values![0])).to.be.true;
-
-      // ...and cancel it
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-
-      expect(calendar.values?.length).to.equal(0);
-    });
-
-    it('Calendar toggle and complete range selection', async () => {
-      calendar.selection = 'range';
-      await elementUpdated(calendar);
-
-      const firstDay = new Date(2021, 8, 26);
-      const lastDay = new Date(2021, 9, 2);
-
-      // Toggle range selection...
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-
-      // ...and complete it
-      dates?.item(dates.length - 1).click();
-      await elementUpdated(calendar);
-
-      expect(calendar.values?.length).to.equal(7);
-      expect(calendar.values![0].toDateString()).to.equal(
-        firstDay.toDateString()
-      );
-      expect(
-        calendar.values![calendar.values!.length - 1].toDateString()
-      ).to.equal(lastDay.toDateString());
-
-      for (const date of calendar.values!) {
-        expect(isSelected(date)).to.be.true;
-      }
-    });
-
-    it('should emit igcActiveDateChange event when active date is selected', async () => {
-      const eventSpy = spy(daysView, 'emitEvent');
-
-      dates?.item(4).querySelector('span')?.click();
-      await elementUpdated(daysView);
-      expect(eventSpy).calledWith('igcActiveDateChange');
-
-      const evDetails = eventSpy.args[1][1]?.detail as ICalendarDate;
-      expect(evDetails.date.toISOString()).to.equals(
-        new Date(2021, 8, 28).toISOString()
-      );
-      const selectedDate = evDetails.date;
-      const selectedMonth = selectedDate.getMonth();
-      const selectedYear = selectedDate.getFullYear();
-      const currentDate = calendar.activeDate;
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      expect(evDetails.isCurrentMonth).to.equal(
-        selectedYear === currentYear && selectedMonth === currentMonth,
-        `Wrong current month! Selected: ${selectedMonth} - Current: ${currentMonth}`
-      );
-      expect(evDetails.isNextMonth).to.equal(
-        selectedYear > currentYear ||
-          (selectedYear === currentYear && selectedMonth % 12 > currentMonth),
-        'Wrong isNextMonth!'
-      );
-      expect(evDetails.isPrevMonth).to.equal(
-        selectedYear < currentYear ||
-          (selectedYear === currentYear && selectedMonth % 12 < currentMonth),
-        'Wrong isPrevMonth!'
-      );
-    });
-
-    it('should emit igcRangePreviewDateChange event', async () => {
-      const eventSpy = spy(daysView, 'emitEvent');
-
-      calendar.selection = 'range';
-      await elementUpdated(calendar);
-
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-      dates?.item(dates.length - 1).focus();
-      await elementUpdated(calendar);
-
-      expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
-        detail: new Date(2021, 9, 2),
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - Before', async () => {
-      const beforeDate = new Date(2021, 8, 29);
-      const disabledDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Before,
-          dateRange: [beforeDate],
-        },
-      ];
-
-      calendar.disabledDates = disabledDates;
-      await elementUpdated(calendar);
-
-      // Get before dates
-      const inRangeDates = calendarDates.filter(
-        (d) => d.date.getTime() < beforeDate.getTime()
-      );
-
-      // Validate if dates before are disabled
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, disabledDates)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - After', async () => {
-      const afterDate = new Date(2021, 8, 27);
-      const disabledDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.After,
-          dateRange: [afterDate],
-        },
-      ];
-
-      calendar.disabledDates = disabledDates;
-      await elementUpdated(calendar);
-
-      // Get after dates
-      const inRangeDates = calendarDates.filter(
-        (d) => d.date.getTime() > afterDate.getTime()
-      );
-
-      const enableDate = dates.item(0).querySelector('span');
-      enableDate.click();
-      await elementUpdated(calendar);
-      const enableDateValue = calendar.value;
-
-      const disabledDatesEl = weekDays.querySelectorAll(
-        'span[part="date disabled single"]'
-      );
-
-      const disableDate = disabledDatesEl.item(0);
-
-      disableDate.querySelector('span').click();
-      await elementUpdated(calendar);
-
-      expect(calendar.value).to.equals(enableDateValue);
-
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, disabledDates)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - Between', async () => {
-      const minDate = new Date(2021, 8, 20);
-      const maxDate = new Date(2021, 8, 30);
-
-      const disabledDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [minDate, maxDate],
-        },
-      ];
-
-      calendar.disabledDates = disabledDates;
-      await elementUpdated(calendar);
-
-      // Get between dates
-      const inRangeDates = calendarDates.filter(
-        (d) =>
-          d.date.getTime() >= minDate.getTime() &&
-          d.date.getTime() <= maxDate.getTime()
-      );
-
-      // Validate if dates between are disabled
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, disabledDates)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - Specific', async () => {
-      const maxDate = new Date(2021, 8, 23);
-      const minDate = new Date(2021, 8, 7);
-
-      const specialDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Specific,
-          dateRange: [minDate, maxDate],
-        },
-      ];
-
-      calendar.specialDates = specialDates;
-      await elementUpdated(calendar);
-
-      // Get before dates
-      const inRangeDates = calendarDates.filter(
-        (d) =>
-          d.date.getTime() === maxDate.getTime() ||
-          d.date.getTime() === minDate.getTime()
-      );
-
-      // Validate if specific dates are disabled
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, specialDates)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - Weekdays', async () => {
-      const weekdays: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Weekdays,
-          dateRange: [],
-        },
-      ];
-
-      calendar.disabledDates = weekdays;
-      await elementUpdated(calendar);
-
-      // Get only weekdays
-      const inRangeDates = calendarDates.filter(
-        (d) => d.date.getDay() !== 0 && d.date.getDay() !== 6
-      );
-
-      // Validate if weekdays are disabled
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, weekdays)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled for DateRangeType - Weekends', async () => {
-      const weekends: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Weekends,
-          dateRange: [],
-        },
-      ];
-
-      calendar.disabledDates = weekends;
-      await elementUpdated(calendar);
-
-      // Get only weekends
-      const inRangeDates = calendarDates.filter(
-        (d) => d.date.getDay() === 0 || d.date.getDay() === 6
-      );
-
-      // Validate if weekends are disabled
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, weekends)).to.be.true;
-      });
-    });
-
-    it('Verify date is disabled when Between DateRangeType is used with the same date items', async () => {
-      const date = new Date(2021, 8, 24);
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [date, date],
-        },
-      ];
-
-      calendar.disabledDates = disableDates;
-      await elementUpdated(calendar);
-
-      verifyDisableDates(date, date, disableDates);
-    });
-
-    it('Should not select disabled dates when having "range" selection', async () => {
-      calendar.selection = 'range';
-      await elementUpdated(calendar);
-
-      const minDate = new Date(2021, 8, 29);
-      const maxDate = new Date(2021, 9, 1);
-
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [minDate, maxDate],
-        },
-      ];
-
-      calendarDates = calendarModel.monthdates(2021, 8, true);
-
-      calendar.disabledDates = disableDates;
-      await elementUpdated(calendar);
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-      dates?.item(dates.length - 1).click();
-      await elementUpdated(calendar);
-      const calValues = calendar.values as Date[];
-
-      const selectedDates = calendarDates.filter(
-        (d) =>
-          (d.date.getTime() >= new Date(2021, 8, 26).getTime() &&
-            d.date.getTime() <= new Date(2021, 8, 28).getTime()) ||
-          d.date.getTime() === new Date(2021, 9, 2).getTime()
-      );
-
-      expect(selectedDates.map((d) => d.date)).to.have.deep.members(calValues);
-
-      const notSelectedDates = calendarDates.filter(
-        (d) =>
-          d.date.getTime() >= new Date(2021, 8, 29).getTime() &&
-          d.date.getTime() <= new Date(2021, 9, 1).getTime()
-      );
-
-      expect(notSelectedDates.map((d) => d.date)).to.not.have.deep.members(
-        calValues
-      );
-    });
-
-    it('Should disable dates when using "Between" date descriptor with max date declared first', async () => {
-      const maxDate = new Date(2021, 8, 29);
-      const minDate = new Date(2021, 8, 23);
-
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [maxDate, minDate],
-        },
-      ];
-
-      calendar.disabledDates = disableDates;
-      await elementUpdated(calendar);
-
-      const betweenMin =
-        maxDate.getTime() > minDate.getTime() ? minDate : maxDate;
-      const betweenMax =
-        maxDate.getTime() > minDate.getTime() ? maxDate : minDate;
-
-      verifyDisableDates(betweenMin, betweenMax, disableDates);
-    });
-
-    it('Should disable dates when using overlapping "Between" ranges', async () => {
-      const firstBetweenMin = new Date(2021, 8, 10);
-      const firstBetweenMax = new Date(2021, 8, 15);
-      const secondBetweenMin = new Date(2021, 8, 12);
-      const secondBetweenMax = new Date(2021, 8, 22);
-
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [firstBetweenMin, firstBetweenMax],
-        },
-        {
-          type: DateRangeType.Between,
-          dateRange: [secondBetweenMin, secondBetweenMax],
-        },
-      ];
-
-      calendar.disabledDates = disableDates;
-      await elementUpdated(calendar);
-
-      verifyDisableDates(firstBetweenMin, secondBetweenMax, disableDates);
-    });
-
-    it('Should disable dates between two years', async () => {
-      const minDate = new Date(2021, 8, 10);
-      const maxDate = new Date(2022, 8, 31);
-
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [minDate, maxDate],
-        },
-      ];
-
-      calendarDates = calendarModel.monthdates(2022, 8);
-
-      calendar.disabledDates = disableDates;
-      await elementUpdated(calendar);
-
-      verifyDisableDates(minDate, maxDate, disableDates);
-    });
-
-    it('Should disable dates when using multiple ranges', async () => {
-      const disableDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Before,
-          dateRange: [new Date(2021, 8, 1)],
-        },
-        {
-          type: DateRangeType.After,
-          dateRange: [new Date(2021, 8, 29)],
-        },
-        {
-          type: DateRangeType.Weekends,
-          dateRange: [],
-        },
-        {
-          type: DateRangeType.Between,
-          dateRange: [new Date(2021, 8, 1), new Date(2021, 8, 16)],
-        },
-        {
-          type: DateRangeType.Between,
-          dateRange: [new Date(2021, 8, 5), new Date(2021, 8, 28)],
-        },
-      ];
-
-      const enableDateTime = new Date(2021, 8, 29);
-
-      const inRangeDates = calendarDates.filter(
-        (d) => d.date.getTime() !== enableDateTime.getTime()
-      );
-
-      expect(inRangeDates.length).to.not.equal(0);
-      inRangeDates.forEach((date) => {
-        expect(isDateInRanges(date.date, disableDates)).to.be.true;
-      });
-    });
-
-    it('Should not create range when selection is set to multiple', async () => {
-      calendar.selection = 'range';
-      await elementUpdated(calendar);
-
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-      dates?.item(dates.length - 1).focus();
-      await elementUpdated(calendar);
-
-      expect(daysView.rangePreviewDate?.toDateString()).to.deep.equal(
-        new Date(2021, 9, 2).toDateString()
-      );
-
-      calendar.selection = 'multiple';
-      await elementUpdated(calendar);
-
-      dates?.item(0).querySelector('span')?.click();
-      await elementUpdated(calendar);
-      dates?.item(dates.length - 1).focus();
-      await elementUpdated(calendar);
-      expect(daysView.rangePreviewDate).to.be.null;
-    });
-
-    it('Should change days view when selecting an outside day - multiple', async () => {
-      changeDaysViewWhenOutsideDateSelected('multiple');
-    });
-
-    it('Should change days view when selecting an outside day - range', async () => {
-      changeDaysViewWhenOutsideDateSelected('range');
-    });
+    daysView = getCalendarDOM(calendar).views.days;
   });
 
-  const isSelected = (date: Date) => {
-    let selectedDates: Date | Date[];
-    const dates = calendar.values as Date[];
+  it('is accessible', async () => {
+    await expect(calendar).lightDom.to.be.accessible();
+    await expect(calendar).shadowDom.to.be.accessible();
+  });
 
-    if (calendar.selection === 'single') {
-      selectedDates = calendar.value as Date;
-      return selectedDates.getTime() === date?.getTime();
-    }
-    if (calendar.selection === 'multiple') {
-      selectedDates = dates;
-      const currentDate = selectedDates.find(
-        (element) => element.getTime() === date.getTime()
-      );
-      return !!currentDate;
-    }
-    if (calendar.selection === 'range' && dates.length === 1) {
-      selectedDates = dates;
-      return selectedDates[0].getTime() === date.getTime();
-    }
+  it('setting `value` attribute', async () => {
+    const date = new CalendarDay({ year: 2022, month: 0, date: 19 });
 
-    return isDateInRanges(date, [
-      {
-        type: DateRangeType.Between,
-        dateRange: [dates[0], dates[dates.length - 1]],
-      },
-    ]);
-  };
+    calendar.setAttribute('value', date.native.toISOString());
+    expect(date.equalTo(calendar.value!)).to.be.true;
+  });
 
-  const verifyDisableDates = (
-    minDate: Date,
-    maxDate: Date,
-    disableDates: DateRangeDescriptor[]
-  ) => {
-    const inRangeDates = calendarDates.filter(
-      (d) =>
-        d.date.getTime() >= minDate.getTime() &&
-        d.date.getTime() <= maxDate.getTime()
+  it('setting `values` attribute', async () => {
+    const date_1 = new CalendarDay({ year: 2022, month: 0, date: 19 });
+    const date_2 = date_1.set({ date: 22 });
+
+    calendar.selection = 'multiple';
+    calendar.setAttribute(
+      'values',
+      `${date_1.native.toISOString()}, ${date_2.native.toISOString()}`
     );
 
-    expect(inRangeDates.length).to.not.equal(0);
+    expect(calendar.values).lengthOf(2);
+    expect(date_1.equalTo(first(calendar.values))).to.be.true;
+    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+  });
 
-    inRangeDates.forEach((date) => {
-      expect(isDateInRanges(date.date, disableDates)).to.be.true;
+  it('clicking previous/next buttons in days view', async () => {
+    const { previous, next } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('month', -1);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('month', 1);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, {}, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('clicking previous/next buttons in months view', async () => {
+    const { previous, next, months } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('year', -1);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('year', 1);
+
+    simulateClick(months);
+    await elementUpdated(calendar);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, {}, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('clicking previous/next buttons in years view', async () => {
+    const { previous, next, years } = getCalendarDOM(calendar).navigation;
+
+    const previousDate = CalendarDay.from(calendar.activeDate).add('year', -15);
+    const nextDate = CalendarDay.from(calendar.activeDate).add('year', 15);
+
+    simulateClick(years);
+    await elementUpdated(calendar);
+
+    simulateClick(previous);
+    await elementUpdated(calendar);
+    expect(previousDate.equalTo(calendar.activeDate)).to.be.true;
+
+    simulateClick(next, {}, 2);
+    await elementUpdated(calendar);
+    expect(nextDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('single selection', async () => {
+    const eventSpy = spy(calendar, 'emitEvent');
+
+    const current = CalendarDay.from(calendar.value!);
+    const previous = current.add('day', -1);
+
+    const previousDOM = getDOMDate(previous, daysView);
+
+    simulateClick(previousDOM);
+    await elementUpdated(calendar);
+
+    expect(eventSpy).calledOnceWithExactly('igcChange', {
+      detail: previous.native,
     });
-  };
 
-  const changeDaysViewWhenOutsideDateSelected = async (
-    slection: 'single' | 'multiple' | 'range'
-  ) => {
-    const currentDayViewDate = dates?.item(5).cloneNode(true);
-    calendar.selection = slection;
+    expect(current.equalTo(calendar.value!)).to.be.false;
+    expect(previous.equalTo(calendar.value!)).to.be.true;
+  });
+
+  it('single selection outside of the current month', async () => {
+    const target = new CalendarDay({ year: 2021, month: 9, date: 2 });
+    const DOMDate = getDOMDate(target, daysView);
+
+    simulateClick(DOMDate);
     await elementUpdated(calendar);
 
-    currentDayViewDate?.querySelector('span')?.click();
-    await elementUpdated(calendar);
-    dates?.item(dates.length - 1).click();
+    expect(target.equalTo(calendar.value!)).to.be.true;
+  });
+
+  it('multiple selection', async () => {
+    const eventSpy = spy(calendar, 'emitEvent');
+    const start = CalendarDay.from(calendar.value!).set({ date: 15 });
+    const dates = Array.from(calendarRange({ start, end: 7 }));
+    const elements = dates.map((date) => getDOMDate(date, daysView));
+
+    calendar.selection = 'multiple';
     await elementUpdated(calendar);
 
-    const chagedDateViewDate = dates?.item(5).cloneNode(true);
+    expect(calendar.values).lengthOf(0);
 
-    expect(currentDayViewDate).to.not.equal(chagedDateViewDate);
-  };
+    for (const element of elements) {
+      simulateClick(element);
+      expect(eventSpy).calledWith('igcChange', { detail: calendar.values });
+    }
+    await elementUpdated(calendar);
+
+    expect(calendar.values).lengthOf(7);
+    expect(eventSpy.callCount).equal(7);
+    expect(first(dates).equalTo(first(calendar.values))).to.be.true;
+    expect(last(dates).equalTo(last(calendar.values))).to.be.true;
+
+    // Deselect one
+    simulateClick(last(elements));
+    await elementUpdated(calendar);
+
+    expect(calendar.values).lengthOf(6);
+    expect(last(dates).equalTo(last(calendar.values))).to.be.false;
+  });
+
+  it('start and cancel a range selection', async () => {
+    const start = CalendarDay.from(calendar.value!).set({ date: 15 });
+    const element = getDOMDate(start, daysView);
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    // Start range selection
+    simulateClick(element);
+    await elementUpdated(calendar);
+
+    expect(calendar.values).lengthOf(1);
+    expect(start.equalTo(first(calendar.values))).to.be.true;
+
+    // Cancel it
+    simulateClick(element);
+    await elementUpdated(calendar);
+
+    expect(calendar.values).lengthOf(0);
+  });
+
+  it('start and complete a range selection', async () => {
+    const start = CalendarDay.from(calendar.value!).set({ date: 26 });
+    const dates = Array.from(calendarRange({ start, end: 7 }));
+    const elements = dates.map((date) => getDOMDate(date, daysView));
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    // Start and complete the selection
+    simulateClick(first(elements));
+    simulateClick(last(elements));
+    await elementUpdated(calendar);
+
+    expect(calendar.values).lengthOf(7);
+
+    for (const [i, date] of dates.entries()) {
+      expect(date.equalTo(calendar.values[i])).to.be.true;
+    }
+  });
+
+  it('should emit `igcACtiveDateChange` event when the active date is selected', async () => {
+    const eventSpy = spy(daysView, 'emitEvent');
+    const date = CalendarDay.from(calendar.value!).set({ date: 28 });
+    const element = getDOMDate(date, daysView);
+
+    simulateClick(element);
+    await elementUpdated(calendar);
+
+    const argDate = CalendarDay.from(eventSpy.getCall(1).lastArg.detail);
+
+    expect(eventSpy).calledWith('igcActiveDateChange');
+    expect(argDate.equalTo(date)).to.be.true;
+    expect(argDate.equalTo(calendar.activeDate)).to.be.true;
+  });
+
+  it('should emit `igcRangePreviewDateChange` event', async () => {
+    const eventSpy = spy(daysView, 'emitEvent');
+    const start = CalendarDay.from(calendar.value!).set({ date: 26 });
+    const dates = Array.from(calendarRange({ start, end: 7 }));
+    const elements = dates.map((date) => getDOMDate(date, daysView));
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    simulateClick(first(elements));
+    last(elements).focus();
+    await elementUpdated(calendar);
+
+    expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
+      detail: last(dates).native,
+    });
+  });
+
+  it('date is disabled for DateRangeType - Before', async () => {
+    const before = new CalendarDay({ year: 2021, month: 8, date: 29 });
+    const month = Array.from(
+      generateMonth(before, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Before,
+        dateRange: [before.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    for (const day of month) {
+      day.lessThan(before)
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled for DateRangeType - After', async () => {
+    const after = new CalendarDay({ year: 2021, month: 8, date: 27 });
+    const month = Array.from(
+      generateMonth(after, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.After,
+        dateRange: [after.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    for (const day of month) {
+      day.greaterThan(after)
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled for DateRangeType - Between', async () => {
+    let min = new CalendarDay({ year: 2021, month: 8, date: 20 });
+    let max = min.set({ date: 30 });
+    const month = Array.from(
+      generateMonth(min, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Between,
+        dateRange: [min.native, max.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    // Expand boundaries for the range check
+    min = min.add('day', -1);
+    max = max.add('day', 1);
+
+    for (const day of month) {
+      day.greaterThan(min) && day.lessThan(max)
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled for DateRangeType - Specific', async () => {
+    const start = new CalendarDay({ year: 2021, month: 8, date: 7 });
+    const range = [start, start.set({ date: 14 }), start.set({ date: 21 })];
+    const month = Array.from(
+      generateMonth(start, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Specific,
+        dateRange: range.map((d) => d.native),
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    for (const day of month) {
+      range.some((date) => date.equalTo(day))
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled for DateRangeType - Weekdays', async () => {
+    const month = Array.from(
+      generateMonth(calendar.value!, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Weekdays,
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    for (const day of month) {
+      !day.weekend
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled for DateRangeType - Weekends', async () => {
+    const month = Array.from(
+      generateMonth(calendar.value!, getWeekDayNumber(calendar.weekStart))
+    );
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Weekends,
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    for (const day of month) {
+      day.weekend
+        ? expect(isDateInRanges(day, descriptor)).to.be.true
+        : expect(isDateInRanges(day, descriptor)).to.be.false;
+    }
+  });
+
+  it('date is disabled DateRangeType - Between when start/end boundaries are the same date', async () => {
+    const date = new CalendarDay({ year: 2021, month: 8, date: 15 });
+    const month = Array.from(
+      generateMonth(date, getWeekDayNumber(calendar.weekStart))
+    );
+
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Between,
+        dateRange: [date.native, date.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    expect(month.filter((date) => isDateInRanges(date, descriptor))).lengthOf(
+      1
+    );
+  });
+
+  it('should not select disabled dates when having `range` selection', async () => {
+    const start = new CalendarDay({ year: 2021, month: 8, date: 29 });
+    const end = start.set({ month: 9, date: 1 });
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Between,
+        dateRange: [start.native, end.native],
+      },
+    ];
+
+    const startElement = getDOMDate(start.set({ date: 26 }), daysView);
+    const endElement = getDOMDate(start.set({ month: 9, date: 2 }), daysView);
+
+    calendar.selection = 'range';
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    simulateClick(startElement);
+    simulateClick(endElement);
+    await elementUpdated(calendar);
+
+    expect(calendar.values.every((value) => !isDateInRanges(value, descriptor)))
+      .to.be.true;
+  });
+
+  it('date is disabled for DateRangeType - Between with start boundary > end', async () => {
+    const min = new CalendarDay({ year: 2021, month: 8, date: 30 });
+    const max = min.set({ date: 20 });
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Between,
+        dateRange: [min.native, max.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    const disabled = getDayViewDOM(daysView).dates.disabled;
+
+    expect(disabled).lengthOf(min.date - max.date + 1);
+
+    for (const day of calendarRange({ start: max, end: disabled.length })) {
+      expect(isDateInRanges(day, descriptor)).to.be.true;
+    }
+  });
+
+  it('dates are disabled using overlapping Between ranges', async () => {
+    const firstMin = new CalendarDay({ year: 2021, month: 8, date: 10 });
+    const firstMax = firstMin.set({ date: 15 });
+    const secondMin = firstMin.set({ date: 12 });
+    const secondMax = firstMin.set({ date: 22 });
+
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Between,
+        dateRange: [firstMin.native, firstMax.native],
+      },
+      {
+        type: DateRangeType.Between,
+        dateRange: [secondMin.native, secondMax.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    const disabled = getDayViewDOM(daysView).dates.disabled;
+
+    expect(disabled).lengthOf(secondMax.date - firstMin.date + 1);
+    for (const day of calendarRange({
+      start: firstMin,
+      end: disabled.length,
+    })) {
+      expect(isDateInRanges(day, descriptor)).to.be.true;
+    }
+  });
+
+  it('disabled dates with multiple ranges', async () => {
+    const before = new CalendarDay({ year: 2021, month: 8 });
+    const after = before.set({ date: 29 });
+    const firstMax = before.set({ date: 16 });
+    const [secondMin, secondMax] = [
+      before.set({ date: 5 }),
+      before.set({ date: 28 }),
+    ];
+
+    const descriptor: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Before,
+        dateRange: [before.native],
+      },
+      {
+        type: DateRangeType.After,
+        dateRange: [after.native],
+      },
+      {
+        type: DateRangeType.Weekends,
+      },
+      {
+        type: DateRangeType.Between,
+        dateRange: [before.native, firstMax.native],
+      },
+      {
+        type: DateRangeType.Between,
+        dateRange: [secondMin.native, secondMax.native],
+      },
+    ];
+
+    calendar.disabledDates = descriptor;
+    await elementUpdated(calendar);
+
+    const DOMDates = getDayViewDOM(daysView).dates;
+
+    // All but one date in the current month are disabled.
+    expect(DOMDates.all.length - DOMDates.disabled.length).to.equal(1);
+  });
+
+  it('no range is created when selection is set to `multiple`', async () => {
+    const start = new CalendarDay({ year: 2021, month: 8, date: 26 });
+    const end = start.set({ month: 9, date: 2 });
+
+    calendar.selection = 'range';
+    await elementUpdated(calendar);
+
+    const startElement = getDOMDate(start, daysView);
+    const endElement = getDOMDate(end, daysView);
+
+    simulateClick(startElement);
+    endElement.focus();
+    await elementUpdated(calendar);
+
+    expect(end.equalTo(daysView.rangePreviewDate!)).to.be.true;
+
+    calendar.selection = 'multiple';
+    await elementUpdated(calendar);
+
+    simulateClick(startElement);
+    endElement.focus();
+    await elementUpdated(calendar);
+
+    expect(daysView.rangePreviewDate).to.be.undefined;
+  });
 });

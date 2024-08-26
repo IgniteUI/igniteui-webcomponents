@@ -29,7 +29,7 @@ const metadata: Meta<IgcTextareaComponent> = {
           'This element represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
       },
     },
-    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
     autocomplete: {

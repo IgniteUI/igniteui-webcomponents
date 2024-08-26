@@ -5,11 +5,7 @@ $theme: $indigo;
 
 :host {
     --stroke-thickness: 2px;
-    --diameter: 46px;
-}
-
-[part~='label'] {
-    @include type-style('subtitle-2');
+    --scale-factor: 3.4;
 }
 
 [part~='fill'] {

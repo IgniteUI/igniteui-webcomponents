@@ -3,50 +3,73 @@ import {
   expect,
   fixture,
   html,
-  unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { simulateClick } from '../common/utils.spec.js';
 import IgcDialogComponent from './dialog.js';
 
-describe('Dialog component', () => {
-  const fireMouseEvent = (type: string, opts: MouseEventInit) =>
-    new MouseEvent(type, opts);
-  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
-
+describe('Dialog', () => {
   before(() => {
     defineComponents(IgcDialogComponent);
   });
 
   let dialog: IgcDialogComponent;
-  let dialogEl: HTMLDialogElement;
+  let nativeDialog: HTMLDialogElement;
 
-  describe('', () => {
-    beforeEach(async () => {
-      dialog = await createDialogComponent();
-      dialogEl = dialog.renderRoot.querySelector('dialog')!;
-    });
-
-    it('passes the a11y audit', async () => {
-      const dialog = await fixture<IgcDialogComponent>(
+  describe('WAI-ARIA', () => {
+    it('is accessible (closed state)', async () => {
+      dialog = await fixture<IgcDialogComponent>(
         html`<igc-dialog></igc-dialog>`
       );
 
+      await expect(dialog).dom.to.be.accessible();
       await expect(dialog).shadowDom.to.be.accessible();
     });
 
-    it('should render content inside the dialog', async () => {
-      const content = 'Dialog content';
-      dialog = await createDialogComponent(
-        `<igc-dialog><span>${content}</span></igc-dialog>`
+    it('is accessible (open state)', async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog open></igc-dialog>`
       );
 
-      dialog.show();
+      await expect(dialog).does.to.not.be.accessible();
+      await expect(dialog).shadowDom.to.not.be.accessible();
+
+      dialog.title = 'Default dialog';
       await elementUpdated(dialog);
 
-      expect(dialog).dom.to.have.text(content);
+      await expect(dialog).does.to.be.accessible();
+      await expect(dialog).shadowDom.to.be.accessible();
+    });
+  });
+
+  describe('DOM', () => {
+    const attributes = [
+      'variant',
+      'aria-label',
+      'aria-disabled',
+      'aria-hidden',
+      'aria-labelledby',
+      'part',
+      'role',
+      'id',
+      'hidden',
+      'open',
+      'style',
+    ];
+
+    it('should render content inside the dialog', async () => {
+      dialog = await fixture<IgcDialogComponent>(html`
+        <igc-dialog>
+          <span>Dialog content</span>
+        </igc-dialog>
+      `);
+
+      await dialog.show();
+
       expect(dialog).dom.to.equal(
         `
         <igc-dialog>
@@ -54,297 +77,227 @@ describe('Dialog component', () => {
             Dialog content
           </span>
         </igc-dialog>`,
-        {
-          ignoreAttributes: [
-            'variant',
-            'aria-label',
-            'aria-disabled',
-            'aria-hidden',
-            'aria-labelledby',
-            'part',
-            'role',
-            'size',
-            'id',
-            'hidden',
-            'open',
-            'style',
-          ],
-        }
+        { ignoreAttributes: attributes }
       );
     });
 
-    it('`hide-default-action` correctly toggles DOM structure', async () => {
+    it('`hide-default-action` is correctly applied', async () => {
+      dialog = await fixture<IgcDialogComponent>(html`
+        <igc-dialog hide-default-action>Message</igc-dialog>
+      `);
+
+      const footer = dialog.renderRoot.querySelector('footer')!;
+      expect(footer).dom.to.equal(
+        `<footer>
+          <slot name="footer">
+          </slot>
+        </footer>`,
+        {
+          ignoreAttributes: ['part'],
+        }
+      );
+    });
+  });
+
+  describe('API', () => {
+    beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
-        html`<igc-dialog>Message</igc-dialog>`
+        html`<igc-dialog></igc-dialog>`
       );
-
-      const footer = dialog.shadowRoot!.querySelector('footer');
-
-      expect(footer).dom.to.equal(
-        `<footer>
-          <slot name="footer">
-            <igc-button type="button">OK</igc-button>
-          </slot>
-        </footer>`,
-        {
-          ignoreAttributes: ['part', 'variant', 'size', 'style'],
-        }
-      );
-
-      dialog.hideDefaultAction = true;
-      await elementUpdated(dialog);
-
-      expect(footer).dom.to.equal(
-        `<footer>
-          <slot name="footer">
-          </slot>
-        </footer>`,
-        {
-          ignoreAttributes: ['part', 'style'],
-        }
-      );
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
     });
 
-    it('renders a dialog element internally with default button if no content is provided', async () => {
-      await expect(dialog).shadowDom.to.be.accessible();
-      expect(dialog).shadowDom.to.equal(
-        `
-        <div></div>
-        <dialog>
-          <header>
-            <slot name="title"><span></span></slot>
-          </header>
-          <section>
-            <slot></slot>
-          </section>
-          <footer>
-            <slot name="footer">
-              <igc-button type="button">
-                OK
-              </igc-button>
-            </slot>
-          </footer>
-        </dialog>`,
-        {
-          ignoreAttributes: [
-            'variant',
-            'aria-label',
-            'aria-disabled',
-            'aria-hidden',
-            'aria-labelledby',
-            'part',
-            'role',
-            'size',
-            'id',
-            'hidden',
-            'style',
-          ],
-        }
-      );
-    });
-
-    it('show method should open the dialog', async () => {
-      dialog.open = false;
-      await elementUpdated(dialog);
-
-      dialog.show();
-      await elementUpdated(dialog);
-      expect(dialog.open).to.eq(true);
-    });
-
-    it('hide method should close the dialog', async () => {
-      dialog.open = true;
-      await elementUpdated(dialog);
-
-      dialog.hide();
-      await waitUntil(() => !dialog.open);
-      expect(dialog.open).to.eq(false);
-    });
-
-    it('toggle method should toggle the dialog', async () => {
-      dialog.open = true;
-      await elementUpdated(dialog);
-
-      dialog.toggle();
-      await waitUntil(() => !dialog.open);
-      expect(dialog.open).to.eq(false);
-
-      dialog.open = false;
-      await elementUpdated(dialog);
-
-      dialog.toggle();
-      await elementUpdated(dialog);
-      expect(dialog.open).to.eq(true);
-    });
-
-    it('is created with the proper default values', async () => {
+    it('initialized with proper default values', async () => {
       expect(dialog.keepOpenOnEscape).to.equal(false);
       expect(dialog.closeOnOutsideClick).to.equal(false);
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
       expect(dialog.returnValue).to.be.undefined;
-
-      const header = dialog.shadowRoot?.querySelector('header') as HTMLElement;
-      expect(dialogEl.getAttribute('aria-labelledby')).to.equal(
-        header.getAttribute('id')
+      expect(nativeDialog.getAttribute('aria-labelledby')).to.equal(
+        dialog.renderRoot.querySelector('header')?.id
       );
     });
 
-    it('has correct aria label and role', async () => {
-      dialog.ariaLabel = 'ariaLabel';
+    it('`show` opens the dialog', async () => {
+      await dialog.show();
+      expect(dialog.open).to.be.true;
+    });
+
+    it('`hide` closes the dialog', async () => {
       dialog.open = true;
       await elementUpdated(dialog);
+      expect(dialog.open).to.be.true;
 
-      expect(dialogEl.getAttribute('aria-label')).to.equal('ariaLabel');
-      expect(dialogEl.getAttribute('role')).to.equal('dialog');
+      await dialog.hide();
+      expect(dialog.open).to.be.false;
+    });
+
+    it('`toggle` switches between open states', async () => {
+      await dialog.toggle();
+      expect(dialog.open).to.be.true;
+
+      await dialog.toggle();
+      expect(dialog.open).to.be.false;
+    });
+
+    it('has correct ARIA attributes', async () => {
+      dialog.ariaLabel = 'Custom label';
+      await dialog.show();
+
+      expect(nativeDialog).attribute('aria-label').to.equal('Custom label');
+      expect(nativeDialog).attribute('role').to.equal('dialog');
+    });
+
+    it('calling `show/hide` is a no-op for existing state', async () => {
+      dialog.open = true;
+      await elementUpdated(dialog);
+      expect(await dialog.show()).to.be.false;
+
+      dialog.open = false;
+      await elementUpdated(dialog);
+      expect(await dialog.hide()).to.be.false;
     });
 
     it('does not emit events through API calls', async () => {
       const eventSpy = spy(dialog, 'emitEvent');
-      dialog.show();
-      await elementUpdated(dialog);
 
+      await dialog.show();
       expect(dialog.open).to.be.true;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(eventSpy.getCalls()).is.empty;
 
-      dialog.hide();
-      await waitUntil(() => !dialog.open);
-
+      await dialog.hide();
       expect(dialog.open).to.be.false;
-      expect(eventSpy.callCount).to.equal(0);
-
-      dialog.open = true;
-      await elementUpdated(dialog);
-
-      expect(dialog.open).to.be.true;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(eventSpy.getCalls()).is.empty;
 
       dialog.open = false;
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.false;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(eventSpy.getCalls()).is.empty;
+    });
+  });
+
+  describe('Events & Behaviors', () => {
+    beforeEach(async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog></igc-dialog>`
+      );
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
     });
 
-    it('default action button emits closing events', async () => {
+    it('should close the dialog when the user presses Escape', async () => {
       const eventSpy = spy(dialog, 'emitEvent');
-      dialog.show();
-      await elementUpdated(dialog);
+      await dialog.show();
 
-      dialog.shadowRoot!.querySelector('igc-button')!.click();
+      nativeDialog.dispatchEvent(new Event('cancel'));
+      await elementUpdated(dialog);
       await waitUntil(() => !dialog.open);
 
-      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.getCalls()).lengthOf(2);
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.secondCall).calledWith('igcClosed');
     });
 
-    it('cancels closing event correctly', async () => {
-      dialog.toggle();
-      await elementUpdated(dialog);
-      expect(dialog.open).to.be.true;
-
+    it('should not close the dialog when the user presses Escape and `keepOpenOnEscape` is set', async () => {
       const eventSpy = spy(dialog, 'emitEvent');
 
-      dialog.addEventListener('igcClosing', (ev) => {
-        ev.preventDefault();
-      });
+      dialog.keepOpenOnEscape = true;
+      await dialog.show();
 
-      dialog.shadowRoot!.querySelector('igc-button')!.click();
+      nativeDialog.dispatchEvent(new Event('cancel'));
       await elementUpdated(dialog);
-      expect(eventSpy).calledOnceWith('igcClosing');
+
+      expect(dialog.open).to.be.true;
+      expect(eventSpy.getCalls()).is.empty;
     });
 
-    it('can cancel `igcClosing` event when clicking outside', async () => {
-      dialog.show();
-      await elementUpdated(dialog);
+    it('default action button emits closing events', async () => {
+      const eventSpy = spy(dialog, 'emitEvent');
+      await dialog.show();
 
-      dialog.closeOnOutsideClick = true;
+      simulateClick(
+        dialog.renderRoot.querySelector(IgcButtonComponent.tagName)!
+      );
       await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
+
+      expect(eventSpy.getCalls()).lengthOf(2);
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.secondCall).calledWith('igcClosed');
+    });
+
+    it('can cancel `igcClosing` events when clicking outside the dialog area', async () => {
+      dialog.closeOnOutsideClick = true;
+      await dialog.show();
 
       const eventSpy = spy(dialog, 'emitEvent');
-      dialog.addEventListener('igcClosing', (e) => e.preventDefault());
+      dialog.addEventListener('igcClosing', (e) => e.preventDefault(), {
+        once: true,
+      });
 
-      const { x, y } = getBoundingRect(dialog);
-      dialogEl.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x - 1,
-          clientY: y - 1,
-        })
-      );
+      const { x, y } = dialog.getBoundingClientRect();
+      simulateClick(nativeDialog, { clientX: x - 1, clientY: y - 1 });
       await elementUpdated(dialog);
 
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).not.calledWith('igcClosed');
     });
 
-    it('does not close the dialog on clicking outside when `closeOnOutsideClick` is false.', async () => {
-      dialog.show();
-      await elementUpdated(dialog);
+    it('does not close the dialog on clicking outside when `closeOnOutsideClick` is not set', async () => {
+      await dialog.show();
 
-      dialog.closeOnOutsideClick = false;
-      await elementUpdated(dialog);
-
-      const { x, y } = getBoundingRect(dialog);
-      dialogEl.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x - 1,
-          clientY: y - 1,
-        })
-      );
+      const { x, y } = dialog.getBoundingClientRect();
+      simulateClick(nativeDialog, { clientX: x - 1, clientY: y - 1 });
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.true;
     });
 
-    it('closes the dialog on clicking outside when `closeOnOutsideClick` is true.', async () => {
-      dialog.show();
-      await elementUpdated(dialog);
-
+    it('does close the dialog on clicking outside when `closeOnOutsideClick` is set', async () => {
       dialog.closeOnOutsideClick = true;
-      await elementUpdated(dialog);
-
-      const { x, y } = getBoundingRect(dialog);
-      dialogEl.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x - 1,
-          clientY: y - 1,
-        })
-      );
+      await dialog.show();
 
       const eventSpy = spy(dialog, 'emitEvent');
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
+      const { x, y } = dialog.getBoundingClientRect();
+      simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
+      await elementUpdated(dialog);
+
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
       expect(dialog.open).to.be.false;
     });
+  });
 
-    it('closes the dialog when form with method=dialog is submitted', async () => {
-      dialog = await createDialogComponent(`
+  describe('Form', () => {
+    beforeEach(async () => {
+      dialog = await fixture<IgcDialogComponent>(html`
         <igc-dialog>
-          <form id="form" method="dialog">
-            <igc-button type="submit">Confirm</igc-button>
+          <form method="dialog">
+            <button value="Done" type="submit">Submit</button>
           </form>
         </igc-dialog>
-        `);
-      await elementUpdated(dialog);
-
-      dialog.show();
-      await elementUpdated(dialog);
-
-      document.querySelector('form')?.requestSubmit();
-      await waitUntil(() => !dialog.open);
-
-      expect(dialog.open).to.eq(false);
+      `);
     });
 
-    const createDialogComponent = (template = '<igc-dialog></igc-dialog>') => {
-      return fixture<IgcDialogComponent>(html`${unsafeStatic(template)}`);
-    };
+    it('closes the dialog when a method="dialog" form is submitted with submitter value', async () => {
+      const submitter = dialog.querySelector('button')!;
+      await dialog.show();
+
+      submitter.click();
+      await elementUpdated(dialog);
+
+      await waitUntil(() => !dialog.open);
+      expect(dialog.returnValue).to.equal(submitter.value);
+
+      // No submitter value
+      submitter.value = '';
+      await dialog.show();
+
+      submitter.click();
+      await elementUpdated(dialog);
+
+      await waitUntil(() => !dialog.open);
+      expect(dialog.returnValue).to.equal('');
+    });
   });
 });

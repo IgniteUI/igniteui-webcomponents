@@ -45,10 +45,10 @@ const metadata: Meta<IgcChipComponent> = {
       table: { defaultValue: { summary: false } },
     },
     variant: {
-      type: '"primary" | "success" | "danger" | "warning" | "info"',
+      type: '"primary" | "info" | "success" | "warning" | "danger"',
       description:
         'A property that sets the color variant of the chip component.',
-      options: ['primary', 'success', 'danger', 'warning', 'info'],
+      options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
     },
   },
@@ -72,7 +72,7 @@ interface IgcChipArgs {
   /** Defines if the chip is selected or not. */
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
-  variant: 'primary' | 'success' | 'danger' | 'warning' | 'info';
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
 }
 type Story = StoryObj<IgcChipArgs>;
 

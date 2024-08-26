@@ -1,16 +1,15 @@
 import {
-  aTimeout,
   elementUpdated,
   expect,
   fixture,
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 
-import type IgcButtonComponent from '../button/button.js';
+import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { finishAnimationsFor, getAnimationsFor } from '../common/utils.spec.js';
+import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
@@ -22,6 +21,7 @@ describe('Snackbar', () => {
   const defaultContent = 'Hello world';
 
   let snackbar: IgcSnackbarComponent;
+  let clock: SinonFakeTimers;
 
   describe('DOM', () => {
     beforeEach(async () => {
@@ -70,8 +70,7 @@ describe('Snackbar', () => {
             </igc-button>
           </slot>
         </div>
-      `,
-        { ignoreAttributes: ['style', 'size'] }
+      `
       );
     });
 
@@ -110,16 +109,15 @@ describe('Snackbar', () => {
       }
     };
 
-    const showSkipAnimation = () => {
-      const show = snackbar.show();
-      finishAnimationsFor(snackbar.shadowRoot!);
-      return show;
-    };
-
     beforeEach(async () => {
+      clock = useFakeTimers({ toFake: ['setTimeout'] });
       snackbar = await fixture<IgcSnackbarComponent>(
         html`<igc-snackbar>${defaultContent}</igc-snackbar>`
       );
+    });
+
+    afterEach(() => {
+      clock.restore();
     });
 
     it('`open` property', async () => {
@@ -136,15 +134,20 @@ describe('Snackbar', () => {
 
     it('`displayTime` property', async () => {
       snackbar.displayTime = 400;
-      await showSkipAnimation();
+      await snackbar.show();
       checkOpenState(true);
 
-      await aTimeout(400);
+      await clock.tickAsync(399);
       checkOpenState(true);
-      // setTimeout(() => `hide()`) should be called at this point
+      expect(snackbar.open).to.be.true;
+
+      // hide timer triggers after this tick
+      await clock.tickAsync(1);
+
+      // Stop running animations and repaint
       finishAnimationsFor(snackbar.shadowRoot!);
+      await nextFrame();
 
-      await aTimeout(50);
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
     });
@@ -153,10 +156,10 @@ describe('Snackbar', () => {
       snackbar.displayTime = 200;
       snackbar.keepOpen = true;
 
-      await showSkipAnimation();
+      await snackbar.show();
       checkOpenState(true);
 
-      await aTimeout(400);
+      await clock.tickAsync(400);
       expect(snackbar.open).to.be.true;
       checkOpenState(true);
     });
@@ -171,34 +174,22 @@ describe('Snackbar', () => {
 
     it('`show()` and `hide()` are no-op in their respective states', async () => {
       snackbar.open = true;
-      await elementUpdated(snackbar);
-
-      snackbar.show();
+      expect(await snackbar.show()).to.be.false;
       checkOpenState(true);
-      expect(getAnimationsFor(snackbar.shadowRoot!).length).to.equal(0);
 
       snackbar.open = false;
-      await elementUpdated(snackbar);
-
-      snackbar.hide();
+      expect(await snackbar.hide()).to.be.false;
       checkOpenState(false);
-      expect(getAnimationsFor(snackbar.shadowRoot!).length).to.equal(0);
     });
 
     it('`toggle()`', async () => {
       // close -> open
-      snackbar.toggle();
-      finishAnimationsFor(snackbar.shadowRoot!);
-      await nextFrame();
-
+      await snackbar.toggle();
       expect(snackbar.open).to.be.true;
       checkOpenState(true);
 
       // open -> close
-      snackbar.toggle();
-      finishAnimationsFor(snackbar.shadowRoot!);
-      await nextFrame();
-
+      await snackbar.toggle();
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
     });
@@ -206,7 +197,7 @@ describe('Snackbar', () => {
 
   describe('Events', () => {
     const getDefaultActionButton = () =>
-      snackbar.shadowRoot?.querySelector('igc-button') as IgcButtonComponent;
+      snackbar.renderRoot.querySelector(IgcButtonComponent.tagName)!;
 
     beforeEach(async () => {
       snackbar = await fixture<IgcSnackbarComponent>(

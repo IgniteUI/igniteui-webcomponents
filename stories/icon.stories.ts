@@ -3,13 +3,15 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
+  IgcButtonComponent,
   IgcIconComponent,
   defineComponents,
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from '../src/index.js';
 
-defineComponents(IgcIconComponent);
+defineComponents(IgcIconComponent, IgcButtonComponent);
 
 const icons = all.map((icon) => icon.name);
 
@@ -110,4 +112,103 @@ const Template = ({
   `;
 };
 
+setIconRef('aliased', 'example', {
+  name: 'biking',
+  collection: 'default',
+});
+
+const IconReference = ({
+  name = 'bacteria',
+  collection = 'default',
+}: IgcIconArgs) => {
+  const updateRef = () => {
+    setIconRef('aliased', 'example', {
+      name,
+      collection,
+    });
+  };
+
+  return html`
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <style>
+      .ref {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-block: 1rem;
+        border: 1px solid hsl(var(--ig-gray-300));
+        color: hsl(var(--ig-gray-800));
+
+        igc-icon {
+          --size: 2.5rem;
+          color: hsl(var(--ig-primary-500));
+
+          padding-inline: 1rem;
+          border-inline-end: 1px solid hsl(var(--ig-gray-300));
+        }
+      }
+
+      p,
+      h5 {
+        color: hsl(var(--ig-gray-700));
+      }
+
+      pre[class*='language-'] {
+        padding: unset;
+        margin-block: 1rem;
+        font-size: 0.75rem;
+        background: hsl(var(--ig-surface-500));
+        border: 1px solid hsl(var(--ig-gray-100));
+
+        code {
+          text-shadow: none;
+        }
+      }
+
+      .token.operator {
+        background: none;
+      }
+    </style>
+    <h3>Icon References</h3>
+    <p>
+      This sample showcases how icons can be declared and used by reference.
+    </p>
+    <h5>JavaScript:</h5>
+    <pre>
+      <code class="language-js">
+  setIconRef('aliased', 'example', {
+    name: 'biking',
+    collection: 'default',
+  });</code>
+    </pre>
+    <h5>Markup:</h5>
+    <pre><code class="language-markup">
+  &lt;igc-icon name="aliased" collection="example">&lt;igc-icon>
+    </code></pre>
+
+    <p>
+      <small>
+        <i>The code above results in following icon when rendered:</i>
+      </small>
+    </p>
+
+    <div class="ref">
+      <igc-icon name="aliased" collection="example"></igc-icon>
+      <small>
+        To see how this will affect the icon at runtime, choose an icon name
+        from the dropdown list in the <b>Controls</b> section bellow and press
+        the <b>Update Reference</b> button.
+      </small>
+    </div>
+    <br />
+
+    <igc-button @click=${updateRef}>Update Reference</igc-button>
+  `;
+};
+
 export const Basic: Story = Template.bind({});
+export const Reference: Story = IconReference.bind({});

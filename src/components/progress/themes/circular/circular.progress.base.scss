@@ -8,12 +8,6 @@
 
     display: inline-flex;
     position: relative;
-
-    // Do not use rem values here
-    // This will break the component in Safari
-    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
-    --stroke-thickness: 1.3px;
-    --diameter: 30px;
 }
 
 [part~='label'] {
@@ -27,10 +21,8 @@
 
 [part~='label'],
 [part~='value'] {
-    font-size: rem(12px);
-    line-height: rem(16px);
+    line-height: normal;
     font-weight: 600;
-    letter-spacing: rem(0.15px);
 }
 
 [part='svg indeterminate'] {

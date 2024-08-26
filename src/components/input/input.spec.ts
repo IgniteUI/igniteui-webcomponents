@@ -1,8 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed, simulateInput } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  isFocused,
+  simulateInput,
+} from '../common/utils.spec.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
@@ -20,7 +23,6 @@ describe('Input component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
       expect(el.value).to.be.empty;
       expect(el.invalid).to.be.false;
@@ -179,20 +181,6 @@ describe('Input component', () => {
       expect(input.disabled).to.be.false;
     });
 
-    it('changes size property values successfully', async () => {
-      el.size = 'medium';
-      expect(el.size).to.equal('medium');
-      await elementUpdated(el);
-
-      el.size = 'small';
-      expect(el.size).to.equal('small');
-      await elementUpdated(el);
-
-      el.size = 'large';
-      expect(el.size).to.equal('large');
-      await elementUpdated(el);
-    });
-
     it('should increment/decrement the value by calling the stepUp and stepDown methods', async () => {
       el.type = 'number';
       el.value = '10';
@@ -219,32 +207,14 @@ describe('Input component', () => {
       expect(el.value).to.equal('the slow brown fox');
     });
 
-    it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = spy(el, 'emitEvent');
+    it('should have correct focus states between Light/Shadow DOM', async () => {
       el.focus();
-
-      expect(el.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(el)).to.be.true;
+      expect(isFocused(input)).to.be.true;
 
       el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
-    });
-
-    it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.focus();
-
-      expect(el.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
-
-      el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
+      expect(isFocused(el)).to.be.false;
+      expect(isFocused(input)).to.be.false;
     });
 
     it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {

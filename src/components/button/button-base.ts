@@ -6,18 +6,21 @@ import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 
 export interface IgcButtonEventMap {
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
 }
 
 @blazorDeepImport
-export abstract class IgcButtonBaseComponent extends SizableMixin(
-  EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
-) {
+export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
+  IgcButtonEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly formAssociated = true;
 
   protected static shadowRootOptions = {
@@ -92,8 +95,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   constructor() {
     super();
     this.__internals = this.attachInternals();
-
-    this.size = 'medium';
   }
 
   /* alternateName: focusComponent */
@@ -113,12 +114,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this._nativeButton.blur();
   }
 
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
   }
 
@@ -150,7 +146,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
         @click=${this.handleClick}
-        @focus=${this.handleFocus}
         @blur=${this.handleBlur}
       >
         ${this.renderContent()}
@@ -172,7 +167,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        @focus=${this.disabled ? nothing : this.handleFocus}
         @blur=${this.disabled ? nothing : this.handleBlur}
       >
         ${this.renderContent()}

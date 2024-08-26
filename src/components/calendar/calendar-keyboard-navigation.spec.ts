@@ -1,523 +1,570 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  enterKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+  shiftKey,
+  spaceBar,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { asNumber, first } from '../common/util.js';
+import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcCalendarComponent from './calendar.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
+import type IgcDaysViewComponent from './days-view/days-view.js';
+import { MONTHS_PER_ROW, YEARS_PER_ROW, getYearRange } from './helpers.js';
+import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
+import { CalendarDay } from './model.js';
+import type IgcMonthsViewComponent from './months-view/months-view.js';
+import { DateRangeType } from './types.js';
+import type IgcYearsViewComponent from './years-view/years-view.js';
 
-function createCalendarElement() {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
-}
+describe('Calendar keyboard interaction', () => {
+  before(() => defineComponents(IgcCalendarComponent));
 
-describe('Calendar Rendering', () => {
-  before(() => {
-    defineComponents(IgcCalendarComponent);
-  });
-
-  let el: IgcCalendarComponent;
-  let daysView: IgcDaysViewComponent;
-  let monthsView: IgcMonthsViewComponent;
-  let yearsView: IgcYearsViewComponent;
+  let calendar: IgcCalendarComponent;
+  const activeDate = new Date(2021, 6, 17);
 
   describe('Focus state', () => {
     beforeEach(async () => {
-      el = await createCalendarElement();
-      el.activeDate = new Date(2021, 6, 17);
+      calendar = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar .activeDate=${activeDate}></igc-calendar>`
+      );
     });
 
-    it('keeps focus state inside the component when switching to months view', async () => {
-      const monthsButton = el.shadowRoot!.querySelector(
-        `[part="months-navigation"]`
-      ) as HTMLButtonElement;
+    it('focus is retained when switching to month view', async () => {
+      const dom = getCalendarDOM(calendar);
+      const button = dom.navigation.months;
 
-      // Simulate focus and "activation"
-      monthsButton.focus();
-      monthsButton.click();
+      // Simulate focus and activation
+      button.focus();
+      simulateClick(button);
 
-      await elementUpdated(el);
+      await elementUpdated(calendar);
 
-      expect(document.activeElement).to.equal(el);
-      expect(el.shadowRoot?.activeElement).to.not.be.undefined;
+      expect(document.activeElement).to.equal(calendar);
+      expect(dom.active).to.not.be.undefined;
     });
 
-    it('keeps focus state inside the component when switching to years view', async () => {
-      const yearsButton = el.shadowRoot!.querySelector(
-        `[part="years-navigation"]`
-      ) as HTMLButtonElement;
+    it('focus is retained when switching to year view', async () => {
+      const dom = getCalendarDOM(calendar);
+      const button = dom.navigation.years;
 
-      // Simulate focus and "activation"
-      yearsButton.focus();
-      yearsButton.click();
+      // Simulate focus and activation
+      button.focus();
+      simulateClick(button);
 
-      await elementUpdated(el);
+      await elementUpdated(calendar);
 
-      expect(document.activeElement).to.equal(el);
-      expect(el.shadowRoot?.activeElement).to.not.be.undefined;
+      expect(document.activeElement).to.equal(calendar);
+      expect(dom.active).to.not.be.undefined;
     });
   });
 
-  describe('Days view', async () => {
-    beforeEach(async () => {
-      el = await createCalendarElement();
-      el.activeView = 'days';
-      el.size = 'large';
-      el.activeDate = new Date(2021, 6, 17);
+  describe('Days view', () => {
+    let daysView: IgcDaysViewComponent;
 
-      await elementUpdated(el);
-      daysView = el.shadowRoot!.querySelector(IgcDaysViewComponent.tagName)!;
+    beforeEach(async () => {
+      calendar = await fixture<IgcCalendarComponent>(html`
+        <igc-calendar
+          active-view="days"
+          .activeDate=${activeDate}
+        ></igc-calendar>
+      `);
+      daysView = getCalendarDOM(calendar).views.days;
     });
 
-    it('passes the a11y audit', async () => {
-      await expect(daysView).to.be.accessible();
+    it('is accessible', async () => {
+      await expect(daysView).lightDom.to.be.accessible();
       await expect(daysView).shadowDom.to.be.accessible();
     });
 
-    it('successfully switches to next month by pressing PageDown', async () => {
-      const currentMonth = el.activeDate.getMonth();
+    it('navigates to next month by pressing `PageDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', 1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, pageDownKey);
+      await elementUpdated(calendar);
 
-      const nextMonth = el.activeDate.getMonth();
-      expect(nextMonth).to.equal(currentMonth + 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to next year by pressing Shift + PageDown', async () => {
-      const currentYear = el.activeDate.getFullYear();
+    it('navigates to next year by pressing `Shift + PageDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', 1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'PageDown',
-          bubbles: true,
-          shiftKey: true,
-        })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, [shiftKey, pageDownKey]);
+      await elementUpdated(calendar);
 
-      const nextYear = el.activeDate.getFullYear();
-      expect(nextYear).to.equal(currentYear + 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to previous month by pressing PageUp', async () => {
-      const currentMonth = el.activeDate.getMonth();
+    it('navigates to previous month by pressing `PageUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', -1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, pageUpKey);
+      await elementUpdated(calendar);
 
-      const nextMonth = el.activeDate.getMonth();
-      expect(nextMonth).to.equal(currentMonth - 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to previous year by pressing Shift + PageUp', async () => {
-      const currentYear = el.activeDate.getFullYear();
+    it('navigates to previous year by pressing `Shift + PageUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', -1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'PageUp',
-          bubbles: true,
-          shiftKey: true,
-        })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, [shiftKey, pageUpKey]);
+      await elementUpdated(calendar);
 
-      const nextYear = el.activeDate.getFullYear();
-      expect(nextYear).to.equal(currentYear - 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to next day by pressing ArrowRight', async () => {
-      const currentDay = el.activeDate.getDate();
+    it('navigates to the next day by pressing `ArrowRight`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('day', 1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, arrowRight);
+      await elementUpdated(calendar);
 
-      const nextDay = el.activeDate.getDate();
-      expect(nextDay).to.equal(currentDay + 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to previous day by pressing ArrowLeft', async () => {
-      const currentDay = el.activeDate.getDate();
+    it('navigates to the previous day by pressing `ArrowLeft`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('day', -1);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, arrowLeft);
+      await elementUpdated(calendar);
 
-      const previousDay = el.activeDate.getDate();
-      expect(previousDay).to.equal(currentDay - 1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to previous week by pressing ArrowUp', async () => {
-      const currentTime = el.activeDate.getTime();
+    it('navigates to the next week by pressing `ArrowDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('week', 1);
 
-      const lastWeekDate = new Date(
-        currentTime! - 7 * 24 * 60 * 60 * 1000
-      ).getDate();
+      simulateKeyboard(daysView, arrowDown);
+      await elementUpdated(calendar);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const activeDate = el.activeDate.getDate();
-
-      expect(activeDate).to.equal(lastWeekDate);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to next week by pressing ArrowDown', async () => {
-      const currentTime = el.activeDate.getTime();
+    it('navigates to the previous week by pressing `ArrowUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('week', -1);
 
-      const nextWeekDate = new Date(
-        currentTime! + 7 * 24 * 60 * 60 * 1000
-      ).getDate();
+      simulateKeyboard(daysView, arrowUp);
+      await elementUpdated(calendar);
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const activeDate = el.activeDate.getDate();
-      expect(activeDate).to.equal(nextWeekDate);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to first day of month by pressing Home', async () => {
-      expect(el.activeDate.getDate()).to.equal(17);
+    it('navigates to the start of the current month by pressing `Home`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ date: 1 });
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, homeKey);
+      await elementUpdated(calendar);
 
-      expect(el.activeDate.getDate()).to.equal(1);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to last day of month by pressing End', async () => {
-      expect(el.activeDate.getDate()).to.equal(17);
+    it('navigates to the end of the current month by pressing `End`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ month: current.month + 1, date: 0 });
 
-      daysView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(daysView, endKey);
+      await elementUpdated(calendar);
 
-      expect(el.activeDate.getDate()).to.equal(31);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully focuses date by pressing Enter', async () => {
-      const firstDay = daysView.shadowRoot?.querySelectorAll(
-        'span[part="date-inner single"]'
-      )[0] as HTMLElement;
+    it('selects a date by pressing `Enter`', async () => {
+      const day = first(getDayViewDOM(daysView).dates.all);
+      const value = CalendarDay.from(new Date(asNumber(day.dataset.value)));
 
-      firstDay.focus();
-      await elementUpdated(el);
+      day.focus();
+      simulateKeyboard(day, enterKey);
+      await elementUpdated(calendar);
 
-      firstDay.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const timeZoneOffset = (el.value as Date).getTimezoneOffset() * 60000;
-
-      const newDate = new Date((el.value as any) - timeZoneOffset);
-
-      expect(newDate.getDate()).to.equal(1);
+      expect(value.equalTo(calendar.value!)).to.be.true;
     });
 
-    it('successfully focuses date by pressing Space', async () => {
-      const firstDay = daysView.shadowRoot?.querySelectorAll(
-        'span[part="date-inner single"]'
-      )[0] as HTMLElement;
+    it('selects a date by pressing `Space`', async () => {
+      const day = first(getDayViewDOM(daysView).dates.all);
+      const value = CalendarDay.from(new Date(asNumber(day.dataset.value)));
 
-      firstDay.focus();
-      await elementUpdated(el);
+      day.focus();
+      simulateKeyboard(day, spaceBar);
+      await elementUpdated(calendar);
 
-      firstDay.dispatchEvent(
-        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
-      );
-      await elementUpdated(el);
+      expect(value.equalTo(calendar.value!)).to.be.true;
+    });
 
-      const timeZoneOffset = (el.value as Date).getTimezoneOffset() * 60000;
+    it('skips disabled dates with keyboard navigation - 1', async () => {
+      const lastOfJan = new CalendarDay({ year: 2024, month: 0, date: 31 });
+      const firstOfMarch = new CalendarDay({ year: 2024, month: 2, date: 1 });
 
-      const newDate = new Date((el.value as any) - timeZoneOffset);
+      const getActiveDOM = () =>
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
 
-      expect(newDate.getDate()).to.equal(1);
+      // Start on 1st of March
+      calendar.activeDate = firstOfMarch.native;
+      // Disabled the whole month of February
+      calendar.disabledDates = [
+        {
+          type: DateRangeType.Between,
+          dateRange: [
+            lastOfJan.add('day', 1).native,
+            firstOfMarch.add('day', -1).native,
+          ],
+        },
+      ];
+      await elementUpdated(calendar);
+
+      // Previous day -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), arrowLeft);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next day -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), arrowRight);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+
+      // Previous week -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), arrowUp);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next week -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), arrowDown);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+
+      // Previous month -> fallback to last of January
+      simulateKeyboard(getActiveDOM(), pageUpKey);
+      await elementUpdated(calendar);
+      expect(lastOfJan.equalTo(calendar.activeDate)).to.be.true;
+
+      // Next month -> fallback to first of March
+      simulateKeyboard(getActiveDOM(), pageDownKey);
+      await elementUpdated(calendar);
+      expect(firstOfMarch.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('skips disabled dates with keyboard navigation - 2', async () => {
+      const date = new CalendarDay({ year: 2024, month: 1, date: 14 });
+      const getActiveDOM = () =>
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
+
+      calendar.activeDate = date.native;
+      calendar.disabledDates = [
+        {
+          type: DateRangeType.Specific,
+          dateRange: [date.set({ date: 1 }).native],
+        },
+        {
+          type: DateRangeType.Between,
+          dateRange: [
+            date.set({ date: 25 }).native,
+            date.set({ date: 29 }).native,
+          ],
+        },
+      ];
+      await elementUpdated(calendar);
+
+      // Beginning of February is disabled -> fallback to 2nd day
+      simulateKeyboard(getActiveDOM(), homeKey);
+      await elementUpdated(calendar);
+      expect(date.set({ date: 2 }).equalTo(calendar.activeDate)).to.be.true;
+
+      // End of February -> [25-29] are disabled, fallback to 24th
+      simulateKeyboard(getActiveDOM(), endKey);
+      await elementUpdated(calendar);
+      expect(date.set({ date: 24 }).equalTo(calendar.activeDate)).to.be.true;
     });
   });
 
-  describe('Months view', async () => {
-    beforeEach(async () => {
-      el = await createCalendarElement();
-      el.activeView = 'months';
-      el.size = 'large';
-
-      await elementUpdated(el);
-
-      monthsView = el.shadowRoot!.querySelector(
-        IgcMonthsViewComponent.tagName
-      )!;
-    });
-
-    it('successfully switches to first month by pressing Home', async () => {
-      monthsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(0);
-    });
-
-    it('successfully switches to last month by pressing End', async () => {
-      monthsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(11);
-    });
-
-    it('successfully switches to previous year by pressing PageUp', async () => {
-      const btn = el.shadowRoot?.querySelector(
-        'button[part="years-navigation"]'
-      );
-      const year = Number(btn?.textContent?.trim());
-
-      await switchMonth(el, 'PageUp');
-
-      const previousYear = Number(btn?.textContent?.trim());
-
-      expect(previousYear).to.equal(year - 1);
-    });
-
-    it('successfully switches to next year by pressing PageDown', async () => {
-      const btn = el.shadowRoot?.querySelector(
-        'button[part="years-navigation"]'
-      );
-      const year = Number(btn?.textContent?.trim());
-
-      await switchMonth(el, 'PageDown');
-
-      const nextYear = Number(btn?.textContent?.trim());
-
-      expect(nextYear).to.equal(year + 1);
-    });
-
-    it('successfully switches to next month by pressing ArrowRight', async () => {
-      await switchMonth(el, 'ArrowRight');
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(1);
-    });
-
-    it('successfully switches to previous month by pressing ArrowLeft', async () => {
-      await switchMonth(el, 'ArrowLeft');
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(11);
-    });
-
-    it('successfully switches month by pressing ArrowDown', async () => {
-      await switchMonth(el, 'ArrowDown');
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(3);
-    });
-
-    it('successfully switches month by pressing ArrowUp', async () => {
-      await switchMonth(el, 'ArrowUp');
-
-      const month = el.activeDate.getMonth();
-      expect(month).to.equal(9);
-    });
-
-    it('successfully focuses month by pressing Enter', async () => {
-      expect(el.activeView).to.equal('months');
-
-      const month = monthsView.shadowRoot?.querySelectorAll(
-        'span[part="month-inner"]'
-      )[0] as HTMLElement;
-      month.focus();
-      await elementUpdated(el);
-
-      month.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-      await elementUpdated(el);
-
-      expect(el.activeView).to.equal('days');
-    });
-
-    it('successfully focuses month by pressing Space', async () => {
-      expect(el.activeView).to.equal('months');
-
-      const month = monthsView.shadowRoot?.querySelectorAll(
-        'span[part="month-inner"]'
-      )[0] as HTMLElement;
-      month.focus();
-      await elementUpdated(el);
-
-      month.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
-      await elementUpdated(el);
-
-      expect(el.activeView).to.equal('days');
-    });
-
-    const switchMonth = async (el: IgcCalendarComponent, btn: string) => {
-      // focus first month
-      monthsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      monthsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: btn, bubbles: true })
-      );
-      await elementUpdated(el);
-    };
-  });
-
-  describe('Years view', async () => {
-    function getYearElements(view: IgcYearsViewComponent) {
-      return Array.from(
-        view.shadowRoot!.querySelectorAll(`[part~="year-inner"]`)
-      ) as HTMLElement[];
-    }
+  describe('Months view', () => {
+    let monthsView: IgcMonthsViewComponent;
 
     beforeEach(async () => {
-      el = await createCalendarElement();
-      el.activeView = 'years';
-      el.size = 'large';
-
-      await elementUpdated(el);
-
-      yearsView = el.shadowRoot!.querySelector(IgcYearsViewComponent.tagName)!;
+      calendar = await fixture<IgcCalendarComponent>(html`
+        <igc-calendar active-view="months"></igc-calendar>
+      `);
+      monthsView = getCalendarDOM(calendar).views.months;
     });
 
-    it('successfully switches to first year by pressing Home', async () => {
-      const firstYearEl = getYearElements(yearsView).at(0);
-
-      yearsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
-      );
-      await elementUpdated(el);
-
-      const year = el.activeDate.getFullYear();
-      expect(firstYearEl).lightDom.to.equal(`${year}`);
+    it('is accessible', async () => {
+      await expect(monthsView).lightDom.to.be.accessible();
+      await expect(monthsView).shadowDom.to.be.accessible();
     });
 
-    it('successfully switches to last year by pressing End', async () => {
-      const lastYear = getYearElements(yearsView).at(-1);
+    it('navigates to the first month by pressing `Home`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ month: 0 });
 
-      yearsView.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End', bubbles: true })
-      );
-      await elementUpdated(el);
+      simulateKeyboard(monthsView, homeKey);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(lastYear).lightDom.to.equal(`${year}`);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to next year by pressing ArrowRight', async () => {
-      const firstYearEl = getYearElements(yearsView).at(1);
+    it('navigates to the last month by pressing `End`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ month: 11 });
 
-      await switchYear(yearsView, 'ArrowRight');
+      simulateKeyboard(monthsView, endKey);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(firstYearEl).lightDom.to.equal(`${year}`);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches to previous year by pressing ArrowLeft', async () => {
-      const lastYear = getYearElements(yearsView).at(-1);
+    it('navigates to the previous year by pressing `PageUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', -1);
 
-      await switchYear(yearsView, 'ArrowLeft');
+      simulateKeyboard(monthsView, pageUpKey);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(lastYear).lightDom.to.equal(`${year}`);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches year by pressing ArrowUp', async () => {
-      const firstYear = Number(
-        getYearElements(yearsView).at(0)!.textContent?.trim()
-      );
+    it('navigates to the next year by pressing `PageDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', 1);
 
-      await switchYear(yearsView, 'ArrowUp');
+      simulateKeyboard(monthsView, pageDownKey);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(year).to.equal(firstYear - 3);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches year by pressing ArrowDown', async () => {
-      const firstYearEl = getYearElements(yearsView).at(3);
+    it('navigates to the next month by pressing `ArrowRight`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', 1);
 
-      await switchYear(yearsView, 'ArrowDown');
+      simulateKeyboard(monthsView, arrowRight);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(firstYearEl).lightDom.to.equal(`${year}`);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches year by pressing PageUp', async () => {
-      const firstYear = Number(
-        getYearElements(yearsView).at(0)!.textContent?.trim()
-      );
+    it('navigates to the previous month by pressing `ArrowLeft`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', -1);
 
-      await switchYear(yearsView, 'PageUp');
+      simulateKeyboard(monthsView, arrowLeft);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(year).to.equal(firstYear - 15);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully switches year by pressing PageDown', async () => {
-      const firstYear = Number(
-        getYearElements(yearsView).at(0)!.textContent?.trim()
-      );
+    it('navigates by MONTHS_PER_ROW by pressing `ArrowDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', MONTHS_PER_ROW);
 
-      await switchYear(yearsView, 'PageDown');
+      simulateKeyboard(monthsView, arrowDown);
+      await elementUpdated(calendar);
 
-      const year = el.activeDate.getFullYear();
-      expect(year).to.equal(firstYear + 15);
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully focuses year by pressing Enter', async () => {
-      expect(el.activeView).to.equal('years');
+    it('navigates by -MONTHS_PER_ROW by pressing `ArrowUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('month', -MONTHS_PER_ROW);
 
-      const year = getYearElements(yearsView).at(0)!;
-      year.focus();
-      await elementUpdated(el);
+      simulateKeyboard(monthsView, arrowUp);
+      await elementUpdated(calendar);
 
-      year.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-      await elementUpdated(el);
-
-      expect(el.activeView).to.equal('months');
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
     });
 
-    it('successfully focuses year by pressing Space', async () => {
-      expect(el.activeView).to.equal('years');
+    it('selects a month by pressing `Enter`', async () => {
+      const month = first(getMonthViewDOM(monthsView).months.all);
+      const value = CalendarDay.from(calendar.activeDate).set({
+        month: asNumber(month.dataset.value),
+      });
 
-      const year = getYearElements(yearsView).at(0)!;
-      year.focus();
-      await elementUpdated(el);
+      month.focus();
+      simulateKeyboard(month, enterKey);
+      await elementUpdated(calendar);
 
-      year.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
-      await elementUpdated(el);
+      expect(value.equalTo(calendar.activeDate)).to.be.true;
+      expect(calendar.activeView).to.equal('days');
+    });
 
-      expect(el.activeView).to.equal('months');
+    it('selects a month by pressing `Space`', async () => {
+      const month = first(getMonthViewDOM(monthsView).months.all);
+      const value = CalendarDay.from(calendar.activeDate).set({
+        month: asNumber(month.dataset.value),
+      });
+
+      month.focus();
+      simulateKeyboard(month, spaceBar);
+      await elementUpdated(calendar);
+
+      expect(value.equalTo(calendar.activeDate)).to.be.true;
+      expect(calendar.activeView).to.equal('days');
     });
   });
 
-  const switchYear = async (yearsView: Element, btn: string) => {
-    // focus first year
-    yearsView.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
-    );
-    await elementUpdated(el);
+  describe('Years view', () => {
+    let yearsView: IgcYearsViewComponent;
 
-    yearsView.dispatchEvent(
-      new KeyboardEvent('keydown', { key: btn, bubbles: true })
-    );
-    await elementUpdated(el);
-  };
+    beforeEach(async () => {
+      calendar = await fixture<IgcCalendarComponent>(html`
+        <igc-calendar active-view="years"></igc-calendar>
+      `);
+      yearsView = getCalendarDOM(calendar).views.years;
+    });
+
+    it('is accessible', async () => {
+      await expect(yearsView).lightDom.to.be.accessible();
+      await expect(yearsView).shadowDom.to.be.accessible();
+    });
+
+    it('navigates to the first year by pressing `Home`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ year: getYearRange(current, 15).start });
+
+      simulateKeyboard(yearsView, homeKey);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates to the last year by pressing `End`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.set({ year: getYearRange(current, 15).end });
+
+      simulateKeyboard(yearsView, endKey);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates to the next year by pressing `ArrowRight`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', 1);
+
+      simulateKeyboard(yearsView, arrowRight);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates to the previous year by pressing `ArrowLeft`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', -1);
+
+      simulateKeyboard(yearsView, arrowLeft);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates by YEARS_PER_ROW by pressing `ArrowDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', YEARS_PER_ROW);
+
+      simulateKeyboard(yearsView, arrowDown);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates by YEARS_PER_ROW by pressing `ArrowUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', -YEARS_PER_ROW);
+
+      simulateKeyboard(yearsView, arrowUp);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates by -`yearsPerPage` by pressing `PageUp`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', -15);
+
+      simulateKeyboard(yearsView, pageUpKey);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('navigates by `yearsPerPage` by pressing `PageDown`', async () => {
+      const current = CalendarDay.from(calendar.activeDate);
+      const next = current.add('year', 15);
+
+      simulateKeyboard(yearsView, pageDownKey);
+      await elementUpdated(calendar);
+
+      expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('selects an year by pressing `Enter`', async () => {
+      const year = first(getYearViewDOM(yearsView).years.all);
+      const value = CalendarDay.from(calendar.activeDate).set({
+        year: asNumber(year.dataset.value),
+      });
+
+      year.focus();
+      simulateKeyboard(year, enterKey);
+      await elementUpdated(calendar);
+
+      expect(value.equalTo(calendar.activeDate)).to.be.true;
+      expect(calendar.activeView).to.equal('months');
+    });
+
+    it('selects an year by pressing `Space`', async () => {
+      const year = first(getYearViewDOM(yearsView).years.all);
+      const value = CalendarDay.from(calendar.activeDate).set({
+        year: asNumber(year.dataset.value),
+      });
+
+      year.focus();
+      simulateKeyboard(year, spaceBar);
+      await elementUpdated(calendar);
+
+      expect(value.equalTo(calendar.activeDate)).to.be.true;
+      expect(calendar.activeView).to.equal('months');
+    });
+  });
 });
+
+/* Helper Functions */
+
+function getMonthViewDOM(element: IgcMonthsViewComponent) {
+  const root = element.shadowRoot!;
+  return {
+    months: {
+      get all() {
+        return Array.from(
+          root.querySelectorAll(`span[part='month-inner']`)
+        ) as HTMLElement[];
+      },
+    },
+  };
+}
+
+function getYearViewDOM(element: IgcYearsViewComponent) {
+  const root = element.shadowRoot!;
+  return {
+    years: {
+      get all() {
+        return Array.from(
+          root.querySelectorAll(`[part~='year-inner']`)
+        ) as HTMLElement[];
+      },
+    },
+  };
+}

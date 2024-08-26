@@ -12,25 +12,30 @@ import {
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
-import { alternateName } from '../common/decorators/alternateName.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import messages from '../common/localization/validation-en.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
+import { radioValidators } from './validators.js';
+
+export interface RadioChangeEventArgs {
+  checked: boolean;
+  value?: string;
+}
 
 export interface IgcRadioEventMap {
-  igcChange: CustomEvent<boolean>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  igcChange: CustomEvent<RadioChangeEventArgs>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
 }
 
 /**
@@ -39,11 +44,9 @@ export interface IgcRadioEventMap {
  * @slot - The radio label.
  *
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart base - The radio control base wrapper.
- * @csspart control - The radio control.
+ * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
 @themes(all)
@@ -60,19 +63,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   private static readonly increment = createCounter();
 
-  protected override validators: Validator<this>[] = [
-    {
-      key: 'valueMissing',
-      message: messages.required,
-      isValid: () => {
-        const radios = this._radios;
-        const checked = this._checkedRadios;
-        return radios.some((radio) => radio.required)
-          ? checked.length > 0
-          : true;
-      },
-    },
-  ];
+  protected override get __validators() {
+    return radioValidators;
+  }
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
@@ -133,12 +126,12 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
    * The checked state of the control.
    * @attr
    */
   @property({ type: Boolean })
-  @blazorTwoWayBind('igcChange', 'detail')
   public set checked(value: boolean) {
     this._checked = Boolean(value);
     this._checked ? this._updateCheckedState() : this._updateUncheckedState();
@@ -188,14 +181,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     this.input.click();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the radio control. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the radio control. */
-  @alternateName('blurComponent')
   public override blur() {
     this.input.blur();
   }
@@ -269,17 +262,21 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleClick() {
+    if (this.checked) {
+      return;
+    }
+
     this.checked = true;
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.emitEvent('igcChange', {
+      detail: {
+        checked: this.checked,
+        value: this.value,
+      },
+    });
   }
 
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
-  }
-
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
   }
 
   protected navigate(idx: number) {
@@ -289,7 +286,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
     radio.focus();
     radio.checked = true;
-    radio.emitEvent('igcChange', { detail: radio.checked });
+    radio.emitEvent('igcChange', {
+      detail: { checked: radio.checked, value: radio.value },
+    });
   }
 
   protected override render() {
@@ -320,7 +319,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
         />
         <span part=${partNameMap({ control: true, checked })}>
           <span

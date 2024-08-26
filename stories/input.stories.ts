@@ -29,7 +29,7 @@ const metadata: Meta<IgcInputComponent> = {
   component: 'igc-input',
   parameters: {
     docs: { description: { component: '' } },
-    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
     value: {

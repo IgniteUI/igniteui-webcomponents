@@ -59,13 +59,13 @@ textarea {
     overflow: auto;
     text-overflow: ellipsis;
 
+    /* resets typography styles */
+    line-height: normal;
+
     &::placeholder {
         opacity: 1;
         line-height: normal;
     }
-
-    /* resets typography styles */
-    line-height: normal;
 
     &:not([type='*']) {
         /* resets typography styles */

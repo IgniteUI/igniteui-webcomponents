@@ -29,7 +29,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
           'A masked input is an input field where a developer can control user input and format the visible value,\nbased on configurable rules',
       },
     },
-    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
     valueMode: {

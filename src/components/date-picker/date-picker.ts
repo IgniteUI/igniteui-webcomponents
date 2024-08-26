@@ -3,14 +3,13 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import type { Theme } from '../../theming/types.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
-  isDateInRanges,
-} from '../calendar/common/calendar.model.js';
+  type WeekDays,
+} from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
@@ -18,7 +17,6 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -26,31 +24,22 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
-import messages from '../common/localization/validation-en.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import {
-  createCounter,
-  findElementFromEventPath,
-  formatString,
-} from '../common/util.js';
-import {
-  type Validator,
-  maxDateValidator,
-  minDateValidator,
-  requiredValidator,
-} from '../common/validators.js';
+import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DatePart } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
 import { all } from './themes/themes.js';
+import { datePickerValidators } from './validators.js';
 
 export interface IgcDatepickerEventMap {
   igcOpening: CustomEvent<void>;
@@ -137,7 +126,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, true)
+@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
@@ -158,21 +147,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private static readonly increment = createCounter();
   protected inputId = `date-picker-${IgcDatePickerComponent.increment()}`;
 
-  private declare readonly [themeSymbol]: Theme;
-
-  protected override validators: Validator<this>[] = [
-    requiredValidator,
-    minDateValidator,
-    maxDateValidator,
-    {
-      key: 'badInput',
-      message: () => formatString(messages.disabledDate, this.value),
-      isValid: () =>
-        this.value
-          ? !isDateInRanges(this.value, this.disabledDates ?? [])
-          : true,
-    },
-  ];
+  protected override get __validators() {
+    return datePickerValidators;
+  }
 
   /* blazorSuppress */
   public static register() {
@@ -196,16 +173,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _displayFormat?: string;
   private _inputFormat?: string;
 
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: this.handleClosing,
-  });
-
   private get isDropDown() {
     return this.mode === 'dropdown';
-  }
-
-  private get isMaterialTheme() {
-    return this[themeSymbol] === 'material';
   }
 
   @query(IgcDateTimeInputComponent.tagName)
@@ -225,6 +194,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'helper-text' })
   private helperText!: Array<HTMLElement>;
+
+  protected get _isMaterialTheme(): boolean {
+    return getThemeController(this)?.theme === 'material';
+  }
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -443,20 +416,15 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })
-  public weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday' = 'sunday';
+  public weekStart: WeekDays = 'sunday';
 
   constructor() {
     super();
 
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('focusout', this.handleFocusOut);
+
+    this._rootClickController.update({ hideCallback: this.handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled,
@@ -503,7 +471,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public setSelectionRange(
     start: number,
     end: number,
-    direction?: 'none' | 'backward' | 'forward'
+    direction?: SelectionRangeDirection
   ): void {
     this._input.setSelectionRange(start, end, direction);
   }
@@ -513,7 +481,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     replacement: string,
     start: number,
     end: number,
-    mode?: 'select' | 'start' | 'end' | 'preserve'
+    mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);
     this.value = this._input.value;
@@ -634,8 +602,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <span slot="suffix" part="clear-icon" @click=${this.clear}>
             <slot name="clear-icon">
               <igc-icon
-                name="clear"
-                collection="internal"
+                name="input_clear"
+                collection="default"
                 aria-hidden="true"
               ></igc-icon>
             </slot>
@@ -645,11 +613,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private renderCalendarIcon() {
     const defaultIcon = html`
-      <igc-icon
-        name="calendar_today"
-        collection="internal"
-        aria-hidden="true"
-      ></igc-icon>
+      <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
@@ -771,7 +735,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(this.isMaterialTheme ? this.label : undefined)}
+        label=${ifDefined(this._isMaterialTheme ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -808,7 +772,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const id = this.id || this.inputId;
 
     return html`
-      ${!this.isMaterialTheme ? this.renderLabel(id) : nothing}
+      ${!this._isMaterialTheme ? this.renderLabel(id) : nothing}
       ${this.renderInput(id)}${this.renderPicker(id)}${this.renderHelperText()}
     `;
   }

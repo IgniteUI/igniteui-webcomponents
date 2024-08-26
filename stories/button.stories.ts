@@ -21,7 +21,6 @@ const metadata: Meta<IgcButtonComponent> = {
           'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.',
       },
     },
-    actions: { handles: ['igcFocus', 'igcBlur'] },
   },
   argTypes: {
     variant: {

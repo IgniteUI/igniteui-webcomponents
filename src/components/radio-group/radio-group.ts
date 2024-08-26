@@ -57,6 +57,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     return this._name;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
    * Gets/Sets the checked igc-radio element that matches `value`
    * @attr

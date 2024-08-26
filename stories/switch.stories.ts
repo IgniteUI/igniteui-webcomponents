@@ -22,7 +22,7 @@ const metadata: Meta<IgcSwitchComponent> = {
           'Similar to a checkbox, a switch controls the state of a single setting on or off.',
       },
     },
-    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
     required: {

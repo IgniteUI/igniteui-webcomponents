@@ -4,12 +4,11 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
-import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcIconComponent from '../icon/icon.js';
+import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
 import { all } from './themes/themes.js';
@@ -35,9 +34,10 @@ export interface IgcChipEventMap {
  * @csspart suffix - The suffix container of the chip.
  */
 @themes(all)
-export default class IgcChipComponent extends SizableMixin(
-  EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcChipComponent extends EventEmitterMixin<
+  IgcChipEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];
 
@@ -69,12 +69,12 @@ export default class IgcChipComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public selectable = false;
 
+  /* @tsTwoWayProperty(true, "igcSelect", "detail", false) */
   /**
    * Defines if the chip is selected or not.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  @blazorTwoWayBind('igcSelect', 'detail')
   public selected = false;
 
   /**
@@ -82,16 +82,21 @@ export default class IgcChipComponent extends SizableMixin(
    * @attr
    */
   @property({ reflect: true })
-  public variant!: 'primary' | 'success' | 'danger' | 'warning' | 'info';
+  public variant!: StyleVariant;
 
   constructor() {
     super();
-    this.size = 'medium';
 
     addKeybindings(this, {
       ref: this._removePartRef,
       bindingDefaults: { triggers: ['keyup'] },
     }).setActivateHandler(this.handleRemove);
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   protected handleSelect() {
@@ -117,12 +122,8 @@ export default class IgcChipComponent extends SizableMixin(
       >
         <span part="prefix">
           ${this.selectable && this.selected
-            ? html`<slot @slotchange=${this.slotChanges} name="select">
-                <igc-icon
-                  size=${this.size}
-                  name="chip_select"
-                  collection="internal"
-                ></igc-icon>
+            ? html`<slot name="select">
+                <igc-icon name="selected" collection="default"></igc-icon>
               </slot>`
             : nothing}
           <slot name="start"></slot>
@@ -135,14 +136,12 @@ export default class IgcChipComponent extends SizableMixin(
           ${this.removable && !this.disabled
             ? html`<slot
                 ${ref(this._removePartRef)}
-                @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
                 name="remove"
               >
                 <igc-icon
-                  size=${this.size}
-                  name="chip_cancel"
-                  collection="internal"
+                  name="remove"
+                  collection="default"
                   tabindex="0"
                   role="button"
                   aria-label="remove"
@@ -152,10 +151,6 @@ export default class IgcChipComponent extends SizableMixin(
         </span>
       </button>
     `;
-  }
-
-  protected slotChanges() {
-    this.requestUpdate();
   }
 }
 

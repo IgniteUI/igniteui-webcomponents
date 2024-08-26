@@ -70,6 +70,7 @@ export { defineAllComponents } from './components/common/definitions/defineAllCo
 export {
   registerIcon,
   registerIconFromText,
+  setIconRef,
 } from './components/icon/icon.registry.js';
 
 // theming configuration
@@ -79,8 +80,16 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export type { DateRangeDescriptor } from './components/calendar/common/calendar.model.js';
-export { DateRangeType } from './components/calendar/common/calendar.model.js';
+export type {
+  RangeTextSelectMode,
+  SelectionRangeDirection,
+  StyleVariant,
+} from './components/types.js';
+export type {
+  DateRangeDescriptor,
+  WeekDays,
+} from './components/calendar/types.js';
+export { DateRangeType } from './components/calendar/types.js';
 export type {
   DatePart,
   DatePartDeltas,
@@ -94,3 +103,4 @@ export type {
   ComboItemTemplate,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
+export type { IconMeta } from './components/icon/registry/types.js';

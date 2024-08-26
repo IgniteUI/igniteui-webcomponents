@@ -11,7 +11,6 @@ import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -70,39 +69,35 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private animationPlayer = addAnimationController(this, this.groupRef);
 
+  /* blazorSuppress */
   /** A reference to the tree the item is a part of. */
-  @blazorSuppress()
   public tree?: IgcTreeComponent;
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
 
-  /** @private */
-  @blazorSuppress()
+  /** @private @hidden @internal */
   public init = false;
 
   @queryAssignedElements({ slot: 'label', flatten: true })
   private contentList!: Array<HTMLElement>;
 
-  /** @private */
+  /** @private @hidden @internal */
   @query('#wrapper')
-  @blazorSuppress()
   public wrapper!: HTMLElement;
 
   @state()
   private isFocused = false;
 
-  /** @private */
+  /** @private @hidden @internal */
   @state()
-  @blazorSuppress()
   public hasChildren = false;
 
   /** The depth of the item, relative to the root. */
   @state()
   public level = 0;
 
-  /** @private */
+  /** @private @hidden @internal */
   @state()
-  @blazorSuppress()
   public indeterminate = false;
 
   /**
@@ -422,12 +417,12 @@ export default class IgcTreeItemComponent extends LitElement {
     this.navService?.update_visible_cache(this, this.expanded, false);
   }
 
+  /* blazorSuppress */
   /**
    * Returns a collection of child items.
    * If the parameter value is true returns all tree item's direct children,
    * otherwise - only the direct children.
    */
-  @blazorSuppress()
   public getChildren(
     options: { flatten: boolean } = { flatten: false }
   ): IgcTreeItemComponent[] {
@@ -512,7 +507,10 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const ltr = this.tree ? isLTR(this.tree) : true;
+    const indicatorParts = {
+      indicator: true,
+      rtl: !(this.tree ? isLTR(this.tree) : true),
+    };
 
     return html`
       <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
@@ -523,7 +521,7 @@ export default class IgcTreeItemComponent extends LitElement {
         >
           <slot name="indentation"></slot>
         </div>
-        <div part="indicator" aria-hidden="true">
+        <div part="${partNameMap(indicatorParts)}" aria-hidden="true">
           ${this.loading
             ? html`
                 <slot name="loading">
@@ -541,11 +539,9 @@ export default class IgcTreeItemComponent extends LitElement {
                     ? html`
                         <igc-icon
                           name=${this.expanded
-                            ? 'keyboard_arrow_down'
-                            : !ltr
-                              ? 'navigate_before'
-                              : 'keyboard_arrow_right'}
-                          collection="internal"
+                            ? 'tree_collapse'
+                            : 'tree_expand'}
+                          collection="default"
                         >
                         </igc-icon>
                       `

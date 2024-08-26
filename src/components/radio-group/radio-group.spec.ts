@@ -8,7 +8,7 @@ import {
   arrowUp,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
+import { isFocused, simulateKeyboard } from '../common/utils.spec.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
 
@@ -119,61 +119,61 @@ describe('Radio Group Component', () => {
           await elementUpdated(first);
 
           validateGroupSelected(first);
-          expect(firstSpy).calledWith('igcFocus');
+          expect(isFocused(first)).to.be.true;
           expect(firstSpy).calledWith('igcChange');
 
           simulateKeyboard(first, arrowDown);
           await waitForUpdate();
 
           validateGroupSelected(second);
-          expect(firstSpy).calledWith('igcBlur');
-          expect(secondSpy).calledWith('igcFocus');
+          expect(isFocused(first)).to.be.false;
+          expect(isFocused(second)).to.be.true;
           expect(secondSpy).calledWith('igcChange');
 
           simulateKeyboard(second, arrowUp);
           await waitForUpdate();
 
           validateGroupSelected(first);
-          expect(secondSpy).to.be.calledWith('igcBlur');
-          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(isFocused(second)).to.be.false;
+          expect(isFocused(first)).to.be.true;
           expect(firstSpy).to.be.calledWith('igcChange');
 
           simulateKeyboard(first, arrowRight);
           await waitForUpdate();
 
           validateGroupSelected(second);
-          expect(firstSpy).to.be.calledWith('igcBlur');
-          expect(secondSpy).to.be.calledWith('igcFocus');
+          expect(isFocused(first)).to.be.false;
+          expect(isFocused(second)).to.be.true;
           expect(secondSpy).to.be.calledWith('igcChange');
 
           simulateKeyboard(second, arrowLeft);
           await waitForUpdate();
 
           validateGroupSelected(first);
-          expect(secondSpy).to.be.calledWith('igcBlur');
-          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(isFocused(second)).to.be.false;
+          expect(isFocused(first)).to.be.true;
           expect(firstSpy).to.be.calledWith('igcChange');
 
           simulateKeyboard(first, arrowLeft);
           await waitForUpdate();
 
           validateGroupSelected(third);
-          expect(firstSpy).to.be.calledWith('igcBlur');
-          expect(thirdSpy).to.be.calledWith('igcFocus');
+          expect(isFocused(first)).to.be.false;
+          expect(isFocused(third)).to.be.true;
           expect(thirdSpy).to.be.calledWith('igcChange');
 
           simulateKeyboard(third, arrowDown);
           await waitForUpdate();
 
           validateGroupSelected(first);
-          expect(thirdSpy).to.be.calledWith('igcBlur');
-          expect(firstSpy).to.be.calledWith('igcFocus');
+          expect(isFocused(third)).to.be.false;
+          expect(isFocused(first)).to.be.true;
           expect(firstSpy).to.be.calledWith('igcChange');
         });
 
         it('should skip disabled radios when navigating', async () => {
           const [first, second, third] = radios;
-          const [firstSpy, secondSpy, thirdSpy] = spies;
+          const [_, secondSpy, thirdSpy] = spies;
 
           second.disabled = true;
           await elementUpdated(second);
@@ -187,9 +187,9 @@ describe('Radio Group Component', () => {
           await waitForUpdate();
 
           validateGroupSelected(third);
-          expect(firstSpy).calledWith('igcBlur');
+          expect(isFocused(first)).to.be.false;
+          expect(isFocused(third)).to.be.true;
           expect(secondSpy).to.not.be.called;
-          expect(thirdSpy).calledWith('igcFocus');
           expect(thirdSpy).calledWith('igcChange');
         });
       });

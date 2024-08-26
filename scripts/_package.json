@@ -65,7 +65,7 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.0",
     "@lit-labs/virtualizer": "^2.0.10",
-    "lit": "^3.1.0"
+    "lit": "^3.2.0"
   },
   "web-types": "./web-types.json"
 }
