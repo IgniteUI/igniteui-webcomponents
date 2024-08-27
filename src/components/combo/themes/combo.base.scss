@@ -89,8 +89,8 @@
 }
 
 [part='filter-input'] {
-    padding-inline: pad-inline(4px, 8px, 16px);
-    padding-block: pad-block(8px);
+    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
+    padding-block: pad-block(rem(8px));
     z-index: 26;
 }
 

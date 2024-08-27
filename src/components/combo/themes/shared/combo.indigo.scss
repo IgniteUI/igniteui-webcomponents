@@ -62,6 +62,10 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
+[part='filter-input'] {
+    padding: pad-inline(rem(12px));
+}
+
 :host(:focus-within) {
     igc-input::part(label) {
         color: var-get($input-theme, 'focused-secondary-color');

@@ -20,7 +20,7 @@ $dropdown-theme: dropdown-theme.$fluent;
 }
 
 [part='filter-input'] {
-    padding: pad(2px, 4px, 8px);
+    padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
 [part='list-wrapper'] {
