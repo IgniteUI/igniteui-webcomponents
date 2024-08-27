@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-
-## [Unreleased]
+## [5.0.0] - 2024-08-27
+### Added
+- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
+    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
+    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Changed
 - **BREAKING**: Removed `igcFocus` and `igcBlur` events from buttons and inputs - Button, Icon Button, Checkbox, Switch, Combo, Date Time Input, Input, Mask Input, Radios, Select, Textarea.
@@ -22,7 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   input.addEventListener('focus', focusHandler);
   ```
-
 - **BREAKING**: Checkbox, Switch `igcChange` event.
 
   Before:
@@ -34,8 +36,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
-
-
 - **BREAKING**: Radio `igcChange` event.
 
   Before:
@@ -47,11 +47,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
-
-### Added
-- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
-    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
-    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Removed
 - **BREAKING**: igc-form - use the native form element instead.
@@ -74,13 +69,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [4.11.1] - 2024-07-03
 ### Changed
- - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
+- Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
 
 ## [4.11.0] - 2024-07-03
 ### Changed
- - Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
- - Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
- - Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
 
 ## [4.10.0] - 2024-07-01
 ### Added
@@ -563,6 +558,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.1...5.0.0
 [4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
 [4.11.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.10.0...4.11.0
 [4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0
