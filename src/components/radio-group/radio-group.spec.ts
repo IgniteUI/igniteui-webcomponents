@@ -262,7 +262,7 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          // The first checked member of the group takes over
+          // The last checked member of the group takes over as the default checked
           expect(last(radios).checked).to.be.true;
           expect(group.value).to.equal(last(radios).value);
 
