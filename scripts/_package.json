@@ -71,7 +71,6 @@
   "customElements": "custom-elements.json",
   "dependencies": {
     "@floating-ui/dom": "^1.6.0",
-    "@lit/react": "^1.0.0",
     "@lit-labs/virtualizer": "^2.0.10",
     "lit": "^3.2.0"
   },

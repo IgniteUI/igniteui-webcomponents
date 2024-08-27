@@ -54,7 +54,6 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.10",
     "@lit-labs/virtualizer": "^2.0.14",
-    "@lit/react": "^1.0.5",
     "lit": "^3.2.0"
   },
   "devDependencies": {
