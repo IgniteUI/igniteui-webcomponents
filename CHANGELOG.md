@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Radio - do not emit change event on already checked radio
 - Calendar - add correct dates DOM parts based on active view [[#1278](https://github.com/IgniteUI/igniteui-webcomponents/issues/1278)]
 - Date-picker, Dropdown & Select - showing the component programmatically in response to an outside click event closes the dropdown popover [#1339](https://github.com/IgniteUI/igniteui-webcomponents/issues/1339)
+- Radio - Initially checked radio by attribute throws error when not being last sibling [#1356](https://github.com/IgniteUI/igniteui-webcomponents/issues/1356)
 
 ## [4.11.1] - 2024-07-03
 ### Changed
