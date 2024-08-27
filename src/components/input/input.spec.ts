@@ -1,8 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed, simulateInput } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  isFocused,
+  simulateInput,
+} from '../common/utils.spec.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
@@ -204,32 +207,14 @@ describe('Input component', () => {
       expect(el.value).to.equal('the slow brown fox');
     });
 
-    it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = spy(el, 'emitEvent');
+    it('should have correct focus states between Light/Shadow DOM', async () => {
       el.focus();
-
-      expect(el.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(el)).to.be.true;
+      expect(isFocused(input)).to.be.true;
 
       el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
-    });
-
-    it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.focus();
-
-      expect(el.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
-
-      el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
+      expect(isFocused(el)).to.be.false;
+      expect(isFocused(input)).to.be.false;
     });
 
     it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {

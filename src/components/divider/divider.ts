@@ -53,6 +53,7 @@ export default class IgcDividerComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public middle = false;
 
+  /* alternateName: lineType */
   /**
    * Whether to render a solid or a dashed divider line.
    * @attr

@@ -43,8 +43,7 @@ class ThemeEventListeners {
 
 const _themeListeners = new ThemeEventListeners();
 
-/* blazorSuppress */
-export class ThemingController implements ReactiveController, ThemeController {
+class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
 
@@ -53,8 +52,9 @@ export class ThemingController implements ReactiveController, ThemeController {
   public onThemeChanged?: ThemeChangedCallback;
 
   constructor(host: ReactiveControllerHost & ReactiveElement, themes: Themes) {
-    this.host = host;
     this.themes = themes;
+    this.host = host;
+    this.host.addController(this);
   }
 
   public hostConnected() {
@@ -98,4 +98,11 @@ export class ThemingController implements ReactiveController, ThemeController {
     this.onThemeChanged?.call(this.host, this.theme);
     this.host.requestUpdate();
   };
+}
+
+export function createThemeController(
+  host: ReactiveControllerHost & ReactiveElement,
+  themes: Themes
+) {
+  return new ThemingController(host, themes);
 }

@@ -1,18 +1,19 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { findElementFromEventPath } from '../util.js';
 
 type RootClickControllerConfig = {
   hideCallback?: () => void;
   target?: HTMLElement;
 };
 
-type RootClickControllerHost = ReactiveControllerHost &
-  HTMLElement & {
-    open: boolean;
-    keepOpenOnOutsideClick?: boolean;
-    hide(): void;
-  };
+interface RootClickControllerHost extends ReactiveControllerHost, HTMLElement {
+  open: boolean;
+  keepOpenOnOutsideClick?: boolean;
+  hide(): void;
+}
 
-class RootClickController implements ReactiveController {
+/* blazorSuppress */
+export class RootClickController implements ReactiveController {
   constructor(
     private readonly host: RootClickControllerHost,
     private config?: RootClickControllerConfig
@@ -22,30 +23,36 @@ class RootClickController implements ReactiveController {
 
   private addEventListeners() {
     if (!this.host.keepOpenOnOutsideClick) {
-      document.addEventListener('click', this);
+      document.addEventListener('click', this, { capture: true });
     }
   }
 
   private removeEventListeners() {
-    document.removeEventListener('click', this);
+    document.removeEventListener('click', this, { capture: true });
   }
 
   private configureListeners() {
     this.host.open ? this.addEventListeners() : this.removeEventListeners();
   }
 
-  public handleEvent(event: MouseEvent) {
+  private shouldHide(event: PointerEvent) {
+    const targets = new Set<Element>([this.host]);
+
+    if (this.config?.target) {
+      targets.add(this.config.target);
+    }
+
+    return !findElementFromEventPath((node) => targets.has(node), event);
+  }
+
+  public handleEvent(event: PointerEvent) {
     if (this.host.keepOpenOnOutsideClick) {
       return;
     }
 
-    const path = event.composed ? event.composedPath() : [event.target];
-    const target = this.config?.target || null;
-    if (path.includes(this.host) || path.includes(target)) {
-      return;
+    if (this.shouldHide(event)) {
+      this.hide();
     }
-
-    this.hide();
   }
 
   private hide() {

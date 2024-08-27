@@ -10,7 +10,9 @@ import {
   getIconRegistry,
   registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
+  setIconRef as setIconRef_impl,
 } from './icon.registry.js';
+import type { IconMeta } from './registry/types.js';
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
 import { all } from './themes/themes.js';
@@ -126,6 +128,12 @@ export default class IgcIconComponent extends LitElement {
     collection = 'default'
   ) {
     registerIconFromText_impl(name, iconText, collection);
+  }
+
+  /* c8 ignore next 4 */
+  @blazorInclude()
+  protected setIconRef(name: string, collection: string, icon: IconMeta) {
+    setIconRef_impl(name, collection, icon);
   }
 }
 

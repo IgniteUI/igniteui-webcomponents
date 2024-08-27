@@ -27,8 +27,6 @@ export interface IgcMaskInputComponentEventMap extends IgcInputEventMap {}
  *
  * @fires igcInput - Emitted when the control receives user input
  * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
- * @fires igcFocus - Emitted when the control gains focus
- * @fires igcBlur - Emitted when the control loses focus
  *
  * @csspart container - The main wrapper that holds all main input elements
  * @csspart input - The native input element
@@ -157,9 +155,8 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  protected override async handleFocus() {
+  protected async handleFocus() {
     this.focused = true;
-    super.handleFocus();
 
     if (this.readOnly) {
       return;
@@ -174,11 +171,10 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  protected override handleBlur() {
+  protected handleBlur() {
     this.focused = false;
     this.updateMaskedValue();
     this.invalid = !this.checkValidity();
-    super.handleBlur();
   }
 
   protected handleChange() {

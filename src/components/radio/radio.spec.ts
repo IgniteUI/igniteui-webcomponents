@@ -8,7 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import { IgcRadioComponent, defineComponents } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
 
 describe('Radio Component', () => {
   before(() => {
@@ -175,18 +175,14 @@ describe('Radio Component', () => {
       expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
-    it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = spy(radio, 'emitEvent');
+    it('should have correct focus states between Light/Shadow DOM', () => {
       radio.focus();
-
-      expect(radio.shadowRoot?.activeElement).to.equal(input);
-      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      expect(isFocused(radio)).to.be.true;
+      expect(isFocused(input)).to.be.true;
 
       radio.blur();
-
-      expect(radio.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
+      expect(isFocused(radio)).to.be.false;
+      expect(isFocused(input)).to.be.false;
     });
 
     it('should emit igcChange event when radio is checked', async () => {
@@ -207,11 +203,11 @@ describe('Radio Component', () => {
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(2); // [igcFocus, igcChange]
+      expect(eventSpy.getCalls()).lengthOf(1);
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(2);
+      expect(eventSpy.getCalls()).lengthOf(1);
     });
 
     it('should be able to use external elements as label', async () => {

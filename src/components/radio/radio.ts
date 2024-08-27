@@ -17,7 +17,13 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
+import {
+  createCounter,
+  isLTR,
+  last,
+  partNameMap,
+  wrap,
+} from '../common/util.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -31,8 +37,11 @@ export interface RadioChangeEventArgs {
 
 export interface IgcRadioComponentEventMap {
   igcChange: CustomEvent<RadioChangeEventArgs>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
 }
 
 /**
@@ -41,11 +50,9 @@ export interface IgcRadioComponentEventMap {
  * @slot - The radio label.
  *
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
  *
  * @csspart base - The radio control base wrapper.
- * @csspart control - The radio control.
+ * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
 @themes(all)
@@ -127,7 +134,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return this._value;
   }
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* @tsTwoWayProperty(true, "igcChange", "detail.checked", false) */
   /**
    * The checked state of the control.
    * @attr
@@ -135,7 +142,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-    this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    if (this.hasUpdated) {
+      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    }
   }
 
   public get checked(): boolean {
@@ -172,9 +181,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-
-    this._checked = this === this._checkedRadios[0];
     this.updateValidity();
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this._checked && this === last(this._checkedRadios)
+      ? this._updateCheckedState()
+      : this.updateValidity();
   }
 
   /** Simulates a click on the radio control. */
@@ -277,12 +291,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleBlur() {
-    this.emitEvent('igcBlur');
     this._kbFocus.reset();
-  }
-
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
   }
 
   protected navigate(idx: number) {
@@ -325,7 +334,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
         />
         <span part=${partNameMap({ control: true, checked })}>
           <span

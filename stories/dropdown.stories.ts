@@ -359,6 +359,52 @@ export const GroupsAndHeaders: Story = {
   `,
 };
 
+function setVersion(event: Event) {
+  const input = document.querySelector<IgcInputComponent>('#versions')!;
+  const value = (event.target as IgcDropdownComponent).selectedItem?.value;
+  input.value = value?.replace(/\p{Extended_Pictographic}/gu, '') ?? '';
+}
+
+export const OpenFromInteraction: Story = {
+  render: () => html`
+    <style>
+      .version-container {
+        padding: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+    </style>
+    <p>Open the dropdown from the button on the side to choose a version</p>
+    <div class="version-container">
+      <igc-input id="versions" label="Target version" readonly outlined>
+      </igc-input>
+
+      <igc-button
+        onclick="dropdownVersions.toggle('versions'); versions.focus()"
+        >Select version</igc-button
+      >
+    </div>
+
+    <igc-dropdown
+      flip
+      same-width
+      id="dropdownVersions"
+      @igcChange=${setVersion}
+    >
+      <igc-dropdown-item disabled
+        >5.0 &lt;pending release&gt;
+      </igc-dropdown-item>
+      <igc-dropdown-item>4.11 ⭐</igc-dropdown-item>
+      <igc-dropdown-item>4.10</igc-dropdown-item>
+      <igc-dropdown-item>4.9</igc-dropdown-item>
+      <igc-dropdown-item>4.8</igc-dropdown-item>
+      <igc-dropdown-item>4.7</igc-dropdown-item>
+    </igc-dropdown>
+  `,
+};
+
 export const WithNonSlottedTarget: Story = {
   render: ({
     distance,

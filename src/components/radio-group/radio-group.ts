@@ -57,6 +57,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     return this._name;
   }
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
    * Gets/Sets the checked igc-radio element that matches `value`
    * @attr
@@ -91,6 +92,7 @@ export default class IgcRadioGroupComponent extends LitElement {
 
     if (allRadiosUnchecked && this._value) {
       this._setSelectedRadio();
+      this._setDefaultValue();
     }
   }
 
@@ -99,6 +101,12 @@ export default class IgcRadioGroupComponent extends LitElement {
       for (const radio of this._radios) {
         radio.name = this._name;
       }
+    }
+  }
+
+  private _setDefaultValue() {
+    for (const radio of this._radios) {
+      Object.assign(radio, { _defaultValue: radio.checked });
     }
   }
 

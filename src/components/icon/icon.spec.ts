@@ -1,7 +1,14 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first, last } from '../common/util.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -9,6 +16,12 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import {
+  ActionType,
+  type BroadcastIconsChangeMessage,
+  type IconMeta,
+  type SvgIcon,
+} from './registry/types.js';
 
 const bugSvgContent =
   '<title id="brbug-title">Bug Icon</title><desc id="brbug-desc">A picture showing an insect.</desc><path d="M21 9h-3.54a7.251 7.251 0 00-2.56-2.271 2.833 2.833 0 00-.2-2.015l1.007-1.007-1.414-1.414L13.286 3.3a2.906 2.906 0 00-2.572 0L9.707 2.293 8.293 3.707 9.3 4.714a2.833 2.833 0 00-.2 2.015A7.251 7.251 0 006.54 9H3v2h2.514a8.879 8.879 0 00-.454 2H3v2h2.06a8.879 8.879 0 00.454 2H3v2h3.54A6.7 6.7 0 0012 22a6.7 6.7 0 005.46-3H21v-2h-2.514a8.879 8.879 0 00.454-2H21v-2h-2.06a8.879 8.879 0 00-.454-2H21zm-10 7H9v-2h2zm0-4v-2h2v2zm4 4h-2v-2h2z"/>';
@@ -116,6 +129,173 @@ describe('Icon registry', () => {
   });
 });
 
+describe('Icon broadcast service', () => {
+  let channel: BroadcastChannel;
+  let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
+  const collectionName = 'broadcast-test';
+
+  const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
+    events.push(message);
+
+  beforeEach(async () => {
+    channel = new BroadcastChannel('ignite-ui-icon-channel');
+    channel.addEventListener('message', handler);
+  });
+
+  afterEach(async () => {
+    channel.close();
+    events = [];
+  });
+
+  function getIconFromCollection(
+    name: string,
+    collectionName: string,
+    collection: Map<string, Map<string, SvgIcon>>
+  ) {
+    return collection.get(collectionName)?.get(name);
+  }
+
+  describe('Broadcast Events', () => {
+    it('correct event state when registering an icon', async () => {
+      const iconName = 'bug';
+
+      registerIconFromText(iconName, bugSvg, collectionName);
+      await aTimeout(0);
+
+      const { actionType, collections } = first(events).data;
+      expect(actionType).to.equal(ActionType.RegisterIcon);
+      expect(collections?.has(collectionName)).to.be.true;
+      expect(
+        getIconFromCollection(iconName, collectionName, collections!)
+      ).to.eql(getIconRegistry().get(iconName, collectionName));
+    });
+
+    it('correct events state when registering several icons', async () => {
+      const icons = [
+        ['bug', bugSvg],
+        ['virus', virusSvg],
+        ['search', searchSvg],
+      ] as const;
+
+      for (const each of icons) {
+        registerIconFromText(each[0], each[1], collectionName);
+      }
+      await aTimeout(0);
+
+      expect(events).lengthOf(icons.length);
+      for (const [idx, event] of events.entries()) {
+        expect(
+          getIconFromCollection(
+            icons[idx][0],
+            collectionName,
+            event.data.collections!
+          )
+        ).to.eql(getIconRegistry().get(icons[idx][0], collectionName));
+      }
+    });
+
+    it('correct event state when setting an icon reference', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+
+      registerIconFromText('reference-test', bugSvg, collectionName);
+
+      setIconRef(refName, refCollectionName, {
+        name: 'reference-test',
+        collection: collectionName,
+      });
+      await aTimeout(0);
+
+      const { actionType, collections, references } = last(events).data;
+
+      expect(actionType).to.equal(ActionType.UpdateIconReference);
+      expect(collections).to.be.undefined;
+      expect(references?.get(refCollectionName)?.get(refName)).to.eql(
+        getIconRegistry().getIconRef(refName, refCollectionName)
+      );
+    });
+
+    it('correct event state when setting an icon reference via class', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+
+      registerIconFromText('reference-test', bugSvg, collectionName);
+      const meta = new IconMetaClass();
+      meta.name = 'reference-test';
+      meta.collection = collectionName;
+      setIconRef(refName, refCollectionName, meta);
+      await aTimeout(0);
+
+      const { actionType, collections, references } = last(events).data;
+
+      expect(actionType).to.equal(ActionType.UpdateIconReference);
+      expect(collections).to.be.undefined;
+      expect(references?.get(refCollectionName)?.get(refName)).to.eql(
+        getIconRegistry().getIconRef(refName, refCollectionName)
+      );
+    });
+
+    it('no event when setting an icon reference with external false.', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+      getIconRegistry().setIconRef({
+        alias: { name: refName, collection: refCollectionName },
+        target: {
+          name: 'reference-test',
+          collection: collectionName,
+          external: false,
+        },
+        overwrite: true,
+      });
+      await aTimeout(0);
+
+      expect(events.length).to.equal(0);
+    });
+  });
+
+  describe('Peer registry', () => {
+    it('registered icon is correctly sent when a peer requests a sync states', async () => {
+      const iconName = 'bug';
+      registerIconFromText(iconName, bugSvg, collectionName);
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(0);
+
+      expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
+
+      const { actionType, collections } = last(events).data;
+      expect(actionType).to.equal(ActionType.SyncState);
+      expect(collections).not.to.be.undefined;
+
+      expect(
+        getIconFromCollection(iconName, collectionName, collections!)
+      ).to.eql(getIconRegistry().get(iconName, collectionName));
+    });
+
+    it('non-external icons refs are not sent when a peer requests a sync states', async () => {
+      const iconName = 'internalIcon';
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+      getIconRegistry().setIconRef({
+        alias: { name: refName, collection: refCollectionName },
+        target: { name: iconName, collection: collectionName, external: false },
+        overwrite: true,
+      });
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(0);
+
+      expect(events).lengthOf(1); // [ActionType.SyncState]
+
+      const { actionType, references } = last(events).data;
+      expect(actionType).to.equal(ActionType.SyncState);
+      expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
+    });
+  });
+});
+
 describe('Icon component', () => {
   before(() => {
     defineComponents(IgcIconComponent);
@@ -189,4 +369,21 @@ function verifySvg(icon: IgcIconComponent, svgContent: string) {
   const svg = icon.shadowRoot?.querySelector('svg');
   expect(svg).to.exist;
   expect(svg).lightDom.to.equal(svgContent);
+}
+
+class IconMetaClass implements IconMeta {
+  private _name?: string;
+  get name(): string {
+    return this._name || '';
+  }
+  set name(value: string) {
+    this._name = value;
+  }
+  private _collection?: string;
+  get collection(): string {
+    return this._collection || '';
+  }
+  set collection(value: string) {
+    this._collection = value;
+  }
 }

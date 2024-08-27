@@ -23,6 +23,10 @@ export function numberInRangeInclusive(
   return value >= min && value <= max;
 }
 
+export function sameObject(a: object, b: object) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  *
  * Returns an element's offset relative to its parent. Similar to element.offsetTop and element.offsetLeft, except the

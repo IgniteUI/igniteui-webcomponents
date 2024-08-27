@@ -10,7 +10,7 @@ import {
   getWeekDayNumber,
 } from './helpers.js';
 import { CalendarDay } from './model.js';
-import type { DateRangeDescriptor } from './types.js';
+import type { DateRangeDescriptor, WeekDays } from './types.js';
 
 @blazorIndirectRender
 @blazorDeepImport
@@ -117,14 +117,7 @@ export class IgcCalendarBaseComponent extends LitElement {
    * @attr week-start
    */
   @property({ attribute: 'week-start' })
-  public weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday' = 'sunday';
+  public weekStart: WeekDays = 'sunday';
 
   /**
    * Gets/Sets the locale used for formatting and displaying the dates in the component.

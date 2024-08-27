@@ -251,10 +251,10 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       }
     }
 
-    protected handleInvalid = (event: Event) => {
+    protected handleInvalid(event: Event) {
       event.preventDefault();
       this.invalid = true;
-    };
+    }
 
     protected setFormValue(
       value: string | File | FormData | null,

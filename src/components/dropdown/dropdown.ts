@@ -15,7 +15,6 @@ import {
   homeKey,
   tabKey,
 } from '../common/controllers/key-bindings.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
@@ -92,10 +91,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   private _keyBindings: ReturnType<typeof addKeybindings>;
 
   private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: this.handleClosing,
-  });
-
-  private _rootClickController = addRootClickHandler(this, {
     hideCallback: this.handleClosing,
   });
 
@@ -201,6 +196,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    this._rootClickController.update({ hideCallback: this.handleClosing });
 
     this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,
