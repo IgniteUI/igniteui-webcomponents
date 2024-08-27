@@ -78,7 +78,7 @@
     "custom-element-jet-brains-integration": "^1.6.2",
     "custom-element-vs-code-integration": "^1.4.1",
     "globby": "^14.0.2",
-    "husky": "^9.1.4",
+    "husky": "^9.1.5",
     "ig-typedoc-theme": "^5.0.4",
     "igniteui-theming": "^12.0.0-beta.2",
     "keep-a-changelog": "^2.5.3",
@@ -97,13 +97,13 @@
     "stylelint": "^16.8.2",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.2",
-    "stylelint-scss": "^6.5.0",
+    "stylelint-scss": "^6.5.1",
     "ts-lit-plugin": "^2.0.2",
-    "tslib": "^2.6.3",
+    "tslib": "^2.7.0",
     "typedoc": "^0.26.6",
     "typedoc-plugin-localization": "^3.0.5",
     "typescript": "^5.5.4",
-    "vite": "^5.4.1"
+    "vite": "^5.4.2"
   },
   "lint-staged": {
     "*.{js,ts,cjs,mjs,jsx,tsx}": [
