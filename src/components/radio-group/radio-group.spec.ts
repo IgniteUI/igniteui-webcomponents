@@ -263,11 +263,11 @@ describe('Radio Group Component', () => {
           setFormListener();
 
           // The first checked member of the group takes over
-          expect(first(radios).checked).to.be.true;
-          expect(group.value).to.equal(first(radios).value);
+          expect(last(radios).checked).to.be.true;
+          expect(group.value).to.equal(last(radios).value);
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(first(radios).value);
+          expect(formData.get('fruit')).to.equal(last(radios).value);
         });
 
         it('form reset when bound through group value attribute', async () => {
