@@ -17,7 +17,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { noop, partNameMap } from '../common/util.js';
-import type { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -34,8 +33,11 @@ export interface IgcDateTimeInputComponentEventMap {
   igcChange: CustomEvent<Date | null>;
   /* alternateName: inputOcurred */
   igcInput: CustomEvent<string>;
-  igcBlur: CustomEvent<void>;
-  igcFocus: CustomEvent<void>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
 }
 
 const converter: ComplexAttributeConverter<Date | null> = {

@@ -5,6 +5,7 @@ import { rimraf } from 'rimraf';
 
 const ignored = [
   'igc-popover',
+  'igc-focus-trap',
   'igc-days-view',
   'igc-months-view',
   'igc-years-view',
