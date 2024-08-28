@@ -17,7 +17,13 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
+import {
+  createCounter,
+  isLTR,
+  last,
+  partNameMap,
+  wrap,
+} from '../common/util.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -134,7 +140,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-    this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    if (this.hasUpdated) {
+      this._checked ? this._updateCheckedState() : this._updateUncheckedState();
+    }
   }
 
   public get checked(): boolean {
@@ -171,9 +179,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-
-    this._checked = this === this._checkedRadios[0];
     this.updateValidity();
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this._checked && this === last(this._checkedRadios)
+      ? this._updateCheckedState()
+      : this.updateValidity();
   }
 
   /** Simulates a click on the radio control. */
