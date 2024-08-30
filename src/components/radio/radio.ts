@@ -118,7 +118,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override setDefaultValue(): void {
-    this._defaultValue = this === this._checkedRadios[0];
+    this._defaultValue = this === last(this._checkedRadios);
   }
 
   /**
