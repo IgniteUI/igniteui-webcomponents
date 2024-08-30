@@ -4,10 +4,5 @@
 @use 'igniteui-theming/sass/elevations/presets' as *;
 
 @mixin root-styles($palette, $variant) {
-    :root {
-        --ig-scrollbar-thumb-background: #{color($color: gray, $variant: 400)};
-        --ig-scrollbar-track-background: #{color($color: gray, $variant: 200)};
-    }
-
     @include theme($palette, $indigo-elevations, $typeface, $type-scale, $variant);
 }
