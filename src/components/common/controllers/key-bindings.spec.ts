@@ -21,6 +21,7 @@ describe('Key bindings controller', () => {
   let instance: LitElement & {
     key: string;
     event: KeyboardEvent;
+    input: HTMLInputElement;
   };
 
   before(() => {
@@ -28,6 +29,10 @@ describe('Key bindings controller', () => {
       class extends LitElement {
         public key?: string;
         public event?: KeyboardEvent;
+
+        public get input() {
+          return this.renderRoot.querySelector('input')!;
+        }
 
         constructor() {
           super();
@@ -38,9 +43,15 @@ describe('Key bindings controller', () => {
             .set('a', this.handleKeyboardEvent, { triggers: ['keydown'] })
             .set('s', this.handleKeyboardEvent, { triggers: ['keyup'] })
             .set('k', this.handleKeyboardEvent)
-            .set('d', this.handleKeyboardEvent, { preventDefault: true })
+            .set('d', this.handleKeyboardEvent, {
+              triggers: ['keydown', 'keyup'],
+              preventDefault: true,
+              stopPropagation: true,
+            })
             .set([shiftKey, 'c'], this.handleKeyboardEvent)
             .set([shiftKey, altKey, arrowUp], this.handleKeyboardEvent);
+
+          addKeybindings(this).set('x', this.handleKeyboardEvent);
         }
 
         private handleKeyboardEvent(event: KeyboardEvent) {
@@ -49,7 +60,7 @@ describe('Key bindings controller', () => {
         }
 
         protected override render() {
-          return html``;
+          return html`<input />`;
         }
       }
     );
@@ -97,7 +108,13 @@ describe('Key bindings controller', () => {
     });
   });
 
-  it('should honor skip condition', async () => {
+  it('should honor default skip condition', () => {
+    simulateKeyboard(instance.input, 'x');
+    expect(instance.key).to.be.undefined;
+    expect(instance.event).to.be.undefined;
+  });
+
+  it('should honor skip condition', () => {
     instance.hidden = true;
 
     simulateKeyboard(instance, 'k');
@@ -105,19 +122,38 @@ describe('Key bindings controller', () => {
     expect(instance.event).to.be.undefined;
   });
 
-  it('event handler modifiers', async () => {
+  it('event handler modifiers - prevent default', () => {
     dispatch(instance, 'keydown', 'd');
+    expect(instance.event.type).to.equal('keydown');
+    expect(instance.event.defaultPrevented).to.be.true;
+
+    dispatch(instance, 'keyup', 'd');
+    expect(instance.event.type).to.equal('keyup');
     expect(instance.event.defaultPrevented).to.be.true;
   });
 
-  it('activation keys', async () => {
+  it('event handler modifiers - stop propagation', () => {
+    let parentHandlerCalled = false;
+    const handler = () => {
+      parentHandlerCalled = true;
+    };
+    const container = instance.parentElement!;
+    container.addEventListener('keydown', handler, { once: true });
+    container.addEventListener('keyup', handler, { once: true });
+
+    simulateKeyboard(instance, 'd');
+    expect(parentHandlerCalled).to.be.false;
+    expect(instance.key).to.equal('d');
+  });
+
+  it('activation keys', () => {
     for (const key of [enterKey, spaceBar]) {
       simulateKeyboard(instance, key);
       expect(instance.key).to.equal(key.toLowerCase());
     }
   });
 
-  it('combinations', async () => {
+  it('combinations', () => {
     simulateKeyboard(instance, shiftKey);
     expect(instance.key).to.be.undefined;
 
