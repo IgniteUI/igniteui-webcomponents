@@ -80,16 +80,22 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export type * from './components/types.js';
+export type {
+  RangeTextSelectMode,
+  SelectionRangeDirection,
+  StyleVariant,
+} from './components/types.js';
 export type {
   DateRangeDescriptor,
   WeekDays,
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
+export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export type {
   DatePart,
   DatePartDeltas,
 } from './components/date-time-input/date-util.js';
+export type { RadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
   IgcActiveStepChangingArgs,
