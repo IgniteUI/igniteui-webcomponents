@@ -1,0 +1,16 @@
+@mixin ig-scrollbar($track-size, $track-bg, $thumb-bg) {
+    // Firefox only
+    scrollbar-width: $track-size;
+    scrollbar-color: $thumb-bg $track-bg;
+
+    // Chromium only
+    ::-webkit-scrollbar {
+        width: $track-size;
+        height: $track-size;
+        background: $track-bg;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: $thumb-bg;
+    }
+}
