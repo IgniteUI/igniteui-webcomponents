@@ -4,8 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.0.1] - 2024-08-30
+### Added
+- Checkbox, Radio, Switch - Exported the `CheckboxChangeEventArgs` and `RadioChangeEventArgs` types for public use, providing more flexibility and control over event handling.
 
-## [Unreleased]
+### Fixed
+- Select - Resolved an issue where pressing the Tab key while a Select component's dropdown was open would incorrectly return focus to the document. Now, focus is correctly returned to the Select component after closing the dropdown.
+- Radio - Prevented form submission if a Radio component/group is invalid on initial render within a form context. This ensures that forms with invalid Radio components are not submitted prematurely.
+
+## [5.0.0] - 2024-08-27
+### Added
+- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
+    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
+    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Changed
 - **BREAKING**: Removed `igcFocus` and `igcBlur` events from buttons and inputs - Button, Icon Button, Checkbox, Switch, Combo, Date Time Input, Input, Mask Input, Radios, Select, Textarea.
@@ -22,7 +33,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   input.addEventListener('focus', focusHandler);
   ```
-
 - **BREAKING**: Checkbox, Switch `igcChange` event.
 
   Before:
@@ -34,8 +44,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
-
-
 - **BREAKING**: Radio `igcChange` event.
 
   Before:
@@ -47,11 +55,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ```ts
   CustomEvent<{ checked: boolean; value: string | undefined }>
   ```
-
-### Added
-- Icon Registry [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304)
-    - You can now register and replace icons by reference via the `setIconRef` function. To learn more check out the [documentation](https://www.infragistics.com/webcomponentssite/components/layouts/icon#icon-references).
-    - All components now use icons by reference internally so that it's easy to replace them without explicitly providing custom templates.
 
 ### Removed
 - **BREAKING**: igc-form - use the native form element instead.
@@ -70,16 +73,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Radio - do not emit change event on already checked radio
 - Calendar - add correct dates DOM parts based on active view [[#1278](https://github.com/IgniteUI/igniteui-webcomponents/issues/1278)]
 - Date-picker, Dropdown & Select - showing the component programmatically in response to an outside click event closes the dropdown popover [#1339](https://github.com/IgniteUI/igniteui-webcomponents/issues/1339)
+- Radio - Initially checked radio by attribute throws error when not being last sibling [#1356](https://github.com/IgniteUI/igniteui-webcomponents/issues/1356)
 
 ## [4.11.1] - 2024-07-03
 ### Changed
- - Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
+- Stepper Design in vertical mode [#1246](https://github.com/IgniteUI/igniteui-webcomponents/issues/1246)
 
 ## [4.11.0] - 2024-07-03
 ### Changed
- - Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
- - Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
- - Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Toast Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Rating Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
+- Stepper Component Indigo Theme [#1249](https://github.com/IgniteUI/igniteui-webcomponents/pull/1249)
 
 ## [4.10.0] - 2024-07-01
 ### Added
@@ -562,6 +566,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.0...5.0.1
+[5.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.1...5.0.0
 [4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
 [4.11.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.10.0...4.11.0
 [4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0

@@ -77,20 +77,25 @@ class IconsRegistry {
     const reference = this.references.getOrCreate(alias.collection);
 
     if (overwrite) {
-      reference.set(alias.name, { ...target });
+      reference.set(alias.name, {
+        name: target.name,
+        collection: target.collection,
+        external: target.external,
+      });
       this.notifyAll(alias.name, alias.collection);
     }
+    if (target.external) {
+      const refs = createIconDefaultMap<string, IconMeta>();
+      refs.getOrCreate(alias.collection).set(alias.name, {
+        name: target.name,
+        collection: target.collection,
+      });
 
-    const refs = createIconDefaultMap<string, IconMeta>();
-    refs.getOrCreate(alias.collection).set(alias.name, {
-      name: target.name,
-      collection: target.collection,
-    });
-
-    this.broadcast.send({
-      actionType: ActionType.UpdateIconReference,
-      references: refs.toMap(),
-    });
+      this.broadcast.send({
+        actionType: ActionType.UpdateIconReference,
+        references: refs.toMap(),
+      });
+    }
   }
 
   public getIconRef(name: string, collection: string): IconMeta {
@@ -153,7 +158,11 @@ export function registerIconFromText(
 export function setIconRef(name: string, collection: string, icon: IconMeta) {
   getIconRegistry().setIconRef({
     alias: { name, collection },
-    target: { ...icon, external: true },
+    target: {
+      name: icon.name,
+      collection: icon.collection,
+      external: true,
+    },
     overwrite: true,
   });
 }
