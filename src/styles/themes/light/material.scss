@@ -1,6 +1,4 @@
 @use 'igniteui-theming/sass/color/presets/light/material' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/light/scrollbar' as *;
 @use '../base/material' as base;
-@use '../base/scrollbars' as *;
-@include ig-scrollbar-vars($material-scrollbar);
+@use '../base/scrollbars';
 @include base.root-styles($palette, 'light');
