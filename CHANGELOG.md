@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Carousel component [#1226](https://github.com/IgniteUI/igniteui-webcomponents/issues/1226)
+
 ## [5.0.1] - 2024-08-30
 ### Added
 - Checkbox, Radio, Switch - Exported the `CheckboxChangeEventArgs` and `RadioChangeEventArgs` types for public use, providing more flexibility and control over event handling.
