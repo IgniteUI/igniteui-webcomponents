@@ -44,6 +44,7 @@ $fs: rem(16px) !default;
 input:placeholder-shown + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
     @extend %label;
+    @include type-style('caption');
 }
 
 [part~='input'] {
@@ -55,7 +56,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='label'] {
-    @include type-style('caption');
+    @include type-style('bidy-1');
 
     color: var-get($theme, 'idle-secondary-color');
     transition:
@@ -138,6 +139,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:focus-within) {
     [part='label'] {
         @extend %label;
+        @include type-style('caption');
 
         color: var-get($theme, 'focused-secondary-color');
     }

@@ -42,6 +42,7 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
         @include type-style('subtitle-2');
 
         color: var-get($theme, 'idle-secondary-color');
+        margin-block-end: rem(5px);
     }
 
     [part^='container'] {
