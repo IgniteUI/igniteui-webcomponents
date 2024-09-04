@@ -86,11 +86,11 @@
     "madge": "^8.0.0",
     "node-watch": "^0.7.4",
     "playwright": "^1.46.1",
-    "postcss": "^8.4.44",
+    "postcss": "^8.4.45",
     "prettier": "^3.3.3",
     "rimraf": "^5.0.10",
-    "sass": "^1.77.8",
-    "sass-embedded": "^1.77.8",
+    "sass": "^1.78.0",
+    "sass-embedded": "^1.78.0",
     "sinon": "^18.0.0",
     "storybook": "^8.2.9",
     "stylelint": "^16.9.0",
@@ -102,7 +102,7 @@
     "typedoc": "^0.26.6",
     "typedoc-plugin-localization": "^3.0.5",
     "typescript": "^5.5.4",
-    "vite": "^5.4.2"
+    "vite": "^5.4.3"
   },
   "browserslist": [
     "defaults"
