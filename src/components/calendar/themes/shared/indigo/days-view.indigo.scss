@@ -281,18 +281,22 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
                 color: var-get($theme, 'date-special-hover-foreground');
                 background: var-get($theme, 'date-selected-current-range-hover-background');
 
+                /* stylelint-disable max-nesting-depth */
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
                 }
+                /* stylelint-enable */
             }
 
             &:focus {
                 color: var-get($theme, 'date-special-focus-foreground');
                 background: var-get($theme, 'date-selected-current-range-focus-background');
 
+                /* stylelint-disable max-nesting-depth */
                 &::after {
                     border-color: var-get($theme, 'date-special-hover-border-color');
                 }
+                /* stylelint-enable */
             }
 
             &::after {
