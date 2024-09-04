@@ -56,7 +56,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='label'] {
-    @include type-style('bidy-1');
+    @include type-style('subtitle-1');
 
     color: var-get($theme, 'idle-secondary-color');
     transition:
