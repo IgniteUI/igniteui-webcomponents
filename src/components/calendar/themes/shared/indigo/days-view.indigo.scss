@@ -235,11 +235,13 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             &:hover {
                 color: var-get($theme, 'date-selected-current-hover-foreground');
                 background: var-get($theme, 'date-selected-current-hover-background');
+                border-color: var-get($theme, 'date-current-hover-border-color');
             }
 
             &:focus {
                 color: var-get($theme, 'date-selected-current-focus-foreground');
                 background: var-get($theme, 'date-selected-current-focus-background');
+                border-color: var-get($theme, 'date-current-focus-border-color');
             }
 
             &::after {
