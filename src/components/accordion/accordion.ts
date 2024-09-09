@@ -11,6 +11,7 @@ import {
   shiftKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { ssrAddEventListener } from '../common/util.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
@@ -59,7 +60,7 @@ export default class IgcAccordionComponent extends LitElement {
   constructor() {
     super();
 
-    this.addEventListener('igcOpening', this.handlePanelOpening);
+    ssrAddEventListener(this, 'igcOpening', this.handlePanelOpening);
 
     addKeybindings(this, {
       skip: this.skipKeybinding,

@@ -1,3 +1,5 @@
+import { isServer } from 'lit';
+
 export interface PartNameInfo {
   readonly [name: string]: string | boolean | number;
 }
@@ -254,5 +256,15 @@ export function* chunk<T>(arr: T[], size: number) {
   }
   for (let i = 0; i < arr.length; i += size) {
     yield arr.slice(i, i + size);
+  }
+}
+
+export function ssrAddEventListener(
+  element: Element,
+  type: string,
+  handler: (event: Event) => unknown
+) {
+  if (!isServer) {
+    element.addEventListener(type, handler);
   }
 }
