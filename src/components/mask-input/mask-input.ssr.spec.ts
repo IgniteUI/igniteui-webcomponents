@@ -7,23 +7,17 @@ import {
 
 import { html } from 'lit';
 import { isSsrRendered, isSsrStyled } from '../common/utils.spec.js';
-import type IgcListComponent from './list.js';
+import type IgcMaskInputComponent from './mask-input.js';
 
 afterEach(() => cleanupFixtures());
 
-const template = html`
-  <igc-list>
-    <igc-list-header>Header</igc-list-header>
-    <igc-list-item>1</igc-list-item>
-    <igc-list-item>2</igc-list-item>
-  </igc-list>
-`;
+const template = html`<igc-mask-input value="123"></igc-mask-input>`;
 
 for (const fixture of [csrFixture, ssrHydratedFixture, ssrNonHydratedFixture]) {
-  describe(`[${fixture.name}] - igc-list`, () => {
+  describe(`[${fixture.name}] - igc-mask-input`, () => {
     it('renders as expected', async () => {
-      const element = await fixture<IgcListComponent>(template, {
-        modules: ['./list-auto-register.js'],
+      const element = await fixture<IgcMaskInputComponent>(template, {
+        modules: ['./mask-input-auto-register.js'],
       });
 
       isSsrRendered(element);
