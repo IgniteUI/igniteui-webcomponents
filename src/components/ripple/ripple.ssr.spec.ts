@@ -24,7 +24,7 @@ for (const fixture of [csrFixture, ssrHydratedFixture, ssrNonHydratedFixture]) {
       const element = await fixture<IgcRippleComponent>(template, {
         modules: [
           './ripple-auto-register.js',
-          '../button/button-auto-register.ts',
+          '../button/button-auto-register.js',
         ],
       });
 
