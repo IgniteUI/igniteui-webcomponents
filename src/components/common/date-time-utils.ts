@@ -104,21 +104,21 @@ const TokenToIntlOption = new Map(
     aaaaa: 'narrow',
   })
 );
-type PredefinedValue = NonNullable<Intl.DateTimeFormatOptions['dateStyle']>;
-const PredefinedMap = new Map<string, PredefinedValue>(
+
+const PreDefined = new Map<string, Intl.DateTimeFormatOptions>(
   Object.entries({
-    short: 'short',
-    medium: 'medium',
-    long: 'long',
-    full: 'full',
-    shortDate: 'short',
-    mediumDate: 'medium',
-    longDate: 'long',
-    fullDate: 'full',
-    shortTime: 'short',
-    mediumTime: 'medium',
-    longTime: 'long',
-    fullTime: 'full',
+    short: { dateStyle: 'short', timeStyle: 'short' },
+    medium: { dateStyle: 'medium', timeStyle: 'medium' },
+    long: { dateStyle: 'long', timeStyle: 'long' },
+    full: { dateStyle: 'full', timeStyle: 'full' },
+    shortDate: { dateStyle: 'short' },
+    mediumDate: { dateStyle: 'medium' },
+    longDate: { dateStyle: 'long' },
+    fullDate: { dateStyle: 'full' },
+    shortTime: { timeStyle: 'short' },
+    mediumTime: { timeStyle: 'medium' },
+    longTime: { timeStyle: 'long' },
+    fullTime: { timeStyle: 'full' },
   })
 );
 
@@ -172,20 +172,7 @@ type FormatDateOptions = {
 
 function formatPreDefined(date: Date, config: FormatDateOptions) {
   const { locale = 'en', format } = config;
-  const options: Intl.DateTimeFormatOptions = {};
-  const value = PredefinedMap.get(format)!;
-  const match = /(?<date>date)|(?<time>time)/i.exec(value);
-
-  if (!match) {
-    options.dateStyle = value;
-    options.timeStyle = value;
-  } else if (match.groups?.date) {
-    options.dateStyle = value;
-  } else {
-    options.timeStyle = value;
-  }
-
-  return getFormatter(locale, options).format(date);
+  return getFormatter(locale, PreDefined.get(format) ?? {}).format(date);
 }
 
 export function formatDate(
@@ -195,7 +182,7 @@ export function formatDate(
     locale: 'en',
   }
 ) {
-  if (PredefinedMap.has(config.format)) {
+  if (PreDefined.has(config.format)) {
     return formatPreDefined(date, config);
   }
 
