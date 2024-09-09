@@ -426,7 +426,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private onTabKey(event: KeyboardEvent) {
     if (this.open) {
       event.preventDefault();
-      this._selectItem(this._activeItem);
+      this._selectItem(this._activeItem ?? this._selectedItem);
       this._hide(true);
     }
   }
@@ -472,13 +472,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return null;
     }
 
-    const items = this.items;
-    const [previous, current] = [
-      items.indexOf(this._selectedItem!),
-      items.indexOf(item),
-    ];
+    const shouldFocus = emit && this.open;
+    const shouldHide = emit && !this.keepOpenOnSelect;
 
-    if (previous === current) {
+    if (this._selectedItem === item) {
+      if (shouldFocus) this.input.focus();
       return this._selectedItem;
     }
 
@@ -487,8 +485,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._updateValue(newItem.value);
 
     if (emit) this.handleChange(newItem);
-    if (emit && this.open) this.input.focus();
-    if (emit && !this.keepOpenOnSelect) this._hide(true);
+    if (shouldFocus) this.input.focus();
+    if (shouldHide) this._hide(true);
 
     return this._selectedItem;
   }
@@ -534,7 +532,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /** Removes focus from the component. */
   public override blur() {
     this.input.blur();
-    super.blur();
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
