@@ -17,7 +17,7 @@ for (const fixture of [csrFixture, ssrHydratedFixture, ssrNonHydratedFixture]) {
       const element = await fixture<IgcInputComponent>(
         html`<igc-input value="Hello world"></igc-input>`,
         {
-          modules: ['./input.js'],
+          modules: ['./input-auto-register.js'],
         }
       );
 
