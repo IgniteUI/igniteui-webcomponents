@@ -1,4 +1,5 @@
 import { playwrightLauncher } from '@web/test-runner-playwright';
+import { litSsrPlugin } from '@lit-labs/testing/web-test-runner-ssr-plugin.js';
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   files: ['dist/**/*.spec.js'],
@@ -15,6 +16,8 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   coverageConfig: {
     exclude: ['node_modules/**/*', '**/themes/**'],
   },
+
+  plugins: [litSsrPlugin()],
 
   // See documentation for all available options
   // https://modern-web.dev/docs/test-runner/cli-and-configuration/#configuration-file
