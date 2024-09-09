@@ -5,8 +5,8 @@ import {
   ssrNonHydratedFixture,
 } from '@lit-labs/testing/fixtures.js';
 
-import { expect } from '@open-wc/testing';
 import { html } from 'lit';
+import { isSsrRendered, isSsrStyled } from '../common/utils.spec.js';
 import type IgcInputComponent from './input.js';
 
 afterEach(() => cleanupFixtures());
@@ -21,8 +21,8 @@ for (const fixture of [csrFixture, ssrHydratedFixture, ssrNonHydratedFixture]) {
         }
       );
 
-      expect(element).not.to.be.undefined;
-      expect(element.shadowRoot).not.to.be.null;
+      isSsrRendered(element);
+      isSsrStyled(element);
     });
   });
 }
