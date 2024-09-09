@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, ssrAddEventListener } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -355,7 +355,7 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    this.addEventListener('blur', () => {
+    ssrAddEventListener(this, 'blur', () => {
       const { selected } = this.selectionController;
 
       if (selected.size === 0) {
@@ -366,9 +366,13 @@ export default class IgcComboComponent<
       this.invalid = !this.checkValidity();
     });
 
-    this.addEventListener(
+    // TODO: Fix types
+    ssrAddEventListener(
+      this,
       'keydown',
-      this.navigationController.navigateHost.bind(this.navigationController)
+      this.navigationController.navigateHost.bind(
+        this.navigationController
+      ) as any
     );
   }
 
