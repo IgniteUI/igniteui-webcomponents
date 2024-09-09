@@ -1,5 +1,5 @@
 // NOTE: Self-registering import for SSR fixtures.
-import Component from './input.js';
+import Component from './avatar.js';
 Component.register();
 
 export default Component;
