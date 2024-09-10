@@ -11,7 +11,10 @@ import type IgcIconComponent from './icon.js';
 
 afterEach(() => cleanupFixtures());
 
-const template = html`<igc-icon name="icon" collection="icons"></igc-icon>`;
+const template = html`
+  <igc-icon name="input_clear" collection="default" aria-hidden="true">
+  </igc-icon>
+`;
 
 for (const fixture of [csrFixture, ssrHydratedFixture, ssrNonHydratedFixture]) {
   describe(`[${fixture.name}] - igc-icon`, () => {
