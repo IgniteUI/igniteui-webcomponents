@@ -16,19 +16,19 @@ type ThemeImport = { styles: CSSResult };
 const themes = import.meta.glob<ThemeImport>(
   '../src/styles/themes/**/*.css.ts',
   {
-    query: '?inline',
+    eager: true,
+    import: 'styles',
   }
 );
 
-const getTheme = async ({ theme, variant }) => {
+const getTheme = ({ theme, variant }) => {
   const matcher = `../src/styles/themes/${variant}/${theme}.css.ts`;
 
-  const [_, resolver] = Object.entries(themes).find(([path]) => {
-    return path.match(matcher);
-  })!;
-
-  const stylesheet = await resolver();
-  return stylesheet.styles.toString();
+  for (const [path, styles] of Object.entries(themes)) {
+    if (path === matcher) {
+      return styles;
+    }
+  }
 };
 
 const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
