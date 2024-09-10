@@ -15,7 +15,12 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  partNameMap,
+  ssrAddEventListener,
+} from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
@@ -270,10 +275,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
-    this.addEventListener('focus', () => {
+    ssrAddEventListener(this, 'focus', () => {
       this._dirty = true;
     });
-    this.addEventListener('blur', () => {
+    ssrAddEventListener(this, 'blur', () => {
       this.updateValidity();
       this.setInvalidState();
     });
@@ -291,7 +296,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   public override disconnectedCallback(): void {
-    this.observer.disconnect();
+    this.observer?.disconnect();
     super.disconnectedCallback();
   }
 
