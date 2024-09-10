@@ -164,7 +164,9 @@ export function* iterNodes<T = Node>(
 }
 
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
-  return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  return isServer
+    ? null
+    : (root.getRootNode() as Document | ShadowRoot).getElementById(id);
 }
 
 export function isElement(node: unknown): node is Element {
