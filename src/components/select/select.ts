@@ -37,7 +37,11 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { findElementFromEventPath, partNameMap } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  partNameMap,
+  ssrAddEventListener,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
@@ -291,9 +295,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(spaceBar, this.onSpaceBarKey)
       .set(enterKey, this.onEnterKey);
 
-    this.addEventListener('keydown', this.handleSearch);
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    ssrAddEventListener(this, 'keydown', this.handleSearch);
+    ssrAddEventListener(this, 'focusin', this.handleFocusIn);
+    ssrAddEventListener(this, 'focusout', this.handleFocusOut);
   }
 
   protected override createRenderRoot() {
