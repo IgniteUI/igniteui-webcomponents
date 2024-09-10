@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { registerComponent } from '../common/definitions/register.js';
-import { isDefined } from '../common/util.js';
+import { isDefined, ssrAddEventListener } from '../common/util.js';
 
 /* blazorSuppress */
 /**
@@ -49,8 +49,8 @@ export default class IgcFocusTrapComponent extends LitElement {
   constructor() {
     super();
 
-    this.addEventListener('focusin', this.onFocusIn);
-    this.addEventListener('focusout', this.onFocusOut);
+    ssrAddEventListener(this, 'focusin', this.onFocusIn);
+    ssrAddEventListener(this, 'focusout', this.onFocusOut);
   }
 
   private onFocusIn() {

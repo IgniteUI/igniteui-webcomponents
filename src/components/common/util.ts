@@ -259,12 +259,18 @@ export function* chunk<T>(arr: T[], size: number) {
   }
 }
 
-export function ssrAddEventListener(
+/**
+ * Skips adding event listeners in SSR environments.
+ */
+export function ssrAddEventListener<T = Event>(
   element: Element,
-  type: string,
-  handler: (event: Event) => unknown
+  type: keyof HTMLElementEventMap,
+  handler: (event: T) => unknown
 ) {
   if (!isServer) {
-    element.addEventListener(type, handler);
+    element.addEventListener(
+      type,
+      handler as EventListenerOrEventListenerObject
+    );
   }
 }

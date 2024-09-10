@@ -60,7 +60,7 @@ export default class IgcAccordionComponent extends LitElement {
   constructor() {
     super();
 
-    ssrAddEventListener(this, 'igcOpening', this.handlePanelOpening);
+    ssrAddEventListener(this, 'igcOpening' as any, this.handlePanelOpening);
 
     addKeybindings(this, {
       skip: this.skipKeybinding,

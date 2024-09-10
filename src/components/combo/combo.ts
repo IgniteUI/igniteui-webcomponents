@@ -366,13 +366,10 @@ export default class IgcComboComponent<
       this.invalid = !this.checkValidity();
     });
 
-    // TODO: Fix types
     ssrAddEventListener(
       this,
       'keydown',
-      this.navigationController.navigateHost.bind(
-        this.navigationController
-      ) as any
+      this.navigationController.navigateHost.bind(this.navigationController)
     );
   }
 
