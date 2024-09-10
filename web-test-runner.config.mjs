@@ -14,7 +14,12 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   },
 
   coverageConfig: {
-    exclude: ['node_modules/**/*', '**/themes/**'],
+    exclude: [
+      'node_modules/**/*',
+      '**/themes/**',
+      '**/*auto-register.js',
+      '**/*.css.js',
+    ],
   },
 
   plugins: [litSsrPlugin()],
