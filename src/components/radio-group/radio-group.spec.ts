@@ -300,6 +300,31 @@ describe('Radio Group Component', () => {
           expect(first(radios).checked).to.be.true;
           expect(group.value).to.equal(first(radios).value);
         });
+
+        it('form reset with multiple checked radios', async () => {
+          form = await fixture(html`
+            <form>
+              <igc-radio-group name="fruit">
+                <igc-radio value="apple" checked>Apple</igc-radio>
+                <igc-radio value="banana" checked>Banana</igc-radio>
+                <igc-radio value="orange" checked>Orange</igc-radio>
+              </igc-radio-group>
+            </form>
+          `);
+          group = form.querySelector(IgcRadioGroupComponent.tagName)!;
+          radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
+          setFormListener();
+
+          expect(first(radios).checked).to.be.false;
+          expect(last(radios).checked).to.be.true;
+
+          first(radios).click();
+          expect(first(radios).checked).to.be.true;
+
+          form.reset();
+          expect(first(radios).checked).to.be.false;
+          expect(last(radios).checked).to.be.true;
+        });
       });
 
       describe('Validation state', () => {

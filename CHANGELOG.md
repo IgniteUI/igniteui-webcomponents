@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.0.1] - 2024-08-30
+### Added
+- Checkbox, Radio, Switch - Exported the `CheckboxChangeEventArgs` and `RadioChangeEventArgs` types for public use, providing more flexibility and control over event handling.
+
 ### Fixed
-- Select - pressing Tab key in an opened Select now correctly returns focus back to the component after closing the dropdown
+- Select - Resolved an issue where pressing the Tab key while a Select component's dropdown was open would incorrectly return focus to the document. Now, focus is correctly returned to the Select component after closing the dropdown.
+- Radio - Prevented form submission if a Radio component/group is invalid on initial render within a form context. This ensures that forms with invalid Radio components are not submitted prematurely.
 
 ## [5.0.0] - 2024-08-27
 ### Added
@@ -562,6 +566,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.1...5.0.0
 [4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
 [4.11.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.10.0...4.11.0
