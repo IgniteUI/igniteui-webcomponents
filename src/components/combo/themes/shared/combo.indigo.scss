@@ -16,8 +16,7 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 
     [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+        margin-top: rem(4px);
     }
 
     ::slotted([slot='helper-text']) {
@@ -43,15 +42,17 @@ $dropdown-theme: dropdown-theme.$indigo;
 
 [part='list-wrapper'] {
     border-radius: var-get($dropdown-theme, 'border-radius');
+    box-shadow: elevation(3);
+    outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
+    background-color: var-get($dropdown-theme, 'background-color');
+    padding: rem(3px);
 
-    igc-input::part(container) {
-        background: transparent;
-        border-inline-end-color: transparent;
+    igc-input {
+        --ig-theme: indigo;
+        --ig-size: var(--ig-size-medium);
     }
 
     igc-input::part(input) {
-        border-inline-end-color: transparent;
-
         &::selection {
             background: color(primary, 100);
         }

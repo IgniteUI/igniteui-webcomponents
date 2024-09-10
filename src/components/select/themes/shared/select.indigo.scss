@@ -14,6 +14,7 @@ $input-theme: input-theme.$indigo;
 
     ::slotted([slot='helper-text']) {
         color: var-get($theme, 'helper-text-color');
+        line-height: 1;
     }
 
     igc-input::part(input) {
@@ -25,13 +26,15 @@ $input-theme: input-theme.$indigo;
     }
 
     [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+        margin-top: rem(4px);
     }
 }
 
 [part='base'] {
     box-shadow: var(--ig-elevation-3);
+    outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
+    background-color: var-get($dropdown-theme, 'background-color');
+    padding: rem(3px);
 }
 
 :host(:focus-within) {

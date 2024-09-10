@@ -58,31 +58,6 @@
         --ig-theme: material;
     }
 
-    igc-input::part(container) {
-        background: transparent;
-        border-inline-start: 0;
-        border-inline-end-color: transparent;
-        border-block-start: 0;
-        border-radius: 0;
-    }
-
-    igc-input::part(start) {
-        display: none;
-    }
-
-    igc-input::part(input) {
-        border-radius: 0;
-        padding: 0;
-        border-inline-start: 0;
-        border-inline-end-color: transparent;
-        border-block-start: 0;
-        box-shadow: none;
-
-        &::selection {
-            background: color(primary, 100);
-        }
-    }
-
     [part='case-icon active'] {
         color: color(primary, 500);
     }

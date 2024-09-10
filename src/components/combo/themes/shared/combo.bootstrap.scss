@@ -20,8 +20,30 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 [part='list-wrapper'] {
     border-radius: var-get($dropdown-theme, 'border-radius');
 
+    igc-input::part(container) {
+        background: transparent;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        border-radius: 0;
+    }
+
+    igc-input::part(start) {
+        display: none;
+    }
+
     igc-input::part(input) {
+        border-radius: 0;
+        padding: 0;
         border-inline-end: 0;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        box-shadow: none;
+
+        &::selection {
+            background: color(primary, 100);
+        }
     }
 
     igc-input::part(suffix) {
