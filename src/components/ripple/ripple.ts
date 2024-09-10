@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 
 import { registerComponent } from '../common/definitions/register.js';
+import { ssrAddEventListener } from '../common/util.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [
@@ -40,10 +41,10 @@ export default class IgcRippleComponent extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener('pointerdown', this.handler);
+    ssrAddEventListener(this, 'pointerdown', this.handler);
   }
 
-  private handler = ({ clientX, clientY }: PointerEvent) => {
+  private handler({ clientX, clientY }: PointerEvent) {
     const element = getRippleElement();
     const { radius, top, left } = this.getDimensions(clientX, clientY);
 
@@ -70,7 +71,7 @@ export default class IgcRippleComponent extends LitElement {
     element
       .animate(rippleFrames, rippleAnimation)
       .finished.then(() => element.remove());
-  };
+  }
 
   private getDimensions(x: number, y: number) {
     const rect = this.getBoundingClientRect();
