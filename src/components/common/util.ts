@@ -69,7 +69,7 @@ export function createCounter() {
  * Returns whether an element has a Left-to-Right directionality.
  */
 export function isLTR(element: HTMLElement) {
-  return element.matches(':dir(ltr)');
+  return isServer ? true : element.matches(':dir(ltr)');
 }
 
 /**
