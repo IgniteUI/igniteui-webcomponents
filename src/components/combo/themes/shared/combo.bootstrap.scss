@@ -18,6 +18,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 }
 
 [part='list-wrapper'] {
+    border: var-get($dropdown-theme, 'border-width') solid
+        var-get($dropdown-theme, 'border-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
     igc-input::part(container) {
@@ -55,7 +57,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     [part='search-input'] {
         [part~='case-icon'] {
             border-block-end: rem(1px) solid color(gray, 400);
-            transition: border .15s ease-out;
+            transition: border 0.15s ease-out;
         }
 
         &:focus,
@@ -112,7 +114,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     }
 
     [part~='clear-icon'] {
-        border-inline-end: rem(1px) solid var-get($input-theme, 'disabled-border-color');
+        border-inline-end: rem(1px) solid
+            var-get($input-theme, 'disabled-border-color');
         background: inherit;
         color: var-get($theme, 'disabled-text-color');
 

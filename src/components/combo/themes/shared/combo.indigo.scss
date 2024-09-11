@@ -42,7 +42,6 @@ $dropdown-theme: dropdown-theme.$indigo;
 
 [part='list-wrapper'] {
     border-radius: var-get($dropdown-theme, 'border-radius');
-    box-shadow: elevation(3);
     outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
     background-color: var-get($dropdown-theme, 'background-color');
     padding: rem(3px);
