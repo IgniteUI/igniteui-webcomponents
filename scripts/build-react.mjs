@@ -45,8 +45,6 @@ for (const component of components) {
     ${eventsMeta.imports}
     ${eventsMeta.exports}
 
-    Component.register()
-
     ${makeDescription(component)}
     const reactWrapper = createComponent({
       tagName: '${component.tagName}',

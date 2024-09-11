@@ -235,6 +235,7 @@ export const createComponent = <
   renderProps,
 }: Options<I, E>): ReactWebComponent<I, E> => {
   events ??= {} as E;
+  (elementClass as any)?.register();
 
   if (renderProps) {
     Object.assign(events, {
