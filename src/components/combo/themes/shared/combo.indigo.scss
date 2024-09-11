@@ -41,9 +41,9 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
     outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
-    background-color: var-get($dropdown-theme, 'background-color');
     padding: rem(3px);
 
     igc-input {

@@ -38,6 +38,7 @@ $dropdown-theme: dropdown-theme.$material;
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
     igc-input::part(container) {
@@ -80,6 +81,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
         background: var-get($theme, 'toggle-button-background-focus');
     }
 }

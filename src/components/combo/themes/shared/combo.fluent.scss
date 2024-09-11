@@ -24,6 +24,7 @@ $dropdown-theme: dropdown-theme.$fluent;
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
     igc-input::part(container) {

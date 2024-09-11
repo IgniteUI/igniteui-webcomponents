@@ -20,6 +20,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 [part='list-wrapper'] {
     border: var-get($dropdown-theme, 'border-width') solid
         var-get($dropdown-theme, 'border-color');
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
     igc-input::part(container) {
