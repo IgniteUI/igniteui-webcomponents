@@ -13,6 +13,7 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import { ssrAddEventListener } from '../common/util.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
+import type { IgcExpansionPanelComponentEventMap } from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
 /**
@@ -60,7 +61,11 @@ export default class IgcAccordionComponent extends LitElement {
   constructor() {
     super();
 
-    ssrAddEventListener(this, 'igcOpening' as any, this.handlePanelOpening);
+    ssrAddEventListener<IgcExpansionPanelComponentEventMap>(
+      this,
+      'igcOpening',
+      this.handlePanelOpening
+    );
 
     addKeybindings(this, {
       skip: this.skipKeybinding,
@@ -121,15 +126,15 @@ export default class IgcAccordionComponent extends LitElement {
     }
   }
 
-  private handlePanelOpening(event: Event) {
-    const current = event.target as IgcExpansionPanelComponent;
-
-    if (!(this.singleExpand && this.panels.includes(current))) {
+  private handlePanelOpening({
+    detail,
+  }: CustomEvent<IgcExpansionPanelComponent>) {
+    if (!(this.singleExpand && this.panels.includes(detail))) {
       return;
     }
 
     for (const panel of this.enabledPanels) {
-      if (panel.open && panel !== current) {
+      if (panel.open && panel !== detail) {
         this.closePanel(panel);
       }
     }

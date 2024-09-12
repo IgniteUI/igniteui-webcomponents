@@ -27,7 +27,7 @@ const template = html`
     </igc-card-content>
 
     <igc-card-actions>
-      <button slot="buttons">Like</button>
+      <button slot="start">Like</button>
     </igc-card-actions>
   </igc-card>
 `;

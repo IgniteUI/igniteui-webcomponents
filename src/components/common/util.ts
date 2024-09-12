@@ -261,13 +261,24 @@ export function* chunk<T>(arr: T[], size: number) {
   }
 }
 
+/// REVIEW: Simplify the types? Maybe move the whole thing as a separate host controller?
+
+type EventKey<T extends keyof U, U> = T extends keyof U
+  ? T
+  : T extends string
+    ? T
+    : never;
+
 /**
  * Skips adding event listeners in SSR environments.
  */
-export function ssrAddEventListener<T = Event>(
+export function ssrAddEventListener<
+  EventMap = HTMLElementEventMap,
+  K = EventKey<keyof EventMap, EventMap>,
+>(
   element: Element,
-  type: keyof HTMLElementEventMap,
-  handler: (event: T) => unknown
+  type: K extends keyof HTMLElementEventMap | string ? K : string,
+  handler: (event: K extends keyof EventMap ? EventMap[K] : Event) => unknown
 ) {
   if (!isServer) {
     element.addEventListener(
