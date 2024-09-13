@@ -9,11 +9,6 @@ import { nothing } from 'lit';
 import { spy } from 'sinon';
 
 import {
-  IgcRatingComponent,
-  type IgcRatingSymbolComponent,
-  defineComponents,
-} from '../../index.js';
-import {
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -21,34 +16,38 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  simulateClick,
   simulateKeyboard,
+  simulatePointerMove,
 } from '../common/utils.spec.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import IgcRatingComponent from './rating.js';
 
 describe('Rating component', () => {
   before(() => {
     defineComponents(IgcRatingComponent);
   });
 
-  const getRatingSymbols = (el: IgcRatingComponent) =>
-    el.shadowRoot!.querySelectorAll(
-      'igc-rating-symbol'
-    ) as NodeListOf<IgcRatingSymbolComponent>;
-  const getProjectedSymbols = (el: IgcRatingComponent) => {
-    const slot = el.shadowRoot!.querySelector(
-      'slot[name="symbol"]'
-    ) as HTMLSlotElement;
-    return slot
-      .assignedElements()
-      .filter((el) => el.matches('igc-rating-symbol'));
-  };
-  const getRatingWrapper = (el: IgcRatingComponent) =>
-    el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
-  const fireMouseEvent = (type: string, opts: MouseEventInit) =>
-    new MouseEvent(type, opts);
-  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
   let el: IgcRatingComponent;
+
+  const getRatingSymbols = (el: IgcRatingComponent) =>
+    el.renderRoot.querySelectorAll(IgcRatingSymbolComponent.tagName);
+
+  const getProjectedSymbols = (el: IgcRatingComponent) =>
+    el.renderRoot
+      .querySelector<HTMLSlotElement>('slot[name="symbol"]')
+      ?.assignedElements()
+      .filter((each) =>
+        each.matches(IgcRatingSymbolComponent.tagName)
+      ) as IgcRatingSymbolComponent[];
+
+  const getRatingWrapper = (el: IgcRatingComponent) =>
+    el.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
+
+  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
 
   describe('', () => {
     beforeEach(async () => {
@@ -280,13 +279,8 @@ describe('Rating component', () => {
       const eventSpy = spy(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
-      symbol.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x + width / 2,
-        })
-      );
+      simulateClick(symbol, { clientX: x + width / 2 });
+
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
       expect(el.value).to.equal(3);
     });
@@ -298,13 +292,8 @@ describe('Rating component', () => {
 
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
-      symbol.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x + width / 4,
-        })
-      );
+      simulateClick(symbol, { clientX: x + width / 4 });
+
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
       expect(el.value).to.equal(2.5);
     });
@@ -316,14 +305,8 @@ describe('Rating component', () => {
       await elementUpdated(el);
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
+      simulatePointerMove(symbol, { clientX: x + width / 2 });
 
-      symbol.dispatchEvent(
-        fireMouseEvent('mousemove', {
-          bubbles: true,
-          composed: true,
-          clientX: x + width / 2,
-        })
-      );
       expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
       expect(el.value).to.equal(2);
     });
@@ -335,14 +318,7 @@ describe('Rating component', () => {
 
       el.value = 5;
       await elementUpdated(el);
-
-      symbol.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x + width / 2,
-        })
-      );
+      simulateClick(symbol, { clientX: x + width / 2 });
 
       expect(el.value).to.equal(5);
       expect(eventSpy).not.to.be.called;
@@ -357,13 +333,7 @@ describe('Rating component', () => {
       el.allowReset = true;
       await elementUpdated(el);
 
-      symbol.dispatchEvent(
-        fireMouseEvent('click', {
-          bubbles: true,
-          composed: true,
-          clientX: x + width / 2,
-        })
-      );
+      simulateClick(symbol, { clientX: x + width / 2 });
 
       expect(el.value).to.equal(0);
       expect(eventSpy).to.have.been.calledOnceWith('igcChange', { detail: 0 });
