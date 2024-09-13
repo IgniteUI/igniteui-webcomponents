@@ -237,7 +237,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       .set(endKey, () => this.emitValueUpdate(this.max));
   }
 
-  protected handleClick({ clientX }: MouseEvent) {
+  protected handleClick({ clientX }: PointerEvent) {
     const value = this.calcNewValue(clientX);
     const sameValue = this.value === value;
 
@@ -248,11 +248,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  protected handleMouseMove({ clientX }: MouseEvent) {
+  protected handlePointerMove({ clientX }: PointerEvent) {
     const value = this.calcNewValue(clientX);
 
     if (this.hoverValue !== value) {
-      // Since mousemove spams a lot, only emit on a value change
+      // Since pointermove spams a lot, only emit on a value change
       this.hoverValue = value;
       this.emitEvent('igcHover', { detail: this.hoverValue });
     }
@@ -358,26 +358,22 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected clipProjected() {
-    if (this.hasProjectedSymbols) {
-      const ltr = isLTR(this);
-      this.ratingSymbols.forEach((symbol: IgcRatingSymbolComponent, i) => {
-        const full = symbol.shadowRoot?.querySelector(
-          '[part="symbol full"]'
-        ) as HTMLElement;
+    const ltr = isLTR(this);
+    const partFull = '[part="symbol full"]';
+    const partEmpty = '[part="symbol empty"]';
 
-        const empty = symbol.shadowRoot?.querySelector(
-          '[part="symbol empty"]'
-        ) as HTMLElement;
-        const { forward, backward } = this.clipSymbol(i, ltr);
+    for (const [i, symbol] of this.ratingSymbols.entries()) {
+      const full = symbol.renderRoot.querySelector<HTMLElement>(partFull);
+      const empty = symbol.renderRoot.querySelector<HTMLElement>(partEmpty);
+      const { forward, backward } = this.clipSymbol(i, ltr);
 
-        if (full) {
-          full.style.clipPath = forward;
-        }
+      if (full) {
+        full.style.clipPath = forward;
+      }
 
-        if (empty) {
-          empty.style.clipPath = backward;
-        }
-      });
+      if (empty) {
+        empty.style.clipPath = backward;
+      }
     }
   }
 
@@ -412,15 +408,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
           aria-hidden="true"
           part="symbols"
           @click=${this.isInteractive ? this.handleClick : nothing}
-          @mouseenter=${hoverActive ? this.handleHoverEnabled : nothing}
-          @mouseleave=${hoverActive ? this.handleHoverDisabled : nothing}
-          @mousemove=${hoverActive ? this.handleMouseMove : nothing}
+          @pointerenter=${hoverActive ? this.handleHoverEnabled : nothing}
+          @pointerleave=${hoverActive ? this.handleHoverDisabled : nothing}
+          @pointermove=${hoverActive ? this.handlePointerMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>
-            ${guard(props, () => {
-              this.clipProjected();
-              return this.renderSymbols();
-            })}
+            ${guard(props, () =>
+              this.hasProjectedSymbols
+                ? this.clipProjected()
+                : this.renderSymbols()
+            )}
           </slot>
         </div>
         <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
