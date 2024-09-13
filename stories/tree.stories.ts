@@ -94,14 +94,6 @@ const log = () => {
   const item = document.getElementById('parent2');
   item?.parentElement?.removeChild(item);
   const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.info(
-    'Selected items: ',
-    (tree.selectionService as any).itemSelection.size
-  );
-  console.info(
-    'Indeterminate items: ',
-    (tree.selectionService as any).indeterminateItems.size
-  );
 };
 
 const log1 = () => {
@@ -110,43 +102,16 @@ const log1 = () => {
   if (firstChild) {
     item.removeChild(firstChild);
   }
-  const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.info(
-    'Selected items: ',
-    (tree.selectionService as any).itemSelection.size
-  );
-  console.info(
-    'Indeterminate items: ',
-    (tree.selectionService as any).indeterminateItems.size
-  );
 };
 
 const log2 = () => {
   const item = document.getElementById('asd') as IgcTreeItemComponent;
   addChildren(item, 2, true);
-  const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.info(
-    'Selected items: ',
-    (tree.selectionService as any).itemSelection.size
-  );
-  console.info(
-    'Indeterminate items: ',
-    (tree.selectionService as any).indeterminateItems.size
-  );
 };
 
 const log3 = () => {
   const item = document.getElementById('asd') as IgcTreeItemComponent;
   addChildren(item, 2);
-  const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.info(
-    'Selected items: ',
-    (tree.selectionService as any).itemSelection.size
-  );
-  console.info(
-    'Indeterminate items: ',
-    (tree.selectionService as any).indeterminateItems.size
-  );
 };
 
 const log4 = () => {
@@ -154,15 +119,6 @@ const log4 = () => {
   const item1 = document.getElementById('asd1') as IgcTreeItemComponent;
   item1.parentNode?.removeChild(item1);
   item.appendChild(item1);
-  const tree = document.getElementById('tree') as IgcTreeComponent;
-  console.info(
-    'Selected items: ',
-    (tree.selectionService as any).itemSelection.size
-  );
-  console.info(
-    'Indeterminate items: ',
-    (tree.selectionService as any).indeterminateItems.size
-  );
 };
 
 const BasicTemplate = ({
@@ -175,7 +131,7 @@ const BasicTemplate = ({
         id="tree"
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
-        .toggleNodeOnClick = ${toggleNodeOnClick}
+        ?toggle-node-on-click = ${toggleNodeOnClick}
       >
         <igc-tree-item expanded active selected label="Tree Node 1">
           <igc-tree-item expanded id="parent" label="Tree Node 1.1">

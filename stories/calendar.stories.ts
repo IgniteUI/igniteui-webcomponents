@@ -278,9 +278,6 @@ const Template = ({
       .value=${value ? new Date(value as Date) : undefined}
       values=${ifDefined(values)}
       visible-months=${ifDefined(visibleMonths)}
-      @igcChange=${(ev: Event) => {
-        console.info(ev);
-      }}
     >
       ${title ? html`<span slot="title">${title}</span>` : ''}
     </igc-calendar>
