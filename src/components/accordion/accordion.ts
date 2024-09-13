@@ -11,6 +11,7 @@ import {
   shiftKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { first, last } from '../common/util.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
@@ -36,14 +37,6 @@ export default class IgcAccordionComponent extends LitElement {
   })
   private enabledPanels!: Array<IgcExpansionPanelComponent>;
 
-  private get firstEnabled() {
-    return this.enabledPanels[0];
-  }
-
-  private get lastEnabled() {
-    return this.enabledPanels[this.enabledPanels.length - 1];
-  }
-
   /**
    * Allows only one panel to be expanded at a time.
    * @attr single-expand
@@ -65,8 +58,10 @@ export default class IgcAccordionComponent extends LitElement {
       skip: this.skipKeybinding,
       bindingDefaults: { preventDefault: true },
     })
-      .set(homeKey, () => this.getPanelHeader(this.firstEnabled).focus())
-      .set(endKey, () => this.getPanelHeader(this.lastEnabled).focus())
+      .set(homeKey, () =>
+        this.getPanelHeader(first(this.enabledPanels)).focus()
+      )
+      .set(endKey, () => this.getPanelHeader(last(this.enabledPanels)).focus())
       .set(arrowUp, this.navigatePrev)
       .set(arrowDown, this.navigateNext)
       .set([shiftKey, altKey, arrowDown], this.expandAll)
@@ -84,22 +79,18 @@ export default class IgcAccordionComponent extends LitElement {
     const current = event.target as IgcExpansionPanelComponent;
     const next = this.getNextPanel(current, -1);
 
-    if (event.altKey || next === current) {
-      return;
+    if (next !== current) {
+      this.getPanelHeader(next).focus();
     }
-
-    this.getPanelHeader(next).focus();
   }
 
   private navigateNext(event: KeyboardEvent) {
     const current = event.target as IgcExpansionPanelComponent;
     const next = this.getNextPanel(current, 1);
 
-    if (event.altKey || next === current) {
-      return;
+    if (next !== current) {
+      this.getPanelHeader(next).focus();
     }
-
-    this.getPanelHeader(next).focus();
   }
 
   private collapseAll() {
