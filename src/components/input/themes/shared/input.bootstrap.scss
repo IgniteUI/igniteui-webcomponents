@@ -54,7 +54,6 @@ $theme: $bootstrap;
     border-radius: 0;
 }
 
-
 [part~='label'],
 [part~='input']::placeholder {
     @include type-style('body-1');
