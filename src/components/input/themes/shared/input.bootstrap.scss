@@ -54,18 +54,19 @@ $theme: $bootstrap;
     border-radius: 0;
 }
 
+
+[part~='label'],
+[part~='input']::placeholder {
+    @include type-style('body-1');
+}
+
 [part~='label'] {
-    margin-bottom: rem(4px);
+    margin-block-end: rem(4px);
     color: var-get($theme, 'idle-secondary-color');
 
     &:empty {
         display: none;
     }
-}
-
-[part~='label'],
-[part~='input']::placeholder {
-    @include type-style('body-1');
 }
 
 [name='prefix']::slotted(*),
