@@ -128,7 +128,10 @@ export function simulatePointerMove(
   const { x = 0, y = 0 } = increment ?? {};
   const { clientX = 0, clientY = 0 } = options ?? {};
 
-  for (let i = 0; i < times; i++) {
+  let i = 0;
+
+  do {
+    i += 1;
     node.dispatchEvent(
       new PointerEvent('pointermove', {
         bubbles: true,
@@ -139,7 +142,7 @@ export function simulatePointerMove(
         clientY: clientY + i * y,
       })
     );
-  }
+  } while (i < times);
 }
 
 export function simulateClick(
