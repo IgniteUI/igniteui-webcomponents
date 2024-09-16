@@ -31,8 +31,11 @@ import {
   asNumber,
   createCounter,
   findElementFromEventPath,
+  first,
   isLTR,
+  last,
   partNameMap,
+  wrap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
@@ -116,11 +119,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private get nextIndex(): number {
-    return (this.current + 1) % this.total;
+    return wrap(0, this.total - 1, this.current + 1);
   }
 
   private get prevIndex(): number {
-    return this.current - 1 < 0 ? this.total - 1 : this.current - 1;
+    return wrap(0, this.total - 1, this.current - 1);
   }
 
   @queryAll(IgcCarouselIndicatorComponent.tagName)
@@ -149,9 +152,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     if (activeSlides.length <= 1) {
       return;
     }
-    const idx = this.slides.indexOf(
-      added.length ? added.at(-1)! : attributes.at(-1)!
-    );
+
+    const idx = this.slides.indexOf(last(added.length ? added : attributes));
 
     for (const [i, slide] of this.slides.entries()) {
       if (slide.active && i !== idx) {
@@ -250,8 +252,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * The index of the current active slide.
    */
   public get current(): number {
-    const index = this.slides.indexOf(this._activeSlide);
-    return index === -1 ? 0 : index;
+    return Math.max(0, this.slides.indexOf(this._activeSlide));
   }
 
   /**
@@ -328,12 +329,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private handleSlotChange(): void {
-    const index = this.slides.findIndex((slide) => slide.active);
-
     if (this.total) {
-      index === -1
-        ? this.activateSlide(this.slides[0])
-        : this.activateSlide(this.slides[index]);
+      this.activateSlide(
+        this.slides.findLast((slide) => slide.active) ?? first(this.slides)
+      );
     }
   }
 
@@ -349,26 +348,31 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerEnter(): void {
     this._hasMouseStop = true;
-    if (this._carouselKeyboardInteractionFocus.focused) return;
+    if (this._carouselKeyboardInteractionFocus.focused) {
+      return;
+    }
     this.handlePauseOnInteraction();
   }
 
   private handlePointerLeave(): void {
     this._hasMouseStop = false;
-    if (this._carouselKeyboardInteractionFocus.focused) return;
+    if (this._carouselKeyboardInteractionFocus.focused) {
+      return;
+    }
     this.handlePauseOnInteraction();
   }
 
   private handleFocusIn(): void {
-    if (this._carouselKeyboardInteractionFocus.focused || this._hasMouseStop)
+    if (this._carouselKeyboardInteractionFocus.focused || this._hasMouseStop) {
       return;
+    }
     this.handlePauseOnInteraction();
   }
 
   private handleFocusOut(event: FocusEvent): void {
     if (
       this.contains(event.relatedTarget as Node) ||
-      this.shadowRoot?.contains(event.relatedTarget as Node)
+      this.renderRoot.contains(event.relatedTarget as Node)
     ) {
       return;
     }
@@ -485,12 +489,19 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private updateProjectedIndicators(): void {
     for (const [idx, slide] of this.slides.entries()) {
       const indicator = this._projectedIndicators[idx];
-      indicator.role = 'tab';
-      indicator.tabIndex = slide.active ? 0 : -1;
-      indicator.ariaLabel = `Slide ${idx + 1}`;
-      indicator.ariaSelected = slide.active ? 'true' : 'false';
-      indicator.setAttribute('aria-controls', slide.id);
-      indicator.active = slide.active;
+      const active = slide.active;
+
+      Object.assign<
+        IgcCarouselIndicatorComponent,
+        Partial<IgcCarouselIndicatorComponent>
+      >(indicator, {
+        role: 'tab',
+        tabIndex: active ? 0 : -1,
+        ariaLabel: `Slide ${idx + 1}`,
+        ariaSelected: active ? 'true' : 'false',
+        active,
+      });
+      this.setAttribute('aria-controls', slide.id);
     }
   }
 
@@ -665,16 +676,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private indicatorTemplate() {
+    const parts = partNameMap({
+      indicators: true,
+      start: this.indicatorsOrientation === 'start',
+    });
+
     return html`
       <igc-carousel-indicator-container>
-        <div
-          ${ref(this._indicatorsContainerRef)}
-          role="tablist"
-          part=${partNameMap({
-            indicators: true,
-            start: this.indicatorsOrientation === 'start',
-          })}
-        >
+        <div ${ref(this._indicatorsContainerRef)} role="tablist" part=${parts}>
           <slot
             name="indicator"
             @slotchange=${this.handleIndicatorSlotChange}
@@ -690,15 +699,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private labelTemplate() {
+    const parts = partNameMap({
+      label: true,
+      indicators: true,
+      start: this.indicatorsOrientation === 'start',
+    });
+    const value = `${this.current + 1}/${this.total}`;
+
     return html`
-      <div
-        part=${partNameMap({
-          label: true,
-          indicators: true,
-          start: this.indicatorsOrientation === 'start',
-        })}
-      >
-        <span>${this.current + 1}/${this.total}</span>
+      <div part=${parts}>
+        <span>${value}</span>
       </div>
     `;
   }
