@@ -271,15 +271,38 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
+  @watch('value')
+  protected async valueChanged() {
+    await this.updateComplete;
+    this.setAreaHeight();
+  }
+
+  @watch('rows', { waitUntilFirstUpdate: true })
+  @watch('resize', { waitUntilFirstUpdate: true })
+  protected setAreaHeight() {
+    if (this.resize === 'auto') {
+      this.input.style.height = 'auto';
+      this.input.style.height = `${this.setAutoHeight()}px`;
+    } else {
+      Object.assign(this.input.style, { height: undefined });
+    }
+  }
+
   constructor() {
     super();
-    this.addEventListener('focus', () => {
-      this._dirty = true;
-    });
-    this.addEventListener('blur', () => {
-      this.updateValidity();
-      this.setInvalidState();
-    });
+    this.addEventListener('focus', this.handleFocus);
+    this.addEventListener('blur', this.handleBlur);
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this._defaultValue = this.value;
   }
 
   public override async connectedCallback() {
@@ -333,44 +356,22 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       : this.input.scrollTo(x as ScrollToOptions);
   }
 
-  protected resolvePartNames(base: string) {
+  protected resolvePartNames() {
     return {
-      [base]: true,
+      container: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
       filled: !!this.value,
     };
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
-    this._defaultValue = this.value;
-  }
-
-  @watch('value')
-  protected async valueChanged() {
-    await this.updateComplete;
-    this.setAreaHeight();
-  }
-
-  @watch('rows', { waitUntilFirstUpdate: true })
-  @watch('resize', { waitUntilFirstUpdate: true })
-  protected setAreaHeight() {
-    if (this.resize === 'auto') {
-      this.input.style.height = 'auto';
-      this.input.style.height = `${this.setAutoHeight()}px`;
-    } else {
-      Object.assign(this.input.style, { height: undefined });
-    }
-  }
-
   private setAutoHeight() {
-    const computed = getComputedStyle(this.input);
-    const [top, bottom] = [
-      asNumber(computed.getPropertyValue('border-top-width')),
-      asNumber(computed.getPropertyValue('border-bottom-width')),
-    ];
-    return this.input.scrollHeight + top + bottom;
+    const { borderTopWidth, borderBottomWidth } = getComputedStyle(this.input);
+    return (
+      this.input.scrollHeight +
+      asNumber(borderTopWidth) +
+      asNumber(borderBottomWidth)
+    );
   }
 
   protected handleInput() {
@@ -383,30 +384,29 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected valueSlotChange() {
-    const value = [];
+  protected handleFocus() {
+    this._dirty = true;
+  }
 
-    for (const node of this.projected) {
-      const text = node.textContent?.trim();
-      if (text) {
-        value.push(text);
-      }
-    }
+  protected handleBlur() {
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  protected valueSlotChange() {
+    const value = this.projected
+      .map((node) => node.textContent?.trim())
+      .filter((node) => Boolean(node));
 
     if (value.length) {
       this.value = value.join('\r\n');
     }
   }
 
-  protected slotChange() {
-    this.requestUpdate();
-  }
-
   protected renderValueSlot() {
-    return html`<slot
-      style="display: none"
-      @slotchange=${this.valueSlotChange}
-    ></slot>`;
+    return html`
+      <slot style="display: none" @slotchange=${this.valueSlotChange}></slot>
+    `;
   }
 
   protected renderValidationContainer(): TemplateResult {
@@ -414,29 +414,35 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderPrefix() {
-    return html`<div part="prefix" .hidden=${this.prefixes.length < 1}>
-      <slot name="prefix" @slotchange=${this.slotChange}></slot>
-    </div>`;
+    return html`
+      <div part="prefix" .hidden=${this.prefixes.length < 1}>
+        <slot name="prefix"></slot>
+      </div>
+    `;
   }
 
   protected renderSuffix() {
-    return html`<div part="suffix" .hidden=${this.suffixes.length < 1}>
-      <slot name="suffix" @slotchange=${this.slotChange}></slot>
-    </div>`;
+    return html`
+      <div part="suffix" .hidden=${this.suffixes.length < 1}>
+        <slot name="suffix"></slot>
+      </div>
+    `;
   }
 
   protected renderLabel() {
     return this.label
-      ? html`<label part="label" for=${this.id || this.inputId}
-          >${this.label}</label
-        >`
+      ? html`
+          <label part="label" for=${this.id || this.inputId}>
+            ${this.label}
+          </label>
+        `
       : nothing;
   }
 
   protected renderStandard() {
     return html`
       ${this.renderLabel()}
-      <div part=${partNameMap(this.resolvePartNames('container'))}>
+      <div part=${partNameMap(this.resolvePartNames())}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
       ${this.renderValidationContainer()}
@@ -447,7 +453,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return html`
       <div
         part=${partNameMap({
-          ...this.resolvePartNames('container'),
+          ...this.resolvePartNames(),
           labelled: this.label,
         })}
       >
@@ -462,7 +468,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderInput() {
-    return html`${this.renderValueSlot()}
+    return html`
+      ${this.renderValueSlot()}
       <textarea
         id=${this.id || this.inputId}
         part="input"
@@ -483,7 +490,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?required=${this.required}
         ?readonly=${this.readOnly}
         aria-invalid=${this.invalid ? 'true' : 'false'}
-      ></textarea>`;
+      ></textarea>
+    `;
   }
 
   protected override render() {

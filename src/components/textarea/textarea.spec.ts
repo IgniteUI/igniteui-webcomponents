@@ -50,6 +50,26 @@ describe('Textarea component', () => {
       configureTheme('bootstrap');
       await nextFrame();
     });
+
+    it('auto sizing is applied', async () => {
+      await createFixture(
+        html`<igc-textarea resize="auto" rows="1"></igc-textarea>`
+      );
+      const initialHeight = textArea.scrollHeight;
+
+      simulateInput(textArea, { value: [1, 2, 3, 4, 5, 6].join('\n') });
+      await elementUpdated(element);
+
+      const intermediateHeight = textArea.scrollHeight;
+      expect(intermediateHeight).greaterThan(initialHeight);
+
+      simulateInput(textArea, { value: '' });
+      await elementUpdated(element);
+
+      const finalHeight = textArea.scrollHeight;
+      expect(finalHeight).lessThan(intermediateHeight);
+      expect(finalHeight).to.equal(initialHeight);
+    });
   });
 
   describe('Setting value through attribute and projection', () => {
