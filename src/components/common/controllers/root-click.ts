@@ -1,4 +1,8 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import {
+  type ReactiveController,
+  type ReactiveControllerHost,
+  isServer,
+} from 'lit';
 import { findElementFromEventPath } from '../util.js';
 
 type RootClickControllerConfig = {
@@ -22,13 +26,15 @@ export class RootClickController implements ReactiveController {
   }
 
   private addEventListeners() {
-    if (!this.host.keepOpenOnOutsideClick) {
+    if (!this.host.keepOpenOnOutsideClick && !isServer) {
       document.addEventListener('click', this, { capture: true });
     }
   }
 
   private removeEventListeners() {
-    document.removeEventListener('click', this, { capture: true });
+    if (!isServer) {
+      document.removeEventListener('click', this, { capture: true });
+    }
   }
 
   private configureListeners() {

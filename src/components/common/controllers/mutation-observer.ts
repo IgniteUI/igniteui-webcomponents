@@ -1,4 +1,8 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import {
+  type ReactiveController,
+  type ReactiveControllerHost,
+  isServer,
+} from 'lit';
 
 import { isElement } from '../util.js';
 
@@ -62,7 +66,7 @@ function mutationFilter<T>(nodes: T[], filter?: MutationControllerFilter<T>) {
 
 class MutationController<T> implements ReactiveController {
   private _host: ReactiveControllerHost & Element;
-  private _observer: MutationObserver;
+  private _observer!: MutationObserver;
   private _target: Element;
   private _config: MutationObserverInit;
   private _callback: MutationControllerCallback<T>;
@@ -78,21 +82,23 @@ class MutationController<T> implements ReactiveController {
     this._target = options.target ?? this._host;
     this._filter = options.filter ?? [];
 
-    this._observer = new MutationObserver((records) => {
-      this.disconnect();
-      this._callback.call(this._host, this._process(records));
-      this.observe();
-    });
+    if (!isServer) {
+      this._observer = new MutationObserver((records) => {
+        this.disconnect();
+        this._callback.call(this._host, this._process(records));
+        this.observe();
+      });
+    }
 
     host.addController(this);
   }
 
   public hostConnected() {
-    this.observe();
+    this?.observe();
   }
 
   public hostDisconnected() {
-    this.disconnect();
+    this?.disconnect();
   }
 
   private _process(records: MutationRecord[]): MutationControllerParams<T> {

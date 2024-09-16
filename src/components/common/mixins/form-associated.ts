@@ -1,4 +1,4 @@
-import type { LitElement } from 'lit';
+import { type LitElement, isServer } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import type { Validator } from '../validators.js';
@@ -216,7 +216,9 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     constructor(...args: any[]) {
       super(args);
       this.__internals = this.attachInternals();
-      this.addEventListener('invalid', this.handleInvalid);
+      if (!isServer) {
+        this.addEventListener('invalid', this.handleInvalid);
+      }
     }
 
     public override connectedCallback(): void {

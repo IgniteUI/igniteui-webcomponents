@@ -11,7 +11,14 @@ import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resource
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, first, last, partNameMap, take } from '../../common/util.js';
+import {
+  chunk,
+  first,
+  last,
+  partNameMap,
+  ssrAddEventListener,
+  take,
+} from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -137,7 +144,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this.handleInteraction);
 
-    this.addEventListener('click', this.handleInteraction);
+    ssrAddEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {

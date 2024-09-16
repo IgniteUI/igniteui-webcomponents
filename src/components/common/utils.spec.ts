@@ -1,5 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
+import type { LitElement, TemplateResult } from 'lit';
 
 import { parseKeys } from './controllers/key-bindings.js';
 import type { FormAssociatedElementInterface } from './mixins/form-associated.js';
@@ -240,4 +240,15 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
 
 export function isFocused(element?: Element) {
   return element ? element.matches(':focus') : false;
+}
+
+export function isSsrRendered(element: LitElement) {
+  expect(element).to.exist;
+  expect(element.shadowRoot).to.exist;
+}
+
+export function isSsrStyled(element: LitElement) {
+  expect(
+    getComputedStyle(element).getPropertyValue('--is-large').startsWith('clamp')
+  );
 }

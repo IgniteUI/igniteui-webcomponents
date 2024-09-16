@@ -60,6 +60,7 @@
     "@biomejs/biome": "1.9.1",
     "@custom-elements-manifest/analyzer": "^0.10.3",
     "@igniteui/material-icons-extended": "^3.0.2",
+    "@lit-labs/testing": "^0.2.4",
     "@open-wc/testing": "^4.0.0",
     "@storybook/addon-a11y": "^8.3.0",
     "@storybook/addon-actions": "^8.3.0",

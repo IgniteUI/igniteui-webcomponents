@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "exclude": [
+    "../**/*-auto-register.ts",
     "../vite.config.ts",
     "../**/*.spec.ts",
     "../stories"
@@ -12,7 +13,5 @@
     "declarationMap": false,
     "removeComments": true
   },
-  "include": [
-    "../**/*.ts"
-  ]
+  "include": ["../**/*.ts"]
 }

@@ -1,11 +1,14 @@
+import { isServer } from 'lit';
 import type { SvgIcon } from './types.js';
 
 /* blazorSuppress */
 export class SvgIconParser {
-  private _parser: DOMParser;
+  private _parser!: DOMParser;
 
   constructor() {
-    this._parser = new DOMParser();
+    if (!isServer) {
+      this._parser = new DOMParser();
+    }
   }
 
   public parse(svgString: string): SvgIcon {

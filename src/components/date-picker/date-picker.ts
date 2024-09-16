@@ -28,7 +28,11 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { createCounter, findElementFromEventPath } from '../common/util.js';
+import {
+  createCounter,
+  findElementFromEventPath,
+  ssrAddEventListener,
+} from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DatePart } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
@@ -421,8 +425,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    ssrAddEventListener(this, 'focusin', this.handleFocusIn);
+    ssrAddEventListener(this, 'focusout', this.handleFocusOut);
 
     this._rootClickController.update({ hideCallback: this.handleClosing });
 

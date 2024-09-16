@@ -62,13 +62,23 @@ export default class IgcIconComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public mirrored = false;
 
+  @watch('name', { waitUntilFirstUpdate: true })
+  @watch('collection', { waitUntilFirstUpdate: true })
+  protected iconChanged(prev: string, curr: string) {
+    if (prev !== curr) {
+      this.getIcon();
+    }
+  }
+
   constructor() {
     super();
+
     this.__internals = this.attachInternals();
     this.__internals.role = 'img';
+  }
 
-    getThemeController(this)!.onThemeChanged = (theme) =>
-      getIconRegistry().setRefsByTheme(theme);
+  protected override firstUpdated() {
+    this._setInitialReferencesByTheme();
   }
 
   public override connectedCallback() {
@@ -81,12 +91,13 @@ export default class IgcIconComponent extends LitElement {
     super.disconnectedCallback();
   }
 
-  @watch('name')
-  @watch('collection')
-  protected iconChanged(prev: string, curr: string) {
-    if (prev !== curr) {
-      this.getIcon();
-    }
+  private _setInitialReferencesByTheme() {
+    const registry = getIconRegistry();
+    const controller = getThemeController(this);
+
+    registry.setRefsByTheme(controller?.theme ?? 'bootstrap');
+    controller!.onThemeChanged = (theme) => registry.setRefsByTheme(theme);
+    this.getIcon();
   }
 
   private iconLoaded = (name: string, collection: string) => {

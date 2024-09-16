@@ -30,6 +30,7 @@ import {
   formatString,
   isDefined,
   isLTR,
+  ssrAddEventListener,
 } from '../common/util.js';
 import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
@@ -278,10 +279,10 @@ export class IgcSliderBaseComponent extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener('pointerdown', this.pointerDown);
-    this.addEventListener('pointermove', this.pointerMove);
-    this.addEventListener('lostpointercapture', this.lostPointerCapture);
-    this.addEventListener('keyup', this.handleKeyUp);
+    ssrAddEventListener(this, 'pointerdown', this.pointerDown);
+    ssrAddEventListener(this, 'pointermove', this.pointerMove);
+    ssrAddEventListener(this, 'lostpointercapture', this.lostPointerCapture);
+    ssrAddEventListener(this, 'keyup', this.handleKeyUp);
 
     addKeybindings(this, {
       skip: () => this.disabled,

@@ -1,0 +1,5 @@
+// NOTE: Self-registering import for SSR fixtures.
+import Component from './button-group.js';
+Component.register();
+
+export default Component;
