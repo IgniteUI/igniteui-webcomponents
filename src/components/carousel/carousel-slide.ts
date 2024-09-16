@@ -19,7 +19,7 @@ import { styles } from './themes/carousel-slide.base.css.js';
  *
  * @slot Default slot for the carousel slide.
  *
- * @csspart
+ * @csspart base - The base wrapper of the carousel slide.
  */
 
 export default class IgcCarouselSlideComponent extends LitElement {

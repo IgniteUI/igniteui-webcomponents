@@ -12,6 +12,9 @@ import { styles } from './themes/carousel-indicator.base.css.js';
  * @slot - Default slot for projected inactive indicator.
  * @slot active - Default slot for projected active indicator.
  *
+ * @csspart indicator - The wrapping container of the carousel dot indicator.
+ * @csspart inactive - The wrapping container of the inactive dot indicator.
+ * @csspart active - The wrapping container of the active dot indicator.
  */
 export default class IgcCarouselIndicatorComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator';

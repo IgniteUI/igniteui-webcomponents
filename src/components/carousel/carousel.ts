@@ -60,7 +60,13 @@ export interface IgcCarouselComponentEventMap {
  * @fires igcPlaying - Emitted when the carousel enters playing state by a user interaction.
  * @fires igcPaused - Emitted when the carousel enters paused state by a user interaction.
  *
- * @csspart
+ * @csspart navigation - The wrapper container of each carousel navigation button.
+ * @csspart previous - The wrapper container of the carousel previous navigation button.
+ * @csspart next - The wrapper container of the carousel next navigation button.
+ * @csspart dot - The carousel dot indicator container.
+ * @csspart active - The carousel active dot indicator container.
+ * @csspart label - The label container of the carousel indicators.
+ * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
 
 @themes(all)

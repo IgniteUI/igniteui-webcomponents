@@ -8,6 +8,9 @@ import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';
 import { styles as shared } from './themes/shared/indicator-container/indicator-container.common.css.js';
 
+/**
+ * @csspart base - The wrapping container of all carousel indicators.
+ */
 @themes(all)
 export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator-container';
