@@ -1,4 +1,6 @@
 import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
@@ -20,17 +22,27 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     registerComponent(IgcCarouselIndicatorComponent);
   }
 
+  /** @private @hidden @internal */
+  @property()
+  public active = false;
+
   public override connectedCallback() {
     super.connectedCallback();
     this.slot = this.slot.length > 0 ? this.slot : 'indicator';
   }
 
   protected override render() {
+    const forward = this.active ? 'visible' : 'hidden';
+    const backward = this.active ? 'hidden' : 'visible';
+
     return html`
-      <div part="indicator inactive">
+      <div
+        part="indicator inactive"
+        style=${styleMap({ visibility: backward })}
+      >
         <slot></slot>
       </div>
-      <div part="indicator active">
+      <div part="indicator active" style=${styleMap({ visibility: forward })}>
         <slot name="active"></slot>
       </div>
     `;

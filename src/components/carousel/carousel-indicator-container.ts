@@ -21,14 +21,11 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   private _kbFocus = addKeyboardFocusRing(this);
 
   private handleFocusOut(event: FocusEvent) {
-    const target = event.relatedTarget as HTMLElement;
-    if (
-      target &&
-      target.tagName.toLowerCase() === IgcCarouselIndicatorComponent.tagName
-    ) {
-      return;
+    const target = event.relatedTarget as Element;
+
+    if (!target?.matches(IgcCarouselIndicatorComponent.tagName)) {
+      this._kbFocus.reset();
     }
-    this._kbFocus.reset();
   }
 
   protected override render() {
