@@ -40,9 +40,7 @@ describe('Gestures controller', () => {
           super();
 
           this.gestures = addGesturesController(this);
-          this.gestures.addEventListener('swipe', (event) => {
-            this.events.push(event as SwipeEvent);
-          });
+          this.gestures.set('swipe', (event) => this.events.push(event));
         }
 
         protected override render() {
@@ -128,14 +126,14 @@ describe('Gestures controller', () => {
     const options = { once: true } as AddEventListenerOptions;
     const times = 3;
 
-    function handler(e: Event) {
-      event = e as SwipeEvent;
+    function handler(e: SwipeEvent) {
+      event = e;
     }
 
     it('swipe-left', () => {
       const x = -100;
 
-      instance.gestures.addEventListener('swipe-left', handler, options);
+      instance.gestures.set('swipe-left', handler, options);
       simulatePointerDown(instance);
       simulatePointerMove(instance, {}, { x }, times);
       simulateLostPointerCapture(instance);
@@ -148,7 +146,7 @@ describe('Gestures controller', () => {
     it('swipe-up', () => {
       const y = -100;
 
-      instance.gestures.addEventListener('swipe-up', handler, options);
+      instance.gestures.set('swipe-up', handler, options);
       simulatePointerDown(instance);
       simulatePointerMove(instance, {}, { y }, times);
       simulateLostPointerCapture(instance);
@@ -161,9 +159,9 @@ describe('Gestures controller', () => {
     it('swipe-right', () => {
       const x = 100;
 
-      instance.gestures.addEventListener('swipe-right', handler, options);
+      instance.gestures.set('swipe-right', handler, options);
 
-      instance.gestures.addEventListener('swipe-right', handler, options);
+      instance.gestures.set('swipe-right', handler, options);
       simulatePointerDown(instance);
       simulatePointerMove(instance, {}, { x }, times);
       simulateLostPointerCapture(instance);
@@ -175,7 +173,7 @@ describe('Gestures controller', () => {
 
     it('swipe-down', () => {
       const y = 100;
-      instance.gestures.addEventListener('swipe-down', handler, options);
+      instance.gestures.set('swipe-down', handler, options);
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, {}, { y }, times);
