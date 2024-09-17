@@ -25,8 +25,7 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     registerComponent(IgcCarouselIndicatorComponent);
   }
 
-  /** @private @hidden @internal */
-  @property()
+  @property({ attribute: false })
   public active = false;
 
   public override connectedCallback() {

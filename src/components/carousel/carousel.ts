@@ -58,6 +58,8 @@ export interface IgcCarouselComponentEventMap {
  * @element igc-carousel
  *
  * @slot Default slot for the carousel. Any projected `igc-carousel-slide` components should be projected here.
+ * @slot previous-button - Renders content inside the previous button.
+ * @slot next-button - Renders content inside the next button.
  *
  * @fires igcSlideChanged - Emitted when the current active slide is changed either by user interaction or by the interval callback.
  * @fires igcPlaying - Emitted when the carousel enters playing state by a user interaction.
