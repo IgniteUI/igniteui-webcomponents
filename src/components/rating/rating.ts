@@ -196,9 +196,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @watch('value')
   protected handleValueChange() {
     this.value = clamp(Number.isNaN(this.value) ? 0 : this.value, 0, this.max);
-    this.setFormValue(`${this.value}`, `${this.value}`);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(`${this.value}`, `${this.value}`);
+    this._validate();
   }
 
   @watch('step')

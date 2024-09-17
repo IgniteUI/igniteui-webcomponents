@@ -51,7 +51,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this.setFormValue(this._value || 'on');
+      this._setFormValue(this._value || 'on');
     }
   }
 
@@ -67,9 +67,8 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-    this.setFormValue(this._checked ? this.value || 'on' : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this._checked ? this.value || 'on' : null);
+    this._validate();
   }
 
   public get checked(): boolean {
@@ -89,11 +88,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
       this.hideLabel = this.label.length < 1;
     });
     return root;
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   /** Simulates a click on the control. */

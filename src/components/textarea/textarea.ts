@@ -226,9 +226,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string) {
     this._value = value ?? '';
-    this.setFormValue(this._value ? this._value : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this._value ? this._value : null);
+    this._validate();
   }
 
   public get value(): string {
@@ -273,15 +272,11 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('focus', () => {
       this._dirty = true;
     });
-    this.addEventListener('blur', () => {
-      this.updateValidity();
-      this.setInvalidState();
-    });
+    this.addEventListener('blur', () => this._validate());
   }
 
   public override async connectedCallback() {
     super.connectedCallback();
-    this.updateValidity();
 
     await this.updateComplete;
 

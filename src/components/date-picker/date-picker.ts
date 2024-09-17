@@ -242,9 +242,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: converter })
   public set value(value: Date | null) {
     this._value = value;
-    this.setFormValue(value ? value.toISOString() : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(value ? value.toISOString() : null);
+    this._validate();
   }
 
   public get value(): Date | null {
@@ -272,7 +271,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set min(value: Date) {
     this._min = value;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get min(): Date {
@@ -287,7 +286,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set max(value: Date) {
     this._max = value;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get max(): Date {
@@ -324,7 +323,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set disabledDates(dates: DateRangeDescriptor[]) {
     this._disabledDates = dates;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get disabledDates() {
@@ -433,11 +432,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this.onEscapeKey)
       .set(escapeKey, this.onEscapeKey);
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   protected override createRenderRoot() {

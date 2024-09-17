@@ -64,7 +64,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   @property({ type: Number })
   public set value(value: number) {
     this._value = this.validateValue(asNumber(value, this._value));
-    this.setFormValue(`${this._value}`);
+    this._setFormValue(`${this._value}`);
   }
 
   public get value(): number {

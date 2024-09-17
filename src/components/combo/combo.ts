@@ -389,7 +389,7 @@ export default class IgcComboComponent<
     // Wait for the underlying igc-input to update
     await this.updateComplete;
 
-    this.updateValidity();
+    this._updateValidity();
     this.invalid = !this.checkValidity();
   }
 
@@ -450,7 +450,7 @@ export default class IgcComboComponent<
     return this._value;
   }
 
-  protected override setFormValue(): void {
+  protected override _setFormValue(): void {
     if (!this.name) {
       return;
     }
@@ -458,7 +458,7 @@ export default class IgcComboComponent<
     const items = this._value;
 
     if (items.length < 1) {
-      super.setFormValue(null);
+      super._setFormValue(null);
       return;
     }
 
@@ -472,7 +472,7 @@ export default class IgcComboComponent<
       }
     }
 
-    super.setFormValue(data);
+    super._setFormValue(data);
   }
 
   protected async updateValue() {
@@ -488,17 +488,11 @@ export default class IgcComboComponent<
       this.target.value = this._displayValue;
     }
 
-    this.setFormValue();
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue();
+    this._validate();
 
     await this.updateComplete;
     this.list.requestUpdate();
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   /* alternateName: focusComponent */

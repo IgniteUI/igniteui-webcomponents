@@ -112,7 +112,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return getGroup(this).checked;
   }
 
-  protected override setDefaultValue(): void {
+  protected override _setDefaultValue(): void {
     this._defaultValue = this === last(this._checkedRadios);
   }
 
@@ -124,7 +124,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   public set value(value: string) {
     this._value = value;
     if (this._checked) {
-      this.setFormValue(this._value || 'on');
+      this._setFormValue(this._value || 'on');
     }
   }
 
@@ -177,16 +177,11 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return root;
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
-  }
-
   protected override async firstUpdated() {
     await this.updateComplete;
     this._checked && this === last(this._checkedRadios)
       ? this._updateCheckedState()
-      : this.updateValidity();
+      : this._updateValidity();
   }
 
   /** Simulates a click on the radio control. */
@@ -214,8 +209,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     const radios = this._radios;
 
     for (const radio of radios) {
-      radio.updateValidity(message);
-      radio.setInvalidState();
+      radio._validate(message);
     }
   }
 
@@ -224,17 +218,15 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     const radios = this._radios;
 
     for (const radio of radios) {
-      radio.updateValidity();
-      radio.setInvalidState();
+      radio._validate();
     }
   }
 
   private _updateCheckedState() {
     const siblings = this._siblings;
 
-    this.setFormValue(this.value || 'on');
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this.value || 'on');
+    this._validate();
 
     this._tabIndex = 0;
     this.input?.focus();
@@ -242,22 +234,20 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     for (const radio of siblings) {
       radio.checked = false;
       radio._tabIndex = -1;
-      radio.updateValidity();
-      radio.setInvalidState();
+      radio._validate();
     }
   }
 
   private _updateUncheckedState() {
     const siblings = this._siblings;
 
-    this.setFormValue(null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(null);
+    this._validate();
 
     this._tabIndex = -1;
 
     for (const radio of siblings) {
-      radio.updateValidity();
+      radio._updateValidity();
     }
   }
 

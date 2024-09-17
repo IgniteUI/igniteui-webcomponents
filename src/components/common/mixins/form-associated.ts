@@ -26,44 +26,40 @@ export declare class FormAssociatedElementInterface {
   protected _defaultValue: unknown;
 
   /**
-   * Applies the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
+   * Executes the {@link FormAssociatedElementInterface._updateValidity | `_updateValidity()`} hook and then applies
+   * the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
    * if the element has completed the first update cycle or it has been interacted with by the user.
-   *
-   * Usually, it should be called after {@link FormAssociatedElementInterface.updateValidity | `updateValidity()`}
    */
-  protected setInvalidState(): void;
+  protected _validate(message?: string): void;
 
   /**
    * Executes the component validators and updates the internal validity state.
    */
-  protected updateValidity(message?: string): void;
+  protected _updateValidity(message?: string): void;
 
   /**
    * Saves the initial value/checked state of the control.
    *
    * Called on connectedCallback.
    */
-  protected setDefaultValue(): void;
+  protected _setDefaultValue(): void;
 
   /**
    * Called when the parent form is reset.
    *
    * Restores the initially bound value/checked state of the control.
    */
-  protected restoreDefaultValue(): void;
+  protected _restoreDefaultValue(): void;
 
-  protected setFormValue(
+  protected _setFormValue(
     value: string | File | FormData | null,
-    state?: string | File | FormData | null | undefined
-  ): void;
-  protected setValidity(
-    flags?: ValidityStateFlags | undefined,
-    message?: string | undefined,
-    anchor?: HTMLElement | undefined
+    state?: string | File | FormData | null
   ): void;
 
   protected formResetCallback(): void;
+
   protected formDisabledCallback(state: boolean): void;
+
   protected formStateRestoreCallback(
     state: string | FormData | File,
     mode: 'autocomplete' | 'restore'
@@ -222,7 +218,29 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public override connectedCallback(): void {
       super.connectedCallback();
       this._dirty = false;
-      this.setDefaultValue();
+      this._updateValidity();
+      this._setDefaultValue();
+    }
+
+    public override attributeChangedCallback(
+      name: string,
+      prev: string | null,
+      value: string | null
+    ): void {
+      super.attributeChangedCallback(name, prev, value);
+
+      // TODO: This is still work in progress. Probably should stick the `setDefaultValue()`
+      // around here. It would be nice to be able to separate the mixin for string | boolean values
+      // with defaultValue and defaultChecked respectively.
+
+      if (name === 'checked') {
+        this._defaultValue = value;
+        return;
+      }
+
+      if (name === 'value') {
+        this._defaultValue = value;
+      }
     }
 
     /**
@@ -230,7 +248,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      *
      * Called on connectedCallback.
      */
-    protected setDefaultValue() {
+    protected _setDefaultValue() {
       if ('checked' in this) {
         this._defaultValue = this.checked;
       } else if ('value' in this) {
@@ -243,7 +261,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      *
      * Restores the initially bound value/checked state of the control.
      */
-    protected restoreDefaultValue() {
+    protected _restoreDefaultValue() {
       if ('checked' in this) {
         this.checked = this._defaultValue;
       } else if ('value' in this) {
@@ -256,23 +274,15 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       this.invalid = true;
     }
 
-    protected setFormValue(
+    protected _setFormValue(
       value: string | File | FormData | null,
-      state?: string | File | FormData | null | undefined
+      state?: string | File | FormData | null
     ) {
       this.__internals.setFormValue(value, state || value);
     }
 
-    protected setValidity(
-      flags?: ValidityStateFlags | undefined,
-      message?: string | undefined,
-      anchor?: HTMLElement | undefined
-    ) {
-      this.__internals.setValidity(flags, message, anchor);
-    }
-
     protected formResetCallback() {
-      this.restoreDefaultValue();
+      this._restoreDefaultValue();
       this._dirty = false;
 
       // Apply any changes happening during form reset synchronously
@@ -287,9 +297,19 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     /**
+     * Executes the {@link FormAssociatedElementInterface._updateValidity | `_updateValidity()`} hook and then applies
+     * the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
+     * if the element has completed the first update cycle or it has been interacted with by the user.
+     */
+    protected _validate(message?: string) {
+      this._updateValidity(message);
+      this._setInvalidState();
+    }
+
+    /**
      * Executes the component validators and updates the internal validity state.
      */
-    protected updateValidity(message?: string) {
+    protected _updateValidity(message?: string) {
       const validity: ValidityStateFlags = {};
       let validationMessage = '';
 
@@ -314,13 +334,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       this.__internals.setValidity(validity, validationMessage);
     }
 
-    /**
-     * Applies the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
-     * if the element has completed the first update cycle or it has been interacted with by the user.
-     *
-     * Usually, it should be called after {@link FormAssociatedElementInterface.updateValidity | `updateValidity()`}
-     */
-    protected setInvalidState() {
+    private _setInvalidState() {
       if (this.hasUpdated || this._dirty) {
         this.invalid = !this.checkValidity();
       }
@@ -341,7 +355,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * As long as `message` is not empty, the control is considered invalid.
      */
     public setCustomValidity(message: string) {
-      this.updateValidity(message);
+      this._updateValidity(message);
       this.invalid = !this.checkValidity();
     }
   }

@@ -35,7 +35,7 @@ export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
 
     @watch('required', { waitUntilFirstUpdate: true })
     protected requiredChange() {
-      this.updateValidity();
+      this._updateValidity();
       this.invalid = !this.checkValidity();
     }
   }
