@@ -22,6 +22,9 @@ import {
   finishAnimationsFor,
   simulateClick,
   simulateKeyboard,
+  simulateLostPointerCapture,
+  simulatePointerDown,
+  simulatePointerMove,
 } from '../common/utils.spec.js';
 import type IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
@@ -63,6 +66,7 @@ describe('Carousel', () => {
 
   let carousel: IgcCarouselComponent;
   let slides: IgcCarouselSlideComponent[];
+  let carouselSlidesContainer: Element;
   let nextButton: IgcButtonComponent;
   let prevButton: IgcButtonComponent;
   let defaultIndicators: IgcCarouselIndicatorComponent[];
@@ -95,6 +99,7 @@ describe('Carousel', () => {
       expect(carousel.skipNavigation).to.be.false;
       expect(carousel.skipIndicator).to.be.false;
       expect(carousel.vertical).to.be.false;
+      expect(carousel.gesturesSupport).to.be.false;
       expect(carousel.indicatorsOrientation).to.equal('end');
       expect(carousel.interval).to.be.undefined;
       expect(carousel.maximumIndicatorsCount).to.equal(10);
@@ -742,6 +747,157 @@ describe('Carousel', () => {
         expect(divContainer.ariaLive).to.equal('off');
 
         expect(eventSpy.callCount).to.equal(0);
+      });
+    });
+
+    describe('Swipe', () => {
+      beforeEach(() => {
+        carouselSlidesContainer = carousel.shadowRoot?.querySelector(
+          'div[aria-live="polite"]'
+        ) as Element;
+      });
+
+      it('it should change to next slide on swipe-left', async () => {
+        carousel.gesturesSupport = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(1);
+      });
+
+      it('it should change to previous slide on swipe-right', async () => {
+        carousel.gesturesSupport = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(2);
+      });
+
+      it('it should not change to next/previous slide on swipe left/right when `vertical` is true', async () => {
+        carousel.gesturesSupport = true;
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe left
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe right
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(0);
+      });
+
+      it('it should change to next slide on swipe-up', async () => {
+        carousel.gesturesSupport = true;
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(1);
+      });
+
+      it('it should change to previous slide on swipe-down', async () => {
+        carousel.gesturesSupport = true;
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(2);
+      });
+
+      it('it should not change to next/previous slide on swipe up/down when `vertical` is false', async () => {
+        carousel.gesturesSupport = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+        expect(carousel.vertical).to.be.false;
+
+        // swipe up
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe down
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(0);
+      });
+
+      it('it should not change to next/previous slide on swipe when `gesturesSupport` is false', async () => {
+        expect(carousel.current).to.equal(0);
+        expect(carousel.gesturesSupport).to.be.false;
+
+        // swipe left
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe right
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe up
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe down
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(0);
       });
     });
   });

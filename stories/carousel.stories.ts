@@ -94,6 +94,12 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
     },
+    gesturesSupport: {
+      type: 'boolean',
+      description: 'Controls whether the carousel should support gestures.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
   },
   args: {
     skipLoop: false,
@@ -104,6 +110,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     indicatorsOrientation: 'end',
     maximumIndicatorsCount: 10,
     animationType: 'slide',
+    gesturesSupport: false,
   },
 };
 
@@ -128,6 +135,8 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
+  /** Controls whether the carousel should support gestures. */
+  gesturesSupport: boolean;
 }
 type Story = StoryObj<IgcCarouselArgs>;
 
@@ -167,6 +176,7 @@ const BasicTemplate = ({
   maximumIndicatorsCount,
   interval,
   animationType,
+  gesturesSupport,
 }: IgcCarouselArgs) => {
   return html`
     <igc-carousel
@@ -179,6 +189,7 @@ const BasicTemplate = ({
       .vertical=${vertical}
       .indicatorsOrientation=${indicatorsOrientation}
       .maximumIndicatorsCount=${maximumIndicatorsCount}
+      .gesturesSupport=${gesturesSupport}
     >
       <igc-carousel-slide>
         <img
@@ -212,6 +223,7 @@ const SlottedContentTemplate = ({
   interval,
   animationType,
   maximumIndicatorsCount,
+  gesturesSupport,
 }: IgcCarouselArgs) => {
   return html`
     <igc-carousel
@@ -224,6 +236,7 @@ const SlottedContentTemplate = ({
       .vertical=${vertical}
       .indicatorsOrientation=${indicatorsOrientation}
       .maximumIndicatorsCount=${maximumIndicatorsCount}
+      .gesturesSupport=${gesturesSupport}
     >
       <igc-icon
         slot="previous-button"
@@ -279,6 +292,7 @@ const SlottedInputsTemplate = ({
   interval,
   animationType,
   maximumIndicatorsCount,
+  gesturesSupport,
 }: IgcCarouselArgs) => {
   return html`
     <style>
@@ -315,6 +329,7 @@ const SlottedInputsTemplate = ({
       .vertical=${vertical}
       .indicatorsOrientation=${indicatorsOrientation}
       .maximumIndicatorsCount=${maximumIndicatorsCount}
+      .gesturesSupport=${gesturesSupport}
     >
       <igc-carousel-slide>
         <igc-input type="text" placeholder="Username">
@@ -360,6 +375,7 @@ const SlottedThumbnailTemplate = ({
   interval,
   animationType,
   maximumIndicatorsCount,
+  gesturesSupport,
 }: IgcCarouselArgs) => {
   return html`
     <style>
@@ -387,6 +403,7 @@ const SlottedThumbnailTemplate = ({
       .vertical=${vertical}
       .indicatorsOrientation=${indicatorsOrientation}
       .maximumIndicatorsCount=${maximumIndicatorsCount}
+      .gesturesSupport=${gesturesSupport}
     >
       <igc-carousel-indicator>
         <img

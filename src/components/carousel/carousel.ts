@@ -13,6 +13,10 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
+  type SwipeEvent,
+  addGesturesController,
+} from '../common/controllers/gestures.js';
+import {
   addKeybindings,
   arrowLeft,
   arrowRight,
@@ -108,9 +112,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     initialValue: this,
   });
 
+  private _carouselSlidesContainerRef: Ref<HTMLDivElement> = createRef();
   private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
   private _prevButtonRef: Ref<IgcButtonComponent> = createRef();
   private _nextButtonRef: Ref<IgcButtonComponent> = createRef();
+
+  private _carouselGesturesInteraction = addGesturesController(this, {
+    ref: this._carouselSlidesContainerRef,
+  });
 
   private get hasProjectedIndicators(): boolean {
     return this._projectedIndicators.length > 0;
@@ -238,6 +247,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public animationType: 'slide' | 'fade' | 'none' = 'slide';
 
   /**
+   * Controls whether the carousel should support gestures.
+   */
+  @property({ type: Boolean, reflect: false })
+  public gesturesSupport = false;
+
+  /**
    * The slides of the carousel.
    */
   @queryAssignedElements({ selector: IgcCarouselSlideComponent.tagName })
@@ -295,6 +310,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.addEventListener('pointerdown', this.handlePointerDown);
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
+
+    this._carouselGesturesInteraction.set('swipe', (event) =>
+      this.handleSwipe(event)
+    );
 
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
@@ -434,6 +453,32 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ? await this.select(this.slides[this.total - 1])
         : await this.select(this.slides[0]);
     });
+  }
+
+  private async handleSwipe(event: SwipeEvent): Promise<void> {
+    if (!this.gesturesSupport) {
+      return;
+    }
+
+    const dir = event.data.direction;
+
+    if (this.shouldSwipe(event)) {
+      this.handleInteraction(async () => {
+        dir === 'left' || dir === 'up' ? await this.next() : await this.prev();
+      });
+    }
+  }
+
+  private shouldSwipe(event: SwipeEvent): boolean {
+    const dir = event.data.direction;
+
+    if (this.vertical && (dir === 'up' || dir === 'down')) {
+      return true;
+    }
+    if (!this.vertical && (dir === 'left' || dir === 'right')) {
+      return true;
+    }
+    return false;
   }
 
   private async handleIndicatorClick(event: MouseEvent): Promise<void> {
@@ -726,6 +771,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
           ? this.labelTemplate()
           : nothing}
         <div
+          ${ref(this._carouselSlidesContainerRef)}
           id=${this._carouselId}
           aria-live=${this.interval && this.isPlaying ? 'off' : 'polite'}
         >
