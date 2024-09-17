@@ -119,6 +119,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private _carouselGesturesInteraction = addGesturesController(this, {
     ref: this._carouselSlidesContainerRef,
+    touchOnly: true,
   });
 
   private get hasProjectedIndicators(): boolean {
@@ -247,12 +248,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public animationType: 'slide' | 'fade' | 'none' = 'slide';
 
   /**
-   * Controls whether the carousel should support gestures.
-   */
-  @property({ type: Boolean, reflect: false })
-  public gesturesSupport = false;
-
-  /**
    * The slides of the carousel.
    */
   @queryAssignedElements({ selector: IgcCarouselSlideComponent.tagName })
@@ -311,9 +306,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
 
-    this._carouselGesturesInteraction.set('swipe', (event) =>
-      this.handleSwipe(event)
-    );
+    this._carouselGesturesInteraction
+      .set('swipe-left', (event) => this.handleSwipe(event))
+      .set('swipe-right', (event) => this.handleSwipe(event))
+      .set('swipe-up', (event) => this.handleSwipe(event, true))
+      .set('swipe-down', (event) => this.handleSwipe(event, true));
 
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
@@ -455,30 +452,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     });
   }
 
-  private async handleSwipe(event: SwipeEvent): Promise<void> {
-    if (!this.gesturesSupport) {
+  private async handleSwipe(
+    event: SwipeEvent,
+    isVertical = false
+  ): Promise<void> {
+    if (this.vertical !== isVertical) {
       return;
     }
-
     const dir = event.data.direction;
 
-    if (this.shouldSwipe(event)) {
-      this.handleInteraction(async () => {
-        dir === 'left' || dir === 'up' ? await this.next() : await this.prev();
-      });
-    }
-  }
-
-  private shouldSwipe(event: SwipeEvent): boolean {
-    const dir = event.data.direction;
-
-    if (this.vertical && (dir === 'up' || dir === 'down')) {
-      return true;
-    }
-    if (!this.vertical && (dir === 'left' || dir === 'right')) {
-      return true;
-    }
-    return false;
+    this.handleInteraction(async () => {
+      dir === 'left' || dir === 'up' ? await this.next() : await this.prev();
+    });
   }
 
   private async handleIndicatorClick(event: MouseEvent): Promise<void> {

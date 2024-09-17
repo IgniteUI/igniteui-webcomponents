@@ -99,7 +99,6 @@ describe('Carousel', () => {
       expect(carousel.skipNavigation).to.be.false;
       expect(carousel.skipIndicator).to.be.false;
       expect(carousel.vertical).to.be.false;
-      expect(carousel.gesturesSupport).to.be.false;
       expect(carousel.indicatorsOrientation).to.equal('end');
       expect(carousel.interval).to.be.undefined;
       expect(carousel.maximumIndicatorsCount).to.equal(10);
@@ -447,7 +446,7 @@ describe('Carousel', () => {
       )[0] as IgcButtonComponent;
     });
 
-    it('it should slot previous button icon', async () => {
+    it('should slot previous button icon', async () => {
       const slottedContent = prevButton
         ?.querySelector('slot')
         ?.assignedNodes()[0];
@@ -455,7 +454,7 @@ describe('Carousel', () => {
       expect(slottedContent?.textContent).to.equal('left');
     });
 
-    it('it should slot next button icon', async () => {
+    it('should slot next button icon', async () => {
       const slottedContent = nextButton
         ?.querySelector('slot')
         ?.assignedNodes()[0];
@@ -463,7 +462,7 @@ describe('Carousel', () => {
       expect(slottedContent?.textContent).to.equal('right');
     });
 
-    it('it should slot indicator', async () => {
+    it('should slot indicator', async () => {
       const indicator = carousel?.querySelector('igc-carousel-indicator');
       expect(indicator).dom.to.equal(
         `<igc-carousel-indicator
@@ -496,7 +495,7 @@ describe('Carousel', () => {
 
   describe('Interactions', () => {
     describe('Click', () => {
-      it('it should change slide when clicking next button', async () => {
+      it('should change slide when clicking next button', async () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
@@ -508,7 +507,7 @@ describe('Carousel', () => {
         expect(defaultIndicators[1].ariaSelected).to.equal('true');
       });
 
-      it('it should change slide when clicking previous button', async () => {
+      it('should change slide when clicking previous button', async () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
@@ -520,7 +519,7 @@ describe('Carousel', () => {
         expect(defaultIndicators[2].ariaSelected).to.equal('true');
       });
 
-      it('it should change slide when clicking indicators', async () => {
+      it('should change slide when clicking indicators', async () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].ariaSelected).to.equal('true');
 
@@ -543,7 +542,7 @@ describe('Carousel', () => {
     });
 
     describe('Keyboard', () => {
-      it('it should change to next slide on Enter/Space keys', async () => {
+      it('should change to next slide on Enter/Space keys', async () => {
         carousel.vertical = true;
         await elementUpdated(carousel);
 
@@ -560,7 +559,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(2);
       });
 
-      it('it should change to previous slide on Enter/Space keys', async () => {
+      it('should change to previous slide on Enter/Space keys', async () => {
         carousel.vertical = true;
         await elementUpdated(carousel);
 
@@ -577,7 +576,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
       });
 
-      it('it should change slides on ArrowLeft/ArrowRight/Home/End keys (LTR)', async () => {
+      it('should change slides on ArrowLeft/ArrowRight/Home/End keys (LTR)', async () => {
         const indicatorsContainer = carousel.shadowRoot?.querySelector(
           'div[role="tablist"]'
         ) as HTMLDivElement;
@@ -600,7 +599,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
       });
 
-      it('it should change slides on ArrowLeft/ArrowRight/Home/End keys (RTL)', async () => {
+      it('should change slides on ArrowLeft/ArrowRight/Home/End keys (RTL)', async () => {
         carousel.dir = 'rtl';
         await elementUpdated(carousel);
         const indicatorsContainer = carousel.shadowRoot?.querySelector(
@@ -627,7 +626,7 @@ describe('Carousel', () => {
     });
 
     describe('Automatic rotation', () => {
-      it('it should pause/play on pointerenter/pointerleave', async () => {
+      it('should pause/play on pointerenter/pointerleave', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
           'div[aria-live]'
@@ -661,7 +660,7 @@ describe('Carousel', () => {
         expect(eventSpy.secondCall).calledWith('igcPlaying');
       });
 
-      it('it should pause/play on keyboard interaction', async () => {
+      it('should pause/play on keyboard interaction', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
           'div[aria-live]'
@@ -716,7 +715,7 @@ describe('Carousel', () => {
         expect(eventSpy.secondCall).calledWith('igcPlaying');
       });
 
-      it('it should not pause on interaction if `skipPauseOnInteraction` is true', async () => {
+      it('should not pause on interaction if `skipPauseOnInteraction` is true', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
           'div[aria-live]'
@@ -757,10 +756,7 @@ describe('Carousel', () => {
         ) as Element;
       });
 
-      it('it should change to next slide on swipe-left', async () => {
-        carousel.gesturesSupport = true;
-        await elementUpdated(carousel);
-
+      it('should change to next slide on swipe-left', async () => {
         expect(carousel.current).to.equal(0);
 
         simulatePointerDown(carouselSlidesContainer);
@@ -771,10 +767,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
       });
 
-      it('it should change to previous slide on swipe-right', async () => {
-        carousel.gesturesSupport = true;
-        await elementUpdated(carousel);
-
+      it('should change to previous slide on swipe-right', async () => {
         expect(carousel.current).to.equal(0);
 
         simulatePointerDown(carouselSlidesContainer);
@@ -785,8 +778,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(2);
       });
 
-      it('it should not change to next/previous slide on swipe left/right when `vertical` is true', async () => {
-        carousel.gesturesSupport = true;
+      it('should not change to next/previous slide on swipe left/right when `vertical` is true', async () => {
         carousel.vertical = true;
         await elementUpdated(carousel);
 
@@ -809,8 +801,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
       });
 
-      it('it should change to next slide on swipe-up', async () => {
-        carousel.gesturesSupport = true;
+      it('should change to next slide on swipe-up', async () => {
         carousel.vertical = true;
         await elementUpdated(carousel);
 
@@ -824,8 +815,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
       });
 
-      it('it should change to previous slide on swipe-down', async () => {
-        carousel.gesturesSupport = true;
+      it('should change to previous slide on swipe-down', async () => {
         carousel.vertical = true;
         await elementUpdated(carousel);
 
@@ -839,10 +829,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(2);
       });
 
-      it('it should not change to next/previous slide on swipe up/down when `vertical` is false', async () => {
-        carousel.gesturesSupport = true;
-        await elementUpdated(carousel);
-
+      it('should not change to next/previous slide on swipe up/down when `vertical` is false', async () => {
         expect(carousel.current).to.equal(0);
         expect(carousel.vertical).to.be.false;
 
@@ -863,38 +850,65 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
       });
 
-      it('it should not change to next/previous slide on swipe when `gesturesSupport` is false', async () => {
+      it('should not change to next/previous slide on mouse swipe', async () => {
         expect(carousel.current).to.equal(0);
-        expect(carousel.gesturesSupport).to.be.false;
 
         // swipe left
-        simulatePointerDown(carouselSlidesContainer);
-        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
-        simulateLostPointerCapture(carouselSlidesContainer);
+        simulatePointerDown(carouselSlidesContainer, { pointerType: 'mouse' });
+        simulatePointerMove(
+          carouselSlidesContainer,
+          { pointerType: 'mouse' },
+          { x: -100 },
+          10
+        );
+        simulateLostPointerCapture(carouselSlidesContainer, {
+          pointerType: 'mouse',
+        });
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(0);
 
         // swipe right
-        simulatePointerDown(carouselSlidesContainer);
-        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
-        simulateLostPointerCapture(carouselSlidesContainer);
+        simulatePointerDown(carouselSlidesContainer, { pointerType: 'mouse' });
+        simulatePointerMove(
+          carouselSlidesContainer,
+          { pointerType: 'mouse' },
+          { x: 100 },
+          10
+        );
+        simulateLostPointerCapture(carouselSlidesContainer, {
+          pointerType: 'mouse',
+        });
         await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(0);
 
         // swipe up
-        simulatePointerDown(carouselSlidesContainer);
-        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
-        simulateLostPointerCapture(carouselSlidesContainer);
+        simulatePointerDown(carouselSlidesContainer, { pointerType: 'mouse' });
+        simulatePointerMove(
+          carouselSlidesContainer,
+          { pointerType: 'mouse' },
+          { y: -100 },
+          10
+        );
+        simulateLostPointerCapture(carouselSlidesContainer, {
+          pointerType: 'mouse',
+        });
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(0);
 
         // swipe down
-        simulatePointerDown(carouselSlidesContainer);
-        simulatePointerMove(carouselSlidesContainer, {}, { y: 100 }, 10);
-        simulateLostPointerCapture(carouselSlidesContainer);
+        simulatePointerDown(carouselSlidesContainer, { pointerType: 'mouse' });
+        simulatePointerMove(
+          carouselSlidesContainer,
+          { pointerType: 'mouse' },
+          { y: 100 },
+          10
+        );
+        simulateLostPointerCapture(carouselSlidesContainer, {
+          pointerType: 'mouse',
+        });
         await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(0);
