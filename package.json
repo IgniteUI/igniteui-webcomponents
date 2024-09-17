@@ -62,12 +62,12 @@
     "@custom-elements-manifest/analyzer": "^0.10.3",
     "@igniteui/material-icons-extended": "^3.0.2",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^8.3.0",
-    "@storybook/addon-actions": "^8.3.0",
-    "@storybook/addon-essentials": "^8.3.0",
-    "@storybook/addon-links": "^8.3.0",
-    "@storybook/web-components": "^8.3.0",
-    "@storybook/web-components-vite": "^8.3.0",
+    "@storybook/addon-a11y": "^8.3.1",
+    "@storybook/addon-actions": "^8.3.1",
+    "@storybook/addon-essentials": "^8.3.1",
+    "@storybook/addon-links": "^8.3.1",
+    "@storybook/web-components": "^8.3.1",
+    "@storybook/web-components-vite": "^8.3.1",
     "@types/mocha": "^10.0.8",
     "@web/test-runner": "^0.19.0",
     "@web/test-runner-playwright": "^0.11.0",
@@ -93,7 +93,7 @@
     "sass": "^1.78.0",
     "sass-embedded": "^1.78.0",
     "sinon": "^19.0.2",
-    "storybook": "^8.3.0",
+    "storybook": "^8.3.1",
     "stylelint": "^16.9.0",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.2",
@@ -103,7 +103,7 @@
     "typedoc": "^0.26.7",
     "typedoc-plugin-localization": "^3.0.5",
     "typescript": "^5.6.2",
-    "vite": "^5.4.5"
+    "vite": "^5.4.6"
   },
   "browserslist": [
     "defaults"
