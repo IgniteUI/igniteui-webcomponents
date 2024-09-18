@@ -3,6 +3,7 @@ import { spy } from 'sinon';
 
 import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
+import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import {
   altKey,
@@ -91,7 +92,7 @@ describe('Date picker', () => {
       );
       await elementUpdated(picker);
 
-      dateTimeInput = picker.shadowRoot!.querySelector(
+      dateTimeInput = picker.renderRoot.querySelector(
         IgcDateTimeInputComponent.tagName
       )!;
 
@@ -160,7 +161,7 @@ describe('Date picker', () => {
         await slotTests[i].prerequisite?.();
         await elementUpdated(picker);
 
-        const slot = slotTests[i].parent.shadowRoot!.querySelector(
+        const slot = slotTests[i].parent.renderRoot.querySelector(
           `slot[name="${slotTests[i].slot}"]`
         ) as HTMLSlotElement;
         let elements = slot.assignedElements();
@@ -189,7 +190,7 @@ describe('Date picker', () => {
       );
       await elementUpdated(picker);
 
-      const slot = picker.shadowRoot!.querySelector(
+      const slot = picker.renderRoot.querySelector(
         `slot[name="title"]`
       ) as HTMLSlotElement;
       expect(slot).to.be.null;
@@ -200,7 +201,7 @@ describe('Date picker', () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker .value="${expectedValue}"></igc-date-picker>`
       );
-      dateTimeInput = picker.shadowRoot!.querySelector(
+      dateTimeInput = picker.renderRoot.querySelector(
         IgcDateTimeInputComponent.tagName
       )!;
 
@@ -214,14 +215,12 @@ describe('Date picker', () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker open></igc-date-picker>`
       );
-      calendar = picker.shadowRoot!.querySelector(
-        IgcCalendarComponent.tagName
-      )!;
+      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
 
       expect(picker.mode).to.equal('dropdown');
       await picker.show();
 
-      const popover = picker.shadowRoot?.querySelector('igc-popover');
+      const popover = picker.renderRoot.querySelector('igc-popover');
       expect(popover).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.have.tagName('igc-focus-trap');
@@ -231,14 +230,12 @@ describe('Date picker', () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker open mode="dialog"></igc-date-picker>`
       );
-      calendar = picker.shadowRoot!.querySelector(
-        IgcCalendarComponent.tagName
-      )!;
+      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
 
       expect(picker.mode).to.equal('dialog');
       await picker.show();
 
-      const dialog = picker.shadowRoot?.querySelector('igc-dialog');
+      const dialog = picker.renderRoot.querySelector('igc-dialog');
       expect(dialog).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.equal(dialog);
@@ -246,15 +243,13 @@ describe('Date picker', () => {
   });
 
   describe('Attributes and properties', () => {
-    const currentDate = new Date(new Date().setHours(0, 0, 0));
-    const tomorrowDate = new Date(
-      new Date().setDate(currentDate.getDate() + 1)
-    );
+    const currentDate = CalendarDay.today;
+    const tomorrowDate = currentDate.add('day', 1);
 
     it('should set the value trough attribute correctly', async () => {
       expect(picker.value).to.be.null;
-      const expectedValue = new Date(2024, 2, 1);
-      picker.setAttribute('value', expectedValue.toDateString());
+      const expectedValue = new CalendarDay({ year: 2024, month: 2, date: 1 });
+      picker.setAttribute('value', expectedValue.native.toDateString());
       await elementUpdated(picker);
 
       checkDatesEqual(picker.value!, expectedValue);
@@ -317,7 +312,7 @@ describe('Date picker', () => {
     });
 
     it('should modify value only through calendar selection and not input when nonEditable is true', async () => {
-      picker.value = tomorrowDate;
+      picker.value = tomorrowDate.native;
       await elementUpdated(picker);
 
       picker.nonEditable = true;
@@ -342,7 +337,7 @@ describe('Date picker', () => {
     });
 
     it('should not modify value through selection or typing when readOnly is true', async () => {
-      picker.value = tomorrowDate;
+      picker.value = tomorrowDate.native;
       await elementUpdated(picker);
 
       picker.readOnly = true;
@@ -432,7 +427,7 @@ describe('Date picker', () => {
       picker.label = 'Test label';
       await elementUpdated(picker);
 
-      const label = picker.shadowRoot?.querySelector(
+      const label = picker.renderRoot.querySelector(
         'label[part="label"]'
       ) as HTMLLabelElement;
       expect(label).not.to.be.undefined;
@@ -440,15 +435,9 @@ describe('Date picker', () => {
     });
 
     describe('Active date', () => {
-      const tomorrowDate = new Date(
-        new Date().setDate(currentDate.getDate() + 1)
-      );
-      const after10DaysDate = new Date(
-        new Date().setDate(currentDate.getDate() + 10)
-      );
-      const after20DaysDate = new Date(
-        new Date().setDate(currentDate.getDate() + 20)
-      );
+      const tomorrowDate = currentDate.add('day', 1);
+      const after10DaysDate = currentDate.add('day', 10);
+      const after20DaysDate = currentDate.add('day', 20);
 
       it('should initialize activeDate with current date, when not set', async () => {
         checkDatesEqual(picker.activeDate, currentDate);
@@ -460,15 +449,15 @@ describe('Date picker', () => {
       it('should initialize activeDate = value when it is not set, but value is', async () => {
         const valueDate = after10DaysDate;
         picker = await fixture<IgcDatePickerComponent>(
-          html`<igc-date-picker .value=${valueDate}></igc-date-picker>`
+          html`<igc-date-picker .value=${valueDate.native}></igc-date-picker>`
         );
         await elementUpdated(picker);
 
         checkDatesEqual(picker.value as Date, valueDate);
 
-        calendar = picker.shadowRoot!.querySelector(
+        calendar = picker.renderRoot.querySelector(
           IgcCalendarComponent.tagName
-        ) as IgcCalendarComponent;
+        )!;
 
         checkDatesEqual(picker.activeDate, after10DaysDate);
         checkDatesEqual(calendar.activeDate, after10DaysDate);
@@ -476,7 +465,7 @@ describe('Date picker', () => {
       });
 
       it('should set activeDate correctly', async () => {
-        picker.activeDate = tomorrowDate;
+        picker.activeDate = tomorrowDate.native;
 
         await elementUpdated(picker);
         checkDatesEqual(calendar.activeDate, tomorrowDate);
@@ -485,7 +474,7 @@ describe('Date picker', () => {
         expect(picker.value).to.be.null;
 
         // setting the value does not affect the activeDate, when it is explicitly set
-        picker.value = after20DaysDate;
+        picker.value = after20DaysDate.native;
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, tomorrowDate);
@@ -574,7 +563,7 @@ describe('Date picker', () => {
     let input: HTMLInputElement;
 
     beforeEach(() => {
-      input = dateTimeInput.shadowRoot!.querySelector(
+      input = dateTimeInput.renderRoot.querySelector(
         'input'
       ) as HTMLInputElement;
     });
@@ -741,7 +730,7 @@ describe('Date picker', () => {
       simulateKeyboard(picker, [altKey, arrowDown]);
       await elementUpdated(picker);
 
-      const dialog = picker.shadowRoot!.querySelector('igc-dialog');
+      const dialog = picker.renderRoot.querySelector('igc-dialog');
       expect(picker.open).to.be.true;
       expect(dialog).not.to.be.undefined;
       expect(dialog?.open).to.be.true;
@@ -869,6 +858,7 @@ describe('Date picker', () => {
   });
 
   describe('Form integration', () => {
+    const today = CalendarDay.today;
     const spec = new FormAssociatedTestBed<IgcDatePickerComponent>(
       html`<igc-date-picker name="datePicker"></igc-date-picker>`
     );
@@ -886,7 +876,7 @@ describe('Date picker', () => {
     });
 
     it('should participate in form submission if there is a value and the value adheres to the validation constraints', async () => {
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal(
@@ -895,11 +885,23 @@ describe('Date picker', () => {
     });
 
     it('should reset to its default value state on form reset', async () => {
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
 
       spec.reset();
       expect(spec.element.value).to.be.null;
+    });
+
+    it('should reset to the new default value after setAttribute() call', () => {
+      spec.element.setAttribute('value', today.native.toISOString());
+      spec.element.value = today.add('day', 180).native;
+
+      spec.reset();
+
+      checkDatesEqual(spec.element.value, today);
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        today.native.toISOString()
+      );
     });
 
     it('should reflect disabled ancestor state (fieldset/form)', async () => {
@@ -915,7 +917,7 @@ describe('Date picker', () => {
       await elementUpdated(spec.element);
       spec.submitFails();
 
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
       spec.submitValidates();
     });
@@ -936,7 +938,7 @@ describe('Date picker', () => {
 
     it('should enforce max value constraint', async () => {
       spec.element.max = new Date(2020, 0, 1);
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
       spec.submitFails();
 
@@ -983,7 +985,7 @@ describe('Date picker', () => {
 
       spec.reset();
 
-      spec.element.value = new Date();
+      spec.element.value = today.native;
       expect(spec.form.checkValidity()).to.be.true;
       spec.submitValidates();
     });
@@ -1014,17 +1016,16 @@ describe('Date picker', () => {
 });
 
 const selectCurrentDate = (calendar: IgcCalendarComponent) => {
-  const daysView = calendar.shadowRoot!.querySelector(
+  const daysView = calendar.renderRoot.querySelector(
     IgcDaysViewComponent.tagName
   )!;
 
-  const currentDaySpan = daysView.shadowRoot!.querySelector(
+  const currentDaySpan = daysView.renderRoot.querySelector(
     'span[part~="current"]'
   )!;
   simulateClick(currentDaySpan?.children[0]);
 };
 
-const checkDatesEqual = (a: Date, b: Date) =>
-  expect(new Date(a.setHours(0, 0, 0, 0)).toISOString()).to.equal(
-    new Date(b.setHours(0, 0, 0, 0)).toISOString()
-  );
+function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
+  expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
+}
