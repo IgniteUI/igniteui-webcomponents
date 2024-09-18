@@ -8,7 +8,12 @@ import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';
 import { styles as shared } from './themes/shared/indicator-container/indicator-container.common.css.js';
 
+/* blazorSuppress */
 /**
+ * @element igc-carousel-indicator-container
+ *
+ * @slot - Default slot for the carousel indicator container.
+ *
  * @csspart base - The wrapping container of all carousel indicators.
  */
 @themes(all)

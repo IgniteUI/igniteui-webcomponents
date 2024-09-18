@@ -103,7 +103,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _carouselKeyboardInteractionFocus = addKeyboardFocusRing(this);
 
   private _internals: ElementInternals;
-  private _lastInterval: any;
+  private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
 
@@ -116,11 +116,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
   private _prevButtonRef: Ref<IgcButtonComponent> = createRef();
   private _nextButtonRef: Ref<IgcButtonComponent> = createRef();
-
-  private _carouselGesturesInteraction = addGesturesController(this, {
-    ref: this._carouselSlidesContainerRef,
-    touchOnly: true,
-  });
 
   private get hasProjectedIndicators(): boolean {
     return this._projectedIndicators.length > 0;
@@ -306,11 +301,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
 
-    this._carouselGesturesInteraction
-      .set('swipe-left', (event) => this.handleSwipe(event))
-      .set('swipe-right', (event) => this.handleSwipe(event))
-      .set('swipe-up', (event) => this.handleSwipe(event, true))
-      .set('swipe-down', (event) => this.handleSwipe(event, true));
+    addGesturesController(this, {
+      ref: this._carouselSlidesContainerRef,
+      touchOnly: true,
+    })
+      .set('swipe-left', this.handleHorizontalSwipe)
+      .set('swipe-right', this.handleHorizontalSwipe)
+      .set('swipe-up', this.handleVerticalSwipe)
+      .set('swipe-down', this.handleVerticalSwipe);
 
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
@@ -324,16 +322,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     addKeybindings(this, {
       ref: this._prevButtonRef,
       bindingDefaults: { preventDefault: true },
-    }).setActivateHandler(
-      async () => await this.handleNavigationInteraction('prev')
-    );
+    }).setActivateHandler(this.handleNavigationInteractionPrevious);
 
     addKeybindings(this, {
       ref: this._nextButtonRef,
       bindingDefaults: { preventDefault: true },
-    }).setActivateHandler(
-      async () => await this.handleNavigationInteraction('next')
-    );
+    }).setActivateHandler(this.handleNavigationInteractionNext);
 
     createMutationController(this, {
       callback: this._observerCallback,
@@ -388,10 +382,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private handleFocusOut(event: FocusEvent): void {
-    if (
-      this.contains(event.relatedTarget as Node) ||
-      this.renderRoot.contains(event.relatedTarget as Node)
-    ) {
+    const node = event.relatedTarget as Node;
+
+    if (this.contains(node) || this.renderRoot.contains(node)) {
       return;
     }
 
@@ -418,87 +411,76 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private async handleArrowLeft(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
-
-    this.handleInteraction(async () => {
-      isLTR(this) ? await this.prev() : await this.next();
-    });
+    this.handleInteraction(isLTR(this) ? this.prev : this.next);
   }
 
   private async handleArrowRight(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
-
-    this.handleInteraction(async () => {
-      isLTR(this) ? await this.next() : await this.prev();
-    });
+    this.handleInteraction(isLTR(this) ? this.next : this.prev);
   }
 
   private async handleHomeKey(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
-
-    this.handleInteraction(async () => {
-      isLTR(this)
-        ? await this.select(this.slides[0])
-        : await this.select(this.slides[this.total - 1]);
-    });
+    this.handleInteraction(() =>
+      this.select(isLTR(this) ? first(this.slides) : last(this.slides))
+    );
   }
 
   private async handleEndKey(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
-
-    this.handleInteraction(async () => {
-      isLTR(this)
-        ? await this.select(this.slides[this.total - 1])
-        : await this.select(this.slides[0]);
-    });
+    this.handleInteraction(() =>
+      this.select(isLTR(this) ? last(this.slides) : first(this.slides))
+    );
   }
 
-  private async handleSwipe(
-    event: SwipeEvent,
-    isVertical = false
-  ): Promise<void> {
-    if (this.vertical !== isVertical) {
-      return;
+  private handleVerticalSwipe({ data: { direction } }: SwipeEvent) {
+    if (this.vertical) {
+      this.handleInteraction(direction === 'up' ? this.next : this.prev);
     }
-    const dir = event.data.direction;
-
-    this.handleInteraction(async () => {
-      dir === 'left' || dir === 'up' ? await this.next() : await this.prev();
-    });
   }
 
-  private async handleIndicatorClick(event: MouseEvent): Promise<void> {
+  private handleHorizontalSwipe({ data: { direction } }: SwipeEvent) {
+    if (!this.vertical) {
+      this.handleInteraction(direction === 'left' ? this.next : this.prev);
+    }
+  }
+
+  private async handleIndicatorClick(event: PointerEvent): Promise<void> {
     const indicator = findElementFromEventPath<IgcCarouselIndicatorComponent>(
       IgcCarouselIndicatorComponent.tagName,
       event
-    ) as IgcCarouselIndicatorComponent;
+    )!;
 
     const index = this.hasProjectedIndicators
       ? this._projectedIndicators.indexOf(indicator)
       : Array.from(this._defaultIndicators).indexOf(indicator);
 
-    if (index !== this.current && this.slides[index]) {
-      this.handleInteraction(async () => {
-        const dir = index > this.current ? 'next' : 'prev';
-        await this.select(this.slides[index], dir);
-      });
-    }
+    this.handleInteraction(() =>
+      this.select(this.slides[index], index > this.current ? 'next' : 'prev')
+    );
   }
 
-  private async handleNavigationInteraction(
-    dir: 'next' | 'prev'
-  ): Promise<void> {
-    this.handleInteraction(async () => {
-      dir === 'next' ? await this.next() : await this.prev();
-    });
+  private handleNavigationInteractionNext() {
+    this.handleInteraction(this.next);
+  }
+
+  private handleNavigationInteractionPrevious() {
+    this.handleInteraction(this.prev);
   }
 
   private async handleInteraction(
-    callback: () => Promise<void>
+    callback: () => Promise<unknown>
   ): Promise<void> {
-    if (this.interval) this.resetInterval();
-    await callback();
+    if (this.interval) {
+      this.resetInterval();
+    }
+
+    await callback.call(this);
     this.emitEvent('igcSlideChanged');
-    if (this.interval) this.restartInterval();
+
+    if (this.interval) {
+      this.restartInterval();
+    }
   }
 
   private activateSlide(slide: IgcCarouselSlideComponent): void {
@@ -547,8 +529,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private restartInterval(): void {
     this.resetInterval();
 
-    const tick = asNumber(this.interval);
-    if (tick > 0) {
+    if (asNumber(this.interval) > 0) {
       this._lastInterval = setInterval(() => {
         if (this.isPlaying && this.total) {
           this.next();
@@ -652,7 +633,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         aria-label="Previous slide"
         aria-controls=${this._carouselId}
         ?disabled=${this.skipLoop && this.current === 0}
-        @click=${() => this.handleNavigationInteraction('prev')}
+        @click=${this.handleNavigationInteractionPrevious}
       >
         <slot name="previous-button">
           <igc-icon
@@ -669,7 +650,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         aria-label="Next slide"
         aria-controls=${this._carouselId}
         ?disabled=${this.skipLoop && this.current === this.total - 1}
-        @click=${() => this.handleNavigationInteraction('next')}
+        @click=${this.handleNavigationInteractionNext}
       >
         <slot name="next-button">
           <igc-icon
@@ -683,27 +664,29 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   protected *renderIndicators() {
-    for (let i = 0; i < this.slides.length; i++) {
-      const slide = this.slides[i];
-      const forward = `${slide.active ? 'visible' : 'hidden'}`;
-      const backward = `${slide.active ? 'hidden' : 'visible'}`;
-      yield html`<igc-carousel-indicator
-        exportparts="indicator, active, inactive"
-        role="tab"
-        tabindex=${slide.active ? 0 : -1}
-        aria-label="Slide ${i + 1}"
-        aria-selected=${slide.active}
-      >
-        <div
-          part="dot"
-          style=${styleMap({ visibility: backward, zIndex: 1 })}
-        ></div>
-        <div
-          part="dot active"
-          slot="active"
-          style=${styleMap({ visibility: forward })}
-        ></div>
-      </igc-carousel-indicator>`;
+    for (const [i, slide] of this.slides.entries()) {
+      const forward = slide.active ? 'visible' : 'hidden';
+      const backward = slide.active ? 'hidden' : 'visible';
+
+      yield html`
+        <igc-carousel-indicator
+          exportparts="indicator, active, inactive"
+          role="tab"
+          tabindex=${slide.active ? 0 : -1}
+          aria-label="Slide ${i + 1}"
+          aria-selected=${slide.active}
+        >
+          <div
+            part="dot"
+            style=${styleMap({ visibility: backward, zIndex: 1 })}
+          ></div>
+          <div
+            part="dot active"
+            slot="active"
+            style=${styleMap({ visibility: forward })}
+          ></div>
+        </igc-carousel-indicator>
+      `;
     }
   }
 
