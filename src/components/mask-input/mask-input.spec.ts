@@ -664,6 +664,18 @@ describe('Masked input', () => {
       expect(bed.element.value).to.eql('(123) (456)');
     });
 
+    it('should reset to the new default value after setAttribute() call', () => {
+      spec.element.setAttribute('value', '1111');
+      spec.element.value = '2222';
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal('1111');
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
