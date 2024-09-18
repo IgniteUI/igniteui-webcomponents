@@ -7,3 +7,8 @@ $theme: $indigo;
 :host {
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-chip');
 }
+
+:host([selected]) button[disabled],
+:host([variant='primary']) button[disabled] {
+    color: contrast-color($color: 'primary', $variant: 900, $opacity: .2);
+}

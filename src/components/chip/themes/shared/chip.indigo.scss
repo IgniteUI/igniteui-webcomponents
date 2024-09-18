@@ -9,64 +9,74 @@ $theme: $indigo;
 
 :host button {
     border: rem(1px) solid var-get($theme, 'border-color');
+    padding: 0 pad(4px, 6px, 8px);
 
     &:focus {
-        outline: rem(3px) solid var-get($theme, 'focus-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
     }
 
     &[disabled] {
         border-color: var-get($theme, 'disabled-border-color');
     }
+
+    igc-icon {
+        --size: #{sizable(rem(14px), rem(14px), rem(16px))};
+    }
 }
 
 :host([selected]) button:not([disabled]) {
-    border-color: transparent;
-    background: var-get($theme, 'selected-background');
     color: var-get($theme, 'selected-text-color');
+    background: var-get($theme, 'selected-background');
+    border-color: transparent;
+
+    &:focus {
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-outline-color');
+    }
 
     &:hover {
+        color: var-get($theme, 'hover-selected-text-color');
         background: var-get($theme, 'hover-selected-background');
     }
 
-    &:focus {
-        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
-    }
 }
 
 :host([variant='primary']) button,
 :host([selected][variant='primary']) button:not([disabled]) {
+    color: var-get($theme, 'selected-text-color');
+    background: var-get($theme, 'selected-background');
     border-color: transparent;
 
-    &:hover {
-        background: color(primary, 400);
-        color: contrast-color(primary, 400);
+    &:focus {
+        color: var-get($theme, 'selected-text-color');
+        background: var-get($theme, 'selected-background');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-outline-color');
     }
 
-    &:focus {
-        background: color(primary, 500);
-        color: contrast-color(primary, 500);
-        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
+    &:hover {
+        color: var-get($theme, 'hover-selected-text-color');
+        background: var-get($theme, 'hover-selected-background');
     }
 }
 
+:host([selected]) button[disabled],
 :host([variant='primary']) button[disabled] {
-    background: color(primary, 200);
-    color: contrast-color(primary, 400);
+    background: color($color: 'primary', $variant: 400, $opacity: .5);
+    border-color: transparent;
 }
 
 :host([variant='info']) button,
 :host([selected][variant='info']) button:not([disabled]) {
     border-color: transparent;
 
-    &:hover {
-        background: color(info, 400);
-        color: contrast-color(info, 400);
-    }
-
     &:focus {
         background: color(info, 500);
         color: contrast-color(info, 500);
-        outline: rem(3px) solid color(info, 200);
+        box-shadow: 0 0 0 rem(3px) color(info, 200);
+    }
+
+    &:hover {
+        background: color(info, 400);
+        color: contrast-color(info, 400);
     }
 }
 
@@ -79,15 +89,15 @@ $theme: $indigo;
 :host([selected][variant='success']) button:not([disabled]) {
     border-color: transparent;
 
-    &:hover {
-        background: color(success, 400);
-        color: contrast-color(success, 400);
-    }
-
     &:focus {
         background: color(success, 500);
         color: contrast-color(success, 500);
-        outline: rem(3px) solid color(success, 200);
+        box-shadow: 0 0 0 rem(3px) color(success, 200);
+    }
+
+    &:hover {
+        background: color(success, 400);
+        color: contrast-color(success, 400);
     }
 }
 
@@ -100,15 +110,15 @@ $theme: $indigo;
 :host([selected][variant='warning']) button:not([disabled]) {
     border-color: transparent;
 
-    &:hover {
-        background: color(warn, 400);
-        color: contrast-color(warn, 400);
-    }
-
     &:focus {
         background: color(warn, 500);
         color: contrast-color(warn, 500);
-        outline: rem(3px) solid color(warn, 200);
+        box-shadow: 0 0 0 rem(3px) color(warn, 200);
+    }
+
+    &:hover {
+        background: color(warn, 400);
+        color: contrast-color(warn, 400);
     }
 }
 
@@ -121,15 +131,15 @@ $theme: $indigo;
 :host([selected][variant='danger']) button:not([disabled]) {
     border-color: transparent;
 
-    &:hover {
-        background: color(error, 400);
-        color: contrast-color(error, 400);
-    }
-
     &:focus {
         background: color(error, 500);
         color: contrast-color(error, 500);
-        outline: rem(3px) solid color(error, 200);
+        box-shadow: 0 0 0 rem(3px) color(error, 200);
+    }
+
+    &:hover {
+        background: color(error, 400);
+        color: contrast-color(error, 400);
     }
 }
 
