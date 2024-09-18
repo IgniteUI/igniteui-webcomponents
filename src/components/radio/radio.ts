@@ -16,7 +16,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
   createCounter,
   isLTR,
@@ -56,7 +56,7 @@ export interface IgcRadioEventMap {
  * @csspart label - The radio control label.
  */
 @themes(all)
-export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
+export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
@@ -112,9 +112,9 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return getGroup(this).checked;
   }
 
-  protected override _setDefaultValue(): void {
-    this._defaultValue = this === last(this._checkedRadios);
-  }
+  // protected override _setDefaultValue(): void {
+  //   this._defaultValue = this === last(this._checkedRadios);
+  // }
 
   /**
    * The value attribute of the control.

@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';

@@ -14,7 +14,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
