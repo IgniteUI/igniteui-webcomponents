@@ -122,7 +122,10 @@ igc-button::part(base) {
     [part~='navigation'] {
         inset-inline-end: 0;
         margin-inline-end: rem(16px);
-        transform: rotate(90deg);
+
+        igc-icon {
+            transform: rotate(90deg);
+        }
     }
 
     [part='navigation previous'] {
