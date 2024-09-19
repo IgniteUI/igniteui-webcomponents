@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { html } from 'lit';
+import { type CSSResult, html } from 'lit';
 import { configureTheme } from '../src/theming/config';
 import type { Decorator } from '@storybook/web-components';
 import { withActions } from '@storybook/addon-actions/decorator';
@@ -11,21 +11,24 @@ configureActions({
   limit: 5,
 });
 
-type ThemeImport = { default: string };
+type ThemeImport = { styles: CSSResult };
 
-const themes = import.meta.glob<ThemeImport>('../src/styles/themes/**/*.scss', {
-  query: '?inline',
-});
+const themes = import.meta.glob<ThemeImport>(
+  '../src/styles/themes/**/*.css.ts',
+  {
+    eager: true,
+    import: 'styles',
+  }
+);
 
-const getTheme = async ({ theme, variant }) => {
-  const matcher = `../src/styles/themes/${variant}/${theme}.scss`;
+const getTheme = ({ theme, variant }) => {
+  const matcher = `../src/styles/themes/${variant}/${theme}.css.ts`;
 
-  const [_, resolver] = Object.entries(themes).find(([path]) => {
-    return path.match(matcher);
-  })!;
-
-  const stylesheet = await resolver();
-  return stylesheet.default;
+  for (const [path, styles] of Object.entries(themes)) {
+    if (path === matcher) {
+      return styles;
+    }
+  }
 };
 
 const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
@@ -81,21 +84,9 @@ export const globalTypes = {
   },
 };
 
-const parser = new DOMParser();
-
 export const parameters = {
   backgrounds: {
     disable: true,
-  },
-  docs: {
-    source: {
-      // Strip theme styles and wrapping container from the code preview
-      transform: (code: string) =>
-        parser.parseFromString(code, 'text/html').querySelector('#igc-story')
-          ?.innerHTML,
-      format: 'html',
-      language: 'html',
-    },
   },
 };
 
