@@ -1,11 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first } from '../common/util.js';
 import IgcCalendarComponent from './calendar.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import { getCalendarDOM, getDOMDate } from './helpers.spec.js';
+import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
-import type IgcMonthsViewComponent from './months-view/months-view.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar Rendering', () => {
@@ -13,27 +13,52 @@ describe('Calendar Rendering', () => {
     defineComponents(IgcCalendarComponent);
   });
 
-  let el: IgcCalendarComponent;
-  let daysView: IgcDaysViewComponent;
+  let calendar: IgcCalendarComponent;
 
-  describe('', async () => {
+  describe('DOM', () => {
     beforeEach(async () => {
-      el = await createCalendarElement();
-      daysView = el.renderRoot.querySelector(IgcDaysViewComponent.tagName)!;
+      calendar = await createCalendarElement();
     });
 
     it('passes the a11y audit', async () => {
-      await expect(el).shadowDom.to.be.accessible();
+      await expect(calendar).dom.to.be.accessible();
+      await expect(calendar).shadowDom.to.be.accessible();
     });
 
-    it('renders calendar successfully', async () => {
-      expect(el).shadowDom.to.equal(
+    it('renders the calendar successfully', async () => {
+      const today = CalendarDay.today.native;
+      const day = new Intl.DateTimeFormat('en', { weekday: 'short' }).format(
+        today
+      );
+      const month = new Intl.DateTimeFormat('en', {
+        month: 'short',
+        day: 'numeric',
+      }).format(today);
+
+      const headerDate = `${day}, ${month}`;
+
+      const ignoreAttributes = [
+        'style',
+        'aria-label',
+        'aria-live',
+        'collection',
+        'name',
+        'role',
+        'exportparts',
+      ];
+      const ignoreChildren = ['span', 'button'];
+
+      expect(calendar).shadowDom.to.equal(
         `
       <div part="header">
         <h5 part="header-title">
           <slot name="title">Select date</slot>
         </h5>
-	      <h2 part="header-date">Selected date</h2>
+	      <h2 part="header-date">
+          <slot>
+            ${headerDate}
+          </slot>
+        </h2>
       </div>
       <div part="content">
         <div part="days-view-container">
@@ -56,453 +81,329 @@ describe('Calendar Rendering', () => {
         </div>
       </div>
       `,
-        {
-          ignoreAttributes: [
-            'style',
-            'aria-label',
-            'aria-live',
-            'collection',
-            'name',
-            'role',
-            'exportparts',
-          ],
-          ignoreChildren: ['span', 'button'],
-        }
+        { ignoreAttributes, ignoreChildren }
       );
     });
 
-    it('successfully enable hideOutsideDays', async () => {
-      el.activeDate = new Date(2022, 3, 10);
-      el.hideOutsideDays = true;
-      expect(el.hideOutsideDays).to.equal(true);
-      await elementUpdated(el);
-
-      const content = daysView.shadowRoot?.querySelector(
-        'div[part="days-row"]'
-      ) as Element;
-      const datePart = content.children[0].getAttribute('part');
-
-      expect(datePart).to.contain('hidden');
-    });
-
-    it('successfully changes orientation', async () => {
-      const content = el.shadowRoot?.querySelector(
-        'div[part=content]'
-      ) as Element;
-      const computedStyles = window.getComputedStyle(content);
-
-      expect(computedStyles.getPropertyValue('flex-direction')).to.equal('row');
-
-      el.orientation = 'vertical';
-      expect(el.orientation).to.equal('vertical');
-      await elementUpdated(el);
-
-      expect(computedStyles.getPropertyValue('flex-direction')).to.equal(
-        'column'
-      );
-    });
-
-    it('successfully enables and disables hideHeader', async () => {
-      el.hideHeader = true;
-      expect(el.hideHeader).to.equal(true);
-
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `
-      <div part="content">
-      </div>
-      `,
-        { ignoreChildren: ['div'], ignoreAttributes: ['style'] }
+    it('should render title slot', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar><p slot="title">Title</p></igc-calendar>`
       );
 
-      el.hideHeader = false;
-      expect(el.hideHeader).to.equal(false);
+      const titleSlot =
+        getCalendarDOM(calendar).header.title.querySelector('slot')!;
 
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `
-      <div part="header">
-      </div>
-      <div part="content">
-      </div>
-      `,
-        { ignoreChildren: ['div'], ignoreAttributes: ['style'] }
-      );
+      expect(titleSlot.assignedElements()).lengthOf(1);
+      expect(first(titleSlot.assignedElements()).textContent).to.equal('Title');
     });
 
-    it('successfully changes header orientation', async () => {
-      expect(el).dom.to.equal(
+    it('should render header-date slot', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar><p slot="header-date">Header date</p></igc-calendar>`
+      );
+
+      const dateSlot =
+        getCalendarDOM(calendar).header.date.querySelector('slot')!;
+
+      expect(dateSlot.assignedElements()).lengthOf(1);
+      expect(first(dateSlot.assignedElements()).textContent).to.equal(
+        'Header date'
+      );
+    });
+  });
+
+  describe('API', () => {
+    beforeEach(async () => {
+      calendar = await createCalendarElement();
+    });
+
+    it('should successfully enable `hideOutsideDays`', async () => {
+      calendar.activeDate = new Date(2022, 3, 10);
+      calendar.hideOutsideDays = true;
+      await elementUpdated(calendar);
+
+      const { first, last } = getDayViewDOM(
+        getCalendarDOM(calendar).views.days
+      ).dayRows;
+
+      expect(first.children.item(0)?.part.contains('hidden')).to.be.true;
+      expect(last.children.item(6)?.part.contains('hidden')).to.be.true;
+    });
+
+    it('should change orientation', async () => {
+      const dom = getCalendarDOM(calendar);
+
+      expect(
+        getComputedStyle(dom.content).getPropertyValue('flex-direction')
+      ).to.equal('row');
+
+      calendar.orientation = 'vertical';
+      await elementUpdated(calendar);
+
+      expect(
+        getComputedStyle(dom.content).getPropertyValue('flex-direction')
+      ).to.equal('column');
+    });
+
+    it('successfully enables and disables `hideHeader`', async () => {
+      calendar.hideHeader = true;
+      await elementUpdated(calendar);
+      expect(getCalendarDOM(calendar).header.container).to.be.null;
+
+      calendar.hideHeader = false;
+      await elementUpdated(calendar);
+      expect(getCalendarDOM(calendar).header.container).not.to.be.null;
+    });
+
+    it('should change header orientation', async () => {
+      expect(calendar).dom.to.equal(
         '<igc-calendar header-orientation="horizontal"></igc-calendar>'
       );
 
-      el.headerOrientation = 'vertical';
-      expect(el.headerOrientation).to.equal('vertical');
+      calendar.headerOrientation = 'vertical';
+      await elementUpdated(calendar);
 
-      await elementUpdated(el);
-
-      expect(el).dom.to.equal(
+      expect(calendar).dom.to.equal(
         '<igc-calendar header-orientation="vertical"></igc-calendar>'
       );
     });
 
-    it('successfully adds a month', async () => {
-      const content = el.shadowRoot?.querySelector(
-        'div[part=content]'
-      ) as Element;
-      expect(content.children.length).to.equal(1);
+    it('should display more than one month', async () => {
+      const dom = getCalendarDOM(calendar);
 
-      el.visibleMonths = 3;
-      expect(el.visibleMonths).to.equal(3);
-      await elementUpdated(el);
+      expect(dom.content.children).lengthOf(1);
 
-      expect(content.children.length).to.equal(3);
+      calendar.visibleMonths = 3;
+      await elementUpdated(calendar);
+
+      expect(dom.content.children).lengthOf(3);
     });
 
-    it('successfully changes active view', async () => {
-      expect(daysView).to.not.be.null;
+    it('should render the correct active view', async () => {
+      const { views } = getCalendarDOM(calendar);
 
-      let monthsView = el.shadowRoot?.querySelector(
-        'igc-months-view'
-      ) as IgcMonthsViewComponent;
+      expect(views.days).not.to.be.null;
+      expect(views.months).to.be.null;
+      expect(views.years).to.be.null;
 
-      expect(monthsView).to.be.null;
+      calendar.activeView = 'months';
+      await elementUpdated(calendar);
 
-      el.activeView = 'months';
-      await elementUpdated(el);
+      expect(views.days).to.be.null;
+      expect(views.months).not.to.be.null;
+      expect(views.years).to.be.null;
 
-      monthsView = el.shadowRoot?.querySelector(
-        'igc-months-view'
-      ) as IgcMonthsViewComponent;
+      calendar.activeView = 'years';
+      await elementUpdated(calendar);
 
-      expect(monthsView).to.not.be.null;
-
-      daysView = el.shadowRoot?.querySelector(
-        'igc-days-view'
-      ) as IgcDaysViewComponent;
-
-      expect(daysView).to.be.null;
-
-      el.activeView = 'years';
-      await elementUpdated(el);
-
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view[part=years-view]'
-      ) as Element;
-      expect(yearsView).to.not.be.null;
+      expect(views.days).to.be.null;
+      expect(views.months).to.be.null;
+      expect(views.years).not.to.be.null;
     });
 
-    it('successfully changes selection', async () => {
-      let headerPart = el.shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as Element;
-      expect(headerPart).to.not.be.null;
-      expect(el.selection).to.equal('single');
+    it('should render header container based on selection', async () => {
+      const { header } = getCalendarDOM(calendar);
 
-      el.selection = 'multiple';
-      expect(el.selection).to.equal('multiple');
+      expect(calendar.selection).to.equal('single');
+      expect(header.container).not.to.be.null;
 
-      await elementUpdated(el);
+      calendar.selection = 'multiple';
+      await elementUpdated(calendar);
 
-      headerPart = el.shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as Element;
+      expect(header.container).to.be.null;
 
-      expect(headerPart).to.be.null;
+      calendar.selection = 'range';
+      await elementUpdated(calendar);
 
-      el.selection = 'range';
-      expect(el.selection).to.equal('range');
-
-      await elementUpdated(el);
-
-      headerPart = el.shadowRoot?.querySelector(
-        'div[part="header"]'
-      ) as Element;
-      expect(headerPart).to.not.be.null;
+      expect(header.container).not.to.be.null;
     });
 
-    it('successfully shows week numbers', async () => {
-      el.showWeekNumbers = true;
-      expect(el.showWeekNumbers).to.be.true;
-      await elementUpdated(el);
+    it('should render week numbers', async () => {
+      const dayViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
 
-      let weekNumber = daysView.shadowRoot?.querySelector(
-        'span[part="week-number"]'
-      ) as Element;
-      expect(weekNumber).to.not.be.null;
+      expect(dayViewDOM.weekNumbers).empty;
 
-      el.showWeekNumbers = false;
-      expect(el.showWeekNumbers).to.be.false;
-      await elementUpdated(el);
+      calendar.showWeekNumbers = true;
+      await elementUpdated(calendar);
 
-      weekNumber = daysView.shadowRoot?.querySelector(
-        'span[part="week-number"]'
-      ) as Element;
-
-      expect(weekNumber).to.be.null;
+      expect(dayViewDOM.weekNumbers).not.empty;
     });
 
-    it('successfully switches weekStart', async () => {
-      el.weekStart = 'wednesday';
-      expect(el.weekStart).to.equal('wednesday');
-      await elementUpdated(el);
+    it('should render labels based on `weekStart`', async () => {
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
 
-      const weekDay = daysView.shadowRoot?.querySelector(
-        'span[part="label"]'
-      ) as Element;
-      const attr = weekDay.getAttribute('aria-label');
-      expect(attr).to.equal('Wednesday');
+      calendar.weekStart = 'wednesday';
+      await elementUpdated(calendar);
+
+      expect(first(daysViewDOM.weekLabels)).attribute(
+        'aria-label',
+        'Wednesday'
+      );
     });
 
-    it('successfully changes weekDayFormat', async () => {
-      el.formatOptions = {
-        weekday: 'short',
-      };
-      el.weekStart = 'sunday';
+    it('should change on `weekDayFormat`', async () => {
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
 
-      expect(el.formatOptions.weekday).to.equal('short');
-      await elementUpdated(el);
+      calendar.formatOptions = { weekday: 'short' };
+      calendar.weekStart = 'sunday';
+      await elementUpdated(calendar);
 
-      const weekDay = daysView.shadowRoot?.querySelector(
-        'span[part="label-inner"]'
-      ) as Element;
-      expect(weekDay).lightDom.to.equal('Sun');
+      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sun');
 
-      el.formatOptions = {
-        weekday: 'long',
-      };
+      calendar.formatOptions = { weekday: 'long' };
+      await elementUpdated(calendar);
 
-      expect(el.formatOptions.weekday).to.equal('long');
-      await elementUpdated(el);
+      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sunday');
 
-      expect(weekDay).lightDom.to.equal('Sunday');
+      calendar.formatOptions = { weekday: 'narrow' };
+      await elementUpdated(calendar);
 
-      el.formatOptions = {
-        weekday: 'narrow',
-      };
-
-      expect(el.formatOptions.weekday).to.equal('narrow');
-      await elementUpdated(el);
-
-      expect(weekDay).lightDom.to.equal('S');
+      expect(first(daysViewDOM.weekLabels).innerText).to.equal('S');
     });
 
-    it('successfully changes monthFormat', async () => {
-      el.activeDate = new Date(2021, 6, 17);
+    it('should change on `monthFormat`', async () => {
+      const dom = getCalendarDOM(calendar);
 
-      el.formatOptions = {
+      calendar.activeDate = new Date(2021, 6, 17);
+      calendar.formatOptions = {
         month: 'numeric',
       };
+      await elementUpdated(calendar);
+      expect(dom.navigation.months.innerText).to.equal('7');
 
-      expect(el.formatOptions.month).to.equal('numeric');
-      await elementUpdated(el);
-
-      const month = el.shadowRoot?.querySelector(
-        'button[part="months-navigation"]'
-      ) as Element;
-      expect(month).lightDom.to.equal('7');
-
-      el.formatOptions = {
+      calendar.formatOptions = {
         month: '2-digit',
       };
+      await elementUpdated(calendar);
+      expect(dom.navigation.months.innerText).to.equal('07');
 
-      expect(el.formatOptions.month).to.equal('2-digit');
-      await elementUpdated(el);
-
-      expect(month).lightDom.to.equal('07');
-
-      el.formatOptions = {
+      calendar.formatOptions = {
         month: 'long',
       };
-
-      expect(el.formatOptions.month).to.equal('long');
-      await elementUpdated(el);
-
-      expect(month).lightDom.to.equal('July');
-
-      el.formatOptions = {
-        month: 'short',
-      };
-
-      expect(el.formatOptions.month).to.equal('short');
-      await elementUpdated(el);
-
-      expect(month).lightDom.to.equal('Jul');
-
-      el.formatOptions = {
-        month: 'narrow',
-      };
-
-      expect(el.formatOptions.month).to.equal('narrow');
-      await elementUpdated(el);
-
-      expect(month).lightDom.to.equal('J');
+      await elementUpdated(calendar);
+      expect(dom.navigation.months.innerText).to.equal('July');
     });
 
-    it('successfully changes title', async () => {
-      el.title = 'New Title';
-      expect(el.title).to.equal('New Title');
-      await elementUpdated(el);
+    it('should accept active date through attribute', async () => {
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
 
-      expect(el).dom.to.equal(
-        '<igc-calendar title="New Title"></igc-calendar>',
-        { ignoreAttributes: ['header-orientation'] }
-      );
+      const today = CalendarDay.today;
+      const date = new CalendarDay({ year: 2022, month: 1, date: 2 });
+
+      calendar.setAttribute('active-date', '2022-02-02');
+      await elementUpdated(calendar);
+
+      expect(CalendarDay.from(calendar.activeDate).equalTo(date)).to.be.true;
+      expect(daysViewDOM.dates.active.innerText).to.equal('2');
+
+      calendar.setAttribute('active-date', '');
+      await elementUpdated(calendar);
+
+      expect(CalendarDay.from(calendar.activeDate).equalTo(today)).to.be.true;
+      expect(daysViewDOM.dates.active.innerText).to.equal(`${today.date}`);
     });
 
-    it('successfully changes active date through attribute', async () => {
-      el.setAttribute('active-date', '2022-02-02');
-      await elementUpdated(el);
+    it('navigates to the initially set active date regardless of any value(s) set, single selection', async () => {
+      const activeDate = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      const valueDate = activeDate.set({ month: 5 });
 
-      const activeDateElement = () =>
-        el
-          .shadowRoot!.querySelector('igc-days-view')
-          ?.shadowRoot!.querySelector('[tabindex="0"]');
-
-      expect(el.activeDate.getFullYear()).to.equal(2022);
-      expect(el.activeDate.getMonth()).to.equal(1);
-      expect(el.activeDate.getDate()).to.equal(2);
-      expect(activeDateElement()?.textContent?.trim()).to.equal('2');
-
-      const today = new Date();
-
-      el.setAttribute('active-date', '');
-      await elementUpdated(el);
-
-      expect(el.activeDate.getFullYear()).to.equal(today.getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(today.getMonth());
-      expect(el.activeDate.getDate()).to.equal(today.getDate());
-      expect(activeDateElement()?.textContent?.trim()).to.equal(
-        `${today.getDate()}`
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          .activeDate=${activeDate.native}
+          .value=${valueDate.native}
+        ></igc-calendar>`
       );
+
+      const dom = getCalendarDOM(calendar);
+
+      expect(CalendarDay.from(calendar.activeDate).equalTo(activeDate)).to.be
+        .true;
+      expect(dom.header.date.innerText).to.equal('Tue, Jun 6');
+      expect(dom.navigation.months.innerText).to.equal('August');
     });
 
-    it('navigates to the initially set active date regardless of any value(s) set', async () => {
-      // set as attribute in template and element has value set
-      const activeDate = new Date('08/06/2023');
-      const valueDate = new Date('06/06/2023');
-      el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar .activeDate="${activeDate}" .value=${valueDate} />`
+    it('navigates to the initially set active date regardless of any value(s) set, range selection', async () => {
+      const activeDate = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      const valuesDate = [
+        activeDate.set({ month: 5 }).native,
+        activeDate.set({ month: 5, date: 9 }).native,
+      ];
+
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          selection="range"
+          .activeDate=${activeDate.native}
+          .values=${valuesDate}
+        ></igc-calendar>`
       );
-      await elementUpdated(el);
 
-      expect(el.activeDate.getFullYear()).to.equal(activeDate.getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(activeDate.getMonth());
-      expect(el.activeDate.getDate()).to.equal(activeDate.getDate());
+      const dom = getCalendarDOM(calendar);
 
-      let headerDate = el.shadowRoot?.querySelector(
-        '[part=header-date]'
-      ) as Element;
-      expect(headerDate.textContent).to.equal('Tue, Jun 6');
-
-      let buttonMonthsNav = el.shadowRoot
-        ?.querySelector('[part=navigation]')
-        ?.querySelector('button[part=months-navigation]') as Element;
-
-      expect(buttonMonthsNav.textContent).to.contain('August');
-
-      // set through code and element has values set
-      const valueDates = [new Date('06/06/2023'), new Date('06/09/2023')];
-
-      el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar .values="${valueDates}" .selection="${'range'}" />`
+      expect(CalendarDay.from(calendar.activeDate).equalTo(activeDate)).to.be
+        .true;
+      expect(dom.header.date.innerText.replaceAll('\n', '')).to.equal(
+        'Jun 6 - Jun 9'
       );
-      el.activeDate = activeDate;
-      await elementUpdated(el);
-
-      expect(el.activeDate.getFullYear()).to.equal(activeDate.getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(activeDate.getMonth());
-      expect(el.activeDate.getDate()).to.equal(activeDate.getDate());
-
-      headerDate = el.shadowRoot?.querySelector(
-        '[part=header-date]'
-      ) as Element;
-
-      expect(headerDate.textContent)
-        .to.contain('Jun 6')
-        .and.to.contain('-')
-        .and.to.contain('Jun 9');
-
-      buttonMonthsNav = el.shadowRoot
-        ?.querySelector('[part=navigation]')
-        ?.querySelector('button[part=months-navigation]') as Element;
-
-      expect(buttonMonthsNav.textContent).to.contain('August');
+      expect(dom.navigation.months.innerText).to.equal('August');
     });
 
     it('navigates to the current date if no initial active date is set and no value(s) are set', async () => {
-      const today = new Date();
-      el = await fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-      await elementUpdated(el);
-      expect(el.activeDate.getFullYear()).to.equal(today.getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(today.getMonth());
-      expect(el.activeDate.getDate()).to.equal(today.getDate());
+      expect(CalendarDay.from(calendar.activeDate).equalTo(CalendarDay.today))
+        .to.be.true;
     });
 
     it("navigates to the date set as value initially, selection 'single', no activeDate explicitly set", async () => {
-      const valueDate = new Date('08/06/2023');
-      el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar .value="${valueDate}" />`
+      const date = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      calendar = await createCalendarElement(
+        html`<igc-calendar .value=${date.native}></igc-calendar>`
       );
-      await elementUpdated(el);
 
-      expect(el.activeDate.getFullYear()).to.equal(valueDate.getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(valueDate.getMonth());
-      expect(el.activeDate.getDate()).to.equal(valueDate.getDate());
-
-      const headerDate = el.shadowRoot?.querySelector(
-        '[part=header-date]'
-      ) as Element;
-      expect(headerDate.textContent).to.equal('Sun, Aug 6');
+      expect(CalendarDay.from(calendar.activeDate).equalTo(date)).to.be.true;
+      expect(getCalendarDOM(calendar).header.date.innerText).to.equal(
+        'Sun, Aug 6'
+      );
     });
 
     it("navigates to the first date of the initially set values, selection 'range', no activeDate explicitly set", async () => {
-      const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
-      el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar .values="${valueDates}" .selection="${'range'}" />`
+      const start = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      const end = start.set({ date: 9 });
+
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          selection="range"
+          .values=${[start.native, end.native]}
+        ></igc-calendar>`
       );
-      await elementUpdated(el);
 
-      expect(el.activeDate.getFullYear()).to.equal(valueDates[0].getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(valueDates[0].getMonth());
-      expect(el.activeDate.getDate()).to.equal(valueDates[0].getDate());
-
-      const headerDate = el.shadowRoot?.querySelector(
-        '[part=header-date]'
-      ) as Element;
-      expect(headerDate.textContent)
-        .to.contain('Aug 6')
-        .and.to.contain('-')
-        .and.to.contain('Aug 9');
+      expect(CalendarDay.from(calendar.activeDate).equalTo(start)).to.be.true;
+      expect(
+        getCalendarDOM(calendar).header.date.innerText.replaceAll('\n', '')
+      ).to.equal('Aug 6 - Aug 9');
     });
 
     it("navigates to the first date of the initially set values as attribute, selection 'multiple', no activeDate explicitly set", async () => {
-      const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
-      el = await fixture<IgcCalendarComponent>(
+      const first = new CalendarDay({ year: 2023, month: 7, date: 6 });
+      const last = first.set({ date: 9 });
+
+      calendar = await createCalendarElement(
         html`<igc-calendar
-          .values="${valueDates}"
-          .selection="${'multiple'}"
-        />`
+          selection="multiple"
+          .values=${[first.native, last.native]}
+        ></igc-calendar>`
       );
-      await elementUpdated(el);
 
-      expect(el.activeDate.getFullYear()).to.equal(valueDates[0].getFullYear());
-      expect(el.activeDate.getMonth()).to.equal(valueDates[0].getMonth());
-      expect(el.activeDate.getDate()).to.equal(valueDates[0].getDate());
-
-      const buttonMonthsNav = el.shadowRoot
-        ?.querySelector('[part=navigation]')
-        ?.querySelector('button[part=months-navigation]') as Element;
-      expect(buttonMonthsNav.textContent).to.contain('August');
+      expect(CalendarDay.from(calendar.activeDate).equalTo(first)).to.be.true;
+      expect(getCalendarDOM(calendar).navigation.months.innerText).to.equal(
+        'August'
+      );
     });
 
     it('issue #1278', async () => {
       const today = new CalendarDay({ year: 2024, month: 6, date: 25 });
-      el.activeDate = today.native;
-      await elementUpdated(el);
+      calendar.activeDate = today.native;
+      await elementUpdated(calendar);
 
-      const calendarDOM = getCalendarDOM(el);
+      const calendarDOM = getCalendarDOM(calendar);
 
       const julySpecials = [
         new CalendarDay({ year: 2024, month: 6, date: 22 }),
@@ -523,8 +424,8 @@ describe('Calendar Rendering', () => {
         },
       ];
 
-      el.specialDates = specialDates;
-      await elementUpdated(el);
+      calendar.specialDates = specialDates;
+      await elementUpdated(calendar);
 
       for (const date of julySpecials) {
         const dateDOM = getDOMDate(date, calendarDOM.views.days);
@@ -541,8 +442,8 @@ describe('Calendar Rendering', () => {
       }
 
       // Move active date to August
-      el.activeDate = today.set({ month: 7 }).native;
-      await elementUpdated(el);
+      calendar.activeDate = today.set({ month: 7 }).native;
+      await elementUpdated(calendar);
 
       for (const date of augustSpecials) {
         const dateDOM = getDOMDate(date, calendarDOM.views.days);
@@ -554,6 +455,8 @@ describe('Calendar Rendering', () => {
   });
 });
 
-function createCalendarElement() {
-  return fixture<IgcCalendarComponent>(html`<igc-calendar></igc-calendar>`);
+function createCalendarElement(template?: TemplateResult) {
+  return fixture<IgcCalendarComponent>(
+    template ?? html`<igc-calendar></igc-calendar>`
+  );
 }
