@@ -112,10 +112,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return getGroup(this).checked;
   }
 
-  // protected override _setDefaultValue(): void {
-  //   this._defaultValue = this === last(this._checkedRadios);
-  // }
-
   /**
    * The value attribute of the control.
    * @attr
