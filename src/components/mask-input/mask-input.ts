@@ -102,8 +102,8 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   protected updateFormValue() {
     this.valueMode === 'raw'
-      ? this._setFormValue(this.value || null, this.value)
-      : this._setFormValue(this.maskedValue || null, this.maskedValue);
+      ? this._setFormValue(this.value || null)
+      : this._setFormValue(this.maskedValue || null);
     this._validate();
   }
 
