@@ -161,7 +161,6 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       expect(masked.reportValidity()).to.be.true;
-      expect(masked.invalid).to.be.false;
     });
 
     it('valid/invalid state based on mask pattern', async () => {

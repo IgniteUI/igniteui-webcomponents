@@ -148,12 +148,13 @@ export declare class FormAssociatedCheckboxElementInterface extends BaseFormAsso
 }
 
 export declare class FormRequiredInterface {
-  protected requiredChange(): void;
+  protected _required: boolean;
 
   /**
    * When set, makes the component a required field for validation.
    * @attr
    * @default false
    */
-  public required: boolean;
+  public set required(value: boolean);
+  public get required(): boolean;
 }

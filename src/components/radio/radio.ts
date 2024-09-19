@@ -12,7 +12,6 @@ import {
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -112,6 +111,21 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return getGroup(this).checked;
   }
 
+  @property({ type: Boolean, reflect: true })
+  public override set required(value: boolean) {
+    super.required = value;
+
+    if (this.hasUpdated) {
+      for (const radio of this._siblings) {
+        radio._validate();
+      }
+    }
+  }
+
+  public override get required(): boolean {
+    return this._required;
+  }
+
   /**
    * The value attribute of the control.
    * @attr
@@ -206,15 +220,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     for (const radio of radios) {
       radio._validate(message);
-    }
-  }
-
-  @watch('required', { waitUntilFirstUpdate: true })
-  protected override requiredChange(): void {
-    const radios = this._radios;
-
-    for (const radio of radios) {
-      radio._validate();
     }
   }
 

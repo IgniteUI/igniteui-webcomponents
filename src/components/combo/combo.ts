@@ -384,15 +384,6 @@ export default class IgcComboComponent<
     this.navigationController.active = -1;
   }
 
-  @watch('required', { waitUntilFirstUpdate: true })
-  protected override async requiredChange() {
-    // Wait for the underlying igc-input to update
-    await this.updateComplete;
-
-    this._updateValidity();
-    this.invalid = !this.checkValidity();
-  }
-
   @watch('value')
   protected selectItems() {
     if (!this._value || this.value.length === 0) {

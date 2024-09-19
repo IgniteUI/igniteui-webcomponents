@@ -113,13 +113,16 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
     }
 
+    /* c8 ignore next 1 */
     protected _setInitialDefaultValue(): void {}
 
+    /* c8 ignore next 4 */
     protected _setDefaultValue(
       _prev: string | null,
       _current: string | null
     ): void {}
 
+    /* c8 ignore next 1 */
     protected _restoreDefaultValue(): void {}
 
     protected _validate(message?: string): void {
@@ -170,6 +173,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this.invalid = false;
     }
 
+    /* c8 ignore next 4 */
     protected formStateRestoreCallback(
       _state: FormValueType,
       _mode: FormRestoreMode
@@ -198,6 +202,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     T;
 }
 
+/**
+ * Mixes the passed in class and turns it into a form associated custom element.
+ */
 export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
@@ -239,6 +246,9 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     T;
 }
 
+/**
+ * Mixes the passed in class and turns it into a form associated custom element.
+ */
 export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
 ) {

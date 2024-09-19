@@ -15,6 +15,13 @@ const metadata: Meta<IgcRadioComponent> = {
     actions: { handles: ['igcChange'] },
   },
   argTypes: {
+    required: {
+      type: 'boolean',
+      description:
+        'When set, makes the component a required field for validation.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
@@ -32,13 +39,6 @@ const metadata: Meta<IgcRadioComponent> = {
       options: ['before', 'after'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'after' } },
-    },
-    required: {
-      type: 'boolean',
-      description:
-        'When set, makes the component a required field for validation.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -59,9 +59,9 @@ const metadata: Meta<IgcRadioComponent> = {
     },
   },
   args: {
+    required: false,
     checked: false,
     labelPosition: 'after',
-    required: false,
     disabled: false,
     invalid: false,
   },
@@ -70,14 +70,14 @@ const metadata: Meta<IgcRadioComponent> = {
 export default metadata;
 
 interface IgcRadioArgs {
+  /** When set, makes the component a required field for validation. */
+  required: boolean;
   /** The value attribute of the control. */
   value: string;
   /** The checked state of the control. */
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
-  /** When set, makes the component a required field for validation. */
-  required: boolean;
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component. */
