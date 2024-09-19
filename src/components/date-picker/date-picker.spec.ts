@@ -77,13 +77,14 @@ describe('Date picker', () => {
       await expect(picker).lightDom.to.be.accessible();
     });
 
-    it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title, actions', async () => {
+    it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title, header-date actions', async () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker>
           <span slot="prefix">$</span>
           <span slot="suffix">~</span>
           <p slot="helper-text">For example, select your birthday</p>
           <p slot="title">Custom title</p>
+          <p slot="header-date">Custom header date</p>
           <span slot="calendar-icon-open">v</span>
           <span slot="calendar-icon">^</span>
           <span slot="clear-icon">X</span>
@@ -115,6 +116,15 @@ describe('Date picker', () => {
           slot: 'title',
           tagName: 'p',
           content: 'Custom title',
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
+          parent: picker,
+        },
+        {
+          slot: 'header-date',
+          tagName: 'p',
+          content: 'Custom header date',
           prerequisite: () => {
             picker.mode = 'dialog';
           },

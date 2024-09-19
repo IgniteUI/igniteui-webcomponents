@@ -67,6 +67,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @slot suffix - Renders content after the input.
  * @slot helper-text - Renders content below the input.
  * @slot title - Renders content in the calendar title.
+ * @slot header-date - Renders content instead of the current date/range in the calendar header.
  * @slot clear-icon - Renders a clear icon template.
  * @slot calendar-icon - Renders the icon/content for the calendar picker.
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
@@ -191,6 +192,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'actions' })
   private actions!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'header-date' })
+  private headerDateSlotItems!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'helper-text' })
   private helperText!: Array<HTMLElement>;
@@ -624,6 +628,21 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     `;
   }
 
+  private renderCalendarSlots() {
+    if (this.isDropDown) {
+      return nothing;
+    }
+
+    const hasHeaderDate = this.headerDateSlotItems.length ? 'header-date' : '';
+
+    return html`
+      <slot name="title" slot="title">
+        ${this.resourceStrings.selectDate}
+      </slot>
+      <slot name="header-date" slot=${hasHeaderDate}></slot>
+    `;
+  }
+
   private renderCalendar(id: string) {
     const hideHeader = this.isDropDown ? true : this.hideHeader;
 
@@ -651,11 +670,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
         month, month-inner, year, year-inner, selected, current"
       >
-        ${!this.isDropDown
-          ? html`<slot name="title" slot="title"
-              >${this.resourceStrings.selectDate}</slot
-            >`
-          : nothing}
+        ${this.renderCalendarSlots()}
       </igc-calendar>
     `;
   }
