@@ -173,35 +173,35 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   /**
    * Whether the carousel should skip rotating to the first slide after it reaches the last.
-   * @attr skip-loop
+   * @attr disable-loop
    */
-  @property({ type: Boolean, reflect: true, attribute: 'skip-loop' })
-  public skipLoop = false;
+  @property({ type: Boolean, reflect: true, attribute: 'disable-loop' })
+  public disableLoop = false;
 
   /**
    * Whether the carousel should ignore use interactions and not pause on them.
-   * @attr skip-pause-on-interaction
+   * @attr disable-pause-on-interaction
    */
   @property({
     type: Boolean,
     reflect: true,
-    attribute: 'skip-pause-on-interaction',
+    attribute: 'disable-pause-on-interaction',
   })
-  public skipPauseOnInteraction = false;
+  public disablePauseOnInteraction = false;
 
   /**
    * Whether the carousel should skip rendering of the default navigation buttons.
-   * @attr skip-navigation
+   * @attr hide-navigation
    */
-  @property({ type: Boolean, reflect: true, attribute: 'skip-navigation' })
-  public skipNavigation = false;
+  @property({ type: Boolean, reflect: true, attribute: 'hide-navigation' })
+  public hideNavigation = false;
 
   /**
    * Whether the carousel should render the indicator controls (dots).
-   * @attr skip-indicator
+   * @attr hide-indicators
    */
-  @property({ type: Boolean, reflect: true, attribute: 'skip-indicator' })
-  public skipIndicator = false;
+  @property({ type: Boolean, reflect: true, attribute: 'hide-indicators' })
+  public hideIndicators = false;
 
   /**
    * Whether the carousel has vertical alignment.
@@ -398,7 +398,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private handlePauseOnInteraction(): void {
-    if (!this.interval || this.skipPauseOnInteraction) return;
+    if (!this.interval || this.disablePauseOnInteraction) return;
 
     if (this.isPlaying) {
       this.pause();
@@ -441,7 +441,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handleHorizontalSwipe({ data: { direction } }: SwipeEvent) {
     if (!this.vertical) {
-      this.handleInteraction(direction === 'left' ? this.next : this.prev);
+      this.handleInteraction(async () => {
+        if (isLTR(this)) {
+          direction === 'left' ? await this.next() : await this.prev();
+        } else {
+          direction === 'left' ? await this.prev() : await this.next();
+        }
+      });
     }
   }
 
@@ -585,7 +591,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * Switches to the next slide running any animations and returns if the operation was a success.
    */
   public async next(): Promise<boolean> {
-    if (this.skipLoop && this.nextIndex === 0) {
+    if (this.disableLoop && this.nextIndex === 0) {
       this.pause();
       return false;
     }
@@ -597,7 +603,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * Switches to the previous slide running any animations and returns if the operation was a success.
    */
   public async prev(): Promise<boolean> {
-    if (this.skipLoop && this.prevIndex === this.total - 1) {
+    if (this.disableLoop && this.prevIndex === this.total - 1) {
       this.pause();
       return false;
     }
@@ -632,7 +638,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         part="navigation previous"
         aria-label="Previous slide"
         aria-controls=${this._carouselId}
-        ?disabled=${this.skipLoop && this.current === 0}
+        ?disabled=${this.disableLoop && this.current === 0}
         @click=${this.handleNavigationInteractionPrevious}
       >
         <slot name="previous-button">
@@ -649,7 +655,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         part="navigation next"
         aria-label="Next slide"
         aria-controls=${this._carouselId}
-        ?disabled=${this.skipLoop && this.current === this.total - 1}
+        ?disabled=${this.disableLoop && this.current === this.total - 1}
         @click=${this.handleNavigationInteractionNext}
       >
         <slot name="next-button">
@@ -731,11 +737,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
-        ${this.skipNavigation ? nothing : this.navigationTemplate()}
-        ${this.skipIndicator || this.showIndicatorsLabel
+        ${this.hideNavigation ? nothing : this.navigationTemplate()}
+        ${this.hideIndicators || this.showIndicatorsLabel
           ? nothing
           : this.indicatorTemplate()}
-        ${!this.skipIndicator && this.showIndicatorsLabel
+        ${!this.hideIndicators && this.showIndicatorsLabel
           ? this.labelTemplate()
           : nothing}
         <div

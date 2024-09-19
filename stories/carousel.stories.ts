@@ -33,28 +33,28 @@ const metadata: Meta<IgcCarouselComponent> = {
     actions: { handles: ['igcSlideChanged', 'igcPlaying', 'igcPaused'] },
   },
   argTypes: {
-    skipLoop: {
+    disableLoop: {
       type: 'boolean',
       description:
         'Whether the carousel should skip rotating to the first slide after it reaches the last.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    skipPauseOnInteraction: {
+    disablePauseOnInteraction: {
       type: 'boolean',
       description:
         'Whether the carousel should ignore use interactions and not pause on them.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    skipNavigation: {
+    hideNavigation: {
       type: 'boolean',
       description:
         'Whether the carousel should skip rendering of the default navigation buttons.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
-    skipIndicator: {
+    hideIndicators: {
       type: 'boolean',
       description:
         'Whether the carousel should render the indicator controls (dots).',
@@ -96,10 +96,10 @@ const metadata: Meta<IgcCarouselComponent> = {
     },
   },
   args: {
-    skipLoop: false,
-    skipPauseOnInteraction: false,
-    skipNavigation: false,
-    skipIndicator: false,
+    disableLoop: false,
+    disablePauseOnInteraction: false,
+    hideNavigation: false,
+    hideIndicators: false,
     vertical: false,
     indicatorsOrientation: 'end',
     maximumIndicatorsCount: 10,
@@ -111,13 +111,13 @@ export default metadata;
 
 interface IgcCarouselArgs {
   /** Whether the carousel should skip rotating to the first slide after it reaches the last. */
-  skipLoop: boolean;
+  disableLoop: boolean;
   /** Whether the carousel should ignore use interactions and not pause on them. */
-  skipPauseOnInteraction: boolean;
+  disablePauseOnInteraction: boolean;
   /** Whether the carousel should skip rendering of the default navigation buttons. */
-  skipNavigation: boolean;
+  hideNavigation: boolean;
   /** Whether the carousel should render the indicator controls (dots). */
-  skipIndicator: boolean;
+  hideIndicators: boolean;
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** Sets the orientation of the indicator controls (dots). */
@@ -158,10 +158,10 @@ icons.forEach((icon) => {
 });
 
 const BasicTemplate = ({
-  skipLoop,
-  skipPauseOnInteraction,
-  skipNavigation,
-  skipIndicator,
+  disableLoop,
+  disablePauseOnInteraction,
+  hideNavigation,
+  hideIndicators,
   vertical,
   indicatorsOrientation,
   maximumIndicatorsCount,
@@ -170,10 +170,10 @@ const BasicTemplate = ({
 }: IgcCarouselArgs) => {
   return html`
     <igc-carousel
-      ?skip-loop=${skipLoop}
-      ?skip-pause-on-interaction=${skipPauseOnInteraction}
-      ?skip-navigation=${skipNavigation}
-      ?skip-indicator=${skipIndicator}
+      ?disable-loop=${disableLoop}
+      ?disable-pause-on-interaction=${disablePauseOnInteraction}
+      ?hide-navigation=${hideNavigation}
+      ?hide-indicators=${hideIndicators}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
@@ -203,10 +203,10 @@ const BasicTemplate = ({
 };
 
 const SlottedContentTemplate = ({
-  skipLoop,
-  skipPauseOnInteraction,
-  skipNavigation,
-  skipIndicator,
+  disableLoop,
+  disablePauseOnInteraction,
+  hideNavigation,
+  hideIndicators,
   vertical,
   indicatorsOrientation,
   interval,
@@ -215,10 +215,10 @@ const SlottedContentTemplate = ({
 }: IgcCarouselArgs) => {
   return html`
     <igc-carousel
-      ?skip-loop=${skipLoop}
-      ?skip-pause-on-interaction=${skipPauseOnInteraction}
-      ?skip-navigation=${skipNavigation}
-      ?skip-indicator=${skipIndicator}
+      ?disable-loop=${disableLoop}
+      ?disable-pause-on-interaction=${disablePauseOnInteraction}
+      ?hide-navigation=${hideNavigation}
+      ?hide-indicators=${hideIndicators}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
@@ -270,10 +270,10 @@ const SlottedContentTemplate = ({
 };
 
 const SlottedInputsTemplate = ({
-  skipLoop,
-  skipPauseOnInteraction,
-  skipNavigation,
-  skipIndicator,
+  disableLoop,
+  disablePauseOnInteraction,
+  hideNavigation,
+  hideIndicators,
   vertical,
   indicatorsOrientation,
   interval,
@@ -306,10 +306,10 @@ const SlottedInputsTemplate = ({
     </style>
     <igc-carousel
       id="carousel"
-      ?skip-loop=${skipLoop}
-      ?skip-pause-on-interaction=${skipPauseOnInteraction}
-      ?skip-navigation=${skipNavigation}
-      ?skip-indicator=${skipIndicator}
+      ?disable-loop=${disableLoop}
+      ?disable-pause-on-interaction=${disablePauseOnInteraction}
+      ?hide-navigation=${hideNavigation}
+      ?hide-indicators=${hideIndicators}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}
@@ -351,10 +351,10 @@ const SlottedInputsTemplate = ({
 };
 
 const SlottedThumbnailTemplate = ({
-  skipLoop,
-  skipPauseOnInteraction,
-  skipNavigation,
-  skipIndicator,
+  disableLoop,
+  disablePauseOnInteraction,
+  hideNavigation,
+  hideIndicators,
   vertical,
   indicatorsOrientation,
   interval,
@@ -378,10 +378,10 @@ const SlottedThumbnailTemplate = ({
       }
     </style>
     <igc-carousel
-      ?skip-loop=${skipLoop}
-      ?skip-pause-on-interaction=${skipPauseOnInteraction}
-      ?skip-navigation=${skipNavigation}
-      ?skip-indicator=${skipIndicator}
+      ?disable-loop=${disableLoop}
+      ?disable-pause-on-interaction=${disablePauseOnInteraction}
+      ?hide-navigation=${hideNavigation}
+      ?hide-indicators=${hideIndicators}
       .interval=${interval}
       .animationType=${animationType}
       .vertical=${vertical}

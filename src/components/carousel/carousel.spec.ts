@@ -6,7 +6,7 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 
-import { spy } from 'sinon';
+import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import type IgcButtonComponent from '../button/button.js';
 import {
   arrowLeft,
@@ -70,6 +70,7 @@ describe('Carousel', () => {
   let nextButton: IgcButtonComponent;
   let prevButton: IgcButtonComponent;
   let defaultIndicators: IgcCarouselIndicatorComponent[];
+  let clock: SinonFakeTimers;
 
   beforeEach(async () => {
     carousel = await fixture<IgcCarouselComponent>(createCarouselComponent());
@@ -85,6 +86,11 @@ describe('Carousel', () => {
     defaultIndicators = carousel.shadowRoot?.querySelectorAll(
       'igc-carousel-indicator'
     ) as unknown as IgcCarouselIndicatorComponent[];
+    clock = useFakeTimers({ toFake: ['setInterval'] });
+  });
+
+  afterEach(() => {
+    clock.restore();
   });
 
   describe('Initialization', () => {
@@ -94,10 +100,10 @@ describe('Carousel', () => {
     });
 
     it('is correctly initialized with its default component state', () => {
-      expect(carousel.skipLoop).to.be.false;
-      expect(carousel.skipPauseOnInteraction).to.be.false;
-      expect(carousel.skipNavigation).to.be.false;
-      expect(carousel.skipIndicator).to.be.false;
+      expect(carousel.disableLoop).to.be.false;
+      expect(carousel.disablePauseOnInteraction).to.be.false;
+      expect(carousel.hideNavigation).to.be.false;
+      expect(carousel.hideIndicators).to.be.false;
       expect(carousel.vertical).to.be.false;
       expect(carousel.indicatorsOrientation).to.equal('end');
       expect(carousel.interval).to.be.undefined;
@@ -240,24 +246,24 @@ describe('Carousel', () => {
       );
     });
 
-    it('should not render indicators if `skipIndicator` is true', async () => {
+    it('should not render indicators if `hideIndicators` is true', async () => {
       let indicators = carousel.shadowRoot?.querySelector(
         'div[role="tablist"]'
       );
       expect(indicators).to.not.be.null;
 
-      carousel.skipIndicator = true;
+      carousel.hideIndicators = true;
       await elementUpdated(carousel);
 
       indicators = carousel.shadowRoot?.querySelector('div[role="tablist"]');
       expect(indicators).to.be.null;
     });
 
-    it('should not render navigation if `skipNavigation` is true', async () => {
+    it('should not render navigation if `hideNavigation` is true', async () => {
       let navigation = carousel.shadowRoot?.querySelectorAll('igc-button');
       expect(navigation?.length).to.equal(2);
 
-      carousel.skipNavigation = true;
+      carousel.hideNavigation = true;
       await elementUpdated(carousel);
 
       navigation = carousel.shadowRoot?.querySelectorAll('igc-button');
@@ -280,7 +286,7 @@ describe('Carousel', () => {
       expect(label?.textContent?.trim()).to.equal('1/3');
     });
 
-    it('should not render indicators label if `skipIndicator` is true', async () => {
+    it('should not render indicators label if `hideIndicators` is true', async () => {
       let label = carousel.shadowRoot?.querySelector(
         'div[part="label indicators"]'
       );
@@ -295,7 +301,7 @@ describe('Carousel', () => {
       expect(label).to.not.be.null;
       expect(label?.textContent?.trim()).to.equal('1/3');
 
-      carousel.skipIndicator = true;
+      carousel.hideIndicators = true;
       await elementUpdated(carousel);
 
       label = carousel.shadowRoot?.querySelector(
@@ -381,7 +387,7 @@ describe('Carousel', () => {
         </igc-carousel>`
       );
 
-      carousel.skipLoop = true;
+      carousel.disableLoop = true;
       await elementUpdated(carousel);
 
       let animation = await carousel.next();
@@ -626,6 +632,18 @@ describe('Carousel', () => {
     });
 
     describe('Automatic rotation', () => {
+      it('should automatically change slides', async () => {
+        expect(carousel.current).to.equal(0);
+
+        carousel.interval = 200;
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(200);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(1);
+      });
+
       it('should pause/play on pointerenter/pointerleave', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
@@ -715,7 +733,7 @@ describe('Carousel', () => {
         expect(eventSpy.secondCall).calledWith('igcPlaying');
       });
 
-      it('should not pause on interaction if `skipPauseOnInteraction` is true', async () => {
+      it('should not pause on interaction if `disablePauseOnInteraction` is true', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
           'div[aria-live]'
@@ -724,7 +742,7 @@ describe('Carousel', () => {
         expect(divContainer.ariaLive).to.equal('polite');
 
         carousel.interval = 2000;
-        carousel.skipPauseOnInteraction = true;
+        carousel.disablePauseOnInteraction = true;
         await elementUpdated(carousel);
 
         expect(carousel.isPlaying).to.be.true;
@@ -767,6 +785,19 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
       });
 
+      it('should change to previous slide on swipe-left (RTL)', async () => {
+        carousel.dir = 'rtl';
+        await elementUpdated(carousel);
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        expect(carousel.current).to.equal(2);
+      });
+
       it('should change to previous slide on swipe-right', async () => {
         expect(carousel.current).to.equal(0);
 
@@ -776,6 +807,19 @@ describe('Carousel', () => {
         await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(2);
+      });
+
+      it('should change to next slide on swipe-right (RTL)', async () => {
+        carousel.dir = 'rtl';
+        await elementUpdated(carousel);
+        expect(carousel.current).to.equal(0);
+
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(carousel.current).to.equal(1);
       });
 
       it('should not change to next/previous slide on swipe left/right when `vertical` is true', async () => {
