@@ -96,6 +96,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       super.connectedCallback();
       this._dirty = false;
       this._updateValidity();
+
+      if (!this.hasUpdated) {
+        this._setInitialDefaultValue();
+      }
     }
 
     private _handleInvalid(event: Event) {
@@ -109,18 +113,14 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
     }
 
+    protected _setInitialDefaultValue(): void {}
+
     protected _setDefaultValue(
       _prev: string | null,
       _current: string | null
-    ): void {
-      // this._defaultValue = current;
-    }
+    ): void {}
 
-    protected _restoreDefaultValue(): void {
-      // if ('value' in this) {
-      //   this.value = this._defaultValue;
-      // }
-    }
+    protected _restoreDefaultValue(): void {}
 
     protected _validate(message?: string): void {
       this._updateValidity(message);
@@ -227,6 +227,12 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
         this.value = this._defaultValue;
       }
     }
+
+    protected override _setInitialDefaultValue() {
+      if ('_value' in this) {
+        this._defaultValue = this._value;
+      }
+    }
   }
 
   return FormAssociatedElement as unknown as Constructor<FormAssociatedElementInterface> &
@@ -260,6 +266,12 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
     protected override _restoreDefaultValue(): void {
       if ('checked' in this) {
         this.checked = this._defaultChecked;
+      }
+    }
+
+    protected override _setInitialDefaultValue() {
+      if ('checked' in this) {
+        this._defaultChecked = this.checked as boolean;
       }
     }
   }

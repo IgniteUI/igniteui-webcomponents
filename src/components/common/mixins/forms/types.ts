@@ -57,6 +57,12 @@ declare class BaseFormAssociatedElement {
   // Methods
 
   /**
+   * Invoked on the first `connectedCallback` run before the component has been through the
+   * firstUpdate lifecycle hook. Sets the default value to the **property** state of the value/checked member.
+   */
+  protected _setInitialDefaultValue(): void;
+
+  /**
    * Sets the default value of the component.
    * Called in `attributeChangedCallback`(i.e. when the `value` attribute of the control is set).
    */
