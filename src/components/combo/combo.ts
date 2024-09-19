@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { partNameMap } from '../common/util.js';
+import { findElementFromEventPath, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -450,6 +450,13 @@ export default class IgcComboComponent<
     return this._value;
   }
 
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = JSON.parse(current ?? '');
+  }
+
   protected override _setFormValue(): void {
     if (!this.name) {
       return;
@@ -715,12 +722,10 @@ export default class IgcComboComponent<
 
   protected itemClickHandler(event: MouseEvent) {
     const input = this.singleSelect ? this.target : this.input;
-
-    const target = event
-      .composedPath()
-      .find(
-        (el) => el instanceof IgcComboItemComponent
-      ) as IgcComboItemComponent;
+    const target = findElementFromEventPath<IgcComboItemComponent>(
+      IgcComboItemComponent.tagName,
+      event
+    )!;
 
     this.toggleSelect(target.index);
     input.focus();
