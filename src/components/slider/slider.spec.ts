@@ -1136,6 +1136,18 @@ describe('Slider component', () => {
       expect(spec.element.value).to.equal(3);
     });
 
+    it('should reset to the new default value after setAttribute() call', () => {
+      spec.element.setAttribute('value', '17');
+      spec.element.value = 50;
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal(17);
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value.toString()
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

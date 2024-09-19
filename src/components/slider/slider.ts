@@ -75,6 +75,13 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     return this.value;
   }
 
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = this.validateValue(asNumber(current));
+  }
+
   protected override normalizeValue(): void {
     this.value = this.validateValue(this.value);
   }
