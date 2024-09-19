@@ -9,8 +9,8 @@ import {
   getVsCodeHtmlCustomData,
 } from 'custom-element-vs-code-integration';
 import customElements from '../custom-elements.json' assert { type: 'json' };
-import { buildThemes } from './build-styles.mjs';
 import report from './report.mjs';
+import { buildComponents, buildThemes } from './sass.mjs';
 
 const exec = promisify(_exec);
 
@@ -39,7 +39,8 @@ async function runTask(tag, cmd) {
 
 (async () => {
   await runTask('Clean up', () => exec('npm run clean'));
-  await runTask('Styles', () => exec('npm run build:styles'));
+  await runTask('Component styles', () => buildComponents(true));
+  await runTask('Themes', () => buildThemes(true));
 
   // https://github.com/microsoft/TypeScript/issues/14619
   await runTask('Components', () =>
@@ -47,8 +48,6 @@ async function runTask(tag, cmd) {
       'tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json'
     )
   );
-
-  await runTask('Themes', buildThemes);
 
   await runTask('Copying release files', () =>
     Promise.all([
