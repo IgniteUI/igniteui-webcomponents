@@ -6,7 +6,7 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { carouselContext } from './context.js';
@@ -65,6 +65,9 @@ export default class IgcCarouselSlideComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
+  @property({ attribute: false })
+  public previous = false;
+
   public async toggleAnimation(
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
@@ -105,8 +108,14 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   protected override render() {
+    const parts = partNameMap({
+      base: true,
+      current: this.active,
+      previous: this.previous,
+    });
+
     return html`
-      <div ${ref(this._slideRef)} part="base">
+      <div ${ref(this._slideRef)} part=${parts}>
         <slot></slot>
       </div>
     `;

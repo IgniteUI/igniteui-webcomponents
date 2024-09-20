@@ -554,14 +554,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   ): Promise<void> {
     if (dir === 'next') {
       // Animate slides in next direction
-      await currentSlide.toggleAnimation('out');
+      currentSlide.previous = true;
+      currentSlide.toggleAnimation('out');
       this.activateSlide(nextSlide);
       await nextSlide.toggleAnimation('in');
+      currentSlide.previous = false;
     } else {
       // Animate slides in previous direction
-      await currentSlide.toggleAnimation('in', 'reverse');
+      currentSlide.previous = true;
+      currentSlide.toggleAnimation('in', 'reverse');
       this.activateSlide(nextSlide);
       await nextSlide.toggleAnimation('out', 'reverse');
+      currentSlide.previous = false;
     }
   }
 
