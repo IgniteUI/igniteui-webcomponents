@@ -279,6 +279,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     this.hoverState = false;
   }
 
+  protected override _setInitialDefaultValue(): void {
+    this._defaultValue = this.value;
+  }
+
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
