@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-import type IgcButtonComponent from '../button/button.js';
+import IgcButtonComponent from '../button/button.js';
 import {
   arrowLeft,
   arrowRight,
@@ -26,7 +26,7 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import type IgcCarouselIndicatorComponent from './carousel-indicator.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import IgcCarouselComponent from './carousel.js';
 
@@ -74,18 +74,21 @@ describe('Carousel', () => {
 
   beforeEach(async () => {
     carousel = await fixture<IgcCarouselComponent>(createCarouselComponent());
-    slides = carousel.querySelectorAll(
-      IgcCarouselSlideComponent.tagName
-    ) as unknown as IgcCarouselSlideComponent[];
-    nextButton = carousel.shadowRoot?.querySelectorAll(
-      'igc-button'
-    )[1] as IgcButtonComponent;
-    prevButton = carousel.shadowRoot?.querySelectorAll(
-      'igc-button'
-    )[0] as IgcButtonComponent;
-    defaultIndicators = carousel.shadowRoot?.querySelectorAll(
-      'igc-carousel-indicator'
-    ) as unknown as IgcCarouselIndicatorComponent[];
+
+    slides = Array.from(
+      carousel.querySelectorAll(IgcCarouselSlideComponent.tagName)
+    );
+
+    [prevButton, nextButton] = carousel.renderRoot.querySelectorAll(
+      IgcButtonComponent.tagName
+    );
+
+    defaultIndicators = Array.from(
+      carousel.renderRoot.querySelectorAll(
+        IgcCarouselIndicatorComponent.tagName
+      )
+    );
+
     clock = useFakeTimers({ toFake: ['setInterval'] });
   });
 
@@ -150,8 +153,6 @@ describe('Carousel', () => {
             <div role="tablist">
               <slot name="indicator">
                 <igc-carousel-indicator
-                  aria-label="Slide 1"
-                  aria-selected="true"
                   role="tab"
                   tabindex="0"
                   slot="indicator"
@@ -161,8 +162,6 @@ describe('Carousel', () => {
                   <div slot="active"></div>
                 </igc-carousel-indicator>
                 <igc-carousel-indicator
-                  aria-label="Slide 2"
-                  aria-selected="false"
                   role="tab"
                   tabindex="-1"
                   slot="indicator"
@@ -172,8 +171,6 @@ describe('Carousel', () => {
                   <div slot="active"></div>
                 </igc-carousel-indicator>
                 <igc-carousel-indicator
-                  aria-label="Slide 3"
-                  aria-selected="false"
                   role="tab"
                   tabindex="-1"
                   slot="indicator"
@@ -283,7 +280,15 @@ describe('Carousel', () => {
         'div[part="label indicators"]'
       );
       expect(label).to.not.be.null;
-      expect(label?.textContent?.trim()).to.equal('1/3');
+      expect(label?.textContent?.trim()).to.equal('1 of 3');
+
+      // slidesLabelFormat integration
+      carousel.slidesLabelFormat = 'Showing picture {0} of {1} total slides';
+      await elementUpdated(carousel);
+
+      expect(label?.textContent?.trim()).to.equal(
+        'Showing picture 1 of 3 total slides'
+      );
     });
 
     it('should not render indicators label if `hideIndicators` is true', async () => {
@@ -299,7 +304,7 @@ describe('Carousel', () => {
         'div[part="label indicators"]'
       );
       expect(label).to.not.be.null;
-      expect(label?.textContent?.trim()).to.equal('1/3');
+      expect(label?.textContent?.trim()).to.equal('1 of 3');
 
       carousel.hideIndicators = true;
       await elementUpdated(carousel);
@@ -474,8 +479,6 @@ describe('Carousel', () => {
         `<igc-carousel-indicator
           slot="indicator"
           role="tab"
-          aria-label="Slide 1"
-          aria-selected="true"
           tabindex="0"
         >
           <span>empty</span>
@@ -503,47 +506,47 @@ describe('Carousel', () => {
     describe('Click', () => {
       it('should change slide when clicking next button', async () => {
         expect(carousel.current).to.equal(0);
-        expect(defaultIndicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(nextButton!);
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
-        expect(defaultIndicators[0].ariaSelected).to.equal('false');
-        expect(defaultIndicators[1].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.false;
+        expect(defaultIndicators[1].active).to.be.true;
       });
 
       it('should change slide when clicking previous button', async () => {
         expect(carousel.current).to.equal(0);
-        expect(defaultIndicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(prevButton!);
         await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(2);
-        expect(defaultIndicators[0].ariaSelected).to.equal('false');
-        expect(defaultIndicators[2].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.false;
+        expect(defaultIndicators[2].active).to.be.true;
       });
 
       it('should change slide when clicking indicators', async () => {
         expect(carousel.current).to.equal(0);
-        expect(defaultIndicators[0].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.true;
 
         // select second slide
         simulateClick(defaultIndicators[1]);
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
-        expect(defaultIndicators[0].ariaSelected).to.equal('false');
-        expect(defaultIndicators[1].ariaSelected).to.equal('true');
+        expect(defaultIndicators[0].active).to.be.false;
+        expect(defaultIndicators[1].active).to.be.true;
 
         // select first slide
         simulateClick(defaultIndicators[0]);
         await slideChangeComplete(slides[1], slides[0]);
 
         expect(carousel.current).to.equal(0);
-        expect(defaultIndicators[0].ariaSelected).to.equal('true');
-        expect(defaultIndicators[1].ariaSelected).to.equal('false');
+        expect(defaultIndicators[0].active).to.be.true;
+        expect(defaultIndicators[1].active).to.be.false;
       });
     });
 

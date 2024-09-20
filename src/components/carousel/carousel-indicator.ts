@@ -1,7 +1,11 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { formatString } from '../common/util.js';
+import type IgcCarouselComponent from './carousel.js';
+import { carouselContext } from './context.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
 /**
@@ -25,12 +29,47 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     registerComponent(IgcCarouselIndicatorComponent);
   }
 
+  private _active = false;
+  private _internals: ElementInternals;
+
+  @consume({ context: carouselContext, subscribe: true })
+  private _carousel?: IgcCarouselComponent;
+
+  protected get _labelFormat() {
+    return this._carousel ? this._carousel.indicatorsLabelFormat : '';
+  }
+
+  /* blazorSuppress */
   @property({ attribute: false })
-  public active = false;
+  public set active(value: boolean) {
+    this._active = Boolean(value);
+    this.tabIndex = this._active ? 0 : -1;
+    this._internals.ariaSelected = this._active.toString();
+  }
+
+  public get active(): boolean {
+    return this._active;
+  }
+
+  /* blazorSuppress */
+  @property({ attribute: false })
+  public index = 0;
+
+  constructor() {
+    super();
+
+    this._internals = this.attachInternals();
+    this._internals.role = 'tab';
+  }
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.slot = this.slot.length > 0 ? this.slot : 'indicator';
+    this.role = 'tab';
+    this.slot = this.slot || 'indicator';
+  }
+
+  protected override willUpdate(): void {
+    this._internals.ariaLabel = formatString(this._labelFormat, this.index + 1);
   }
 
   protected override render() {
