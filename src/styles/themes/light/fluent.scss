@@ -1,4 +1,6 @@
 @use 'igniteui-theming/sass/color/presets/light/fluent' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/scrollbar' as *;
 @use '../base/fluent' as base;
-@use '../base/scrollbars';
+@use '../base/scrollbars' as *;
+@include ig-scrollbar-vars($fluent-scrollbar);
 @include base.root-styles($palette, 'light');
