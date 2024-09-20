@@ -210,9 +210,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @queryAssignedElements({ slot: 'header-date' })
   private headerDateSlotItems!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'helper-text' })
-  private helperText!: Array<HTMLElement>;
-  
   protected get _isMaterialTheme(): boolean {
     return getThemeController(this)?.theme === 'material';
   }
