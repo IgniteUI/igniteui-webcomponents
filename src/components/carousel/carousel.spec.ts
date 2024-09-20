@@ -203,7 +203,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[0]).shadowDom.to.equal(
-        `<div part="base">
+        `<div part="base current">
           <slot></slot>
         </div>`
       );
@@ -240,7 +240,7 @@ describe('Carousel', () => {
         DIFF_OPTIONS
       );
       expect(slides[1]).shadowDom.to.equal(
-        `<div part="base">
+        `<div part="base current">
           <slot></slot>
         </div>`
       );

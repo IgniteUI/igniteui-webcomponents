@@ -65,6 +65,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
+  /* blazorSuppress */
   @property({ attribute: false })
   public previous = false;
 
