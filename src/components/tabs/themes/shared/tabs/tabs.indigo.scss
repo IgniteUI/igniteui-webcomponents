@@ -1,0 +1,13 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+[part='headers'] {
+    min-height: rem(40px);
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    border-bottom: rem(1px) solid var(--navigation-border-color);
+}
