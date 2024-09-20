@@ -6,7 +6,7 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { createCounter, formatString, partNameMap } from '../common/util.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { carouselContext } from './context.js';
@@ -58,6 +58,10 @@ export default class IgcCarouselSlideComponent extends LitElement {
     return animation;
   }
 
+  protected get _labelFormat() {
+    return this._carousel ? this._carousel.slidesLabelFormat : '';
+  }
+
   /**
    * The current active slide for the carousel component.
    * @attr
@@ -98,7 +102,11 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   protected override willUpdate(): void {
-    this._internals.ariaLabel = `${this._index + 1} of ${this._total}`;
+    this._internals.ariaLabel = formatString(
+      this._labelFormat,
+      this._index + 1,
+      this._total
+    );
   }
 
   public override connectedCallback(): void {

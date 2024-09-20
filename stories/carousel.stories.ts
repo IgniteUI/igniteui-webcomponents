@@ -74,6 +74,20 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
+    indicatorsLabelFormat: {
+      type: 'string',
+      description:
+        "The format used to set the aria-label on the carousel indicators.\nInstances of '{0}' will be replaced with the index of the corresponding slide.",
+      control: 'text',
+      table: { defaultValue: { summary: 'Slide {0}' } },
+    },
+    slidesLabelFormat: {
+      type: 'string',
+      description:
+        "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than tha maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
+      control: 'text',
+      table: { defaultValue: { summary: '{0} of {1}' } },
+    },
     interval: {
       type: 'number',
       description:
@@ -102,6 +116,8 @@ const metadata: Meta<IgcCarouselComponent> = {
     hideIndicators: false,
     vertical: false,
     indicatorsOrientation: 'end',
+    indicatorsLabelFormat: 'Slide {0}',
+    slidesLabelFormat: '{0} of {1}',
     maximumIndicatorsCount: 10,
     animationType: 'slide',
   },
@@ -122,6 +138,18 @@ interface IgcCarouselArgs {
   vertical: boolean;
   /** Sets the orientation of the indicator controls (dots). */
   indicatorsOrientation: 'start' | 'end';
+  /**
+   * The format used to set the aria-label on the carousel indicators.
+   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   */
+  indicatorsLabelFormat: string;
+  /**
+   * The format used to set the aria-label on the carousel slides and the text displayed
+   * when the number of indicators is greater than tha maximum indicator count.
+   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   * Instances of '{1}' will be replaced with the total amount of slides.
+   */
+  slidesLabelFormat: string;
   /** The duration in milliseconds between changing the active slide. */
   interval: number;
   /** Controls the maximum indicator controls (dots) that can be shown. Default value is `10`. */
@@ -157,130 +185,111 @@ icons.forEach((icon) => {
   registerIconFromText(icon.name, icon.text, 'material');
 });
 
-const BasicTemplate = ({
-  disableLoop,
-  disablePauseOnInteraction,
-  hideNavigation,
-  hideIndicators,
-  vertical,
-  indicatorsOrientation,
-  maximumIndicatorsCount,
-  interval,
-  animationType,
-}: IgcCarouselArgs) => {
-  return html`
+const defaultImages = [
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg',
+    alt: 'Red Ice Forest',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg',
+    alt: 'Yosemite',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg',
+    alt: 'New York',
+  },
+];
+
+const fancyImages = [
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoast.png',
+    alt: 'Wonderful Coast',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDip.png',
+    alt: 'Cultural Dip',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeaches.png',
+    alt: 'Golden Beaches',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistory.png',
+    alt: 'Island Of History',
+  },
+  {
+    src: 'https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridge.png',
+    alt: 'Amazing Bridge',
+  },
+];
+
+export const Basic: Story = {
+  render: (args) => html`
     <igc-carousel
-      ?disable-loop=${disableLoop}
-      ?disable-pause-on-interaction=${disablePauseOnInteraction}
-      ?hide-navigation=${hideNavigation}
-      ?hide-indicators=${hideIndicators}
-      .interval=${interval}
-      .animationType=${animationType}
-      .vertical=${vertical}
-      .indicatorsOrientation=${indicatorsOrientation}
-      .maximumIndicatorsCount=${maximumIndicatorsCount}
+      ?disable-loop=${args.disableLoop}
+      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
+      ?hide-navigation=${args.hideNavigation}
+      ?hide-indicators=${args.hideIndicators}
+      .interval=${args.interval}
+      .animationType=${args.animationType}
+      .vertical=${args.vertical}
+      .indicatorsOrientation=${args.indicatorsOrientation}
+      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
+      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
+      .slidesLabelFormat=${args.slidesLabelFormat}
     >
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
-          alt="Red Ice Forest"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
-          alt="Yosemite"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
-          alt="New York"
-        />
-      </igc-carousel-slide>
+      ${defaultImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
+        `
+      )}
     </igc-carousel>
-  `;
+  `,
 };
 
-const SlottedContentTemplate = ({
-  disableLoop,
-  disablePauseOnInteraction,
-  hideNavigation,
-  hideIndicators,
-  vertical,
-  indicatorsOrientation,
-  interval,
-  animationType,
-  maximumIndicatorsCount,
-}: IgcCarouselArgs) => {
-  return html`
+export const SlottedContent: Story = {
+  render: (args) => html`
     <igc-carousel
-      ?disable-loop=${disableLoop}
-      ?disable-pause-on-interaction=${disablePauseOnInteraction}
-      ?hide-navigation=${hideNavigation}
-      ?hide-indicators=${hideIndicators}
-      .interval=${interval}
-      .animationType=${animationType}
-      .vertical=${vertical}
-      .indicatorsOrientation=${indicatorsOrientation}
-      .maximumIndicatorsCount=${maximumIndicatorsCount}
+      ?disable-loop=${args.disableLoop}
+      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
+      ?hide-navigation=${args.hideNavigation}
+      ?hide-indicators=${args.hideIndicators}
+      .interval=${args.interval}
+      .animationType=${args.animationType}
+      .vertical=${args.vertical}
+      .indicatorsOrientation=${args.indicatorsOrientation}
+      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
+      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
+      .slidesLabelFormat=${args.slidesLabelFormat}
     >
       <igc-icon
         slot="previous-button"
         name="previous"
         collection="material"
       ></igc-icon>
+
       <igc-icon slot="next-button" name="next" collection="material"></igc-icon>
 
-      <igc-carousel-indicator>
-        <span>🤍</span>
-        <span slot="active">❤️</span>
-      </igc-carousel-indicator>
+      ${defaultImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
 
-      <igc-carousel-indicator>
-        <span>🤍</span>
-        <span slot="active">❤️</span>
-      </igc-carousel-indicator>
-
-      <igc-carousel-indicator>
-        <span>🤍</span>
-        <span slot="active">❤️</span>
-      </igc-carousel-indicator>
-
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/the_red_ice_forest.jpg"
-          alt="Red Ice Forest"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg"
-          alt="Yosemite"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/card/media/ny.jpg"
-          alt="New York"
-        />
-      </igc-carousel-slide>
+          <igc-carousel-indicator>
+            <span>🤍</span>
+            <span slot="active">❤️</span>
+          </igc-carousel-indicator>
+        `
+      )}
     </igc-carousel>
-  `;
+  `,
 };
 
-const SlottedInputsTemplate = ({
-  disableLoop,
-  disablePauseOnInteraction,
-  hideNavigation,
-  hideIndicators,
-  vertical,
-  indicatorsOrientation,
-  interval,
-  animationType,
-  maximumIndicatorsCount,
-}: IgcCarouselArgs) => {
-  return html`
+export const InputsTemplate: Story = {
+  render: (args) => html`
     <style>
       igc-carousel {
         border-radius: 10px;
@@ -306,15 +315,17 @@ const SlottedInputsTemplate = ({
     </style>
     <igc-carousel
       id="carousel"
-      ?disable-loop=${disableLoop}
-      ?disable-pause-on-interaction=${disablePauseOnInteraction}
-      ?hide-navigation=${hideNavigation}
-      ?hide-indicators=${hideIndicators}
-      .interval=${interval}
-      .animationType=${animationType}
-      .vertical=${vertical}
-      .indicatorsOrientation=${indicatorsOrientation}
-      .maximumIndicatorsCount=${maximumIndicatorsCount}
+      ?disable-loop=${args.disableLoop}
+      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
+      ?hide-navigation=${args.hideNavigation}
+      ?hide-indicators=${args.hideIndicators}
+      .interval=${args.interval}
+      .animationType=${args.animationType}
+      .vertical=${args.vertical}
+      .indicatorsOrientation=${args.indicatorsOrientation}
+      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
+      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
+      .slidesLabelFormat=${args.slidesLabelFormat}
     >
       <igc-carousel-slide>
         <igc-input type="text" placeholder="Username">
@@ -347,21 +358,11 @@ const SlottedInputsTemplate = ({
         </div>
       </igc-carousel-slide>
     </igc-carousel>
-  `;
+  `,
 };
 
-const SlottedThumbnailTemplate = ({
-  disableLoop,
-  disablePauseOnInteraction,
-  hideNavigation,
-  hideIndicators,
-  vertical,
-  indicatorsOrientation,
-  interval,
-  animationType,
-  maximumIndicatorsCount,
-}: IgcCarouselArgs) => {
-  return html`
+export const ThumbnailTemplate: Story = {
+  render: (args) => html`
     <style>
       igc-carousel {
         height: 550px;
@@ -378,132 +379,42 @@ const SlottedThumbnailTemplate = ({
       }
     </style>
     <igc-carousel
-      ?disable-loop=${disableLoop}
-      ?disable-pause-on-interaction=${disablePauseOnInteraction}
-      ?hide-navigation=${hideNavigation}
-      ?hide-indicators=${hideIndicators}
-      .interval=${interval}
-      .animationType=${animationType}
-      .vertical=${vertical}
-      .indicatorsOrientation=${indicatorsOrientation}
-      .maximumIndicatorsCount=${maximumIndicatorsCount}
+      ?disable-loop=${args.disableLoop}
+      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
+      ?hide-navigation=${args.hideNavigation}
+      ?hide-indicators=${args.hideIndicators}
+      .interval=${args.interval}
+      .animationType=${args.animationType}
+      .vertical=${args.vertical}
+      .indicatorsOrientation=${args.indicatorsOrientation}
+      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
+      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
+      .slidesLabelFormat=${args.slidesLabelFormat}
     >
-      <igc-carousel-indicator>
-        <img
-          class="blurred"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoastThumb.png"
-          alt="Wonderful Coast Thumb"
-          width="50"
-          height="60"
-        />
-        <img
-          slot="active"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoastThumb.png"
-          alt="Wonderful Coast Thumb Active"
-          width="50"
-          height="60"
-        />
-      </igc-carousel-indicator>
-      <igc-carousel-indicator>
-        <img
-          class="blurred"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDipThumb.png"
-          alt="Cultural Dip Thumb"
-          width="50"
-          height="60"
-        />
-        <img
-          slot="active"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDipThumb.png"
-          alt="Cultural Dip Thumb Active"
-          width="50"
-          height="60"
-        />
-      </igc-carousel-indicator>
-      <igc-carousel-indicator>
-        <img
-          class="blurred"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeachesThumb.png"
-          alt="Golden Beaches Thumb"
-          width="50"
-          height="60"
-        />
-        <img
-          slot="active"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeachesThumb.png"
-          alt="Golden Beaches Thumb Active"
-          width="50"
-          height="60"
-        />
-      </igc-carousel-indicator>
-      <igc-carousel-indicator>
-        <img
-          class="blurred"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistoryThumb.png"
-          alt="Island Of History Thumb"
-          width="50"
-          height="60"
-        />
-        <img
-          slot="active"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistoryThumb.png"
-          alt="Island Of History Thumb Active"
-          width="50"
-          height="60"
-        />
-      </igc-carousel-indicator>
-      <igc-carousel-indicator>
-        <img
-          class="blurred"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridgeThumb.png"
-          alt="Amazing Bridge Thumb"
-          width="50"
-          height="60"
-        />
-        <img
-          slot="active"
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridgeThumb.png"
-          alt="Amazing Bridge Thumb Active"
-          width="50"
-          height="60"
-        />
-      </igc-carousel-indicator>
+      ${fancyImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
 
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/WonderfulCoast.png"
-          alt="Wonderful Coast"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/CulturalDip.png"
-          alt="Cultural Dip"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/GoldenBeaches.png"
-          alt="Golden Beaches"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/IslandOfHistory.png"
-          alt="Island Of History"
-        />
-      </igc-carousel-slide>
-      <igc-carousel-slide>
-        <img
-          src="https://www.infragistics.com/angular-demos-lob/assets/images/carousel/AmazingBridge.png"
-          alt="Amazing Bridge"
-        />
-      </igc-carousel-slide>
+          <igc-carousel-indicator>
+            <img
+              class="blurred"
+              src=${src.replace('.png', 'Thumb.png')}
+              alt=${`${alt} Thumb`}
+              width="50"
+              height="60"
+            />
+            <img
+              slot="active"
+              src=${src.replace('.png', 'Thumb.png')}
+              alt=${`${alt} Thumb Active`}
+              width="50"
+              height="60"
+            />
+          </igc-carousel-indicator>
+        `
+      )}
     </igc-carousel>
-  `;
+  `,
 };
-
-export const Basic: Story = BasicTemplate.bind({});
-export const SlottedContent: Story = SlottedContentTemplate.bind({});
-export const InputsTemplate: Story = SlottedInputsTemplate.bind({});
-export const ThumbnailTemplate: Story = SlottedThumbnailTemplate.bind({});

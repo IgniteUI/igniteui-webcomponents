@@ -36,6 +36,7 @@ import {
   createCounter,
   findElementFromEventPath,
   first,
+  formatString,
   isLTR,
   last,
   partNameMap,
@@ -218,6 +219,26 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public indicatorsOrientation: 'start' | 'end' = 'end';
 
   /**
+   * The format used to set the aria-label on the carousel indicators.
+   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   *
+   * @attr indicators-label-format
+   */
+  @property({ attribute: 'indicators-label-format' })
+  public indicatorsLabelFormat = 'Slide {0}';
+
+  /**
+   * The format used to set the aria-label on the carousel slides and the text displayed
+   * when the number of indicators is greater than tha maximum indicator count.
+   * Instances of '{0}' will be replaced with the index of the corresponding slide.
+   * Instances of '{1}' will be replaced with the total amount of slides.
+   *
+   * @attr slides-label-format
+   */
+  @property({ attribute: 'slides-label-format' })
+  public slidesLabelFormat = '{0} of {1}';
+
+  /**
    * The duration in milliseconds between changing the active slide.
    * @attr interval
    */
@@ -277,7 +298,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   @watch('animationType')
-  protected animationTypeChange() {
+  @watch('slidesLabelFormat')
+  @watch('indicatorsLabelFormat')
+  protected contextChanged() {
     this._context.setValue(this, true);
   }
 
@@ -509,18 +532,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private updateProjectedIndicators(): void {
     for (const [idx, slide] of this.slides.entries()) {
       const indicator = this._projectedIndicators[idx];
-      const active = slide.active;
+      indicator.active = slide.active;
+      indicator.index = idx;
 
-      Object.assign<
-        IgcCarouselIndicatorComponent,
-        Partial<IgcCarouselIndicatorComponent>
-      >(indicator, {
-        role: 'tab',
-        tabIndex: active ? 0 : -1,
-        ariaLabel: `Slide ${idx + 1}`,
-        ariaSelected: active ? 'true' : 'false',
-        active,
-      });
       this.setAttribute('aria-controls', slide.id);
     }
   }
@@ -681,10 +695,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       yield html`
         <igc-carousel-indicator
           exportparts="indicator, active, inactive"
-          role="tab"
-          tabindex=${slide.active ? 0 : -1}
-          aria-label="Slide ${i + 1}"
-          aria-selected=${slide.active}
+          .active=${slide.active}
+          .index=${i}
         >
           <div
             part="dot"
@@ -729,7 +741,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       indicators: true,
       start: this.indicatorsOrientation === 'start',
     });
-    const value = `${this.current + 1}/${this.total}`;
+    const value = formatString(
+      this.slidesLabelFormat,
+      this.current + 1,
+      this.total
+    );
 
     return html`
       <div part=${parts}>
