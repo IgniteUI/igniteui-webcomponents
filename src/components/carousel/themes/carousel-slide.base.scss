@@ -19,14 +19,16 @@
 [part='base'] {
     width: 100%;
     height: 100%;
-}
-
-:host(:not([active])) {
     z-index: -1;
     visibility: hidden;
 }
 
-:host([active]) {
+[part='base current'] {
     z-index: 2;
+    visibility: visible;
+}
+
+[part='base previous'] {
+    z-index: 1;
     visibility: visible;
 }
