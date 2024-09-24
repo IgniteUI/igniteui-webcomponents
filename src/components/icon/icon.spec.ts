@@ -18,6 +18,7 @@ import {
 } from './icon.registry.js';
 import {
   ActionType,
+  type IconMeta,
   type BroadcastIconsChangeMessage,
   type SvgIcon,
 } from './registry/types.js';
@@ -213,6 +214,43 @@ describe('Icon broadcast service', () => {
         getIconRegistry().getIconRef(refName, refCollectionName)
       );
     });
+
+    it('correct event state when setting an icon reference via class', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+
+      registerIconFromText('reference-test', bugSvg, collectionName);
+      const meta = new IconMetaClass();
+      meta.name = 'reference-test';
+      meta.collection = collectionName;
+      setIconRef(refName, refCollectionName, meta);
+      await aTimeout(0);
+
+      const { actionType, collections, references } = last(events).data;
+
+      expect(actionType).to.equal(ActionType.UpdateIconReference);
+      expect(collections).to.be.undefined;
+      expect(references?.get(refCollectionName)?.get(refName)).to.eql(
+        getIconRegistry().getIconRef(refName, refCollectionName)
+      );
+    });
+
+    it('no event when setting an icon reference with external false.', async () => {
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+      getIconRegistry().setIconRef({
+        alias: { name: refName, collection: refCollectionName },
+        target: {
+          name: 'reference-test',
+          collection: collectionName,
+          external: false,
+        },
+        overwrite: true,
+      });
+      await aTimeout(0);
+
+      expect(events.length).to.equal(0);
+    });
   });
 
   describe('Peer registry', () => {
@@ -233,6 +271,27 @@ describe('Icon broadcast service', () => {
       expect(
         getIconFromCollection(iconName, collectionName, collections!)
       ).to.eql(getIconRegistry().get(iconName, collectionName));
+    });
+
+    it('non-external icons refs are not sent when a peer requests a sync states', async () => {
+      const iconName = 'internalIcon';
+      const refName = 'bug-reference';
+      const refCollectionName = 'ref-test';
+      getIconRegistry().setIconRef({
+        alias: { name: refName, collection: refCollectionName },
+        target: { name: iconName, collection: collectionName, external: false },
+        overwrite: true,
+      });
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(0);
+
+      expect(events).lengthOf(1); // [ActionType.SyncState]
+
+      const { actionType, references } = last(events).data;
+      expect(actionType).to.equal(ActionType.SyncState);
+      expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
     });
   });
 });
@@ -310,4 +369,21 @@ function verifySvg(icon: IgcIconComponent, svgContent: string) {
   const svg = icon.shadowRoot?.querySelector('svg');
   expect(svg).to.exist;
   expect(svg).lightDom.to.equal(svgContent);
+}
+
+class IconMetaClass implements IconMeta {
+  private _name?: string;
+  get name(): string {
+    return this._name || '';
+  }
+  set name(value: string) {
+    this._name = value;
+  }
+  private _collection?: string;
+  get collection(): string {
+    return this._collection || '';
+  }
+  set collection(value: string) {
+    this._collection = value;
+  }
 }

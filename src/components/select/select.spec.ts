@@ -22,6 +22,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  isFocused,
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -63,8 +64,7 @@ describe('Select', () => {
   };
 
   const openSelect = async () => {
-    select.show();
-    await Promise.all([elementUpdated(select), nextFrame()]);
+    await select.show();
   };
 
   const Items = [
@@ -378,14 +378,10 @@ describe('Select', () => {
     });
 
     it('`toggle()` controls the open state', async () => {
-      select.toggle();
-      await elementUpdated(select);
-
+      await select.toggle();
       expect(select.open).to.be.true;
 
-      select.toggle();
-      await elementUpdated(select);
-
+      await select.toggle();
       expect(select.open).to.be.false;
     });
 
@@ -836,6 +832,22 @@ describe('Select', () => {
       expect(select.open).to.be.false;
     });
 
+    it('pressing Tab while the active item is the current selected item moves focus back to the component', async () => {
+      select.value = 'spec';
+      await openSelect();
+
+      simulateKeyboard(select, tabKey);
+      await elementUpdated(select);
+
+      const item = select.items[0];
+
+      checkItemState(item, { active: true, selected: true });
+      expect(select.selectedItem).to.equal(item);
+      expect(select.value).to.equal(item.value);
+      expect(select.open).to.be.false;
+      expect(isFocused(select)).to.be.true;
+    });
+
     // Search selection
 
     it('does not select disabled items when searching (closed state)', async () => {
@@ -1043,7 +1055,6 @@ describe('Select', () => {
       expect(select.selectedItem).to.be.null;
     });
 
-    // TODO
     it('ArrowUp (closed state)', async () => {
       const eventSpy = spy(select, 'emitEvent');
       const activeItems = Items.filter((item) => !item.disabled).reverse();
@@ -1133,8 +1144,7 @@ describe('Select', () => {
       await openSelect();
       expect(eventSpy).not.to.be.called;
 
-      select.hide();
-      await elementUpdated(select);
+      await select.hide();
       expect(eventSpy).not.to.be.called;
 
       select.select('testing');

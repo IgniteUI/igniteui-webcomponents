@@ -28,21 +28,25 @@
         "noForEach": "off",
         "noStaticOnlyClass": "off"
       },
+      "correctness": {
+        "useImportExtensions": {
+          "options": {
+            "suggestedExtensions": {
+              "ts": { "component": "js", "module": "js" }
+            }
+          },
+          "level": "error"
+        }
+      },
       "style": {
         "noNamespace": "error",
         "useCollapsedElseIf": "error",
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        "noConsoleLog": "error",
+        "noConsole": "error",
         "noDebugger": "error",
         "noExplicitAny": "off"
-      },
-      "nursery": {
-        "useImportExtensions": {
-          "level": "error",
-          "fix": "none"
-        }
       }
     }
   }

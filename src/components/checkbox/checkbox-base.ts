@@ -16,7 +16,9 @@ export interface CheckboxChangeEventArgs {
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<CheckboxChangeEventArgs>;
   // For analyzer meta only:
+  /* skipWCPrefix */
   focus: FocusEvent;
+  /* skipWCPrefix */
   blur: FocusEvent;
 }
 
@@ -83,9 +85,12 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
+    this.hideLabel = this.label.length < 1;
+
     root.addEventListener('slotchange', () => {
       this.hideLabel = this.label.length < 1;
     });
+
     return root;
   }
 

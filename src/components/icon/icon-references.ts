@@ -58,10 +58,18 @@ addIcon('expand', {
     name: 'keyboard_arrow_down',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_down',
+    collection: 'internal',
+  },
 });
 addIcon('collapse', {
   default: {
     name: 'keyboard_arrow_up',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_up',
     collection: 'internal',
   },
 });
@@ -74,6 +82,10 @@ addIcon('arrow_prev', {
     name: 'arrow_upward',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
 });
 addIcon('arrow_next', {
   default: {
@@ -82,6 +94,10 @@ addIcon('arrow_next', {
   },
   fluent: {
     name: 'arrow_downward',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
     collection: 'internal',
   },
 });
@@ -102,8 +118,8 @@ addIcon('input_clear', {
     name: 'clear',
     collection: 'internal',
   },
-  material: {
-    name: 'chip_cancel',
+  indigo: {
+    name: 'indigo_clear',
     collection: 'internal',
   },
 });
@@ -116,6 +132,10 @@ addIcon('input_expand', {
     name: 'keyboard_arrow_down',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_down',
+    collection: 'internal',
+  },
 });
 addIcon('input_collapse', {
   default: {
@@ -126,16 +146,28 @@ addIcon('input_collapse', {
     name: 'keyboard_arrow_up',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_up',
+    collection: 'internal',
+  },
 });
 addIcon('chevron_right', {
   default: {
     name: 'keyboard_arrow_right',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_right',
+    collection: 'internal',
+  },
 });
 addIcon('chevron_left', {
   default: {
     name: 'navigate_before',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_left',
     collection: 'internal',
   },
 });
@@ -180,10 +212,18 @@ addIcon('tree_expand', {
     name: 'keyboard_arrow_right',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_right',
+    collection: 'internal',
+  },
 });
 addIcon('tree_collapse', {
   default: {
     name: 'keyboard_arrow_down',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_down',
     collection: 'internal',
   },
 });

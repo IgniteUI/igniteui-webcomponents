@@ -39,7 +39,7 @@ export function getGroup(member: IgcRadioComponent) {
   const iterator = iterNodes<IgcRadioComponent>(
     globalThis.document.documentElement,
     'SHOW_ELEMENT',
-    (radio) => radio.matches(`${member.tagName}[name='${member.name}']`)
+    (radio) => radio.matches(member.tagName) && radio.name === member.name
   );
 
   for (const each of iterator) {
