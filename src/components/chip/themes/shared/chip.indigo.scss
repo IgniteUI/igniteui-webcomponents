@@ -9,10 +9,14 @@ $theme: $indigo;
 
 :host button {
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding: 0 pad(4px, 6px, 8px);
+    padding: 0 pad(3px, 5px, 7px);
 
     &:focus {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
+    }
+
+    &:hover {
+        border-color: var-get($theme, 'hover-border-color');
     }
 
     &[disabled] {
@@ -36,11 +40,12 @@ $theme: $indigo;
     &:hover {
         color: var-get($theme, 'hover-selected-text-color');
         background: var-get($theme, 'hover-selected-background');
+        border-color: var-get($theme, 'hover-selected-border-color');
     }
-
 }
 
 :host([selected]) button[disabled] {
+    color: contrast-color(primary, 900, .4);
     background: color($color: 'primary', $variant: 400, $opacity: .5);
     border-color: transparent;
 }
@@ -62,7 +67,7 @@ $theme: $indigo;
 }
 
 :host([variant='primary']) button[disabled] {
-    color: contrast-color(primary, 900);
+    color: contrast-color(primary, 900, .4);
     background: color(primary, 400, .5);
 }
 
