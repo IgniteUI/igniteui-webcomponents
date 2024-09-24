@@ -6,7 +6,9 @@ $theme: $indigo;
 :host {
     --btn-hover-color: #{var-get($theme, 'button-hover-color')};
 
+    border-top: rem(1px) solid transparent; 
     border-bottom: rem(1px) solid var-get($theme, 'border-color');
+    padding-block: rem(11px);
 
     ::slotted(igc-icon) {
         --ig-size: 2;
