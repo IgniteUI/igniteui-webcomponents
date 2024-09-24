@@ -445,7 +445,7 @@ export default class IgcComboComponent<
     _: string | null,
     current: string | null
   ): void {
-    this._defaultValue = JSON.parse(current ?? '');
+    this._defaultValue = JSON.parse(current ?? '[]');
   }
 
   protected override _setFormValue(): void {
