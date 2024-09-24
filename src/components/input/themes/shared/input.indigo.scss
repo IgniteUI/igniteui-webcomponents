@@ -57,6 +57,7 @@ $transition-duration: .25s;
         @include type-style('caption');
 
         color: var-get($theme, 'idle-secondary-color');
+        margin-block-end: rem(4px);
     }
 
     [part^='container'] {

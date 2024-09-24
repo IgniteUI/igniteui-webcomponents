@@ -20,18 +20,41 @@ $dropdown-theme: dropdown-theme.$fluent;
 }
 
 [part='filter-input'] {
-    padding: pad(2px, 4px, 8px);
+    padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
-    igc-input::part(suffix) {
+    igc-input::part(container) {
         background: transparent;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        border-radius: 0;
+    }
+
+    igc-input::part(start) {
+        display: none;
     }
 
     igc-input::part(input) {
+        border-radius: 0;
+        padding: 0;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        box-shadow: none;
         height: var(--size);
+
+        &::selection {
+            background: color(primary, 100);
+        }
+    }
+
+    igc-input::part(suffix) {
+        background: transparent;
     }
 }
 
