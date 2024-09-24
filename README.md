@@ -232,9 +232,9 @@ npm run storybook:build
 [Combo Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/combo/overview
 [Textarea Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/text-area
 [Button Group Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/button-group
-[Banner Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/banner
-[Divider Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/divider
-[Date Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/date-picker
+[Banner Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/banner
+[Divider Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/divider
+[Date Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-picker
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
