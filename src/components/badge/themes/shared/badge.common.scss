@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+[part='base'] {
+    box-shadow: var-get($theme, 'elevation');
+}
+
 ::slotted(igc-icon) {
     color: var-get($theme, 'icon-color');
 }

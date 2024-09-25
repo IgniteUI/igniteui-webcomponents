@@ -53,6 +53,6 @@
 }
 
 :host([shape='rounded']),
-:host([outlined][shape='rounded']) [part='base'] {
+:host([shape='rounded']) [part='base'] {
     border-radius: calc(var(--size) * 2);
 }
