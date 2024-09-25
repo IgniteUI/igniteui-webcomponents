@@ -13,26 +13,23 @@
 }
 
 [part='base'] {
+    @include type-style('caption');
+
     display: inline-flex;
     min-width: var(--size);
     min-height: var(--size);
-    line-height: 1;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
-    font-family: var(--ig-font-family);
-    font-weight: inherit;
 }
 
 ::slotted(*) {
     --size: calc(var(--_badge-size) / 2) !important;
-
-    font-size: calc(var(--_badge-size) / 2) !important;
 }
 
 :host(:not(:empty)) [part='base'] {
-    padding: calc(var(--size) / 8) calc(var(--size) / 5.5);
+    padding-inline: rem(4px);
 }
 
 :host([variant='info']) {
