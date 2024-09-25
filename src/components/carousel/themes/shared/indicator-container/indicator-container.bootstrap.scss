@@ -1,0 +1,13 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+[part='base focused'] {
+    ::slotted(div) {
+        &::after {
+            border: none;
+            box-shadow: 0 0 0 rem(4px) var-get($theme, 'button-focus-border-color');
+        }
+    }
+}
