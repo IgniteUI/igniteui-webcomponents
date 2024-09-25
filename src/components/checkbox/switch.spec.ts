@@ -246,6 +246,13 @@ describe('Switch', () => {
       expect(spec.element.checked).to.be.false;
     });
 
+    it('is correctly reset on form reset after setAttribute() call', () => {
+      spec.element.setAttribute('checked', 'true');
+
+      spec.reset();
+      expect(spec.element.checked).to.be.true;
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

@@ -106,7 +106,7 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   private _setDefaultValue() {
     for (const radio of this._radios) {
-      Object.assign(radio, { _defaultValue: radio.checked });
+      radio.toggleAttribute('checked', radio.checked);
     }
   }
 

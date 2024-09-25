@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
@@ -64,7 +64,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   @property({ type: Number })
   public set value(value: number) {
     this._value = this.validateValue(asNumber(value, this._value));
-    this.setFormValue(`${this._value}`);
+    this._setFormValue(this._value.toString());
   }
 
   public get value(): number {
@@ -73,6 +73,13 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   protected override get activeValue(): number {
     return this.value;
+  }
+
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = this.validateValue(asNumber(current));
   }
 
   protected override normalizeValue(): void {

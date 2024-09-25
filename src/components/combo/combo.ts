@@ -16,8 +16,8 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import { partNameMap } from '../common/util.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import { findElementFromEventPath, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -384,15 +384,6 @@ export default class IgcComboComponent<
     this.navigationController.active = -1;
   }
 
-  @watch('required', { waitUntilFirstUpdate: true })
-  protected override async requiredChange() {
-    // Wait for the underlying igc-input to update
-    await this.updateComplete;
-
-    this.updateValidity();
-    this.invalid = !this.checkValidity();
-  }
-
   @watch('value')
   protected selectItems() {
     if (!this._value || this.value.length === 0) {
@@ -450,7 +441,14 @@ export default class IgcComboComponent<
     return this._value;
   }
 
-  protected override setFormValue(): void {
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = JSON.parse(current ?? '[]');
+  }
+
+  protected override _setFormValue(): void {
     if (!this.name) {
       return;
     }
@@ -458,7 +456,7 @@ export default class IgcComboComponent<
     const items = this._value;
 
     if (items.length < 1) {
-      super.setFormValue(null);
+      super._setFormValue(null);
       return;
     }
 
@@ -472,7 +470,7 @@ export default class IgcComboComponent<
       }
     }
 
-    super.setFormValue(data);
+    super._setFormValue(data);
   }
 
   protected async updateValue() {
@@ -488,17 +486,11 @@ export default class IgcComboComponent<
       this.target.value = this._displayValue;
     }
 
-    this.setFormValue();
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue();
+    this._validate();
 
     await this.updateComplete;
     this.list.requestUpdate();
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   /* alternateName: focusComponent */
@@ -721,12 +713,10 @@ export default class IgcComboComponent<
 
   protected itemClickHandler(event: MouseEvent) {
     const input = this.singleSelect ? this.target : this.input;
-
-    const target = event
-      .composedPath()
-      .find(
-        (el) => el instanceof IgcComboItemComponent
-      ) as IgcComboItemComponent;
+    const target = findElementFromEventPath<IgcComboItemComponent>(
+      IgcComboItemComponent.tagName,
+      event
+    )!;
 
     this.toggleSelect(target.index);
     input.focus();

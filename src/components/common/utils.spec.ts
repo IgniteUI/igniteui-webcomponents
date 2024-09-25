@@ -2,10 +2,17 @@ import { expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
 import { parseKeys } from './controllers/key-bindings.js';
-import type { FormAssociatedElementInterface } from './mixins/form-associated.js';
+import type {
+  FormAssociatedCheckboxElementInterface,
+  FormAssociatedElementInterface,
+} from './mixins/forms/types.js';
 
 export class FormAssociatedTestBed<
-  T extends FormAssociatedElementInterface & Element,
+  T extends (
+    | FormAssociatedElementInterface
+    | FormAssociatedCheckboxElementInterface
+  ) &
+    Element,
 > {
   private _element!: T;
   private _form!: HTMLFormElement;

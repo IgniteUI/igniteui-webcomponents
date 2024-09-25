@@ -1329,6 +1329,31 @@ describe('Combo', () => {
       expect(spec.element.value).to.eql(initial);
     });
 
+    it('should reset to the new default value after setAttribute() call (multiple)', async () => {
+      spec.element.setAttribute('value', JSON.stringify(['US01', 'US02']));
+      spec.element.value = [];
+
+      spec.reset();
+      expect(spec.element.value).to.eql(['US01', 'US02']);
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
+        spec.element.value
+      );
+    });
+
+    it('should reset to the new default value after setAttribute() call (single)', async () => {
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
+      spec.element.setAttribute('value', JSON.stringify(['US01']));
+      spec.element.value = [];
+
+      spec.reset();
+      expect(spec.element.value).to.eql(['US01']);
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
+        spec.element.value
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
