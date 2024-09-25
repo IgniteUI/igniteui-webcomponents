@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.0.2] - 2024-09-25
+### Added
+- Calendar, Date picker - added **header-date** slot; renders content instead of the current date/range in the calendar header [#1329](https://github.com/IgniteUI/igniteui-webcomponents/pull/1329/files)
+
+### Changed
+- Input - label typography [#1363](https://github.com/IgniteUI/igniteui-webcomponents/pull/1363/files)
+- Calendar, Select, Combo - updated to latest Indigo theme [#1337](https://github.com/IgniteUI/igniteui-webcomponents/pull/1337/files)
+
+### Fixed
+- Navigation drawer - use min-width in the mini variant [#1394]((https://github.com/IgniteUI/igniteui-webcomponents/pull/1394/files))
+
 ## [5.0.1] - 2024-08-30
 ### Added
 - Checkbox, Radio, Switch - Exported the `CheckboxChangeEventArgs` and `RadioChangeEventArgs` types for public use, providing more flexibility and control over event handling.
@@ -566,6 +577,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.0.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.1...5.0.2
 [5.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.1...5.0.0
 [4.11.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.0...4.11.1
