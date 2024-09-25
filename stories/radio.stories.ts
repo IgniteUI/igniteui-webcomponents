@@ -15,6 +15,13 @@ const metadata: Meta<IgcRadioComponent> = {
     actions: { handles: ['igcChange'] },
   },
   argTypes: {
+    required: {
+      type: 'boolean',
+      description:
+        'When set, makes the component a required field for validation.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
@@ -33,12 +40,6 @@ const metadata: Meta<IgcRadioComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'after' } },
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -46,7 +47,7 @@ const metadata: Meta<IgcRadioComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -58,9 +59,9 @@ const metadata: Meta<IgcRadioComponent> = {
     },
   },
   args: {
+    required: false,
     checked: false,
     labelPosition: 'after',
-    required: false,
     disabled: false,
     invalid: false,
   },
@@ -69,17 +70,17 @@ const metadata: Meta<IgcRadioComponent> = {
 export default metadata;
 
 interface IgcRadioArgs {
+  /** When set, makes the component a required field for validation. */
+  required: boolean;
   /** The value attribute of the control. */
   value: string;
   /** The checked state of the control. */
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
-  /** Makes the control a required field in a form context. */
-  required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
