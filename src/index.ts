@@ -53,6 +53,9 @@ export { default as IgcSliderLabelComponent } from './components/slider/slider-l
 export { default as IgcTabsComponent } from './components/tabs/tabs.js';
 export { default as IgcTabComponent } from './components/tabs/tab.js';
 export { default as IgcTabPanelComponent } from './components/tabs/tab-panel.js';
+export { default as IgcTileComponent } from './components/tile-manager/tile.js';
+export { default as IgcTileHeaderComponent } from './components/tile-manager/tile-header.js';
+export { default as IgcTileManagerComponent } from './components/tile-manager/tile-manager.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcToggleButtonComponent } from './components/button-group/toggle-button.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';

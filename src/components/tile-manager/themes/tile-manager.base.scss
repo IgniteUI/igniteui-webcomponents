@@ -1,0 +1,11 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-auto-flow: column;
+    gap: 20px;
+    width: fit-content;
+    height: fit-content;
+}
