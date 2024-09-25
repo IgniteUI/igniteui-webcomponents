@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Carousel component [#1226](https://github.com/IgniteUI/igniteui-webcomponents/issues/1226)
+
 ## [5.0.2] - 2024-09-25
 ### Added
 - Calendar, Date picker - added **header-date** slot; renders content instead of the current date/range in the calendar header [#1329](https://github.com/IgniteUI/igniteui-webcomponents/pull/1329/files)

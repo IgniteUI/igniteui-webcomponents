@@ -1,0 +1,13 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: inherit;
+    overflow: hidden;
+    outline-style: none;
+    min-height: inherit;
+    min-width: inherit;
+}
