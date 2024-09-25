@@ -27,7 +27,8 @@ const metadata: Meta<IgcSwitchComponent> = {
   argTypes: {
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -38,7 +39,7 @@ const metadata: Meta<IgcSwitchComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -79,11 +80,11 @@ const metadata: Meta<IgcSwitchComponent> = {
 export default metadata;
 
 interface IgcSwitchArgs {
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;

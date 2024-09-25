@@ -8,6 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import { IgcRadioComponent, defineComponents } from '../../index.js';
+import { first, last } from '../common/util.js';
 import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
 
 describe('Radio Component', () => {
@@ -290,6 +291,22 @@ describe('Radio Component', () => {
 
       spec.reset();
       expect(spec.element.checked).to.be.false;
+    });
+
+    it('should reset to the new default value after setAttribute() call', () => {
+      first(radios).toggleAttribute('checked', true);
+      last(radios).toggleAttribute('checked', true);
+      first(radios).checked = true;
+
+      expect(last(radios).checked).to.be.false;
+
+      spec.reset();
+      expect(last(radios).checked).to.be.true;
+      expect(first(radios).checked).to.be.false;
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        last(radios).value
+      );
     });
 
     it('reflects disabled ancestor state', async () => {
