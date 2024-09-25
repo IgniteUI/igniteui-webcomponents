@@ -53,9 +53,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public set value(value: string) {
     this._value = value ?? '';
-    this.setFormValue(value ? value : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(value ? value : null);
+    this._validate();
   }
 
   public get value() {
@@ -163,14 +162,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @watch('pattern', { waitUntilFirstUpdate: true })
   @watch('step', { waitUntilFirstUpdate: true })
   protected constraintsChanged() {
-    this.updateValidity();
-  }
-
-  /** @hidden */
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setFormValue(this._value ? this._value : null);
-    this.updateValidity();
+    this._validate();
   }
 
   /* blazorSuppress */
@@ -217,7 +209,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected handleBlur(): void {
-    this.checkValidity();
+    this._validate();
   }
 
   protected renderInput() {
