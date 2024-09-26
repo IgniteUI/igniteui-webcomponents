@@ -1,0 +1,167 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host { 
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    section {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: inherit;
+        overflow: hidden;
+        outline-style: none;
+        min-height: rem(240px);
+        min-width: rem(300px);
+    }
+}
+
+[part~='indicators'] {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: rem(16px) 0;
+    list-style: none;
+    z-index: 10;
+    gap: rem(8px);
+    padding: rem(4px) rem(6px);
+}
+
+[part='label indicators'],
+[part='label indicators start'] {
+    @include type-style('caption');
+
+    margin: rem(16px) 0;
+    min-width: rem(46px);
+}
+
+[part~='dot'] {
+    position: relative;
+    width: rem(12px);
+    height: rem(12px);
+    text-indent: rem(-9999px);
+    border-radius: border-radius(50%);
+    transition: all .05s ease-out;
+    padding: 0;
+    background: initial;
+    cursor: pointer;
+
+    &::after {
+        content: '';
+        position: absolute;
+        border-radius: inherit;
+        inset: rem(1px);
+    }
+}
+
+[part~='navigation'] {
+    position: absolute;
+    z-index: 3;
+    transition: all .15s ease-in;
+
+    igc-icon {
+        --ig-size: 1;
+    }
+}
+
+igc-button::part(base) {
+    width: rem(46px);
+    height: rem(46px);
+    min-width: initial;
+}
+
+:host(:not([vertical])),
+:host([dir='rtl'][vertical]) {
+    --dir: #{direction($rtl: false)};
+}
+
+:host([vertical]),
+:host([dir='rtl']:not([vertical])) {
+    --dir: #{direction($rtl: true)};
+}
+
+:host(:not([vertical])) {
+    [part~='navigation'] {
+        inset-block-start: 50%;
+        transform: translateY(-50%);
+    }
+
+    [part='navigation previous'] {
+        inset-inline-start: 0;
+        margin-inline-start: rem(16px);
+    }
+
+    [part='navigation next'] {
+        inset-inline-end: 0;
+        margin-inline-end: rem(16px);
+    }
+
+    [part='navigation next'],
+    [part='navigation previous'] {
+        transform: scaleX(var(--dir)) translateY(-50%);
+    }
+
+    [part~='indicators'] {
+        inset-inline-start: 50%;
+        inset-block-end: 0;
+        transform: translateX(calc(-50% * var(--dir)));
+    }
+
+    [part='indicators start'],
+    [part='label indicators start'] {
+        inset-block-end: unset;
+        inset-block-start: 0;
+    }
+}
+
+:host([vertical]) {
+    [part~='navigation'] {
+        inset-inline-end: 0;
+        margin-inline-end: rem(16px);
+
+        igc-icon {
+            transform: rotate(90deg);
+        }
+    }
+
+    [part='navigation previous'] {
+        inset-block-start: 0;
+        margin-block-start: rem(16px);
+    }
+
+    [part='navigation next'] {
+        inset-block-end: 0;
+        margin-block-end: rem(16px);
+    }
+
+    [part~='indicators'] {
+        inset-inline-end: 0;
+        flex-direction: column;
+        inset-block-start: 50%;
+        transform: translateY(-50%);
+        margin-block: 0;
+        margin-inline-end: rem(29px);
+        padding: rem(6px) rem(4px);
+    }
+
+    [part='label indicators'] {
+        margin-inline-end: rem(16px);
+    }
+
+    [part='indicators start'],
+    [part='label indicators start'] {
+        inset-inline-end: unset;
+        inset-inline-start: 0;
+        margin-inline-start: rem(16px);
+        margin-inline-end: unset;
+    }
+
+    [part='label indicators'],
+    [part='label indicators start'] {
+        padding: rem(4px) rem(6px);
+    }
+}
