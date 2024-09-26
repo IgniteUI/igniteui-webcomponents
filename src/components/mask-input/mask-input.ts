@@ -98,21 +98,18 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.updateValidity();
-  }
-
-  protected override setDefaultValue(): void {
-    this._defaultValue = this._value;
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = current;
   }
 
   protected updateFormValue() {
     this.valueMode === 'raw'
-      ? this.setFormValue(this.value || null, this.value)
-      : this.setFormValue(this.maskedValue || null, this.maskedValue);
-    this.updateValidity();
-    this.setInvalidState();
+      ? this._setFormValue(this.value || null)
+      : this._setFormValue(this.maskedValue || null);
+    this._validate();
   }
 
   @watch('prompt')

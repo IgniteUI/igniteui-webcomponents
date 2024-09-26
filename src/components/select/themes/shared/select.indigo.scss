@@ -29,7 +29,8 @@ $input-theme: input-theme.$indigo;
 }
 
 [part='base'] {
-    box-shadow: var(--ig-elevation-3);
+    outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
+    padding: rem(3px);
 }
 
 :host(:focus-within) {

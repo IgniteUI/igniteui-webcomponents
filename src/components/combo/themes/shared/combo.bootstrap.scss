@@ -21,10 +21,35 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 }
 
 [part='list-wrapper'] {
+    border: var-get($dropdown-theme, 'border-width') solid
+        var-get($dropdown-theme, 'border-color');
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
+    igc-input::part(container) {
+        background: transparent;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        border-radius: 0;
+    }
+
+    igc-input::part(start) {
+        display: none;
+    }
+
     igc-input::part(input) {
+        border-radius: 0;
+        padding: 0;
         border-inline-end: 0;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        box-shadow: none;
+
+        &::selection {
+            background: color(primary, 100);
+        }
     }
 
     igc-input::part(suffix) {
@@ -36,7 +61,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     [part='search-input'] {
         [part~='case-icon'] {
             border-block-end: rem(1px) solid color(gray, 400);
-            transition: border .15s ease-out;
+            transition: border 0.15s ease-out;
         }
 
         &:focus,
@@ -86,7 +111,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     }
 
     [part~='clear-icon'] {
-        border-inline-end: rem(1px) solid var-get($input-theme, 'disabled-border-color');
+        border-inline-end: rem(1px) solid
+            var-get($input-theme, 'disabled-border-color');
         background: inherit;
         color: var-get($theme, 'disabled-text-color');
 

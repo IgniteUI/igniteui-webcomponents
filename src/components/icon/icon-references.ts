@@ -227,6 +227,26 @@ addIcon('tree_collapse', {
     collection: 'internal',
   },
 });
+addIcon('carousel_prev', {
+  default: {
+    name: 'keyboard_arrow_left',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
+});
+addIcon('carousel_next', {
+  default: {
+    name: 'keyboard_arrow_right',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
+    collection: 'internal',
+  },
+});
 addIcon('validation_error', {
   default: {
     name: 'chip_cancel',

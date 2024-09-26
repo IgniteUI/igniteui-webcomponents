@@ -7,94 +7,6 @@ $theme: $bootstrap;
     padding-block-start: rem(16px);
 }
 
-[part~='month-inner'] {
-    &:focus,
-    &:hover {
-        color: var-get($theme, 'ym-hover-foreground');
-        background: var-get($theme, 'ym-hover-background');
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'ym-current-foreground');
-        background: var-get($theme, 'ym-current-background');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-color');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-current-hover-foreground');
-            background: var-get($theme, 'ym-current-hover-background');
-        }
-
-        &:hover {
-           box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-hover-color');
-        }
-    }
-
-    &[part~='selected'] {
-        color: var-get($theme, 'ym-selected-foreground');
-        background: var-get($theme, 'ym-selected-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-hover-foreground');
-            background: var-get($theme, 'ym-selected-hover-background');
-        }
-    }
-
-    &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'ym-selected-current-foreground');
-        background: var-get($theme, 'ym-selected-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-current-hover-foreground');
-            background: var-get($theme, 'ym-selected-current-hover-background');
-        }
-    }
-}
-
-[part~='year-inner'] {
-    &:focus,
-    &:hover {
-        color: var-get($theme, 'ym-hover-foreground');
-        background: var-get($theme, 'ym-hover-background');
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'ym-current-foreground');
-        background: var-get($theme, 'ym-current-background');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-color');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-current-hover-foreground');
-            background: var-get($theme, 'ym-current-hover-background');
-        }
-    }
-
-    &[part~='selected'] {
-        color: var-get($theme, 'ym-selected-foreground');
-        background: var-get($theme, 'ym-selected-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-hover-foreground');
-            background: var-get($theme, 'ym-selected-hover-background');
-        }
-    }
-
-    &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'ym-selected-current-foreground');
-        background: var-get($theme, 'ym-selected-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-current-hover-foreground');
-            background: var-get($theme, 'ym-selected-current-hover-background');
-        }
-    }
-}
-
 [part~='month-inner'],
 [part~='year-inner'] {
     height: var-get($theme, 'size');
@@ -106,6 +18,72 @@ $theme: $bootstrap;
         // Don't use outline color transparent here since :focus-visible will have transparent border around
         // the element that will cover the outline of the box shadow.
         outline: none;
+    }
+
+    &:focus,
+    &:hover {
+        color: var-get($theme, 'ym-hover-foreground');
+        background: var-get($theme, 'ym-hover-background');
+    }
+
+    &[part~='current'] {
+        color: var-get($theme, 'ym-current-foreground');
+        background: var-get($theme, 'ym-current-background');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-color');
+
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-current-hover-foreground');
+            background: var-get($theme, 'ym-current-hover-background');
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-focus-color');
+        }
+
+        &:hover {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-current-outline-hover-color');
+        }
+    }
+
+    &[part~='selected'] {
+        color: var-get($theme, 'ym-selected-foreground');
+        background: var-get($theme, 'ym-selected-background');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-outline-color');
+
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-selected-hover-foreground');
+            background: var-get($theme, 'ym-selected-hover-background');
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-focus-outline-color');
+        }
+
+        &:hover {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-hover-outline-color');
+        }
+    }
+
+    &[part~='selected'][part~='current'] {
+        color: var-get($theme, 'ym-selected-current-foreground');
+        background: var-get($theme, 'ym-selected-current-background');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-color');
+
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-selected-current-hover-foreground');
+            background: var-get($theme, 'ym-selected-current-hover-background');
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-focus-color');
+        }
+
+        &:hover {
+            box-shadow: 0 0 0 rem(1px) var-get($theme, 'ym-selected-current-outline-hover-color');
+        }
     }
 }
 

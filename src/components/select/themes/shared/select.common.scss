@@ -20,6 +20,7 @@ $dropdown-theme: dropdown-theme.$material;
 [part='base'] {
     background: var(--dd-background-color);
     border-radius: var(--dd-border-radius);
+    box-shadow: var(--dd-elevation);
 }
 
 [part~='toggle-icon'] {
@@ -31,6 +32,7 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
+:host(:hover),
 :host(:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus--border');

@@ -5,7 +5,7 @@ import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';

@@ -36,7 +36,7 @@ import {
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { findElementFromEventPath, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -316,7 +316,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this.focus();
     }
 
-    this.updateValidity();
+    this._updateValidity();
   }
 
   private handleFocusIn({ relatedTarget }: FocusEvent) {
@@ -498,9 +498,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string) {
     this._value = value as string;
-    this.setFormValue(this._value ? this._value : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this._value ? this._value : null);
+    this._validate();
   }
 
   private clearSelectedItem() {

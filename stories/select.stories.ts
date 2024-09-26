@@ -110,7 +110,8 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -121,7 +122,7 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -198,11 +199,11 @@ interface IgcSelectArgs {
     | 'left-end';
   /** Determines the behavior of the component during scrolling of the parent container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
@@ -340,7 +341,7 @@ export const Basic: Story = {
     >
       <igc-select-header>Available tasks:</igc-select-header>
       ${items}
-      <p slot="helper-text">Choose a task to assign.</p>
+      <span slot="helper-text">Choose a task to assign.</span>
     </igc-select>
   `,
 };
@@ -382,7 +383,7 @@ export const WithGroups: Story = {
           </igc-select-group>
         `
       )}
-      <p slot="helper-text">Choose a country.</p>
+      <span slot="helper-text">Choose a country.</span>
     </igc-select>
   `,
 };
@@ -406,11 +407,11 @@ export const InitialValue: Story = {
       <igc-select-item value="2" selected>Second</igc-select-item>
       <igc-select-item value="3" selected>Third</igc-select-item>
 
-      <p slot="helper-text">
+      <span slot="helper-text">
         If there are multiple items with the <code>selected</code> attribute,
         the last one will take precedence and set the initial value of the
         component.
-      </p>
+      </span>
     </igc-select>
 
     <igc-select label="Both set on initial render" value=${value}>
@@ -418,11 +419,11 @@ export const InitialValue: Story = {
       <igc-select-item value="2" selected>Second</igc-select-item>
       <igc-select-item value="3">Third</igc-select-item>
 
-      <p slot="helper-text">
+      <span slot="helper-text">
         If both are set on initial render, then the
         <code>selected</code> attribute of the child (if any) item will take
         precedence over the <code>value</code> attribute of the select.
-      </p>
+      </span>
     </igc-select>
   `,
 };
@@ -450,7 +451,7 @@ export const Slots: Story = {
       <section class="template" slot="header">This is a header</section>
       <section class="template" slot="footer">This is a footer</section>
 
-      <p slot="helper-text">Helper text</p>
+      <span slot="helper-text">Helper text</span>
 
       <igc-select-header>Tasks</igc-select-header>
       ${items}

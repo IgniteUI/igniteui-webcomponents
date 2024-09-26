@@ -1,16 +1,11 @@
-import {
-  type ComplexAttributeConverter,
-  LitElement,
-  type TemplateResult,
-  html,
-  nothing,
-} from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
+import { dateFromISOString } from '../calendar/helpers.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -33,7 +28,7 @@ import {
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DatePart } from '../date-time-input/date-util.js';
@@ -56,11 +51,6 @@ export interface IgcDatepickerEventMap {
   igcChange: CustomEvent<Date>;
   igcInput: CustomEvent<Date>;
 }
-
-const converter: ComplexAttributeConverter<Date | undefined> = {
-  fromAttribute: (value: string) => (value ? new Date(value) : undefined),
-  toAttribute: (value: Date) => value.toISOString(),
-};
 
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
@@ -254,12 +244,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The value of the picker
    * @attr
    */
-  @property({ converter: converter })
+  @property({ converter: dateFromISOString })
   public set value(value: Date | null) {
     this._value = value;
-    this.setFormValue(value ? value.toISOString() : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(value ? value.toISOString() : null);
+    this._validate();
   }
 
   public get value(): Date | null {
@@ -270,7 +259,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * Gets/Sets the date which is shown in the calendar picker and is highlighted.
    * By default it is the current date.
    */
-  @property({ attribute: 'active-date', converter: converter })
+  @property({ attribute: 'active-date', converter: dateFromISOString })
   public set activeDate(value: Date) {
     this._activeDate = value;
   }
@@ -283,11 +272,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The minimum value required for the date picker to remain valid.
    * @attr
    */
-  @property({ converter: converter })
+  @property({ converter: dateFromISOString })
   public set min(value: Date) {
     this._min = value;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get min(): Date {
@@ -298,11 +287,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The maximum value required for the date picker to remain valid.
    * @attr
    */
-  @property({ converter: converter })
+  @property({ converter: dateFromISOString })
   public set max(value: Date) {
     this._max = value;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get max(): Date {
@@ -339,7 +328,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set disabledDates(dates: DateRangeDescriptor[]) {
     this._disabledDates = dates;
     this.setDateConstraints();
-    this.updateValidity();
+    this._updateValidity();
   }
 
   public get disabledDates() {
@@ -448,11 +437,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this.onEscapeKey)
       .set(escapeKey, this.onEscapeKey);
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   protected override createRenderRoot() {
@@ -593,6 +577,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected handleDialogClosed(event: Event) {
     event.stopPropagation();
+  }
+
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ) {
+    this._defaultValue = dateFromISOString(current);
   }
 
   private setDateConstraints() {
