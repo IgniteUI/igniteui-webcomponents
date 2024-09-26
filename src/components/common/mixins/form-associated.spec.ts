@@ -14,11 +14,11 @@ import {
   minLengthValidator,
   requiredValidator,
 } from '../validators.js';
-import {
-  FormAssociatedRequiredMixin,
-  type FormRequiredInterface,
-} from './form-associated-required.js';
-import type { FormAssociatedElementInterface } from './form-associated.js';
+import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
+import type {
+  FormAssociatedElementInterface,
+  FormRequiredInterface,
+} from './forms/types.js';
 
 type FormAssociatedTestProps = {
   value?: string;
@@ -57,7 +57,7 @@ describe('Form associated mixin tests', () => {
 
         public set minLength(value: number) {
           this._minLength = value;
-          this.updateValidity();
+          this._updateValidity();
         }
 
         public get minLength() {
@@ -66,7 +66,7 @@ describe('Form associated mixin tests', () => {
 
         public set maxLength(value: number) {
           this._maxLength = value;
-          this.updateValidity();
+          this._updateValidity();
         }
 
         public get maxLength() {
@@ -75,7 +75,7 @@ describe('Form associated mixin tests', () => {
 
         public set value(value: string) {
           this._value = value;
-          this.updateValidity();
+          this._updateValidity();
         }
 
         public get value() {
@@ -84,7 +84,7 @@ describe('Form associated mixin tests', () => {
 
         public override connectedCallback() {
           super.connectedCallback();
-          this.updateValidity();
+          this._updateValidity();
         }
 
         protected override render() {

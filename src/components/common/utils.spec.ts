@@ -323,7 +323,8 @@ export function hasSlotContent(
 }
 
 export async function checkValidationSlots(
-  element: LitElement & FormAssociatedElementInterface,
+  element: LitElement &
+    (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface),
   ...names: Array<keyof ValidityStateFlags | 'invalid'>
 ) {
   const container = element.renderRoot.querySelector(

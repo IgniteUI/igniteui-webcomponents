@@ -3,14 +3,18 @@ import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { FormAssociatedElementInterface } from '../common/mixins/form-associated.js';
+import type {
+  FormAssociatedCheckboxElementInterface,
+  FormAssociatedElementInterface,
+} from '../common/mixins/forms/types.js';
 import { partNameMap, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles as shared } from './themes/shared/validator.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
-type IgcFormControl = LitElement & FormAssociatedElementInterface;
+type IgcFormControl = LitElement &
+  (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
 interface ValidationContainerConfig {
   id?: string;

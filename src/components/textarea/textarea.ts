@@ -289,10 +289,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
-    this.addEventListener('focus', () => {
-      this._dirty = true;
-    });
-    this.addEventListener('blur', () => this._validate());
+    this.addEventListener('focus', this.handleFocus);
+    this.addEventListener('blur', this.handleBlur);
   }
 
   public override async connectedCallback() {
@@ -378,8 +376,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected handleBlur() {
-    this.updateValidity();
-    this.setInvalidState();
+    this._validate();
   }
 
   protected valueSlotChange() {

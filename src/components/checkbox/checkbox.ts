@@ -126,7 +126,6 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           <slot></slot>
         </span>
       </label>
-      <!-- @simeonoff: You should take a look at the layout here -->
       ${this.renderValidatorContainer()}
     `;
   }

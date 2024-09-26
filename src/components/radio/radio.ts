@@ -224,7 +224,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     const radios = this._radios;
 
     for (const radio of radios) {
-      radio._validate(message);
+      radio._validate(message, true);
     }
   }
 
