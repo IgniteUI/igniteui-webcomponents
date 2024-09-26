@@ -45,7 +45,6 @@ $theme: $indigo;
 }
 
 :host([selected]) button[disabled] {
-    color: contrast-color(primary, 900, .4);
     background: color($color: 'primary', $variant: 400, $opacity: .5);
     border-color: transparent;
 }
@@ -67,7 +66,6 @@ $theme: $indigo;
 }
 
 :host([variant='primary']) button[disabled] {
-    color: contrast-color(primary, 900, .4);
     background: color(primary, 400, .5);
 }
 

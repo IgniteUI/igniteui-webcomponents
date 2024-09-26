@@ -35,3 +35,8 @@ $theme: $indigo;
         box-shadow: 0 0 0 rem(3px) color(error, 900);
     }
 }
+
+:host([selected]) button[disabled],
+:host([variant='primary']) button[disabled] {
+    color: contrast-color(primary, 900, .2);
+}
