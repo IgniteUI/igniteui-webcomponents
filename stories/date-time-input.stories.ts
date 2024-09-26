@@ -229,8 +229,16 @@ const Template = ({
     .invalid=${invalid}
   >
     <igc-icon name="clear" slot="prefix" onclick="editor.clear()"></igc-icon>
-    <igc-icon name="up" slot="suffix" onclick="editor.stepUp()"></igc-icon>
-    <igc-icon name="down" slot="suffix" onclick="editor.stepDown()"></igc-icon>
+    <igc-icon
+      name="input_collapse"
+      slot="suffix"
+      onclick="editor.stepUp()"
+    ></igc-icon>
+    <igc-icon
+      name="input_expand"
+      slot="suffix"
+      onclick="editor.stepDown()"
+    ></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-date-time-input>`;
 };
