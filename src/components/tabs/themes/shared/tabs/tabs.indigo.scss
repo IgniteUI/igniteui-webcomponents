@@ -1,0 +1,21 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+[part='headers'] {
+    min-height: rem(40px);
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    min-width: rem(40px);
+    width: rem(40px);
+    border-bottom: rem(1px) solid var(--navigation-border-color);
+
+    &:hover {
+        &::part(icon) {
+            color: var-get($theme, 'button-hover-color');
+        }
+    }
+}

@@ -200,10 +200,18 @@ addIcon('prev', {
     name: 'navigate_before',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
 });
 addIcon('next', {
   default: {
     name: 'navigate_next',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
     collection: 'internal',
   },
 });
