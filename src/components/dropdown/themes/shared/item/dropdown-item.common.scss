@@ -4,6 +4,7 @@
 $theme: $material;
 
 :host {
+    height: var-get($theme, 'size');
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
 

@@ -171,7 +171,13 @@ const Items = [
   'Documentation',
   'Builds',
 ].map(
-  (each) => html`<igc-dropdown-item value=${each}>${each}</igc-dropdown-item>`
+  (each) =>
+    html`<igc-dropdown-item value=${each}
+      ><igc-icon slot="prefix" name="github"></igc-icon>${each}<igc-icon
+        slot="suffix"
+        name="github"
+      ></igc-icon
+    ></igc-dropdown-item>`
 );
 
 const overflowItems = Array.from(range(1, 51)).map(
