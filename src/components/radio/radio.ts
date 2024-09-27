@@ -221,23 +221,19 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const radios = this._radios;
-
-    for (const radio of radios) {
-      radio._validate(message, true);
+    for (const radio of this._radios) {
+      radio._validate(message);
     }
   }
 
   private _updateCheckedState() {
-    const siblings = this._siblings;
-
     this._setFormValue(this.value || 'on');
     this._validate();
 
     this._tabIndex = 0;
     this.input?.focus();
 
-    for (const radio of siblings) {
+    for (const radio of this._siblings) {
       radio.checked = false;
       radio._tabIndex = -1;
       radio._validate();
@@ -245,14 +241,12 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   private _updateUncheckedState() {
-    const siblings = this._siblings;
-
     this._setFormValue(null);
     this._validate();
 
     this._tabIndex = -1;
 
-    for (const radio of siblings) {
+    for (const radio of this._siblings) {
       radio._updateValidity();
     }
   }
@@ -264,8 +258,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /** Called after a form reset callback to restore default keyboard navigation. */
   private _resetTabIndexes() {
-    const radios = this._radios;
-    for (const radio of radios) {
+    for (const radio of this._radios) {
       radio._tabIndex = 0;
     }
   }

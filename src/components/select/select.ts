@@ -37,7 +37,11 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { findElementFromEventPath, partNameMap } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  isString,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
@@ -546,8 +550,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
-    const item =
-      typeof value === 'string' ? this.getItem(value) : this.items[value];
+    const item = isString(value) ? this.getItem(value) : this.items[value];
 
     if (item) {
       this._navigateToActiveItem(item);
@@ -565,8 +568,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
   public select(value: string | number): IgcSelectItemComponent | null {
-    const item =
-      typeof value === 'string' ? this.getItem(value) : this.items[value];
+    const item = isString(value) ? this.getItem(value) : this.items[value];
     return item ? this._selectItem(item, false) : null;
   }
 

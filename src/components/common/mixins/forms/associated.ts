@@ -1,5 +1,6 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { isFunction } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
 import type {
@@ -123,10 +124,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         validity[validator.key] = !isValid;
 
         if (!isValid) {
-          message =
-            typeof validator.message === 'function'
-              ? validator.message(this)
-              : validator.message;
+          message = isFunction(validator.message)
+            ? validator.message(this)
+            : validator.message;
         }
       }
 
@@ -145,38 +145,38 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     /* c8 ignore next 1 */
     protected _restoreDefaultValue(): void {}
 
-    protected _validate(message?: string, isUserSet?: boolean): void {
-      this._updateValidity(message, isUserSet);
+    protected _validate(message?: string): void {
+      this._updateValidity(message);
       this._setInvalidState();
     }
 
     /**
      * Executes the component validators and updates the internal validity state.
      */
-    protected _updateValidity(error?: string, isUserSet?: boolean) {
+    protected _updateValidity(error?: string) {
       let { validity, message } = this.__runValidators();
+      const hasCustomError = this.validity.customError;
 
-      // If `valueMissing` is true, rebuild the validation state
-      // with only it and possibly `customError`.
+      // valueMissing has precedence over the other validators aside from customError
       if (validity.valueMissing) {
-        validity = { valueMissing: true, customError: false };
+        validity = {
+          valueMissing: true,
+          customError: hasCustomError,
+        };
       }
 
-      if (isUserSet) {
-        // validation cycle triggered by calling `setCustomValidity()`.
-        // Update validity with the passed in state of `customError`...
-
-        validity.customError = Boolean(error);
-        message = error || message;
-      } else {
-        //...otherwise check if there is already a custom error set by a previous call to setCustomValidity.
-        // If there is keep setting it and overwriting the validation message until the user clears it,
-        // in which case it will be handled in the branch above.
-
-        const keepCustomError = this.validity.customError && !error;
-
-        validity.customError = keepCustomError;
-        message = keepCustomError ? this.validationMessage : message;
+      if (hasCustomError && error === undefined) {
+        // Internal validation cycle after the user has called setCustomValidity()
+        // with some message. Keep the customError flag and the passed in message.
+        validity.customError = true;
+        message = this.validationMessage;
+      } else if (hasCustomError && error === '') {
+        // setCustomValidity with an empty message.
+        validity.customError = false;
+      } else if (error && error !== '') {
+        // setCustomValidity with a message.
+        validity.customError = true;
+        message = error;
       }
 
       this.__internals.setValidity(validity, message);
@@ -225,7 +225,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * As long as `message` is not empty, the control is considered invalid.
      */
     public setCustomValidity(message: string) {
-      this._updateValidity(message, true);
+      this._updateValidity(message);
     }
   }
   return BaseFormAssociatedElement as Constructor<BaseFormAssociatedElement> &

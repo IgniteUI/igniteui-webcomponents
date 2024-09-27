@@ -177,17 +177,16 @@ export function findElementFromEventPath<T extends Element>(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ) {
-  const func =
-    typeof predicate === 'string'
-      ? (e: Element) => e.matches(predicate)
-      : (e: Element) => predicate(e);
+  const func = isString(predicate)
+    ? (e: Element) => e.matches(predicate)
+    : (e: Element) => predicate(e);
 
   return getElementsFromEventPath(event).find(func) as T | undefined;
 }
 
 export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   const result: Record<string, T[]> = {};
-  const _get = typeof key === 'function' ? key : (item: T) => item[key];
+  const _get = isFunction(key) ? key : (item: T) => item[key];
 
   for (const item of array) {
     const category = _get(item);
@@ -266,4 +265,12 @@ export function splitToWords(text: string) {
 export function toKebabCase(text: string): string {
   const input = text.trim();
   return splitToWords(input).join('-').toLocaleLowerCase();
+}
+
+export function isFunction(value: unknown): value is CallableFunction {
+  return typeof value === 'function';
+}
+
+export function isString(value: unknown): value is string {
+  return typeof value === 'string';
 }

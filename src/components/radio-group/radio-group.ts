@@ -86,7 +86,7 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.setCSSGridVars());
+    root.addEventListener('slotchange', () => this._setCSSGridVars());
     return root;
   }
 
@@ -102,7 +102,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   }
 
-  private setCSSGridVars() {
+  private _setCSSGridVars() {
     const slot = this.renderRoot.querySelector('slot');
     if (slot) {
       this.style.setProperty(

@@ -7,7 +7,9 @@ import {
 } from '@open-wc/testing';
 import type { LitElement, TemplateResult } from 'lit';
 
-import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import IgcValidationContainerComponent, {
+  type IgcFormControl,
+} from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
 import type {
   FormAssociatedCheckboxElementInterface,
@@ -15,13 +17,7 @@ import type {
 } from './mixins/forms/types.js';
 import { toKebabCase } from './util.js';
 
-export class FormAssociatedTestBed<
-  T extends (
-    | FormAssociatedElementInterface
-    | FormAssociatedCheckboxElementInterface
-  ) &
-    Element,
-> {
+export class FormAssociatedTestBed<T extends IgcFormControl> {
   private _element!: T;
   private _form!: HTMLFormElement;
 

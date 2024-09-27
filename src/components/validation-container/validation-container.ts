@@ -13,7 +13,7 @@ import { styles as shared } from './themes/shared/validator.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
-type IgcFormControl = LitElement &
+export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
 interface ValidationContainerConfig {
