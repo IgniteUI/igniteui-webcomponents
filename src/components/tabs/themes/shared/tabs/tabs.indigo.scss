@@ -19,3 +19,7 @@ $theme: $indigo;
         }
     }
 }
+
+[part='selected-indicator'] {
+    height: rem(3px);
+}
