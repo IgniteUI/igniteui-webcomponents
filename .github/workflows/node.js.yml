@@ -20,11 +20,12 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
     - run: npm ci
     - run: npx playwright install --with-deps chromium
     - run: npm run lint
@@ -32,6 +33,6 @@ jobs:
     - run: npm run check
     - name: Publish to coveralls.io
       if: matrix.node-version == '18.x'
-      uses: coverallsapp/github-action@v1.1.2
+      uses: coverallsapp/github-action@v2
       with:
           github-token: ${{ github.token }}
