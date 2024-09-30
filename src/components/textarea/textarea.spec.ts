@@ -213,6 +213,18 @@ describe('Textarea component', () => {
       expect(spec.element.value).to.be.empty;
     });
 
+    it('is correctly reset on form reset after setAttribute() call', () => {
+      spec.element.setAttribute('value', 'Some initial value');
+      spec.element.value = '123';
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal('Some initial value');
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

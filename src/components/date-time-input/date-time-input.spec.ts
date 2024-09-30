@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
@@ -919,6 +920,7 @@ describe('Date Time Input component', () => {
   };
 
   describe('Form integration', () => {
+    const today = CalendarDay.today;
     const spec = new FormAssociatedTestBed<IgcDateTimeInputComponent>(
       html`<igc-date-time-input name="dt"></igc-date-time-input>`
     );
@@ -936,7 +938,7 @@ describe('Date Time Input component', () => {
     });
 
     it('is associated on submit', async () => {
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal(
@@ -945,11 +947,23 @@ describe('Date Time Input component', () => {
     });
 
     it('is correctly reset on form reset', async () => {
-      spec.element.value = new Date(Date.now());
+      spec.element.value = today.native;
       await elementUpdated(spec.element);
 
       spec.reset();
       expect(spec.element.value).to.be.null;
+    });
+
+    it('is correctly reset to the new default value after setAttribute() call', () => {
+      spec.element.setAttribute('value', today.native.toISOString());
+      spec.element.value = today.add('day', 180).native;
+
+      spec.reset();
+
+      expect(toCalendarDay(spec.element.value).equalTo(today)).to.be.true;
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        today.native.toISOString()
+      );
     });
 
     it('reflects disabled ancestor state', async () => {

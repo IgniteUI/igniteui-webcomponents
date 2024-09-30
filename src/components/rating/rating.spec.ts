@@ -457,6 +457,18 @@ describe('Rating component', () => {
       expect(spec.element.value).to.equal(3);
     });
 
+    it('should reset to the new default value after setAttribute() call', () => {
+      spec.element.setAttribute('value', '5');
+      spec.element.value = 1;
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal(5);
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value.toString()
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
