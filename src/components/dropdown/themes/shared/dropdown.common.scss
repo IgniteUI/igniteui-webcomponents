@@ -10,6 +10,7 @@ $theme: $base;
 }
 
 [part='base'] {
+    box-shadow: var-get($theme, 'elevation');
     background: var-get($theme, 'background-color');
     border-radius: var-get($theme, 'border-radius');
 }
