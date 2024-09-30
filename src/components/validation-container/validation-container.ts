@@ -17,9 +17,13 @@ export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
 interface ValidationContainerConfig {
+  /** The id attribute for the validation container. */
   id?: string;
+  /** Project the validation container to the given slot inside the host shadow DOM. */
   slot?: string;
+  /** Additional part(s) that should be bound to the validation container. */
   part?: string;
+  /** Whether the validation container should expose a helper-text slot. */
   hasHelperText?: boolean;
 }
 
@@ -73,8 +77,11 @@ export default class IgcValidationContainerComponent extends LitElement {
       hasHelperText: true,
     }
   ): TemplateResult {
-    /// XXX: Yeah, don't like this
-    const renderer = IgcValidationContainerComponent.prototype;
+    const { renderValidationSlots } = IgcValidationContainerComponent.prototype;
+    const helperText = config.hasHelperText
+      ? html`<slot name="helper-text" slot="helper-text"></slot>`
+      : null;
+
     return html`
       <igc-validator
         id=${ifDefined(config.id)}
@@ -84,10 +91,7 @@ export default class IgcValidationContainerComponent extends LitElement {
         ?invalid=${host.invalid}
         exportparts="helper-text validation-message validation-icon"
       >
-        ${config.hasHelperText
-          ? html`<slot name="helper-text" slot="helper-text"></slot>`
-          : nothing}
-        ${renderer.renderValidationSlots(host.validity, true)}
+        ${helperText}${renderValidationSlots(host.validity, true)}
       </igc-validator>
     `;
   }
