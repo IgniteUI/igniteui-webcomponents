@@ -28,14 +28,14 @@
     background: color(primary, 500);
     color: contrast-color(primary, 500);
 
-    &:hover {
-        background: color(primary, 600);
-        color: contrast-color(primary, 600);
-    }
-
     &:focus {
         background: color(primary, 800);
         color: contrast-color(primary, 800);
+    }
+
+    &:hover {
+        background: color(primary, 600);
+        color: contrast-color(primary, 600);
     }
 }
 
@@ -44,14 +44,14 @@
     background: color(info, 500);
     color: contrast-color(info, 500);
 
-    &:hover {
-        background: color(info, 600);
-        color: contrast-color(info, 600);
-    }
-
     &:focus {
         background: color(info, 800);
         color: contrast-color(info, 800);
+    }
+
+    &:hover {
+        background: color(info, 600);
+        color: contrast-color(info, 600);
     }
 }
 
@@ -60,14 +60,14 @@
     background: color(success, 500);
     color: contrast-color(success, 500);
 
-    &:hover {
-        background: color(success, 600);
-        color: contrast-color(success, 600);
-    }
-
     &:focus {
         background: color(success, 800);
         color: contrast-color(success, 800);
+    }
+
+    &:hover {
+        background: color(success, 600);
+        color: contrast-color(success, 600);
     }
 }
 
@@ -76,14 +76,14 @@
     background: color(warn, 500);
     color: contrast-color(warn, 500);
 
-    &:hover {
-        background: color(warn, 600);
-        color: contrast-color(warn, 600);
-    }
-
     &:focus {
         background: color(warn, 800);
         color: contrast-color(warn, 800);
+    }
+
+    &:hover {
+        background: color(warn, 600);
+        color: contrast-color(warn, 600);
     }
 }
 
@@ -92,14 +92,14 @@
     background: color(error, 500);
     color: contrast-color(error, 500);
 
-    &:hover {
-        background: color(error, 600);
-        color: contrast-color(error, 600);
-    }
-
     &:focus {
         background: color(error, 800);
         color: contrast-color(error, 800);
+    }
+
+    &:hover {
+        background: color(error, 600);
+        color: contrast-color(error, 600);
     }
 }
 
