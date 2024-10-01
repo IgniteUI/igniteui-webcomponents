@@ -65,6 +65,10 @@
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
+
+    ::slotted(igc-icon) {
+        display: flex;
+    }
 }
 
 [part~='body'] {

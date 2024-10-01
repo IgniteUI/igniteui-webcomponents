@@ -144,6 +144,7 @@ $arrow-start: 0;
     }
 }
 
+:host-context([dir='rtl']),
 :host([dir='rtl']) {
     [part~='start-scroll-button'],
     [part~='end-scroll-button'] {

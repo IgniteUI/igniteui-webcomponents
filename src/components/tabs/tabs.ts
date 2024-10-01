@@ -431,6 +431,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           variant="flat"
           collection="default"
           part="${direction}-scroll-button"
+          exportparts="icon"
           name="${start ? 'prev' : 'next'}"
           .disabled=${start
             ? this.disableStartScrollButton
