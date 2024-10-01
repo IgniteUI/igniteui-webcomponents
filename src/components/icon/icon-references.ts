@@ -125,10 +125,6 @@ addIcon('input_clear', {
 });
 addIcon('input_expand', {
   default: {
-    name: 'arrow_drop_down',
-    collection: 'internal',
-  },
-  material: {
     name: 'keyboard_arrow_down',
     collection: 'internal',
   },
@@ -139,10 +135,6 @@ addIcon('input_expand', {
 });
 addIcon('input_collapse', {
   default: {
-    name: 'arrow_drop_up',
-    collection: 'internal',
-  },
-  material: {
     name: 'keyboard_arrow_up',
     collection: 'internal',
   },
@@ -200,10 +192,18 @@ addIcon('prev', {
     name: 'navigate_before',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
 });
 addIcon('next', {
   default: {
     name: 'navigate_next',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
     collection: 'internal',
   },
 });
