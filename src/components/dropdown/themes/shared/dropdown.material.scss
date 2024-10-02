@@ -6,8 +6,3 @@ $theme: $material;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
-
-[part='base'] {
-    box-shadow: var(--ig-elevation-8);
-    padding: rem(8px) 0;
-}

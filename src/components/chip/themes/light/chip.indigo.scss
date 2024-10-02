@@ -6,3 +6,36 @@ $theme: $indigo;
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig-chip');
 }
+
+:host([variant='info']) button,
+:host([selected][variant='info']) button:not([disabled]) {
+    &:focus {
+        box-shadow: 0 0 0 rem(3px) color(info, 100);
+    }
+}
+
+:host([variant='success']) button,
+:host([selected][variant='success']) button:not([disabled]) {
+    &:focus {
+        box-shadow: 0 0 0 rem(3px) color(success, 200);
+    }
+}
+
+:host([variant='warning']) button,
+:host([selected][variant='warning']) button:not([disabled]) {
+    &:focus {
+        box-shadow: 0 0 0 rem(3px) color(warn, 100);
+    }
+}
+
+:host([variant='danger']) button,
+:host([selected][variant='danger']) button:not([disabled]) {
+    &:focus {
+        box-shadow: 0 0 0 rem(3px) color(error, 100);
+    }
+}
+
+:host([selected]) button[disabled],
+:host([variant='primary']) button[disabled] {
+    color: contrast-color(primary, 900, .4);
+}
