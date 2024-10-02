@@ -249,7 +249,7 @@ addIcon('carousel_next', {
 });
 addIcon('validation_error', {
   default: {
-    name: 'chip_cancel',
+    name: 'error',
     collection: 'internal',
   },
 });
