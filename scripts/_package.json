@@ -7,12 +7,12 @@
   "homepage": "https://www.infragistics.com/products/ignite-ui-web-components",
   "exports": {
     ".": {
-      "default": "./index.js",
-      "types": "./index.d.ts"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     },
     "./types": {
-      "default": "./types.js",
-      "types": "./types.d.ts"
+      "types": "./types.d.ts",
+      "default": "./types.js"
     }
   },
   "type": "module",
