@@ -172,21 +172,6 @@ type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
 
-registerIcon(
-  'clear',
-  'https://unpkg.com/material-design-icons@3.0.1/content/svg/production/ic_clear_24px.svg'
-);
-
-registerIcon(
-  'up',
-  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_up_24px.svg'
-);
-
-registerIcon(
-  'down',
-  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
-);
-
 const Template = ({
   inputFormat,
   prompt,
@@ -228,9 +213,21 @@ const Template = ({
     .spinDelta=${spinDelta}
     .invalid=${invalid}
   >
-    <igc-icon name="clear" slot="prefix" onclick="editor.clear()"></igc-icon>
-    <igc-icon name="up" slot="suffix" onclick="editor.stepUp()"></igc-icon>
-    <igc-icon name="down" slot="suffix" onclick="editor.stepDown()"></igc-icon>
+    <igc-icon
+      name="input_clear"
+      slot="prefix"
+      onclick="editor.clear()"
+    ></igc-icon>
+    <igc-icon
+      name="input_collapse"
+      slot="suffix"
+      onclick="editor.stepUp()"
+    ></igc-icon>
+    <igc-icon
+      name="input_expand"
+      slot="suffix"
+      onclick="editor.stepDown()"
+    ></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-date-time-input>`;
 };

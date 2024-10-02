@@ -15,11 +15,11 @@ $theme: $fluent;
     background: var-get($theme, 'selected-background');
     color: var-get($theme, 'selected-text-color');
 
-    &:hover {
-        background: var-get($theme, 'hover-selected-background');
-    }
-
     &:focus {
         background: var-get($theme, 'focus-selected-background');
+    }
+
+    &:hover {
+        background: var-get($theme, 'hover-selected-background');
     }
 }
