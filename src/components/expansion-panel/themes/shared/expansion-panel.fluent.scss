@@ -12,6 +12,6 @@
     }
 }
 
-:host([open]) [part~='content'] {
+[part='content'] ::slotted(*) {
     @include type-style('caption');
 }

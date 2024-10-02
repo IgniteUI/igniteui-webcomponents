@@ -48,6 +48,8 @@
 
 [part='content'] ::slotted(*) {
     @include type-style('body-2');
+
+    display: block;
 }
 
 [part~='content'] {
