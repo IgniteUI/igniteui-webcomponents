@@ -15,14 +15,14 @@ $theme: $material;
     outline: none;
     height: var-get($theme, 'size');
 
-    &:hover {
-        background: var-get($theme, 'hover-background');
-        color: var-get($theme, 'hover-text-color');
-    }
-
     &:focus {
         background: var-get($theme, 'focus-background');
         color: var-get($theme, 'focus-text-color');
+    }
+
+    &:hover {
+        background: var-get($theme, 'hover-background');
+        color: var-get($theme, 'hover-text-color');
     }
 
     &[disabled] {
