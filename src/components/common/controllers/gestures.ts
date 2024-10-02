@@ -1,5 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import type { Ref } from 'lit/directives/ref';
+import type { Ref } from 'lit/directives/ref.js';
 
 const Events = [
   'pointerdown',

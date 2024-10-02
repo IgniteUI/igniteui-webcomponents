@@ -5,14 +5,21 @@
   "author": "Infragistics",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://www.infragistics.com/products/ignite-ui-web-components",
+  "exports": {
+    ".": {
+      "default": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./types": {
+      "default": "./types.js",
+      "types": "./types.d.ts"
+    }
+  },
   "type": "module",
-  "main": "index.js",
-  "module": "index.js",
-  "types": "index.d.ts",
-  "sideEffects": ["*.css"],
+  "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/IgniteUI/igniteui-webcomponents"
+    "url": "git+https://github.com/IgniteUI/igniteui-webcomponents"
   },
   "bugs": {
     "url": "https://github.com/IgniteUI/igniteui-webcomponents/issues"
