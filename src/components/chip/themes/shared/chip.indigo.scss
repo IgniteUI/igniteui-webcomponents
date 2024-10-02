@@ -9,131 +9,99 @@ $theme: $indigo;
 
 :host button {
     border: rem(1px) solid var-get($theme, 'border-color');
+    padding: 0 pad(3px, 5px, 7px);
 
     &:focus {
-        outline: rem(3px) solid var-get($theme, 'focus-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
+    }
+
+    &:hover {
+        border-color: var-get($theme, 'hover-border-color');
     }
 
     &[disabled] {
         border-color: var-get($theme, 'disabled-border-color');
     }
+
+    igc-icon {
+        --size: #{sizable(rem(14px), rem(14px), rem(16px))};
+    }
 }
 
 :host([selected]) button:not([disabled]) {
-    border-color: transparent;
-    background: var-get($theme, 'selected-background');
     color: var-get($theme, 'selected-text-color');
-
-    &:hover {
-        background: var-get($theme, 'hover-selected-background');
-    }
+    background: var-get($theme, 'selected-background');
+    border-color: transparent;
 
     &:focus {
-        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-outline-color');
     }
+
+    &:hover {
+        color: var-get($theme, 'hover-selected-text-color');
+        background: var-get($theme, 'hover-selected-background');
+        border-color: var-get($theme, 'hover-selected-border-color');
+    }
+}
+
+:host([selected]) button[disabled] {
+    background: color($color: 'primary', $variant: 400, $opacity: .5);
+    border-color: transparent;
 }
 
 :host([variant='primary']) button,
 :host([selected][variant='primary']) button:not([disabled]) {
     border-color: transparent;
 
-    &:hover {
-        background: color(primary, 400);
-        color: contrast-color(primary, 400);
+    &:focus {
+        color: contrast-color(primary, 900);
+        background: color(primary, 500);
+        box-shadow: 0 0 0 rem(3px) color(primary, 400, .5);
     }
 
-    &:focus {
-        background: color(primary, 500);
-        color: contrast-color(primary, 500);
-        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
+    &:hover {
+        color: contrast-color(primary, 900);
+        background: color(primary, 400);
     }
 }
 
 :host([variant='primary']) button[disabled] {
-    background: color(primary, 200);
-    color: contrast-color(primary, 400);
+    background: color(primary, 400, .5);
 }
 
-:host([variant='info']) button,
-:host([selected][variant='info']) button:not([disabled]) {
-    border-color: transparent;
+@mixin chip-variants($variant, $variant-color) {
+    :host([variant='#{$variant}']) button,
+    :host([selected][variant='#{$variant}']) button:not([disabled]) {
+        color: contrast-color($variant-color, 900);
+        border-color: transparent;
 
-    &:hover {
-        background: color(info, 400);
-        color: contrast-color(info, 400);
+        &:focus {
+            background: color($variant-color, 500);
+            color: contrast-color($variant-color, 900);
+        }
+
+        &:hover {
+            background: color($variant-color, 400);
+            color: contrast-color($variant-color, 900);
+        }
     }
 
-    &:focus {
-        background: color(info, 500);
-        color: contrast-color(info, 500);
-        outline: rem(3px) solid color(info, 200);
-    }
-}
-
-:host([variant='info']) button[disabled] {
-    background: color(info, 200);
-    color: contrast-color(info, 400);
-}
-
-:host([variant='success']) button,
-:host([selected][variant='success']) button:not([disabled]) {
-    border-color: transparent;
-
-    &:hover {
-        background: color(success, 400);
-        color: contrast-color(success, 400);
-    }
-
-    &:focus {
-        background: color(success, 500);
-        color: contrast-color(success, 500);
-        outline: rem(3px) solid color(success, 200);
+    :host([variant='#{$variant}']) button[disabled] {
+        color: contrast-color($variant-color, 900);
+        background: color($variant-color, 500);
     }
 }
 
-:host([variant='success']) button[disabled] {
-    background: color(success, 200);
-    color: contrast-color(success, 800);
-}
+@include chip-variants('info', info);
+@include chip-variants('success', success);
+@include chip-variants('warning', warn);
+@include chip-variants('danger', error);
 
-:host([variant='warning']) button,
-:host([selected][variant='warning']) button:not([disabled]) {
-    border-color: transparent;
-
-    &:hover {
-        background: color(warn, 400);
-        color: contrast-color(warn, 400);
+:host([variant='info']),
+:host([variant='success']),
+:host([variant='warning']),
+:host([variant='danger']) {
+    button[disabled] {
+        opacity: .4;
     }
-
-    &:focus {
-        background: color(warn, 500);
-        color: contrast-color(warn, 500);
-        outline: rem(3px) solid color(warn, 200);
-    }
-}
-
-:host([variant='warning']) button[disabled] {
-    background: color(warn, 200);
-    color: contrast-color(warn, 900);
-}
-
-:host([variant='danger']) button,
-:host([selected][variant='danger']) button:not([disabled]) {
-    border-color: transparent;
-
-    &:hover {
-        background: color(error, 400);
-        color: contrast-color(error, 400);
-    }
-
-    &:focus {
-        background: color(error, 500);
-        color: contrast-color(error, 500);
-        outline: rem(3px) solid color(error, 200);
-    }
-}
-
-:host([variant='danger']) button[disabled] {
-    background: color(error, 200);
-    color: contrast-color(error, 400);
 }

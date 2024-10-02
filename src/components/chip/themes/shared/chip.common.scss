@@ -15,14 +15,14 @@ $theme: $material;
     outline: none;
     height: var-get($theme, 'size');
 
-    &:hover {
-        background: var-get($theme, 'hover-background');
-        color: var-get($theme, 'hover-text-color');
-    }
-
     &:focus {
         background: var-get($theme, 'focus-background');
         color: var-get($theme, 'focus-text-color');
+    }
+
+    &:hover {
+        background: var-get($theme, 'hover-background');
+        color: var-get($theme, 'hover-text-color');
     }
 
     &[disabled] {
@@ -32,5 +32,17 @@ $theme: $material;
 
     igc-icon {
         --component-size: var(--chip-size);
+    }
+
+    ::slotted(*) {
+        --default-size: var(--chip-size);
+    }
+
+    ::slotted(igc-avatar) {
+        --size: #{sizable(rem(14px), rem(18px), rem(24px))};
+    }
+
+    ::slotted(igc-circular-progress) {
+        --diameter: #{sizable(rem(14px), rem(18px), rem(24px))};
     }
 }
