@@ -142,7 +142,7 @@ export default class IgcValidationContainerComponent extends LitElement {
       ? html`
           <igc-icon
             aria-hidden="true"
-            name="validation_error"
+            name="error"
             collection="default"
             part="validation-icon"
           ></igc-icon>

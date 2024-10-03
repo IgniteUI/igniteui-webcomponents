@@ -247,7 +247,7 @@ addIcon('carousel_next', {
     collection: 'internal',
   },
 });
-addIcon('validation_error', {
+addIcon('error', {
   default: {
     name: 'error',
     collection: 'internal',
