@@ -274,3 +274,12 @@ export function isFunction(value: unknown): value is CallableFunction {
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
+
+/**
+ * Returns whether a given collection has at least one member.
+ */
+export function isEmpty<T, U extends string>(
+  x: ArrayLike<T> | Set<T> | Map<U, T>
+): boolean {
+  return 'length' in x ? x.length < 1 : x.size < 1;
+}

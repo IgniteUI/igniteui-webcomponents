@@ -1,5 +1,6 @@
 import type { ReactiveController } from 'lit';
 
+import { isEmpty } from '../../common/util.js';
 import type {
   ComboHost,
   ComboValue,
@@ -38,7 +39,7 @@ export class SelectionController<T extends object>
   }
 
   private selectValueKeys(keys: Values<T>[]) {
-    if (keys.length === 0) return;
+    if (isEmpty(keys)) return;
 
     this.getItemsByValueKey(keys).forEach((item) => {
       return item && this._selected.add(item);
@@ -46,7 +47,7 @@ export class SelectionController<T extends object>
   }
 
   private deselectValueKeys(keys: Values<T>[]) {
-    if (keys.length === 0) return;
+    if (isEmpty(keys)) return;
 
     this.getItemsByValueKey(keys).forEach((item) => {
       return item && this._selected.delete(item);
@@ -54,7 +55,7 @@ export class SelectionController<T extends object>
   }
 
   private selectObjects(items: T[]) {
-    if (items.length === 0) return;
+    if (isEmpty(items)) return;
 
     items.forEach((item) => {
       const i = this.data.includes(item);
@@ -65,7 +66,7 @@ export class SelectionController<T extends object>
   }
 
   private deselectObjects(items: T[]) {
-    if (items.length === 0) return;
+    if (isEmpty(items)) return;
 
     items.forEach((item) => {
       const i = this.data.includes(item);
@@ -95,7 +96,7 @@ export class SelectionController<T extends object>
       this.resetSearchTerm();
     }
 
-    if (!items || items.length === 0) {
+    if (!items || isEmpty(items)) {
       !singleSelect && this.selectAll();
       return;
     }
@@ -129,7 +130,7 @@ export class SelectionController<T extends object>
   }
 
   public async deselect(items?: Item<T>[], emit = false) {
-    if (!items || items.length === 0) {
+    if (!items || isEmpty(items)) {
       if (
         emit &&
         !this.handleChange({

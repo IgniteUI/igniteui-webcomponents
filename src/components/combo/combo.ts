@@ -17,7 +17,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { findElementFromEventPath, partNameMap } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  isEmpty,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -304,7 +308,7 @@ export default class IgcComboComponent<
 
   @watch('data')
   protected dataChanged() {
-    if (this.data.length === 0) return;
+    if (isEmpty(this.data)) return;
     this.dataState = structuredClone(this.data) as ComboRecord<T>[];
 
     if (this.hasUpdated) {
@@ -360,7 +364,7 @@ export default class IgcComboComponent<
     this.addEventListener('blur', () => {
       const { selected } = this.selectionController;
 
-      if (selected.size === 0) {
+      if (isEmpty(selected)) {
         this._displayValue = '';
         this.resetSearchTerm();
       }
@@ -388,7 +392,7 @@ export default class IgcComboComponent<
 
   @watch('value')
   protected selectItems() {
-    if (!this._value || this.value.length === 0) {
+    if (!this._value || isEmpty(this._value)) {
       this.selectionController.deselect([]);
     } else {
       this.selectionController.deselect([]);
@@ -457,7 +461,7 @@ export default class IgcComboComponent<
 
     const items = this._value;
 
-    if (items.length < 1) {
+    if (isEmpty(items)) {
       super._setFormValue(null);
       return;
     }
@@ -476,7 +480,7 @@ export default class IgcComboComponent<
   }
 
   protected async updateValue() {
-    if (this.data.length === 0) return;
+    if (isEmpty(this.data)) return;
     const selected = Array.from(this.selectionController.selected);
 
     this._value = this.selectionController.getValue(selected, this.valueKey!);
@@ -754,7 +758,7 @@ export default class IgcComboComponent<
 
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
-      this.selectionController.deselect([item], selected.size > 0);
+      this.selectionController.deselect([item], !isEmpty(selected));
       this._value = [];
     }
   }
@@ -826,7 +830,7 @@ export default class IgcComboComponent<
       slot="suffix"
       part="clear-icon"
       @click=${this.handleClearIconClick}
-      ?hidden=${selected.size === 0}
+      ?hidden=${isEmpty(selected)}
     >
       <slot name="clear-icon">
         <igc-icon

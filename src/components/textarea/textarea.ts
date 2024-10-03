@@ -15,7 +15,12 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  isEmpty,
+  partNameMap,
+} from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
@@ -401,7 +406,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   protected renderPrefix() {
     return html`
-      <div part="prefix" .hidden=${this.prefixes.length < 1}>
+      <div part="prefix" .hidden=${isEmpty(this.prefixes)}>
         <slot name="prefix"></slot>
       </div>
     `;
@@ -409,7 +414,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   protected renderSuffix() {
     return html`
-      <div part="suffix" .hidden=${this.suffixes.length < 1}>
+      <div part="suffix" .hidden=${isEmpty(this.suffixes)}>
         <slot name="suffix"></slot>
       </div>
     `;

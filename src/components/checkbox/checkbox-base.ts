@@ -6,6 +6,7 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import { isEmpty } from '../common/util.js';
 import { checkBoxValidators } from './validators.js';
 
 export interface CheckboxChangeEventArgs {
@@ -86,7 +87,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     const root = super.createRenderRoot();
 
     root.addEventListener('slotchange', () => {
-      this.hideLabel = this.label.length < 1;
+      this.hideLabel = isEmpty(this.label);
     });
 
     return root;

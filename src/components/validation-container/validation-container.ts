@@ -7,7 +7,7 @@ import type {
   FormAssociatedCheckboxElementInterface,
   FormAssociatedElementInterface,
 } from '../common/mixins/forms/types.js';
-import { partNameMap, toKebabCase } from '../common/util.js';
+import { isEmpty, partNameMap, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles as shared } from './themes/shared/validator.common.css';
 import { all } from './themes/themes.js';
@@ -36,7 +36,7 @@ function getValidationSlots(element: IgcValidationContainerComponent) {
 function hasProjection(element: IgcValidationContainerComponent) {
   return Array.from(
     element.renderRoot.querySelectorAll<HTMLSlotElement>('slot')
-  ).every((slot) => slot.assignedElements({ flatten: true }).length < 1);
+  ).every((slot) => isEmpty(slot.assignedElements({ flatten: true })));
 }
 
 function hasProjectedValidation(

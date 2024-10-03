@@ -13,7 +13,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { getElementByIdFromRoot, isString } from '../common/util.js';
+import { getElementByIdFromRoot, isEmpty, isString } from '../common/util.js';
 import { styles } from './themes/light/popover.base.css.js';
 
 function roundByDPR(value: number) {
@@ -240,7 +240,7 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _anchorSlotChange() {
-    if (this.anchor || this._anchors.length < 1) return;
+    if (this.anchor || isEmpty(this._anchors)) return;
 
     this.target = this._anchors[0];
     this._updateState();
