@@ -49,7 +49,7 @@ import { styles as shared } from './themes/shared/select.common.css.js';
 import { all } from './themes/themes.js';
 import { selectValidators } from './validators.js';
 
-export interface IgcSelectEventMap {
+export interface IgcSelectComponentEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
   // For analyzer meta only:
   /* skipWCPrefix */
@@ -96,7 +96,7 @@ export interface IgcSelectEventMap {
 )
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
-    IgcSelectEventMap,
+    IgcSelectComponentEventMap,
     AbstractConstructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {
