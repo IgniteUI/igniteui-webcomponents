@@ -1,6 +1,6 @@
 import type IgcTreeItemComponent from './tree-item.js';
 
-export interface IgcTreeEventMap {
+export interface IgcTreeComponentEventMap {
   /* alternateName: selectionChanged */
   igcSelection: CustomEvent<TreeSelectionChange>;
   igcItemExpanding: CustomEvent<IgcTreeItemComponent>;
