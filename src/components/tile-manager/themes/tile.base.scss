@@ -6,6 +6,8 @@
     grid-column: span 5;
     border: 5px solid blue;
     background-color: yellow;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .dragging {
@@ -13,4 +15,37 @@
     z-index: 1000;
     opacity: 0.8;
     cursor: grabbing;
+}
+
+.resize-handle {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    right: 0;
+    bottom: 0;
+    cursor: se-resize;
+    background: rgba(0, 0, 0);
+    z-index: 999;
+}
+
+.resizer {
+    position: absolute;
+    background: pink;  /* Color for visibility */
+    z-index: 10;
+}
+  
+.resizer.right {
+    top: 0;
+    right: -4px;
+    bottom: 0;
+    width: 2px;
+    cursor: ew-resize;
+}
+
+.resizer.bottom {
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    cursor: ns-resize;
 }
