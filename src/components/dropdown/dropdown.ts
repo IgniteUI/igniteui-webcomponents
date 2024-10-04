@@ -41,7 +41,7 @@ import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { styles as shared } from './themes/shared/dropdown.common.css.js';
 
-export interface IgcDropdownEventMap {
+export interface IgcDropdownComponentEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
@@ -71,7 +71,7 @@ export interface IgcDropdownEventMap {
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
 export default class IgcDropdownComponent extends EventEmitterMixin<
-  IgcDropdownEventMap,
+  IgcDropdownComponentEventMap,
   AbstractConstructor<IgcBaseComboBoxLikeComponent>
 >(IgcBaseComboBoxLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
