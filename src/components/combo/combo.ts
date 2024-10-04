@@ -37,7 +37,7 @@ import type {
   ComboValue,
   FilteringOptions,
   GroupingDirection,
-  IgcComboEventMap,
+  IgcComboComponentEventMap,
   Item,
   Keys,
 } from './types.js';
@@ -96,7 +96,9 @@ import { comboValidators } from './validators.js';
 export default class IgcComboComponent<
   T extends object = any,
 > extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcComboComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-combo';
   public static styles = [styles, shared];
