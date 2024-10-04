@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { noop, partNameMap } from '../common/util.js';
-import type { IgcInputEventMap } from '../input/input-base.js';
+import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -32,7 +32,7 @@ import {
 import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputComponentEventMap
-  extends Omit<IgcInputEventMap, 'igcChange'> {
+  extends Omit<IgcInputComponentEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
 

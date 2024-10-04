@@ -11,7 +11,7 @@ export type { IgcDateTimeInputComponentEventMap } from './components/date-time-i
 export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
-export type { IgcInputEventMap } from './components/input/input-base.js';
+export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcRadioEventMap } from './components/radio/radio.js';
 export type { IgcRatingEventMap } from './components/rating/rating.js';
 export type { IgcSelectEventMap } from './components/select/select.js';
