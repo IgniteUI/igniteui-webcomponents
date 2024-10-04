@@ -22,7 +22,7 @@ import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
 import { textAreaValidators } from './validators.js';
 
-export interface IgcTextareaEventMap {
+export interface IgcTextareaComponentEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
   // For analyzer meta only:
@@ -56,7 +56,9 @@ export interface IgcTextareaEventMap {
  */
 @themes(all, { exposeController: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcTextareaComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles, shared];

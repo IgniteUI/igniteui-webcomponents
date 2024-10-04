@@ -20,7 +20,7 @@ export type { IgcRangeSliderComponentEventMap } from './components/slider/range-
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
 export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
-export type { IgcTextareaEventMap } from './components/textarea/textarea.js';
+export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTreeEventMap } from './components/tree/tree.common.js';
 
 // Public types
