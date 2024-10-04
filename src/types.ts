@@ -13,7 +13,7 @@ export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdow
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
-export type { IgcRatingEventMap } from './components/rating/rating.js';
+export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectEventMap } from './components/select/select.js';
 export type { IgcSliderEventMap } from './components/slider/slider.js';
 export type { IgcRangeSliderEventMap } from './components/slider/range-slider.js';
