@@ -7,3 +7,7 @@
 ::slotted([slot='subtitle']) {
     @include type-style('body-2');
 }
+
+:host {
+    padding: rem(16px) rem(8px);
+}
