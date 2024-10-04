@@ -8,7 +8,7 @@ export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
-export type { IgcDialogEventMap } from './components/dialog/dialog.js';
+export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownEventMap } from './components/dropdown/dropdown.js';
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputEventMap } from './components/input/input-base.js';
