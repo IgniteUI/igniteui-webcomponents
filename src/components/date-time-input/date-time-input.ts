@@ -31,7 +31,7 @@ import {
 } from './date-util.js';
 import { dateTimeInputValidators } from './validators.js';
 
-export interface IgcDateTimeInputEventMap
+export interface IgcDateTimeInputComponentEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
@@ -63,7 +63,7 @@ const converter: ComplexAttributeConverter<Date | null> = {
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
-  IgcDateTimeInputEventMap,
+  IgcDateTimeInputComponentEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
