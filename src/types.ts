@@ -15,8 +15,8 @@ export type { IgcInputComponentEventMap } from './components/input/input-base.js
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';
-export type { IgcSliderEventMap } from './components/slider/slider.js';
-export type { IgcRangeSliderEventMap } from './components/slider/range-slider.js';
+export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
+export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
 export type { IgcSnackbarEventMap } from './components/snackbar/snackbar.js';
 export type { IgcStepperEventMap } from './components/stepper/stepper.common.js';
 export type { IgcTabsEventMap } from './components/tabs/tabs.js';
