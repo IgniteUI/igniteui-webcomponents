@@ -3,17 +3,20 @@
 
 $theme: $material;
 
+[part='base'] {
+    box-shadow: var-get($theme, 'elevation');
+}
+
 ::slotted(igc-icon) {
     color: var-get($theme, 'icon-color');
 }
 
-:host([variant='primary']) {
+:host([variant='primary']) [part='base'] {
     background: var-get($theme, 'background-color');
     color: var-get($theme, 'text-color');
 }
 
-:host([shape='square']),
-:host([outlined][shape='square']) [part='base'] {
+:host([shape='square']) [part='base'] {
     border-radius: var-get($theme, 'border-radius');
 }
 

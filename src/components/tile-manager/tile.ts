@@ -19,6 +19,32 @@ export default class IgcTileComponent extends LitElement {
     registerComponent(IgcTileComponent);
   }
 
+  constructor() {
+    super();
+
+    this.setAttribute('draggable', 'true');
+    this.addEventListener('dragstart', this.handleDragStart);
+    this.addEventListener('dragend', this.handleDragEnd);
+  }
+
+  private handleDragStart() {
+    const event = new CustomEvent('tileDragStart', {
+      detail: { tile: this },
+      bubbles: true,
+    });
+    this.dispatchEvent(event);
+    this.classList.add('dragging');
+  }
+
+  private handleDragEnd() {
+    const event = new CustomEvent('tileDragEnd', {
+      detail: { tile: this },
+      bubbles: true,
+    });
+    this.dispatchEvent(event);
+    this.classList.remove('dragging');
+  }
+
   startResize(event: MouseEvent) {
     event.preventDefault();
 

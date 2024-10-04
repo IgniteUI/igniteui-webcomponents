@@ -4,7 +4,9 @@
 $theme: $base;
 
 :host {
+    height: var-get($theme, 'size');
     color: var-get($theme, 'header-text-color');
-    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
-    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
+    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    display: flex;
+    align-items: center;
 }

@@ -3,9 +3,3 @@
 :host([open]) [part~='content'] {
     @include type-style('body-1');
 }
-
-[part='subtitle'] {
-    &::slotted(*) {
-        @include type-style('body-2');
-    }
-}

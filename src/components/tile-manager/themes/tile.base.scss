@@ -2,12 +2,19 @@
 @use 'styles/utilities' as *;
 
 :host {
-    grid-row: span 3;
-    grid-column: span 3;
+    grid-row: span 5;
+    grid-column: span 5;
     border: 5px solid blue;
     background-color: yellow;
     position: relative;
     box-sizing: border-box;
+}
+
+.dragging {
+    position: absolute;
+    z-index: 1000;
+    opacity: 0.8;
+    cursor: grabbing;
 }
 
 .resize-handle {
