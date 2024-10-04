@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 
+import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
@@ -25,12 +26,20 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private draggedItem: HTMLElement | null = null;
 
+  /**
+   * Determines whether the tiles slide or swap on drop.
+   * @attr
+   */
+  @property()
+  public dragMode: 'slide' | 'swap' = 'slide';
+
   private handleTileDragStart(e: CustomEvent) {
     this.draggedItem = e.detail.tile;
   }
 
   private handleTileDragEnd() {
     if (this.draggedItem) {
+      this.draggedItem.style.transform = ''; // Reset transformation
       this.draggedItem = null;
     }
   }
@@ -45,19 +54,24 @@ export default class IgcTileManagerComponent extends LitElement {
     const target = e.target as HTMLElement;
 
     const slot = this.shadowRoot?.querySelector('slot');
-    const slottedItems = slot?.assignedElements({
-      flatten: true,
-    }) as HTMLElement[];
+    const slottedItems = slot?.assignedElements() as HTMLElement[];
 
     if (this.draggedItem && slottedItems && target !== this.draggedItem) {
       const draggedIndex = slottedItems.indexOf(this.draggedItem);
       const droppedIndex = slottedItems.indexOf(target);
 
-      // Reorder items based on drag/drop indices
       if (draggedIndex > -1 && droppedIndex > -1) {
         const parent = this.draggedItem.parentElement;
         if (parent) {
-          parent.insertBefore(this.draggedItem, target);
+          if (this.dragMode === 'slide') {
+            parent.insertBefore(this.draggedItem, target);
+          } else if (this.dragMode === 'swap') {
+            const draggedNextSibling = this.draggedItem.nextElementSibling;
+
+            parent.insertBefore(this.draggedItem, target);
+
+            parent.insertBefore(target, draggedNextSibling);
+          }
         }
       }
     }
