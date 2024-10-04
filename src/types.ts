@@ -6,7 +6,7 @@ export type { IgcCarouselComponentEventMap } from './components/carousel/carouse
 export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
-export type { IgcDatepickerEventMap } from './components/date-picker/date-picker.js';
+export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateTimeInputEventMap } from './components/date-time-input/date-time-input.js';
 export type { IgcDialogEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownEventMap } from './components/dropdown/dropdown.js';
