@@ -5,16 +5,11 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import type { LitElement, TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
 
-import IgcValidationContainerComponent, {
-  type IgcFormControl,
-} from '../validation-container/validation-container.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
-import type {
-  FormAssociatedCheckboxElementInterface,
-  FormAssociatedElementInterface,
-} from './mixins/forms/types.js';
+import type { IgcFormControl } from './mixins/forms/types.js';
 import { toKebabCase } from './util.js';
 
 export class FormAssociatedTestBed<T extends IgcFormControl> {
@@ -319,8 +314,7 @@ export function hasSlotContent(
 }
 
 export async function checkValidationSlots(
-  element: LitElement &
-    (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface),
+  element: IgcFormControl,
   ...names: Array<keyof ValidityStateFlags | 'invalid'>
 ) {
   const container = element.renderRoot.querySelector(
