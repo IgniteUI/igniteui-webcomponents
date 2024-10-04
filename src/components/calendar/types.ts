@@ -22,6 +22,6 @@ export type WeekDays =
   | 'friday'
   | 'saturday';
 
-export interface IgcCalendarEventMap {
+export interface IgcCalendarComponentEventMap {
   igcChange: CustomEvent<Date | Date[]>;
 }

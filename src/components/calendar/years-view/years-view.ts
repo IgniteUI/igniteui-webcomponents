@@ -14,7 +14,7 @@ import { YEARS_PER_ROW, getViewElement, getYearRange } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
-import type { IgcCalendarEventMap } from '../types.js';
+import type { IgcCalendarComponentEventMap } from '../types.js';
 
 /**
  * Instantiate a years view as a separate component in the calendar.
@@ -29,7 +29,7 @@ import type { IgcCalendarEventMap } from '../types.js';
 @blazorSuppressComponent
 @themes(all)
 export default class IgcYearsViewComponent extends EventEmitterMixin<
-  IgcCalendarEventMap,
+  IgcCalendarComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-years-view';

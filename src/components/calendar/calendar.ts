@@ -46,7 +46,7 @@ import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
-import type { IgcCalendarEventMap } from './types.js';
+import type { IgcCalendarComponentEventMap } from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
@@ -102,7 +102,7 @@ export const focusActiveDate = Symbol();
  */
 @themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
-  IgcCalendarEventMap,
+  IgcCalendarComponentEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
