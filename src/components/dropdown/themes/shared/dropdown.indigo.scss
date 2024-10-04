@@ -8,7 +8,6 @@ $theme: $indigo;
 }
 
 [part='base'] {
-    box-shadow: var-get($theme, 'elevation');
     padding: rem(3px);
     outline: var-get($theme, 'border-width') solid var-get($theme, 'border-color');
     outline-offset: rem(-1px);

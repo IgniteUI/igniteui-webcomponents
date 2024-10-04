@@ -130,14 +130,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     this.updateMask();
     this.updateFormValue();
-    this.updateValidity();
-    this.setInvalidState();
+    this._validate();
   }
 
   protected updateFormValue() {
     this._value
-      ? this.setFormValue(this._value.toISOString())
-      : this.setFormValue(null);
+      ? this._setFormValue(this._value.toISOString())
+      : this._setFormValue(null);
   }
 
   /**
@@ -214,7 +213,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @watch('min', { waitUntilFirstUpdate: true })
   @watch('max', { waitUntilFirstUpdate: true })
   protected constraintChange() {
-    this.updateValidity();
+    this._updateValidity();
   }
 
   protected get hasDateParts(): boolean {
@@ -293,7 +292,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this.updateValidity();
+    this._updateValidity();
     if (this.value) {
       this.updateMask();
     }

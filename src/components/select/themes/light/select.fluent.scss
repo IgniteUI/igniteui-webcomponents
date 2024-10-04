@@ -7,9 +7,10 @@ $theme: $fluent;
 
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig-select');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-popover');
 
     --dd-background-color: #{var-get($dropdown-theme, 'background-color')};
     --dd-border-radius: #{var-get($dropdown-theme, 'border-radius')};
     --dd-border-color: #{var-get($dropdown-theme, 'border-color')};
+    --dd-elevation: #{var-get($dropdown-theme, 'elevation')};
 }

@@ -14,7 +14,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
@@ -226,9 +226,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string) {
     this._value = value ?? '';
-    this.setFormValue(this._value ? this._value : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this._value ? this._value : null);
+    this._validate();
   }
 
   public get value(): string {
@@ -273,15 +272,11 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('focus', () => {
       this._dirty = true;
     });
-    this.addEventListener('blur', () => {
-      this.updateValidity();
-      this.setInvalidState();
-    });
+    this.addEventListener('blur', () => this._validate());
   }
 
   public override async connectedCallback() {
     super.connectedCallback();
-    this.updateValidity();
 
     await this.updateComplete;
 

@@ -12,6 +12,9 @@ import IgcCardContentComponent from '../../card/card.content.js';
 import IgcCardHeaderComponent from '../../card/card.header.js';
 import IgcCardComponent from '../../card/card.js';
 import IgcCardMediaComponent from '../../card/card.media.js';
+import IgcCarouselIndicatorComponent from '../../carousel/carousel-indicator.js';
+import IgcCarouselSlideComponent from '../../carousel/carousel-slide.js';
+import IgcCarouselComponent from '../../carousel/carousel.js';
 import IgcCheckboxComponent from '../../checkbox/checkbox.js';
 import IgcSwitchComponent from '../../checkbox/switch.js';
 import IgcChipComponent from '../../chip/chip.js';
@@ -78,6 +81,9 @@ const allComponents: IgniteComponent[] = [
   IgcCardHeaderComponent,
   IgcCardMediaComponent,
   IgcCardComponent,
+  IgcCarouselComponent,
+  IgcCarouselIndicatorComponent,
+  IgcCarouselSlideComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
   IgcComboComponent,

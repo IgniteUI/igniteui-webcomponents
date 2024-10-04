@@ -5,7 +5,7 @@ import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { checkBoxValidators } from './validators.js';
 
 export interface CheckboxChangeEventArgs {
@@ -23,7 +23,7 @@ export interface IgcCheckboxEventMap {
 }
 
 @blazorDeepImport
-export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
+export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
   protected override get __validators() {
@@ -51,7 +51,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this.setFormValue(this._value || 'on');
+      this._setFormValue(this._value || 'on');
     }
   }
 
@@ -67,9 +67,8 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._checked = Boolean(value);
-    this.setFormValue(this._checked ? this.value || 'on' : null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this._checked ? this.value || 'on' : null);
+    this._validate();
   }
 
   public get checked(): boolean {
@@ -85,15 +84,13 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
+    this.hideLabel = this.label.length < 1;
+
     root.addEventListener('slotchange', () => {
       this.hideLabel = this.label.length < 1;
     });
-    return root;
-  }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
+    return root;
   }
 
   /** Simulates a click on the control. */

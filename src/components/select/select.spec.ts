@@ -1242,11 +1242,23 @@ describe('Select', () => {
       );
     });
 
-    it('is correctly reset on form reset', async () => {
+    it('is correctly reset on form reset', () => {
       spec.element.value = 'spec';
 
       spec.reset();
       expect(spec.element.value).to.equal(undefined);
+    });
+
+    it('is correctly reset on form reset after setAttribute() call', () => {
+      spec.element.setAttribute('value', 'implementation');
+      spec.element.value = 'spec';
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal('implementation');
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
     });
 
     it('is correctly reset of form reset with selection through attribute on item', async () => {
