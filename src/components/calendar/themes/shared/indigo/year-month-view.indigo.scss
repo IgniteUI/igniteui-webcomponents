@@ -5,90 +5,6 @@ $theme: $indigo;
 $border-size: rem(2px);
 $inner-width: calc(#{$border-size} * 4);
 
-[part~='month-inner'] {
-    &:focus,
-    &:hover {
-        color: var-get($theme, 'ym-hover-foreground');
-        background: var-get($theme, 'ym-hover-background');
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'ym-current-foreground');
-        background: var-get($theme, 'ym-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-current-hover-foreground');
-            background: var-get($theme, 'ym-current-hover-background');
-        }
-    }
-
-    &[part~='selected'] {
-        color: var-get($theme, 'ym-selected-foreground');
-        background: var-get($theme, 'ym-selected-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-hover-foreground');
-            background: var-get($theme, 'ym-selected-hover-background');
-        }
-    }
-
-    &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'ym-selected-current-foreground');
-        background: var-get($theme, 'ym-selected-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-current-hover-foreground');
-            background: var-get($theme, 'ym-selected-current-hover-background');
-        }
-    }
-}
-
-[part~='year-inner'] {
-    &:focus,
-    &:hover {
-        color: var-get($theme, 'ym-hover-foreground');
-        background: var-get($theme, 'ym-hover-background');
-    }
-
-    &[part~='current'] {
-        color: var-get($theme, 'ym-current-foreground');
-        background: var-get($theme, 'ym-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-current-hover-foreground');
-            background: var-get($theme, 'ym-current-hover-background');
-        }
-    }
-
-
-    &[part~='selected'] {
-        color: var-get($theme, 'ym-selected-foreground');
-        background: var-get($theme, 'ym-selected-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-hover-foreground');
-            background: var-get($theme, 'ym-selected-hover-background');
-        }
-    }
-
-
-    &[part~='selected'][part~='current'] {
-        color: var-get($theme, 'ym-selected-current-foreground');
-        background: var-get($theme, 'ym-selected-current-background');
-
-        &:focus,
-        &:hover {
-            color: var-get($theme, 'ym-selected-current-hover-foreground');
-            background: var-get($theme, 'ym-selected-current-hover-background');
-        }
-    }
-}
-
 [part~='month-inner'],
 [part~='year-inner'] {
     height: var-get($theme, 'size');
@@ -101,46 +17,69 @@ $inner-width: calc(#{$border-size} * 4);
         outline: none;
     }
 
-    &::after {
-        content: '';
-        position: absolute;
-        width: calc(100% - #{$inner-width});
-        height: calc(100% - #{$inner-width});
-        inset-inline-start: calc(#{$border-size});
-        inset-block-start: calc(#{$border-size});
-        z-index: 0;
-        border-radius: inherit;
-        border: $border-size solid transparent;
-        pointer-events: none;
+    &:focus,
+    &:hover {
+        color: var-get($theme, 'ym-hover-foreground');
+        background: var-get($theme, 'ym-hover-background');
     }
 
-
     &[part~='current'] {
+        color: var-get($theme, 'ym-current-foreground');
+        background: var-get($theme, 'ym-current-background');
         box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-current-outline-color');
 
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-current-hover-foreground');
+            background: var-get($theme, 'ym-current-hover-background');
+        }
 
         &:hover {
             box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-current-outline-hover-color');
         }
+
+        &:focus {
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-current-outline-focus-color');
+        }
     }
 
     &[part~='selected'] {
+        color: var-get($theme, 'ym-selected-foreground');
+        background: var-get($theme, 'ym-selected-background');
         box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-outline-color');
+
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-selected-hover-foreground');
+            background: var-get($theme, 'ym-selected-hover-background');
+        }
 
         &:hover {
             box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-hover-outline-color');
         }
+
+        &:focus {
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-focus-outline-color');
+        }
     }
 
     &[part~='selected'][part~='current'] {
-        &::after {
-            border-color: var-get($theme, 'ym-selected-current-outline-color');
+        color: var-get($theme, 'ym-selected-current-foreground');
+        background: var-get($theme, 'ym-selected-current-background');
+        box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-current-outline-color');
+
+        &:focus,
+        &:hover {
+            color: var-get($theme, 'ym-selected-current-hover-foreground');
+            background: var-get($theme, 'ym-selected-current-hover-background');
         }
 
         &:hover {
-            &::after {
-                border-color: var-get($theme, 'ym-selected-current-outline-color');
-            }
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-current-outline-hover-color');
+        }
+
+        &:focus {
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'ym-selected-current-outline-focus-color');
         }
     }
 }

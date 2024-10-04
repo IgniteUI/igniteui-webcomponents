@@ -14,10 +14,6 @@ $focused-border-width: rem(2px);
     --dropdown-size: var(--component-size);
 }
 
-[part='base'] {
-    box-shadow: var(--ig-elevation-4);
-}
-
 [part='helper-text'] {
     margin-top: rem(5px);
 

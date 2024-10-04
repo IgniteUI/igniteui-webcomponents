@@ -23,13 +23,13 @@
     }
 
     [part~='mini'] {
-        width: var(--menu-mini-width);
+        min-width: var(--menu-mini-width);
     }
-	
+
 	[part='base'] {
         width: var(--menu-full-width);
     }
-	
+
 	[part='main'] {
 		width: 100%;
 	}
