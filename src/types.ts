@@ -3,7 +3,7 @@ export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
 export type { IgcButtonGroupComponentEventMap } from './components/button-group/button-group.js';
 export type { IgcCalendarComponentEventMap } from './components/calendar/types.js';
 export type { IgcCarouselComponentEventMap } from './components/carousel/carousel.js';
-export type { IgcCheckboxEventMap } from './components/checkbox/checkbox-base.js';
+export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipEventMap } from './components/chip/chip.js';
 export type { IgcComboEventMap } from './components/combo/types.js';
 export type { IgcDatepickerEventMap } from './components/date-picker/date-picker.js';

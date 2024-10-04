@@ -13,7 +13,7 @@ export interface CheckboxChangeEventArgs {
   value?: string;
 }
 
-export interface IgcCheckboxEventMap {
+export interface IgcCheckboxComponentEventMap {
   igcChange: CustomEvent<CheckboxChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
@@ -24,7 +24,9 @@ export interface IgcCheckboxEventMap {
 
 @blazorDeepImport
 export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcCheckboxComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   protected override get __validators() {
     return checkBoxValidators;
