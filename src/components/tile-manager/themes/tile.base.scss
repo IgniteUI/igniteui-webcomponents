@@ -1,9 +1,16 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-[part='base'] {
-    width: 200px;
-    height: 200px;
+:host {
+    grid-row: span 5;
+    grid-column: span 5;
     border: 5px solid blue;
     background-color: yellow;
+}
+
+.dragging {
+    position: absolute;
+    z-index: 1000;
+    opacity: 0.8;
+    cursor: grabbing;
 }

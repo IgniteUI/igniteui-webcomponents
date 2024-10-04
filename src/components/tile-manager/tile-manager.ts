@@ -23,8 +23,58 @@ export default class IgcTileManagerComponent extends LitElement {
     );
   }
 
+  private draggedItem: HTMLElement | null = null;
+
+  private handleTileDragStart(e: CustomEvent) {
+    this.draggedItem = e.detail.tile;
+  }
+
+  private handleTileDragEnd() {
+    if (this.draggedItem) {
+      this.draggedItem = null;
+    }
+  }
+
+  private handleDragOver(e: DragEvent) {
+    e.preventDefault(); // Allow dropping
+  }
+
+  private handleDrop(e: DragEvent) {
+    e.preventDefault();
+
+    const target = e.target as HTMLElement;
+
+    const slot = this.shadowRoot?.querySelector('slot');
+    const slottedItems = slot?.assignedElements({
+      flatten: true,
+    }) as HTMLElement[];
+
+    if (this.draggedItem && slottedItems && target !== this.draggedItem) {
+      const draggedIndex = slottedItems.indexOf(this.draggedItem);
+      const droppedIndex = slottedItems.indexOf(target);
+
+      // Reorder items based on drag/drop indices
+      if (draggedIndex > -1 && droppedIndex > -1) {
+        const parent = this.draggedItem.parentElement;
+        if (parent) {
+          parent.insertBefore(this.draggedItem, target);
+        }
+      }
+    }
+  }
+
   protected override render() {
-    return html` <slot></slot> `;
+    return html`
+      <div
+        part="base"
+        @tileDragStart=${this.handleTileDragStart}
+        @tileDragEnd=${this.handleTileDragEnd}
+        @dragover=${this.handleDragOver}
+        @drop=${this.handleDrop}
+      >
+        <slot></slot>
+      </div>
+    `;
   }
 }
 

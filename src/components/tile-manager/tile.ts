@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit';
+import { LitElement, html } from 'lit';
 
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile.base.css.js';
@@ -16,6 +16,32 @@ export default class IgcTileComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(IgcTileComponent);
+  }
+
+  constructor() {
+    super();
+
+    this.setAttribute('draggable', 'true');
+    this.addEventListener('dragstart', this.handleDragStart);
+    this.addEventListener('dragend', this.handleDragEnd);
+  }
+
+  private handleDragStart() {
+    const event = new CustomEvent('tileDragStart', {
+      detail: { tile: this },
+      bubbles: true,
+    });
+    this.dispatchEvent(event);
+    this.classList.add('dragging');
+  }
+
+  private handleDragEnd() {
+    const event = new CustomEvent('tileDragEnd', {
+      detail: { tile: this },
+      bubbles: true,
+    });
+    this.dispatchEvent(event);
+    this.classList.remove('dragging');
   }
 
   protected override render() {

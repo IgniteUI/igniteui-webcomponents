@@ -1,11 +1,13 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host {
+[part='base'] {
     display: grid;
-    grid-template-columns: auto auto auto;
-    grid-auto-flow: column;
-    gap: 20px;
-    width: fit-content;
-    height: fit-content;
+    grid-template-columns: repeat(auto-fit, 20px);
+    grid-template-rows: repeat(auto-fit, 20px) ;
+    grid-auto-columns: 20px;
+    grid-auto-rows: 20px;
+    grid-gap: 10px;
+    //dense option rearranges the items to remove the empty spaces when possible
+    //grid-auto-flow: dense;
 }
