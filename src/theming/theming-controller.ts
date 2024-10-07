@@ -7,6 +7,7 @@ import {
   css,
 } from 'lit';
 
+import { isEmpty } from '../components/common/util.js';
 import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 import type {
@@ -29,7 +30,7 @@ class ThemeEventListeners {
 
   public remove(listener: ThemeCallback) {
     this.listeners.delete(listener);
-    if (this.listeners.size < 1) {
+    if (isEmpty(this.listeners)) {
       globalThis.removeEventListener(CHANGE_THEME_EVENT, this);
     }
   }

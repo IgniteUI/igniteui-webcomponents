@@ -8,7 +8,7 @@ $input-theme: input-theme.$material;
 $dropdown-theme: dropdown-theme.$material;
 
 :host {
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }
 
@@ -46,7 +46,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host([disabled]),
 :host(:disabled) {
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         color: var-get($input-theme, 'disabled-text-color');
     }
 
@@ -57,5 +57,12 @@ $dropdown-theme: dropdown-theme.$material;
         igc-icon {
             color: inherit;
         }
+    }
+}
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
     }
 }

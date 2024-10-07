@@ -1,19 +1,18 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
-import type {
-  FormAssociatedCheckboxElementInterface,
-  FormAssociatedElementInterface,
-} from './mixins/forms/types.js';
+import type { IgcFormControl } from './mixins/forms/types.js';
+import { toKebabCase } from './util.js';
 
-export class FormAssociatedTestBed<
-  T extends (
-    | FormAssociatedElementInterface
-    | FormAssociatedCheckboxElementInterface
-  ) &
-    Element,
-> {
+export class FormAssociatedTestBed<T extends IgcFormControl> {
   private _element!: T;
   private _form!: HTMLFormElement;
 
@@ -32,7 +31,7 @@ export class FormAssociatedTestBed<
   }
 
   public get valid() {
-    return this.element.checkValidity() && !this.element.invalid;
+    return this.element.checkValidity();
   }
 
   constructor(private template: TemplateResult) {}
@@ -164,9 +163,31 @@ export function simulateClick(
   }
 }
 
-export function simulateInput(input: HTMLInputElement, value = '') {
-  input.value = value;
-  input.dispatchEvent(new InputEvent('input'));
+interface MockInputEventConfig extends InputEventInit {
+  /** The value to set on the passed input */
+  value?: string;
+
+  /**
+   * Whether to skip setting the value to the input target.
+   * Useful when the test scenario cares for the handling of the event.
+   */
+  skipValueProperty?: boolean;
+}
+
+/**
+ * Simulates input interaction for a given input DOM element.
+ *
+ * @param input - the input element
+ * @param options - a {@link MockInputEventConfig} object
+ */
+export function simulateInput(
+  input: HTMLInputElement | HTMLTextAreaElement,
+  options: MockInputEventConfig = { value: '', skipValueProperty: false }
+) {
+  if (!options.skipValueProperty) {
+    input.value = options.value ?? '';
+  }
+  input.dispatchEvent(new InputEvent('input', options));
 }
 
 /**
@@ -213,6 +234,25 @@ export function simulateKeyboard(
 }
 
 /**
+ * Simulates scrolling for a given element.
+ */
+export async function simulateScroll(node: Element, options?: ScrollToOptions) {
+  node.scrollTo(options);
+  node.dispatchEvent(new Event('scroll'));
+  await elementUpdated(node);
+  await nextFrame();
+}
+
+/**
+ * Simulates a wheel event for a given element.
+ */
+export function simulateWheel(node: Element, options?: WheelEventInit) {
+  node.dispatchEvent(
+    new WheelEvent('wheel', { bubbles: true, composed: true, ...options })
+  );
+}
+
+/**
  * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
  * It can optionally return Animation objects for descendant elements too.
  */
@@ -233,6 +273,64 @@ export function finishAnimationsFor(
   const animations = getAnimationsFor(element, options);
   for (const animation of animations) {
     animation.finish();
+  }
+}
+
+/**
+ * Returns whether all passed `names` exist as slots in the given `root`.
+ */
+export function hasSlots(
+  root: HTMLElement | DocumentFragment,
+  ...names: string[]
+) {
+  const slotNames = new Set(
+    Array.from(root.querySelectorAll('slot')).map((slot) => slot.name ?? '')
+  );
+
+  for (const name of names) {
+    if (!slotNames.has(name)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns whether the given slot `name` has any slotted content for the given `root`.
+ * Pass an empty string for the default slot.
+ *
+ * The function will flatten the target slot discarding any slot re-projection and
+ * will match only elements being projected.
+ */
+export function hasSlotContent(
+  root: HTMLElement | DocumentFragment,
+  name: string
+) {
+  const slot = root.querySelector<HTMLSlotElement>(
+    name ? `slot[name='${name}']` : 'slot:not([name])'
+  );
+
+  return !!slot && slot.assignedElements({ flatten: true }).length > 0;
+}
+
+export async function checkValidationSlots(
+  element: IgcFormControl,
+  ...names: Array<keyof ValidityStateFlags | 'invalid'>
+) {
+  const container = element.renderRoot.querySelector(
+    IgcValidationContainerComponent.tagName
+  )!;
+
+  const slots = names.map((name) => toKebabCase(name));
+
+  element.checkValidity();
+  await Promise.all([elementUpdated(element), elementUpdated(container)]);
+
+  expect(element.invalid).to.be.true;
+  expect(hasSlots(container.renderRoot, ...slots)).to.be.true;
+
+  for (const slot of slots) {
+    expect(hasSlotContent(container.renderRoot, slot)).to.be.true;
   }
 }
 

@@ -9,7 +9,7 @@ $theme: $bootstrap;
             border: none;
         }
     }
-    
+
     igc-dialog::part(base) {
         border: rem(1px) solid var-get($theme, 'border-color');
     }
@@ -18,22 +18,23 @@ $theme: $bootstrap;
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
-    [part='helper-text'] {
-        padding-inline: 0;
-
-        ::slotted([slot='helper-text']) {
-            @include type-style('body-2');
-        }
-    }
-
     [part~='label'] {
         @include type-style('body-1');
 
         margin-bottom: rem(4px);
-    
+
         &:empty {
             display: none;
         }
+    }
+
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        padding-inline-start: 0;
+	    margin-block-start: rem(4px)
     }
 }
 

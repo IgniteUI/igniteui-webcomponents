@@ -14,7 +14,7 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
@@ -205,7 +205,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     const indicatorHidden =
       this.open && this._indicatorExpandedElements.length > 0;
     const indicatorExpandedHidden =
-      this._indicatorExpandedElements.length < 1 || !this.open;
+      isEmpty(this._indicatorExpandedElements) || !this.open;
 
     return html`
       <div part="indicator" aria-hidden="true">

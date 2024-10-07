@@ -1,7 +1,10 @@
+import type { LitElement } from 'lit';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
 export type FormValueType = string | File | FormData | null;
+export type IgcFormControl = LitElement &
+  (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
 declare class BaseFormAssociatedElement {
   public static readonly formAssociated: boolean;
@@ -24,7 +27,7 @@ declare class BaseFormAssociatedElement {
   public disabled: boolean;
 
   /**
-   * Control the validity of the control.
+   * Sets the control into invalid state (visual state only).
    * @attr
    * @default false
    */

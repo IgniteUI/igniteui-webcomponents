@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import type { TemplateResult } from 'lit';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
@@ -14,6 +15,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  checkValidationSlots,
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
@@ -1021,6 +1023,88 @@ describe('Date picker', () => {
 
       expect(picker.invalid).to.be.false;
       expect(dateTimeInput.invalid).to.be.false;
+    });
+  });
+
+  describe('Validation message slots', () => {
+    const now = new Date(2024, 6, 17);
+    const tomorrow = new Date(2024, 6, 18);
+    const yesterday = new Date(2024, 6, 16);
+
+    async function createFixture(template: TemplateResult) {
+      picker = await fixture<IgcDatePickerComponent>(template);
+    }
+
+    it('renders range-overflow slot', async () => {
+      await createFixture(html`
+        <igc-date-picker .value=${now} .max=${yesterday}>
+          <div slot="range-overflow"></div>
+        </igc-date-picker>
+      `);
+
+      await checkValidationSlots(picker, 'rangeOverflow');
+    });
+
+    it('renders range-underflow slot', async () => {
+      await createFixture(html`
+        <igc-date-picker .value=${now} .min=${tomorrow}>
+          <div slot="range-underflow"></div>
+        </igc-date-picker>
+      `);
+
+      await checkValidationSlots(picker, 'rangeUnderflow');
+    });
+
+    it('renders value-missing slot', async () => {
+      await createFixture(html`
+        <igc-date-picker required>
+          <div slot="value-missing"></div>
+        </igc-date-picker>
+      `);
+
+      await checkValidationSlots(picker, 'valueMissing');
+    });
+
+    it('renders bad-input slot', async () => {
+      const minDate = new Date(2024, 1, 1);
+      const maxDate = new Date(2024, 1, 28);
+      const value = new Date(2024, 1, 26);
+
+      const disabledDates: DateRangeDescriptor[] = [
+        {
+          type: DateRangeType.Between,
+          dateRange: [minDate, maxDate],
+        },
+      ];
+
+      await createFixture(html`
+        <igc-date-picker .value=${value} .disabledDates=${disabledDates}>
+          <div slot="bad-input"></div>
+        </igc-date-picker>
+      `);
+
+      await checkValidationSlots(picker, 'badInput');
+    });
+
+    it('renders invalid slot', async () => {
+      await createFixture(html`
+        <igc-date-picker required>
+          <div slot="invalid"></div>
+        </igc-date-picker>
+      `);
+
+      await checkValidationSlots(picker, 'invalid');
+    });
+
+    it('renders custom-error slot', async () => {
+      await createFixture(html`
+        <igc-date-picker>
+          <div slot="custom-error"></div>
+        </igc-date-picker>
+      `);
+
+      picker.setCustomValidity('invalid');
+      await checkValidationSlots(picker, 'customError');
     });
   });
 });

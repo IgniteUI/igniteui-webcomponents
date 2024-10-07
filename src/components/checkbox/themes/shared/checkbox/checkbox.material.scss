@@ -3,6 +3,15 @@
 
 $theme: $material;
 
+:host {
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(8px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='label'] {
     @include type-style('subtitle-1');
 }
@@ -43,6 +52,8 @@ label {
 }
 
 [part~='base'] {
+    gap: rem(8px);
+
     &:hover {
         [part~='control'] {
             &::before {

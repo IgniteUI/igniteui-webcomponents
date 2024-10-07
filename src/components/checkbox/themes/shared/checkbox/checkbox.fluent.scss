@@ -9,6 +9,15 @@ $invalid-color: var-get($theme, 'error-color');
 $invalid-hover-color: var-get($theme, 'error-color-hover');
 $disabled-color: var-get($theme, 'disabled-color');
 
+:host {
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='control'] {
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
@@ -35,6 +44,10 @@ $disabled-color: var-get($theme, 'disabled-color');
 [part~='indicator'] {
     stroke-width: 1.5;
     transform: scale(.8);
+}
+
+[part~='base'] {
+    gap: rem(16px);
 }
 
 :host(:hover) {
@@ -185,7 +198,7 @@ $disabled-color: var-get($theme, 'disabled-color');
         &::before {
             background: $invalid-hover-color;
         }
- 
+
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;
             background: transparent;

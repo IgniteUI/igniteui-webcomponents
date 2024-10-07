@@ -247,3 +247,9 @@ addIcon('carousel_next', {
     collection: 'internal',
   },
 });
+addIcon('error', {
+  default: {
+    name: 'error',
+    collection: 'internal',
+  },
+});
