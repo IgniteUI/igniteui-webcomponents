@@ -12,8 +12,9 @@ import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
   simulateInput,
   simulateScroll,
 } from '../common/utils.spec.js';
@@ -320,60 +321,17 @@ describe('Textarea component', () => {
   });
 
   describe('Validation message slots', () => {
-    async function createFixture(template: TemplateResult) {
-      element = await fixture<IgcTextareaComponent>(template);
-    }
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcTextareaComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } }, // too-long slot
+          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    it('renders too-long slot', async () => {
-      await createFixture(html`
-        <igc-textarea maxlength="3">
-          1234
-          <div slot="too-long"></div>
-        </igc-textarea>
-      `);
-
-      await checkValidationSlots(element, 'tooLong');
-    });
-
-    it('renders too-short slot', async () => {
-      await createFixture(html`
-        <igc-textarea minlength="3">
-          <div slot="too-short"></div>
-        </igc-textarea>
-      `);
-
-      await checkValidationSlots(element, 'tooShort');
-    });
-
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-textarea required>
-          <div slot="value-missing"></div>
-        </igc-textarea>
-      `);
-
-      await checkValidationSlots(element, 'valueMissing');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-textarea required>
-          <div slot="invalid"></div>
-        </igc-textarea>
-      `);
-
-      await checkValidationSlots(element, 'invalid');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-textarea>
-          <div slot="custom-error"></div>
-        </igc-textarea>
-      `);
-
-      element.setCustomValidity('invalid');
-      await checkValidationSlots(element, 'customError');
+      runValidationContainerTests(IgcTextareaComponent, testParameters);
     });
   });
 });
