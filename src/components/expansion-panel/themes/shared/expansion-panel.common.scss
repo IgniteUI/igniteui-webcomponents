@@ -32,8 +32,11 @@ $theme: $material;
 
 :host([disabled]) {
     [part='title'],
-    [part='subtitle'],
     [part~='indicator'] {
         color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part='subtitle'] {
+        color: var-get($theme, 'disabled-description-color');
     }
 }

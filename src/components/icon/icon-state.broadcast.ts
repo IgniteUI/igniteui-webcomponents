@@ -8,7 +8,7 @@ import type {
 import { ActionType } from './registry/types.js';
 
 export class IconsStateBroadcast {
-  private iconBroadcastChannel: BroadcastChannel;
+  private channel!: BroadcastChannel | null;
   private collections: IconsCollection<SvgIcon>;
   private refsCollection: IconsCollection<IconMeta>;
 
@@ -18,12 +18,16 @@ export class IconsStateBroadcast {
   ) {
     this.collections = collections;
     this.refsCollection = refsCollection;
-    this.iconBroadcastChannel = new BroadcastChannel('ignite-ui-icon-channel');
-    this.iconBroadcastChannel.addEventListener('message', this);
+    this.create();
+
+    globalThis.addEventListener('pageshow', () => this.create());
+    globalThis.addEventListener('pagehide', () => this.dispose());
   }
 
   public send(data: BroadcastIconsChangeMessage) {
-    this.iconBroadcastChannel.postMessage(data);
+    if (this.channel) {
+      this.channel.postMessage(data);
+    }
   }
 
   public handleEvent({ data }: MessageEvent<BroadcastIconsChangeMessage>) {
@@ -36,6 +40,22 @@ export class IconsStateBroadcast {
       collections: this.getUserSetCollection(this.collections).toMap(),
       references: this.getUserRefsCollection(this.refsCollection).toMap(),
     });
+  }
+
+  private create() {
+    if (!this.channel) {
+      this.channel = new BroadcastChannel('ignite-ui-icon-channel');
+      this.channel.addEventListener('message', this);
+    }
+  }
+
+  /* c8 ignore next 7 */
+  private dispose() {
+    if (this.channel) {
+      this.channel.removeEventListener('message', this);
+      this.channel.close();
+      this.channel = null;
+    }
   }
 
   private getUserRefsCollection(collections: IconsCollection<IconMeta>) {

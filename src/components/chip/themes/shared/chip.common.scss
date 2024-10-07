@@ -33,4 +33,16 @@ $theme: $material;
     igc-icon {
         --component-size: var(--chip-size);
     }
+
+    ::slotted(*) {
+        --default-size: var(--chip-size);
+    }
+
+    ::slotted(igc-avatar) {
+        --size: #{sizable(rem(14px), rem(18px), rem(24px))};
+    }
+
+    ::slotted(igc-circular-progress) {
+        --diameter: #{sizable(rem(14px), rem(18px), rem(24px))};
+    }
 }
