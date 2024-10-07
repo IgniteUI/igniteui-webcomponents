@@ -81,12 +81,12 @@ declare class BaseFormAssociatedElement {
    * the {@link BaseFormAssociatedElement.invalid | `invalid`} attribute on the control and the associated styles
    * if the element has completed the first update cycle or it has been interacted with by the user.
    */
-  protected _validate(message?: string, isUserSet?: boolean): void;
+  protected _validate(message?: string): void;
 
   /**
    * Executes the component's validators and updates the internal validity state.
    */
-  protected _updateValidity(message?: string, isUserSet?: boolean): void;
+  protected _updateValidity(message?: string): void;
 
   /**
    * Sets the component's submission value and state.

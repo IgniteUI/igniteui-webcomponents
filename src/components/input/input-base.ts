@@ -47,6 +47,9 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @query('input')
   protected input!: HTMLInputElement;
 
+  @queryAssignedElements({ slot: 'helper-text' })
+  protected _helperText!: Array<HTMLElement>;
+
   @queryAssignedElements({ slot: 'prefix' })
   protected prefixes!: Array<HTMLElement>;
 

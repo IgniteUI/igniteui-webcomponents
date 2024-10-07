@@ -1,11 +1,11 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { isEmpty, partNameMap } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcMaskInputBaseComponent,
@@ -211,6 +211,9 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
+        aria-describedby=${ifDefined(
+          isEmpty(this._helperText) ? nothing : 'helper-text'
+        )}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         @keydown=${this.handleKeydown}
       />
