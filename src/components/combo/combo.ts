@@ -17,10 +17,15 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { findElementFromEventPath, partNameMap } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  isEmpty,
+  partNameMap,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboListComponent from './combo-list.js';
@@ -60,6 +65,9 @@ import { comboValidators } from './validators.js';
  * @slot helper-text - Renders content below the input of the combo.
  * @slot toggle-icon - Renders content inside the suffix container of the combo.
  * @slot clear-icon - Renders content inside the suffix container of the combo.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's selection has changed.
  * @fires igcOpening - Emitted just before the list of options is opened.
@@ -112,7 +120,8 @@ export default class IgcComboComponent<
       IgcComboItemComponent,
       IgcComboHeaderComponent,
       IgcInputComponent,
-      IgcPopoverComponent
+      IgcPopoverComponent,
+      IgcValidationContainerComponent
     );
   }
 
@@ -137,9 +146,6 @@ export default class IgcComboComponent<
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'suffix' })
   protected inputSuffix!: Array<HTMLElement>;
@@ -304,7 +310,7 @@ export default class IgcComboComponent<
 
   @watch('data')
   protected dataChanged() {
-    if (this.data.length === 0) return;
+    if (isEmpty(this.data)) return;
     this.dataState = structuredClone(this.data) as ComboRecord<T>[];
 
     if (this.hasUpdated) {
@@ -360,7 +366,7 @@ export default class IgcComboComponent<
     this.addEventListener('blur', () => {
       const { selected } = this.selectionController;
 
-      if (selected.size === 0) {
+      if (isEmpty(selected)) {
         this._displayValue = '';
         this.resetSearchTerm();
       }
@@ -388,7 +394,7 @@ export default class IgcComboComponent<
 
   @watch('value')
   protected selectItems() {
-    if (!this._value || this.value.length === 0) {
+    if (!this._value || isEmpty(this._value)) {
       this.selectionController.deselect([]);
     } else {
       this.selectionController.deselect([]);
@@ -457,7 +463,7 @@ export default class IgcComboComponent<
 
     const items = this._value;
 
-    if (items.length < 1) {
+    if (isEmpty(items)) {
       super._setFormValue(null);
       return;
     }
@@ -476,7 +482,7 @@ export default class IgcComboComponent<
   }
 
   protected async updateValue() {
-    if (this.data.length === 0) return;
+    if (isEmpty(this.data)) return;
     const selected = Array.from(this.selectionController.selected);
 
     this._value = this.selectionController.getValue(selected, this.valueKey!);
@@ -754,7 +760,7 @@ export default class IgcComboComponent<
 
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
-      this.selectionController.deselect([item], selected.size > 0);
+      this.selectionController.deselect([item], !isEmpty(selected));
       this._value = [];
     }
   }
@@ -826,7 +832,7 @@ export default class IgcComboComponent<
       slot="suffix"
       part="clear-icon"
       @click=${this.handleClearIconClick}
-      ?hidden=${selected.size === 0}
+      ?hidden=${isEmpty(selected)}
     >
       <slot name="clear-icon">
         <igc-icon
@@ -846,7 +852,7 @@ export default class IgcComboComponent<
       aria-controls="dropdown"
       aria-owns="dropdown"
       aria-expanded=${this.open ? 'true' : 'false'}
-      aria-describedby="helper-text"
+      aria-describedby="combo-helper-text"
       aria-disabled=${this.disabled}
       exportparts="container: input, input: native-input, label, prefix, suffix"
       @click=${(e: MouseEvent) => {
@@ -947,14 +953,11 @@ export default class IgcComboComponent<
     </div>`;
   }
 
-  private renderHelperText() {
-    return html`<div
-      id="helper-text"
-      part="helper-text"
-      ?hidden="${this.helperText.length === 0}"
-    >
-      <slot name="helper-text"></slot>
-    </div>`;
+  private renderHelperText(): TemplateResult {
+    return IgcValidationContainerComponent.create(this, {
+      id: 'combo-helper-text',
+      hasHelperText: true,
+    });
   }
 
   protected override render() {

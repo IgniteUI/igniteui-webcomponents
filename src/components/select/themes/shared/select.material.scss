@@ -19,6 +19,14 @@ $active-border-width: rem(2px) !default;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(4px);
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
 }
 
 :host([outlined]:focus-within) {
@@ -131,19 +139,6 @@ $active-border-width: rem(2px) !default;
     color: var-get($theme, 'toggle-button-foreground-filled');
 }
 
-
-[part='helper-text'] {
-    color: var-get($theme, 'helper-text-color');
-    margin-top: rem(5px);
-    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
-}
-
-:host([invalid]) {
-    [part='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
     igc-input::part(input)::selection {
@@ -157,10 +152,6 @@ $active-border-width: rem(2px) !default;
         igc-icon {
             color: inherit;
         }
-    }
-
-    [part='helper-text'] {
-        color: var-get($theme, 'disabled-text-color');
     }
 }
 

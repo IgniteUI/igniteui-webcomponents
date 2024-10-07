@@ -101,7 +101,7 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -158,7 +158,7 @@ interface IgcRatingArgs {
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
 }
 type Story = StoryObj<IgcRatingArgs>;

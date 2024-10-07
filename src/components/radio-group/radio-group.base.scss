@@ -1,16 +1,22 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host {
-    display: flex;
-}
-
 :host([alignment='vertical']) {
+    display: flex;
     flex-direction: column;
     gap: rem(8px);
 }
 
 :host([alignment='horizontal']) {
-    flex-direction: row;
-    gap: rem(8px);
+    --radio-base-display: contents;
+
+    display: grid;
+    grid-template-columns: repeat(var(--layout-count), minmax(min-content, max-content));
+    grid-template-rows: auto auto;
+    column-gap: rem(8px);
+    align-items: start;
+
+    > * {
+        grid-row: 1;
+    }
 }

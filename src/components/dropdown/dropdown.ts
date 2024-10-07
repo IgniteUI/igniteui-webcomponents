@@ -32,6 +32,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   findElementFromEventPath,
   getElementByIdFromRoot,
+  isString,
 } from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
@@ -333,10 +334,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private _setTarget(anchor: HTMLElement | string) {
-    const target =
-      typeof anchor === 'string'
-        ? (getElementByIdFromRoot(this, anchor) as HTMLElement)
-        : anchor;
+    const target = isString(anchor)
+      ? getElementByIdFromRoot(this, anchor)!
+      : anchor;
 
     this._target = target;
     this._targetListeners = this._keyBindings.observeElement(target);
@@ -369,8 +369,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
-    const item =
-      typeof value === 'string' ? this.getItem(value) : this.items[value];
+    const item = isString(value) ? this.getItem(value) : this.items[value];
 
     if (item) {
       this._navigateToActiveItem(item);
@@ -388,8 +387,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
   public select(value: string | number): IgcDropdownItemComponent | null {
-    const item =
-      typeof value === 'string' ? this.getItem(value) : this.items[value];
+    const item = isString(value) ? this.getItem(value) : this.items[value];
     return item ? this._selectItem(item, false) : null;
   }
 

@@ -1,9 +1,12 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  checkValidationSlots,
+} from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
@@ -1379,6 +1382,45 @@ describe('Combo', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    let combo: IgcComboComponent;
+
+    async function createFixture(template: TemplateResult) {
+      combo = await fixture<IgcComboComponent>(template);
+    }
+
+    it('renders value-missing slot', async () => {
+      await createFixture(html`
+        <igc-combo required>
+          <div slot="value-missing"></div>
+        </igc-combo>
+      `);
+
+      await checkValidationSlots(combo, 'valueMissing');
+    });
+
+    it('renders invalid slot', async () => {
+      await createFixture(html`
+        <igc-combo required>
+          <div slot="invalid"></div>
+        </igc-combo>
+      `);
+
+      await checkValidationSlots(combo, 'invalid');
+    });
+
+    it('renders custom-error slot', async () => {
+      await createFixture(html`
+        <igc-combo>
+          <div slot="custom-error"></div>
+        </igc-combo>
+      `);
+
+      combo.setCustomValidity('invalid');
+      await checkValidationSlots(combo, 'customError');
     });
   });
 });

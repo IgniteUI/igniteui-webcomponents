@@ -3,6 +3,15 @@
 
 $theme: $indigo;
 
+:host {
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='base'] {
     gap: rem(8px);
 
@@ -59,7 +68,7 @@ $theme: $indigo;
         &::after {
             border-color: var-get($theme, 'fill-hover-border-color');
         }
-    
+
         &::before {
             background: var-get($theme, 'fill-color-hover');
             border-color: var-get($theme, 'fill-hover-border-color');

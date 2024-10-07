@@ -6,9 +6,9 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import { IgcSwitchComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
   before(() => {

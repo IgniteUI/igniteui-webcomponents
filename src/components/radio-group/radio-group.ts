@@ -84,6 +84,12 @@ export default class IgcRadioGroupComponent extends LitElement {
     this._internals.role = 'radiogroup';
   }
 
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this._setCSSGridVars());
+    return root;
+  }
+
   protected override firstUpdated() {
     const radios = Array.from(this._radios);
     const allRadiosUnchecked = radios.every((radio) => !radio.checked);
@@ -93,6 +99,16 @@ export default class IgcRadioGroupComponent extends LitElement {
     if (allRadiosUnchecked && this._value) {
       this._setSelectedRadio();
       this._setDefaultValue();
+    }
+  }
+
+  private _setCSSGridVars() {
+    const slot = this.renderRoot.querySelector('slot');
+    if (slot) {
+      this.style.setProperty(
+        '--layout-count',
+        `${slot.assignedElements({ flatten: true }).length}`
+      );
     }
   }
 

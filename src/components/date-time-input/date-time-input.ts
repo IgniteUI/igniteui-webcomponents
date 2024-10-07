@@ -22,6 +22,7 @@ import {
   IgcMaskInputBaseComponent,
   type MaskRange,
 } from '../mask-input/mask-input-base.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   DatePart,
   type DatePartDeltas,
@@ -51,6 +52,11 @@ const converter: ComplexAttributeConverter<Date | null> = {
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot range-overflow - Renders content when the max validation fails.
+ * @slot range-underflow - Renders content when the min validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
@@ -70,7 +76,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcDateTimeInputComponent);
+    registerComponent(
+      IgcDateTimeInputComponent,
+      IgcValidationContainerComponent
+    );
   }
 
   protected override get __validators() {

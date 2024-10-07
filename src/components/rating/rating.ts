@@ -25,7 +25,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import { clamp, formatString, isLTR } from '../common/util.js';
+import { clamp, formatString, isEmpty, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
@@ -425,7 +425,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
             )}
           </slot>
         </div>
-        <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
+        <label part="value-label" ?hidden=${isEmpty(this.valueLabel)}>
           <slot name="value-label"></slot>
         </label>
       </div>

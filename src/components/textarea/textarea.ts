@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -15,8 +15,14 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  isEmpty,
+  partNameMap,
+} from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
@@ -43,6 +49,11 @@ export interface IgcTextareaComponentEventMap {
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot too-long - Renders content when the maxlength validation fails.
+ * @slot too-short - Renders content when the minlength validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input.
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
@@ -65,7 +76,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcTextareaComponent);
+    registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
   protected override get __validators() {
@@ -91,9 +102,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected helperText!: Array<HTMLElement>;
 
   @query('textarea', true)
   private input!: HTMLTextAreaElement;
@@ -269,12 +277,27 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
+  @watch('value')
+  protected async valueChanged() {
+    await this.updateComplete;
+    this.setAreaHeight();
+  }
+
+  @watch('rows', { waitUntilFirstUpdate: true })
+  @watch('resize', { waitUntilFirstUpdate: true })
+  protected setAreaHeight() {
+    if (this.resize === 'auto') {
+      this.input.style.height = 'auto';
+      this.input.style.height = `${this.setAutoHeight()}px`;
+    } else {
+      Object.assign(this.input.style, { height: undefined });
+    }
+  }
+
   constructor() {
     super();
-    this.addEventListener('focus', () => {
-      this._dirty = true;
-    });
-    this.addEventListener('blur', () => this._validate());
+    this.addEventListener('focus', this.handleFocus);
+    this.addEventListener('blur', this.handleBlur);
   }
 
   public override async connectedCallback() {
@@ -327,44 +350,22 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       : this.input.scrollTo(x as ScrollToOptions);
   }
 
-  protected resolvePartNames(base: string) {
+  protected resolvePartNames() {
     return {
-      [base]: true,
+      container: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
       filled: !!this.value,
     };
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
-    this._defaultValue = this.value;
-  }
-
-  @watch('value')
-  protected async valueChanged() {
-    await this.updateComplete;
-    this.setAreaHeight();
-  }
-
-  @watch('rows', { waitUntilFirstUpdate: true })
-  @watch('resize', { waitUntilFirstUpdate: true })
-  protected setAreaHeight() {
-    if (this.resize === 'auto') {
-      this.input.style.height = 'auto';
-      this.input.style.height = `${this.setAutoHeight()}px`;
-    } else {
-      Object.assign(this.input.style, { height: undefined });
-    }
-  }
-
   private setAutoHeight() {
-    const computed = getComputedStyle(this.input);
-    const [top, bottom] = [
-      asNumber(computed.getPropertyValue('border-top-width')),
-      asNumber(computed.getPropertyValue('border-bottom-width')),
-    ];
-    return this.input.scrollHeight + top + bottom;
+    const { borderTopWidth, borderBottomWidth } = getComputedStyle(this.input);
+    return (
+      this.input.scrollHeight +
+      asNumber(borderTopWidth) +
+      asNumber(borderBottomWidth)
+    );
   }
 
   protected handleInput() {
@@ -377,67 +378,67 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected valueSlotChange() {
-    const value = [];
+  protected handleFocus() {
+    this._dirty = true;
+  }
 
-    for (const node of this.projected) {
-      const text = node.textContent?.trim();
-      if (text) {
-        value.push(text);
-      }
-    }
+  protected handleBlur() {
+    this._validate();
+  }
+
+  protected valueSlotChange() {
+    const value = this.projected
+      .map((node) => node.textContent?.trim())
+      .filter((node) => Boolean(node));
 
     if (value.length) {
       this.value = value.join('\r\n');
     }
   }
 
-  protected slotChange() {
-    this.requestUpdate();
-  }
-
   protected renderValueSlot() {
-    return html`<slot
-      style="display: none"
-      @slotchange=${this.valueSlotChange}
-    ></slot>`;
+    return html`
+      <slot style="display: none" @slotchange=${this.valueSlotChange}></slot>
+    `;
   }
 
-  protected renderHelperText() {
+  protected renderValidationContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
+  }
+
+  protected renderPrefix() {
     return html`
-      <div part="helper-text" .hidden=${this.helperText.length < 1}>
-        <slot name="helper-text" @slotchange=${this.slotChange}></slot>
+      <div part="prefix" .hidden=${isEmpty(this.prefixes)}>
+        <slot name="prefix"></slot>
       </div>
     `;
   }
 
-  protected renderPrefix() {
-    return html`<div part="prefix" .hidden=${this.prefixes.length < 1}>
-      <slot name="prefix" @slotchange=${this.slotChange}></slot>
-    </div>`;
-  }
-
   protected renderSuffix() {
-    return html`<div part="suffix" .hidden=${this.suffixes.length < 1}>
-      <slot name="suffix" @slotchange=${this.slotChange}></slot>
-    </div>`;
+    return html`
+      <div part="suffix" .hidden=${isEmpty(this.suffixes)}>
+        <slot name="suffix"></slot>
+      </div>
+    `;
   }
 
   protected renderLabel() {
     return this.label
-      ? html`<label part="label" for=${this.id || this.inputId}
-          >${this.label}</label
-        >`
+      ? html`
+          <label part="label" for=${this.id || this.inputId}>
+            ${this.label}
+          </label>
+        `
       : nothing;
   }
 
   protected renderStandard() {
     return html`
       ${this.renderLabel()}
-      <div part=${partNameMap(this.resolvePartNames('container'))}>
+      <div part=${partNameMap(this.resolvePartNames())}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      ${this.renderHelperText()}
+      ${this.renderValidationContainer()}
     `;
   }
 
@@ -445,7 +446,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return html`
       <div
         part=${partNameMap({
-          ...this.resolvePartNames('container'),
+          ...this.resolvePartNames(),
           labelled: this.label,
         })}
       >
@@ -455,12 +456,13 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      ${this.renderHelperText()}
+      ${this.renderValidationContainer()}
     `;
   }
 
   protected renderInput() {
-    return html`${this.renderValueSlot()}
+    return html`
+      ${this.renderValueSlot()}
       <textarea
         id=${this.id || this.inputId}
         part="input"
@@ -481,7 +483,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?required=${this.required}
         ?readonly=${this.readOnly}
         aria-invalid=${this.invalid ? 'true' : 'false'}
-      ></textarea>`;
+      ></textarea>
+    `;
   }
 
   protected override render() {
