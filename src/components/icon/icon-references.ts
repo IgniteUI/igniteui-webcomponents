@@ -270,4 +270,8 @@ addIcon('error', {
     name: 'error',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_error',
+    collection: 'internal',
+  },
 });
