@@ -7,7 +7,6 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import type { TemplateResult } from 'lit';
 import {
   altKey,
   arrowDown,
@@ -22,8 +21,9 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
@@ -1329,41 +1329,15 @@ describe('Select', () => {
   });
 
   describe('Validation message slots', () => {
-    let select: IgcSelectComponent;
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcSelectComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    async function createFixture(template: TemplateResult) {
-      select = await fixture<IgcSelectComponent>(template);
-    }
-
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-select required>
-          <div slot="value-missing"></div>
-        </igc-select>
-      `);
-
-      await checkValidationSlots(select, 'valueMissing');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-select required>
-          <div slot="invalid"></div>
-        </igc-select>
-      `);
-
-      await checkValidationSlots(select, 'invalid');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-select>
-          <div slot="custom-error"></div>
-        </igc-select>
-      `);
-
-      select.setCustomValidity('invalid');
-      await checkValidationSlots(select, 'customError');
+      runValidationContainerTests(new IgcSelectComponent(), testParameters);
     });
   });
 });

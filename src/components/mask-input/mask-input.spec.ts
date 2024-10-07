@@ -1,11 +1,12 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { type TemplateResult, html } from 'lit';
+import { html } from 'lit';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
+  runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -769,49 +770,16 @@ describe('Masked input', () => {
   });
 
   describe('Validation message slots', () => {
-    async function createFixture(template: TemplateResult) {
-      element = await fixture<IgcMaskInputComponent>(template);
-    }
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcMaskInputComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['badInput'], props: { mask: '00-00' } }, // bad-input slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    it('renders bad-input slot', async () => {
-      await createFixture(html`
-        <igc-mask-input mask="00-00">
-          <div slot="bad-input"></div>
-        </igc-mask-input>
-      `);
-
-      await checkValidationSlots(element, 'badInput');
-    });
-
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-mask-input required>
-          <div slot="value-missing"></div>
-        </igc-mask-input>
-      `);
-
-      await checkValidationSlots(element, 'valueMissing');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-mask-input required>
-          <div slot="invalid"></div>
-        </igc-mask-input>
-      `);
-
-      await checkValidationSlots(element, 'invalid');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-mask-input>
-          <div slot="custom-error"></div>
-        </igc-mask-input>
-      `);
-
-      element.setCustomValidity('invalid');
-      await checkValidationSlots(element, 'customError');
+      runValidationContainerTests(new IgcMaskInputComponent(), testParameters);
     });
   });
 });

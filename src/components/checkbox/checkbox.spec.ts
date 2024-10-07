@@ -5,13 +5,13 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
 } from '../common/utils.spec.js';
 import IgcCheckboxComponent from './checkbox.js';
 
@@ -389,39 +389,15 @@ describe('Checkbox', () => {
   });
 
   describe('Validation message slots', () => {
-    async function createFixture(template: TemplateResult) {
-      element = await fixture<IgcCheckboxComponent>(template);
-    }
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcCheckboxComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-checkbox required>
-          <div slot="value-missing"></div>
-        </igc-checkbox>
-      `);
-
-      await checkValidationSlots(element, 'valueMissing');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-checkbox>
-          <div slot="custom-error"></div>
-        </igc-checkbox>
-      `);
-
-      element.setCustomValidity('invalid');
-      await checkValidationSlots(element, 'customError');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-checkbox required>
-          <div slot="invalid"></div>
-        </igc-checkbox>
-      `);
-
-      await checkValidationSlots(element, 'invalid');
+      runValidationContainerTests(new IgcCheckboxComponent(), testParameters);
     });
   });
 });

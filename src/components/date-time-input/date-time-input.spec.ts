@@ -1,7 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import type { TemplateResult } from 'lit';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
@@ -14,8 +13,9 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
@@ -1000,65 +1000,30 @@ describe('Date Time Input component', () => {
   });
 
   describe('Validation message slots', () => {
-    let element: IgcDateTimeInputComponent;
+    it('', async () => {
+      const now = CalendarDay.today;
+      const tomorrow = now.add('day', 1);
+      const yesterday = now.add('day', -1);
 
-    const now = new Date(2024, 6, 17);
-    const tomorrow = new Date(2024, 6, 18);
-    const yesterday = new Date(2024, 6, 16);
+      const testParameters: ValidationContainerTestsParams<IgcDateTimeInputComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          {
+            slots: ['rangeOverflow'],
+            props: { value: now.native, max: yesterday.native }, // range-overflow slot
+          },
+          {
+            slots: ['rangeUnderflow'],
+            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
+          },
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    async function createFixture(template: TemplateResult) {
-      element = await fixture<IgcDateTimeInputComponent>(template);
-    }
-
-    it('renders range-overflow slot', async () => {
-      await createFixture(html`
-        <igc-date-time-input .value=${now} .max=${yesterday}>
-          <div slot="range-overflow"></div>
-        </igc-date-time-input>
-      `);
-
-      await checkValidationSlots(element, 'rangeOverflow');
-    });
-
-    it('renders range-underflow slot', async () => {
-      await createFixture(html`
-        <igc-date-time-input .value=${now} .min=${tomorrow}>
-          <div slot="range-underflow"></div>
-        </igc-date-time-input>
-      `);
-
-      await checkValidationSlots(element, 'rangeUnderflow');
-    });
-
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-date-time-input required>
-          <div slot="value-missing"></div>
-        </igc-date-time-input>
-      `);
-
-      await checkValidationSlots(element, 'valueMissing');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-date-time-input required>
-          <div slot="invalid"></div>
-        </igc-date-time-input>
-      `);
-
-      await checkValidationSlots(element, 'invalid');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-date-time-input>
-          <div slot="custom-error"></div>
-        </igc-date-time-input>
-      `);
-
-      element.setCustomValidity('invalid');
-      await checkValidationSlots(element, 'customError');
+      runValidationContainerTests(
+        new IgcDateTimeInputComponent(),
+        testParameters
+      );
     });
   });
 });

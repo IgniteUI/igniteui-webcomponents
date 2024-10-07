@@ -12,8 +12,9 @@ import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
   simulateInput,
 } from '../common/utils.spec.js';
 import IgcInputComponent from './input.js';
@@ -534,120 +535,32 @@ describe('Input component', () => {
   });
 
   describe('Validation message slots', () => {
-    async function createFixture(template: TemplateResult) {
-      element = await fixture<IgcInputComponent>(template);
-    }
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['typeMismatch'], props: { type: 'email' } }, // type-mismatch slot
+          { slots: ['patternMismatch'], props: { pattern: 'd{3}' } }, // pattern-mismatch slot
+          { slots: ['tooLong'], props: { maxLength: 3, value: '123123' } }, // too-long slot
+          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          {
+            slots: ['rangeOverflow'],
+            props: { type: 'number', max: 3, value: '5' }, // range-overflow slot
+          },
+          { slots: ['rangeUnderflow'], props: { type: 'number', min: 3 } }, // range-underflow
+          {
+            slots: ['stepMismatch'],
+            props: { type: 'number', step: 2, value: '3' }, // step-mismatch slot
+          },
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          {
+            slots: ['typeMismatch', 'tooShort'],
+            props: { type: 'email', minLength: 8 }, // multiple validation slots
+          },
+        ];
 
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-input required>
-          <div slot="value-missing"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'valueMissing');
-    });
-
-    it('renders type-mismatch slot', async () => {
-      await createFixture(html`
-        <igc-input type="email">
-          <div slot="type-mismatch"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'typeMismatch');
-    });
-
-    it('renders pattern-mismatch slot', async () => {
-      await createFixture(html`
-        <igc-input pattern="d{3}">
-          <div slot="pattern-mismatch"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'patternMismatch');
-    });
-
-    it('renders too-long slot', async () => {
-      await createFixture(html`
-        <igc-input maxlength="3" value="123213">
-          <div slot="too-long"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'tooLong');
-    });
-
-    it('renders too-short slot', async () => {
-      await createFixture(html`
-        <igc-input minlength="3">
-          <div slot="too-short"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'tooShort');
-    });
-
-    it('renders range-overflow slot', async () => {
-      await createFixture(html`
-        <igc-input type="number" max="3" value="5">
-          <div slot="range-overflow"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'rangeOverflow');
-    });
-
-    it('renders range-underflow slot', async () => {
-      await createFixture(html`
-        <igc-input type="number" min="3">
-          <div slot="range-underflow"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'rangeUnderflow');
-    });
-
-    it('renders step-mismatch slot', async () => {
-      await createFixture(html`
-        <igc-input type="number" step="2" value="3">
-          <div slot="step-mismatch"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'stepMismatch');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-input>
-          <div slot="custom-error"></div>
-        </igc-input>
-      `);
-
-      element.setCustomValidity('invalid');
-      await checkValidationSlots(element, 'customError');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-input required>
-          <div slot="invalid"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'invalid');
-    });
-
-    it('renders multiple validation slots', async () => {
-      await createFixture(html`
-        <igc-input type="email" minlength="8">
-          <div slot="type-mismatch"></div>
-          <div slot="too-short"></div>
-        </igc-input>
-      `);
-
-      await checkValidationSlots(element, 'typeMismatch', 'tooShort');
+      runValidationContainerTests(new IgcInputComponent(), testParameters);
     });
   });
 });
