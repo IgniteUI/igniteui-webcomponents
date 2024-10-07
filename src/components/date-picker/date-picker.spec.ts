@@ -1059,7 +1059,7 @@ describe('Date picker', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(new IgcDatePickerComponent(), testParameters);
+      runValidationContainerTests(IgcDatePickerComponent, testParameters);
     });
   });
 });

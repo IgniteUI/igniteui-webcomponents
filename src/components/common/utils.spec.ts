@@ -9,6 +9,8 @@ import type { TemplateResult } from 'lit';
 
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
+import type { IgniteComponent } from './definitions/register.js';
+import type { Constructor } from './mixins/constructor.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
 import { isEmpty, toKebabCase } from './util.js';
 
@@ -356,7 +358,7 @@ export type ValidationContainerTestsParams<T> = {
 };
 
 export function runValidationContainerTests<T extends IgcFormControl>(
-  element: T,
+  element: Constructor<T> & IgniteComponent,
   testParams: ValidationContainerTestsParams<T>[]
 ) {
   const runner = async ({

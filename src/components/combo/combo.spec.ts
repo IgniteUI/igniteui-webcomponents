@@ -1394,7 +1394,7 @@ describe('Combo', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(new IgcComboComponent(), testParameters);
+      runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 });

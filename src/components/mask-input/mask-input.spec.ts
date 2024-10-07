@@ -779,7 +779,7 @@ describe('Masked input', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(new IgcMaskInputComponent(), testParameters);
+      runValidationContainerTests(IgcMaskInputComponent, testParameters);
     });
   });
 });

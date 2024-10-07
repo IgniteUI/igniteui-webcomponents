@@ -331,7 +331,7 @@ describe('Textarea component', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(new IgcTextareaComponent(), testParameters);
+      runValidationContainerTests(IgcTextareaComponent, testParameters);
     });
   });
 });

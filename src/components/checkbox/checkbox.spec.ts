@@ -397,7 +397,7 @@ describe('Checkbox', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(new IgcCheckboxComponent(), testParameters);
+      runValidationContainerTests(IgcCheckboxComponent, testParameters);
     });
   });
 });

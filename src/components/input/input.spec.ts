@@ -560,7 +560,7 @@ describe('Input component', () => {
           },
         ];
 
-      runValidationContainerTests(new IgcInputComponent(), testParameters);
+      runValidationContainerTests(IgcInputComponent, testParameters);
     });
   });
 });
