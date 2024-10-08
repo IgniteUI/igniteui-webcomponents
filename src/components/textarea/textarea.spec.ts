@@ -1,35 +1,93 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import type { TemplateResult } from 'lit';
+import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  isFocused,
+  runValidationContainerTests,
+  simulateInput,
+  simulateScroll,
+} from '../common/utils.spec.js';
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
-  before(() => defineComponents(IgcTextareaComponent));
+  before(() => {
+    defineComponents(IgcTextareaComponent);
+  });
 
   let element: IgcTextareaComponent;
   let textArea: HTMLTextAreaElement;
+
+  async function createFixture(template: TemplateResult) {
+    element = await fixture<IgcTextareaComponent>(template);
+    textArea = element.renderRoot.querySelector('textarea')!;
+  }
+
+  describe('Defaults', () => {
+    it('is accessible', async () => {
+      await createFixture(html`<igc-textarea label="Label"></igc-textarea>`);
+
+      await expect(element).to.be.accessible();
+      await expect(element).shadowDom.to.be.accessible();
+    });
+
+    it('material variant layout', async () => {
+      configureTheme('material');
+      await createFixture(html`<igc-textarea></igc-textarea>`);
+
+      expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
+
+      // Reset theme
+      configureTheme('bootstrap');
+      await nextFrame();
+    });
+
+    it('auto sizing is applied', async () => {
+      await createFixture(
+        html`<igc-textarea resize="auto" rows="1"></igc-textarea>`
+      );
+      const initialHeight = textArea.scrollHeight;
+
+      simulateInput(textArea, { value: [1, 2, 3, 4, 5, 6].join('\n') });
+      await elementUpdated(element);
+
+      const intermediateHeight = textArea.scrollHeight;
+      expect(intermediateHeight).greaterThan(initialHeight);
+
+      simulateInput(textArea, { value: '' });
+      await elementUpdated(element);
+
+      const finalHeight = textArea.scrollHeight;
+      expect(finalHeight).lessThan(intermediateHeight);
+      expect(finalHeight).to.equal(initialHeight);
+    });
+  });
 
   describe('Setting value through attribute and projection', () => {
     const value = 'Hello world!';
 
     it('through attribute', async () => {
-      element = await fixture<IgcTextareaComponent>(
-        html`<igc-textarea value=${value}></igc-textarea>`
-      );
+      await createFixture(html`<igc-textarea value=${value}></igc-textarea>`);
       expect(element.value).to.equal(value);
     });
 
     it('through slot projection', async () => {
-      element = await fixture<IgcTextareaComponent>(
-        html`<igc-textarea>${value}</igc-textarea>`
-      );
+      await createFixture(html`<igc-textarea>${value}</igc-textarea>`);
       expect(element.value).to.equal(value);
     });
 
     it('priority of slot over attribute value binding', async () => {
-      element = await fixture<IgcTextareaComponent>(
+      await createFixture(
         html`<igc-textarea value="ignored">${value}</igc-textarea>`
       );
 
@@ -37,11 +95,8 @@ describe('Textarea component', () => {
     });
 
     it('reflects on slot change state', async () => {
+      await createFixture(html`<igc-textarea>${value}</igc-textarea>`);
       const additional = ['...', 'Goodbye world!'];
-
-      element = await fixture<IgcTextareaComponent>(
-        html`<igc-textarea>${value}</igc-textarea>`
-      );
 
       element.append(...additional);
       await elementUpdated(element);
@@ -71,18 +126,13 @@ describe('Textarea component', () => {
 
   describe('Events', () => {
     beforeEach(async () => {
-      element = await fixture<IgcTextareaComponent>(
-        html`<igc-textarea></igc-textarea>`
-      );
-      textArea = element.shadowRoot!.querySelector('textarea')!;
+      await createFixture(html`<igc-textarea></igc-textarea>`);
     });
 
     it('igcInput', async () => {
       const eventSpy = spy(element, 'emitEvent');
 
-      textArea.value = '123';
-      textArea.dispatchEvent(new Event('input'));
-
+      simulateInput(textArea, { value: '123' });
       await elementUpdated(element);
 
       expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
@@ -106,10 +156,7 @@ describe('Textarea component', () => {
     const projected = 'Hello world!';
 
     beforeEach(async () => {
-      element = await fixture<IgcTextareaComponent>(
-        html`<igc-textarea>${projected}</igc-textarea>`
-      );
-      textArea = element.shadowRoot!.querySelector('textarea')!;
+      await createFixture(html`<igc-textarea>${projected}</igc-textarea>`);
     });
 
     it('select()', async () => {
@@ -156,23 +203,20 @@ describe('Textarea component', () => {
           '\n'
         )
       );
-      const textarea = element.shadowRoot?.querySelector('textarea');
       const [xDelta, yDelta] = [250, 250];
 
       element.wrap = 'off';
       element.appendChild(text);
       await elementUpdated(element);
 
-      element.scrollTo({ top: yDelta, left: xDelta });
-      await elementUpdated(element);
-      expect([textarea?.scrollLeft, textarea?.scrollTop]).to.eql([
+      await simulateScroll(element, { top: yDelta, left: xDelta });
+      expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta,
         yDelta,
       ]);
 
-      element.scrollTo(xDelta * 2, yDelta * 2);
-      await elementUpdated(element);
-      expect([textarea?.scrollLeft, textarea?.scrollTop]).to.eql([
+      await simulateScroll(element, { top: yDelta * 2, left: xDelta * 2 });
+      expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta * 2,
         yDelta * 2,
       ]);
@@ -273,6 +317,21 @@ describe('Textarea component', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcTextareaComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } }, // too-long slot
+          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcTextareaComponent, testParameters);
     });
   });
 });

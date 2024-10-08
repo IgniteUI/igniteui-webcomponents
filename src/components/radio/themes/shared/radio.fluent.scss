@@ -3,6 +3,15 @@
 
 $theme: $fluent;
 
+:host {
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='label'] {
     @include type-style('body-2');
 }

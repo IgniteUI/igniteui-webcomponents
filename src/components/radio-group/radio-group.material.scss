@@ -5,5 +5,5 @@
 }
 
 :host([alignment='horizontal']) {
-    gap: rem(16px);
+    column-gap: rem(16px);
 }

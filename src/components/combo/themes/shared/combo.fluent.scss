@@ -9,13 +9,11 @@ $dropdown-theme: dropdown-theme.$fluent;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
 
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         @include type-style('caption');
 
-        display: block;
-        padding: 0;
-        margin-top: rem(5px);
-        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(5px);
+        grid-auto-rows: minmax(rem(18px), auto);
     }
 }
 
@@ -82,12 +80,6 @@ $dropdown-theme: dropdown-theme.$fluent;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host([invalid]:focus-within) {
     igc-input::part(input) {
         height: calc(var(--size) - #{rem(4px)});
@@ -110,8 +102,7 @@ $dropdown-theme: dropdown-theme.$fluent;
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     igc-input::part(label),
-    igc-input::part(input)::placeholder,
-    ::slotted([slot='helper-text']) {
+    igc-input::part(input)::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 

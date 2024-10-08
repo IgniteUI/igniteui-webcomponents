@@ -51,13 +51,13 @@ $input-theme: input-theme.$material;
         color: var-get($input-theme, 'idle-secondary-color');
     }
 
-    [part='helper-text'] {
-        margin-top: rem(4px);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
-    }
+    ::part(helper-text) {
+        @include type-style('caption');
 
-    ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(4px);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -71,16 +71,10 @@ igc-icon,
     --component-size: var(--input-size);
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     [part='label'],
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($input-theme, 'disabled-text-color');
     }
 }

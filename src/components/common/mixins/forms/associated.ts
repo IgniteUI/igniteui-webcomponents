@@ -1,5 +1,6 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { isFunction } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
 import type {
@@ -46,7 +47,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     /**
-     * Control the validity of the control.
+     * Sets the control into invalid state (visual state only).
      * @attr
      * @default false
      */
@@ -113,6 +114,25 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
     }
 
+    private __runValidators() {
+      const validity: ValidityStateFlags = {};
+      let message = '';
+
+      for (const validator of this.__validators) {
+        const isValid = validator.isValid(this);
+
+        validity[validator.key] = !isValid;
+
+        if (!isValid) {
+          message = isFunction(validator.message)
+            ? validator.message(this)
+            : validator.message;
+        }
+      }
+
+      return { validity, message };
+    }
+
     /* c8 ignore next 1 */
     protected _setInitialDefaultValue(): void {}
 
@@ -130,29 +150,36 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._setInvalidState();
     }
 
-    protected _updateValidity(message?: string) {
-      const validity: ValidityStateFlags = {};
-      let validationMessage = '';
+    /**
+     * Executes the component validators and updates the internal validity state.
+     */
+    protected _updateValidity(error?: string) {
+      let { validity, message } = this.__runValidators();
+      const hasCustomError = this.validity.customError;
 
-      for (const validator of this.__validators) {
-        const isValid = validator.isValid(this);
-
-        validity[validator.key] = !isValid;
-
-        if (!isValid) {
-          validationMessage =
-            typeof validator.message === 'function'
-              ? validator.message(this)
-              : validator.message;
-        }
+      // valueMissing has precedence over the other validators aside from customError
+      if (validity.valueMissing) {
+        validity = {
+          valueMissing: true,
+          customError: hasCustomError,
+        };
       }
 
-      if (message) {
+      if (hasCustomError && error === undefined) {
+        // Internal validation cycle after the user has called setCustomValidity()
+        // with some message. Keep the customError flag and the passed in message.
         validity.customError = true;
-        validationMessage = message;
+        message = this.validationMessage;
+      } else if (hasCustomError && error === '') {
+        // setCustomValidity with an empty message.
+        validity.customError = false;
+      } else if (error && error !== '') {
+        // setCustomValidity with a message.
+        validity.customError = true;
+        message = error;
       }
 
-      this.__internals.setValidity(validity, validationMessage);
+      this.__internals.setValidity(validity, message);
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
@@ -181,12 +208,16 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity() {
-      return this.__internals.reportValidity();
+      const state = this.__internals.reportValidity();
+      this.invalid = !state;
+      return state;
     }
 
     /** Checks for validity of the control and emits the invalid event if it invalid. */
     public checkValidity() {
-      return this.__internals.checkValidity();
+      const state = this.__internals.checkValidity();
+      this.invalid = !state;
+      return state;
     }
 
     /**
@@ -195,7 +226,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      */
     public setCustomValidity(message: string) {
       this._updateValidity(message);
-      this.invalid = !this.checkValidity();
     }
   }
   return BaseFormAssociatedElement as Constructor<BaseFormAssociatedElement> &

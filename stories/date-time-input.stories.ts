@@ -91,7 +91,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -157,7 +157,7 @@ interface IgcDateTimeInputArgs {
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;

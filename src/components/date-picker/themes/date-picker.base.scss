@@ -30,16 +30,6 @@
     }
 }
 
-[part='helper-text'] {
-    line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
-    }
-}
-
 [part='label'] {
     display: inline-block;
     white-space: nowrap;

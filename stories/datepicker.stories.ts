@@ -474,11 +474,9 @@ export const Form: Story = {
       </fieldset>
 
       <fieldset>
-        <igc-date-picker
-          label="Required"
-          name="picker-required"
-          required
-        ></igc-date-picker>
+        <igc-date-picker label="Required" name="picker-required" required>
+          <p slot="value-missing">This field is required!</p>
+        </igc-date-picker>
       </fieldset>
 
       <fieldset>
@@ -486,11 +484,17 @@ export const Form: Story = {
           <p slot="helper-text">
             Choose a date after ${minDate.toLocaleDateString()}
           </p>
+          <p slot="range-underflow">
+            Selected date is less that ${minDate.toLocaleDateString()}
+          </p>
         </igc-date-picker>
 
         <igc-date-picker label="Maximum date" name="picker-max" .max=${maxDate}>
           <p slot="helper-text">
             Choose a date before ${maxDate.toLocaleDateString()}
+          </p>
+          <p slot="range-overflow">
+            Selected date is greater than ${maxDate.toLocaleDateString()}
           </p>
         </igc-date-picker>
       </fieldset>
@@ -500,7 +504,9 @@ export const Form: Story = {
           label="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
           name="picker-disabled-ranges"
           .disabledDates=${disabledDates}
-        ></igc-date-picker>
+        >
+          <p slot="bad-input">Selected date is in the disabled dates!</p>
+        </igc-date-picker>
       </fieldset>
       ${formControls()}
     </form>

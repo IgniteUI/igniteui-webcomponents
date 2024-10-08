@@ -42,7 +42,7 @@ const metadata: Meta<IgcSliderComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -168,7 +168,7 @@ interface IgcSliderArgs {
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /**
    * The minimum value of the slider scale. Defaults to 0.
