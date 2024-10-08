@@ -27,7 +27,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
  * @fires igcItemExpanded - Emitted when tree item is expanded.
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
- * @fires igcItemActivated - Emitted when the tree's `active` item changes.
+ * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
