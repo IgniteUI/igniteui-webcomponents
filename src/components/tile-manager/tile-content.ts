@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/tile-content.css.js';
+import { styles } from './themes/tile-content.base.css.js';
 
 /** A container for tile's text content
  * @element igc-tile-content

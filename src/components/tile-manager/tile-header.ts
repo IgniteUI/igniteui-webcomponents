@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/tile-header.css.js';
+import { styles } from './themes/tile-header.base.css.js';
 
 /** A container for card's header
  * @element igc-card-header
