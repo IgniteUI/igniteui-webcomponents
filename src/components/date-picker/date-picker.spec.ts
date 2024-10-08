@@ -14,6 +14,8 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
@@ -1021,6 +1023,43 @@ describe('Date picker', () => {
 
       expect(picker.invalid).to.be.false;
       expect(dateTimeInput.invalid).to.be.false;
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const now = CalendarDay.today;
+      const tomorrow = now.add('day', 1);
+      const yesterday = now.add('day', -1);
+
+      const testParameters: ValidationContainerTestsParams<IgcDatePickerComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          {
+            slots: ['rangeOverflow'],
+            props: { value: now.native, max: yesterday.native }, // range-overflow slot
+          },
+          {
+            slots: ['rangeUnderflow'],
+            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
+          },
+          {
+            slots: ['badInput'],
+            props: {
+              value: now.native,
+              disabledDates: [
+                {
+                  type: DateRangeType.Between,
+                  dateRange: [yesterday.native, tomorrow.native], // bad-input slot
+                },
+              ],
+            },
+          },
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcDatePickerComponent, testParameters);
     });
   });
 });

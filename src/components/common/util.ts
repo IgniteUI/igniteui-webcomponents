@@ -177,17 +177,16 @@ export function findElementFromEventPath<T extends Element>(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ) {
-  const func =
-    typeof predicate === 'string'
-      ? (e: Element) => e.matches(predicate)
-      : (e: Element) => predicate(e);
+  const func = isString(predicate)
+    ? (e: Element) => e.matches(predicate)
+    : (e: Element) => predicate(e);
 
   return getElementsFromEventPath(event).find(func) as T | undefined;
 }
 
 export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
   const result: Record<string, T[]> = {};
-  const _get = typeof key === 'function' ? key : (item: T) => item[key];
+  const _get = isFunction(key) ? key : (item: T) => item[key];
 
   for (const item of array) {
     const category = _get(item);
@@ -255,4 +254,32 @@ export function* chunk<T>(arr: T[], size: number) {
   for (let i = 0; i < arr.length; i += size) {
     yield arr.slice(i, i + size);
   }
+}
+
+export function splitToWords(text: string) {
+  const input = text.replaceAll(/[^a-zA-Z0-9\s-_]/g, '');
+  if (/[\s-_]+/.test(input)) return input.split(/[\s-_]+/);
+  return input.split(/(?=[A-Z])+/);
+}
+
+export function toKebabCase(text: string): string {
+  const input = text.trim();
+  return splitToWords(input).join('-').toLocaleLowerCase();
+}
+
+export function isFunction(value: unknown): value is CallableFunction {
+  return typeof value === 'function';
+}
+
+export function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+/**
+ * Returns whether a given collection has at least one member.
+ */
+export function isEmpty<T, U extends string>(
+  x: ArrayLike<T> | Set<T> | Map<U, T>
+): boolean {
+  return 'length' in x ? x.length < 1 : x.size < 1;
 }

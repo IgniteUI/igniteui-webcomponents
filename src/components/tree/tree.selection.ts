@@ -1,3 +1,4 @@
+import { isEmpty } from '../common/util.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type { IgcSelectionEventArgs } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
@@ -288,7 +289,7 @@ export class IgcTreeSelectionService {
     items: IgcTreeItemComponent[] | undefined,
     selected: boolean
   ): void {
-    if (!items || items.length === 0) {
+    if (!items || isEmpty(items)) {
       return;
     }
 
@@ -397,14 +398,12 @@ export class IgcTreeSelectionService {
 
   /** Returns array of the selected items. */
   private getSelectedItems(): IgcTreeItemComponent[] {
-    return this.itemSelection.size ? Array.from(this.itemSelection) : [];
+    return Array.from(this.itemSelection);
   }
 
   /** Returns array of the items in indeterminate state. */
   private getIndeterminateItems(): IgcTreeItemComponent[] {
-    return this.indeterminateItems.size
-      ? Array.from(this.indeterminateItems)
-      : [];
+    return Array.from(this.indeterminateItems);
   }
 
   private areEqualCollections(

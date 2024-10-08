@@ -1,12 +1,13 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { isEmpty, partNameMap } from '../common/util.js';
 import type { RangeTextSelectMode } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
 import { numberValidators, stringValidators } from './validators.js';
 
@@ -16,6 +17,16 @@ import { numberValidators, stringValidators } from './validators.js';
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot type-mismatch - Renders content when the a type url/email input pattern validation fails.
+ * @slot pattern-mismatch - Renders content when the pattern validation fails.
+ * @slot too-long - Renders content when the maxlength validation fails.
+ * @slot too-short - Renders content when the minlength validation fails.
+ * @slot range-overflow - Renders content when the max validation fails.
+ * @slot range-underflow - Renders content when the min validation fails.
+ * @slot step-mismatch - Renders content when the step validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
@@ -32,7 +43,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcInputComponent);
+    registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
   private get isStringType() {
@@ -235,6 +246,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         step=${ifDefined(this.step)}
         aria-invalid=${this.invalid ? 'true' : 'false'}
+        aria-describedby=${ifDefined(
+          isEmpty(this._helperText) ? nothing : 'helper-text'
+        )}
         @change=${this.handleChange}
         @input=${this.handleInput}
         @focus=${this.handleFocus}

@@ -21,8 +21,12 @@ $input-theme: input-theme.$indigo;
         @include type-style('caption');
     }
 
-    [part='helper-text'] {
-        padding: 0;
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(15px), auto);
+        padding-inline-start: 0;
     }
 }
 

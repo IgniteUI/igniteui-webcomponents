@@ -10,11 +10,13 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
-}
 
-[part='helper-text'] {
-    margin-top: rem(4px);
-    color: var-get($theme, 'helper-text-color');
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: rem(4px);
+    }
 }
 
 [part='list-wrapper'] {
@@ -98,19 +100,12 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     igc-input::part(label),
-    igc-input::part(input)::placeholder,
-    ::slotted([slot='helper-text']) {
+    igc-input::part(input)::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 

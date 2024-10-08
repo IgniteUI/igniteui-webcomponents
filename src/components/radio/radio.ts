@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, type TemplateResult, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -18,11 +18,13 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
   createCounter,
+  isEmpty,
   isLTR,
   last,
   partNameMap,
   wrap,
 } from '../common/util.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -47,6 +49,10 @@ export interface IgcRadioEventMap {
  * @element igc-radio
  *
  * @slot - The radio label.
+ * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
  *
@@ -63,7 +69,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcRadioComponent);
+    registerComponent(IgcRadioComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
@@ -182,7 +188,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => {
-      this.hideLabel = this.label.length < 1;
+      this.hideLabel = isEmpty(this.label);
     });
     return root;
   }
@@ -216,23 +222,19 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const radios = this._radios;
-
-    for (const radio of radios) {
+    for (const radio of this._radios) {
       radio._validate(message);
     }
   }
 
   private _updateCheckedState() {
-    const siblings = this._siblings;
-
     this._setFormValue(this.value || 'on');
     this._validate();
 
     this._tabIndex = 0;
     this.input?.focus();
 
-    for (const radio of siblings) {
+    for (const radio of this._siblings) {
       radio.checked = false;
       radio._tabIndex = -1;
       radio._validate();
@@ -240,14 +242,12 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   private _updateUncheckedState() {
-    const siblings = this._siblings;
-
     this._setFormValue(null);
     this._validate();
 
     this._tabIndex = -1;
 
-    for (const radio of siblings) {
+    for (const radio of this._siblings) {
       radio._updateValidity();
     }
   }
@@ -259,8 +259,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /** Called after a form reset callback to restore default keyboard navigation. */
   private _resetTabIndexes() {
-    const radios = this._radios;
-    for (const radio of radios) {
+    for (const radio of this._radios) {
       radio._tabIndex = 0;
     }
   }
@@ -293,6 +292,10 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     radio.emitEvent('igcChange', {
       detail: { checked: radio.checked, value: radio.value },
     });
+  }
+
+  protected renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected override render() {
@@ -338,6 +341,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           <slot></slot>
         </span>
       </label>
+      ${this.renderValidatorContainer()}
     `;
   }
 }
