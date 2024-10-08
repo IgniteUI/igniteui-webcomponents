@@ -34,6 +34,10 @@ export default class IgcTileComponent extends LitElement {
     });
     this.dispatchEvent(event);
     this.classList.add('dragging');
+
+    setTimeout(() => {
+      this.style.transform = 'scale(0)';
+    }, 0);
   }
 
   private handleDragEnd() {
