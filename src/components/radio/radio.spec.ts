@@ -1,13 +1,13 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
 } from '../common/utils.spec.js';
 import IgcRadioComponent from './radio.js';
 
@@ -376,39 +376,15 @@ describe('Radio Component', () => {
   });
 
   describe('Validation message slots', () => {
-    async function createFixture(template: TemplateResult) {
-      radio = await fixture<IgcRadioComponent>(template);
-    }
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-radio required>
-          <div slot="value-missing"></div>
-        </igc-radio>
-      `);
-
-      await checkValidationSlots(radio, 'valueMissing');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-radio>
-          <div slot="custom-error"></div>
-        </igc-radio>
-      `);
-
-      radio.setCustomValidity('invalid');
-      await checkValidationSlots(radio, 'customError');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-radio required>
-          <div slot="invalid"></div>
-        </igc-radio>
-      `);
-
-      await checkValidationSlots(radio, 'invalid');
+      runValidationContainerTests(IgcRadioComponent, testParameters);
     });
   });
 });

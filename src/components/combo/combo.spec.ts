@@ -1,11 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
-  checkValidationSlots,
+  type ValidationContainerTestsParams,
+  runValidationContainerTests,
 } from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcComboHeaderComponent from './combo-header.js';
@@ -1386,41 +1386,15 @@ describe('Combo', () => {
   });
 
   describe('Validation message slots', () => {
-    let combo: IgcComboComponent;
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-    async function createFixture(template: TemplateResult) {
-      combo = await fixture<IgcComboComponent>(template);
-    }
-
-    it('renders value-missing slot', async () => {
-      await createFixture(html`
-        <igc-combo required>
-          <div slot="value-missing"></div>
-        </igc-combo>
-      `);
-
-      await checkValidationSlots(combo, 'valueMissing');
-    });
-
-    it('renders invalid slot', async () => {
-      await createFixture(html`
-        <igc-combo required>
-          <div slot="invalid"></div>
-        </igc-combo>
-      `);
-
-      await checkValidationSlots(combo, 'invalid');
-    });
-
-    it('renders custom-error slot', async () => {
-      await createFixture(html`
-        <igc-combo>
-          <div slot="custom-error"></div>
-        </igc-combo>
-      `);
-
-      combo.setCustomValidity('invalid');
-      await checkValidationSlots(combo, 'customError');
+      runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 });

@@ -9,8 +9,10 @@ import type { TemplateResult } from 'lit';
 
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
+import type { IgniteComponent } from './definitions/register.js';
+import type { Constructor } from './mixins/constructor.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
-import { toKebabCase } from './util.js';
+import { isEmpty, toKebabCase } from './util.js';
 
 export class FormAssociatedTestBed<T extends IgcFormControl> {
   private _element!: T;
@@ -326,7 +328,7 @@ export async function checkValidationSlots(
   element.checkValidity();
   await Promise.all([elementUpdated(element), elementUpdated(container)]);
 
-  expect(element.invalid).to.be.true;
+  expect(element.invalid, `${element.tagName} is not invalid`).to.be.true;
   expect(hasSlots(container.renderRoot, ...slots)).to.be.true;
 
   for (const slot of slots) {
@@ -348,4 +350,44 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
 
 export function isFocused(element?: Element) {
   return element ? element.matches(':focus') : false;
+}
+
+export type ValidationContainerTestsParams<T> = {
+  slots: Array<keyof ValidityStateFlags | 'invalid'>;
+  props?: { [K in keyof T]?: T[K] };
+};
+
+export function runValidationContainerTests<T extends IgcFormControl>(
+  element: Constructor<T> & IgniteComponent,
+  testParams: ValidationContainerTestsParams<T>[]
+) {
+  const runner = async ({
+    slots,
+    props,
+  }: ValidationContainerTestsParams<T>) => {
+    if (isEmpty(slots)) return;
+
+    const instance = document.createElement(element.tagName) as T;
+    instance.append(
+      ...slots.map((slot) =>
+        Object.assign(document.createElement('div'), {
+          slot: toKebabCase(slot),
+        })
+      )
+    );
+    Object.assign(instance, props);
+    document.body.append(instance);
+    await elementUpdated(instance);
+
+    if (slots.includes('customError')) {
+      instance.setCustomValidity('invalid');
+    }
+
+    await checkValidationSlots(instance, ...slots);
+    instance.remove();
+  };
+
+  for (const each of testParams) {
+    runner(each);
+  }
 }
