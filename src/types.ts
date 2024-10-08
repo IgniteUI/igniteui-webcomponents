@@ -4,6 +4,7 @@ export type { IgcButtonGroupComponentEventMap } from './components/button-group/
 export type { IgcCalendarComponentEventMap } from './components/calendar/types.js';
 export type { IgcCarouselComponentEventMap } from './components/carousel/carousel.js';
 export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbox-base.js';
+export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
@@ -12,6 +13,7 @@ export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';
