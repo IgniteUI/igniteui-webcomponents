@@ -3,6 +3,15 @@
 
 $theme: $bootstrap;
 
+:host {
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
 [part~='label'] {
     @include type-style('body-1');
 
@@ -46,9 +55,13 @@ $theme: $bootstrap;
     }
 }
 
+[part~='base'] {
+    gap: rem(16px);
+}
+
 :host(:hover) {
     [part~='control']::after {
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'empty-color-hover'); 
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'empty-color-hover');
     }
 
     [part='control checked']::after {

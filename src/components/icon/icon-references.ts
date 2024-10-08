@@ -112,6 +112,10 @@ addIcon('remove', {
     name: 'chip_cancel',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_cancel',
+    collection: 'internal',
+  },
 });
 addIcon('input_clear', {
   default: {
@@ -172,6 +176,20 @@ addIcon('case_sensitive', {
 addIcon('today', {
   default: {
     name: 'calendar_today',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_calendar_today',
+    collection: 'internal',
+  },
+});
+addIcon('clock', {
+  default: {
+    name: 'access_time',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_access_time',
     collection: 'internal',
   },
 });
@@ -244,6 +262,16 @@ addIcon('carousel_next', {
   },
   indigo: {
     name: 'indigo_chevron_right',
+    collection: 'internal',
+  },
+});
+addIcon('error', {
+  default: {
+    name: 'error',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_error',
     collection: 'internal',
   },
 });

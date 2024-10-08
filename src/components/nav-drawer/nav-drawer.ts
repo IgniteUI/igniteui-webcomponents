@@ -3,7 +3,7 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { isEmpty, partNameMap } from '../common/util.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
@@ -100,7 +100,7 @@ export default class IgcNavDrawerComponent extends LitElement {
   protected override render() {
     const parts = partNameMap({
       mini: true,
-      hidden: this._miniSlotElements.length < 1,
+      hidden: isEmpty(this._miniSlotElements),
     });
 
     return html`

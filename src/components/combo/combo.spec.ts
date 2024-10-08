@@ -1,9 +1,12 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  runValidationContainerTests,
+} from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
@@ -1379,6 +1382,19 @@ describe('Combo', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 });

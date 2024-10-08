@@ -1,15 +1,15 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcRadioComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
-import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  isFocused,
+  runValidationContainerTests,
+} from '../common/utils.spec.js';
+import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
   before(() => {
@@ -34,8 +34,10 @@ describe('Radio Component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      radio = await createRadioComponent();
-      input = radio.renderRoot.querySelector('input') as HTMLInputElement;
+      radio = await fixture<IgcRadioComponent>(
+        html`<igc-radio>${label}</igc-radio>`
+      );
+      input = radio.renderRoot.querySelector('input')!;
     });
 
     it('is initialized with the proper default values', async () => {
@@ -224,12 +226,6 @@ describe('Radio Component', () => {
     });
   });
 
-  const createRadioComponent = (
-    template = `<igc-radio>${label}</igc-radio>`
-  ) => {
-    return fixture<IgcRadioComponent>(html`${unsafeStatic(template)}`);
-  };
-
   describe('Form integration', () => {
     const values = [1, 2, 3];
     let radios: IgcRadioComponent[] = [];
@@ -376,6 +372,19 @@ describe('Radio Component', () => {
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcRadioComponent, testParameters);
     });
   });
 });

@@ -133,7 +133,7 @@ const metadata: Meta<IgcComboComponent> = {
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -185,7 +185,7 @@ interface IgcComboArgs {
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
@@ -380,7 +380,10 @@ export const Form: Story = {
             value-key="id"
             display-key="name"
             required
-          ></igc-combo>
+          >
+            <div slot="helper-text">Select a value</div>
+            <div slot="value-missing">This field is required!</div>
+          </igc-combo>
         </fieldset>
 
         ${formControls()}

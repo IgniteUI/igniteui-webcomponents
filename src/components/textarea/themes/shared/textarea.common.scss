@@ -33,10 +33,6 @@ $theme: $base;
     }
 }
 
-[part~='helper-text'] {
-    color: var-get($theme, 'helper-text-color');
-}
-
 [part~='label'] {
     color: var-get($theme, 'idle-secondary-color');
 }
@@ -56,13 +52,6 @@ textarea {
         &::placeholder {
             color: var-get($theme, 'hover-placeholder-color');
         }
-    }
-}
-
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
-    [part~='helper-text'] {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
 
