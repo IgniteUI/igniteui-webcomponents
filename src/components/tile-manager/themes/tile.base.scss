@@ -11,9 +11,15 @@
     border-radius: 5px;
 }
 
+:host(.maximized) {
+    position: absolute;
+    inset: 0 0 0 0;
+    z-index: 10002;
+}
+
 [part="content-container"] {
     display: block;
-    background-color: rgb(19, 95, 195);
+    background-color: rgb(19 95 195);
     overflow: auto;
 }
 
@@ -31,7 +37,7 @@
     right: 0;
     bottom: 0;
     cursor: se-resize;
-    background: rgba(0, 0, 0);
+    background: rgba(0 0 0);
     z-index: 999;
 }
 
@@ -39,7 +45,7 @@
     position: absolute;
     z-index: 10;
 }
-  
+
 .resizer.right {
     top: 0;
     right: -2px;

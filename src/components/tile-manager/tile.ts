@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 
+import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile.base.css.js';
 
@@ -19,12 +20,33 @@ export default class IgcTileComponent extends LitElement {
     registerComponent(IgcTileComponent);
   }
 
+  @property({ type: Boolean })
+  public maximized = false;
+
   constructor() {
     super();
 
     this.setAttribute('draggable', 'true');
     this.addEventListener('dragstart', this.handleDragStart);
     this.addEventListener('dragend', this.handleDragEnd);
+  }
+
+  protected override updated(
+    changedProperties: Map<string | number | symbol, unknown>
+  ) {
+    super.updated(changedProperties);
+
+    if (changedProperties.has('maximized')) {
+      this.toggleClass(this.maximized, 'maximized');
+    }
+  }
+
+  private toggleClass(condition: boolean, className: string) {
+    if (condition) {
+      this.classList.add(className);
+    } else {
+      this.classList.remove(className);
+    }
   }
 
   private handleDragStart() {
