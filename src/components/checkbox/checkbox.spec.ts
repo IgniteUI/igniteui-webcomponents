@@ -230,6 +230,16 @@ describe('Checkbox', () => {
       expect(isFocused(input)).to.be.false;
     });
 
+    it('should emit click event only once', async () => {
+      const eventSpy = spy(el, 'click');
+
+      el.addEventListener('click', eventSpy);
+      el.click();
+
+      await elementUpdated(el);
+      expect(eventSpy.callCount).to.equal(1);
+    });
+
     it('should emit igcChange event when the checkbox checked state changes', async () => {
       const eventSpy = spy(element, 'emitEvent');
       element.click();

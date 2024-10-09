@@ -55,9 +55,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     return getThemeController(this)?.theme === 'indigo';
   }
 
-  protected override handleClick() {
+  protected override handleClick(event: PointerEvent) {
     this.indeterminate = false;
-    super.handleClick();
+    super.handleClick(event);
   }
 
   protected renderValidatorContainer(): TemplateResult {
