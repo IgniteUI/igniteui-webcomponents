@@ -231,12 +231,12 @@ describe('Checkbox', () => {
     });
 
     it('should emit click event only once', async () => {
-      const eventSpy = spy(el, 'click');
+      const eventSpy = spy(element, 'click');
 
-      el.addEventListener('click', eventSpy);
-      el.click();
+      element.addEventListener('click', eventSpy);
+      element.click();
 
-      await elementUpdated(el);
+      await elementUpdated(element);
       expect(eventSpy.callCount).to.equal(1);
     });
 
