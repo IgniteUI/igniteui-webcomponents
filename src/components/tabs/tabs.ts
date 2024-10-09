@@ -134,10 +134,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           this.selectTab(tab);
         }
       }
+      this.syncProperties();
     }
 
     this.activeTab?.scrollIntoView({ block: 'nearest' });
-    this.syncProperties();
     this.alignIndicator();
   }
 
@@ -224,6 +224,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected override async firstUpdated() {
     await this.updateComplete;
 
+    this.syncProperties();
     this.updateButtonsOnResize();
     this.setupObserver();
     this.selectTab(
@@ -396,6 +397,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private syncProperties() {
+    this.style.setProperty('--tabs-count', this.tabs.length.toString());
     this.tabs.forEach((tab: IgcTabComponent, index: number) => {
       tab.index = index;
       tab.selected = this.activeTab === tab;
