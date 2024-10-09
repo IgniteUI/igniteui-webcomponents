@@ -13,7 +13,7 @@
 
 :host(.maximized) {
     position: absolute;
-    inset: 0 0 0 0;
+    inset: 0;
     z-index: 10002;
 }
 
