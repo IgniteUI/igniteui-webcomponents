@@ -25,9 +25,9 @@ import {
 import { CalendarDay, daysInWeek } from '../model.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
-import { DateRangeType, type IgcCalendarBaseEventMap } from '../types.js';
+import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
 
-export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
+export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
   igcActiveDateChange: CustomEvent<Date>;
   igcRangePreviewDateChange: CustomEvent<Date>;
 }

@@ -33,7 +33,7 @@ import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
 
-export interface IgcTabsEventMap {
+export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
 
@@ -59,7 +59,7 @@ export interface IgcTabsEventMap {
 @themes(all)
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
-  IgcTabsEventMap,
+  IgcTabsComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';

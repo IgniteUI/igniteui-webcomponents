@@ -48,7 +48,7 @@ function hasProjectedValidation(
 
 /* blazorSuppress */
 /**
- * @element - igc-validator
+ * @element igc-validator
  *
  * @csspart helper-text - The base wrapper
  * @csspart validation-message - The validation error message container

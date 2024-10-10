@@ -8,7 +8,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isLTR } from '../common/util.js';
 import IgcStepComponent from './step.js';
-import type { IgcStepperEventMap } from './stepper.common.js';
+import type { IgcStepperComponentEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
@@ -33,7 +33,7 @@ import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
   dark: { bootstrap, fluent, indigo },
 })
 export default class IgcStepperComponent extends EventEmitterMixin<
-  IgcStepperEventMap,
+  IgcStepperComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-stepper';

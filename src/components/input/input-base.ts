@@ -13,7 +13,7 @@ import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcInputEventMap {
+export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
@@ -28,7 +28,9 @@ export interface IgcInputEventMap {
 @blazorDeepImport
 @themes(all, { exposeController: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,

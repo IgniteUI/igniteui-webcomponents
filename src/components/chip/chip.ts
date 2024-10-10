@@ -13,7 +13,7 @@ import { styles } from './themes/chip.base.css.js';
 import { styles as shared } from './themes/shared/chip.common.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcChipEventMap {
+export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
   igcSelect: CustomEvent<boolean>;
 }
@@ -35,7 +35,7 @@ export interface IgcChipEventMap {
  */
 @themes(all)
 export default class IgcChipComponent extends EventEmitterMixin<
-  IgcChipEventMap,
+  IgcChipComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-chip';

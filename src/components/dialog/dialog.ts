@@ -21,7 +21,7 @@ import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcDialogEventMap {
+export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
@@ -46,7 +46,7 @@ export interface IgcDialogEventMap {
 @themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
-  IgcDialogEventMap,
+  IgcDialogComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';

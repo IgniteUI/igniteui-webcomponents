@@ -4,12 +4,14 @@
   "description": "Ignite UI Web Components",
   "author": "Infragistics",
   "license": "SEE LICENSE IN LICENSE",
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./types": "./dist/src/types.js"
+  },
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/IgniteUI/igniteui-webcomponents"
+    "url": "git+https://github.com/IgniteUI/igniteui-webcomponents"
   },
   "bugs": {
     "url": "https://github.com/IgniteUI/igniteui-webcomponents/issues"

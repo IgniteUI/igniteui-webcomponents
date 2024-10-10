@@ -32,7 +32,7 @@ import { styles } from './themes/rating.base.css.js';
 import { styles as shared } from './themes/shared/rating.common.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcRatingEventMap {
+export interface IgcRatingComponentEventMap {
   igcChange: CustomEvent<number>;
   igcHover: CustomEvent<number>;
 }
@@ -62,7 +62,9 @@ export interface IgcRatingEventMap {
  */
 @themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
-  EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles, shared];

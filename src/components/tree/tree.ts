@@ -10,7 +10,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
-import type { IgcTreeEventMap } from './tree.common.js';
+import type { IgcTreeComponentEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 
@@ -27,12 +27,12 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
  * @fires igcItemExpanded - Emitted when tree item is expanded.
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
- * @fires igcItemActivated - Emitted when the tree's `active` item changes.
+ * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends EventEmitterMixin<
-  IgcTreeEventMap,
+  IgcTreeComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tree';
