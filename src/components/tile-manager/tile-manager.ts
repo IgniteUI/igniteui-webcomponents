@@ -51,7 +51,7 @@ export default class IgcTileManagerComponent extends LitElement {
   private handleDrop(e: DragEvent) {
     e.preventDefault();
 
-    const target = e.target as HTMLElement;
+    const target = (e.target as HTMLElement).closest('igc-tile');
 
     const slot = this.shadowRoot?.querySelector('slot');
     const slottedItems = slot?.assignedElements() as HTMLElement[];
