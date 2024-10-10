@@ -432,8 +432,8 @@ export const Slots: Story = {
   render: () => html`
     <style>
       .template {
-        background-color: hsl(var(--ig-primary-A200));
-        color: hsl(var(--ig-primary-A200-contrast));
+        background-color: var(--ig-primary-A200);
+        color: var(--ig-primary-A200-contrast);
         padding: 0.5rem;
       }
 
