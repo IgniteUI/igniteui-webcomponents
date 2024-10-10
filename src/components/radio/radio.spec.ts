@@ -8,6 +8,7 @@ import {
   type ValidationContainerTestsParams,
   isFocused,
   runValidationContainerTests,
+  simulateClick,
 } from '../common/utils.spec.js';
 import IgcRadioComponent from './radio.js';
 
@@ -223,6 +224,16 @@ describe('Radio Component', () => {
 
       expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
       expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
+    });
+
+    it('should emit click event only once', async () => {
+      const eventSpy = spy(radio, 'click');
+
+      radio.addEventListener('click', eventSpy);
+      simulateClick(radio);
+
+      await elementUpdated(radio);
+      expect(eventSpy.callCount).to.equal(1);
     });
   });
 

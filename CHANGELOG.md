@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Carousel component [#1226](https://github.com/IgniteUI/igniteui-webcomponents/issues/1226)
 
+### Fixed
+- Checkbox, Switch - click event fires more than once
+- Radio - click event fires more than once
+
 ## [5.0.2] - 2024-09-25
 ### Added
 - Calendar, Date picker - added **header-date** slot; renders content instead of the current date/range in the calendar header [#1329](https://github.com/IgniteUI/igniteui-webcomponents/pull/1329/files)
