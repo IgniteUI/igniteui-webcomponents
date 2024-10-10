@@ -61,7 +61,7 @@ export default class IgcRippleComponent extends LitElement {
       borderRadius: '50%',
       top: `${top}px`,
       left: `${left}px`,
-      background: 'var(--color, hsl(var(--ig-gray-800)))',
+      background: 'var(--color, var(--ig-gray-800))',
     };
 
     Object.assign(element.style, styles);
