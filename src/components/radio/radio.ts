@@ -264,7 +264,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  protected handleClick() {
+  protected handleClick(event: PointerEvent) {
+    event.stopPropagation();
+
     if (this.checked) {
       return;
     }
