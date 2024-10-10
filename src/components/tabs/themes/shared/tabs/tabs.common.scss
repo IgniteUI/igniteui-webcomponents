@@ -7,10 +7,6 @@ $theme: $material;
     background: var-get($theme, 'item-background');
 }
 
-[part='selected-indicator'] {
-    background: var-get($theme, 'indicator-color');
-}
-
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
     background: var-get($theme, 'button-background');
