@@ -2,7 +2,7 @@
 
 import { type CSSResult, html } from 'lit';
 import { configureTheme } from '../src/theming/config';
-import type { Decorator } from '@storybook/web-components';
+import type { Decorator, Preview } from '@storybook/web-components';
 import { withActions } from '@storybook/addon-actions/decorator';
 import { configureActions } from '@storybook/addon-actions';
 
@@ -41,84 +41,103 @@ const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
   }`;
 };
 
-export const globalTypes = {
-  theme: {
-    name: 'Theme',
-    description: 'Global theme for components',
-    defaultValue: 'bootstrap',
-    toolbar: {
-      icon: 'cog',
-      items: ['bootstrap', 'material', 'fluent', 'indigo'],
-      title: 'Theme',
-    },
-  },
-  variant: {
-    name: 'Variant',
-    description: 'Theme variant',
-    defaultValue: 'light',
-    toolbar: {
-      icon: 'mirror',
-      items: ['light', 'dark'],
-      title: 'Variant',
-    },
-  },
-  direction: {
-    name: 'Direction',
-    description: 'Component direction',
-    defaultValue: 'ltr',
-    toolbar: {
-      icon: 'accessibility',
-      items: ['ltr', 'rtl'],
-      title: 'Direction',
-    },
-  },
-  size: {
-    name: 'Size',
-    description: 'Component size',
-    defaultValue: 'default',
-    toolbar: {
-      icon: 'grow',
-      items: ['default', 'small', 'medium', 'large'],
-      title: 'Size',
-    },
-  },
-};
-
-export const parameters = {
-  backgrounds: {
-    disable: true,
-  },
-};
-
-export const loaders = [
-  async ({ globals }) => ({
-    theme: await getTheme(globals),
-  }),
-];
-
-const themeProvider: Decorator = (Story, context) => {
+const themeProvider: Decorator = (story, context) => {
   const { theme, variant, direction, size } = context.globals;
   configureTheme(theme, variant);
 
-  const styles = html`<style>
-    .docs-story,
-    .sb-main-padded {
+  const styles = html`
+    <style>
+      .docs-story,
+      .sb-main-padded {
         background: ${variant === 'light' ? '#fff' : '#000'};
         color: ${variant === 'light' ? '#000' : '#fff'};
-    }
+      }
 
-    #igc-story[dir='rtl'] {
-      --ig-dir: -1;
-    }
+      #igc-story[dir='rtl'] {
+        --ig-dir: -1;
+      }
 
-    ${context.loaded.theme}
-    ${getSize(size)}
-  </style>`;
+      ${context.loaded.theme}
+      ${getSize(size)}
+    </style>
+  `;
 
   return html`
     ${styles}
-    <div id="igc-story" dir=${direction ?? 'auto'}>${Story()}</div>
+    <div id="igc-story" dir=${direction ?? 'auto'}>${story()}</div>
   `;
 };
 
-export const decorators = [themeProvider, withActions];
+export default {
+  globalTypes: {
+    theme: {
+      name: 'Theme',
+      description: 'Global theme for components',
+      toolbar: {
+        icon: 'cog',
+        items: [
+          { value: 'bootstrap', title: 'Bootstrap' },
+          { value: 'fluent', title: 'Fluent' },
+          { value: 'indigo', title: 'Indigo' },
+          { value: 'material', title: 'Material' },
+        ],
+      },
+    },
+    variant: {
+      name: 'Variant',
+      description: 'Theme variant',
+      toolbar: {
+        icon: 'mirror',
+        items: [
+          {
+            value: 'light',
+            title: 'Light theme',
+          },
+          { value: 'dark', title: 'Dark theme' },
+        ],
+      },
+    },
+    direction: {
+      name: 'Direction',
+      description: 'Component direction',
+      toolbar: {
+        icon: 'accessibility',
+        items: [
+          { value: 'ltr', title: 'Left-to-right' },
+          { value: 'rtl', title: 'Right-to-left' },
+        ],
+      },
+    },
+    size: {
+      name: 'Size',
+      description: 'Component size',
+      toolbar: {
+        icon: 'grow',
+        items: [
+          { value: 'default', title: 'Default' },
+          { value: 'small', title: 'Small' },
+          { value: 'medium', title: 'Medium' },
+          { value: 'large', title: 'Large' },
+        ],
+      },
+    },
+  },
+  initialGlobals: {
+    theme: 'bootstrap',
+    variant: 'light',
+    direction: 'ltr',
+    size: 'default',
+  },
+  parameters: {
+    backgrounds: {
+      disable: true,
+    },
+  },
+  decorators: [themeProvider, withActions],
+  loaders: [
+    async (context) => {
+      const { theme, variant } = context.globals;
+      return { theme: getTheme({ theme, variant }) };
+    },
+  ],
+} satisfies Preview;

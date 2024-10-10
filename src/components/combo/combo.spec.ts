@@ -1,9 +1,12 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  runValidationContainerTests,
+} from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
@@ -1329,6 +1332,31 @@ describe('Combo', () => {
       expect(spec.element.value).to.eql(initial);
     });
 
+    it('should reset to the new default value after setAttribute() call (multiple)', async () => {
+      spec.element.setAttribute('value', JSON.stringify(['US01', 'US02']));
+      spec.element.value = [];
+
+      spec.reset();
+      expect(spec.element.value).to.eql(['US01', 'US02']);
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
+        spec.element.value
+      );
+    });
+
+    it('should reset to the new default value after setAttribute() call (single)', async () => {
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
+      spec.element.setAttribute('value', JSON.stringify(['US01']));
+      spec.element.value = [];
+
+      spec.reset();
+      expect(spec.element.value).to.eql(['US01']);
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
+        spec.element.value
+      );
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
@@ -1354,6 +1382,19 @@ describe('Combo', () => {
 
       spec.element.setCustomValidity('');
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 });

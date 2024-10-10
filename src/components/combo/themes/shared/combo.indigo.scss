@@ -15,13 +15,11 @@ $dropdown-theme: dropdown-theme.$indigo;
         padding-inline: 0;
     }
 
-    [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
-    }
+    ::part(helper-text) {
+        @include type-style('caption');
 
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(15px), auto);
     }
 }
 
@@ -42,16 +40,17 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
+    outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
+    padding: rem(3px);
 
-    igc-input::part(container) {
-        background: transparent;
-        border-inline-end-color: transparent;
+    igc-input {
+        --ig-theme: indigo;
+        --ig-size: var(--ig-size-medium);
     }
 
     igc-input::part(input) {
-        border-inline-end-color: transparent;
-
         &::selection {
             background: color(primary, 100);
         }
@@ -62,11 +61,18 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
+[part='filter-input'] {
+    padding: pad-inline(rem(12px));
+}
+
 :host(:focus-within) {
     igc-input::part(label) {
         color: var-get($input-theme, 'focused-secondary-color');
     }
+}
 
+:host(:hover),
+:host(:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus--border');
         color: var-get($theme, 'toggle-button-foreground-focus');
@@ -86,19 +92,10 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'disabled-text-color');
-    }
 
     igc-input::part(input)::selection {
         background: transparent;

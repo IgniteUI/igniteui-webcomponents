@@ -1,14 +1,16 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcRadioComponent, defineComponents } from '../../index.js';
-import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first, last } from '../common/util.js';
+import {
+  FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
+  isFocused,
+  runValidationContainerTests,
+  simulateClick,
+} from '../common/utils.spec.js';
+import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
   before(() => {
@@ -33,8 +35,10 @@ describe('Radio Component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      radio = await createRadioComponent();
-      input = radio.renderRoot.querySelector('input') as HTMLInputElement;
+      radio = await fixture<IgcRadioComponent>(
+        html`<igc-radio>${label}</igc-radio>`
+      );
+      input = radio.renderRoot.querySelector('input')!;
     });
 
     it('is initialized with the proper default values', async () => {
@@ -221,13 +225,17 @@ describe('Radio Component', () => {
       expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
       expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
     });
-  });
 
-  const createRadioComponent = (
-    template = `<igc-radio>${label}</igc-radio>`
-  ) => {
-    return fixture<IgcRadioComponent>(html`${unsafeStatic(template)}`);
-  };
+    it('should emit click event only once', async () => {
+      const eventSpy = spy(radio, 'click');
+
+      radio.addEventListener('click', eventSpy);
+      simulateClick(radio);
+
+      await elementUpdated(radio);
+      expect(eventSpy.callCount).to.equal(1);
+    });
+  });
 
   describe('Form integration', () => {
     const values = [1, 2, 3];
@@ -290,6 +298,22 @@ describe('Radio Component', () => {
 
       spec.reset();
       expect(spec.element.checked).to.be.false;
+    });
+
+    it('should reset to the new default value after setAttribute() call', () => {
+      first(radios).toggleAttribute('checked', true);
+      last(radios).toggleAttribute('checked', true);
+      first(radios).checked = true;
+
+      expect(last(radios).checked).to.be.false;
+
+      spec.reset();
+      expect(last(radios).checked).to.be.true;
+      expect(first(radios).checked).to.be.false;
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        last(radios).value
+      );
     });
 
     it('reflects disabled ancestor state', async () => {
@@ -359,6 +383,19 @@ describe('Radio Component', () => {
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
       spec.submitValidates();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('', async () => {
+      const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
+
+      runValidationContainerTests(IgcRadioComponent, testParameters);
     });
   });
 });

@@ -59,7 +59,8 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -70,13 +71,13 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -133,13 +134,13 @@ interface IgcMaskInputArgs {
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
@@ -154,39 +155,62 @@ type Story = StoryObj<IgcMaskInputArgs>;
 
 // endregion
 
-const Template = ({
-  name,
-  readOnly,
-  disabled,
-  required,
-  outlined,
-  valueMode,
-  label,
-  value,
-  placeholder,
-  mask,
-  prompt,
-}: IgcMaskInputArgs) => {
-  return html`<igc-mask-input
-    name=${ifDefined(name)}
-    placeholder=${ifDefined(placeholder)}
-    value=${ifDefined(value)}
-    mask=${ifDefined(mask)}
-    prompt=${ifDefined(prompt)}
-    label=${ifDefined(label)}
-    value-mode=${ifDefined(valueMode)}
-    ?readonly=${ifDefined(readOnly)}
-    ?outlined=${ifDefined(outlined)}
-    ?required=${ifDefined(required)}
-    ?disabled=${ifDefined(disabled)}
-  >
-    <igc-icon name="github" slot="prefix"></igc-icon>
-    <igc-icon name="github" slot="suffix"></igc-icon>
-    <span slot="helper-text">This is some helper text</span>
-  </igc-mask-input>`;
+export const Basic: Story = {
+  args: {
+    label: 'Default mask input',
+  },
+  render: (args) => html`
+    <igc-mask-input
+      name=${ifDefined(args.name)}
+      placeholder=${ifDefined(args.placeholder)}
+      value=${ifDefined(args.value)}
+      mask=${ifDefined(args.mask)}
+      prompt=${ifDefined(args.prompt)}
+      label=${ifDefined(args.label)}
+      value-mode=${ifDefined(args.valueMode)}
+      ?readonly=${args.readOnly}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+    ></igc-mask-input>
+  `,
 };
 
-export const Basic: Story = Template.bind({});
+export const Slots: Story = {
+  args: {
+    label: 'Mask input with slots',
+  },
+  render: (args) => html`
+    <igc-mask-input
+      name=${ifDefined(args.name)}
+      placeholder=${ifDefined(args.placeholder)}
+      value=${ifDefined(args.value)}
+      mask=${ifDefined(args.mask)}
+      prompt=${ifDefined(args.prompt)}
+      label=${ifDefined(args.label)}
+      value-mode=${ifDefined(args.valueMode)}
+      ?readonly=${args.readOnly}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+    >
+      <igc-icon name="github" slot="prefix"></igc-icon>
+      <igc-icon name="github" slot="suffix"></igc-icon>
+      <span slot="helper-text">This is some helper text</span>
+    </igc-mask-input>
+  `,
+};
+
+export const Validation: Story = {
+  render: () => html`
+    <igc-mask-input label="Mask pattern validation" mask="(+35\\9) 000-000-000">
+      <p slot="helper-text">Your telephone number</p>
+      <p slot="bad-input">Please enter a valid telephone number</p>
+    </igc-mask-input>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),

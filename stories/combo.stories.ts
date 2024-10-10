@@ -115,7 +115,8 @@ const metadata: Meta<IgcComboComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -126,13 +127,13 @@ const metadata: Meta<IgcComboComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -178,13 +179,13 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
@@ -379,7 +380,10 @@ export const Form: Story = {
             value-key="id"
             display-key="name"
             required
-          ></igc-combo>
+          >
+            <div slot="helper-text">Select a value</div>
+            <div slot="value-missing">This field is required!</div>
+          </igc-combo>
         </fieldset>
 
         ${formControls()}

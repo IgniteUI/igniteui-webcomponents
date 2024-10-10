@@ -1,0 +1,87 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    background: var-get($theme, 'slide-background');
+}
+
+igc-button::part(base) {
+    --icon-color: var-get($theme, 'button-arrow-color');
+
+    color: var-get($theme, 'button-arrow-color');
+    background: var-get($theme, 'button-background');
+    border: rem(1px) solid var-get($theme, 'button-border-color');
+    box-shadow: var-get($theme, 'button-elevation');
+    border-radius: var(--navigation-border-radius);
+
+    &:hover {
+        --icon-color-hover: var-get($theme, 'button-hover-arrow-color');
+
+        color: var-get($theme, 'button-hover-arrow-color');
+        background: var-get($theme, 'button-hover-background');
+        border-color: var-get($theme, 'button-hover-border-color');;
+    }
+}
+
+igc-button::part(focused),
+igc-button::part(focused):hover {
+    border: rem(2px) solid var-get($theme, 'button-focus-border-color');
+    color: var-get($theme, 'button-focus-border-color');
+}
+
+igc-button[disabled]::part(base) {
+    --disabled-icon-color: var-get($theme, 'button-disabled-arrow-color');
+
+    color: var-get($theme, 'button-disabled-arrow-color');
+    background: var-get($theme, 'button-disabled-background');
+    border-color: var-get($theme, 'button-disabled-border-color');
+    box-shadow: none;
+}
+
+[part~='indicators'] {
+    background: var-get($theme, 'indicator-background');
+    box-shadow: var-get($theme, 'button-elevation');
+    border-radius: var(--navigation-border-radius);
+
+    div:focus-visible {
+        outline-style: none;
+    }
+}
+
+[part='label indicators'],
+[part='label indicators start'] {
+    box-shadow: none;
+    border-radius: rem(4px);
+    color: var-get($theme, 'indicator-color');
+    background: var-get($theme, 'label-indicator-background');
+}
+
+[part~='dot'] {
+    border: rem(2px) solid var-get($theme, 'indicator-border-color');
+
+    &::after {
+        background: var-get($theme, 'indicator-dot-color');
+    }
+
+    &:hover {
+        border-color: var-get($theme, 'indicator-active-border-color');
+    }
+}
+
+[part='dot active'] {
+    border: rem(2px) solid var(--indicator-active-color);
+
+    &::after {
+        background: var(--indicator-active-color);
+    }
+
+    &:hover {
+        border-color: var(--indicator-active-color);
+
+        &::after {
+            background: var(--indicator-active-color);
+        }
+    }
+}

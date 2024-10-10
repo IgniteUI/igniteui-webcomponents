@@ -11,16 +11,12 @@ $dropdown-theme: dropdown-theme.$material;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
 
-    [part='helper-text'] {
-        margin-top: rem(5px);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
-    }
-
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         @include type-style('caption');
 
-        color: var-get($theme, 'helper-text-color');
-        line-height: 1;
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(18px), auto);
+        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 
     ::slotted([slot='prefix']),
@@ -38,15 +34,28 @@ $dropdown-theme: dropdown-theme.$material;
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
     igc-input::part(container) {
         background: transparent;
+        border-inline-start: 0;
         border-inline-end-color: transparent;
+        border-block-start: 0;
+        border-radius: 0;
+    }
+
+    igc-input::part(start) {
+        display: none;
     }
 
     igc-input::part(input) {
+        border-radius: 0;
+        padding: 0;
+        border-inline-start: 0;
         border-inline-end-color: transparent;
+        border-block-start: 0;
+        box-shadow: none;
 
         &::selection {
             background: color(primary, 100);
@@ -68,6 +77,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
         background: var-get($theme, 'toggle-button-background-focus');
     }
 }
@@ -84,19 +94,12 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     igc-input::part(label),
-    igc-input::part(input)::placeholder,
-    ::slotted([slot='helper-text']) {
+    igc-input::part(input)::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 
@@ -126,3 +129,4 @@ $dropdown-theme: dropdown-theme.$material;
         border-top-color: transparent;
     }
 }
+

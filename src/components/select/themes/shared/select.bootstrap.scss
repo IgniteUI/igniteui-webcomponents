@@ -10,14 +10,12 @@ $input-theme: input-theme.$bootstrap;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    [part='helper-text'] {
-        margin-top: rem(4px);
-    }
-
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         @include type-style('body-2');
 
         color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: rem(4px);
     }
 }
 
@@ -41,15 +39,9 @@ $input-theme: input-theme.$bootstrap;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
-    ::slotted([slot='helper-text']) {
+    igc-validator {
         color: var-get($theme, 'disabled-text-color');
     }
 

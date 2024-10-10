@@ -12,6 +12,17 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
     font-weight: 600;
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(16px);
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+}
+
+[part~='base'] {
+    gap: rem(16px);
 }
 
 [part~='control'] {

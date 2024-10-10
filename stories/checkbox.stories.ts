@@ -33,7 +33,8 @@ const metadata: Meta<IgcCheckboxComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -44,13 +45,13 @@ const metadata: Meta<IgcCheckboxComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -88,13 +89,13 @@ export default metadata;
 interface IgcCheckboxArgs {
   /** Draws the checkbox in indeterminate state. */
   indeterminate: boolean;
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** The value attribute of the control. */
   value: string;
@@ -150,15 +151,20 @@ export const Form: Story = {
 
         <fieldset>
           <legend>Required section</legend>
-          <igc-checkbox required name="required-checkbox"
-            >Required checkbox</igc-checkbox
-          >
+          <igc-checkbox required name="required-checkbox">
+            Required checkbox
+            <div slot="value-missing">This field is required!</div>
+          </igc-checkbox>
         </fieldset>
 
         <fieldset>
           <legend>Indeterminate with required state</legend>
           <igc-checkbox name="required-indeterminate" indeterminate required>
             Are you sure?
+            <div slot="helper-text">
+              You do want to check me before submit..
+            </div>
+            <div slot="invalid">Mhm, nope, not gonna happen!</div>
           </igc-checkbox>
         </fieldset>
 

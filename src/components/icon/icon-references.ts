@@ -112,6 +112,10 @@ addIcon('remove', {
     name: 'chip_cancel',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_cancel',
+    collection: 'internal',
+  },
 });
 addIcon('input_clear', {
   default: {
@@ -125,10 +129,6 @@ addIcon('input_clear', {
 });
 addIcon('input_expand', {
   default: {
-    name: 'arrow_drop_down',
-    collection: 'internal',
-  },
-  material: {
     name: 'keyboard_arrow_down',
     collection: 'internal',
   },
@@ -139,10 +139,6 @@ addIcon('input_expand', {
 });
 addIcon('input_collapse', {
   default: {
-    name: 'arrow_drop_up',
-    collection: 'internal',
-  },
-  material: {
     name: 'keyboard_arrow_up',
     collection: 'internal',
   },
@@ -182,6 +178,20 @@ addIcon('today', {
     name: 'calendar_today',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_calendar_today',
+    collection: 'internal',
+  },
+});
+addIcon('clock', {
+  default: {
+    name: 'access_time',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_access_time',
+    collection: 'internal',
+  },
 });
 addIcon('star_filled', {
   default: {
@@ -200,10 +210,18 @@ addIcon('prev', {
     name: 'navigate_before',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
 });
 addIcon('next', {
   default: {
     name: 'navigate_next',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
     collection: 'internal',
   },
 });
@@ -224,6 +242,36 @@ addIcon('tree_collapse', {
   },
   indigo: {
     name: 'indigo_chevron_down',
+    collection: 'internal',
+  },
+});
+addIcon('carousel_prev', {
+  default: {
+    name: 'keyboard_arrow_left',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_left',
+    collection: 'internal',
+  },
+});
+addIcon('carousel_next', {
+  default: {
+    name: 'keyboard_arrow_right',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_chevron_right',
+    collection: 'internal',
+  },
+});
+addIcon('error', {
+  default: {
+    name: 'error',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_error',
     collection: 'internal',
   },
 });

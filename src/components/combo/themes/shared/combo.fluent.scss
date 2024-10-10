@@ -9,29 +9,50 @@ $dropdown-theme: dropdown-theme.$fluent;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --combo-size: var(--component-size);
 
-    ::slotted([slot='helper-text']) {
+    ::part(helper-text) {
         @include type-style('caption');
 
-        display: block;
-        padding: 0;
-        margin-top: rem(5px);
-        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(5px);
+        grid-auto-rows: minmax(rem(18px), auto);
     }
 }
 
 [part='filter-input'] {
-    padding: pad(2px, 4px, 8px);
+    padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
 [part='list-wrapper'] {
+    background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
-    igc-input::part(suffix) {
+    igc-input::part(container) {
         background: transparent;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        border-radius: 0;
+    }
+
+    igc-input::part(start) {
+        display: none;
     }
 
     igc-input::part(input) {
+        border-radius: 0;
+        padding: 0;
+        border-inline-start: 0;
+        border-inline-end-color: transparent;
+        border-block-start: 0;
+        box-shadow: none;
         height: var(--size);
+
+        &::selection {
+            background: color(primary, 100);
+        }
+    }
+
+    igc-input::part(suffix) {
+        background: transparent;
     }
 }
 
@@ -59,12 +80,6 @@ $dropdown-theme: dropdown-theme.$fluent;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
 :host([invalid]:focus-within) {
     igc-input::part(input) {
         height: calc(var(--size) - #{rem(4px)});
@@ -87,8 +102,7 @@ $dropdown-theme: dropdown-theme.$fluent;
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     igc-input::part(label),
-    igc-input::part(input)::placeholder,
-    ::slotted([slot='helper-text']) {
+    igc-input::part(input)::placeholder {
         color: var-get($theme, 'disabled-text-color');
     }
 

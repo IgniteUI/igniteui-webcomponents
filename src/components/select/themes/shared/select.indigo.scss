@@ -12,8 +12,11 @@ $input-theme: input-theme.$indigo;
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
 
-    ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'helper-text-color');
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(15px), auto);
     }
 
     igc-input::part(input) {
@@ -23,15 +26,11 @@ $input-theme: input-theme.$indigo;
     igc-input::part(container) {
         padding-inline: 0;
     }
-
-    [part='helper-text'] {
-        margin-top: rem(6px);
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
-    }
 }
 
 [part='base'] {
-    box-shadow: var(--ig-elevation-3);
+    outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
+    padding: rem(3px);
 }
 
 :host(:focus-within) {
@@ -48,14 +47,19 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
+:host([invalid]:focus-within) {
+    igc-input::part(label) {
         color: var-get($theme, 'error-secondary-color');
     }
 }
 
-:host([invalid]:focus-within) {
-    igc-input::part(label) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
+
+    ::part(validation-icon) {
         color: var-get($theme, 'error-secondary-color');
     }
 }
@@ -63,10 +67,6 @@ $input-theme: input-theme.$indigo;
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    ::slotted([slot='helper-text']) {
         color: var-get($theme, 'disabled-text-color');
     }
 

@@ -1,6 +1,6 @@
 import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { html, render } from 'lit';
 
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry.js';
@@ -139,7 +139,8 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -150,13 +151,13 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -245,13 +246,13 @@ interface IgcTextareaArgs {
    * when it is defined.
    */
   validateOnly: boolean;
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
 }
 type Story = StoryObj<IgcTextareaArgs>;
@@ -313,6 +314,45 @@ export const ProjectContent: Story = {
   },
 };
 
+function setMaxChars(value = 0) {
+  render(
+    html`You have used ${value}/255 characters`,
+    document.getElementById('max-chars')!
+  );
+}
+
+function getInput(event: CustomEvent<string>) {
+  setMaxChars(event.detail.length);
+}
+
+export const Validation: Story = {
+  play: async (args) => {
+    setMaxChars();
+  },
+  render: () => html`
+    <fieldset>
+      <igc-textarea label="Required" required>
+        <p slot="value-missing">This field is required!</p>
+      </igc-textarea>
+    </fieldset>
+
+    <fieldset>
+      <igc-textarea
+        resize="auto"
+        @igcInput=${getInput}
+        label="Max characters"
+        required
+        maxlength="255"
+        validate-only
+      >
+        <p id="max-chars" slot="helper-text"></p>
+        <p slot="value-missing">This field is required!</p>
+        <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
+      </igc-textarea>
+    </fieldset>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
@@ -333,7 +373,7 @@ export const Form: Story = {
             value="Hello world!"
           >
             <p slot="helper-text">
-              Initial value bound through property and no validation.Resetting
+              Initial value bound through property and no validation. Resetting
               the form will restore the initial value.
             </p>
           </igc-textarea>
@@ -344,8 +384,8 @@ export const Form: Story = {
           >
             Hello world!
             <p slot="helper-text">
-              Initial value bound through text projection and no
-              validation.Resetting the form will restore the initial value.
+              Initial value bound through text projection and no validation.
+              Resetting the form will restore the initial value.
             </p>
           </igc-textarea>
         </fieldset>

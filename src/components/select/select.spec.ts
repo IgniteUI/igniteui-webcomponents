@@ -4,7 +4,6 @@ import {
   expect,
   fixture,
   html,
-  nextFrame,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
@@ -22,9 +21,12 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   FormAssociatedTestBed,
+  type ValidationContainerTestsParams,
   isFocused,
+  runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
+  simulateScroll,
 } from '../common/utils.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectHeaderComponent from './select-header.js';
@@ -311,13 +313,6 @@ describe('Select', () => {
   describe('Scroll strategy', () => {
     let container: HTMLDivElement;
 
-    const scrollBy = async (amount: number) => {
-      container.scrollTo({ top: amount });
-      container.dispatchEvent(new Event('scroll'));
-      await elementUpdated(select);
-      await nextFrame();
-    };
-
     beforeEach(async () => {
       container = await fixture(createScrollableSelectParent());
       select = container.querySelector(IgcSelectComponent.tagName)!;
@@ -325,7 +320,7 @@ describe('Select', () => {
 
     it('`scroll` behavior', async () => {
       await openSelect();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(select.open).to.be.true;
     });
@@ -335,7 +330,7 @@ describe('Select', () => {
 
       select.scrollStrategy = 'close';
       await openSelect();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(select.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
@@ -345,7 +340,7 @@ describe('Select', () => {
     it('`block behavior`', async () => {
       select.scrollStrategy = 'block';
       await openSelect();
-      await scrollBy(200);
+      await simulateScroll(container, { top: 200 });
 
       expect(select.open).to.be.true;
     });
@@ -1217,6 +1212,31 @@ describe('Select', () => {
     });
   });
 
+  describe('issue-1123', () => {
+    beforeEach(async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select>
+          <igc-select-item value="Orange"
+            ><span id="click-target">Orange</span></igc-select-item
+          >
+          <igc-select-item value="Apple"><span>Apple</span></igc-select-item>
+          <igc-select-item value="Banana">Banana</igc-select-item>
+          <igc-select-item value="Mango">Mango</igc-select-item>
+        </igc-select>
+      `);
+    });
+
+    it('', async () => {
+      await openSelect();
+
+      const inner = document.getElementById('click-target')!;
+      simulateClick(inner);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('Orange');
+    });
+  });
+
   describe('Form integration', () => {
     const spec = new FormAssociatedTestBed<IgcSelectComponent>(
       createBasicSelect()
@@ -1242,11 +1262,23 @@ describe('Select', () => {
       );
     });
 
-    it('is correctly reset on form reset', async () => {
+    it('is correctly reset on form reset', () => {
       spec.element.value = 'spec';
 
       spec.reset();
       expect(spec.element.value).to.equal(undefined);
+    });
+
+    it('is correctly reset on form reset after setAttribute() call', () => {
+      spec.element.setAttribute('value', 'implementation');
+      spec.element.value = 'spec';
+
+      spec.reset();
+
+      expect(spec.element.value).to.equal('implementation');
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
     });
 
     it('is correctly reset of form reset with selection through attribute on item', async () => {
@@ -1296,28 +1328,16 @@ describe('Select', () => {
     });
   });
 
-  describe('issue-1123', () => {
-    beforeEach(async () => {
-      select = await fixture<IgcSelectComponent>(html`
-        <igc-select>
-          <igc-select-item value="Orange"
-            ><span id="click-target">Orange</span></igc-select-item
-          >
-          <igc-select-item value="Apple"><span>Apple</span></igc-select-item>
-          <igc-select-item value="Banana">Banana</igc-select-item>
-          <igc-select-item value="Mango">Mango</igc-select-item>
-        </igc-select>
-      `);
-    });
-
+  describe('Validation message slots', () => {
     it('', async () => {
-      await openSelect();
+      const testParameters: ValidationContainerTestsParams<IgcSelectComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['customError'] }, // custom-error slot
+          { slots: ['invalid'], props: { required: true } }, // invalid slot
+        ];
 
-      const inner = document.getElementById('click-target')!;
-      simulateClick(inner);
-      await elementUpdated(select);
-
-      expect(select.value).to.equal('Orange');
+      runValidationContainerTests(IgcSelectComponent, testParameters);
     });
   });
 });

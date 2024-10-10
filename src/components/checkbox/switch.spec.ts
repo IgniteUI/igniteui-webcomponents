@@ -6,9 +6,9 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import { IgcSwitchComponent, defineComponents } from '../../index.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
   before(() => {
@@ -244,6 +244,13 @@ describe('Switch', () => {
 
       spec.reset();
       expect(spec.element.checked).to.be.false;
+    });
+
+    it('is correctly reset on form reset after setAttribute() call', () => {
+      spec.element.setAttribute('checked', 'true');
+
+      spec.reset();
+      expect(spec.element.checked).to.be.true;
     });
 
     it('reflects disabled ancestor state', async () => {

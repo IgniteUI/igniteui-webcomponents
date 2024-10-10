@@ -12,8 +12,7 @@
     position: relative;
     cursor: pointer;
     outline-style: none;
-    padding-inline: pad-inline(rem(6px), rem(12px), rem(24px));
-    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
+    padding-inline: pad-inline(rem(16px), rem(20px), rem(24px));
 }
 
 :host([disabled]) {
@@ -43,11 +42,11 @@
 [name='prefix']::slotted(*) {
     --component-size: var(--dropdown-size) !important;
 
-    margin-inline-end: pad(rem(16px));
+    margin-inline-end: pad(rem(8px));
 }
 
 [name='suffix']::slotted(*) {
     --component-size: var(--dropdown-size) !important;
 
-    margin-inline-start: pad(rem(16px));
+    margin-inline-start: pad(rem(8px));
 }

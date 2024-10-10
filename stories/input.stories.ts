@@ -103,7 +103,8 @@ const metadata: Meta<IgcInputComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -114,13 +115,13 @@ const metadata: Meta<IgcInputComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -192,13 +193,13 @@ interface IgcInputArgs {
    * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
    */
   validateOnly: boolean;
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
@@ -213,49 +214,121 @@ type Story = StoryObj<IgcInputArgs>;
 
 // endregion
 
-const Template = ({
-  type,
-  label = 'Sample Label',
-  outlined,
-  autofocus,
-  autocomplete,
-  minLength,
-  maxLength,
-  step,
-  value,
-  placeholder,
-  readOnly,
-  required,
-  disabled,
-  min,
-  max,
-  invalid,
-}: IgcInputArgs) => html`
-  <igc-input
-    type=${type}
-    label=${label}
-    placeholder=${ifDefined(placeholder)}
-    minlength=${ifDefined(minLength)}
-    maxlength=${ifDefined(maxLength)}
-    step=${ifDefined(step)}
-    autocomplete=${ifDefined(autocomplete)}
-    min=${ifDefined(min)}
-    max=${ifDefined(max)}
-    .value=${value ?? ''}
-    ?autofocus=${autofocus}
-    ?invalid=${invalid}
-    .readOnly=${readOnly}
-    .outlined=${outlined}
-    .required=${required}
-    .disabled=${disabled}
-  >
-    <igc-icon name="github" slot="prefix"></igc-icon>
-    <igc-icon name="github" slot="suffix"></igc-icon>
-    <span slot="helper-text">This is some helper text</span>
-  </igc-input>
-`;
+export const Basic: Story = {
+  args: {
+    label: 'Default input',
+  },
+  render: (args) => html`
+    <igc-input
+      autocomplete=${ifDefined(args.autocomplete)}
+      name=${ifDefined(args.name)}
+      label=${ifDefined(args.label)}
+      type=${ifDefined(args.type)}
+      placeholder=${ifDefined(args.placeholder)}
+      value=${ifDefined(args.value)}
+      min=${ifDefined(args.min)}
+      max=${ifDefined(args.max)}
+      minlength=${ifDefined(args.minLength)}
+      maxlength=${ifDefined(args.maxLength)}
+      step=${ifDefined(args.step)}
+      ?autofocus=${args.autofocus}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?outlined=${args.outlined}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?validate-only=${args.validateOnly}
+    ></igc-input>
+  `,
+};
 
-export const Basic: Story = Template.bind({});
+export const Slots: Story = {
+  args: {
+    label: 'Input with slots',
+  },
+  render: (args) => html`
+    <igc-input
+      autocomplete=${ifDefined(args.autocomplete)}
+      name=${ifDefined(args.name)}
+      label=${ifDefined(args.label)}
+      type=${ifDefined(args.type)}
+      placeholder=${ifDefined(args.placeholder)}
+      value=${ifDefined(args.value)}
+      min=${ifDefined(args.min)}
+      max=${ifDefined(args.max)}
+      minlength=${ifDefined(args.minLength)}
+      maxlength=${ifDefined(args.maxLength)}
+      step=${ifDefined(args.step)}
+      ?autofocus=${args.autofocus}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?outlined=${args.outlined}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?validate-only=${args.validateOnly}
+    >
+      <igc-icon name="github" slot="prefix"></igc-icon>
+      <igc-icon name="github" slot="suffix"></igc-icon>
+      <span slot="helper-text">This is some helper text</span>
+    </igc-input>
+  `,
+};
+
+export const Validation: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <form @submit=${formSubmitHandler}>
+      <fieldset>
+        <igc-input
+          label="Validate without validation slots and helper text"
+          minlength="3"
+        >
+          <p slot="helper-text">Blah, blah, blah...</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
+        <igc-input label="Username" required>
+          <p slot="helper-text">The username you will use in the platform</p>
+          <p slot="value-missing">The username is required!</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
+        <igc-input id="customError" label="Email" type="email" required>
+          <p slot="helper-text">
+            A valid email for restoring credentials
+            <strong>(not show in your profile)!</strong>
+          </p>
+          <p slot="value-missing">The email is required!</p>
+          <p slot="type-mismatch">Enter a valid email address!</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
+        <igc-input
+          label="Password"
+          type="password"
+          required
+          minlength="8"
+          pattern="^[a-zA-Z0-9]{8,}"
+        >
+          <p slot="helper-text">The password for your account</p>
+          <p slot="value-missing">The password is required!</p>
+          <p slot="too-short">
+            The password needs to be at least 8 characters.
+          </p>
+          <p slot="pattern-mismatch">
+            The password does not match the requirements. Please, enter at least
+            8 alphanumerical characters.
+          </p>
+        </igc-input>
+      </fieldset>
+      ${formControls()}
+    </form>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {

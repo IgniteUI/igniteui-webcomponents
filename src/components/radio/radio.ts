@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, type TemplateResult, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -12,18 +12,19 @@ import {
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
   createCounter,
+  isEmpty,
   isLTR,
   last,
   partNameMap,
   wrap,
 } from '../common/util.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
@@ -48,6 +49,10 @@ export interface IgcRadioEventMap {
  * @element igc-radio
  *
  * @slot - The radio label.
+ * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
  *
@@ -56,7 +61,7 @@ export interface IgcRadioEventMap {
  * @csspart label - The radio control label.
  */
 @themes(all)
-export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
+export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
@@ -64,7 +69,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcRadioComponent);
+    registerComponent(IgcRadioComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
@@ -112,8 +117,19 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     return getGroup(this).checked;
   }
 
-  protected override setDefaultValue(): void {
-    this._defaultValue = this === last(this._checkedRadios);
+  @property({ type: Boolean, reflect: true })
+  public override set required(value: boolean) {
+    super.required = value;
+
+    if (this.hasUpdated) {
+      for (const radio of this._siblings) {
+        radio._validate();
+      }
+    }
+  }
+
+  public override get required(): boolean {
+    return this._required;
   }
 
   /**
@@ -124,7 +140,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   public set value(value: string) {
     this._value = value;
     if (this._checked) {
-      this.setFormValue(this._value || 'on');
+      this._setFormValue(this._value || 'on');
     }
   }
 
@@ -172,21 +188,16 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => {
-      this.hideLabel = this.label.length < 1;
+      this.hideLabel = isEmpty(this.label);
     });
     return root;
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateValidity();
   }
 
   protected override async firstUpdated() {
     await this.updateComplete;
     this._checked && this === last(this._checkedRadios)
       ? this._updateCheckedState()
-      : this.updateValidity();
+      : this._updateValidity();
   }
 
   /** Simulates a click on the radio control. */
@@ -211,53 +222,33 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
    * As long as `message` is not empty, the control is considered invalid.
    */
   public override setCustomValidity(message: string): void {
-    const radios = this._radios;
-
-    for (const radio of radios) {
-      radio.updateValidity(message);
-      radio.setInvalidState();
-    }
-  }
-
-  @watch('required', { waitUntilFirstUpdate: true })
-  protected override requiredChange(): void {
-    const radios = this._radios;
-
-    for (const radio of radios) {
-      radio.updateValidity();
-      radio.setInvalidState();
+    for (const radio of this._radios) {
+      radio._validate(message);
     }
   }
 
   private _updateCheckedState() {
-    const siblings = this._siblings;
-
-    this.setFormValue(this.value || 'on');
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(this.value || 'on');
+    this._validate();
 
     this._tabIndex = 0;
     this.input?.focus();
 
-    for (const radio of siblings) {
+    for (const radio of this._siblings) {
       radio.checked = false;
       radio._tabIndex = -1;
-      radio.updateValidity();
-      radio.setInvalidState();
+      radio._validate();
     }
   }
 
   private _updateUncheckedState() {
-    const siblings = this._siblings;
-
-    this.setFormValue(null);
-    this.updateValidity();
-    this.setInvalidState();
+    this._setFormValue(null);
+    this._validate();
 
     this._tabIndex = -1;
 
-    for (const radio of siblings) {
-      radio.updateValidity();
+    for (const radio of this._siblings) {
+      radio._updateValidity();
     }
   }
 
@@ -268,13 +259,14 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 
   /** Called after a form reset callback to restore default keyboard navigation. */
   private _resetTabIndexes() {
-    const radios = this._radios;
-    for (const radio of radios) {
+    for (const radio of this._radios) {
       radio._tabIndex = 0;
     }
   }
 
-  protected handleClick() {
+  protected handleClick(event: PointerEvent) {
+    event.stopPropagation();
+
     if (this.checked) {
       return;
     }
@@ -302,6 +294,10 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     radio.emitEvent('igcChange', {
       detail: { checked: radio.checked, value: radio.value },
     });
+  }
+
+  protected renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected override render() {
@@ -347,6 +343,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           <slot></slot>
         </span>
       </label>
+      ${this.renderValidatorContainer()}
     `;
   }
 }

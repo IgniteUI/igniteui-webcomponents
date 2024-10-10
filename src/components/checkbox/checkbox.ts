@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { type TemplateResult, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -6,6 +6,7 @@ import { live } from 'lit/directives/live.js';
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { all } from './themes/checkbox-themes.js';
 import { styles } from './themes/checkbox.base.css.js';
@@ -17,6 +18,10 @@ import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.j
  * @element igc-checkbox
  *
  * @slot - The checkbox label.
+ * @slot helper-text - Renders content below the input.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcChange - Emitted when the control's checked state changes.
  *
@@ -32,7 +37,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcCheckboxComponent);
+    registerComponent(IgcCheckboxComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
@@ -50,9 +55,13 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     return getThemeController(this)?.theme === 'indigo';
   }
 
-  protected override handleClick() {
+  protected override handleClick(event: PointerEvent) {
     this.indeterminate = false;
-    super.handleClick();
+    super.handleClick(event);
+  }
+
+  protected renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
   protected renderStandard() {
@@ -76,12 +85,13 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const checked = this.checked;
 
     return html`
       <label
         part=${partNameMap({
           base: true,
-          checked: this.checked,
+          checked,
           focused: this._kbFocus.focused,
         })}
         for=${this.inputId}
@@ -94,30 +104,29 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           value=${ifDefined(this.value)}
           .required=${this.required}
           .disabled=${this.disabled}
-          .checked=${live(this.checked)}
+          .checked=${live(checked)}
           .indeterminate=${live(this.indeterminate)}
-          aria-checked=${this.indeterminate && !this.checked
-            ? 'mixed'
-            : this.checked}
+          aria-checked=${this.indeterminate && !checked ? 'mixed' : checked}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked: this.checked })}>
-          <span part=${partNameMap({ indicator: true, checked: this.checked })}>
+        <span part=${partNameMap({ control: true, checked })}>
+          <span part=${partNameMap({ indicator: true, checked })}>
             ${this._isIndigo ? this.renderIndigo() : this.renderStandard()}
           </span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked: this.checked })}
+          part=${partNameMap({ label: true, checked })}
           id=${this.labelId}
         >
           <slot></slot>
         </span>
       </label>
+      ${this.renderValidatorContainer()}
     `;
   }
 }

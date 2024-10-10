@@ -1,11 +1,12 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { isEmpty, partNameMap } from '../common/util.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -21,6 +22,10 @@ import { maskValidators } from './validators.js';
  * @slot prefix - Renders content before the input
  * @slot suffix - Renders content after the input
  * @slot helper-text - Renders content below the input
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot bad-input - Renders content when a required mask pattern validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input
  * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
@@ -37,7 +42,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcMaskInputComponent);
+    registerComponent(IgcMaskInputComponent, IgcValidationContainerComponent);
   }
 
   protected override get __validators() {
@@ -93,21 +98,18 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.updateValidity();
-  }
-
-  protected override setDefaultValue(): void {
-    this._defaultValue = this._value;
+  protected override _setDefaultValue(
+    _: string | null,
+    current: string | null
+  ): void {
+    this._defaultValue = current;
   }
 
   protected updateFormValue() {
     this.valueMode === 'raw'
-      ? this.setFormValue(this.value || null, this.value)
-      : this.setFormValue(this.maskedValue || null, this.maskedValue);
-    this.updateValidity();
-    this.setInvalidState();
+      ? this._setFormValue(this.value || null)
+      : this._setFormValue(this.maskedValue || null);
+    this._validate();
   }
 
   @watch('prompt')
@@ -209,6 +211,9 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
+        aria-describedby=${ifDefined(
+          isEmpty(this._helperText) ? nothing : 'helper-text'
+        )}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         @keydown=${this.handleKeydown}
       />

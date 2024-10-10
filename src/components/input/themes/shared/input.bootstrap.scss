@@ -8,6 +8,14 @@ $theme: $bootstrap;
     --input-size: var(--component-size);
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
+
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: rem(4px);
+    }
 }
 
 [part~='container'] {
@@ -126,12 +134,6 @@ $theme: $bootstrap;
     }
 }
 
-[part='helper-text'] {
-    @include type-style('body-2');
-
-    margin-top: rem(4px);
-}
-
 :host(:focus-within) {
     [part~='input'] {
         color: var-get($theme, 'input-prefix-color--focused');
@@ -183,8 +185,8 @@ $theme: $bootstrap;
         border-color: var-get($theme, 'disabled-border-color');
     }
 
-    [part='helper-text'],
-    [part='label'] {
+    [part='label'],
+    ::part(helper-text) {
         color: var-get($theme, 'disabled-text-color')
     }
 }

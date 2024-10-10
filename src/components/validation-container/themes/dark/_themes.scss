@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/validator' as *;
+
+$material: digest-schema($dark-material-validator);
+$bootstrap: digest-schema($dark-bootstrap-validator);
+$fluent: digest-schema($dark-fluent-validator);
+$indigo: digest-schema($dark-indigo-validator);

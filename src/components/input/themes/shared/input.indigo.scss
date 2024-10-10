@@ -22,6 +22,14 @@ $transition-duration: .25s;
         --size: var(--input-icon) !important;
     }
 
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+        grid-auto-rows: minmax(rem(15px), auto);
+    }
+
     [part='prefix'],
     [part='suffix'] {
         // transition-duration is needed here because of a bug in safari
@@ -109,10 +117,6 @@ $transition-duration: .25s;
     [part~='suffixed'] {
         padding-inline-end: 0;
     }
-
-    [part='helper-text'] {
-        margin-top: rem(4px);
-    }
 }
 
 :host(:focus-within),
@@ -176,10 +180,6 @@ $transition-duration: .25s;
             background: var-get($theme, 'error-secondary-color');
         }
     }
-
-    [part='helper-text'] {
-        color: var-get($theme, 'helper-text-color');
-    }
 }
 
 :host([type='search']) {
@@ -210,7 +210,7 @@ $transition-duration: .25s;
     [part='suffix'],
     [part='label'],
     [part~='input'],
-    [part='helper-text'] {
+    ::part(helper-text) {
         color: var-get($theme, 'disabled-text-color');
     }
 }

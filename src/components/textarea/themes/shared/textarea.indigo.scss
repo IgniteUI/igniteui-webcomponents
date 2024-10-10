@@ -13,6 +13,15 @@ $theme: $indigo;
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
     }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(15px), auto);
+        margin-block-start: rem(4px);
+    }
+
 }
 
 :host(:hover) {
@@ -111,12 +120,6 @@ textarea {
     padding-inline-end: 0;
 }
 
-[part~='helper-text'] {
-    @include type-style('caption');
-
-    padding-block-start: rem(4px);
-}
-
 [part~='prefixed'] {
     [part~='prefix'] {
         border-start-start-radius: var-get($theme, 'border-border-radius');
@@ -136,16 +139,16 @@ textarea {
 
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
+    ::part(validation-icon) {
+        color: #{var-get($theme, 'error-secondary-color')};
+    }
+
     [part~='container'] {
         caret-color: initial;
 
         &::after {
             border-block-end: rem(1px) solid var-get($theme, 'error-secondary-color');
         }
-    }
-
-    [part~='helper-text'] {
-        color: var-get($theme, 'helper-text-color');
     }
 }
 
