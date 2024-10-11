@@ -38,13 +38,13 @@ const metadata: Meta<IgcSliderComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     min: {
       type: 'number',
@@ -75,13 +75,13 @@ const metadata: Meta<IgcSliderComponent> = {
       description:
         'Marks the slider track as discrete so it displays the steps.\nIf the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideTooltip: {
       type: 'boolean',
       description: 'Hides the thumb tooltip.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     step: {
       type: 'number',
@@ -94,14 +94,14 @@ const metadata: Meta<IgcSliderComponent> = {
       description:
         'The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     secondaryTicks: {
       type: 'number',
       description:
         'The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
       type: '"mirror" | "start" | "end"',
@@ -114,13 +114,13 @@ const metadata: Meta<IgcSliderComponent> = {
       type: 'boolean',
       description: 'Hides the primary tick labels.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideSecondaryLabels: {
       type: 'boolean',
       description: 'Hides the secondary tick labels.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     locale: {
       type: 'string',

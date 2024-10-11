@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html, render } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { IgcRadioGroupComponent, defineComponents } from '../src/index.js';
@@ -99,31 +99,7 @@ export const Form: Story = {
             )}
           </igc-radio-group>
         </fieldset>
-        <fieldset>
-          <legend>Same name scattered outside of group</legend>
-          <igc-radio name="scattered-fruit" value="apple">Apple</igc-radio>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
-            <p>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolore
-              dolorum, corporis exercitationem laborum dignissimos sunt itaque
-              ducimus, soluta blanditiis inventore est quae provident dolores,
-              labore asperiores totam voluptate et minima.
-            </p>
-            <igc-radio name="scattered-fruit" value="banana">Banana</igc-radio>
-            <igc-radio name="scattered-fruit" value="lemon">Lemon</igc-radio>
-            <igc-input label="Search..."></igc-input>
-            <igc-radio name="scattered-fruit" value="orange">Orange</igc-radio>
-          </igc-radio-group>
-          <p>...</p>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
-            <igc-radio name="scattered-fruit" disabled value="tomato"
-              >Tomato</igc-radio
-            >
-            <igc-radio name="scattered-fruit" value="strawberry"
-              >Strawberry</igc-radio
-            >
-          </igc-radio-group>
-        </fieldset>
+
         <fieldset>
           <legend>Initial value</legend>
           <igc-radio-group alignment=${ifDefined(args.alignment)}>
@@ -135,6 +111,7 @@ export const Form: Story = {
             )}
           </igc-radio-group>
         </fieldset>
+
         <fieldset disabled>
           <legend>Disabled</legend>
           <igc-radio-group alignment=${ifDefined(args.alignment)}>
@@ -146,6 +123,7 @@ export const Form: Story = {
             )}
           </igc-radio-group>
         </fieldset>
+
         <fieldset>
           <legend>Required</legend>
           <igc-radio-group alignment=${ifDefined(args.alignment)}>

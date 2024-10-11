@@ -45,7 +45,7 @@ const metadata: Meta<IgcCardComponent> = {
       type: 'boolean',
       description: 'Sets card elevated style, otherwise card looks outlined.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { elevated: false },
