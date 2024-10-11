@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
-
 import { property, query } from 'lit/decorators.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
@@ -36,6 +36,34 @@ export default class IgcTileManagerComponent extends LitElement {
   @property()
   public dragMode: 'slide' | 'swap' = 'slide';
 
+  @property({ type: Number })
+  public columnCount = 0;
+
+  @property({ type: Number })
+  public rowCount = 0;
+
+  @watch('columnCount', { waitUntilFirstUpdate: true })
+  @watch('rowCount', { waitUntilFirstUpdate: true })
+  protected updateRowsCols() {
+    const baseElement = this.shadowRoot?.querySelector(
+      '[part="base"]'
+    ) as HTMLElement;
+
+    if (this.columnCount > 0) {
+      baseElement.style.gridTemplateColumns = `repeat(${this.columnCount}, auto)`;
+    } else {
+      baseElement.style.gridTemplateColumns =
+        'repeat(auto-fit, minmax(20px, 1fr))';
+    }
+
+    if (this.rowCount > 0) {
+      baseElement.style.gridTemplateRows = `repeat(${this.rowCount}, auto)`;
+    } else {
+      baseElement.style.gridTemplateRows =
+        'repeat(auto-fit, minmax(20px, 1fr))';
+    }
+  }
+
   constructor() {
     super();
 
@@ -47,6 +75,8 @@ export default class IgcTileManagerComponent extends LitElement {
 
   protected override async firstUpdated() {
     await this.updateComplete;
+
+    this.updateRowsCols();
 
     const tiles = Array.from(this.children).filter(
       (tile) => tile.tagName === 'IGC-TILE'

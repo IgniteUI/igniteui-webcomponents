@@ -3,8 +3,8 @@
 
 [part='base'] {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20px, auto));
-    grid-template-rows: repeat(auto-fit, minmax(20px, auto));
+    //grid-template-columns: repeat(auto-fit, minmax(20px, auto));
+    //grid-template-rows: repeat(auto-fit, minmax(20px, auto));
     grid-auto-columns: minmax(20px, auto);
     grid-auto-rows: minmax(20px, auto);
     grid-gap: 10px;
