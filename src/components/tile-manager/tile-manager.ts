@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 
 import { property, query } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addFullscreenController } from './controllers/fullscreen.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileComponent from './tile.js';
@@ -15,6 +16,11 @@ export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
   public static override styles = [styles];
 
+  public static override shadowRootOptions: ShadowRootInit = {
+    mode: 'open',
+    slotAssignment: 'manual',
+  };
+
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -24,10 +30,18 @@ export default class IgcTileManagerComponent extends LitElement {
     );
   }
 
-  private draggedItem: HTMLElement | null = null;
+  private draggedItem: IgcTileComponent | null = null;
 
   @query('slot', true)
   private slotElement!: HTMLSlotElement;
+
+  private get _tiles() {
+    return Array.from(
+      this.querySelectorAll<IgcTileComponent>(
+        `:scope > ${IgcTileComponent.tagName}`
+      )
+    );
+  }
 
   /**
    * Determines whether the tiles slide or swap on drop.
@@ -39,19 +53,11 @@ export default class IgcTileManagerComponent extends LitElement {
   constructor() {
     super();
 
-    this.attachShadow({
-      mode: 'open',
-      slotAssignment: 'manual',
-    });
+    addFullscreenController(this);
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
-
-    const tiles = Array.from(this.children).filter(
-      (tile) => tile.tagName === 'IGC-TILE'
-    );
-    this.slotElement.assign(...tiles);
+  protected override firstUpdated() {
+    this.slotElement.assign(...this._tiles);
   }
 
   private handleTileDragStart(e: CustomEvent) {
@@ -73,13 +79,11 @@ export default class IgcTileManagerComponent extends LitElement {
     e.preventDefault();
 
     const target = (e.target as HTMLElement).closest('igc-tile')!;
+    const tiles = this._tiles;
 
-    const slot = this.slotElement;
-    const slottedItems = slot?.assignedElements() as HTMLElement[];
-
-    if (this.draggedItem && slottedItems && target !== this.draggedItem) {
-      const draggedIndex = slottedItems.indexOf(this.draggedItem);
-      const droppedIndex = slottedItems.indexOf(target);
+    if (this.draggedItem && tiles && target !== this.draggedItem) {
+      const draggedIndex = tiles.indexOf(this.draggedItem);
+      const droppedIndex = tiles.indexOf(target);
 
       if (draggedIndex > -1 && droppedIndex > -1) {
         const parent = this.draggedItem.parentElement;
@@ -98,7 +102,7 @@ export default class IgcTileManagerComponent extends LitElement {
             (el) => el.tagName === 'IGC-TILE'
           );
 
-          slot.assign(...updatedTiles);
+          this.slotElement.assign(...updatedTiles);
         }
       }
     }

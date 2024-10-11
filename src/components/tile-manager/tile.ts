@@ -30,9 +30,18 @@ export default class IgcTileComponent extends LitElement {
   constructor() {
     super();
 
-    this.setAttribute('draggable', 'true');
     this.addEventListener('dragstart', this.handleDragStart);
     this.addEventListener('dragend', this.handleDragEnd);
+    // Will probably expose that as a dynamic binding based on a property
+    // and as a response to some UI element interaction
+    this.addEventListener('dblclick', this.handleFullscreenRequest);
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    // This should be probably moved into a DnD (drag & drop) controller
+    // for the tile itself along with the event listeners setup
+    this.draggable = true;
   }
 
   protected override updated(
@@ -50,6 +59,14 @@ export default class IgcTileComponent extends LitElement {
       this.classList.add(className);
     } else {
       this.classList.remove(className);
+    }
+  }
+
+  private async handleFullscreenRequest() {
+    try {
+      await this.requestFullscreen();
+    } catch {
+      document.exitFullscreen();
     }
   }
 
