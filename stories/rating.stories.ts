@@ -37,14 +37,14 @@ const metadata: Meta<IgcRatingComponent> = {
       description:
         'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
-      table: { defaultValue: { summary: 5 } },
+      table: { defaultValue: { summary: '5' } },
     },
     step: {
       type: 'number',
       description:
         'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
-      table: { defaultValue: { summary: 1 } },
+      table: { defaultValue: { summary: '1' } },
     },
     label: {
       type: 'string',
@@ -61,32 +61,32 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     hoverPreview: {
       type: 'boolean',
       description: 'Sets hover preview behavior for the component',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     single: {
       type: 'boolean',
       description: 'Toggles single selection visual mode.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     allowReset: {
       type: 'boolean',
       description:
         'Whether to reset the rating when the user selects the same value.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -97,13 +97,13 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {

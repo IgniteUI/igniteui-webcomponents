@@ -34,7 +34,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'Whether to flip the icon button. Useful for RTL layouts.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     variant: {
       type: '"flat" | "contained" | "outlined"',
@@ -78,7 +78,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {

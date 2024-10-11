@@ -26,13 +26,13 @@ const metadata: Meta<IgcCircularProgressComponent> = {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      table: { defaultValue: { summary: 100 } },
+      table: { defaultValue: { summary: '100' } },
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
@@ -45,19 +45,19 @@ const metadata: Meta<IgcCircularProgressComponent> = {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      table: { defaultValue: { summary: 500 } },
+      table: { defaultValue: { summary: '500' } },
     },
     indeterminate: {
       type: 'boolean',
       description: 'The indeterminate state of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideLabel: {
       type: 'boolean',
       description: 'Shows/hides the label of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelFormat: {
       type: 'string',

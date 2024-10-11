@@ -23,7 +23,7 @@ const metadata: Meta<IgcAccordionComponent> = {
       type: 'boolean',
       description: 'Allows only one panel to be expanded at a time.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { singleExpand: false },

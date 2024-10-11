@@ -30,14 +30,14 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
       description:
         'Indicates whether the contents of the control should be visible.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     disabled: {
       type: 'boolean',
       description:
         'Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     indicatorPosition: {
       type: '"start" | "end" | "none"',

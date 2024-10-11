@@ -25,14 +25,14 @@ const metadata: Meta<IgcDividerComponent> = {
       type: 'boolean',
       description: 'Whether to render a vertical divider line.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     middle: {
       type: 'boolean',
       description:
         'When set and inset is provided, it will shrink the divider line from both sides.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     type: {
       type: '"solid" | "dashed"',
