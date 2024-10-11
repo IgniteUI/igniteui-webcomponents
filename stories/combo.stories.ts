@@ -49,26 +49,26 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     singleSelect: {
       type: 'boolean',
       description:
         'Enables single selection mode and moves item filtering to the main input.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     autofocus: {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     autofocusList: {
       type: 'boolean',
       description: 'Focuses the list of options when the menu opens.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     label: {
       type: 'string',
@@ -90,7 +90,7 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'boolean',
       description: 'Sets the open state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     groupSorting: {
       type: '"asc" | "desc" | "none"',
@@ -105,20 +105,20 @@ const metadata: Meta<IgcComboComponent> = {
       description:
         'Enables the case sensitive search icon in the filtering input.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     disableFiltering: {
       type: 'boolean',
       description: 'Disables the filtering of the list of options.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -129,13 +129,13 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {
@@ -203,6 +203,7 @@ const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
 const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
   return html`<div>Country of ${item?.country ?? item}</div>`;
 };
+const primitiveData = [1, 2, 3, 4, 5, 'one', 'two', 'three', 'four', 'five'];
 
 const cities: City[] = [
   {
@@ -261,91 +262,108 @@ const cities: City[] = [
   },
 ];
 
-// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, NaN, 0];
-
 registerIconFromText(
   'location',
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
 );
 
-const Template = ({
-  name,
-  disableFiltering,
-  caseSensitiveIcon,
-  label = 'Location(s)',
-  placeholder = 'Cities of interest',
-  placeholderSearch = 'Search',
-  open = false,
-  disabled = false,
-  outlined = false,
-  invalid = false,
-  required = false,
-  autofocus = false,
-  singleSelect = false,
-  autofocusList,
-  groupSorting = 'asc',
-  sameWidth = false,
-}: IgcComboComponent<City>) => html`
-  <igc-combo
-    .data=${cities}
-    .itemTemplate=${itemTemplate}
-    .groupHeaderTemplate=${groupHeaderTemplate}
-    label=${ifDefined(label)}
-    name=${ifDefined(name)}
-    placeholder=${ifDefined(placeholder)}
-    placeholder-search=${ifDefined(placeholderSearch)}
-    value-key="id"
-    display-key="name"
-    value='["BG01", "BG02"]'
-    group-key="country"
-    group-sorting=${ifDefined(groupSorting)}
-    ?same-width=${sameWidth}
-    ?case-sensitive-icon=${caseSensitiveIcon}
-    ?disable-filtering=${disableFiltering}
-    ?open=${open}
-    ?autofocus=${autofocus}
-    ?autofocus-list=${autofocusList}
-    ?outlined=${outlined}
-    ?required=${required}
-    ?disabled=${disabled}
-    ?invalid=${invalid}
-    ?single-select=${singleSelect}
-  >
-    <igc-icon slot="prefix" name="location"></igc-icon>
-    <span slot="helper-text">Sample helper text.</span>
-  </igc-combo>
-`;
+registerIconFromText(
+  'no-data',
+  '<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m17.121 21.364l2.122-2.121m2.121-2.122l-2.121 2.122m0 0L17.12 17.12m2.122 2.122l2.121 2.121M4 6v6s0 3 7 3s7-3 7-3V6"/><path d="M11 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3m0 18c-7 0-7-3-7-3v-6"/></g></svg>',
+  'combo-samples'
+);
 
-export const Basic: Story = Template.bind({});
+export const Default: Story = {
+  args: {
+    label: 'Location(s)',
+    placeholder: 'Cities of interest',
+    placeholderSearch: 'Search cities...',
+    groupSorting: 'asc',
+  },
+  render: (args) => html`
+    <igc-combo
+      value-key="id"
+      display-key="name"
+      group-key="country"
+      value='["BG01", "BG02"]'
+      .label=${args.label}
+      .name=${args.name}
+      .placeholder=${args.placeholder}
+      .placeholderSearch=${args.placeholderSearch}
+      .data=${cities}
+      .itemTemplate=${itemTemplate}
+      .groupHeaderTemplate=${groupHeaderTemplate}
+      .groupSorting=${args.groupSorting}
+      ?case-sensitive-icon=${args.caseSensitiveIcon}
+      ?disable-filtering=${args.disableFiltering}
+      ?open=${args.open}
+      ?autofocus=${args.autofocus}
+      ?autofocus-list=${args.autofocusList}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?single-select=${args.singleSelect}
+    >
+      <igc-icon slot="prefix" name="location"></igc-icon>
+      <p slot="helper-text">Sample helper text.</p>
+    </igc-combo>
+  `,
+};
+
+export const NoData: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      igc-combo {
+        margin-bottom: 5rem;
+      }
+      .no-data {
+        display: flex;
+        justify-content: space-evenly;
+      }
+    </style>
+    <igc-combo label="No data and default empty template"></igc-combo>
+
+    <igc-combo label="No data and custom empty template">
+      <div class="no-data" slot="empty">
+        <igc-icon name="no-data" collection="combo-samples"></igc-icon>
+        <p>No data currently bound to the combo</p>
+      </div>
+    </igc-combo>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const primitive = [1, 2, 3, 4, 5, 'one', 'two', 'three', 'four', 'five'];
     return html`
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo
+            .data=${cities}
             label="Default"
             name="combo"
-            .data=${cities}
             value-key="id"
             display-key="name"
           ></igc-combo>
+
           <igc-combo
-            label="Initial value"
             .data=${cities}
+            label="Initial value"
             name="combo-initial"
             value='["BG01", "BG02"]'
             value-key="id"
             display-key="name"
           ></igc-combo>
+
           <igc-combo
-            label="No value key"
             .data=${cities}
+            label="No value key"
             name="combo-not-key"
             display-key="name"
           ></igc-combo>
+
           <igc-combo
             .data=${cities}
             single-select
@@ -355,28 +373,31 @@ export const Form: Story = {
             value-key="id"
           ></igc-combo>
         </fieldset>
+
         <fieldset>
           <igc-combo
-            name="combo-primitive"
+            .data=${primitiveData}
             .value=${[1, 'one']}
-            .data=${primitive}
+            name="combo-primitive"
             label="Primitives binding"
           ></igc-combo>
         </fieldset>
-        <fieldset disabled="disabled">
+
+        <fieldset disabled>
           <igc-combo
+            .data=${cities}
             label="Disabled"
             name="combo-disabled"
-            .data=${cities}
             value-key="id"
             display-key="name"
           ></igc-combo>
         </fieldset>
+
         <fieldset>
           <igc-combo
+            .data=${cities}
             label="Required"
             name="combo-required"
-            .data=${cities}
             value-key="id"
             display-key="name"
             required

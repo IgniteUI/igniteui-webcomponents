@@ -87,7 +87,7 @@ const metadata: Meta<IgcInputComponent> = {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     autocomplete: {
       type: 'string',
@@ -99,14 +99,14 @@ const metadata: Meta<IgcInputComponent> = {
       description:
         'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for\nstring-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -117,25 +117,25 @@ const metadata: Meta<IgcInputComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     placeholder: {
       type: 'string',
@@ -269,7 +269,7 @@ export const Slots: Story = {
     >
       <igc-icon name="github" slot="prefix"></igc-icon>
       <igc-icon name="github" slot="suffix"></igc-icon>
-      <span slot="helper-text">This is some helper text</span>
+      <span slot="helper-text">Sample helper text.</span>
     </igc-input>
   `,
 };

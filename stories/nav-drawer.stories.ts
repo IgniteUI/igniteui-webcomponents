@@ -37,7 +37,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       type: 'boolean',
       description: 'Determines whether the drawer is opened.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { position: 'start', open: false },

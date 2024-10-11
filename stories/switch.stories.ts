@@ -30,7 +30,7 @@ const metadata: Meta<IgcSwitchComponent> = {
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -41,13 +41,13 @@ const metadata: Meta<IgcSwitchComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'string',
@@ -58,7 +58,7 @@ const metadata: Meta<IgcSwitchComponent> = {
       type: 'boolean',
       description: 'The checked state of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelPosition: {
       type: '"before" | "after"',

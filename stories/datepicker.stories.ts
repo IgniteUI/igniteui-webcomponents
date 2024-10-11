@@ -454,11 +454,13 @@ export const Form: Story = {
           label="Default"
           name="picker-default"
         ></igc-date-picker>
+
         <igc-date-picker
           label="Initial value"
           name="picker-initial"
           .value=${args.value}
         ></igc-date-picker>
+
         <igc-date-picker
           label="Readonly"
           name="picker-readonly"

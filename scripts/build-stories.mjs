@@ -285,7 +285,7 @@ class StoriesBuilder {
         parsed.control = control;
       }
       if (isDefined(defaultValue)) {
-        parsed.table = { defaultValue: { summary: defaultValue } };
+        parsed.table = { defaultValue: { summary: defaultValue?.toString() } };
       }
 
       argTypes[property.name] = parsed;

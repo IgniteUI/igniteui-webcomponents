@@ -65,7 +65,7 @@ const metadata: Meta<IgcButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { variant: 'contained', type: 'button', disabled: false },
