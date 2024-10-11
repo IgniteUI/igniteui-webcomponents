@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
@@ -26,12 +26,33 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private draggedItem: HTMLElement | null = null;
 
+  @query('slot', true)
+  private slotElement!: HTMLSlotElement;
+
   /**
    * Determines whether the tiles slide or swap on drop.
    * @attr
    */
   @property()
   public dragMode: 'slide' | 'swap' = 'slide';
+
+  constructor() {
+    super();
+
+    this.attachShadow({
+      mode: 'open',
+      slotAssignment: 'manual',
+    });
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+
+    const tiles = Array.from(this.children).filter(
+      (tile) => tile.tagName === 'IGC-TILE'
+    );
+    this.slotElement.assign(...tiles);
+  }
 
   private handleTileDragStart(e: CustomEvent) {
     this.draggedItem = e.detail.tile;
@@ -53,7 +74,7 @@ export default class IgcTileManagerComponent extends LitElement {
 
     const target = (e.target as HTMLElement).closest('igc-tile')!;
 
-    const slot = this.shadowRoot?.querySelector('slot');
+    const slot = this.slotElement;
     const slottedItems = slot?.assignedElements() as HTMLElement[];
 
     if (this.draggedItem && slottedItems && target !== this.draggedItem) {
@@ -72,6 +93,12 @@ export default class IgcTileManagerComponent extends LitElement {
 
             parent.insertBefore(target, draggedNextSibling);
           }
+
+          const updatedTiles = Array.from(parent.children).filter(
+            (el) => el.tagName === 'IGC-TILE'
+          );
+
+          slot.assign(...updatedTiles);
         }
       }
     }

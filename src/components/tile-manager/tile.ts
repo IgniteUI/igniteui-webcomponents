@@ -20,6 +20,10 @@ export default class IgcTileComponent extends LitElement {
     registerComponent(IgcTileComponent);
   }
 
+  /**
+   * Indicates whether the tile occupies all available space within the layout.
+   * @attr
+   */
   @property({ type: Boolean })
   public maximized = false;
 

@@ -72,6 +72,7 @@ const tiles = Array.from(
 
 const Template = ({ dragMode }: IgcTileManagerArgs) => html`
   <igc-tile-manager dragMode="${ifDefined(dragMode)}">
+    <p>This text won't be displayed in Tile Manager</p>
     ${tiles}
   </igc-tile-manager>
 `;
