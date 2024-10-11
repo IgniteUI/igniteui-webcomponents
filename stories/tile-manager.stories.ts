@@ -62,9 +62,7 @@ const tiles = Array.from(
           <igc-icon name="home" slot="actions"></igc-icon>
         </igc-tile-header>
 
-        <igc-tile-content slot="content">
-          <p>Text in Tile ${i + 1}</p>
-        </igc-tile-content>
+        <p>Text in Tile ${i + 1}</p>
       </igc-tile>
     `
   )

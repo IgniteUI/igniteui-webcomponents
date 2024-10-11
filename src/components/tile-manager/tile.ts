@@ -122,7 +122,7 @@ export default class IgcTileComponent extends LitElement {
         <slot name="header"></slot>
       </div>
       <div part="content-container">
-        <slot name="content"></slot>
+        <slot></slot>
       </div>
 
       <div
