@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
-
 import { property } from 'lit/decorators.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/tile.base.css.js';
 
@@ -20,12 +20,24 @@ export default class IgcTileComponent extends LitElement {
     registerComponent(IgcTileComponent);
   }
 
+  @property({ type: Number })
+  public colSpan = 3;
+
+  @property({ type: Number })
+  public rowSpan = 3;
+
   /**
    * Indicates whether the tile occupies all available space within the layout.
    * @attr
    */
   @property({ type: Boolean })
   public maximized = false;
+
+  @watch('colSpan', { waitUntilFirstUpdate: true })
+  @watch('rowSpan', { waitUntilFirstUpdate: true })
+  protected updateRowsColSpan() {
+    this.style.gridArea = `span ${this.rowSpan} / span ${this.colSpan}`;
+  }
 
   constructor() {
     super();
@@ -42,6 +54,11 @@ export default class IgcTileComponent extends LitElement {
     // This should be probably moved into a DnD (drag & drop) controller
     // for the tile itself along with the event listeners setup
     this.draggable = true;
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this.updateRowsColSpan();
   }
 
   protected override updated(
