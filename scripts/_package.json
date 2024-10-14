@@ -5,17 +5,23 @@
   "author": "Infragistics",
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://www.infragistics.com/products/ignite-ui-web-components",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
   "type": "module",
-  "main": "index.js",
-  "module": "index.js",
-  "types": "index.d.ts",
-  "sideEffects": ["*.css"],
+  "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/IgniteUI/igniteui-webcomponents"
+    "url": "git+https://github.com/IgniteUI/igniteui-webcomponents"
   },
   "bugs": {
     "url": "https://github.com/IgniteUI/igniteui-webcomponents/issues"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "keywords": [
     "webcomponents",
@@ -29,6 +35,7 @@
     "button group",
     "calendar",
     "card",
+    "carousel",
     "circular progress",
     "checkbox",
     "chip",

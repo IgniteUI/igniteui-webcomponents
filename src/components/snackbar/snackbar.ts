@@ -13,7 +13,7 @@ import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
 
-export interface IgcSnackbarEventMap {
+export interface IgcSnackbarComponentEventMap {
   igcAction: CustomEvent<void>;
 }
 
@@ -35,7 +35,7 @@ export interface IgcSnackbarEventMap {
  */
 @themes(all)
 export default class IgcSnackbarComponent extends EventEmitterMixin<
-  IgcSnackbarEventMap,
+  IgcSnackbarComponentEventMap,
   AbstractConstructor<IgcBaseAlertLikeComponent>
 >(IgcBaseAlertLikeComponent) {
   public static readonly tagName = 'igc-snackbar';
