@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcRadioGroupComponent, defineComponents } from '../src/index.js';
+import {
+  IgcRadioGroupComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import { formControls, formSubmitHandler } from './story.js';
 
 defineComponents(IgcRadioGroupComponent);

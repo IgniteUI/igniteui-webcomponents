@@ -5,7 +5,7 @@ import {
   IgcButtonComponent,
   IgcRippleComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcButtonComponent, IgcRippleComponent);
 

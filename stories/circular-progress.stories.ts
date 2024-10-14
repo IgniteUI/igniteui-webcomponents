@@ -5,7 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   IgcCircularProgressComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcCircularProgressComponent);
 

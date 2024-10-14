@@ -6,7 +6,7 @@ import {
   IgcInputComponent,
   IgcStepperComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcStepperComponent, IgcButtonComponent, IgcInputComponent);
 

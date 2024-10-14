@@ -5,7 +5,7 @@ import {
   IgcTreeComponent,
   type IgcTreeItemComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcTreeComponent);
 

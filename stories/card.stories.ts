@@ -13,7 +13,7 @@ import {
   IgcIconButtonComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(
   IgcAvatarComponent,

@@ -5,7 +5,7 @@ import {
   IgcButtonComponent,
   IgcToastComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcToastComponent, IgcButtonComponent);
 

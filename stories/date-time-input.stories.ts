@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
+import {
+  IgcDateTimeInputComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,

@@ -7,7 +7,7 @@ import {
   DateRangeType,
   IgcCalendarComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcCalendarComponent);
 

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 
-import { IgcAvatarComponent, defineComponents } from '../src/index.js';
+import { IgcAvatarComponent, defineComponents } from 'igniteui-webcomponents';
 
 defineComponents(IgcAvatarComponent);
 

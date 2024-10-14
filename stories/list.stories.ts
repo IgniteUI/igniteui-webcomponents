@@ -6,7 +6,7 @@ import {
   IgcButtonComponent,
   IgcListComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
