@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcRangeSliderComponent, defineComponents } from '../src/index.js';
+import {
+  IgcRangeSliderComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
 defineComponents(IgcRangeSliderComponent);

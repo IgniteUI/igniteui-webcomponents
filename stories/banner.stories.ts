@@ -8,7 +8,7 @@ import {
   IgcNavbarComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(
   IgcBannerComponent,

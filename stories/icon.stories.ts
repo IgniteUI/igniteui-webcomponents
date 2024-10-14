@@ -9,7 +9,7 @@ import {
   registerIcon,
   registerIconFromText,
   setIconRef,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcIconComponent, IgcButtonComponent);
 

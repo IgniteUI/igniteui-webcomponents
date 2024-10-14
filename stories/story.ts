@@ -1,7 +1,7 @@
 import type { ArgTypes, Meta } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcDialogComponent, defineComponents } from '../src/index.js';
+import { IgcDialogComponent, defineComponents } from 'igniteui-webcomponents';
 defineComponents(IgcDialogComponent);
 
 export function disableStoryControls<T>(meta: Meta<T>): Partial<ArgTypes<T>> {
