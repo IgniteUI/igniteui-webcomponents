@@ -3,29 +3,43 @@
 
 $theme: $material;
 
-[part='headers'] {
-    background: var-get($theme, 'item-background');
-}
-
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
-    background: var-get($theme, 'button-background');
+    --foreground: #{var-get($theme, 'button-color')};
+    --background: #{var-get($theme, 'button-background')};
+    --hover-foreground: #{var-get($theme, 'button-hover-color')};
+    --hover-background: #{var-get($theme, 'button-hover-background')};
+    --focus-foreground: #{var-get($theme, 'button-hover-color')};
+    --focus-background: #{var-get($theme, 'button-hover-background')};
+    --active-foreground: #{var-get($theme, 'button-hover-color')};
+    --active-background: #{var-get($theme, 'button-hover-background')};
+}
 
-    &:hover,
-    &:focus {
-        background: var-get($theme, 'button-hover-background');
+igc-icon-button[disabled] {
+    --ig-icon-button-disabled-foreground: #{var-get($theme, 'button-disabled-color')}
+}
+
+:host([alignment='start']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::after {
+            background: var-get($theme, 'item-background');
+        }
     }
 }
 
-igc-icon-button::part(base) {
-    color: var-get($theme, 'button-color');
-
-    &:hover,
-    &:focus-within {
-        color: var-get($theme, 'button-hover-color');
+:host([alignment='center']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::before,
+        &::after {
+            background: var-get($theme, 'item-background');
+        }
     }
 }
 
-igc-icon-button[disabled]::part(base) {
-    color: var-get($theme, 'button-disabled-color');
+:host([alignment='end']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::before {
+            background: var-get($theme, 'item-background');
+        }
+    }
 }

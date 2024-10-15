@@ -231,6 +231,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0),
       false
     );
+
+    // Set the CSS variable for the component width
+    this.setComponentWidth();
   }
 
   public override disconnectedCallback() {
@@ -259,11 +262,17 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.updateButtonsOnResize();
       this.performUpdate();
       this.alignIndicator();
+      this.setComponentWidth(); // Update the size variable on resize
     });
 
     [this.scrollContainer, ...this.tabs].forEach((element) =>
       this.resizeObserver.observe(element)
     );
+  }
+
+  private setComponentWidth() {
+    const width = this.scrollContainer.getBoundingClientRect().width;
+    this.style.setProperty('--ig-tabs-width', `${width}px`);
   }
 
   private selectTab(tab?: IgcTabComponent, shouldEmit = true) {

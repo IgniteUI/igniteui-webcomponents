@@ -1,0 +1,12 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='content'] {
+    @include type-style('button');
+}
+
+::slotted(igc-icon) {
+    --size: #{rem(24px)};
+}

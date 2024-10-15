@@ -107,9 +107,9 @@ const tabs = Array.from(
         ><div slot="label">
           Looooooooooooooooooooooooooooooooooooooooooooooong header
         </div>
-        <input />Lorem ipsum dolor sit amet consectetur adipisicing elit.
-        Consequuntur accusantium mollitia dolorem illo expedita aperiam impedit
-        molestias quas in doloremque?
+        <input style="box-sizing: border-box;" />Lorem ipsum dolor sit amet
+        consectetur adipisicing elit. Consequuntur accusantium mollitia dolorem
+        illo expedita aperiam impedit molestias quas in doloremque?
       </igc-tab>`;
     }
     if (i === 10) {
@@ -179,10 +179,10 @@ const Template = ({ activation, alignment }: IgcTabsArgs) => html`
       <igc-tab>
         <div slot="label">
           <div
-            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 16px 0"
           >
             <igc-icon name="home"></igc-icon>
-            <input />
+            <input style="box-sizing: border-box; width: 100%" />
             <strong>Custom layout</strong>
             <span>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do

@@ -3,14 +3,16 @@
 
 $theme: $fluent;
 
-:host {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-icon-color');
-    }
+[part='header'] {
+    transition: all .3s cubic-bezier(.35, 0, .25, 1)
 }
 
-:host([disabled]) {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-disabled-icon-color');
+[part='content'] {
+    @include type-style('body-2');
+}
+
+:host([selected]) {
+    [part='content'] {
+        font-weight: 700;
     }
 }

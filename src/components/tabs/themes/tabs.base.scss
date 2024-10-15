@@ -7,40 +7,12 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 $arrow-start: 0;
 
 :host {
-    // Header idle
-    --header-background: #{color(surface, 500)};
-    --header-foreground: #{color(gray, 700)};
-    --header-background--hover: #{color(gray, 200)};
-    --header-foreground--hover: var(--header-foreground);
-    --header-foreground--focus-within: #{color(primary, 500)};
-
-    // Header Selected
-    --header-background--selected: var(--header-background);
-    --header-foreground--selected: #{color(primary, 500)};
-    --header-background--selected--hover: var(--header-background--hover);
-    --header-foreground--selected--hover: var(--header-foreground--selected);
-
-    // Header Disabled
-    --header-background--disabled: #{color(primary, 500, .5)};
-    --header-foreground--disabled: #{color(gray, 500)};
-
-    // Body
-    --body-background: transparent;
-    --body-foreground: #{contrast-color(gray, 50)};
-
     // Scroll buttons
     --scroll-btn-size: #{rem(48px)};
     --tabs-width: 100%;
     --tab-max-width: #{rem(360px)};
     --tab-min-width: #{rem(90px)};
-
-    // Icon color
-    --scroll-btn-background: #{color(surface, 500)};
-    --scroll-btn-foreground: #{color(gray, 700)};
-    --scroll-btn-background--hover: #{color(gray, 100)};
-    --scroll-btn-foreground--hover: #{color(gray, 700)};
-    --scroll-btn-background--disabled: #{color(surface, 500)};
-    --scroll-btn-foreground--disabled: #{color(gray, 500)};
+    --_border-size: #{rem(1px)};
 
     display: block;
     overflow: hidden;
@@ -52,7 +24,6 @@ $arrow-start: 0;
     content: '';
     width: 100%;
     height: 100%;
-    background: var(--header-background);
     grid-row: 1;
 }
 
@@ -66,12 +37,11 @@ $arrow-start: 0;
     /* stylelint-enable */
 
     overscroll-behavior: none;
+    scrollbar-width: none;
 
     &::-webkit-scrollbar {
         display: none;
     }
-
-    scrollbar-width: none;
 }
 
 // TODO: Move this in part tabs when scroll-padding is fixed.
@@ -82,9 +52,10 @@ $arrow-start: 0;
 
 [part~='inner'] {
     display: grid;
+    grid-template-rows: minmax(var(--header-min-height), auto) auto 1fr;
     align-items: center;
     position: relative;
-    grid-template-rows: auto auto 1fr;
+    flex-grow: 1;
 
     ::slotted(igc-tab) {
         display: contents;
@@ -139,8 +110,12 @@ $arrow-start: 0;
 
     [part~='scrollable'] {
         /* stylelint-disable */
-        grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
+        grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(var(--tab-min-width), 1fr)) var(--scroll-btn-size);
         /* stylelint-enable */
+    }
+
+    [part~='inner']:not([part~='scrollable']) {
+        grid-template-columns: repeat(var(--tabs-count), minmax(var(--tab-min-width), auto));
     }
 }
 
@@ -180,41 +155,18 @@ igc-icon-button::part(base) {
     height: 100%;
     width: 100%;
     cursor: pointer;
-    color: var(--scroll-btn-foreground);
-    background: var(--scroll-btn-background);
-
-    &:hover,
-    &:focus,
-    &:focus-within {
-        color: var(--scroll-btn-foreground--hover);
-        background: var(--scroll-btn-background--hover);
-    }
-
-    &:focus-within {
-        box-shadow: none;
-    }
-}
-
-igc-icon-button[disabled]::part(base) {
-    color: var(--scroll-btn-foreground--disabled);
-    background: var(--scroll-btn-background--disabled);
 }
 
 [part='selected-indicator'] {
-    $indicator-height: rem(2px);
-
-    height: $indicator-height;
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
-    margin-block-start: calc(#{$indicator-height} * -1);
-    z-index: map.get($tabs-z-index, 'selected-indicator');
 
     span {
         content: '';
         position: absolute;
-        height: $indicator-height;
-        background: color(primary, 500);
+        display: inline-block;
         transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
+        z-index: map.get($tabs-z-index, 'selected-indicator');
     }
 }

@@ -3,6 +3,7 @@
 :host {
     overflow: hidden auto;
     flex: 1 1 auto;
+    position: relative;
 }
 
 :host(:not([hidden])) {

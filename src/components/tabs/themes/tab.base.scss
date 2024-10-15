@@ -12,31 +12,17 @@
     justify-content: center;
     height: 100%;
     pointer-events: all;
-    min-height: rem(42px);
-    padding-block: rem(12px);
     padding-inline: rem(16px);
     max-width: var(--tab-max-width--justify, var(--tab-max-width));
     min-width: var(--tab-min-width);
     cursor: pointer;
     position: relative;
-    background: var(--header-background);
-    color: var(--header-foreground);
     z-index: map.get($tabs-z-index, 'header');
     grid-row: 1;
     word-break: break-word;
 
-    &:hover,
     &:focus-within {
-        background: var(--header-background--hover);
-    }
-
-    &:hover {
-        color: var(--header-foreground--hover);
-    }
-
-    &:focus-within {
-        outline: none;
-        color: var(--header-foreground--focus-within);
+        outline-color: transparent;
     }
 }
 
@@ -51,7 +37,6 @@
 }
 
 [part~='content'] {
-    @include type-style('button');
     @include line-clamp(2, true, true);
 
     display: flex;
@@ -75,32 +60,16 @@
     display: none;
     position: sticky;
     inset-inline-start: 0;
-    background: var(--body-background);
-    color: var(--body-foreground);
     width: var(--tabs-width);
     grid-row: 3;
     grid-column: 1 / -1;
+    max-width: var(--ig-tabs-width);
     transition: transform 250ms ease-in-out;
     height: 100%;
     pointer-events: all;
 }
 
 :host([selected]) {
-    [part='header'] {
-        background: var(--header-background--selected);
-        color: var(--header-foreground--selected);
-
-        ::slotted(igc-icon) {
-            color: var(--header-foreground--selected);
-        }
-
-        &:hover,
-        &:focus-within {
-            background: var(--header-background--selected--hover);
-            color: var(--header-foreground--selected--hover);
-        }
-    }
-
     [part~='body'] {
         display: flex;
         transform: translateX(0);
@@ -111,10 +80,5 @@
     [part='header'] {
         pointer-events: none;
         cursor: initial;
-        color: var(--header-foreground--disabled);
     }
-}
-
-::slotted(igc-icon) {
-    --size: #{rem(24px)};
 }
