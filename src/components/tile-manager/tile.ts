@@ -26,6 +26,12 @@ export default class IgcTileComponent extends LitElement {
   @property({ type: Number })
   public rowSpan = 3;
 
+  @property({ type: Number })
+  public colStart: number | null = null;
+
+  @property({ type: Number })
+  public rowStart: number | null = null;
+
   /**
    * Indicates whether the tile occupies all available space within the layout.
    * @attr
@@ -35,8 +41,20 @@ export default class IgcTileComponent extends LitElement {
 
   @watch('colSpan', { waitUntilFirstUpdate: true })
   @watch('rowSpan', { waitUntilFirstUpdate: true })
+  @watch('colStart', { waitUntilFirstUpdate: true })
+  @watch('rowStart', { waitUntilFirstUpdate: true })
   protected updateRowsColSpan() {
-    this.style.gridArea = `span ${this.rowSpan} / span ${this.colSpan}`;
+    if (this.colStart !== null) {
+      this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
+    } else {
+      this.style.gridColumn = `span ${this.colSpan}`;
+    }
+
+    if (this.rowStart !== null) {
+      this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
+    } else {
+      this.style.gridRow = `span ${this.rowSpan}`;
+    }
   }
 
   constructor() {
