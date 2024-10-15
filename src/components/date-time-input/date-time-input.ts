@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { noop, partNameMap } from '../common/util.js';
-import type { IgcInputEventMap } from '../input/input-base.js';
+import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -32,8 +32,8 @@ import {
 } from './date-util.js';
 import { dateTimeInputValidators } from './validators.js';
 
-export interface IgcDateTimeInputEventMap
-  extends Omit<IgcInputEventMap, 'igcChange'> {
+export interface IgcDateTimeInputComponentEventMap
+  extends Omit<IgcInputComponentEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
 
@@ -69,7 +69,7 @@ const converter: ComplexAttributeConverter<Date | null> = {
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
-  IgcDateTimeInputEventMap,
+  IgcDateTimeInputComponentEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';

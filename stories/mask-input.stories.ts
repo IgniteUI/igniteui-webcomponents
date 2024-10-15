@@ -8,7 +8,7 @@ import {
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,
@@ -62,7 +62,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -73,25 +73,25 @@ const metadata: Meta<IgcMaskInputComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     placeholder: {
       type: 'string',
@@ -203,15 +203,6 @@ export const Slots: Story = {
   `,
 };
 
-export const Validation: Story = {
-  render: () => html`
-    <igc-mask-input label="Mask pattern validation" mask="(+35\\9) 000-000-000">
-      <p slot="helper-text">Your telephone number</p>
-      <p slot="bad-input">Please enter a valid telephone number</p>
-    </igc-mask-input>
-  `,
-};
-
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
@@ -224,6 +215,7 @@ export const Form: Story = {
           label="Default"
         ></igc-mask-input>
       </fieldset>
+
       <fieldset>
         <legend>Formatted value mode</legend>
         <igc-mask-input
@@ -235,6 +227,7 @@ export const Form: Story = {
           value="123456"
         ></igc-mask-input>
       </fieldset>
+
       <fieldset disabled>
         <legend>Disabled masked input</legend>
         <igc-mask-input
@@ -242,18 +235,22 @@ export const Form: Story = {
           label="Disabled mask"
         ></igc-mask-input>
       </fieldset>
+
       <fieldset>
         <legend>Masked constraints</legend>
-        <igc-mask-input
-          name="mask-required"
-          label="Required"
-          required
-        ></igc-mask-input>
+        <igc-mask-input name="mask-required" label="Required" required>
+          <p slot="value-missing">This field is required</p>
+        </igc-mask-input>
+
         <igc-mask-input
           name="required-mask-pattern"
           label="Mask pattern validation"
           mask="(+35\\9) 000-000-000"
-        ></igc-mask-input>
+        >
+          <p slot="bad-input">
+            The provided value <strong>does not</strong> match the pattern
+          </p>
+        </igc-mask-input>
       </fieldset>
       ${formControls()}
     </form>`;

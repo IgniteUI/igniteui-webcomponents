@@ -2,13 +2,13 @@ import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html, render } from 'lit';
 
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   IgcIconComponent,
   IgcTextareaComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   disableStoryControls,
   formControls,
@@ -82,7 +82,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     placeholder: {
       type: 'string',
@@ -93,7 +93,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     resize: {
       type: '"auto" | "vertical" | "none"',
@@ -108,7 +108,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       description:
         'The number of visible text lines for the control. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 2.',
       control: 'number',
-      table: { defaultValue: { summary: 2 } },
+      table: { defaultValue: { summary: '2' } },
     },
     value: {
       type: 'string',
@@ -120,7 +120,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       description:
         'Controls whether the element may be checked for spelling errors.',
       control: 'boolean',
-      table: { defaultValue: { summary: true } },
+      table: { defaultValue: { summary: 'true' } },
     },
     wrap: {
       type: '"hard" | "soft" | "off"',
@@ -135,14 +135,14 @@ const metadata: Meta<IgcTextareaComponent> = {
       description:
         'Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property\nwhen it is defined.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -153,13 +153,13 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {

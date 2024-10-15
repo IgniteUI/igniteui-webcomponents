@@ -7,7 +7,7 @@ import {
   IgcTabsComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcBadgeComponent, IgcIconComponent, IgcTabsComponent);
 
@@ -35,7 +35,7 @@ const metadata: Meta<IgcBadgeComponent> = {
       type: 'boolean',
       description: 'Sets whether to draw an outlined version of the badge.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     shape: {
       type: '"rounded" | "square"',

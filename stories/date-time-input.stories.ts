@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
-import type { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
+import {
+  IgcDateTimeInputComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,
@@ -58,7 +58,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       type: 'boolean',
       description: 'Sets whether to loop over the currently spun segment.',
       control: 'boolean',
-      table: { defaultValue: { summary: true } },
+      table: { defaultValue: { summary: 'true' } },
     },
     locale: {
       type: 'string',
@@ -76,7 +76,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -87,25 +87,25 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     placeholder: {
       type: 'string',
@@ -172,67 +172,48 @@ type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
 
-const Template = ({
-  inputFormat,
-  prompt,
-  readOnly,
-  disabled,
-  required,
-  outlined,
-  placeholder,
-  displayFormat,
-  min,
-  max,
-  locale,
-  spinLoop,
-  value,
-  label,
-  invalid,
-}: IgcDateTimeInputArgs) => {
-  const spinDelta: DatePartDeltas = {
-    date: 2,
-    year: 10,
-  };
-
-  return html`<igc-date-time-input
-    id="editor"
-    label=${label}
-    .value=${value ? new Date(value as Date) : null}
-    .inputFormat=${inputFormat}
-    .displayFormat=${displayFormat}
-    .min=${min ? new Date(min as Date) : null}
-    .max=${max ? new Date(max as Date) : null}
-    locale=${ifDefined(locale)}
-    prompt=${ifDefined(prompt)}
-    placeholder=${ifDefined(placeholder)}
-    ?spin-loop=${spinLoop}
-    .readOnly=${readOnly}
-    .outlined=${outlined}
-    .required=${required}
-    .disabled=${disabled}
-    .spinDelta=${spinDelta}
-    .invalid=${invalid}
-  >
-    <igc-icon
-      name="input_clear"
-      slot="prefix"
-      onclick="editor.clear()"
-    ></igc-icon>
-    <igc-icon
-      name="input_collapse"
-      slot="suffix"
-      onclick="editor.stepUp()"
-    ></igc-icon>
-    <igc-icon
-      name="input_expand"
-      slot="suffix"
-      onclick="editor.stepDown()"
-    ></igc-icon>
-    <span slot="helper-text">This is some helper text</span>
-  </igc-date-time-input>`;
+const stepUp = () => {
+  document.querySelector(IgcDateTimeInputComponent.tagName)!.stepUp();
 };
 
-export const Basic: Story = Template.bind({});
+const stepDown = () => {
+  document.querySelector(IgcDateTimeInputComponent.tagName)!.stepDown();
+};
+const clear = () => {
+  document.querySelector(IgcDateTimeInputComponent.tagName)!.clear();
+};
+
+export const Default: Story = {
+  args: {
+    value: new Date(),
+    label: 'Enter a date and/or time',
+  },
+  render: (args) => html`
+    <igc-date-time-input
+      .label=${args.label}
+      .name=${args.name}
+      .value=${args.value ? new Date(args.value) : null}
+      .inputFormat=${args.inputFormat}
+      .displayFormat=${args.displayFormat}
+      .min=${args.min ? new Date(args.min) : null}
+      .max=${args.max ? new Date(args.max) : null}
+      .locale=${args.locale}
+      .prompt=${args.prompt}
+      .placeholder=${args.placeholder}
+      ?spin-loop=${args.spinLoop}
+      ?readonly=${args.readOnly}
+      ?outlined=${args.outlined}
+      ?required=${args.required}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+    >
+      <igc-icon slot="prefix" name="input_clear" @click=${clear}></igc-icon>
+      <igc-icon slot="suffix" name="input_collapse" @click=${stepUp}></igc-icon>
+      <igc-icon slot="suffix" name="input_expand" @click=${stepDown}></igc-icon>
+      <p slot="helper-text">Sample helper text.</p>
+    </igc-date-time-input>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -244,6 +225,7 @@ export const Form: Story = {
             label="Default state"
             name="datetime-default"
           ></igc-date-time-input>
+
           <igc-date-time-input
             label="Initial value"
             name="datetime-initial"
@@ -251,6 +233,7 @@ export const Form: Story = {
             display-format="yyyy-MM-dd HH:mm"
             input-format="yyyy-MM-dd HH:mm"
           ></igc-date-time-input>
+
           <igc-date-time-input
             readonly
             label="Readonly"
@@ -258,30 +241,40 @@ export const Form: Story = {
             value="1987-07-17"
           ></igc-date-time-input>
         </fieldset>
-        <fieldset disabled="disabled">
+
+        <fieldset disabled>
           <igc-date-time-input
             name="datetime-disabled"
             label="Disabled editor"
           ></igc-date-time-input>
         </fieldset>
+
         <fieldset>
           <igc-date-time-input
             required
             name="datetime-required"
             label="Required"
-          ></igc-date-time-input>
+          >
+            <p slot="value-missing">This field is required</p>
+          </igc-date-time-input>
+
           <igc-date-time-input
             name="datetime-min"
             label="Minimum constraint (2023-03-17)"
             min="2023-03-17"
             value="2020-01-01"
-          ></igc-date-time-input>
+          >
+            <p slot="range-underflow">Date is outside of allowed range</p>
+          </igc-date-time-input>
+
           <igc-date-time-input
             name="datetime-max"
             label="Maximum constraint (2023-04-17)"
             max="2023-04-17"
             value="2024-03-17"
-          ></igc-date-time-input>
+          >
+            <p slot="range-overflow">Date is outside of allowed range</p>
+          </igc-date-time-input>
         </fieldset>
         ${formControls()}
       </form>

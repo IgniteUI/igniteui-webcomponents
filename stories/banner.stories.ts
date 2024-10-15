@@ -8,7 +8,7 @@ import {
   IgcNavbarComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(
   IgcBannerComponent,
@@ -35,7 +35,7 @@ const metadata: Meta<IgcBannerComponent> = {
       type: 'boolean',
       description: 'Determines whether the banner is being shown/hidden.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { open: false },

@@ -8,7 +8,7 @@ import {
   IgcTabsComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcTabsComponent);
 

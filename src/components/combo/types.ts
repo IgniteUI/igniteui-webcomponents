@@ -45,7 +45,7 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
   type: ComboChangeType;
 }
 
-export interface IgcComboEventMap {
+export interface IgcComboComponentEventMap {
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */

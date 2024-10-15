@@ -7,7 +7,7 @@ import {
   DateRangeType,
   IgcCalendarComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcCalendarComponent);
 
@@ -30,14 +30,14 @@ const metadata: Meta<IgcCalendarComponent> = {
       description:
         'Whether to show the dates that do not belong to the current active month.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideHeader: {
       type: 'boolean',
       description:
         'Whether to render the calendar header part.\nWhen the calendar selection is set to `multiple` the header is always hidden.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
@@ -58,7 +58,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: 'number',
       description: 'The number of months displayed in the days view.',
       control: 'number',
-      table: { defaultValue: { summary: 1 } },
+      table: { defaultValue: { summary: '1' } },
     },
     activeView: {
       type: '"days" | "months" | "years"',
@@ -90,7 +90,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: 'boolean',
       description: 'Whether to show the week numbers.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',

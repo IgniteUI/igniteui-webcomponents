@@ -7,7 +7,7 @@ import {
   IgcInputComponent,
   IgcSelectComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcDialogComponent, IgcInputComponent, IgcSelectComponent);
 
@@ -25,27 +25,27 @@ const metadata: Meta<IgcDialogComponent> = {
       description:
         "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the dialog should be closed when clicking outside of it.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideDefaultAction: {
       type: 'boolean',
       description:
         'Whether to hide the default action button for the dialog.\n\nWhen there is projected content in the `footer` slot this property\nhas no effect.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
       description: 'Whether the dialog is opened.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     title: {
       type: 'string',

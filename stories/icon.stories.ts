@@ -9,7 +9,7 @@ import {
   registerIcon,
   registerIconFromText,
   setIconRef,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcIconComponent, IgcButtonComponent);
 
@@ -45,7 +45,7 @@ const metadata: Meta<IgcIconComponent> = {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { name: '', collection: 'default', mirrored: false },

@@ -6,7 +6,7 @@ import {
   IgcIconComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcButtonGroupComponent, IgcIconComponent);
 
@@ -28,7 +28,7 @@ const metadata: Meta<IgcButtonGroupComponent> = {
       type: 'boolean',
       description: 'Disables all buttons inside the group.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     alignment: {
       type: '"horizontal" | "vertical"',

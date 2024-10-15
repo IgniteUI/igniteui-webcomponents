@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { range } from 'lit/directives/range.js';
 import {
   IgcButtonComponent,
   IgcIconComponent,
@@ -9,7 +8,8 @@ import {
   type IgcNavDrawerItemComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { range } from 'lit/directives/range.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
@@ -37,7 +37,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       type: 'boolean',
       description: 'Determines whether the drawer is opened.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { position: 'start', open: false },

@@ -7,7 +7,7 @@ export interface IgcActiveStepChangedArgs {
   index: number;
 }
 
-export interface IgcStepperEventMap {
+export interface IgcStepperComponentEventMap {
   igcActiveStepChanging: CustomEvent<IgcActiveStepChangingArgs>;
   igcActiveStepChanged: CustomEvent<IgcActiveStepChangedArgs>;
 }

@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcLinearProgressComponent, defineComponents } from '../src/index.js';
+import {
+  IgcLinearProgressComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcLinearProgressComponent);
 
@@ -23,7 +26,7 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'boolean',
       description: 'Sets the striped look of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelAlign: {
       type: '"top-start" | "top" | "top-end" | "bottom-start" | "bottom" | "bottom-end"',
@@ -43,13 +46,13 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      table: { defaultValue: { summary: 100 } },
+      table: { defaultValue: { summary: '100' } },
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
@@ -62,19 +65,19 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      table: { defaultValue: { summary: 500 } },
+      table: { defaultValue: { summary: '500' } },
     },
     indeterminate: {
       type: 'boolean',
       description: 'The indeterminate state of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideLabel: {
       type: 'boolean',
       description: 'Shows/hides the label of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelFormat: {
       type: 'string',
