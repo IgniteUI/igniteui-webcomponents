@@ -3,13 +3,12 @@ import { html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   IgcIconComponent,
   IgcTileManagerComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcTileManagerComponent, IgcIconComponent);
 
@@ -36,12 +35,12 @@ const metadata: Meta<IgcTileManagerComponent> = {
     columnCount: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     rowCount: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
   },
   args: { dragMode: 'slide', columnCount: 0, rowCount: 0 },
@@ -80,19 +79,15 @@ const tiles = Array.from(
   )
 );
 
-const Template = ({
-  dragMode,
-  columnCount,
-  rowCount,
-}: IgcTileManagerArgs) => html`
-  <igc-tile-manager
-    dragMode="${ifDefined(dragMode)}"
-    columnCount="${ifDefined(columnCount)}"
-    rowCount="${ifDefined(rowCount)}"
-  >
-    <p>This text won't be displayed in Tile Manager</p>
-    ${tiles}
-  </igc-tile-manager>
-`;
-
-export const Basic: Story = Template.bind({});
+export const Default: Story = {
+  render: (args) => html`
+    <igc-tile-manager
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .rowCount=${args.rowCount}
+    >
+      <p>This text won't be displayed in Tile Manager</p>
+      ${tiles}
+    </igc-tile-manager>
+  `,
+};
