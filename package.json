@@ -5,8 +5,8 @@
   "author": "Infragistics",
   "license": "SEE LICENSE IN LICENSE",
   "exports": {
-    ".": "./dist/src/index.js",
-    "./types": "./dist/src/types.js"
+    ".": "./src/index.js",
+    "./types": "./src/types.js"
   },
   "type": "module",
   "repository": {
