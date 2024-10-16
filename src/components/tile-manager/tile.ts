@@ -5,6 +5,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { styles } from './themes/tile.base.css.js';
+import IgcTileHeaderComponent from './tile-header.js';
 
 /**
  * The tile component is used within the `igc-tile-manager` as a container
@@ -19,7 +20,7 @@ export default class IgcTileComponent extends LitElement {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcTileComponent);
+    registerComponent(IgcTileComponent, IgcTileHeaderComponent);
   }
 
   // REVIEW

@@ -2,35 +2,45 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
 import { styles } from './themes/tile-manager.base.css.js';
-import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileComponent from './tile.js';
+
+// REVIEW: WIP
+export interface IgcTileManagerComponentEventMap {
+  igcTileDragStarted: CustomEvent<IgcTileComponent>;
+}
 
 /**
  * The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.
  *
  * @element igc-tile-manager
+ *
+ * @fires igcTileDragStarted - Fired when an owning tile begins a drag operation.
  */
-export default class IgcTileManagerComponent extends LitElement {
+export default class IgcTileManagerComponent extends EventEmitterMixin<
+  IgcTileManagerComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-tile-manager';
-  public static override styles = [styles];
+  public static styles = [styles];
 
-  public static override shadowRootOptions: ShadowRootInit = {
+  protected static shadowRootOptions: ShadowRootInit = {
     mode: 'open',
     slotAssignment: 'manual',
   };
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(
-      IgcTileManagerComponent,
-      IgcTileComponent,
-      IgcTileHeaderComponent
-    );
+    registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
   private draggedItem: IgcTileComponent | null = null;
+
+  @query('[part="base"]', true)
+  private _baseWrapper!: HTMLDivElement;
 
   @query('slot', true)
   private slotElement!: HTMLSlotElement;
@@ -41,6 +51,12 @@ export default class IgcTileManagerComponent extends LitElement {
         `:scope > ${IgcTileComponent.tagName}`
       )
     );
+  }
+
+  /* blazorSuppress */
+  /** Returns the igc-tile components owned by the tile manager. */
+  public get tiles() {
+    return this._tiles;
   }
 
   /**
@@ -59,28 +75,24 @@ export default class IgcTileManagerComponent extends LitElement {
   @watch('columnCount', { waitUntilFirstUpdate: true })
   @watch('rowCount', { waitUntilFirstUpdate: true })
   protected updateRowsCols() {
-    const baseElement = this.shadowRoot?.querySelector(
-      '[part="base"]'
-    ) as HTMLElement;
+    // REVIEW: Bind to internal CSS vars/parts or something
+    const gridTemplateColumns =
+      this.columnCount > 0
+        ? `repeat(${this.columnCount}, auto)`
+        : 'repeat(auto-fit, minmax(20px, 1fr))';
+    const gridTemplateRows =
+      this.rowCount > 0
+        ? `repeat(${this.rowCount}, auto)`
+        : 'repeat(auto-fit, minmax(20px, 1fr))';
 
-    if (this.columnCount > 0) {
-      baseElement.style.gridTemplateColumns = `repeat(${this.columnCount}, auto)`;
-    } else {
-      baseElement.style.gridTemplateColumns =
-        'repeat(auto-fit, minmax(20px, 1fr))';
-    }
-
-    if (this.rowCount > 0) {
-      baseElement.style.gridTemplateRows = `repeat(${this.rowCount}, auto)`;
-    } else {
-      baseElement.style.gridTemplateRows =
-        'repeat(auto-fit, minmax(20px, 1fr))';
-    }
+    Object.assign(this._baseWrapper.style, {
+      gridTemplateColumns,
+      gridTemplateRows,
+    });
   }
 
   constructor() {
     super();
-
     addFullscreenController(this);
   }
 
@@ -90,6 +102,7 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   private handleTileDragStart(e: CustomEvent) {
+    this.emitEvent('igcTileDragStarted', { detail: e.detail.tile });
     this.draggedItem = e.detail.tile;
   }
 

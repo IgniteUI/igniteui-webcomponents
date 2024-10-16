@@ -1,21 +1,27 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { map } from 'lit/directives/map.js';
+import { spy } from 'sinon';
+
 import { range } from 'lit/directives/range.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcTileHeaderComponent from './tile-header.js';
+import { first } from '../common/util.js';
+import { simulateDragStart } from '../common/utils.spec.js';
 import IgcTileManagerComponent from './tile-manager.js';
-import IgcTileComponent from './tile.js';
 
 describe('Tile Manager component', () => {
   before(() => {
-    defineComponents(
-      IgcTileComponent,
-      IgcTileHeaderComponent,
-      IgcTileManagerComponent
-    );
+    defineComponents(IgcTileManagerComponent);
   });
 
   let tileManager: IgcTileManagerComponent;
+
+  function getTileManagerBase() {
+    return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
+  }
+
+  // function assertTileIsInert(element: IgcTileComponent) {
+  //   expect(element.renderRoot.querySelector<HTMLElement>('#base')!.inert).to.be
+  //     .true;
+  // }
 
   describe('Initialization', () => {
     beforeEach(async () => {
@@ -44,27 +50,25 @@ describe('Tile Manager component', () => {
     });
 
     it('should render tile manager with correct number of children', async () => {
-      expect(tileManager.childElementCount).to.equal(5);
+      expect(tileManager.tiles).lengthOf(5);
     });
 
     it('each tile should have correct grid area (col and row span)', async () => {
-      const tiles = tileManager.children;
-
-      Array.from(tiles).forEach((tile) => {
-        expect((tile as HTMLElement).style.gridColumn).to.equal('span 5');
-        expect((tile as HTMLElement).style.gridRow).to.equal('span 5');
-      });
+      expect(
+        tileManager.tiles.every(
+          ({ style: { gridColumn, gridRow } }) =>
+            gridColumn === 'span 5' && gridRow === 'span 5'
+        )
+      ).to.be.true;
     });
 
     it("should check tile manager's row and column template style props", async () => {
-      let baseElement = tileManager.shadowRoot?.querySelector(
-        '[part="base"]'
-      ) as HTMLElement;
+      let style = getTileManagerBase().style;
 
-      expect(baseElement.style.gridTemplateColumns).to.equal(
+      expect(style.gridTemplateColumns).to.equal(
         'repeat(auto-fit, minmax(20px, 1fr))'
       );
-      expect(baseElement.style.gridTemplateRows).to.equal(
+      expect(style.gridTemplateRows).to.equal(
         'repeat(auto-fit, minmax(20px, 1fr))'
       );
 
@@ -73,28 +77,21 @@ describe('Tile Manager component', () => {
 
       await elementUpdated(tileManager);
 
-      baseElement = tileManager.shadowRoot?.querySelector(
-        '[part="base"]'
-      ) as HTMLElement;
+      style = getTileManagerBase().style;
 
-      expect(baseElement.style.gridTemplateColumns).to.equal(
-        'repeat(15, auto)'
-      );
-      expect(baseElement.style.gridTemplateRows).to.equal('repeat(15, auto)');
+      expect(style.gridTemplateColumns).to.equal('repeat(15, auto)');
+      expect(style.gridTemplateRows).to.equal('repeat(15, auto)');
     });
 
     it('should respect tile row and col start properties', async () => {
-      const tileElement = tileManager.children[2];
-      const tile = tileElement as IgcTileComponent;
+      const tile = tileManager.tiles[2];
 
       tile.colStart = 7;
       tile.rowStart = 5;
 
       await elementUpdated(tile);
 
-      expect((tileElement as HTMLElement).style.gridArea).to.equal(
-        '5 / 7 / span 5 / span 5'
-      );
+      expect(tile.style.gridArea).to.equal('5 / 7 / span 5 / span 5');
     });
   });
 
@@ -110,36 +107,47 @@ describe('Tile Manager component', () => {
     });
 
     it('should only accept `igc-tile` elements', async () => {
-      const slot = tileManager.shadowRoot?.querySelector('slot');
-      const assignedNodes = slot?.assignedNodes();
-      const assignedTiles = assignedNodes?.filter(
-        (node) => node.nodeName.toLocaleLowerCase() === IgcTileComponent.tagName
-      );
-      const assignedDivs = assignedNodes?.filter(
-        (node) => node.nodeName.toLocaleLowerCase() === 'div'
-      );
+      const slot = tileManager.renderRoot.querySelector('slot')!;
+      expect(slot.assignedElements()).eql(tileManager.tiles);
+    });
+  });
 
-      expect(assignedTiles?.length).to.equal(2);
-      expect(assignedDivs?.length).to.equal(0);
+  describe('Tile drag behavior', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it("should correctly fire 'dragStart' event", async () => {
+      const eventSpy = spy(tileManager, 'emitEvent');
+
+      const tile = first(tileManager.tiles);
+      simulateDragStart(tile);
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledOnceWithExactly('igcTileDragStarted', {
+        detail: tile,
+      });
     });
   });
 
   function createTileManager() {
-    const tiles = Array.from(
-      map(
-        range(5),
-        (i) => html`
-          <igc-tile .colSpan=${5} .rowSpan=${5} id="tile">
-            <igc-tile-header slot="header">
-              <h3 slot="title">Tile ${i + 1} Title</h3>
-            </igc-tile-header>
+    const result = Array.from(range(5)).map(
+      (i) => html`
+        <igc-tile colSpan="5" rowSpan="5">
+          <igc-tile-header slot="header">
+            <h3 slot="title">Tile ${i + 1}</h3>
+          </igc-tile-header>
 
-            <p>Text in Tile ${i + 1}</p>
-          </igc-tile>
-        `
-      )
+          <div>
+            <p>Content in tile ${i + 1}</p>
+          </div>
+        </igc-tile>
+      `
     );
-
-    return html` <igc-tile-manager> ${tiles} </igc-tile-manager> `;
+    return html`<igc-tile-manager>${result}</igc-tile-manager>`;
   }
 });
+
+// function getTileBaseWrapper(element: IgcTileComponent) {
+//   return element.renderRoot.querySelector<HTMLDivElement>('#base')!;
+// }
