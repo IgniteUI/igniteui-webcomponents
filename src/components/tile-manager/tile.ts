@@ -1,7 +1,9 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
+import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { styles } from './themes/tile.base.css.js';
 
 /**
@@ -19,6 +21,13 @@ export default class IgcTileComponent extends LitElement {
   public static register() {
     registerComponent(IgcTileComponent);
   }
+
+  // REVIEW
+  // @state()
+  // private _isDragging = false;
+
+  @state()
+  private _hasDragOver = false;
 
   @property({ type: Number })
   public colSpan = 3;
@@ -60,18 +69,17 @@ export default class IgcTileComponent extends LitElement {
   constructor() {
     super();
 
-    this.addEventListener('dragstart', this.handleDragStart);
-    this.addEventListener('dragend', this.handleDragEnd);
+    addTileDragAndDrop(this, {
+      dragStart: this.handleDragStart,
+      dragEnd: this.handleDragEnd,
+      dragEnter: this.handleDragEnter,
+      dragLeave: this.handleDragLeave,
+      drop: this.handleDragLeave,
+    });
+
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
     this.addEventListener('dblclick', this.handleFullscreenRequest);
-  }
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    // This should be probably moved into a DnD (drag & drop) controller
-    // for the tile itself along with the event listeners setup
-    this.draggable = true;
   }
 
   protected override async firstUpdated() {
@@ -105,6 +113,14 @@ export default class IgcTileComponent extends LitElement {
     }
   }
 
+  private handleDragEnter() {
+    this._hasDragOver = true;
+  }
+
+  private handleDragLeave() {
+    this._hasDragOver = false;
+  }
+
   private handleDragStart() {
     const event = new CustomEvent('tileDragStart', {
       detail: { tile: this },
@@ -113,9 +129,9 @@ export default class IgcTileComponent extends LitElement {
     this.dispatchEvent(event);
     this.classList.add('dragging');
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       this.style.transform = 'scale(0)';
-    }, 0);
+    });
   }
 
   private handleDragEnd() {
@@ -169,26 +185,32 @@ export default class IgcTileComponent extends LitElement {
   }
 
   protected override render() {
-    return html`
-      <div part="header">
-        <slot name="header"></slot>
-      </div>
-      <div part="content-container">
-        <slot></slot>
-      </div>
+    const parts = partNameMap({
+      'drag-over': this._hasDragOver,
+    });
 
-      <div
-        class="resize-handle"
-        @mousedown=${this.startResize.bind(this)}
-      ></div>
-      <div
-        class="resizer right"
-        @mousedown=${this.startResize.bind(this)}
-      ></div>
-      <div
-        class="resizer bottom"
-        @mousedown=${this.startResize.bind(this)}
-      ></div>
+    return html`
+      <div id="base" .inert=${this._hasDragOver} part=${parts}>
+        <div part="header">
+          <slot name="header"></slot>
+        </div>
+        <div part="content-container">
+          <slot></slot>
+        </div>
+
+        <div
+          class="resize-handle"
+          @mousedown=${this.startResize.bind(this)}
+        ></div>
+        <div
+          class="resizer right"
+          @mousedown=${this.startResize.bind(this)}
+        ></div>
+        <div
+          class="resizer bottom"
+          @mousedown=${this.startResize.bind(this)}
+        ></div>
+      </div>
     `;
   }
 }
