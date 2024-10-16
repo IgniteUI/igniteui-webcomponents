@@ -225,6 +225,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     await this.updateComplete;
 
     this.syncProperties();
+    this.updateButtonsOnResize();
+    this.setComponentWidth();
     this.setupObserver();
     this.selectTab(
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0),
