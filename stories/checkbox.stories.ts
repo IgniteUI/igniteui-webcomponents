@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcCheckboxComponent, defineComponents } from '../src/index.js';
+import { IgcCheckboxComponent, defineComponents } from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,
@@ -29,14 +28,14 @@ const metadata: Meta<IgcCheckboxComponent> = {
       type: 'boolean',
       description: 'Draws the checkbox in indeterminate state.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -47,13 +46,13 @@ const metadata: Meta<IgcCheckboxComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'string',
@@ -64,7 +63,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
       type: 'boolean',
       description: 'The checked state of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelPosition: {
       type: '"before" | "after"',
@@ -108,29 +107,22 @@ type Story = StoryObj<IgcCheckboxArgs>;
 
 // endregion
 
-const Template = ({
-  labelPosition,
-  checked,
-  indeterminate,
-  disabled,
-  invalid,
-  required,
-}: IgcCheckboxArgs) => {
-  return html`
+export const Default: Story = {
+  render: (args) => html`
     <igc-checkbox
-      label-position=${ifDefined(labelPosition)}
-      .checked=${checked}
-      .indeterminate=${indeterminate}
-      .disabled=${disabled}
-      .required=${required}
-      .invalid=${invalid}
+      ?checked=${args.checked}
+      ?disabled=${args.disabled}
+      ?required=${args.required}
+      .value=${args.value}
+      .name=${args.name}
+      .labelPosition=${args.labelPosition}
+      .invalid=${args.invalid}
+      .indeterminate=${args.indeterminate}
     >
       Label
     </igc-checkbox>
-  `;
+  `,
 };
-
-export const Basic: Story = Template.bind({});
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -147,6 +139,11 @@ export const Form: Story = {
           <igc-checkbox name="checkbox-initial" value="initial" checked
             >Checked initial state</igc-checkbox
           >
+        </fieldset>
+
+        <fieldset disabled>
+          <legend>Disabled section</legend>
+          <igc-checkbox name="checkbox-disabled">Checkbox 2</igc-checkbox>
         </fieldset>
 
         <fieldset>
@@ -166,11 +163,6 @@ export const Form: Story = {
             </div>
             <div slot="invalid">Mhm, nope, not gonna happen!</div>
           </igc-checkbox>
-        </fieldset>
-
-        <fieldset disabled>
-          <legend>Disabled section</legend>
-          <igc-checkbox name="checkbox-disabled">Checkbox 2</igc-checkbox>
         </fieldset>
 
         ${formControls()}

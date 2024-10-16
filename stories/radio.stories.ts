@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcRadioComponent, defineComponents } from '../src/index.js';
+import { IgcRadioComponent, defineComponents } from 'igniteui-webcomponents';
 
 defineComponents(IgcRadioComponent);
 
@@ -20,7 +19,7 @@ const metadata: Meta<IgcRadioComponent> = {
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'string',
@@ -31,7 +30,7 @@ const metadata: Meta<IgcRadioComponent> = {
       type: 'boolean',
       description: 'The checked state of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     labelPosition: {
       type: '"before" | "after"',
@@ -49,13 +48,13 @@ const metadata: Meta<IgcRadioComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {
@@ -89,22 +88,18 @@ type Story = StoryObj<IgcRadioArgs>;
 
 // endregion
 
-const Template = ({
-  labelPosition,
-  checked,
-  disabled,
-  required,
-  invalid,
-}: IgcRadioArgs) => html`
-  <igc-radio
-    label-position="${ifDefined(labelPosition)}"
-    .disabled="${disabled}"
-    .checked="${checked}"
-    .required=${required}
-    .invalid="${invalid}"
-  >
-    Label
-  </igc-radio>
-`;
-
-export const Basic: Story = Template.bind({});
+export const Default: Story = {
+  render: (args) => html`
+    <igc-radio
+      .labelPosition=${args.labelPosition}
+      .name=${args.name}
+      .value=${args.value}
+      ?disabled=${args.disabled}
+      ?checked=${args.checked}
+      ?required=${args.required}
+      ?invalid=${args.invalid}
+    >
+      Label
+    </igc-radio>
+  `,
+};

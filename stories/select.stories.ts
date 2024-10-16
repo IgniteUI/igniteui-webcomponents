@@ -6,13 +6,13 @@ import {
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { groupBy } from '../src/components/common/util.js';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { groupBy } from '../src/components/common/util.js';
 import {
   disableStoryControls,
   formControls,
@@ -55,19 +55,19 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     autofocus: {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     distance: {
       type: 'number',
       description: 'The distance of the select dropdown from its input.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     label: {
       type: 'string',
@@ -113,7 +113,7 @@ const metadata: Meta<IgcSelectComponent> = {
       description:
         'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
@@ -124,33 +124,33 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
       description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on selection.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on clicking outside of it.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {
@@ -432,8 +432,8 @@ export const Slots: Story = {
   render: () => html`
     <style>
       .template {
-        background-color: hsl(var(--ig-primary-A200));
-        color: hsl(var(--ig-primary-A200-contrast));
+        background-color: var(--ig-primary-A200);
+        color: var(--ig-primary-A200-contrast);
         padding: 0.5rem;
       }
 

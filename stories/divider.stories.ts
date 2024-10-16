@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
 import {
   IgcButtonComponent,
   IgcDividerComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { html } from 'lit';
 
 defineComponents(IgcDividerComponent, IgcButtonComponent);
 
@@ -25,14 +25,14 @@ const metadata: Meta<IgcDividerComponent> = {
       type: 'boolean',
       description: 'Whether to render a vertical divider line.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     middle: {
       type: 'boolean',
       description:
         'When set and inset is provided, it will shrink the divider line from both sides.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     type: {
       type: '"solid" | "dashed"',

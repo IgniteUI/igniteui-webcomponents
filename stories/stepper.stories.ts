@@ -6,7 +6,7 @@ import {
   IgcInputComponent,
   IgcStepperComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcStepperComponent, IgcButtonComponent, IgcInputComponent);
 
@@ -42,13 +42,13 @@ const metadata: Meta<IgcStepperComponent> = {
       type: 'boolean',
       description: 'Get/Set whether the stepper is linear.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     contentTop: {
       type: 'boolean',
       description: 'Get/Set whether the content is displayed above the steps.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     verticalAnimation: {
       type: '"grow" | "fade" | "none"',
@@ -69,7 +69,7 @@ const metadata: Meta<IgcStepperComponent> = {
       description:
         'The animation duration in either vertical or horizontal mode.',
       control: 'number',
-      table: { defaultValue: { summary: 320 } },
+      table: { defaultValue: { summary: '320' } },
     },
     titlePosition: {
       type: '"bottom" | "top" | "end" | "start"',

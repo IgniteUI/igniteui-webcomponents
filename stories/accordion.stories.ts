@@ -2,9 +2,13 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { range } from 'lit/directives/range.js';
 
-import { IgcAccordionComponent, defineComponents } from '../src/index.js';
+import {
+  IgcAccordionComponent,
+  IgcInputComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 
-defineComponents(IgcAccordionComponent);
+defineComponents(IgcAccordionComponent, IgcInputComponent);
 
 // region default
 const metadata: Meta<IgcAccordionComponent> = {
@@ -23,7 +27,7 @@ const metadata: Meta<IgcAccordionComponent> = {
       type: 'boolean',
       description: 'Allows only one panel to be expanded at a time.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { singleExpand: false },

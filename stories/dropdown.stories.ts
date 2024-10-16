@@ -10,7 +10,7 @@ import {
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 const icons = [github, whiteHouse1];
 
@@ -76,40 +76,40 @@ const metadata: Meta<IgcDropdownComponent> = {
       description:
         "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     distance: {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      table: { defaultValue: { summary: 0 } },
+      table: { defaultValue: { summary: '0' } },
     },
     sameWidth: {
       type: 'boolean',
       description:
         "Whether the dropdown's width should be the same as the target's one.",
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on selection.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on clicking outside of it.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {

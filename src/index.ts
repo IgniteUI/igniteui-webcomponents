@@ -85,7 +85,34 @@ export { configureTheme } from './theming/config.js';
 // localization objects
 export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
-// Types
+// Event maps
+export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
+export type { IgcButtonGroupComponentEventMap } from './components/button-group/button-group.js';
+export type { IgcCalendarComponentEventMap } from './components/calendar/types.js';
+export type { IgcCarouselComponentEventMap } from './components/carousel/carousel.js';
+export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbox-base.js';
+export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
+export type { IgcChipComponentEventMap } from './components/chip/chip.js';
+export type { IgcComboComponentEventMap } from './components/combo/types.js';
+export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
+export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
+export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
+export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
+export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
+export type { IgcInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
+export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
+export type { IgcSelectComponentEventMap } from './components/select/select.js';
+export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
+export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
+export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
+export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
+export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
+export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
+export type { IgcTreeComponentEventMap } from './components/tree/tree.common.js';
+
+// Public types
 export type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -109,6 +136,10 @@ export type {
 } from './components/stepper/stepper.common.js';
 export type {
   ComboItemTemplate,
+  ComboTemplateProps,
+  FilteringOptions,
+  GroupingDirection,
+  GroupingOptions,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';

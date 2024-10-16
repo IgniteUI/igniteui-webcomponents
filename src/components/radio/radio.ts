@@ -36,7 +36,7 @@ export interface RadioChangeEventArgs {
   value?: string;
 }
 
-export interface IgcRadioEventMap {
+export interface IgcRadioComponentEventMap {
   igcChange: CustomEvent<RadioChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
@@ -62,7 +62,9 @@ export interface IgcRadioEventMap {
  */
 @themes(all)
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
-  EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-radio';
   protected static styles = [styles, shared];
@@ -264,7 +266,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  protected handleClick() {
+  protected handleClick(event: PointerEvent) {
+    event.stopPropagation();
+
     if (this.checked) {
       return;
     }

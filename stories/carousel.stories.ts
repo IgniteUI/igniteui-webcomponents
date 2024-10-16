@@ -9,7 +9,7 @@ import {
   IgcTextareaComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(
   IgcCarouselComponent,
@@ -38,34 +38,34 @@ const metadata: Meta<IgcCarouselComponent> = {
       description:
         'Whether the carousel should skip rotating to the first slide after it reaches the last.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     disablePauseOnInteraction: {
       type: 'boolean',
       description:
         'Whether the carousel should ignore use interactions and not pause on them.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideNavigation: {
       type: 'boolean',
       description:
         'Whether the carousel should skip rendering of the default navigation buttons.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideIndicators: {
       type: 'boolean',
       description:
         'Whether the carousel should render the indicator controls (dots).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     vertical: {
       type: 'boolean',
       description: 'Whether the carousel has vertical alignment.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
       type: '"start" | "end"',
@@ -99,7 +99,7 @@ const metadata: Meta<IgcCarouselComponent> = {
       description:
         'Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.',
       control: 'number',
-      table: { defaultValue: { summary: 10 } },
+      table: { defaultValue: { summary: '10' } },
     },
     animationType: {
       type: '"slide" | "fade" | "none"',

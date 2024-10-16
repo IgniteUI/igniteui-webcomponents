@@ -8,7 +8,7 @@ import {
   IgcSnackbarComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 registerIconFromText(radioactive.name, radioactive.value);
 defineComponents(IgcSnackbarComponent, IgcButtonComponent, IgcIconComponent);
@@ -36,21 +36,21 @@ const metadata: Meta<IgcSnackbarComponent> = {
       type: 'boolean',
       description: 'Whether the component is in shown state.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     displayTime: {
       type: 'number',
       description:
         'Determines the duration in ms in which the component will be visible.',
       control: 'number',
-      table: { defaultValue: { summary: 4000 } },
+      table: { defaultValue: { summary: '4000' } },
     },
     keepOpen: {
       type: 'boolean',
       description:
         'Determines whether the component should close after the `displayTime` is over.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     position: {
       type: '"bottom" | "middle" | "top"',

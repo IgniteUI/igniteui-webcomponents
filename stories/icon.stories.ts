@@ -9,7 +9,7 @@ import {
   registerIcon,
   registerIconFromText,
   setIconRef,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcIconComponent, IgcButtonComponent);
 
@@ -45,7 +45,7 @@ const metadata: Meta<IgcIconComponent> = {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: { name: '', collection: 'default', mirrored: false },
@@ -140,29 +140,29 @@ const IconReference = ({
         align-items: center;
         gap: 1rem;
         padding-block: 1rem;
-        border: 1px solid hsl(var(--ig-gray-300));
-        color: hsl(var(--ig-gray-800));
+        border: 1px solid var(--ig-gray-300);
+        color: var(--ig-gray-800);
 
         igc-icon {
           --size: 2.5rem;
-          color: hsl(var(--ig-primary-500));
+          color: var(--ig-primary-500);
 
           padding-inline: 1rem;
-          border-inline-end: 1px solid hsl(var(--ig-gray-300));
+          border-inline-end: 1px solid var(--ig-gray-300);
         }
       }
 
       p,
       h5 {
-        color: hsl(var(--ig-gray-700));
+        color: var(--ig-gray-700);
       }
 
       pre[class*='language-'] {
         padding: unset;
         margin-block: 1rem;
         font-size: 0.75rem;
-        background: hsl(var(--ig-surface-500));
-        border: 1px solid hsl(var(--ig-gray-100));
+        background: var(--ig-surface-500);
+        border: 1px solid var(--ig-gray-100);
 
         code {
           text-shadow: none;

@@ -9,6 +9,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

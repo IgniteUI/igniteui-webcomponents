@@ -5,7 +5,7 @@ import {
   IgcTreeComponent,
   type IgcTreeItemComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcTreeComponent);
 
@@ -27,7 +27,7 @@ const metadata: Meta<IgcTreeComponent> = {
         'igcItemCollapsing',
         'igcItemExpanded',
         'igcItemExpanding',
-        'igcItemActivated',
+        'igcActiveItem',
       ],
     },
   },
@@ -37,14 +37,14 @@ const metadata: Meta<IgcTreeComponent> = {
       description:
         "Whether a single or multiple of a parent's child items can be expanded.",
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     toggleNodeOnClick: {
       type: 'boolean',
       description:
         'Whether clicking over nodes will change their expanded state or not.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     selection: {
       type: '"none" | "multiple" | "cascade"',
