@@ -1,0 +1,20 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+[part='header'] {
+    background-color: #2c2c2c;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 5px 10px;
+}
+
+[part='title'] {
+    color: #f5f5f5;
+    display: block;
+    flex: 1 1 100%;
+}
+
+[part='actions'] {
+    color: #f5f5f5;
+}

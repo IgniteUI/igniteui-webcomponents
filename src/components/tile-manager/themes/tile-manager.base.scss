@@ -1,0 +1,17 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+}
+
+[part='base'] {
+    display: grid;
+    grid-auto-columns: minmax(20px, auto);
+    grid-auto-rows: minmax(20px, auto);
+    grid-gap: 10px;
+    grid-auto-flow: dense;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
