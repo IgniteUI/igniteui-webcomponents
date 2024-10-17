@@ -13,10 +13,13 @@ $theme: $material;
     --focus-background: #{var-get($theme, 'button-hover-background')};
     --active-foreground: #{var-get($theme, 'button-hover-color')};
     --active-background: #{var-get($theme, 'button-hover-background')};
-}
+    --border-color: #{var-get($theme, 'button-background')};
+    --disabled-foreground: #{var-get($theme, 'button-disabled-color')};
 
-igc-icon-button[disabled] {
-    --ig-icon-button-disabled-foreground: #{var-get($theme, 'button-disabled-color')}
+    &:active,
+    &:hover {
+        --border-color: #{var-get($theme, 'button-hover-background')};
+    }
 }
 
 :host([alignment='start']) {

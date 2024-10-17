@@ -102,7 +102,7 @@ const removableTabs = Array.from(
 
 const tabs = Array.from(
   map(range(18), (i) => {
-    if (i === 9) {
+    if (i === 2) {
       return html`<igc-tab
         ><div slot="label">
           Looooooooooooooooooooooooooooooooooooooooooooooong header
@@ -133,11 +133,22 @@ const tabs = Array.from(
 
 const Template = ({ activation, alignment }: IgcTabsArgs) => html`
   <div style="display: flex; flex-direction: column; gap: 24px">
-    <igc-tabs
-      alignment="${ifDefined(alignment)}"
-      activation="${ifDefined(activation)}"
-    >
-      ${tabs}
+    <igc-tabs alignment="${ifDefined(alignment)}">
+      <igc-tab>
+        <igc-icon name="home" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        Content 1
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        Content 2
+      </igc-tab>
+      <igc-tab disabled>
+        <igc-icon name="favorite" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        Content 3
+      </igc-tab>
     </igc-tabs>
 
     <igc-tabs alignment="${ifDefined(alignment)}">
@@ -153,6 +164,13 @@ const Template = ({ activation, alignment }: IgcTabsArgs) => html`
         <igc-icon name="favorite" slot="label"></igc-icon>
         Content 3
       </igc-tab>
+    </igc-tabs>
+
+    <igc-tabs
+      alignment="${ifDefined(alignment)}"
+      activation="${ifDefined(activation)}"
+    >
+      ${tabs}
     </igc-tabs>
 
     <igc-tabs alignment="${ifDefined(alignment)}">
@@ -181,13 +199,22 @@ const Template = ({ activation, alignment }: IgcTabsArgs) => html`
           <div
             style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 16px 0"
           >
-            <igc-icon name="home"></igc-icon>
+            <igc-icon slot="prefix" name="home"></igc-icon>
             <input style="box-sizing: border-box; width: 100%" />
             <strong>Custom layout</strong>
             <span>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              The icon text and input are not direct children fo the tab this is
+              a templated content that has its own styles:
             </span>
+            <pre>
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center; 
+gap: 16px; 
+padding: 16px 0
+            </pre
+            >
           </div>
         </div>
         Content 1

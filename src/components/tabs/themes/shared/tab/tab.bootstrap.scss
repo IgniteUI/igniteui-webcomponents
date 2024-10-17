@@ -10,6 +10,7 @@ $theme: $bootstrap;
 
     [part='header'] {
         border-radius: 0;
+        padding: rem(12px) rem(16px);
 
         &::before {
             content: '';
@@ -19,6 +20,11 @@ $theme: $bootstrap;
             z-index: -1;
         }
     }
+}
+
+
+[part~='content'] {
+    @include type-style('button');
 }
 
 :host(:hover) {

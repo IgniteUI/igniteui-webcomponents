@@ -7,6 +7,10 @@ $theme: $material;
     @include type-style('button');
 }
 
+[part='header'] {
+    padding: rem(12px) rem(16px);
+}
+
 ::slotted(igc-icon) {
     --size: #{rem(24px)};
 }

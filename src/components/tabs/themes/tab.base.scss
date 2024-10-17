@@ -10,9 +10,8 @@
     flex-shrink: 0;
     text-align: center;
     justify-content: center;
-    height: 100%;
     pointer-events: all;
-    padding-inline: rem(16px);
+    height: 100%;
     max-width: var(--tab-max-width--justify, var(--tab-max-width));
     min-width: var(--tab-min-width);
     cursor: pointer;
@@ -45,6 +44,7 @@
     flex-direction: column;
     text-align: center;
     outline-style: none;
+    gap: rem(8px);
     flex: 1;
 
     ::slotted(*) {
@@ -66,13 +66,14 @@
     max-width: var(--ig-tabs-width);
     transition: transform 250ms ease-in-out;
     height: 100%;
-    pointer-events: all;
+    pointer-events: none;
 }
 
 :host([selected]) {
     [part~='body'] {
-        display: flex;
+        display: block;
         transform: translateX(0);
+        pointer-events: all;
     }
 }
 
