@@ -68,6 +68,13 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this._setFormValue(this._value.toString());
   }
 
+  /**
+   * The aria label for the slider thumb.
+   * @attr slider-label
+   */
+  @property({ attribute: 'slider-thumb-label' })
+  public sliderThumbLabel!: string;
+
   public get value(): number {
     return this._value;
   }
@@ -134,7 +141,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override renderThumbs() {
-    return this.renderThumb(this.value, this.ariaLabel!);
+    return this.renderThumb(this.value, this.sliderThumbLabel!);
   }
 }
 
