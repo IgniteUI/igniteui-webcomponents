@@ -1,6 +1,10 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
+:host {
+    display: block;
+}
+
 [part='base'] {
     display: grid;
     grid-auto-columns: minmax(20px, auto);

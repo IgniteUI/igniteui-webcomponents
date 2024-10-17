@@ -4,13 +4,15 @@ import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
 import {
+  IgcButtonComponent,
   IgcIconComponent,
+  type IgcTileComponent,
   IgcTileManagerComponent,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
 
-defineComponents(IgcTileManagerComponent, IgcIconComponent);
+defineComponents(IgcTileManagerComponent, IgcIconComponent, IgcButtonComponent);
 
 // region default
 const metadata: Meta<IgcTileManagerComponent> = {
@@ -23,6 +25,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
           'The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.',
       },
     },
+    actions: { handles: ['igcTileDragStarted'] },
   },
   argTypes: {
     dragMode: {
@@ -88,6 +91,35 @@ export const Default: Story = {
     >
       <p>This text won't be displayed in Tile Manager</p>
       ${tiles}
+    </igc-tile-manager>
+  `,
+};
+
+function toggleMaximizedTile() {
+  const tile = document.querySelector<IgcTileComponent>('#max-tile')!;
+  tile.maximized = !tile.maximized;
+}
+
+export const Maximized: Story = {
+  render: () => html`
+    <style>
+      igc-tile-manager {
+        margin: 0 auto;
+        height: 75lvh;
+        width: 75lvw;
+      }
+    </style>
+
+    <igc-tile-manager>
+      <igc-tile id="max-tile">
+        <h1>I am Maximized</h1>
+        <igc-button @click=${toggleMaximizedTile}
+          >Toggle maximized state</igc-button
+        >
+      </igc-tile>
+      <igc-tile rowStart="5">
+        <h2>I am not maximized and will be under the maximized tile</h2>
+      </igc-tile>
     </igc-tile-manager>
   `,
 };

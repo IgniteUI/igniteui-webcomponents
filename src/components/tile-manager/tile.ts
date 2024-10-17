@@ -46,8 +46,23 @@ export default class IgcTileComponent extends LitElement {
    * Indicates whether the tile occupies all available space within the layout.
    * @attr
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public maximized = false;
+
+  @watch('maximized')
+  protected maximizedChanged() {
+    if (this.maximized) {
+      this.popover = 'manual';
+      this.showPopover();
+      return;
+    }
+
+    // Not maximized; check if it needs to hide any popover state
+    if (this.popover) {
+      this.hidePopover();
+      this.popover = null;
+    }
+  }
 
   @watch('colSpan', { waitUntilFirstUpdate: true })
   @watch('rowSpan', { waitUntilFirstUpdate: true })
@@ -86,24 +101,6 @@ export default class IgcTileComponent extends LitElement {
   protected override async firstUpdated() {
     await this.updateComplete;
     this.updateRowsColSpan();
-  }
-
-  protected override updated(
-    changedProperties: Map<string | number | symbol, unknown>
-  ) {
-    super.updated(changedProperties);
-
-    if (changedProperties.has('maximized')) {
-      this.toggleClass(this.maximized, 'maximized');
-    }
-  }
-
-  private toggleClass(condition: boolean, className: string) {
-    if (condition) {
-      this.classList.add(className);
-    } else {
-      this.classList.remove(className);
-    }
   }
 
   private async handleFullscreenRequest() {
