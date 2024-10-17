@@ -48,7 +48,7 @@ describe('Slider component', () => {
       await expect(slider).shadowDom.not.to.be.accessible();
       await expect(slider).lightDom.not.to.be.accessible();
 
-      slider.ariaLabel = 'Slider thumb value';
+      slider.sliderThumbLabel = 'Slider thumb value';
       slider.requestUpdate();
       await elementUpdated(slider);
 
@@ -196,7 +196,7 @@ describe('Slider component', () => {
 
     it('thumb should have correct aria attributes set.', async () => {
       slider.value = 23;
-      slider.setAttribute('aria-label', 'Price');
+      slider.setAttribute('slider-thumb-label', 'Price');
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
@@ -204,7 +204,7 @@ describe('Slider component', () => {
         thumbs: { current: thumb },
       } = getDOM(slider);
 
-      expect(slider.hasAttribute('aria-label')).to.be.true;
+      expect(thumb.hasAttribute('aria-label')).to.be.true;
       expect(thumb.getAttribute('role')).to.eq('slider');
       expect(thumb.ariaValueMin).to.eq('0');
       expect(thumb.ariaValueMax).to.eq('100');
