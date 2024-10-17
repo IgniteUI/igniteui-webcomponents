@@ -548,7 +548,11 @@ export class IgcSliderBaseComponent extends LitElement {
     return html`<div part="ticks">${this._renderTicks()}</div>`;
   }
 
-  protected renderThumb(value: number, ariaLabel?: string, thumbId?: string) {
+  protected renderThumb(
+    value: number,
+    sliderThumbLabel?: string,
+    thumbId?: string
+  ) {
     const percent = `${asPercent(value - this.min, this.distance)}%`;
     const thumbStyles = { insetInlineStart: percent };
     const tooltipStyles = {
@@ -573,7 +577,7 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemax=${this.upperBound}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
-        aria-label=${ifDefined(ariaLabel)}
+        aria-label=${ifDefined(sliderThumbLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.showThumbLabels}
         @pointerleave=${this.hideThumbLabels}

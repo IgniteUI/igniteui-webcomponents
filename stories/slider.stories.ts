@@ -29,6 +29,11 @@ const metadata: Meta<IgcSliderComponent> = {
       description: 'The current value of the component.',
       control: 'number',
     },
+    sliderThumbLabel: {
+      type: 'string',
+      description: 'The aria label for the slider thumb.',
+      control: 'text',
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -164,6 +169,8 @@ export default metadata;
 interface IgcSliderArgs {
   /** The current value of the component. */
   value: number;
+  /** The aria label for the slider thumb. */
+  sliderThumbLabel: string;
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component. */
@@ -233,6 +240,9 @@ type Story = StoryObj<IgcSliderArgs>;
 // endregion
 
 export const Default: Story = {
+  args: {
+    sliderThumbLabel: 'Default slider label',
+  },
   render: (args) => html`
     <style>
       igc-slider {
@@ -240,7 +250,7 @@ export const Default: Story = {
       }
     </style>
     <igc-slider
-      aria-label="Default slider"
+      .sliderThumbLabel=${args.sliderThumbLabel}
       ?disabled=${args.disabled}
       ?discrete-track=${args.discreteTrack}
       ?hide-tooltip=${args.hideTooltip}
@@ -293,21 +303,21 @@ export const ValueFormat: Story = {
     </style>
 
     <igc-slider
-      aria-label="Currency"
+      slider-thumb-label="Currency"
       primary-ticks="3"
       secondary-ticks="4"
       .valueFormatOptions=${currencyFormat}
     ></igc-slider>
 
     <igc-slider
-      aria-label="Distance"
+      slider-thumb-label="Distance"
       value-format="Distance: {0}"
       locale="fr"
       .valueFormatOptions=${distanceFormat}
     ></igc-slider>
 
     <igc-slider
-      aria-label="Temperature"
+      slider-thumb-label="Temperature"
       step="0"
       value="26"
       value-format="{0}"
@@ -324,7 +334,7 @@ export const Labels: Story = {
   render: () => html`
     <igc-slider
       style="max-width: 300px; margin-top: 40px"
-      aria-label="Priority"
+      slider-thumb-label="Priority"
       discrete-track
       primary-ticks="1"
     >
@@ -343,7 +353,7 @@ export const Form: Story = {
         <fieldset>
           <legend>Default</legend>
           <igc-slider
-            aria-label="Default"
+            slider-thumb-label="Default"
             name="default-slider"
             value="77"
           ></igc-slider>
@@ -351,7 +361,7 @@ export const Form: Story = {
         <fieldset disabled>
           <legend>Disabled</legend>
           <igc-slider
-            aria-label="Default"
+            slider-thumb-label="Disabled"
             name="disabled-slider"
             value="50"
           ></igc-slider>
