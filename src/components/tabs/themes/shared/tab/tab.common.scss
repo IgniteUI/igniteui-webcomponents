@@ -3,31 +3,66 @@
 
 $theme: $material;
 
-:host {
-    background: var-get($theme, 'item-background');
+[part='header'] {
     color: var-get($theme, 'item-text-color');
+    background: var-get($theme, 'item-background');
     border-radius: var-get($theme, 'border-radius');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
+    }
 }
 
 :host(:hover),
 :host(:focus-within) {
-    background: var-get($theme, 'item-hover-background');
-    color: var-get($theme, 'item-hover-color');
+    [part='header'] {
+        color: var-get($theme, 'item-hover-color');
+        background: var-get($theme, 'item-hover-background');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+    }
 }
 
 :host([selected]) {
-    color: var-get($theme, 'item-active-color');
+    [part='header'] {
+        color: var-get($theme, 'item-active-color');
 
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-active-icon-color');
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-active-icon-color');
+        }
     }
 }
 
 :host([selected]:hover),
 :host([selected]:focus-within) {
-    color: var-get($theme, 'item-active-color');
+    [part='header'] {
+        color: var-get($theme, 'item-active-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-active-icon-color');
+        }
+    }
 }
 
 :host([disabled]) {
-    color: var-get($theme, 'item-disabled-color');
+    [part='header'] {
+        color: var-get($theme, 'item-disabled-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-disabled-icon-color');
+        }
+    }
+}
+
+:host(:hover),
+:host(:focus-within),
+:host(:focus),
+:host([selected]:hover),
+:host([selected]:focus),
+:host([selected]:focus-within) {
+    [part='header'] {
+        outline: none;
+    }
 }
