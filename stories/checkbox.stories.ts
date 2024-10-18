@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcCheckboxComponent, defineComponents } from '../src/index.js';
+import { IgcCheckboxComponent, defineComponents } from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,

@@ -5,8 +5,8 @@
   "author": "Infragistics",
   "license": "SEE LICENSE IN LICENSE",
   "exports": {
-    ".": "./dist/src/index.js",
-    "./types": "./dist/src/types.js"
+    ".": "./src/index.js",
+    "./types": "./src/types.js"
   },
   "type": "module",
   "repository": {
@@ -96,16 +96,16 @@
     "sass-embedded": "^1.78.0",
     "sinon": "^19.0.2",
     "storybook": "^8.3.5",
-    "stylelint": "^16.9.0",
+    "stylelint": "^16.10.0",
     "stylelint-config-standard-scss": "^13.1.0",
     "stylelint-prettier": "^5.0.2",
     "stylelint-scss": "^6.7.0",
     "ts-lit-plugin": "^2.0.2",
-    "tslib": "^2.7.0",
-    "typedoc": "^0.26.8",
+    "tslib": "^2.8.0",
+    "typedoc": "^0.26.10",
     "typedoc-plugin-localization": "^3.0.5",
     "typescript": "^5.6.3",
-    "vite": "^5.4.8"
+    "vite": "^5.4.9"
   },
   "browserslist": [
     "defaults"

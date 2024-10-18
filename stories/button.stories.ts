@@ -6,7 +6,7 @@ import {
   IgcIconComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcButtonComponent, IgcIconComponent);
 

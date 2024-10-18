@@ -7,7 +7,7 @@ import {
   IgcInputComponent,
   IgcSelectComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcDialogComponent, IgcInputComponent, IgcSelectComponent);
 

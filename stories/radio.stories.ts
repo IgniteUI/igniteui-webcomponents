@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcRadioComponent, defineComponents } from '../src/index.js';
+import { IgcRadioComponent, defineComponents } from 'igniteui-webcomponents';
 
 defineComponents(IgcRadioComponent);
 

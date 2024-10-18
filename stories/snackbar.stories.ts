@@ -8,7 +8,7 @@ import {
   IgcSnackbarComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 registerIconFromText(radioactive.name, radioactive.value);
 defineComponents(IgcSnackbarComponent, IgcButtonComponent, IgcIconComponent);

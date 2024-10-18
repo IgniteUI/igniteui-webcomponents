@@ -9,7 +9,7 @@ import {
   defineComponents,
   registerIcon,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,

@@ -10,7 +10,7 @@ import {
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 const icons = [github, whiteHouse1];
 

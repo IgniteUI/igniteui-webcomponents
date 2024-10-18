@@ -6,13 +6,13 @@ import {
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { groupBy } from '../src/components/common/util.js';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { groupBy } from '../src/components/common/util.js';
 import {
   disableStoryControls,
   formControls,

@@ -7,7 +7,7 @@ import {
   IgcButtonComponent,
   IgcDatePickerComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,

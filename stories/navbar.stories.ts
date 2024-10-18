@@ -11,7 +11,7 @@ import {
   IgcNavbarComponent,
   defineComponents,
   registerIcon,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 
 defineComponents(
   IgcNavbarComponent,

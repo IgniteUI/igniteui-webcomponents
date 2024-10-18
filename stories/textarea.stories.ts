@@ -2,13 +2,13 @@ import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html, render } from 'lit';
 
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   IgcIconComponent,
   IgcTextareaComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   disableStoryControls,
   formControls,

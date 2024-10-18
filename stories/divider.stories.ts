@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
 import {
   IgcButtonComponent,
   IgcDividerComponent,
   defineComponents,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
+import { html } from 'lit';
 
 defineComponents(IgcDividerComponent, IgcButtonComponent);
 

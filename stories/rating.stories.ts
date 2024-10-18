@@ -7,7 +7,7 @@ import {
   IgcRatingComponent,
   defineComponents,
   registerIconFromText,
-} from '../src/index.js';
+} from 'igniteui-webcomponents';
 import utils from './rating.common.js';
 import {
   disableStoryControls,
