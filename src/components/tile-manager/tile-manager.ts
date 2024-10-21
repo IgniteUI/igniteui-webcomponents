@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { createMutationController } from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -38,7 +39,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private draggedItem: IgcTileComponent | null = null;
-  private mutationObserver: MutationObserver;
 
   @query('[part="base"]', true)
   private _baseWrapper!: HTMLDivElement;
@@ -52,6 +52,10 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         `:scope > ${IgcTileComponent.tagName}`
       )
     );
+  }
+
+  private _observerCallback() {
+    this.updateTilesFromDom();
   }
 
   /**
@@ -102,26 +106,19 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   constructor() {
     super();
     addFullscreenController(this);
-    this.mutationObserver = new MutationObserver(() => {
-      this.updateTilesFromDom();
-    });
-  }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.mutationObserver.observe(this, {
-      childList: true,
+    createMutationController(this, {
+      callback: this._observerCallback,
+      filter: [IgcTileComponent.tagName],
+      config: {
+        childList: true,
+      },
     });
   }
 
   protected override firstUpdated() {
     this.updateRowsCols();
     this.updateTilesFromDom();
-  }
-
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.mutationObserver.disconnect();
   }
 
   private handleTileDragStart(e: CustomEvent) {
