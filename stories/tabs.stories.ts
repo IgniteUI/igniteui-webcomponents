@@ -81,23 +81,21 @@ const remove = (e: MouseEvent) => {
   (e.target as HTMLElement).closest('igc-tab')?.remove();
 };
 
-const removableTabs = Array.from(
-  map(
-    range(10),
-    (i) =>
-      html`<igc-tab>
-        <div slot="label">
-          Item ${i + 1}
-          <igc-icon-button
-            @click=${remove}
-            slot="suffix"
-            collection="internal"
-            name="chip_cancel"
-          ></igc-icon-button>
-        </div>
-        <h1>C${i + 1}</h1>
-      </igc-tab>`
-  )
+const removableTabs = Array.from(range(10)).map(
+  (i) => html`
+    <igc-tab>
+      <div slot="label">
+        Item ${i + 1}
+        <igc-icon-button
+          @click=${remove}
+          slot="suffix"
+          collection="internal"
+          name="chip_cancel"
+        ></igc-icon-button>
+      </div>
+      <h2>C${i + 1}</h2>
+    </igc-tab>
+  `
 );
 
 const tabs = Array.from(
@@ -210,8 +208,8 @@ const Template = ({ activation, alignment }: IgcTabsArgs) => html`
 display: flex;
 flex-direction: column;
 align-items: center;
-justify-content: center; 
-gap: 16px; 
+justify-content: center;
+gap: 16px;
 padding: 16px 0
             </pre
             >
@@ -245,26 +243,22 @@ padding: 16px 0
   </div>
 `;
 
-const TabStrip = ({ activation, alignment }: IgcTabsArgs) => html`
-  <igc-tabs
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${Array.from(range(1, 11)).map(
-      (i) => html` <igc-tab><div slot="label">${i}</div></igc-tab> `
-    )}
-  </igc-tabs>
-`;
+export const Strip: Story = {
+  render: (args) => html`
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${Array.from(range(1, 11)).map(
+        (i) => html` <igc-tab label=${i}></igc-tab> `
+      )}
+    </igc-tabs>
+  `,
+};
 
-const RemovableTabs = ({ activation, alignment }: IgcTabsArgs) => html`
-  <igc-tabs
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${removableTabs}
-  </igc-tabs>
-`;
+export const Removable: Story = {
+  render: (args) => html`
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${removableTabs}
+    </igc-tabs>
+  `,
+};
 
 export const Basic: Story = Template.bind({});
-export const Removable: Story = RemovableTabs.bind({});
-export const Strip: Story = TabStrip.bind({});

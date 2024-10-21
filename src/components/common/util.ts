@@ -283,3 +283,31 @@ export function isEmpty<T, U extends string>(
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;
 }
+
+interface ScrollElementOptions extends ScrollIntoViewOptions {
+  focus?: boolean;
+}
+
+export function scrollIntoView(
+  element?: HTMLElement,
+  config?: ScrollElementOptions
+): void {
+  if (!element) {
+    return;
+  }
+
+  const options: ScrollElementOptions = Object.assign(
+    {
+      behavior: 'auto',
+      block: 'nearest',
+      inline: 'nearest',
+    },
+    config
+  );
+
+  element.scrollIntoView(options);
+
+  if (options.focus) {
+    element.focus();
+  }
+}

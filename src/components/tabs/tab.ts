@@ -1,8 +1,9 @@
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { createCounter } from '../common/util.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
@@ -34,11 +35,7 @@ export default class IgcTabComponent extends LitElement {
     registerComponent(IgcTabComponent);
   }
 
-  @query('[part~="header"]')
-  public header!: HTMLElement;
-
-  @query('[part~="body"]')
-  public contentBody!: HTMLElement;
+  private static increment = createCounter();
 
   /**
    * The tab item label.
@@ -61,21 +58,24 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** @private */
-  @property({ attribute: false })
-  public index = -1;
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.id = this.id || `igc-tab-${IgcTabComponent.increment()}`;
+  }
 
   protected override render() {
+    const headerId = `${this.id}-header`;
+    const contentId = `${this.id}-content`;
+
     return html`
       <div
         part="header"
         role="tab"
-        id="igc-tab-header-${this.index}"
+        id=${headerId}
         aria-disabled=${this.disabled}
         aria-selected=${this.selected}
-        aria-controls="igc-tab-content-${this.index}"
-        aria-posinset=${this.index + 1}
-        tabindex=${this.selected ? '0' : '-1'}
+        aria-controls=${contentId}
+        tabindex=${this.selected ? 0 : -1}
       >
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
@@ -86,10 +86,11 @@ export default class IgcTabComponent extends LitElement {
         </div>
       </div>
       <div
-        id="igc-tab-content-${this.index}"
         part="body"
         role="tabpanel"
-        aria-labelledby="igc-tab-header-${this.index}"
+        id=${contentId}
+        aria-labelledby=${headerId}
+        .inert=${!this.selected}
       >
         <slot></slot>
       </div>
