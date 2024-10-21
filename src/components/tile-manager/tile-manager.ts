@@ -38,6 +38,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private draggedItem: IgcTileComponent | null = null;
+  private mutationObserver: MutationObserver;
 
   @query('[part="base"]', true)
   private _baseWrapper!: HTMLDivElement;
@@ -53,12 +54,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     );
   }
 
-  /* blazorSuppress */
-  /** Returns the igc-tile components owned by the tile manager. */
-  public get tiles() {
-    return this._tiles;
-  }
-
   /**
    * Determines whether the tiles slide or swap on drop.
    * @attr
@@ -71,6 +66,19 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public rowCount = 0;
+
+  /**
+   * Gets/Sets the tiles.
+   * @attr
+   */
+  @property({ type: Array })
+  public tiles: IgcTileComponent[] = [];
+
+  @watch('tiles', { waitUntilFirstUpdate: true })
+  protected updateSlotAssignment() {
+    this.syncTilesWithDom();
+    this.slotElement.assign(...this.tiles);
+  }
 
   @watch('columnCount', { waitUntilFirstUpdate: true })
   @watch('rowCount', { waitUntilFirstUpdate: true })
@@ -94,11 +102,26 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   constructor() {
     super();
     addFullscreenController(this);
+    this.mutationObserver = new MutationObserver(() => {
+      this.updateTilesFromDom();
+    });
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.mutationObserver.observe(this, {
+      childList: true,
+    });
   }
 
   protected override firstUpdated() {
     this.updateRowsCols();
-    this.slotElement.assign(...this._tiles);
+    this.updateTilesFromDom();
+  }
+
+  public override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.mutationObserver.disconnect();
   }
 
   private handleTileDragStart(e: CustomEvent) {
@@ -140,14 +163,30 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
             parent.insertBefore(target, draggedNextSibling);
           }
 
-          const updatedTiles = Array.from(parent.children).filter(
-            (el) => el.tagName === 'IGC-TILE'
+          this.tiles = Array.from(parent.children).filter(
+            (el): el is IgcTileComponent => el.tagName === 'IGC-TILE'
           );
-
-          this.slotElement.assign(...updatedTiles);
         }
       }
     }
+  }
+
+  private updateTilesFromDom() {
+    this.tiles = this._tiles;
+  }
+
+  private syncTilesWithDom() {
+    this._tiles.forEach((child) => {
+      if (!this.tiles.includes(child)) {
+        child.remove();
+      }
+    });
+
+    this.tiles.forEach((tile) => {
+      if (!this.contains(tile)) {
+        this.appendChild(tile);
+      }
+    });
   }
 
   protected override render() {

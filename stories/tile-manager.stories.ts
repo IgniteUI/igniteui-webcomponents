@@ -123,3 +123,31 @@ export const Maximized: Story = {
     </igc-tile-manager>
   `,
 };
+
+function addTile() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+  const newTile = document.createElement('igc-tile');
+  tileManager.appendChild(newTile);
+}
+
+function removeTile() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+  tileManager.tiles = tileManager.tiles.slice(0, -1);
+}
+
+export const DynamicTiles: Story = {
+  render: () => html`
+    <igc-button @click=${addTile}>Add Tile</igc-button>
+    <igc-button @click=${removeTile}>Remove Tile</igc-button>
+    <igc-tile-manager id="tile-manager1">
+      <igc-tile id="tile1">
+        <h1>Tile1</h1>
+      </igc-tile>
+      <igc-tile id="tile2">
+        <h2>Tile2</h2>
+      </igc-tile>
+    </igc-tile-manager>
+  `,
+};

@@ -129,8 +129,7 @@ describe('Tile Manager component', () => {
     });
 
     it('should slot user provided content for tile header', () => {
-      // TODO: Add tests for the title, subtitle and actions slots
-      // if we keep them
+      // TODO: Add tests for the title and actions slots
       const tileHeaders = Array.from(
         tileManager.querySelectorAll(IgcTileHeaderComponent.tagName)
       );
@@ -145,7 +144,6 @@ describe('Tile Manager component', () => {
         `<section>
           <header part="header">
             <slot part="title" name="title"></slot>
-            <slot part="subtitle" name="subtitle"></slot>
             <slot part="actions" name="actions"></slot>
           </header>
           <slot></slot>
@@ -209,15 +207,104 @@ describe('Tile Manager component', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager>
-          <igc-tile></igc-tile>
+          <igc-tile id="tile1"></igc-tile>
           <div></div>
-          <igc-tile></igc-tile>
+          <igc-tile id="tile2"></igc-tile>
         </igc-tile-manager>
       `);
     });
 
     it('should only accept `igc-tile` elements', async () => {
       const slot = tileManager.renderRoot.querySelector('slot')!;
+      expect(slot.assignedElements()).eql(tileManager.tiles);
+    });
+
+    it('should initialize with the correct tiles in the tiles collection and light DOM', async () => {
+      expect(tileManager.tiles.length).to.equal(2);
+      expect(tileManager.tiles[0].id).to.equal('tile1');
+      expect(tileManager.tiles[1].id).to.equal('tile2');
+
+      const lightDomTiles = Array.from(
+        tileManager.querySelectorAll('igc-tile')
+      );
+      expect(lightDomTiles.length).to.equal(2);
+      expect(lightDomTiles[0].id).to.equal('tile1');
+      expect(lightDomTiles[1].id).to.equal('tile2');
+    });
+
+    it('should update the light DOM when a tile is added to the tiles collection', async () => {
+      const newTile = document.createElement('igc-tile') as IgcTileComponent;
+      newTile.id = 'tile3';
+
+      tileManager.tiles = [...tileManager.tiles, newTile];
+      await elementUpdated(tileManager);
+
+      const lightDomTiles = Array.from(
+        tileManager.querySelectorAll('igc-tile')
+      );
+      expect(lightDomTiles.length).to.equal(3);
+      expect(lightDomTiles[2].id).to.equal('tile3');
+    });
+
+    it('should update the light DOM when a tile is removed from the tiles collection', async () => {
+      tileManager.tiles = tileManager.tiles.slice(1);
+      await elementUpdated(tileManager);
+
+      const lightDomTiles = Array.from(
+        tileManager.querySelectorAll('igc-tile')
+      );
+      expect(lightDomTiles.length).to.equal(1);
+      expect(lightDomTiles[0].id).to.equal('tile2');
+    });
+
+    it('should update the tiles collection when a tile is added to the light DOM', async () => {
+      const newTile = document.createElement('igc-tile') as IgcTileComponent;
+      newTile.id = 'tile3';
+
+      tileManager.appendChild(newTile);
+      await elementUpdated(tileManager);
+
+      expect(tileManager.tiles.length).to.equal(3);
+      expect(tileManager.tiles[2].id).to.equal('tile3');
+    });
+
+    it('should update the tiles collection when a tile is removed from the light DOM', async () => {
+      const tileToRemove = tileManager.querySelector(
+        '#tile1'
+      ) as IgcTileComponent;
+
+      tileManager.removeChild(tileToRemove);
+      await elementUpdated(tileManager);
+
+      expect(tileManager.tiles.length).to.equal(1);
+      expect(tileManager.tiles[0].id).to.equal('tile2');
+    });
+
+    it('should update the slot when tile is added to the tiles collection', async () => {
+      const slot = tileManager.renderRoot.querySelector('slot')!;
+      const newTile = document.createElement('igc-tile');
+      newTile.id = 'tile3';
+
+      tileManager.tiles = [...tileManager.tiles, newTile];
+      await tileManager.updateComplete;
+
+      expect(tileManager.tiles.length).to.equal(3);
+      expect(tileManager.tiles[2].id).to.equal('tile3');
+      expect(slot.assignedElements()).eql(tileManager.tiles);
+    });
+
+    it('should update the slot when a tile is removed from tiles collection', async () => {
+      const slot = tileManager.renderRoot.querySelector('slot')!;
+      expect(tileManager.tiles.length).to.equal(2);
+
+      tileManager.tiles = tileManager.tiles.filter(
+        (tile) => tile.id !== 'tile1'
+      );
+
+      await tileManager.updateComplete;
+
+      expect(tileManager.tiles.length).to.equal(1);
+      expect(tileManager.tiles[0].id).to.equal('tile2');
       expect(slot.assignedElements()).eql(tileManager.tiles);
     });
   });

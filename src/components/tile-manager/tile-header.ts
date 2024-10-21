@@ -27,7 +27,6 @@ export default class IgcTileHeaderComponent extends LitElement {
       <section>
         <header part="header">
           <slot part="title" name="title"></slot>
-          <slot part="subtitle" name="subtitle"></slot>
           <slot part="actions" name="actions"></slot>
         </header>
         <slot></slot>
