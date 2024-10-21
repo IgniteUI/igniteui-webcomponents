@@ -29,3 +29,33 @@ $theme: $indigo;
         z-index: calc(map.get($tabs-z-index, 'selected-indicator') + 1);
     }
 }
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    --hover-background: #{var-get($theme, 'button-background')};
+    --focus-background: #{var-get($theme, 'button-background')};
+    --active-background: #{var-get($theme, 'button-background')};
+
+    &:active,
+    &:hover {
+        --border-color: #{var-get($theme, 'button-background')};
+    }
+}
+
+igc-icon-button:hover::part(base) {
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: var-get($theme, 'button-hover-background');
+        z-index: 1;
+    }
+}
+
+igc-icon-button::part(base) {
+    overflow: hidden;
+}
+
+igc-icon-button::part(icon) {
+    z-index: 2;
+}

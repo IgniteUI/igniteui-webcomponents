@@ -195,15 +195,15 @@ const Template = ({ activation, alignment }: IgcTabsArgs) => html`
       <igc-tab>
         <div slot="label">
           <div
-            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 16px 0"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;"
           >
             <igc-icon slot="prefix" name="home"></igc-icon>
             <input style="box-sizing: border-box; width: 100%" />
             <strong>Custom layout</strong>
-            <span>
-              The icon text and input are not direct children fo the tab this is
-              a templated content that has its own styles:
-            </span>
+            <small>
+              The icon, the text, and the input are not direct children of the
+              tab, this is a templated content that has its own styles:
+            </small>
             <pre>
 display: flex;
 flex-direction: column;

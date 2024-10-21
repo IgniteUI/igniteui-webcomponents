@@ -4,6 +4,8 @@
 @use 'sass:map';
 
 [part~='header'] {
+    $transition: .3s cubic-bezier(.35, 0, .25, 1);
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -19,6 +21,13 @@
     z-index: map.get($tabs-z-index, 'header');
     grid-row: 1;
     word-break: break-word;
+    transition:
+        background-color $transition,
+        color $transition;
+
+    ::slotted(igc-icon) {
+        transition: color $transition;
+    }
 
     &:focus-within {
         outline-color: transparent;
@@ -66,14 +75,12 @@
     max-width: var(--ig-tabs-width);
     transition: transform 250ms ease-in-out;
     height: 100%;
-    pointer-events: none;
 }
 
 :host([selected]) {
     [part~='body'] {
         display: block;
         transform: translateX(0);
-        pointer-events: all;
     }
 }
 

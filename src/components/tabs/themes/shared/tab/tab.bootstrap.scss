@@ -22,7 +22,6 @@ $theme: $bootstrap;
     }
 }
 
-
 [part~='content'] {
     @include type-style('button');
 }
@@ -72,10 +71,8 @@ $theme: $bootstrap;
 }
 
 :host(:focus),
-:host(:active),
 :host(:focus-within),
 :host([selected]:focus),
-:host([selected]:active),
 :host([selected]:focus-within) {
     [part='header'] {
         color: var-get($theme, 'item-hover-color');
@@ -84,8 +81,7 @@ $theme: $bootstrap;
     }
 }
 
-:host(:focus-within),
-:host(:active) {
+:host(:focus-within) {
     [part='header'] {
         &::after {
             content: '';

@@ -3,7 +3,6 @@
 @use 'tabs.common' as *;
 @use 'sass:map';
 
-$tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 $arrow-start: 0;
 
 :host {
@@ -31,6 +30,7 @@ $arrow-start: 0;
     display: flex;
     overflow: hidden;
     height: 100%;
+    scroll-behavior: smooth;
 
     /* stylelint-disable */
     -ms-overflow-style: none;
@@ -147,17 +147,16 @@ $arrow-start: 0;
 }
 
 igc-icon-button::part(base) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 0;
     padding: 0;
     height: 100%;
     width: 100%;
-    cursor: pointer;
+    transition: none;
 }
 
 [part='selected-indicator'] {
+    $indicator-bezier: cubic-bezier(.35, 0, .25, 1);
+
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
@@ -166,7 +165,7 @@ igc-icon-button::part(base) {
         content: '';
         position: absolute;
         display: inline-block;
-        transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
+        transition: transform .3s $indicator-bezier, width .2s $indicator-bezier;
         z-index: map.get($tabs-z-index, 'selected-indicator');
     }
 }
