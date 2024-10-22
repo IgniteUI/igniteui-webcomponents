@@ -336,7 +336,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private _keyboardActivateTab(tab: IgcTabComponent) {
-    scrollIntoView(getTabHeader(tab), { focus: true });
+    const header = getTabHeader(tab);
+
+    scrollIntoView(header);
+    header.focus({ preventScroll: true });
 
     if (this.activation === 'auto') {
       this.selectTab(tab);
