@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Checkbox, Switch - click event fires more than once [#1427](https://github.com/IgniteUI/igniteui-webcomponents/pull/1427)
 - Radio - click event fires more than once [#1428](https://github.com/IgniteUI/igniteui-webcomponents/pull/1428)
 - Library - export components event maps through the main package entrypoint [#1422](https://github.com/IgniteUI/igniteui-webcomponents/pull/1422)
+- Calendar - cannot select dates before UNIX epoch [#1443](https://github.com/IgniteUI/igniteui-webcomponents/issues/1443)
 
 ## [5.0.2] - 2024-09-25
 ### Added
