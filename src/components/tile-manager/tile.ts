@@ -4,6 +4,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
+import { addTileResize } from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
@@ -14,9 +15,10 @@ import IgcTileHeaderComponent from './tile-header.js';
  * @element igc-tile
  */
 export default class IgcTileComponent extends LitElement {
+  private ghostElement!: HTMLElement | null;
+
   public static readonly tagName = 'igc-tile';
   public static override styles = [styles];
-  protected activeResizer = '';
 
   /* blazorSuppress */
   public static register() {
@@ -93,6 +95,12 @@ export default class IgcTileComponent extends LitElement {
       drop: this.handleDragLeave,
     });
 
+    addTileResize(this, {
+      resizeStart: this.handleResizeStart,
+      resizeMove: this.handleResize,
+      resizeEnd: this.handleResizeEnd,
+    });
+
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
     this.addEventListener('dblclick', this.handleFullscreenRequest);
@@ -141,25 +149,30 @@ export default class IgcTileComponent extends LitElement {
     this.classList.remove('dragging');
   }
 
-  startResize(event: MouseEvent) {
-    event.preventDefault();
+  private createGhostElement(): HTMLElement {
+    const clone = this.cloneNode(true) as HTMLElement;
+    clone.id = 'resize-ghost';
+    const { left, top } = this.getBoundingClientRect();
 
-    if (event.target instanceof Element) {
-      this.activeResizer = event.target.classList.contains('right')
-        ? 'right'
-        : event.target.classList.contains('bottom')
-          ? 'bottom'
-          : 'handle';
-    }
+    const styles: Partial<CSSStyleDeclaration> = {
+      // position: 'absolute',
+      left: `${left}px`,
+      top: `${top}px`,
+      pointerEvents: 'none',
+      opacity: '0.6',
+    };
 
-    this.onResizing = this.onResizing.bind(this);
-    this.stopResize = this.stopResize.bind(this);
+    Object.assign(clone.style, styles);
 
-    window.addEventListener('mousemove', this.onResizing);
-    window.addEventListener('mouseup', this.stopResize);
+    return clone;
   }
 
-  onResizing(event: MouseEvent) {
+  handleResizeStart() {
+    this.ghostElement = this.createGhostElement();
+    this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
+  }
+
+  private handleResize(event: PointerEvent) {
     const startPos = this.getBoundingClientRect();
 
     const newWidth = event.clientX - startPos.left;
@@ -168,18 +181,17 @@ export default class IgcTileComponent extends LitElement {
     const colSpan = Math.max(2, Math.floor(newWidth / 30)); // 20 + 10 (gap)
     const rowSpan = Math.max(2, Math.floor(newHeight / 30));
 
-    if (this.activeResizer === 'right' || this.activeResizer === 'handle') {
-      this.style.gridColumn = `span ${colSpan}`;
-    }
-
-    if (this.activeResizer === 'bottom' || this.activeResizer === 'handle') {
-      this.style.gridRow = `span ${rowSpan}`;
-    }
+    this.ghostElement!.style.gridColumn = `span ${colSpan}`;
+    this.ghostElement!.style.gridRow = `span ${rowSpan}`;
   }
 
-  stopResize() {
-    window.removeEventListener('mousemove', this.onResizing);
-    window.removeEventListener('mouseup', this.stopResize);
+  private handleResizeEnd() {
+    if (this.ghostElement) {
+      this.style.gridColumn = this.ghostElement.style.gridColumn;
+      this.style.gridRow = this.ghostElement.style.gridRow;
+      this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
+      this.ghostElement = null;
+    }
   }
 
   protected override render() {
@@ -196,18 +208,7 @@ export default class IgcTileComponent extends LitElement {
           <slot></slot>
         </div>
 
-        <div
-          class="resize-handle"
-          @mousedown=${this.startResize.bind(this)}
-        ></div>
-        <div
-          class="resizer right"
-          @mousedown=${this.startResize.bind(this)}
-        ></div>
-        <div
-          class="resizer bottom"
-          @mousedown=${this.startResize.bind(this)}
-        ></div>
+        <div class="resize-handle"></div>
       </div>
     `;
   }

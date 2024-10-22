@@ -8,6 +8,9 @@ import {
   simulateDragEnd,
   simulateDragStart,
   simulateDrop,
+  simulateLostPointerCapture,
+  simulatePointerDown,
+  simulatePointerMove,
 } from '../common/utils.spec.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileManagerComponent from './tile-manager.js';
@@ -306,6 +309,66 @@ describe('Tile Manager component', () => {
       expect(tileManager.tiles.length).to.equal(1);
       expect(tileManager.tiles[0].id).to.equal('tile2');
       expect(slot.assignedElements()).eql(tileManager.tiles);
+    });
+  });
+
+  describe('Tile resize behavior', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('should create a ghost element on resize start', async () => {
+      const tile = first(tileManager.tiles);
+      const resizeHandle = tile.shadowRoot?.querySelector('.resize-handle');
+
+      simulatePointerDown(resizeHandle!);
+      await elementUpdated(resizeHandle!);
+
+      const ghostElement = tileManager.querySelector('#resize-ghost');
+      expect(ghostElement).to.not.be.null;
+      expect(tile.closest('igc-tile-manager')!.contains(ghostElement!)).to.be
+        .true;
+    });
+
+    it('should update ghost element styles during pointer move', async () => {
+      const tile = first(tileManager.tiles);
+      const { x, width } = tile.getBoundingClientRect();
+      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
+
+      simulatePointerDown(resizeHandle!);
+      await elementUpdated(resizeHandle!);
+
+      simulatePointerMove(resizeHandle!, { clientX: x + width * 2 });
+      await elementUpdated(resizeHandle!);
+
+      const ghostElement = tileManager.querySelector('#resize-ghost');
+      expect((ghostElement! as HTMLElement).style.gridColumn).to.equal(
+        'span 9'
+      );
+      expect((ghostElement! as HTMLElement).style.gridRow).to.equal('span 9');
+    });
+
+    it('should set the styles on the tile and remove the ghost element on resize end', async () => {
+      const tile = first(tileManager.tiles);
+      const { x, width } = tile.getBoundingClientRect();
+      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
+
+      simulatePointerDown(resizeHandle!);
+      await elementUpdated(resizeHandle!);
+
+      simulatePointerMove(resizeHandle!, { clientX: x + width * 2 });
+      await elementUpdated(resizeHandle!);
+
+      const ghostElement = tileManager.querySelector('#resize-ghost');
+      const ghostGridColumn = (ghostElement! as HTMLElement).style.gridColumn;
+      const ghostGridRow = (ghostElement! as HTMLElement).style.gridRow;
+
+      simulateLostPointerCapture(resizeHandle!);
+      await elementUpdated(resizeHandle!);
+
+      expect(tile.style.gridColumn).to.equal(ghostGridColumn);
+      expect(tile.style.gridRow).to.equal(ghostGridRow);
+      expect(ghostElement).to.be.null;
     });
   });
 
