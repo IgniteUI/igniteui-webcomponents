@@ -19,7 +19,7 @@ const metadata: Meta<IgcTabsComponent> = {
     docs: {
       description: {
         component:
-          '`IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.',
+          '`IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.\n\nThe tabs component allows the user to navigate between multiple tabs.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
       },
     },
     actions: { handles: ['igcChange'] },

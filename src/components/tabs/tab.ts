@@ -58,7 +58,7 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  override connectedCallback(): void {
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.id = this.id || `igc-tab-${IgcTabComponent.increment()}`;
   }
