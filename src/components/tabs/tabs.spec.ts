@@ -18,7 +18,7 @@ import {
   spaceBar,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { first, last } from '../common/util.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
@@ -260,6 +260,8 @@ describe('Tabs component', () => {
       const { indicator, container } = getTabsDOM(element);
 
       element.dir = 'rtl';
+
+      element.requestUpdate();
       await elementUpdated(element);
 
       let activeTabHeader = getTabDOM(
@@ -314,64 +316,73 @@ describe('Tabs component', () => {
       });
     });
 
-    // it('aligns tab headers properly when `alignment` is set to justify', async () => {
-    //   element.alignment = 'justify';
-    //   await elementUpdated(element);
+    it('aligns tab headers properly when `alignment` is set to justify', async () => {
+      const { container } = getTabsDOM(element);
 
-    //   const diffs: number[] = [];
-    //   const expectedWidth = Math.round(
-    //     getScrollContainer(element).offsetWidth / getTabs(element).length
-    //   );
-    //   getTabs(element).map((elem) =>
-    //     diffs.push(elem.header.offsetWidth - expectedWidth)
-    //   );
+      element.alignment = 'justify';
+      await elementUpdated(element);
 
-    //   const result = diffs.reduce((a, b) => a - b);
-    //   expect(result).to.eq(0);
-    // });
+      const expectedWidth = container.offsetWidth / element.tabs.length;
 
-    // it('aligns tab headers properly when `alignment` is set to start', async () => {
-    //   const widths: number[] = [];
-    //   getTabs(element).map((elem) => widths.push(elem.header.offsetWidth));
+      const diff = element.tabs
+        .map((tab) => getTabDOM(tab).header.offsetWidth - expectedWidth)
+        .reduce((a, b) => a - b, 0);
 
-    //   const result = widths.reduce((a, b) => a + b);
-    //   const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-    //   const offsetRight =
-    //     getScrollContainer(element).offsetWidth -
-    //     getTabs(element)[3].header.offsetLeft -
-    //     getTabs(element)[3].header.offsetWidth;
+      expect(diff).to.equal(0);
+    });
 
-    //   expect(getTabs(element)[0].header.offsetLeft).to.eq(0);
-    //   expect(offsetRight - noTabsAreaWidth).to.eq(0);
-    //   expect(Math.abs(90 - widths[0])).to.eq(0);
-    //   expect(Math.abs(90 - widths[1])).to.eq(0);
-    //   expect(Math.abs(90 - widths[2])).to.eq(0);
-    //   expect(Math.abs(90 - widths[3])).to.eq(0);
-    // });
+    it('aligns tab headers properly when `alignment` is set to start', async () => {
+      const { container } = getTabsDOM(element);
+      const firstTabHeader = getTabDOM(first(element.tabs)).header;
+      const lastTabHeader = getTabDOM(last(element.tabs)).header;
 
-    // it('aligns tab headers properly when `alignment` is set to center', async () => {
-    //   element.alignment = 'center';
-    //   await elementUpdated(element);
+      const widths = element.tabs.map(
+        (tab) => getTabDOM(tab).header.offsetWidth
+      );
 
-    //   const widths: number[] = [];
-    //   getTabs(element).map((elem) => widths.push(elem.header.offsetWidth));
+      const result = widths.reduce((a, b) => a + b, 0);
+      const noTabsAreaWidth = container.offsetWidth - result;
+      const offsetRight =
+        container.offsetWidth -
+        lastTabHeader.offsetLeft -
+        lastTabHeader.offsetWidth;
 
-    //   const result = widths.reduce((a, b) => a + b);
-    //   const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-    //   const offsetRight =
-    //     getScrollContainer(element).offsetWidth -
-    //     getTabs(element)[3].header.offsetLeft -
-    //     getTabs(element)[3].header.offsetWidth;
+      expect(firstTabHeader.offsetLeft).to.equal(0);
+      expect(offsetRight - noTabsAreaWidth).to.equal(0);
+      expect(Math.abs(90 - widths[0])).to.equal(0);
+      expect(Math.abs(90 - widths[1])).to.equal(0);
+      expect(Math.abs(90 - widths[2])).to.equal(0);
+      expect(Math.abs(90 - widths[3])).to.equal(0);
+    });
 
-    //   expect(
-    //     Math.round(noTabsAreaWidth / 2) - getTabs(element)[0].header.offsetLeft
-    //   ).to.eq(0);
-    //   expect(offsetRight - getTabs(element)[0].header.offsetLeft).to.eq(0);
-    //   expect(Math.abs(90 - widths[0])).to.eq(0);
-    //   expect(Math.abs(90 - widths[1])).to.eq(0);
-    //   expect(Math.abs(90 - widths[2])).to.eq(0);
-    //   expect(Math.abs(90 - widths[3])).to.eq(0);
-    // });
+    it('aligns tab headers properly when `alignment` is set to center', async () => {
+      const { container } = getTabsDOM(element);
+      const firstTabHeader = getTabDOM(first(element.tabs)).header;
+      const lastTabHeader = getTabDOM(last(element.tabs)).header;
+
+      element.alignment = 'center';
+      await elementUpdated(element);
+
+      const widths = element.tabs.map(
+        (tab) => getTabDOM(tab).header.offsetWidth
+      );
+
+      const result = widths.reduce((a, b) => a + b, 0);
+      const noTabsAreaWidth = container.offsetWidth - result;
+      const offsetRight =
+        container.offsetWidth -
+        lastTabHeader.offsetLeft -
+        lastTabHeader.offsetWidth;
+
+      expect(
+        Math.round(noTabsAreaWidth / 2) - firstTabHeader.offsetLeft
+      ).to.equal(0);
+      expect(offsetRight - firstTabHeader.offsetLeft).to.equal(0);
+      expect(Math.abs(90 - widths[0])).to.equal(0);
+      expect(Math.abs(90 - widths[1])).to.equal(0);
+      expect(Math.abs(90 - widths[2])).to.equal(0);
+      expect(Math.abs(90 - widths[3])).to.equal(0);
+    });
 
     it('updates selection through tab element `selected` attribute', async () => {
       element.tabs[2].selected = true;

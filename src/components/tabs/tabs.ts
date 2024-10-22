@@ -89,6 +89,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _resizeController!: ReturnType<typeof createResizeController>;
   private _headerRef: Ref<HTMLDivElement> = createRef();
 
+  /** Used in the `update` hook to check if a dynamic ltr-rtl change has happened,
+   * and calls `alignIndicator` if there is one.
+   */
+  private _isLTR = true;
+
   @query('[part~="tabs"]', true)
   protected scrollContainer!: HTMLElement;
 
@@ -105,7 +110,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _activeTab?: IgcTabComponent;
 
   @state()
-  private _tabsCSSVars = {
+  private _cssVars = {
     '--tabs-count': '',
     '--ig-tabs-width': '',
   };
@@ -216,7 +221,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       });
     }
 
-    Object.assign(this._selectedIndicator.style ?? {}, styles);
+    Object.assign(this._selectedIndicator.style, styles);
   }
 
   private async _resizeCallback() {
@@ -273,6 +278,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'tablist';
+  }
+
+  protected override updated() {
+    if (this._isLTR !== isLTR(this)) {
+      this._isLTR = isLTR(this);
+      this.alignIndicator();
+    }
   }
 
   protected updateButtonsOnResize() {
@@ -370,7 +382,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private _setTabsCSSProps() {
-    this._tabsCSSVars = {
+    this._cssVars = {
       '--tabs-count': this.tabs.length.toString(),
       '--ig-tabs-width': `${this.scrollContainer.getBoundingClientRect().width}px`,
     };
@@ -420,7 +432,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       <div
         ${ref(this._headerRef)}
         part="tabs"
-        style=${styleMap(this._tabsCSSVars)}
+        style=${styleMap(this._cssVars)}
         @scroll=${this.handleScroll}
       >
         <div part=${part}>
