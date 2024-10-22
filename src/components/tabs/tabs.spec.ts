@@ -26,9 +26,11 @@ import IgcTabsComponent from './tabs.js';
 describe('Tabs component', () => {
   function verifySelection(tabs: IgcTabsComponent, tab: IgcTabComponent) {
     const { selected } = getTabsDOM(tabs);
+    // biome-ignore lint/complexity/useLiteralKeys: test-scenarios
+    const activeTab = tabs['_activeTab'];
 
     expect(first(selected) === tab).to.be.true;
-    expect(tabs.activeTab === tab).to.be.true;
+    expect(activeTab === tab).to.be.true;
     expect(getComputedStyle(getTabDOM(tab).body).display).to.equal('block'); // REVIEW: Changed from 'flex' to 'block'
   }
 
@@ -45,7 +47,6 @@ describe('Tabs component', () => {
 
     it('is initialized with the proper default values', async () => {
       expect(document.querySelector(IgcTabsComponent.tagName)).to.exist;
-      expect(element.activeTab).to.be.undefined;
       expect(element.alignment).to.eq('start');
       expect(element.activation).to.eq('auto');
       expect(element.tabs).to.be.empty;
