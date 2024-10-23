@@ -94,7 +94,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _isLTR = true;
 
   @query('[part~="tabs"]', true)
-  protected scrollContainer!: HTMLElement;
+  protected _scrollContainer!: HTMLElement;
 
   @query('[part="selected-indicator"] span', true)
   protected _selectedIndicator!: HTMLElement;
@@ -198,7 +198,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this._updateButtonsOnResize();
     this._selectTab(selectedTab, false);
 
-    this._resizeController.observe(this.scrollContainer);
+    this._resizeController.observe(this._scrollContainer);
     for (const tab of this.tabs) {
       this._resizeController.observe(tab);
     }
@@ -269,7 +269,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
       const headerOffsetLeft = activeTabHeader.offsetLeft;
       const headerWidth = activeTabHeader.getBoundingClientRect().width;
-      const containerWidth = this.scrollContainer.getBoundingClientRect().width;
+      const containerWidth =
+        this._scrollContainer.getBoundingClientRect().width;
 
       const translateX = isLTR(this)
         ? headerOffsetLeft
@@ -285,15 +286,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private _updateButtonsOnResize() {
-    const { scrollWidth, clientWidth } = this.scrollContainer;
+    const { scrollWidth, clientWidth } = this._scrollContainer;
 
     this.showScrollButtons = scrollWidth > clientWidth;
     this._updateScrollButtons();
   }
 
   private _updateScrollButtons() {
-    const { scrollLeft, scrollWidth } = this.scrollContainer;
-    const { width } = this.scrollContainer.getBoundingClientRect();
+    const { scrollLeft, scrollWidth } = this._scrollContainer;
+    const { width } = this._scrollContainer.getBoundingClientRect();
 
     this._scrollButtonsDisabled = {
       start: scrollLeft === 0,
@@ -327,12 +328,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _scrollByOffset(direction: 'start' | 'end') {
     const factor = isLTR(this) ? 1 : -1;
     const step = direction === 'start' ? -180 : 180;
-    this.scrollContainer.scrollBy({ left: step * factor, behavior: 'smooth' });
+
+    this._setScrollSnap(direction);
+    this._scrollContainer.scrollBy({ left: step * factor, behavior: 'smooth' });
   }
 
   private _keyboardActivateTab(tab: IgcTabComponent) {
     const header = getTabHeader(tab);
 
+    this._setScrollSnap('unset');
     scrollIntoView(header);
     header.focus({ preventScroll: true });
 
@@ -344,8 +348,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _setCSSProps() {
     this._cssVars = {
       '--tabs-count': this.tabs.length.toString(),
-      '--ig-tabs-width': `${this.scrollContainer.getBoundingClientRect().width}px`,
+      '--ig-tabs-width': `${this._scrollContainer.getBoundingClientRect().width}px`,
     };
+  }
+
+  private _setScrollSnap(value: 'start' | 'end' | 'unset') {
+    this._scrollContainer.style.setProperty('--_ig-tab-snap', value);
   }
 
   protected handleClick(event: PointerEvent) {
@@ -358,6 +366,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
+    this._setScrollSnap('unset');
     getTabHeader(tab).focus();
     this._selectTab(tab);
   }

@@ -29,7 +29,10 @@
     height: 100%;
     scroll-padding-inline: var(--scroll-btn-size);
     scroll-behavior: smooth;
-    overflow: hidden;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    overscroll-behavior: none;
+    scroll-snap-type: x proximity;
 }
 
 [part~='inner'] {
