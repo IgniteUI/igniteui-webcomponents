@@ -105,7 +105,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   protected handleInteraction(event: Event) {
     const value = getViewElement(event);
 
-    if (value > -1) {
+    if (value !== -1) {
       this._value = this._value.set({ month: value });
       this.emitEvent('igcChange', { detail: this.value });
     }
