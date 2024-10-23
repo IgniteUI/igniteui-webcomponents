@@ -30,12 +30,10 @@
     scroll-padding-inline: var(--scroll-btn-size);
     scroll-behavior: smooth;
     overflow: scroll hidden;
-    scroll-snap-type: inline proximity;
+    scroll-snap-type: both proximity;
 
     // Hide the scrollbar for mobile devices
-    /* stylelint-disable */
-    -ms-overflow-style: none;
-    /* stylelint-enable */
+
     scrollbar-width: none;
     overscroll-behavior: none;
 
@@ -123,6 +121,7 @@
     width: var(--scroll-btn-size);
     z-index: map.get($tabs-z-index, 'scroll-button');
     transform: scaleX(direction($rtl: var(--ig-dir)));
+    touch-action: none;
 }
 
 [part~='start-scroll-button'] {
