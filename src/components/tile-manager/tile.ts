@@ -167,7 +167,7 @@ export default class IgcTileComponent extends LitElement {
     return clone;
   }
 
-  handleResizeStart() {
+  private handleResizeStart() {
     this.ghostElement = this.createGhostElement();
     this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
   }
@@ -194,6 +194,13 @@ export default class IgcTileComponent extends LitElement {
     }
   }
 
+  protected handleResizeCancelled(event: KeyboardEvent) {
+    if (event.key === 'Escape' && this.ghostElement) {
+      this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
+      this.ghostElement = null;
+    }
+  }
+
   protected override render() {
     const parts = partNameMap({
       'drag-over': this._hasDragOver,
@@ -208,7 +215,11 @@ export default class IgcTileComponent extends LitElement {
           <slot></slot>
         </div>
 
-        <div class="resize-handle"></div>
+        <div
+          class="resize-handle"
+          tabindex="-1"
+          @keydown=${this.handleResizeCancelled}
+        ></div>
       </div>
     `;
   }

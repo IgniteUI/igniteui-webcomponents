@@ -35,22 +35,23 @@ class TileResizeController implements ReactiveController {
     }
   }
 
-  private pointerDown = (event: PointerEvent) => {
+  private pointerDown(event: PointerEvent) {
     event.preventDefault();
 
-    const resizeHandle =
-      this._host.shadowRoot!.querySelector('.resize-handle')!;
+    const resizeHandle = this._host.shadowRoot!.querySelector(
+      '.resize-handle'
+    )! as HTMLElement;
     this._handlers.get('resizestart')?.call(this._host, event);
 
     resizeHandle.setPointerCapture(event.pointerId);
     this.pointerCaptured = true;
-
+    resizeHandle.focus();
     this._host.addEventListener('pointermove', this.pointerMove.bind(this));
     resizeHandle.addEventListener(
       'lostpointercapture',
       this.lostPointerCapture.bind(this) as EventListener
     );
-  };
+  }
 
   private pointerMove(event: PointerEvent) {
     event.preventDefault();
@@ -64,8 +65,9 @@ class TileResizeController implements ReactiveController {
     event.preventDefault();
     this._handlers.get('resizeend')?.call(this._host, event);
 
-    const resizeHandle =
-      this._host.shadowRoot!.querySelector('.resize-handle')!;
+    const resizeHandle = this._host.shadowRoot!.querySelector(
+      '.resize-handle'
+    )! as HTMLElement;
     this.pointerCaptured = false;
 
     resizeHandle.releasePointerCapture(event.pointerId);
@@ -81,6 +83,8 @@ class TileResizeController implements ReactiveController {
       'lostpointercapture',
       this.lostPointerCapture as EventListener
     );
+
+    resizeHandle.blur();
   }
 
   public hostConnected(): void {
