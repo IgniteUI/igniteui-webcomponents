@@ -29,10 +29,19 @@
     height: 100%;
     scroll-padding-inline: var(--scroll-btn-size);
     scroll-behavior: smooth;
-    overflow-x: scroll;
+    overflow: scroll hidden;
+    scroll-snap-type: inline proximity;
+
+    // Hide the scrollbar for mobile devices
+    /* stylelint-disable */
+    -ms-overflow-style: none;
+    /* stylelint-enable */
     scrollbar-width: none;
     overscroll-behavior: none;
-    scroll-snap-type: x proximity;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 [part~='inner'] {
@@ -50,18 +59,18 @@
 
 [part~='scrollable'] {
     /* stylelint-disable */
-    grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
+    grid-template-columns: var(--scroll-btn-size) repeat(var(--_tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
     /* stylelint-enable */
 }
 
 [part~='inner']:not([part~='scrollable']) {
-    grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content));
+    grid-template-columns: repeat(var(--_tabs-count), minmax(auto, min-content));
     min-width: var(--tab-min-width);
 }
 
 :host([alignment='start']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
+        grid-template-columns: repeat(var(--_tabs-count), minmax(max-content, auto)) 1fr;
 
         &::after {
             @extend %fake-column;
@@ -71,7 +80,7 @@
 
 :host([alignment='center']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
+        grid-template-columns: 1fr repeat(var(--_tabs-count), minmax(max-content, auto)) 1fr;
 
         &::before,
         &::after {
@@ -82,7 +91,7 @@
 
 :host([alignment='end']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto));
+        grid-template-columns: 1fr repeat(var(--_tabs-count), minmax(max-content, auto));
 
         &::before {
             @extend %fake-column;
@@ -95,12 +104,12 @@
 
     [part~='scrollable'] {
         /* stylelint-disable */
-        grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(var(--tab-min-width), 1fr)) var(--scroll-btn-size);
+        grid-template-columns: var(--scroll-btn-size) repeat(var(--_tabs-count), minmax(var(--tab-min-width), 1fr)) var(--scroll-btn-size);
         /* stylelint-enable */
     }
 
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--tabs-count), minmax(var(--tab-min-width), auto));
+        grid-template-columns: repeat(var(--_tabs-count), minmax(var(--tab-min-width), auto));
     }
 }
 

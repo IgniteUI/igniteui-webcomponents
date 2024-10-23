@@ -6,9 +6,8 @@
 [part~='header'] {
     $transition: .3s cubic-bezier(.35, 0, .25, 1);
 
-    scroll-snap-align: var(--_ig-tab-snap, end);
-
     display: flex;
+    scroll-snap-align: var(--_ig-tab-snap);
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
@@ -74,7 +73,7 @@
     width: var(--tabs-width);
     grid-row: 3;
     grid-column: 1 / -1;
-    max-width: var(--ig-tabs-width);
+    max-width: var(--_ig-tabs-width);
     transition: transform 250ms ease-in-out;
     height: 100%;
 }

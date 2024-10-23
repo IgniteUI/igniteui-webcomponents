@@ -104,8 +104,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   @state()
   private _cssVars = {
-    '--tabs-count': '',
-    '--ig-tabs-width': '',
+    '--_tabs-count': '',
+    '--_ig-tabs-width': '',
   };
 
   @state()
@@ -347,8 +347,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   private _setCSSProps() {
     this._cssVars = {
-      '--tabs-count': this.tabs.length.toString(),
-      '--ig-tabs-width': `${this._scrollContainer.getBoundingClientRect().width}px`,
+      '--_tabs-count': this.tabs.length.toString(),
+      '--_ig-tabs-width': `${this._scrollContainer.getBoundingClientRect().width}px`,
     };
   }
 
