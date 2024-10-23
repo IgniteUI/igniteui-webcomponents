@@ -165,15 +165,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._headerRef,
-      skip: (_, event) =>
-        !findElementFromEventPath(IgcTabComponent.tagName, event),
       bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
       .set(homeKey, this.handleHomeKey)
       .set(endKey, this.handleEndKey)
-      .setActivateHandler(this.handleActivationKeys);
+      .setActivateHandler(this.handleActivationKeys, { preventDefault: false });
 
     createMutationController(this, {
       callback: this._mutationCallback,
@@ -383,8 +381,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const tabs = this._enabledTabs;
     const index = this._closestActiveTabIndex;
 
-    this._selectTab(tabs[index], false);
-    this._keyboardActivateTab(tabs[index]);
+    if (index > -1) {
+      this._selectTab(tabs[index], false);
+      this._keyboardActivateTab(tabs[index]);
+    }
   }
 
   @eventOptions({ passive: true })

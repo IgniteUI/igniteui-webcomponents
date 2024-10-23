@@ -8,9 +8,18 @@ type ResizeControllerCallback = (
   ...args: Parameters<ResizeObserverCallback>
 ) => unknown;
 
+/** Configuration for initializing a resize controller. */
 export interface ResizeControllerConfig {
+  /** The callback function to run when a resize mutation is triggered. */
   callback: ResizeControllerCallback;
+  /** Configuration options passed to the underlying ResizeObserver. */
   options?: ResizeObserverOptions;
+  /**
+   * The initial target element to observe for resize mutations.
+   *
+   * If not provided, the host element will be set as initial target.
+   * Pass in `null` to skip setting an initial target.
+   */
   target?: Element | null;
 }
 
@@ -42,12 +51,14 @@ class ResizeController implements ReactiveController {
     host.addController(this);
   }
 
+  /** Starts observing the `targe` element. */
   public observe(target: Element): void {
     this._targets.add(target);
     this._observer.observe(target, this._config.options);
     this._host.requestUpdate();
   }
 
+  /** Stops observing the `target` element. */
   public unobserve(target: Element): void {
     this._targets.delete(target);
     this._observer.unobserve(target);
@@ -68,6 +79,10 @@ class ResizeController implements ReactiveController {
   }
 }
 
+/**
+ * Creates a new resize controller bound to the given `host`
+ * with {@link ResizeControllerConfig | `config`}.
+ */
 export function createResizeController(
   host: ReactiveControllerHost & Element,
   config: ResizeControllerConfig
