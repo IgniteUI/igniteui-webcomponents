@@ -96,12 +96,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @query('[part~="tabs"]', true)
   protected scrollContainer!: HTMLElement;
 
-  @query('[part="start-scroll-button"]')
-  protected startButton!: HTMLElement;
-
-  @query('[part="end-scroll-button"]')
-  protected endButton!: HTMLElement;
-
   @query('[part="selected-indicator"] span', true)
   protected _selectedIndicator!: HTMLElement;
 
@@ -115,13 +109,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   };
 
   @state()
+  private _scrollButtonsDisabled = {
+    start: true,
+    end: false,
+  };
+
+  @state()
   protected showScrollButtons = false;
-
-  @state()
-  protected disableStartScrollButton = true;
-
-  @state()
-  protected disableEndScrollButton = false;
 
   private get _closestActiveTabIndex() {
     const root = this.getRootNode() as Document | ShadowRoot;
@@ -171,6 +165,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._headerRef,
+      skip: (_, event) =>
+        !findElementFromEventPath(IgcTabComponent.tagName, event),
       bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
@@ -301,9 +297,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const { scrollLeft, scrollWidth } = this.scrollContainer;
     const { width } = this.scrollContainer.getBoundingClientRect();
 
-    this.disableStartScrollButton = scrollLeft === 0;
-    this.disableEndScrollButton =
-      Math.abs(Math.abs(scrollLeft) + width - scrollWidth) === 0;
+    this._scrollButtonsDisabled = {
+      start: scrollLeft === 0,
+      end: Math.abs(Math.abs(scrollLeft) + width - scrollWidth) === 0,
+    };
   }
 
   private _selectTab(tab?: IgcTabComponent, shouldEmit = true) {
@@ -332,8 +329,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _scrollByOffset(direction: 'start' | 'end') {
     const factor = isLTR(this) ? 1 : -1;
     const step = direction === 'start' ? -180 : 180;
-
-    this.scrollContainer.scrollLeft += factor * step;
+    this.scrollContainer.scrollBy({ left: step * factor, behavior: 'smooth' });
   }
 
   private _keyboardActivateTab(tab: IgcTabComponent) {
@@ -409,19 +405,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const start = direction === 'start';
 
     return this.showScrollButtons
-      ? html`<igc-icon-button
-          tabindex="-1"
-          aria-hidden="true"
-          variant="flat"
-          collection="default"
-          part="${direction}-scroll-button"
-          exportparts="icon"
-          name="${start ? 'prev' : 'next'}"
-          .disabled=${start
-            ? this.disableStartScrollButton
-            : this.disableEndScrollButton}
-          @click=${() => this._scrollByOffset(direction)}
-        ></igc-icon-button>`
+      ? html`
+          <igc-icon-button
+            tabindex="-1"
+            variant="flat"
+            collection="default"
+            part="${direction}-scroll-button"
+            exportparts="icon"
+            name="${start ? 'prev' : 'next'}"
+            ?disabled=${start
+              ? this._scrollButtonsDisabled.start
+              : this._scrollButtonsDisabled.end}
+            @click=${() => this._scrollByOffset(direction)}
+          >
+          </igc-icon-button>
+        `
       : nothing;
   }
 
