@@ -7,9 +7,8 @@ import {
   css,
 } from 'lit';
 
-import { isEmpty } from '../components/common/util.js';
 import { getTheme } from './config.js';
-import { CHANGE_THEME_EVENT } from './theming-event.js';
+import { CHANGED_THEME_EVENT, _themeChangedEmitter } from './theming-event.js';
 import type {
   Theme,
   ThemeChangedCallback,
@@ -17,32 +16,6 @@ import type {
   ThemeVariant,
   Themes,
 } from './types.js';
-
-type ThemeCallback = () => void;
-
-class ThemeEventListeners {
-  private readonly listeners = new Set<ThemeCallback>();
-
-  public add(listener: ThemeCallback) {
-    globalThis.addEventListener(CHANGE_THEME_EVENT, this);
-    this.listeners.add(listener);
-  }
-
-  public remove(listener: ThemeCallback) {
-    this.listeners.delete(listener);
-    if (isEmpty(this.listeners)) {
-      globalThis.removeEventListener(CHANGE_THEME_EVENT, this);
-    }
-  }
-
-  public handleEvent() {
-    for (const listener of this.listeners) {
-      listener();
-    }
-  }
-}
-
-const _themeListeners = new ThemeEventListeners();
 
 class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
@@ -60,11 +33,15 @@ class ThemingController implements ReactiveController, ThemeController {
 
   public hostConnected() {
     this.themeChanged();
-    _themeListeners.add(this.themeChanged);
+    _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this);
   }
 
   public hostDisconnected() {
-    _themeListeners.remove(this.themeChanged);
+    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
+  }
+
+  public handleEvent() {
+    this.themeChanged();
   }
 
   private getStyles() {
@@ -94,11 +71,11 @@ class ThemingController implements ReactiveController, ThemeController {
     adoptStyles(this.host.shadowRoot!, [...ctor.elementStyles, shared, _theme]);
   }
 
-  private themeChanged: ThemeCallback = () => {
+  private themeChanged() {
     this.adoptStyles();
     this.onThemeChanged?.call(this.host, this.theme);
     this.host.requestUpdate();
-  };
+  }
 }
 
 export function createThemeController(
