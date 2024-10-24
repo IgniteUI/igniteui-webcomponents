@@ -2,12 +2,14 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { range } from 'lit/directives/range.js';
+import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   simulateDragEnd,
   simulateDragStart,
   simulateDrop,
+  simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
@@ -369,6 +371,28 @@ describe('Tile Manager component', () => {
       expect(tile.style.gridColumn).to.equal(ghostGridColumn);
       expect(tile.style.gridRow).to.equal(ghostGridRow);
       expect(ghostElement).to.be.null;
+    });
+
+    it('should cancel resize by pressing ESC key', async () => {
+      const tile = first(tileManager.tiles);
+      const { x, width } = tile.getBoundingClientRect();
+      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
+
+      simulatePointerDown(resizeHandle);
+      await elementUpdated(resizeHandle);
+
+      simulatePointerMove(resizeHandle, { clientX: x + width * 2 });
+      await elementUpdated(resizeHandle);
+
+      const ghostElement = tileManager.querySelector('#resize-ghost');
+      expect(ghostElement).not.to.be.null;
+
+      simulateKeyboard(resizeHandle, escapeKey);
+      await elementUpdated(resizeHandle);
+
+      expect(ghostElement).to.be.null;
+      expect(tile.style.gridColumn).to.equal(5);
+      expect(tile.style.gridRow).to.equal(5);
     });
   });
 
