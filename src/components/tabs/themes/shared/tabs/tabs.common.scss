@@ -51,3 +51,7 @@ $theme: $material;
         }
     }
 }
+
+igc-icon-button::part(icon) {
+    --size: #{rem(24px)};
+}

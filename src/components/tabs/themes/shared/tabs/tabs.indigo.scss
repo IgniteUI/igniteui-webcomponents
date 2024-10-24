@@ -57,5 +57,7 @@ igc-icon-button::part(base) {
 }
 
 igc-icon-button::part(icon) {
+    --size: #{rem(16px)};
+
     z-index: 2;
 }
