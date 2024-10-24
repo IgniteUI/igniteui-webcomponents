@@ -254,6 +254,22 @@ export function simulateWheel(node: Element, options?: WheelEventInit) {
   );
 }
 
+export function simulateDragStart(node: Element) {
+  node.dispatchEvent(
+    new DragEvent('dragstart', { bubbles: true, composed: true })
+  );
+}
+
+export function simulateDragEnd(node: Element) {
+  node.dispatchEvent(
+    new DragEvent('dragend', { bubbles: true, composed: true })
+  );
+}
+
+export function simulateDrop(node: Element) {
+  node.dispatchEvent(new DragEvent('drop', { bubbles: true, composed: true }));
+}
+
 /**
  * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
  * It can optionally return Animation objects for descendant elements too.
