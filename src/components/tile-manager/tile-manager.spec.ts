@@ -126,9 +126,11 @@ describe('Tile Manager component', () => {
           <div part="content-container">
             <slot></slot>
           </div>
-          <div class="resize-handle"></div>
-          <div class="resizer right"></div>
-          <div class="resizer bottom"></div>
+          <div
+            class="resize-handle"
+            tabindex="-1"
+          >
+          </div>
         </div>`
       );
     });
@@ -343,11 +345,11 @@ describe('Tile Manager component', () => {
       simulatePointerMove(resizeHandle!, { clientX: x + width * 2 });
       await elementUpdated(resizeHandle!);
 
-      const ghostElement = tileManager.querySelector('#resize-ghost');
-      expect((ghostElement! as HTMLElement).style.gridColumn).to.equal(
-        'span 9'
-      );
-      expect((ghostElement! as HTMLElement).style.gridRow).to.equal('span 9');
+      const ghostElement = tileManager.querySelector(
+        '#resize-ghost'
+      ) as HTMLElement;
+      expect(ghostElement.style.gridColumn).to.equal('span 9');
+      expect(ghostElement.style.gridRow).to.equal('span 9');
     });
 
     it('should set the styles on the tile and remove the ghost element on resize end', async () => {
