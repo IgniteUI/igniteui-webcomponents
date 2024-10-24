@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
 import {
+  IgcTabComponent,
   IgcTabsComponent,
   defineComponents,
   registerIcon,
@@ -17,7 +16,12 @@ const metadata: Meta<IgcTabsComponent> = {
   title: 'Tabs',
   component: 'igc-tabs',
   parameters: {
-    docs: { description: { component: 'Represents tabs component' } },
+    docs: {
+      description: {
+        component:
+          '`IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.\n\nThe tabs component allows the user to navigate between multiple tabs.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
+      },
+    },
     actions: { handles: ['igcChange'] },
   },
   argTypes: {
@@ -57,119 +61,183 @@ type Story = StoryObj<IgcTabsArgs>;
 
 // endregion
 
-registerIcon(
-  'home',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+const icons = [
+  {
+    name: 'home',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg',
+  },
+  {
+    name: 'search',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg',
+  },
+  {
+    name: 'favorite',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg',
+  },
+];
+await Promise.all(icons.map(async (each) => registerIcon(each.name, each.url)));
+
+function remove({ target }: PointerEvent) {
+  (target as Element).closest(IgcTabComponent.tagName)!.remove();
+}
+
+const removableTabs = Array.from(range(10)).map(
+  (i) => html`
+    <igc-tab>
+      <div slot="label">
+        Item ${i + 1}
+        <igc-icon-button
+          @click=${remove}
+          slot="suffix"
+          collection="internal"
+          name="chip_cancel"
+        ></igc-icon-button>
+      </div>
+      <h2>C${i + 1}</h2>
+    </igc-tab>
+  `
 );
 
-registerIcon(
-  'search',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
-);
+const lorem =
+  'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ducimus aliquid voluptatibus molestias laboriosam, illo totam eaque amet iusto officiis accusamus in deleniti beatae harum culpa laudantium accusantium natus nisi eligendi.';
 
-registerIcon(
-  'favorite',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
-);
+const manyTabs = Array.from(range(18)).map((idx) => {
+  switch (idx) {
+    case 2:
+      return html`
+        <igc-tab>
+          <div slot="label">
+            I am a very long tab header that will try to take as much space as
+            possible.
+          </div>
+          <h2>Content 3</h2>
+          <div>${lorem.repeat(5)}</div>
+        </igc-tab>
+      `;
+    case 10:
+      return html`
+        <igc-tab>
+          <div slot="label">Another long tab header</div>
+          <h2>Content 11</h2>
+          ${lorem.repeat(5)}
+        </igc-tab>
+      `;
+    default:
+      return html`
+        <igc-tab ?disabled=${idx === 3}>
+          <div slot="label">Item ${idx + 1}</div>
+          <h2>Content ${idx + 1}</h2>
+          ${lorem.repeat(3)}
+        </igc-tab>
+      `;
+  }
+});
 
-const remove = (e: MouseEvent) => {
-  (e.target as HTMLElement).closest('igc-tab')?.remove();
+export const Basic: Story = {
+  render: (args) => html`
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${Array.from(range(3)).map(
+        (idx) => html`
+          <igc-tab>
+            <div slot="label">Tab ${idx + 1}</div>
+            <h2>Content for tab ${idx + 1}</h2>
+            ${lorem.repeat(2)}
+          </igc-tab>
+        `
+      )}
+    </igc-tabs>
+  `,
 };
 
-const removableTabs = Array.from(
-  map(
-    range(10),
-    (i) =>
-      html`<igc-tab panel=${i}>
-          Item ${i + 1}
-          <igc-icon-button
-            @click=${remove}
-            slot="suffix"
-            collection="internal"
-            name="chip_cancel"
-          ></igc-icon-button>
-        </igc-tab>
-        <igc-tab-panel id=${i}><h1>Content for ${i + 1}</h1></igc-tab-panel>`
-  )
-);
+export const Variants: Story = {
+  render: (args) => html`
+    <h2>Tab headers with icon only</h2>
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      <igc-tab>
+        <igc-icon name="home" slot="label"></igc-icon>
+        <h3>Content 1</h3>
+        ${lorem.repeat(8)}
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="label"></igc-icon>
+        <h3>Content 2</h3>
+        ${lorem.repeat(4)}
+      </igc-tab>
+      <igc-tab disabled>
+        <igc-icon name="favorite" slot="label"></igc-icon>
+        <h3>Content 3</h3>
+        ${lorem.repeat(6)}
+      </igc-tab>
+    </igc-tabs>
 
-const tabs = Array.from(
-  map(
-    range(18),
-    (i) =>
-      html`<igc-tab panel=${i} ?disabled=${i === 2}> Item ${i + 1} </igc-tab>
-        <igc-tab-panel id=${i}> Content ${i + 1}</igc-tab-panel>`
-  )
-);
+    <h2>Tab headers with icon and text</h2>
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      <igc-tab>
+        <igc-icon name="home" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        <h3>Content 1</h3>
+        ${lorem.repeat(4)}
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        <h3>Content 2</h3>
+        ${lorem.repeat(6)}
+      </igc-tab>
+      <igc-tab disabled>
+        <igc-icon name="favorite" slot="label"></igc-icon>
+        <div slot="label">Test</div>
+        <h3>Content 3</h3>
+        ${lorem.repeat(8)}
+      </igc-tab>
+    </igc-tabs>
 
-const Template = ({ activation, alignment }: IgcTabsArgs) => html`
-  <igc-tabs
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${tabs}
-  </igc-tabs>
+    <h2>Tab headers with icons into prefix and suffix slots and text</h2>
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      <igc-tab>
+        <igc-icon name="home" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        <h3>Content 1</h3>
+        ${lorem.repeat(5)}
+        <igc-icon name="home" slot="suffix"></igc-icon>
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        <h3>Content 2</h3>
+        ${lorem.repeat(3)}
+        <igc-icon name="search" slot="suffix"></igc-icon>
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="favorite" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        <h3>Content 3</h3>
+        ${lorem.repeat(6)}
+        <igc-icon name="favorite" slot="suffix"></igc-icon>
+      </igc-tab>
+    </igc-tabs>
 
-  <igc-tabs alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first">
-      <igc-icon name="home"></igc-icon>
-    </igc-tab>
-    <igc-tab panel="second">
-      <igc-icon name="search"></igc-icon>
-    </igc-tab>
-    <igc-tab panel="third" disabled>
-      <igc-icon name="favorite"></igc-icon>
-    </igc-tab>
-    <igc-tab-panel id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel id="second">Content 2</igc-tab-panel>
-  </igc-tabs>
+    <h2>Having too many tabs will show up the scroll buttons</h2>
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${manyTabs}
+    </igc-tabs>
+  `,
+};
 
-  <igc-tabs alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first">
-      <igc-icon name="home"></igc-icon>
-      <input />
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
-    </igc-tab>
-    <igc-tab panel="second">
-      <igc-icon name="search"></igc-icon>
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
-    </igc-tab>
-    <igc-tab panel="third" disabled>
-      <igc-icon name="favorite"></igc-icon>
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
-    </igc-tab>
-    <igc-tab-panel id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel id="second">Content 2</igc-tab-panel>
-  </igc-tabs>
-`;
+export const Strip: Story = {
+  render: (args) => html`
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${Array.from(range(1, 11)).map(
+        (i) => html` <igc-tab label=${i}></igc-tab> `
+      )}
+    </igc-tabs>
+  `,
+};
 
-const TabStrip = ({ activation, alignment }: IgcTabsArgs) => html`
-  <igc-tabs
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${Array.from(range(1, 11)).map((i) => html` <igc-tab>${i}</igc-tab> `)}
-  </igc-tabs>
-`;
-
-const RemovableTabs = ({ activation, alignment }: IgcTabsArgs) => html`
-  <igc-tabs
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${removableTabs}
-  </igc-tabs>
-`;
-
-export const Basic: Story = Template.bind({});
-export const Removable: Story = RemovableTabs.bind({});
-export const Strip: Story = TabStrip.bind({});
+export const Removable: Story = {
+  render: (args) => html`
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      ${removableTabs}
+    </igc-tabs>
+  `,
+};
