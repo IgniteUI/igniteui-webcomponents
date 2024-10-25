@@ -75,7 +75,6 @@ $theme: $bootstrap;
 :host([selected]:focus),
 :host([selected]:focus-within) {
     [part='header'] {
-        color: var-get($theme, 'item-hover-color');
         background: var-get($theme, 'item-hover-background');
         z-index: 1;
     }
