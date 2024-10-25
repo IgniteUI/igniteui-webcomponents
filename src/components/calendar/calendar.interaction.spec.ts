@@ -131,6 +131,35 @@ describe('Calendar interactions', () => {
     expect(previous.equalTo(calendar.value!)).to.be.true;
   });
 
+  it('issue-1443', async () => {
+    const eventSpy = spy(calendar, 'emitEvent');
+    const anchor = new CalendarDay({
+      year: 681,
+      month: 0,
+      date: 1,
+    });
+
+    calendar.activeDate = anchor.native;
+    await elementUpdated(calendar);
+
+    const current = CalendarDay.from(calendar.activeDate!);
+    const previous = current.add('day', -1);
+
+    const previousDOM = getDOMDate(previous, daysView);
+
+    simulateClick(previousDOM);
+    await elementUpdated(calendar);
+
+    expect(eventSpy).calledOnceWithExactly('igcChange', {
+      detail: previous.native,
+    });
+
+    expect(CalendarDay.from(calendar.value!).equalTo(anchor.add('day', -1))).to
+      .be.true;
+    expect(current.equalTo(calendar.value!)).to.be.false;
+    expect(previous.equalTo(calendar.value!)).to.be.true;
+  });
+
   it('single selection outside of the current month', async () => {
     const target = new CalendarDay({ year: 2021, month: 9, date: 2 });
     const DOMDate = getDOMDate(target, daysView);

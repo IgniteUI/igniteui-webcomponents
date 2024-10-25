@@ -85,7 +85,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   protected handleInteraction(event: Event) {
     const value = getViewElement(event);
 
-    if (value > -1) {
+    if (value !== -1) {
       this._value = this._value.set({
         year: value,
       });

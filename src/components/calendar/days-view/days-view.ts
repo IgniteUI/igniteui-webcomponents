@@ -153,7 +153,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   protected handleInteraction(event: Event) {
     const value = getViewElement(event);
 
-    if (value > -1) {
+    if (value !== -1) {
       const date = CalendarDay.from(new Date(value));
 
       if (this._rangePreviewDate) {

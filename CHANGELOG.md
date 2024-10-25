@@ -4,13 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.1.0] - 2024-10-25
 ### Added
 - Carousel component [#1226](https://github.com/IgniteUI/igniteui-webcomponents/issues/1226)
+- Form associated custom elements validation messages [#1254](https://github.com/IgniteUI/igniteui-webcomponents/pull/1254)
+
+### Changed
+- Library - migrated palettes to relative colors [#1432](https://github.com/IgniteUI/igniteui-webcomponents/pull/1432)
+- Badge - update themes [#1399](https://github.com/IgniteUI/igniteui-webcomponents/pull/1399)
+- Card - update themes [#1414](https://github.com/IgniteUI/igniteui-webcomponents/pull/1414)
+- Chips - update themes [#1408](https://github.com/IgniteUI/igniteui-webcomponents/pull/1408) [#1416](https://github.com/IgniteUI/igniteui-webcomponents/pull/1416)
+- Dropdown - update themes [#1409](https://github.com/IgniteUI/igniteui-webcomponents/pull/1409)
+- Expansion panel - update themes [#1415](https://github.com/IgniteUI/igniteui-webcomponents/pull/1415)
+- Icon - update theme references [#1404](https://github.com/IgniteUI/igniteui-webcomponents/pull/1404) [#1423](https://github.com/IgniteUI/igniteui-webcomponents/pull/1423)
+- Tabs - update themes [#1408](https://github.com/IgniteUI/igniteui-webcomponents/pull/1408)
 
 ### Fixed
-- Checkbox, Switch - click event fires more than once
-- Radio - click event fires more than once
+- Checkbox, Switch - click event fires more than once [#1427](https://github.com/IgniteUI/igniteui-webcomponents/pull/1427)
+- Radio - click event fires more than once [#1428](https://github.com/IgniteUI/igniteui-webcomponents/pull/1428)
+- Library - export components event maps through the main package entrypoint [#1422](https://github.com/IgniteUI/igniteui-webcomponents/pull/1422)
+- Calendar - cannot select dates before UNIX epoch [#1443](https://github.com/IgniteUI/igniteui-webcomponents/issues/1443)
 
 ## [5.0.2] - 2024-09-25
 ### Added
@@ -585,6 +598,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.2...5.1.0
 [5.0.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.1...5.0.2
 [5.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.11.1...5.0.0
