@@ -195,7 +195,7 @@ export default class IgcTileComponent extends LitElement {
   }
 
   protected handleResizeCancelled(event: KeyboardEvent) {
-    if (event.key === 'Escape' && this.ghostElement) {
+    if (event.key.toLowerCase() === 'escape' && this.ghostElement) {
       this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
       this.ghostElement = null;
     }
