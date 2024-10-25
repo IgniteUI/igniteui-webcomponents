@@ -1,9 +1,12 @@
+import { isServer } from 'lit';
 import type { Theme, ThemeVariant } from './types.js';
 
 class ThemeChangedEmitter extends EventTarget {
   constructor() {
     super();
-    globalThis.addEventListener(CHANGE_THEME_EVENT, this);
+    if (!isServer) {
+      globalThis.addEventListener(CHANGE_THEME_EVENT, this);
+    }
   }
 
   public handleEvent() {
