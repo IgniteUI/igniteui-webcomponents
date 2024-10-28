@@ -6,7 +6,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { IgcFormControl } from '../common/mixins/forms/types.js';
 import { isEmpty, partNameMap, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import { styles as shared } from './themes/shared/validator.common.css';
+import { styles as shared } from './themes/shared/validator.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
