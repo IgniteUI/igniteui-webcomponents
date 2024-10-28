@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- Library - internal import path for styles and public exports for themes
+
 ## [5.1.0] - 2024-10-25
 ### Added
 - Carousel component [#1226](https://github.com/IgniteUI/igniteui-webcomponents/issues/1226)

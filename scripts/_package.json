@@ -9,7 +9,8 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
-    }
+    },
+    "./themes/*.css": "./themes/*.css"
   },
   "type": "module",
   "sideEffects": false,
