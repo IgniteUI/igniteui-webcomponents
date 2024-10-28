@@ -4,7 +4,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { addTileResize } from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
@@ -31,8 +31,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  private ghostElement!: HTMLElement | null;
-
   public static readonly tagName = 'igc-tile';
   public static styles = [styles];
 
@@ -40,6 +38,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(IgcTileComponent, IgcTileHeaderComponent);
   }
+
+  private static readonly increment = createCounter();
+
+  private ghostElement!: HTMLElement | null;
 
   // REVIEW
   // @state()
@@ -50,6 +52,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @state()
   private _isFullscreen = false;
+
+  /**
+   * The unique identifier of the tile.
+   * @attr
+   */
+  @property({ attribute: 'tile-id', type: String, reflect: true })
+  public tileId: string | null = null;
 
   @property({ type: Number })
   public colSpan = 3;
@@ -99,13 +108,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
     if (this.colStart !== null) {
       this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
     } else {
-      this.style.gridColumn = `span ${this.colSpan}`;
+      this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
     }
 
     if (this.rowStart !== null) {
       this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
     } else {
-      this.style.gridRow = `span ${this.rowSpan}`;
+      this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
     }
   }
 
@@ -129,6 +138,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
     this.addEventListener('dblclick', this.handleFullscreenRequest);
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
   }
 
   protected override async firstUpdated() {
@@ -228,6 +242,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private handleResizeEnd() {
     if (this.ghostElement) {
+      // this.colSpan = this.ghostElement.style.gridColumn.match(/span (\d+)/).parseint // Number.parseInt(this.ghostElement.style.gridColumn);
+      // this.rowSpan = Number.parseInt(this.ghostElement.style.gridRow);
       this.style.gridColumn = this.ghostElement.style.gridColumn;
       this.style.gridRow = this.ghostElement.style.gridRow;
       this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
@@ -236,7 +252,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected handleResizeCancelled(event: KeyboardEvent) {
-    if (event.key === 'Escape' && this.ghostElement) {
+    if (event.key.toLowerCase() === 'escape' && this.ghostElement) {
       this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
       this.ghostElement = null;
     }

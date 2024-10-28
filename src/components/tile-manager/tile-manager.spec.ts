@@ -39,13 +39,13 @@ describe('Tile Manager component', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager>
-          <igc-tile>
+          <igc-tile tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
             <p>Content 1</p>
           </igc-tile>
-          <igc-tile>
+          <igc-tile tile-id="customId-2">
             <igc-tile-header>
               <span>Tile Header 2</span>
             </igc-tile-header>
@@ -74,6 +74,7 @@ describe('Tile Manager component', () => {
           <igc-tile
             draggable="true"
             style="grid-area: span 3 / span 3;"
+            tile-id="customId-1"
           >
             <igc-tile-header>
               <span>Tile Header 1</span>
@@ -83,6 +84,7 @@ describe('Tile Manager component', () => {
           <igc-tile
             draggable="true"
             style="grid-area: span 3 / span 3;"
+            tile-id="customId-2"
           >
             <igc-tile-header>
               <span>Tile Header 2</span>
@@ -108,7 +110,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="grid-area: span 3 / span 3;">
+        `<igc-tile draggable="true" style="grid-area: span 3 / span 3;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
@@ -337,13 +339,16 @@ describe('Tile Manager component', () => {
 
     it('should update ghost element styles during pointer move', async () => {
       const tile = first(tileManager.tiles);
-      const { x, width } = tile.getBoundingClientRect();
+      const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
 
       simulatePointerDown(resizeHandle!);
       await elementUpdated(resizeHandle!);
 
-      simulatePointerMove(resizeHandle!, { clientX: x + width * 2 });
+      simulatePointerMove(resizeHandle!, {
+        clientX: x + width * 2,
+        clientY: y + height * 2,
+      });
       await elementUpdated(resizeHandle!);
 
       const ghostElement = tileManager.querySelector(
@@ -355,22 +360,26 @@ describe('Tile Manager component', () => {
 
     it('should set the styles on the tile and remove the ghost element on resize end', async () => {
       const tile = first(tileManager.tiles);
-      const { x, width } = tile.getBoundingClientRect();
+      const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
 
       simulatePointerDown(resizeHandle!);
       await elementUpdated(resizeHandle!);
 
-      simulatePointerMove(resizeHandle!, { clientX: x + width * 2 });
+      simulatePointerMove(resizeHandle!, {
+        clientX: x + width * 2,
+        clientY: y + height * 2,
+      });
       await elementUpdated(resizeHandle!);
 
-      const ghostElement = tileManager.querySelector('#resize-ghost');
+      let ghostElement = tileManager.querySelector('#resize-ghost');
       const ghostGridColumn = (ghostElement! as HTMLElement).style.gridColumn;
       const ghostGridRow = (ghostElement! as HTMLElement).style.gridRow;
 
       simulateLostPointerCapture(resizeHandle!);
       await elementUpdated(resizeHandle!);
 
+      ghostElement = tileManager.querySelector('#resize-ghost');
       expect(tile.style.gridColumn).to.equal(ghostGridColumn);
       expect(tile.style.gridRow).to.equal(ghostGridRow);
       expect(ghostElement).to.be.null;
@@ -385,21 +394,22 @@ describe('Tile Manager component', () => {
       simulatePointerDown(resizeHandle);
       await elementUpdated(resizeHandle);
 
-      simulatePointerMove(resizeHandle, {
+      simulatePointerMove(resizeHandle!, {
         clientX: x + width * 2,
         clientY: y + height * 2,
       });
       await elementUpdated(resizeHandle);
 
-      const ghostElement = tileManager.querySelector('#resize-ghost');
+      let ghostElement = tileManager.querySelector('#resize-ghost');
       expect(ghostElement).not.to.be.null;
 
       simulateKeyboard(resizeHandle, escapeKey);
       await elementUpdated(resizeHandle);
 
+      ghostElement = tileManager.querySelector('#resize-ghost');
       expect(ghostElement).to.be.null;
-      expect(tile.style.gridColumn).to.equal(5);
-      expect(tile.style.gridRow).to.equal(5);
+      expect(tile.style.gridColumn).to.equal('span 5');
+      expect(tile.style.gridRow).to.equal('span 5');
     });
   });
 
@@ -553,6 +563,83 @@ describe('Tile Manager component', () => {
 
       expect(eventSpy).calledWith('igcTileFullscreen');
       expect(tile.maximized).to.be.false;
+    });
+  });
+
+  describe('Serialization', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager>
+          <igc-tile tile-id="custom-id1"> Tile content 1 </igc-tile>
+          <igc-tile
+            tile-id="custom-id2"
+            colStart="8"
+            colSpan="10"
+            rowStart="7"
+            rowSpan="7"
+          >
+            Tile content 2
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+    });
+
+    it('should serialize each tile with correct properties', async () => {
+      const serializedData = JSON.parse(tileManager.saveLayout());
+      const expectedData = [
+        {
+          tileId: 'custom-id1',
+          colStart: null,
+          colSpan: 3,
+          rowStart: null,
+          rowSpan: 3,
+          gridColumn: 'span 3',
+          gridRow: 'span 3',
+          maximized: false,
+        },
+        {
+          tileId: 'custom-id2',
+          colStart: 8,
+          colSpan: 10,
+          rowStart: 7,
+          rowSpan: 7,
+          gridColumn: '8 / span 10',
+          gridRow: '7 / span 7',
+          maximized: false,
+        },
+      ];
+
+      expect(serializedData).to.deep.equal(expectedData);
+    });
+  });
+
+  describe('API', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('should automatically assign unique `tileId` for tiles', async () => {
+      const newTile = document.createElement('igc-tile');
+      const existingIds = Array.from(tileManager.tiles).map(
+        (tile) => tile.tileId
+      );
+
+      tileManager.appendChild(newTile);
+      await elementUpdated(tileManager);
+
+      expect(newTile.tileId).to.match(/^tile-\d+$/);
+      expect(existingIds).not.to.include(newTile.tileId);
+      expect(tileManager.tiles.length).to.equal(6);
+    });
+
+    it('should preserve the `tileId` if one is already set', async () => {
+      const tile = document.createElement('igc-tile');
+      tile.tileId = 'custom-id';
+
+      tileManager.appendChild(tile);
+      await elementUpdated(tileManager);
+
+      expect(tileManager.tiles[5].tileId).to.equal('custom-id');
     });
   });
 

@@ -186,6 +186,52 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
   }
 
+  public saveLayout() {
+    // TODO: serialize fullscreen, disableDrag, disableResize when added
+    const tilesData = this.tiles.map((tile) => {
+      const tileStyles = window.getComputedStyle(tile);
+
+      return {
+        tileId: tile.tileId,
+        colSpan: tile.colSpan,
+        colStart: tile.colStart,
+        rowSpan: tile.rowSpan,
+        rowStart: tile.rowStart,
+        gridColumn: tileStyles.gridColumn,
+        gridRow: tileStyles.gridRow,
+        maximized: tile.maximized,
+      };
+    });
+
+    // console.log("tileData: " + JSON.stringify(tilesData, null, 2));
+    return JSON.stringify(tilesData);
+  }
+
+  public loadLayout(data: string) {
+    const tilesData = JSON.parse(data);
+    const serializedTiles: IgcTileComponent[] = [];
+
+    this.tiles = [];
+
+    tilesData.forEach((tileInfo: any) => {
+      const tile = document.createElement('igc-tile');
+
+      tile.tileId = tileInfo.tileId;
+      tile.colSpan = tileInfo.colSpan;
+      tile.colStart = tileInfo.colStart;
+      tile.rowSpan = tileInfo.rowSpan;
+      tile.rowStart = tileInfo.rowStart;
+      tile.maximized = tileInfo.maximized;
+      // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
+      tile.style.gridColumn = tileInfo.gridColumn;
+      tile.style.gridRow = tileInfo.gridRow;
+
+      serializedTiles.push(tile);
+    });
+
+    this.tiles = serializedTiles;
+  }
+
   protected override render() {
     return html`
       <div
