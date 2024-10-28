@@ -2,23 +2,39 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { addTileResize } from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
+export interface IgcTileComponentEventMap {
+  igcTileFullscreen: CustomEvent<{
+    tile: IgcTileComponent;
+    fullscreen: boolean;
+  }>;
+  igcTileMaximize: CustomEvent<{ tile: IgcTileComponent; maximized: boolean }>;
+}
+
 /**
  * The tile component is used within the `igc-tile-manager` as a container
  * for displaying various types of information.
  *
  * @element igc-tile
+ *
+ * @fires igcTileFullscreen - Fired when tile fullscreen state changes.
+ * @fires igcTileMaximize - Fired when tile maximize state changes.
  */
-export default class IgcTileComponent extends LitElement {
+export default class IgcTileComponent extends EventEmitterMixin<
+  IgcTileComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   private ghostElement!: HTMLElement | null;
 
   public static readonly tagName = 'igc-tile';
-  public static override styles = [styles];
+  public static styles = [styles];
 
   /* blazorSuppress */
   public static register() {
@@ -31,6 +47,9 @@ export default class IgcTileComponent extends LitElement {
 
   @state()
   private _hasDragOver = false;
+
+  @state()
+  private _isFullscreen = false;
 
   @property({ type: Number })
   public colSpan = 3;
@@ -53,14 +72,20 @@ export default class IgcTileComponent extends LitElement {
 
   @watch('maximized')
   protected maximizedChanged() {
-    if (this.maximized) {
-      this.popover = 'manual';
-      this.showPopover();
+    if (
+      !this.emitEvent('igcTileMaximize', {
+        detail: { tile: this, maximized: this.maximized },
+        cancelable: true,
+      })
+    ) {
+      this.maximized = false;
       return;
     }
 
-    // Not maximized; check if it needs to hide any popover state
-    if (this.popover) {
+    if (this.maximized) {
+      this.popover = 'manual';
+      this.showPopover();
+    } else if (this.popover) {
       this.hidePopover();
       this.popover = null;
     }
@@ -113,7 +138,23 @@ export default class IgcTileComponent extends LitElement {
 
   private async handleFullscreenRequest() {
     try {
-      await this.requestFullscreen();
+      if (
+        !this.emitEvent('igcTileFullscreen', {
+          detail: { tile: this, fullscreen: this._isFullscreen },
+          cancelable: true,
+        })
+      ) {
+        this._isFullscreen = false;
+        return;
+      }
+
+      if (!this._isFullscreen) {
+        await this.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+
+      this._isFullscreen = !this._isFullscreen;
     } catch {
       document.exitFullscreen();
     }
@@ -204,6 +245,7 @@ export default class IgcTileComponent extends LitElement {
   protected override render() {
     const parts = partNameMap({
       'drag-over': this._hasDragOver,
+      fullscreen: this._isFullscreen,
     });
 
     return html`

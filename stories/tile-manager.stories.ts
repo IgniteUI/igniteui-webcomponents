@@ -100,6 +100,10 @@ function toggleMaximizedTile() {
   tile.maximized = !tile.maximized;
 }
 
+function cancelStateChangeEvent(e: CustomEvent) {
+  e.preventDefault();
+}
+
 export const Maximized: Story = {
   render: () => html`
     <style>
@@ -111,7 +115,7 @@ export const Maximized: Story = {
     </style>
 
     <igc-tile-manager>
-      <igc-tile id="max-tile">
+      <igc-tile id="max-tile" @igcTileFullscreen=${cancelStateChangeEvent}>
         <h1>I am Maximized</h1>
         <igc-button @click=${toggleMaximizedTile}
           >Toggle maximized state</igc-button

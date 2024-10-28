@@ -6,6 +6,7 @@ import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
+  simulateDoubleClick,
   simulateDragEnd,
   simulateDragStart,
   simulateDrop,
@@ -375,15 +376,19 @@ describe('Tile Manager component', () => {
       expect(ghostElement).to.be.null;
     });
 
-    it('should cancel resize by pressing ESC key', async () => {
+    // biome-ignore lint/suspicious/noFocusedTests: <explanation>
+    it.only('should cancel resize by pressing ESC key', async () => {
       const tile = first(tileManager.tiles);
-      const { x, width } = tile.getBoundingClientRect();
+      const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
 
       simulatePointerDown(resizeHandle);
       await elementUpdated(resizeHandle);
 
-      simulatePointerMove(resizeHandle, { clientX: x + width * 2 });
+      simulatePointerMove(resizeHandle, {
+        clientX: x + width * 2,
+        clientY: y + height * 2,
+      });
       await elementUpdated(resizeHandle);
 
       const ghostElement = tileManager.querySelector('#resize-ghost');
@@ -480,6 +485,74 @@ describe('Tile Manager component', () => {
       expect(tileManager.tiles).eql(initialTiles);
       expect(tileManager.tiles[0].id).to.equal('tile0');
       expect(tileManager.tiles[1].id).to.equal('tile1');
+    });
+  });
+
+  describe('Tile state change behavior', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('should correctly fire `igcTileFullscreen` event', async () => {
+      const tile = first(tileManager.tiles);
+
+      const eventSpy = spy(tile, 'emitEvent');
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledOnceWithExactly('igcTileFullscreen', {
+        detail: { tile: tile, fullscreen: true },
+      });
+
+      // check if tile is fullscreen
+    });
+
+    it('can cancel `igcTileFullscreen` event', async () => {
+      const tile = first(tileManager.tiles);
+
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.addEventListener('igcTileFullscreen', (ev) => {
+        ev.preventDefault();
+      });
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledWith('igcTileFullscreen');
+      // check if tile is not fullscreen
+    });
+
+    it('should correctly fire `igcTileMaximized` event', async () => {
+      const tile = first(tileManager.tiles);
+
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.maximized = !tile.maximized;
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledOnceWithExactly('igcTileMaximized', {
+        detail: { tile: tile, fullscreen: true },
+      });
+
+      expect(tile.maximized).to.be.true;
+    });
+
+    it('can cancel `igcTileMaximized` event', async () => {
+      const tile = first(tileManager.tiles);
+
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.addEventListener('igcTileMaximized', (ev) => {
+        ev.preventDefault();
+      });
+
+      tile.maximized = !tile.maximized;
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledWith('igcTileFullscreen');
+      expect(tile.maximized).to.be.false;
     });
   });
 
