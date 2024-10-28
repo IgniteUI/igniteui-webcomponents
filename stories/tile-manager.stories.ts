@@ -151,3 +151,37 @@ export const DynamicTiles: Story = {
     </igc-tile-manager>
   `,
 };
+
+let serializedData: string;
+
+function saveTileManager() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+
+  serializedData = tileManager.saveLayout();
+}
+
+function loadTileManager() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+
+  tileManager.loadLayout(serializedData);
+}
+
+export const Serialization: Story = {
+  render: () => html`
+    <igc-button @click=${saveTileManager}>Save Layout</igc-button>
+    <igc-button @click=${loadTileManager}>Load Layout</igc-button>
+    <igc-button @click=${addTile}>Add Tile</igc-button>
+    <igc-button @click=${removeTile}>Remove Tile</igc-button>
+    <igc-tile-manager id="tile-manager1">
+      <igc-tile>
+        <igc-tile-header>Header 1</igc-tile-header>
+        <h1>Tile1</h1>
+      </igc-tile>
+      <igc-tile id="tile2">
+        <h2>Tile2</h2>
+      </igc-tile>
+    </igc-tile-manager>
+  `,
+};

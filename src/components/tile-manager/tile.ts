@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { addTileResize } from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
@@ -15,8 +15,6 @@ import IgcTileHeaderComponent from './tile-header.js';
  * @element igc-tile
  */
 export default class IgcTileComponent extends LitElement {
-  private ghostElement!: HTMLElement | null;
-
   public static readonly tagName = 'igc-tile';
   public static override styles = [styles];
 
@@ -25,12 +23,23 @@ export default class IgcTileComponent extends LitElement {
     registerComponent(IgcTileComponent, IgcTileHeaderComponent);
   }
 
+  private static readonly increment = createCounter();
+
+  private ghostElement!: HTMLElement | null;
+
   // REVIEW
   // @state()
   // private _isDragging = false;
 
   @state()
   private _hasDragOver = false;
+
+  /**
+   * The unique identifier of the tile.
+   * @attr
+   */
+  @property({ attribute: 'tile-id', type: String, reflect: true })
+  public tileId: string | null = null;
 
   @property({ type: Number })
   public colSpan = 3;
@@ -74,13 +83,13 @@ export default class IgcTileComponent extends LitElement {
     if (this.colStart !== null) {
       this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
     } else {
-      this.style.gridColumn = `span ${this.colSpan}`;
+      this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
     }
 
     if (this.rowStart !== null) {
       this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
     } else {
-      this.style.gridRow = `span ${this.rowSpan}`;
+      this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
     }
   }
 
@@ -104,6 +113,11 @@ export default class IgcTileComponent extends LitElement {
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
     this.addEventListener('dblclick', this.handleFullscreenRequest);
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
   }
 
   protected override async firstUpdated() {
@@ -187,6 +201,8 @@ export default class IgcTileComponent extends LitElement {
 
   private handleResizeEnd() {
     if (this.ghostElement) {
+      // this.colSpan = this.ghostElement.style.gridColumn.match(/span (\d+)/).parseint // Number.parseInt(this.ghostElement.style.gridColumn);
+      // this.rowSpan = Number.parseInt(this.ghostElement.style.gridRow);
       this.style.gridColumn = this.ghostElement.style.gridColumn;
       this.style.gridRow = this.ghostElement.style.gridRow;
       this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
