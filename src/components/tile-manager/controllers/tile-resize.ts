@@ -1,4 +1,5 @@
 import type { ReactiveController } from 'lit';
+import type { Ref } from 'lit/directives/ref.js';
 import type IgcTileComponent from '../tile.js';
 
 type TileResizeCallback = (event: PointerEvent) => unknown;
@@ -9,16 +10,58 @@ type TileResizeConfig = {
   resizeEnd: TileResizeCallback;
 };
 
+const PointerEvents = [
+  'pointerdown',
+  'pointermove',
+  'lostpointercapture',
+  'pointercancel',
+] as const;
+
 class TileResizeController implements ReactiveController {
   private _host: IgcTileComponent;
   private _handlers!: Map<string, TileResizeCallback>;
+  private _ref?: Ref<HTMLElement>;
   private pointerCaptured = false;
-  private observer!: MutationObserver;
 
-  constructor(host: IgcTileComponent, config: Partial<TileResizeConfig>) {
+  protected get _element() {
+    return this._ref ? this._ref.value! : this._host;
+  }
+
+  constructor(
+    host: IgcTileComponent,
+    ref: Ref<HTMLElement>,
+    config: Partial<TileResizeConfig>
+  ) {
     this._host = host;
+    this._ref = ref;
     this._host.addController(this);
     this._initEventHandlers(config);
+  }
+
+  public handleEvent(event: PointerEvent) {
+    switch (event.type) {
+      case 'pointerdown':
+        return this._handlePointerDown(event);
+      case 'pointermove':
+        return this._handlePointerMove(event);
+      case 'lostpointercapture':
+      case 'pointercancel':
+        return this._handleLostPointerCapture(event);
+    }
+  }
+
+  public async hostConnected(): Promise<void> {
+    await this._host.updateComplete;
+
+    for (const event of PointerEvents) {
+      this._element.addEventListener(event, this);
+    }
+  }
+
+  public hostDisconnected(): void {
+    for (const event of PointerEvents) {
+      this._element.removeEventListener(event, this);
+    }
   }
 
   private _initEventHandlers(config: Partial<TileResizeConfig>) {
@@ -29,31 +72,17 @@ class TileResizeController implements ReactiveController {
     }
   }
 
-  public handleEvent(event: PointerEvent) {
-    if (this._handlers.has(event.type)) {
-      this._handlers.get(event.type)!.call(this._host, event);
-    }
-  }
-
-  private pointerDown(event: PointerEvent) {
+  private _handlePointerDown(event: PointerEvent) {
     event.preventDefault();
 
-    const resizeHandle = this._host.shadowRoot!.querySelector(
-      '.resize-handle'
-    )! as HTMLElement;
     this._handlers.get('resizestart')?.call(this._host, event);
 
-    resizeHandle.setPointerCapture(event.pointerId);
+    this._element.setPointerCapture(event.pointerId);
     this.pointerCaptured = true;
-    resizeHandle.focus();
-    this._host.addEventListener('pointermove', this.pointerMove.bind(this));
-    resizeHandle.addEventListener(
-      'lostpointercapture',
-      this.lostPointerCapture.bind(this) as EventListener
-    );
+    this._element.focus();
   }
 
-  private pointerMove(event: PointerEvent) {
+  private _handlePointerMove(event: PointerEvent) {
     event.preventDefault();
 
     if (this.pointerCaptured) {
@@ -61,63 +90,19 @@ class TileResizeController implements ReactiveController {
     }
   }
 
-  private lostPointerCapture(event: PointerEvent) {
+  private _handleLostPointerCapture(event: PointerEvent) {
     event.preventDefault();
     this._handlers.get('resizeend')?.call(this._host, event);
 
-    const resizeHandle = this._host.shadowRoot!.querySelector(
-      '.resize-handle'
-    )! as HTMLElement;
     this.pointerCaptured = false;
-
-    resizeHandle.releasePointerCapture(event.pointerId);
-    resizeHandle.removeEventListener(
-      'pointerdown',
-      this.pointerDown as EventListener
-    );
-    resizeHandle.removeEventListener(
-      'pointermove',
-      this.pointerMove as EventListener
-    );
-    resizeHandle.removeEventListener(
-      'lostpointercapture',
-      this.lostPointerCapture as EventListener
-    );
-
-    resizeHandle.blur();
-  }
-
-  public hostConnected(): void {
-    if (this._host.shadowRoot) {
-      this.observer = new MutationObserver(() => {
-        const resizeHandle =
-          this._host.shadowRoot!.querySelector('.resize-handle');
-        if (resizeHandle) {
-          resizeHandle.addEventListener(
-            'pointerdown',
-            this.pointerDown.bind(this) as EventListener
-          );
-          this.observer.disconnect();
-        }
-      });
-
-      this.observer.observe(this._host.shadowRoot, {
-        childList: true,
-        subtree: true,
-      });
-    }
-  }
-
-  public hostDisconnected(): void {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
+    this._element.releasePointerCapture(event.pointerId);
   }
 }
 
 export function addTileResize(
   host: IgcTileComponent,
+  ref: Ref<HTMLElement>,
   config: Partial<TileResizeConfig>
 ) {
-  return new TileResizeController(host, config);
+  return new TileResizeController(host, ref, config);
 }

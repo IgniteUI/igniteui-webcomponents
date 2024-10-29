@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -18,6 +19,9 @@ type IgcTileChangeState = {
 export interface IgcTileComponentEventMap {
   igcTileFullscreen: CustomEvent<IgcTileChangeState>;
   igcTileMaximize: CustomEvent<IgcTileChangeState>;
+  igcResizeStart: CustomEvent<IgcTileComponent>;
+  igcResizeMove: CustomEvent<IgcTileComponent>;
+  igcResizeEnd: CustomEvent<IgcTileComponent>;
 }
 
 /**
@@ -28,6 +32,9 @@ export interface IgcTileComponentEventMap {
  *
  * @fires igcTileFullscreen - Fired when tile fullscreen state changes.
  * @fires igcTileMaximize - Fired when tile maximize state changes.
+ * @fires igcResizeStart - Fired when tile begins resizing.
+ * @fires igcResizeMove - Fired when tile is being resized.
+ * @fires igcResizeEnd - Fired when tile finishes resizing.
  */
 export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
@@ -42,8 +49,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private static readonly increment = createCounter();
-
   private ghostElement!: HTMLElement | null;
+
+  private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
 
   // REVIEW
   // @state()
@@ -127,7 +135,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       drop: this.handleDragLeave,
     });
 
-    addTileResize(this, {
+    addTileResize(this, this._resizeHandleRef, {
       resizeStart: this.handleResizeStart,
       resizeMove: this.handleResize,
       resizeEnd: this.handleResizeEnd,
@@ -229,25 +237,32 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleResizeStart() {
-    this.ghostElement = this.createGhostElement();
-    this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
+    if (this.emitEvent('igcResizeStart', { detail: this, cancelable: true })) {
+      this.ghostElement = this.createGhostElement();
+      this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
+    }
   }
 
   private handleResize(event: PointerEvent) {
-    const startPos = this.getBoundingClientRect();
+    if (this.emitEvent('igcResizeMove', { detail: this, cancelable: true })) {
+      const startPos = this.getBoundingClientRect();
 
-    const newWidth = event.clientX - startPos.left;
-    const newHeight = event.clientY - startPos.top;
+      const newWidth = event.clientX - startPos.left;
+      const newHeight = event.clientY - startPos.top;
 
-    const colSpan = Math.max(2, Math.floor(newWidth / 30)); // 20 + 10 (gap)
-    const rowSpan = Math.max(2, Math.floor(newHeight / 30));
+      const colSpan = Math.max(2, Math.floor(newWidth / 30)); // 20 + 10 (gap)
+      const rowSpan = Math.max(2, Math.floor(newHeight / 30));
 
-    this.ghostElement!.style.gridColumn = `span ${colSpan}`;
-    this.ghostElement!.style.gridRow = `span ${rowSpan}`;
+      this.ghostElement!.style.gridColumn = `span ${colSpan}`;
+      this.ghostElement!.style.gridRow = `span ${rowSpan}`;
+    }
   }
 
   private handleResizeEnd() {
-    if (this.ghostElement) {
+    if (
+      this.ghostElement &&
+      this.emitEvent('igcResizeEnd', { detail: this, cancelable: true })
+    ) {
       // this.colSpan = this.ghostElement.style.gridColumn.match(/span (\d+)/).parseint // Number.parseInt(this.ghostElement.style.gridColumn);
       // this.rowSpan = Number.parseInt(this.ghostElement.style.gridRow);
       this.style.gridColumn = this.ghostElement.style.gridColumn;
@@ -280,6 +295,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         </div>
 
         <div
+          ${ref(this._resizeHandleRef)}
           class="resize-handle"
           tabindex="-1"
           @keydown=${this.handleResizeCancelled}

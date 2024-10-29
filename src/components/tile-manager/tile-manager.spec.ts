@@ -326,6 +326,8 @@ describe('Tile Manager component', () => {
 
     it('should create a ghost element on resize start', async () => {
       const tile = first(tileManager.tiles);
+      const eventSpy = spy(tile, 'emitEvent');
+
       const resizeHandle = tile.shadowRoot?.querySelector('.resize-handle');
 
       simulatePointerDown(resizeHandle!);
@@ -335,10 +337,15 @@ describe('Tile Manager component', () => {
       expect(ghostElement).to.not.be.null;
       expect(tile.closest('igc-tile-manager')!.contains(ghostElement!)).to.be
         .true;
+      expect(eventSpy).calledWith('igcResizeStart', {
+        detail: tile,
+        cancelable: true,
+      });
     });
 
     it('should update ghost element styles during pointer move', async () => {
       const tile = first(tileManager.tiles);
+      const eventSpy = spy(tile, 'emitEvent');
       const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
 
@@ -351,6 +358,16 @@ describe('Tile Manager component', () => {
       });
       await elementUpdated(resizeHandle!);
 
+      expect(eventSpy.getCall(0)).calledWith('igcResizeStart', {
+        detail: tile,
+        cancelable: true,
+      });
+
+      expect(eventSpy.getCall(1)).calledWith('igcResizeMove', {
+        detail: tile,
+        cancelable: true,
+      });
+
       const ghostElement = tileManager.querySelector(
         '#resize-ghost'
       ) as HTMLElement;
@@ -360,6 +377,8 @@ describe('Tile Manager component', () => {
 
     it('should set the styles on the tile and remove the ghost element on resize end', async () => {
       const tile = first(tileManager.tiles);
+      const eventSpy = spy(tile, 'emitEvent');
+
       const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
 
@@ -378,6 +397,11 @@ describe('Tile Manager component', () => {
 
       simulateLostPointerCapture(resizeHandle!);
       await elementUpdated(resizeHandle!);
+
+      expect(eventSpy).calledWith('igcResizeEnd', {
+        detail: tile,
+        cancelable: true,
+      });
 
       ghostElement = tileManager.querySelector('#resize-ghost');
       expect(tile.style.gridColumn).to.equal(ghostGridColumn);
@@ -502,24 +526,27 @@ describe('Tile Manager component', () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
     });
 
-    it('should correctly fire `igcTileFullscreen` event', async () => {
+    // TODO Mockup browser requestFullscreen/exitFullscreen
+    xit('should correctly fire `igcTileFullscreen` event', async () => {
       const tile = first(tileManager.tiles);
+      const tileWrapper = getTileBaseWrapper(tile);
 
       const eventSpy = spy(tile, 'emitEvent');
 
-      simulateDoubleClick(tile);
-      await elementUpdated(tileManager);
+      simulateDoubleClick(tileWrapper);
+      await elementUpdated(tile);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileFullscreen', {
+      expect(eventSpy).calledWith('igcTileFullscreen', {
         detail: { tile: tile, fullscreen: true },
+        cancelable: true,
       });
 
       // check if tile is fullscreen
     });
 
-    it('can cancel `igcTileFullscreen` event', async () => {
+    // TODO Mockup browser requestFullscreen/exitFullscreen
+    xit('can cancel `igcTileFullscreen` event', async () => {
       const tile = first(tileManager.tiles);
-
       const eventSpy = spy(tile, 'emitEvent');
 
       tile.addEventListener('igcTileFullscreen', (ev) => {
@@ -529,38 +556,44 @@ describe('Tile Manager component', () => {
       simulateDoubleClick(tile);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileFullscreen');
+      expect(eventSpy).calledWith('igcTileFullscreen', {
+        detail: { tile: tile, fullscreen: false },
+        cancelable: true,
+      });
       // check if tile is not fullscreen
     });
 
-    it('should correctly fire `igcTileMaximized` event', async () => {
+    it('should correctly fire `igcTileMaximize` event', async () => {
       const tile = first(tileManager.tiles);
-
       const eventSpy = spy(tile, 'emitEvent');
 
       tile.maximized = !tile.maximized;
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileMaximized', {
-        detail: { tile: tile, fullscreen: true },
+      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
+        detail: { tile: tile, maximized: true },
+        cancelable: true,
       });
 
       expect(tile.maximized).to.be.true;
     });
 
-    it('can cancel `igcTileMaximized` event', async () => {
+    it('can cancel `igcTileMaximize` event', async () => {
       const tile = first(tileManager.tiles);
-
       const eventSpy = spy(tile, 'emitEvent');
 
-      tile.addEventListener('igcTileMaximized', (ev) => {
+      tile.addEventListener('igcTileMaximize', (ev) => {
         ev.preventDefault();
       });
 
       tile.maximized = !tile.maximized;
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileFullscreen');
+      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
+        detail: { tile: tile, maximized: true },
+        cancelable: true,
+      });
+
       expect(tile.maximized).to.be.false;
     });
   });
@@ -660,6 +693,6 @@ describe('Tile Manager component', () => {
   }
 });
 
-// function getTileBaseWrapper(element: IgcTileComponent) {
-//   return element.renderRoot.querySelector<HTMLDivElement>('#base')!;
-// }
+function getTileBaseWrapper(element: IgcTileComponent) {
+  return element.renderRoot.querySelector<HTMLDivElement>('#base')!;
+}
