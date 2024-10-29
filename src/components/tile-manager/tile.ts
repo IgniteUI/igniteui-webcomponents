@@ -10,12 +10,14 @@ import { addTileResize } from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
+type IgcTileChangeState = {
+  tile: IgcTileComponent;
+  state: boolean;
+};
+
 export interface IgcTileComponentEventMap {
-  igcTileFullscreen: CustomEvent<{
-    tile: IgcTileComponent;
-    fullscreen: boolean;
-  }>;
-  igcTileMaximize: CustomEvent<{ tile: IgcTileComponent; maximized: boolean }>;
+  igcTileFullscreen: CustomEvent<IgcTileChangeState>;
+  igcTileMaximize: CustomEvent<IgcTileChangeState>;
 }
 
 /**
@@ -81,13 +83,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @watch('maximized')
   protected maximizedChanged() {
-    if (
-      !this.emitEvent('igcTileMaximize', {
-        detail: { tile: this, maximized: this.maximized },
-        cancelable: true,
-      })
-    ) {
-      this.maximized = false;
+    // FIXME: The maximized event should be emitted only when an user interacts with the default
+    // UI for maximizing tiles. Currently this is emitted through API calls as well which is a no-no.
+    if (!this.emitMaximizedEvent()) {
       return;
     }
 
@@ -150,15 +148,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.updateRowsColSpan();
   }
 
+  private emitFullScreenEvent() {
+    return this.emitEvent('igcTileFullscreen', {
+      detail: { tile: this, state: this._isFullscreen },
+      cancelable: true,
+    });
+  }
+
+  private emitMaximizedEvent() {
+    return this.emitEvent('igcTileMaximize', {
+      detail: { tile: this, state: this.maximized },
+      cancelable: true,
+    });
+  }
+
   private async handleFullscreenRequest() {
     try {
-      if (
-        !this.emitEvent('igcTileFullscreen', {
-          detail: { tile: this, fullscreen: this._isFullscreen },
-          cancelable: true,
-        })
-      ) {
-        this._isFullscreen = false;
+      if (!this.emitFullScreenEvent()) {
         return;
       }
 

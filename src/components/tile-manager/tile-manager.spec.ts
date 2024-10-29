@@ -385,8 +385,7 @@ describe('Tile Manager component', () => {
       expect(ghostElement).to.be.null;
     });
 
-    // biome-ignore lint/suspicious/noFocusedTests: <explanation>
-    it.only('should cancel resize by pressing ESC key', async () => {
+    it('should cancel resize by pressing ESC key', async () => {
       const tile = first(tileManager.tiles);
       const { x, y, width, height } = tile.getBoundingClientRect();
       const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
