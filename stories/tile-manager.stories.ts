@@ -11,6 +11,7 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
+import { disableStoryControls, randomIntBetween } from './story.js';
 
 defineComponents(IgcTileManagerComponent, IgcIconComponent, IgcButtonComponent);
 
@@ -81,6 +82,26 @@ const tiles = Array.from(
     `
   )
 );
+
+const pictures = Array.from(range(25)).map(() => ({
+  width: randomIntBetween(400, 800),
+  height: randomIntBetween(400, 800),
+}));
+
+export const AutoInfer: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <igc-tile-manager>
+      ${pictures.map(
+        ({ width, height }) => html`
+          <igc-tile>
+            <img src="https://picsum.photos/${width}/${height}" alt="picture" />
+          </igc-tile>
+        `
+      )}
+    </igc-tile-manager>
+  `,
+};
 
 export const Default: Story = {
   render: (args) => html`

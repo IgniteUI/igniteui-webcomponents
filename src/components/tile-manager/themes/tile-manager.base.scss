@@ -7,11 +7,11 @@
 
 [part='base'] {
     display: grid;
-    grid-auto-columns: minmax(20px, auto);
-    grid-auto-rows: minmax(20px, auto);
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(400px, 1fr));
     grid-gap: 10px;
     grid-auto-flow: dense;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 100%;
+
 }

@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -71,10 +72,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public tileId: string | null = null;
 
   @property({ type: Number })
-  public colSpan = 3;
+  public colSpan!: number;
 
   @property({ type: Number })
-  public rowSpan = 3;
+  public rowSpan!: number;
 
   @property({ type: Number })
   public colStart: number | null = null;
@@ -111,17 +112,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @watch('colStart', { waitUntilFirstUpdate: true })
   @watch('rowStart', { waitUntilFirstUpdate: true })
   protected updateRowsColSpan() {
-    if (this.colStart !== null) {
-      this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
-    } else {
-      this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
-    }
-
-    if (this.rowStart !== null) {
-      this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
-    } else {
-      this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
-    }
+    // if (this.colStart !== null) {
+    //   this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
+    // } else {
+    //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
+    // }
+    // if (this.rowStart !== null) {
+    //   this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
+    // } else {
+    //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
+    // }
   }
 
   constructor() {
@@ -196,13 +196,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._hasDragOver = false;
   }
 
-  private handleDragStart() {
+  private handleDragStart(e: DragEvent) {
     const event = new CustomEvent('tileDragStart', {
       detail: { tile: this },
       bubbles: true,
     });
+
+    e.dataTransfer!.setDragImage(this, 0, 0);
+    e.dataTransfer!.effectAllowed = 'move';
+
     this.dispatchEvent(event);
-    this.classList.add('dragging');
 
     requestAnimationFrame(() => {
       this.style.transform = 'scale(0)';
@@ -215,7 +218,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       bubbles: true,
     });
     this.dispatchEvent(event);
-    this.classList.remove('dragging');
   }
 
   private createGhostElement(): HTMLElement {
@@ -286,7 +288,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
 
     return html`
-      <div id="base" .inert=${this._hasDragOver} part=${parts}>
+      <div id="base" .inert=${this._hasDragOver} part=${ifDefined(parts)}>
         <div part="header">
           <slot name="header"></slot>
         </div>

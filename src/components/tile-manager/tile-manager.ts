@@ -40,8 +40,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private draggedItem: IgcTileComponent | null = null;
 
-  @query('[part="base"]', true)
-  private _baseWrapper!: HTMLDivElement;
+  // @query('[part="base"]', true)
+  // private _baseWrapper!: HTMLDivElement;
 
   @query('slot', true)
   private slotElement!: HTMLSlotElement;
@@ -88,19 +88,18 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   @watch('rowCount', { waitUntilFirstUpdate: true })
   protected updateRowsCols() {
     // REVIEW: Bind to internal CSS vars/parts or something
-    const gridTemplateColumns =
-      this.columnCount > 0
-        ? `repeat(${this.columnCount}, auto)`
-        : 'repeat(auto-fit, minmax(20px, 1fr))';
-    const gridTemplateRows =
-      this.rowCount > 0
-        ? `repeat(${this.rowCount}, auto)`
-        : 'repeat(auto-fit, minmax(20px, 1fr))';
-
-    Object.assign(this._baseWrapper.style, {
-      gridTemplateColumns,
-      gridTemplateRows,
-    });
+    // const gridTemplateColumns =
+    //   this.columnCount > 0
+    //     ? `repeat(${this.columnCount}, auto)`
+    //     : 'repeat(auto-fit, minmax(20px, 1fr))';
+    // const gridTemplateRows =
+    //   this.rowCount > 0
+    //     ? `repeat(${this.rowCount}, auto)`
+    //     : 'repeat(auto-fit, minmax(20px, 1fr))';
+    // Object.assign(this._baseWrapper.style, {
+    //   gridTemplateColumns,
+    //   gridTemplateRows,
+    // });
   }
 
   constructor() {
