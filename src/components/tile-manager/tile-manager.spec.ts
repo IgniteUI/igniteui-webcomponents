@@ -537,7 +537,7 @@ describe('Tile Manager component', () => {
       await elementUpdated(tile);
 
       expect(eventSpy).calledWith('igcTileFullscreen', {
-        detail: { tile: tile, fullscreen: true },
+        detail: { tile: tile, state: true },
         cancelable: true,
       });
 
@@ -557,7 +557,7 @@ describe('Tile Manager component', () => {
       await elementUpdated(tileManager);
 
       expect(eventSpy).calledWith('igcTileFullscreen', {
-        detail: { tile: tile, fullscreen: false },
+        detail: { tile: tile, state: false },
         cancelable: true,
       });
       // check if tile is not fullscreen
@@ -567,15 +567,25 @@ describe('Tile Manager component', () => {
       const tile = first(tileManager.tiles);
       const eventSpy = spy(tile, 'emitEvent');
 
-      tile.maximized = !tile.maximized;
+      tile.toggleMaximize();
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
-        detail: { tile: tile, maximized: true },
+      expect(eventSpy).calledWith('igcTileMaximize', {
+        detail: { tile: tile, state: true },
         cancelable: true,
       });
 
       expect(tile.maximized).to.be.true;
+
+      tile.toggleMaximize();
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).calledWith('igcTileMaximize', {
+        detail: { tile: tile, state: false },
+        cancelable: true,
+      });
+
+      expect(tile.maximized).to.be.false;
     });
 
     it('can cancel `igcTileMaximize` event', async () => {
@@ -586,11 +596,11 @@ describe('Tile Manager component', () => {
         ev.preventDefault();
       });
 
-      tile.maximized = !tile.maximized;
+      tile.toggleMaximize();
       await elementUpdated(tileManager);
 
       expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
-        detail: { tile: tile, maximized: true },
+        detail: { tile: tile, state: true },
         cancelable: true,
       });
 

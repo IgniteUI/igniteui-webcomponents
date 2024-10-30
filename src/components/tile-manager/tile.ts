@@ -43,6 +43,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-tile';
   public static styles = [styles];
+  private _emitMaximizedEvent = false;
 
   /* blazorSuppress */
   public static register() {
@@ -92,9 +93,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @watch('maximized')
   protected maximizedChanged() {
-    // FIXME: The maximized event should be emitted only when an user interacts with the default
-    // UI for maximizing tiles. Currently this is emitted through API calls as well which is a no-no.
-    if (!this.emitMaximizedEvent()) {
+    if (this._emitMaximizedEvent && !this.emitMaximizedEvent()) {
+      this.maximized = !this.maximized;
       return;
     }
 
@@ -105,6 +105,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.hidePopover();
       this.popover = null;
     }
+
+    this._emitMaximizedEvent = false;
   }
 
   @watch('colSpan', { waitUntilFirstUpdate: true })
@@ -149,6 +151,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+  }
+
+  public toggleMaximize() {
+    this._emitMaximizedEvent = true;
+    this.maximized = !this.maximized;
   }
 
   protected override async firstUpdated() {
