@@ -13,7 +13,7 @@ type TileDragAndDropConfig = {
 
 const DragEvents = ['dragstart', 'dragend', 'dragenter', 'dragleave', 'drop'];
 
-class TileDragAndDropController implements ReactiveController {
+export class TileDragAndDropController implements ReactiveController {
   private _host: IgcTileComponent;
   private _handlers!: Map<string, TileDragCallback>;
 

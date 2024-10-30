@@ -186,7 +186,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   public saveLayout() {
-    // TODO: serialize fullscreen, disableDrag, disableResize when added
+    // TODO: serialize fullscreen when added
     const tilesData = this.tiles.map((tile) => {
       const tileStyles = window.getComputedStyle(tile);
 
@@ -196,9 +196,12 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         colStart: tile.colStart,
         rowSpan: tile.rowSpan,
         rowStart: tile.rowStart,
+        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
         gridColumn: tileStyles.gridColumn,
         gridRow: tileStyles.gridRow,
         maximized: tile.maximized,
+        disableDrag: tile.disableDrag,
+        disableResize: tile.disableResize,
       };
     });
 
@@ -221,6 +224,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       tile.rowSpan = tileInfo.rowSpan;
       tile.rowStart = tileInfo.rowStart;
       tile.maximized = tileInfo.maximized;
+      tile.disableDrag = tileInfo.disableDrag;
+      tile.disableResize = tileInfo.disableResize;
       // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
       tile.style.gridColumn = tileInfo.gridColumn;
       tile.style.gridRow = tileInfo.gridRow;

@@ -7,8 +7,14 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { addTileDragAndDrop } from './controllers/tile-dnd.js';
-import { addTileResize } from './controllers/tile-resize.js';
+import {
+  type TileDragAndDropController,
+  addTileDragAndDrop,
+} from './controllers/tile-dnd.js';
+import {
+  type TileResizeController,
+  addTileResize,
+} from './controllers/tile-resize.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
@@ -52,7 +58,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private ghostElement!: HTMLElement | null;
-
+  private _dragController?: TileDragAndDropController;
+  private _resizeController?: TileResizeController;
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
 
   // REVIEW
@@ -91,6 +98,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public maximized = false;
 
+  /**
+   * Indicates whether the tile can be dragged.
+   * @attr
+   */
+  @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
+  public disableDrag = false;
+
+  /**
+   * Indicates whether the tile can be resized.
+   * @attr
+   */
+  @property({ attribute: 'disable-resize', type: Boolean, reflect: true })
+  public disableResize = false;
+
   @watch('maximized')
   protected maximizedChanged() {
     if (this._emitMaximizedEvent && !this.emitMaximizedEvent()) {
@@ -126,22 +147,52 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // }
   }
 
+  @watch('disableDrag')
+  protected updateDragController() {
+    if (this.disableDrag) {
+      this.draggable = false;
+      if (this._dragController) {
+        this._dragController.hostDisconnected();
+        this._dragController = undefined;
+      }
+    } else if (!this._dragController) {
+      this.draggable = true;
+
+      this._dragController = addTileDragAndDrop(this, {
+        dragStart: this.handleDragStart,
+        dragEnd: this.handleDragEnd,
+        dragEnter: this.handleDragEnter,
+        dragLeave: this.handleDragLeave,
+        drop: this.handleDragLeave,
+      });
+    }
+  }
+
+  @watch('disableResize')
+  protected updateResizeController() {
+    if (this.disableResize) {
+      if (this._resizeController) {
+        this._resizeController.hostDisconnected();
+        this._resizeController = undefined;
+      }
+    } else if (!this._resizeController) {
+      this._resizeController = addTileResize(this, this._resizeHandleRef, {
+        resizeStart: this.handleResizeStart,
+        resizeMove: this.handleResize,
+        resizeEnd: this.handleResizeEnd,
+      });
+    }
+  }
+
   constructor() {
     super();
 
-    addTileDragAndDrop(this, {
-      dragStart: this.handleDragStart,
-      dragEnd: this.handleDragEnd,
-      dragEnter: this.handleDragEnter,
-      dragLeave: this.handleDragLeave,
-      drop: this.handleDragLeave,
-    });
-
-    addTileResize(this, this._resizeHandleRef, {
-      resizeStart: this.handleResizeStart,
-      resizeMove: this.handleResize,
-      resizeEnd: this.handleResizeEnd,
-    });
+    // Moved to updateResizeController() so that we have the resize controller only when the resize is enabled
+    // addTileResize(this, this._resizeHandleRef, {
+    //   resizeStart: this.handleResizeStart,
+    //   resizeMove: this.handleResize,
+    //   resizeEnd: this.handleResizeEnd,
+    // });
 
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
@@ -303,6 +354,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot></slot>
         </div>
 
+        <!-- should we remove/hide the resizeHandle when disableResize is true -->
         <div
           ${ref(this._resizeHandleRef)}
           class="resize-handle"

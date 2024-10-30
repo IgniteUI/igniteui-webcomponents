@@ -17,7 +17,7 @@ const PointerEvents = [
   'pointercancel',
 ] as const;
 
-class TileResizeController implements ReactiveController {
+export class TileResizeController implements ReactiveController {
   private _host: IgcTileComponent;
   private _handlers!: Map<string, TileResizeCallback>;
   private _ref?: Ref<HTMLElement>;

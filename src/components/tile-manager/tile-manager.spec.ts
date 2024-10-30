@@ -434,6 +434,37 @@ describe('Tile Manager component', () => {
       expect(tile.style.gridColumn).to.equal('span 5');
       expect(tile.style.gridRow).to.equal('span 5');
     });
+
+    it('should not resize when `disableResize` is true', async () => {
+      const tile = first(tileManager.tiles);
+      const { x, y, width, height } = tile.getBoundingClientRect();
+      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.disableResize = true;
+      await elementUpdated(tile);
+
+      simulatePointerDown(resizeHandle);
+      await elementUpdated(resizeHandle);
+
+      expect(eventSpy).not.calledWith('igcResizeStart');
+
+      simulatePointerMove(resizeHandle!, {
+        clientX: x + width * 2,
+        clientY: y + height * 2,
+      });
+      await elementUpdated(tile);
+
+      expect(eventSpy).not.calledWith('igcResizeMove');
+
+      const ghostElement = tileManager.querySelector('#resize-ghost');
+      expect(ghostElement).to.be.null;
+
+      simulateLostPointerCapture(resizeHandle!);
+      await elementUpdated(resizeHandle!);
+
+      expect(eventSpy).not.calledWith('igcResizeEnd');
+    });
   });
 
   describe('Tile drag behavior', () => {
@@ -518,6 +549,20 @@ describe('Tile Manager component', () => {
       expect(tileManager.tiles).eql(initialTiles);
       expect(tileManager.tiles[0].id).to.equal('tile0');
       expect(tileManager.tiles[1].id).to.equal('tile1');
+    });
+
+    it('should prevent dragging when `disableDrag` is true', async () => {
+      const draggedTile = last(tileManager.tiles);
+      const dropTarget = first(tileManager.tiles);
+      const eventSpy = spy(tileManager, 'emitEvent');
+
+      draggedTile.disableDrag = true;
+      await elementUpdated(tileManager);
+      await dragAndDrop(draggedTile, dropTarget);
+
+      expect(eventSpy).not.calledWith('igcTileDragStarted');
+      expect(tileManager.tiles[0].id).to.equal('tile0');
+      expect(tileManager.tiles[4].id).to.equal('tile4');
     });
   });
 
@@ -619,6 +664,8 @@ describe('Tile Manager component', () => {
             colSpan="10"
             rowStart="7"
             rowSpan="7"
+            disable-drag
+            disable-resize
           >
             Tile content 2
           </igc-tile>
@@ -633,6 +680,8 @@ describe('Tile Manager component', () => {
           tileId: 'custom-id1',
           colStart: null,
           colSpan: 3,
+          disableDrag: false,
+          disableResize: false,
           rowStart: null,
           rowSpan: 3,
           gridColumn: 'span 3',
@@ -643,6 +692,8 @@ describe('Tile Manager component', () => {
           tileId: 'custom-id2',
           colStart: 8,
           colSpan: 10,
+          disableDrag: true,
+          disableResize: true,
           rowStart: 7,
           rowSpan: 7,
           gridColumn: '8 / span 10',
@@ -652,6 +703,67 @@ describe('Tile Manager component', () => {
       ];
 
       expect(serializedData).to.deep.equal(expectedData);
+    });
+
+    it('should deserialize tiles with proper properties values', async () => {
+      const tilesData = [
+        {
+          tileId: 'id1',
+          colStart: 1,
+          colSpan: 5,
+          disableDrag: true,
+          disableResize: true,
+          gridColumn: '1 / span 5',
+          gridRow: '1 / span 5',
+          maximized: false,
+          rowStart: 1,
+          rowSpan: 5,
+        },
+        {
+          tileId: 'id2',
+          colStart: null,
+          colSpan: 3,
+          disableDrag: false,
+          disableResize: false,
+          gridColumn: 'span 3',
+          gridRow: 'span 3',
+          maximized: false,
+          rowStart: null,
+          rowSpan: 3,
+        },
+      ];
+
+      tileManager.loadLayout(JSON.stringify(tilesData));
+      await elementUpdated(tileManager);
+
+      const tiles = tileManager.tiles;
+      expect(tiles.length).to.equal(2);
+
+      expect(tiles[0].tileId).to.equal('id1');
+      expect(tiles[0].colStart).to.equal(1);
+      expect(tiles[0].colSpan).to.equal(5);
+      expect(tiles[0].disableDrag).to.equal(true);
+      expect(tiles[0].disableResize).to.equal(true);
+      expect(tiles[0].maximized).to.be.false;
+      expect(tiles[0].rowStart).to.equal(1);
+      expect(tiles[0].rowSpan).to.equal(5);
+
+      expect(tiles[1].tileId).to.equal('id2');
+      expect(tiles[1].colStart).to.be.null;
+      expect(tiles[1].colSpan).to.equal(3);
+      expect(tiles[1].disableDrag).to.be.false;
+      expect(tiles[1].disableResize).to.be.false;
+      expect(tiles[1].maximized).to.be.false;
+      expect(tiles[1].rowStart).to.be.null;
+      expect(tiles[1].rowSpan).to.equal(3);
+
+      const firstTileStyles = window.getComputedStyle(tiles[0]);
+      const secondTileStyles = window.getComputedStyle(tiles[1]);
+
+      expect(firstTileStyles.gridColumn).to.equal('1 / span 5');
+      expect(firstTileStyles.gridRow).to.equal('1 / span 5');
+      expect(secondTileStyles.gridColumn).to.equal('span 3');
+      expect(secondTileStyles.gridRow).to.equal('span 3');
     });
   });
 

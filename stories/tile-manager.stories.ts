@@ -200,12 +200,15 @@ export const Serialization: Story = {
     <igc-button @click=${addTile}>Add Tile</igc-button>
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
     <igc-tile-manager id="tile-manager1">
-      <igc-tile>
+      <igc-tile disable-drag disable-resize>
         <igc-tile-header>Header 1</igc-tile-header>
         <h1>Tile1</h1>
       </igc-tile>
       <igc-tile id="tile2">
         <h2>Tile2</h2>
+      </igc-tile>
+      <igc-tile id="tile3">
+        <h2>Tile3</h2>
       </igc-tile>
     </igc-tile-manager>
   `,
