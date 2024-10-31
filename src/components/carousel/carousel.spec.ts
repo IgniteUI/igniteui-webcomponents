@@ -429,6 +429,21 @@ describe('Carousel', () => {
       animation = await carousel.select(slides[2]);
       expect(animation).to.be.true;
       expect(carousel.current).to.equal(2);
+
+      // select current slide by index
+      animation = await carousel.select(2);
+      expect(animation).to.be.false;
+      expect(carousel.current).to.equal(2);
+
+      // select invalid slide by index
+      animation = await carousel.select(3);
+      expect(animation).to.be.false;
+      expect(carousel.current).to.equal(2);
+
+      // select fist slide by index
+      animation = await carousel.select(0);
+      expect(animation).to.be.true;
+      expect(carousel.current).to.equal(0);
     });
   });
 
