@@ -114,6 +114,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @watch('maximized')
   protected maximizedChanged() {
+    //TODO: When the header UI is implemented, emit the event on header button/icon click.
     if (this._emitMaximizedEvent && !this.emitMaximizedEvent()) {
       this.maximized = !this.maximized;
       return;
