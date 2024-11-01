@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- Tabs - nested tabs selection [#713](https://github.com/IgniteUI/igniteui-webcomponents/issues/713)
+
 ## [5.1.1] - 2024-10-28
 ### Fixed
 - Library - internal import path for styles and public exports for themes

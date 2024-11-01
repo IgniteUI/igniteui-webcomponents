@@ -23,12 +23,17 @@ import {
   homeKey,
   spaceBar,
 } from '../common/controllers/key-bindings.js';
+import { first, last } from '../common/util.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 
 describe('Tabs component', () => {
   // Helper functions
   const getTabs = (tabs: IgcTabsComponent) =>
-    Array.from(tabs.querySelectorAll(IgcTabComponent.tagName));
+    Array.from(
+      tabs.querySelectorAll<IgcTabComponent>(
+        `:scope > ${IgcTabComponent.tagName}`
+      )
+    );
 
   const getPanels = (tabs: IgcTabsComponent) =>
     Array.from(tabs.querySelectorAll(IgcTabPanelComponent.tagName));
@@ -668,6 +673,44 @@ describe('Tabs component', () => {
       document.body.appendChild(tabs);
 
       expect(() => tabs.appendChild(tab)).not.to.throw();
+    });
+  });
+
+  describe('issue-713', () => {
+    it('Nested tabs selection', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab>1</igc-tab>
+          <igc-tab>2</igc-tab>
+          <igc-tab-panel>
+            Panel 1
+            <igc-tabs>
+              <igc-tab>1.1</igc-tab>
+              <igc-tab selected>1.2</igc-tab>
+              <igc-tab-panel>Panel 1.1</igc-tab-panel>
+              <igc-tab-panel>Panel 1.2</igc-tab-panel>
+            </igc-tabs>
+          </igc-tab-panel>
+          <igc-tab-panel>Panel 2</igc-tab-panel>
+        </igc-tabs>
+      `);
+
+      const nestedTabs = tabs.querySelector(IgcTabsComponent.tagName)!;
+
+      expect(getSelectedTab(tabs).textContent).to.equal('1');
+      expect(getSelectedTab(nestedTabs).textContent).to.equal('1.2');
+
+      simulateClick(first(getTabs(nestedTabs)));
+      await elementUpdated(tabs);
+
+      expect(getSelectedTab(tabs).textContent).to.equal('1');
+      expect(getSelectedTab(nestedTabs).textContent).to.equal('1.1');
+
+      simulateClick(last(getTabs(tabs)));
+      await elementUpdated(tabs);
+
+      expect(getSelectedTab(tabs).textContent).to.equal('2');
+      expect(getSelectedTab(nestedTabs).textContent).to.equal('1.1');
     });
   });
 });

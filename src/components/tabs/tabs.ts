@@ -121,17 +121,23 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private _mutationCallback({
     changes: { attributes, added, removed },
   }: MutationControllerParams<IgcTabComponent>) {
-    this.setSelectedTab(attributes.find((tab) => tab.selected));
+    const ownAttributes = attributes.filter(
+      (tab) => tab.closest(this.tagName) === this
+    );
+    const ownAdded = added.filter(({ target }) => target === this);
+    const ownRemoved = removed.filter(({ target }) => target === this);
 
-    if (removed.length || added.length) {
-      for (const tab of removed) {
+    this.setSelectedTab(ownAttributes.find((tab) => tab.selected));
+
+    if (ownRemoved.length || ownAdded.length) {
+      for (const { node: tab } of ownRemoved) {
         this.resizeObserver?.unobserve(tab);
         if (tab.selected && tab === this.activeTab) {
           this.activeTab = undefined;
         }
       }
 
-      for (const tab of added) {
+      for (const { node: tab } of ownAdded) {
         this.resizeObserver?.observe(tab);
         if (tab.selected) {
           this.setSelectedTab(tab);
