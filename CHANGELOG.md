@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Carousel component select method overload accepting index [#1457](https://github.com/IgniteUI/igniteui-webcomponents/issues/1457)
+
 ### Fixed
 - Tabs - nested tabs selection [#713](https://github.com/IgniteUI/igniteui-webcomponents/issues/713)
 

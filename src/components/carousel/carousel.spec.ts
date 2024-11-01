@@ -429,6 +429,21 @@ describe('Carousel', () => {
       animation = await carousel.select(slides[2]);
       expect(animation).to.be.true;
       expect(carousel.current).to.equal(2);
+
+      // select current slide by index
+      animation = await carousel.select(2);
+      expect(animation).to.be.false;
+      expect(carousel.current).to.equal(2);
+
+      // select invalid slide by index
+      animation = await carousel.select(3);
+      expect(animation).to.be.false;
+      expect(carousel.current).to.equal(2);
+
+      // select fist slide by index
+      animation = await carousel.select(0);
+      expect(animation).to.be.true;
+      expect(carousel.current).to.equal(0);
     });
   });
 
@@ -505,6 +520,7 @@ describe('Carousel', () => {
   describe('Interactions', () => {
     describe('Click', () => {
       it('should change slide when clicking next button', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
@@ -514,9 +530,11 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[1].active).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 1 });
       });
 
       it('should change slide when clicking previous button', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
@@ -526,9 +544,11 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(2);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[2].active).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 2 });
       });
 
       it('should change slide when clicking indicators', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
@@ -539,6 +559,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[1].active).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 1 });
 
         // select first slide
         simulateClick(defaultIndicators[0]);
@@ -547,6 +568,9 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
         expect(defaultIndicators[1].active).to.be.false;
+        expect(eventSpy.secondCall).calledWith('igcSlideChanged', {
+          detail: 0,
+        });
       });
     });
 

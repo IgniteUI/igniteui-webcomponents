@@ -52,7 +52,7 @@ import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/carousel.common.css.js';
 
 export interface IgcCarouselComponentEventMap {
-  igcSlideChanged: CustomEvent<void>;
+  igcSlideChanged: CustomEvent<number>;
   igcPlaying: CustomEvent<void>;
   igcPaused: CustomEvent<void>;
 }
@@ -244,7 +244,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * @attr interval
    */
   @property({ type: Number, reflect: false })
-  public interval!: number;
+  public interval: number | undefined;
 
   /**
    * Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.
@@ -264,6 +264,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   @property({ attribute: 'animation-type' })
   public animationType: 'slide' | 'fade' | 'none' = 'slide';
 
+  /* blazorSuppress */
   /**
    * The slides of the carousel.
    */
@@ -506,7 +507,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
 
     await callback.call(this);
-    this.emitEvent('igcSlideChanged');
+    this.emitEvent('igcSlideChanged', { detail: this.current });
 
     if (this.interval) {
       this.restartInterval();
@@ -554,7 +555,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       this._lastInterval = setInterval(() => {
         if (this.isPlaying && this.total) {
           this.next();
-          this.emitEvent('igcSlideChanged');
+          this.emitEvent('igcSlideChanged', { detail: this.current });
         } else {
           this.pause();
         }
@@ -607,7 +608,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   /**
-   * Switches to the next slide running any animations and returns if the operation was a success.
+   * Switches to the next slide, runs any animations, and returns if the operation was successful.
    */
   public async next(): Promise<boolean> {
     if (this.disableLoop && this.nextIndex === 0) {
@@ -619,7 +620,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   /**
-   * Switches to the previous slide running any animations and returns if the operation was a success.
+   * Switches to the previous slide, runs any animations, and returns if the operation was successful.
    */
   public async prev(): Promise<boolean> {
     if (this.disableLoop && this.prevIndex === this.total - 1) {
@@ -630,20 +631,41 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return await this.select(this.slides[this.prevIndex], 'prev');
   }
 
+  /* blazorSuppress */
   /**
-   * Switches the passed in slide running any animations and returns if the operation was a success.
+   * Switches to the passed-in slide, runs any animations, and returns if the operation was successful.
    */
   public async select(
     slide: IgcCarouselSlideComponent,
-    direction?: 'next' | 'prev'
+    animationDirection?: 'next' | 'prev'
+  ): Promise<boolean>;
+  /**
+   * Switches to slide by index, runs any animations, and returns if the operation was successful.
+   */
+  public async select(
+    index: number,
+    animationDirection?: 'next' | 'prev'
+  ): Promise<boolean>;
+  public async select(
+    slideOrIndex: IgcCarouselSlideComponent | number,
+    animationDirection?: 'next' | 'prev'
   ): Promise<boolean> {
-    const index = this.slides.indexOf(slide);
+    let index: number;
+    let slide: IgcCarouselSlideComponent | undefined;
 
-    if (index === this.current || index === -1) {
+    if (typeof slideOrIndex === 'number') {
+      index = slideOrIndex;
+      slide = this.slides.at(index);
+    } else {
+      slide = slideOrIndex;
+      index = this.slides.indexOf(slide);
+    }
+
+    if (index === this.current || index === -1 || !slide) {
       return false;
     }
 
-    const dir = direction ?? (index > this.current ? 'next' : 'prev');
+    const dir = animationDirection ?? (index > this.current ? 'next' : 'prev');
 
     await this.animateSlides(slide, this._activeSlide, dir);
     return true;
