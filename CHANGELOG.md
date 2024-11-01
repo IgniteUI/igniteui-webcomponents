@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Carousel component select method overload accepting index [#1457](https://github.com/IgniteUI/igniteui-webcomponents/issues/1457)
 
+### Fixed
+- Tabs - nested tabs selection [#713](https://github.com/IgniteUI/igniteui-webcomponents/issues/713)
+
 ## [5.1.1] - 2024-10-28
 ### Fixed
 - Library - internal import path for styles and public exports for themes
