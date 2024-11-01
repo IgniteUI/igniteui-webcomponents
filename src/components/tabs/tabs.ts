@@ -192,7 +192,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     await this.updateComplete;
 
     const selectedTab =
-      last(this.tabs.filter((tab) => tab.selected)) ?? first(this._enabledTabs);
+      this.tabs.findLast((tab) => tab.selected) ?? first(this._enabledTabs);
 
     this._setCSSProps();
     this._updateButtonsOnResize();
@@ -297,7 +297,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const { width } = this._scrollContainer.getBoundingClientRect();
 
     this._scrollButtonsDisabled = {
-      start: scrollLeft <= 1,
+      start: scrollLeft === 0,
       end: Math.abs(Math.abs(scrollLeft) + width - scrollWidth) <= 1,
     };
   }
