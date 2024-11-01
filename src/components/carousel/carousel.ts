@@ -161,7 +161,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return;
     }
     const idx = this.slides.indexOf(
-      added.length > 0 ? last(added).node : last(attributes)
+      added.length ? last(added).node : last(attributes)
     );
 
     for (const [i, slide] of this.slides.entries()) {

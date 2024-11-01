@@ -124,8 +124,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const ownAttributes = attributes.filter(
       (tab) => tab.closest(this.tagName) === this
     );
-    const ownAdded = added.filter(({ target }) => target === this);
-    const ownRemoved = removed.filter(({ target }) => target === this);
+    const ownAdded = added.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
+    const ownRemoved = removed.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
 
     this.setSelectedTab(ownAttributes.find((tab) => tab.selected));
 
