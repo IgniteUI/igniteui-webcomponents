@@ -165,6 +165,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._headerRef,
+      skip: (node) =>
+        !this.tabs.includes(node.closest(IgcTabComponent.tagName)!),
       bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
@@ -180,7 +182,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         childList: true,
         subtree: true,
       },
-      filter: [IgcTabComponent.tagName],
+      filter: (node) => this.tabs.includes(node),
     });
 
     this._resizeController = createResizeController(this, {
@@ -232,14 +234,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     if (!isEmpty(removed) || !isEmpty(added)) {
       let nextSelectedTab: IgcTabComponent | null = null;
 
-      for (const tab of removed) {
+      for (const { node: tab } of removed) {
         this._resizeController.unobserve(tab);
         if (tab.selected && tab === this._activeTab) {
           nextSelectedTab = first(this._enabledTabs);
         }
       }
 
-      for (const tab of added) {
+      for (const { node: tab } of added) {
         this._resizeController.observe(tab);
         if (tab.selected) {
           nextSelectedTab = tab;
@@ -362,12 +364,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       event
     );
 
-    if (!(tab && this.contains(tab)) || tab.disabled) {
+    if (!this.tabs.includes(tab!)) {
       return;
     }
 
     this._setScrollSnap('unset');
-    getTabHeader(tab).focus();
+    getTabHeader(tab!).focus();
     this._selectTab(tab);
   }
 

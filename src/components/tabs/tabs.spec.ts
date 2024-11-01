@@ -613,6 +613,40 @@ describe('Tabs component', () => {
       expect(() => tabs.appendChild(tab)).not.to.throw();
     });
   });
+
+  describe('issue-713', () => {
+    it('Nested tabs selection', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs>
+          <igc-tab label="1">
+            Panel 1
+            <igc-tabs>
+              <igc-tab label="1.1">Panel 1.1</igc-tab>
+              <igc-tab label="1.2" selected>Panel 1.2</igc-tab>
+            </igc-tabs>
+          </igc-tab>
+          <igc-tab label="2">Panel 2</igc-tab>
+        </igc-tabs>
+      `);
+
+      const nestedTabs = tabs.querySelector(IgcTabsComponent.tagName)!;
+
+      verifySelection(tabs, first(tabs.tabs));
+      verifySelection(nestedTabs, last(nestedTabs.tabs));
+
+      simulateClick(first(nestedTabs.tabs));
+      await elementUpdated(tabs);
+
+      verifySelection(tabs, first(tabs.tabs));
+      verifySelection(nestedTabs, first(nestedTabs.tabs));
+
+      simulateClick(last(tabs.tabs));
+      await elementUpdated(tabs);
+
+      verifySelection(tabs, last(tabs.tabs));
+      verifySelection(nestedTabs, first(nestedTabs.tabs));
+    });
+  });
 });
 
 function getTabsDOM(tabs: IgcTabsComponent) {
