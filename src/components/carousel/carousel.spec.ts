@@ -568,7 +568,9 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
         expect(defaultIndicators[1].active).to.be.false;
-        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 0 });
+        expect(eventSpy.secondCall).calledWith('igcSlideChanged', {
+          detail: 0,
+        });
       });
     });
 
