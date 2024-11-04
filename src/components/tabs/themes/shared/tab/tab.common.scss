@@ -11,11 +11,9 @@ $theme: $material;
     ::slotted(igc-icon) {
         color: var-get($theme, 'item-icon-color');
     }
-}
 
-:host(:hover),
-:host(:focus-within) {
-    [part='header'] {
+    &:hover,
+    &:focus-within {
         color: var-get($theme, 'item-hover-color');
         background: var-get($theme, 'item-hover-background');
 
@@ -32,17 +30,23 @@ $theme: $material;
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-active-icon-color');
         }
+
+        &:hover,
+        &:focus-within {
+            color: var-get($theme, 'item-active-color');
+
+            ::slotted(igc-icon) {
+                color: var-get($theme, 'item-active-icon-color');
+            }
+        }
     }
 }
 
-:host([selected]:hover),
-:host([selected]:focus-within) {
-    [part='header'] {
-        color: var-get($theme, 'item-active-color');
-
-        ::slotted(igc-icon) {
-            color: var-get($theme, 'item-active-icon-color');
-        }
+[part='header'],
+:host([selected]) [part='header'] {
+    &:focus-within,
+    &:focus {
+        outline: none;
     }
 }
 
@@ -53,16 +57,5 @@ $theme: $material;
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-disabled-icon-color');
         }
-    }
-}
-
-:host(:hover),
-:host(:focus-within),
-:host(:focus),
-:host([selected]:hover),
-:host([selected]:focus),
-:host([selected]:focus-within) {
-    [part='header'] {
-        outline: none;
     }
 }
