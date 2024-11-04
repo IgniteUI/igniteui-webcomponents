@@ -138,65 +138,66 @@ describe('Tabs component', () => {
     });
 
     it('selects next/previous tab when pressing right/left arrow', async () => {
-      const { container } = getTabsDOM(element);
+      const tabs = element.tabs;
 
-      simulateClick(element.tabs[1]);
-      simulateKeyboard(container, arrowRight);
+      simulateClick(getTabDOM(tabs[1]).header);
+      simulateKeyboard(getTabDOM(tabs[1]).header, arrowRight);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[2]);
+      verifySelection(element, tabs[2]);
 
-      simulateKeyboard(container, arrowLeft);
+      simulateKeyboard(getTabDOM(tabs[2]).header, arrowLeft);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[1]);
+      verifySelection(element, tabs[1]);
 
-      simulateKeyboard(container, arrowLeft);
+      simulateKeyboard(getTabDOM(tabs[1]).header, arrowLeft);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[3]);
+      verifySelection(element, tabs[3]);
     });
 
     it('selects next/previous tab when pressing right/left arrow (RTL)', async () => {
-      const { container } = getTabsDOM(element);
+      const tabs = element.tabs;
 
       element.dir = 'rtl';
-      element.tabs[1].focus();
-      simulateKeyboard(container, arrowRight);
+      tabs[1].focus();
+
+      simulateKeyboard(getTabDOM(tabs[1]).header, arrowRight);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[3]);
+      verifySelection(element, tabs[3]);
 
-      simulateKeyboard(container, arrowRight);
+      simulateKeyboard(getTabDOM(tabs[3]).header, arrowRight);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[2]);
+      verifySelection(element, tabs[2]);
 
-      simulateKeyboard(container, arrowLeft);
+      simulateKeyboard(getTabDOM(tabs[2]).header, arrowLeft);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[3]);
+      verifySelection(element, tabs[3]);
     });
 
     it('selects first/last enabled tab when pressing home/end keys', async () => {
-      const { container } = getTabsDOM(element);
+      const tabs = element.tabs;
 
-      simulateKeyboard(container, endKey);
+      simulateKeyboard(getTabDOM(tabs[1]).header, endKey);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[3]);
+      verifySelection(element, tabs[3]);
 
-      simulateKeyboard(container, homeKey);
+      simulateKeyboard(getTabDOM(tabs[3]).header, homeKey);
       await elementUpdated(element);
 
-      verifySelection(element, element.tabs[1]);
+      verifySelection(element, tabs[1]);
     });
 
     it('only focuses the corresponding tab when activation is manual and navigating with keyboard', async () => {
       element.activation = 'manual';
       await elementUpdated(element);
 
-      simulateKeyboard(getTabsDOM(element).container, endKey);
+      simulateKeyboard(getTabDOM(element.tabs[1]).header, endKey);
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[1]);
@@ -206,25 +207,25 @@ describe('Tabs component', () => {
     });
 
     it('selects the focused tab when activation is set to `manual` and space/enter is pressed', async () => {
-      const { container } = getTabsDOM(element);
+      const tabs = element.tabs;
 
       element.activation = 'manual';
-      simulateKeyboard(container, endKey);
+      simulateKeyboard(getTabDOM(tabs[1]).header, endKey);
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[1]);
 
-      simulateKeyboard(container, spaceBar);
+      simulateKeyboard(getTabDOM(tabs[3]).header, spaceBar);
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[3]);
 
-      simulateKeyboard(container, homeKey);
+      simulateKeyboard(getTabDOM(tabs[3]).header, homeKey);
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[3]);
 
-      simulateKeyboard(container, enterKey);
+      simulateKeyboard(getTabDOM(tabs[1]).header, enterKey);
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[1]);
@@ -634,13 +635,13 @@ describe('Tabs component', () => {
       verifySelection(tabs, first(tabs.tabs));
       verifySelection(nestedTabs, last(nestedTabs.tabs));
 
-      simulateClick(first(nestedTabs.tabs));
+      simulateClick(getTabDOM(first(nestedTabs.tabs)).header);
       await elementUpdated(tabs);
 
       verifySelection(tabs, first(tabs.tabs));
       verifySelection(nestedTabs, first(nestedTabs.tabs));
 
-      simulateClick(last(tabs.tabs));
+      simulateClick(getTabDOM(last(tabs.tabs)).header);
       await elementUpdated(tabs);
 
       verifySelection(tabs, last(tabs.tabs));

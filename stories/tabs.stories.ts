@@ -101,7 +101,7 @@ const removableTabs = Array.from(range(10)).map(
 const lorem =
   'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ducimus aliquid voluptatibus molestias laboriosam, illo totam eaque amet iusto officiis accusamus in deleniti beatae harum culpa laudantium accusantium natus nisi eligendi.';
 
-const manyTabs = Array.from(range(18)).map((idx) => {
+const manyTabs = Array.from(range(30)).map((idx) => {
   switch (idx) {
     case 2:
       return html`
@@ -141,7 +141,8 @@ export const Basic: Story = {
           <igc-tab>
             <div slot="label">Tab ${idx + 1}</div>
             <h2>Content for tab ${idx + 1}</h2>
-            ${lorem.repeat(2)}
+            <p>${lorem.repeat(2)}</p>
+            <igc-button>Read more</igc-button>
           </igc-tab>
         `
       )}
@@ -238,6 +239,41 @@ export const Removable: Story = {
   render: (args) => html`
     <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
       ${removableTabs}
+    </igc-tabs>
+  `,
+};
+
+export const NestedTabs: Story = {
+  render: (args) => html`
+    <style>
+      .nested {
+        padding-inline-start: 1rem;
+        padding-block-start: 1rem;
+      }
+    </style>
+    <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
+      <igc-tab label="1">
+        Panel 1
+        <igc-tabs
+          class="nested"
+          .alignment=${args.alignment}
+          .activation=${args.activation}
+        >
+          <igc-tab label="1.1">Panel 1.1</igc-tab>
+          <igc-tab label="1.2" selected>
+            Panel 1.2
+            <igc-tabs
+              class="nested"
+              .alignment=${args.alignment}
+              .activation=${args.activation}
+            >
+              <igc-tab label="1.2.1">Panel 1.2.1</igc-tab>
+              <igc-tab label="1.2.2">Panel 1.2.2</igc-tab>
+            </igc-tabs>
+          </igc-tab>
+        </igc-tabs>
+      </igc-tab>
+      <igc-tab label="2">Panel 2</igc-tab>
     </igc-tabs>
   `,
 };
