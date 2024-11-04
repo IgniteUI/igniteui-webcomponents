@@ -18,11 +18,11 @@ import { styles } from './themes/tab.base.css.js';
  * @slot prefix - Renders the tab header's prefix.
  * @slot suffix - Renders the tab header's suffix.
  *
- * @csspart header - The header of a single tab.
+ * @csspart tab-header - The header of a single tab.
  * @csspart prefix - Tab header's label prefix.
  * @csspart content - Tab header's label slot container.
  * @csspart suffix - Tab header's label suffix.
- * @csspart body - Holds the body content of a single tab, only the body of the selected tab is visible.
+ * @csspart tab-body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
 
 @themes(all)
@@ -69,7 +69,7 @@ export default class IgcTabComponent extends LitElement {
 
     return html`
       <div
-        part="header"
+        part="tab-header"
         role="tab"
         id=${headerId}
         aria-disabled=${this.disabled}
@@ -86,7 +86,7 @@ export default class IgcTabComponent extends LitElement {
         </div>
       </div>
       <div
-        part="body"
+        part="tab-body"
         role="tabpanel"
         id=${contentId}
         aria-labelledby=${headerId}

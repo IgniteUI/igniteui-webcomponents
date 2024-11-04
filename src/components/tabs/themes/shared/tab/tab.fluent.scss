@@ -3,7 +3,7 @@
 
 $theme: $fluent;
 
-[part='header'] {
+[part='tab-header'] {
     transition: all .3s cubic-bezier(.35, 0, .25, 1);
     padding: rem(9px) rem(16px);
 }

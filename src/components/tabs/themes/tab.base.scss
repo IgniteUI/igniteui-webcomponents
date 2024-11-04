@@ -3,7 +3,7 @@
 @use 'tabs.common' as *;
 @use 'sass:map';
 
-[part~='header'] {
+[part~='tab-header'] {
     $transition: .3s cubic-bezier(.35, 0, .25, 1);
 
     display: flex;
@@ -66,7 +66,7 @@
     }
 }
 
-[part~='body'] {
+[part~='tab-body'] {
     display: none;
     position: sticky;
     inset-inline-start: 0;
@@ -79,15 +79,16 @@
 }
 
 :host([selected]) {
-    [part~='body'] {
+    [part~='tab-body'] {
         display: block;
         transform: translateX(0);
     }
 }
 
 :host([disabled]) {
-    [part='header'] {
+    [part='tab-header'] {
         pointer-events: none;
         cursor: initial;
     }
 }
+

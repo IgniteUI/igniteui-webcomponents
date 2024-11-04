@@ -671,11 +671,11 @@ function getTabDOM(tab: IgcTabComponent) {
   const root = tab.renderRoot;
   return {
     get header() {
-      return root.querySelector<HTMLElement>('[part~="header"]')!;
+      return root.querySelector<HTMLElement>('[part~="tab-header"]')!;
     },
 
     get body() {
-      return root.querySelector<HTMLElement>('[part~="body"]')!;
+      return root.querySelector<HTMLElement>('[part~="tab-body"]')!;
     },
   };
 }

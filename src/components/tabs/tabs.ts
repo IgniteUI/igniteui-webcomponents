@@ -355,11 +355,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private _isEventFromTabHeader(event: Event) {
-    return findElementFromEventPath('[part~="header"]', event);
+    return findElementFromEventPath('[part~="tab-header"]', event);
   }
 
   private _getTabHeader(tab: IgcTabComponent) {
-    return tab.renderRoot.querySelector<HTMLElement>('[part~="header"]')!;
+    return tab.renderRoot.querySelector<HTMLElement>('[part~="tab-header"]')!;
   }
 
   private _setCSSProps() {

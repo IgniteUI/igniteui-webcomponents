@@ -7,7 +7,7 @@ $theme: $material;
     @include type-style('button');
 }
 
-[part='header'] {
+[part='tab-header'] {
     padding: rem(12px) rem(16px);
 }
 
