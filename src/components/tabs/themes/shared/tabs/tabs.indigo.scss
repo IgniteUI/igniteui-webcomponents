@@ -7,6 +7,7 @@ $theme: $indigo;
 
 :host {
     --header-min-height: #{rem(40px)};
+    --scroll-btn-size: #{rem(40px)};
 }
 
 [part='selected-indicator'] {

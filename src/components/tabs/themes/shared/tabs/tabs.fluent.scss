@@ -14,7 +14,7 @@ igc-icon-button::part(base) {
 }
 
 igc-icon-button[disabled]::part(base) {
-    background: inherit;
+    background: var(--disabled-background);
 }
 
 [part='selected-indicator'] {
