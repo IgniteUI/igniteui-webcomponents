@@ -84,15 +84,13 @@ function remove({ target }: PointerEvent) {
 const removableTabs = Array.from(range(10)).map(
   (i) => html`
     <igc-tab>
-      <div slot="label">
-        Item ${i + 1}
-        <igc-icon-button
-          @click=${remove}
-          slot="suffix"
-          collection="internal"
-          name="chip_cancel"
-        ></igc-icon-button>
-      </div>
+      <div slot="label">Item ${i + 1}</div>
+      <igc-icon-button
+        @click=${remove}
+        slot="suffix"
+        collection="internal"
+        name="chip_cancel"
+      ></igc-icon-button>
       <h2>C${i + 1}</h2>
     </igc-tab>
   `
