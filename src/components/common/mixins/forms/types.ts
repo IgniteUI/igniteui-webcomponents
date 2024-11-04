@@ -14,6 +14,7 @@ declare class BaseFormAssociatedElement {
   // Properties
 
   protected _dirty: boolean;
+  protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;
 
@@ -144,10 +145,16 @@ declare class BaseFormAssociatedElement {
 
 export declare class FormAssociatedElementInterface extends BaseFormAssociatedElement {
   protected _defaultValue: unknown;
+
+  public set defaultValue(value: unknown);
+  public get defaultValue(): unknown;
 }
 
 export declare class FormAssociatedCheckboxElementInterface extends BaseFormAssociatedElement {
   protected _defaultChecked: boolean;
+
+  public set defaultChecked(value: boolean);
+  public get defaultChecked(): boolean;
 }
 
 export declare class FormRequiredInterface {

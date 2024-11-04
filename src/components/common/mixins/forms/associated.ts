@@ -10,6 +10,8 @@ import type {
   FormValueType,
 } from './types.js';
 
+const initialValue = Symbol('initial default form associated element value');
+
 function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
     public static readonly formAssociated = true;
@@ -19,6 +21,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected _disabled = false;
     protected _invalid = false;
     protected _dirty = false;
+    protected _pristine = true;
 
     protected get __validators(): Validator[] {
       return [];
@@ -97,10 +100,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       super.connectedCallback();
       this._dirty = false;
       this._updateValidity();
-
-      if (!this.hasUpdated) {
-        this._setInitialDefaultValue();
-      }
     }
 
     private _handleInvalid(event: Event) {
@@ -183,6 +182,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
+      this._pristine = false;
       this.__internals.setFormValue(value, state);
     }
 
@@ -239,7 +239,28 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
   class FormAssociatedElement extends BaseFormAssociated(base) {
-    protected _defaultValue: unknown;
+    protected _defaultValue: unknown | symbol = initialValue;
+
+    /* blazorCSSuppress */
+    @property({ attribute: false })
+    public set defaultValue(value: unknown) {
+      this._defaultValue = value;
+
+      if (this._pristine) {
+        Object.assign(this, { _value: value });
+      }
+    }
+
+    public get defaultValue() {
+      return this._defaultValue;
+    }
+
+    public override connectedCallback(): void {
+      super.connectedCallback();
+      if (!this.hasUpdated && this._defaultValue === initialValue) {
+        this._setInitialDefaultValue();
+      }
+    }
 
     public override attributeChangedCallback(
       name: string,
@@ -261,7 +282,8 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     protected override _restoreDefaultValue(): void {
       if ('value' in this) {
-        this.value = this._defaultValue;
+        this.value =
+          this._defaultValue === initialValue ? undefined : this._defaultValue;
       }
     }
 
@@ -283,7 +305,28 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
   class FormAssociatedCheckboxElement extends BaseFormAssociated(base) {
-    protected _defaultChecked = false;
+    protected _defaultChecked: boolean | symbol = initialValue;
+
+    /* blazorCSSuppress */
+    @property({ attribute: false })
+    public set defaultChecked(value: boolean) {
+      this._defaultChecked = value;
+
+      if (this._pristine) {
+        Object.assign(this, { _checked: value });
+      }
+    }
+
+    public get defaultChecked(): boolean {
+      return this._defaultChecked as boolean;
+    }
+
+    public override connectedCallback(): void {
+      super.connectedCallback();
+      if (!this.hasUpdated && this._defaultChecked === initialValue) {
+        this._setInitialDefaultValue();
+      }
+    }
 
     public override attributeChangedCallback(
       name: string,

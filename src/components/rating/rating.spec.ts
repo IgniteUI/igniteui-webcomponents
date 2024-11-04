@@ -84,6 +84,14 @@ describe('Rating component', () => {
       expect(el.label).to.equal(label);
     });
 
+    it('value is truncated based on default `max`', async () => {
+      el = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="55"></igc-rating>`
+      );
+      expect(el.max).to.equal(5);
+      expect(el.value).to.equal(5);
+    });
+
     it('value is truncated if greater than `max` attribute', async () => {
       const value = 15;
       const max = 10;
@@ -387,6 +395,21 @@ describe('Rating component', () => {
       expect(el.value).to.equal(5);
     });
 
+    it('correctly increments rating value with arrow keys (RTL)', async () => {
+      el.dir = 'rtl';
+      el.value = 3;
+      await elementUpdated(el);
+
+      simulateKeyboard(el, arrowLeft);
+      expect(el.value).to.equal(4);
+
+      simulateKeyboard(el, arrowUp);
+      expect(el.value).to.equal(5);
+
+      simulateKeyboard(el, arrowLeft);
+      expect(el.value).to.equal(5);
+    });
+
     it('correctly decrements rating value with arrow keys', async () => {
       el.value = 2;
       await elementUpdated(el);
@@ -398,6 +421,21 @@ describe('Rating component', () => {
       expect(el.value).to.equal(0);
 
       simulateKeyboard(el, arrowLeft);
+      expect(el.value).to.equal(0);
+    });
+
+    it('correctly decrements rating value with arrow keys (RTL)', async () => {
+      el.dir = 'rtl';
+      el.value = 2;
+      await elementUpdated(el);
+
+      simulateKeyboard(el, arrowRight);
+      expect(el.value).to.equal(1);
+
+      simulateKeyboard(el, arrowDown);
+      expect(el.value).to.equal(0);
+
+      simulateKeyboard(el, arrowRight);
       expect(el.value).to.equal(0);
     });
 

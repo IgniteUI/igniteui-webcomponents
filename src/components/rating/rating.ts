@@ -20,12 +20,17 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import { clamp, formatString, isEmpty, isLTR } from '../common/util.js';
+import {
+  asNumber,
+  clamp,
+  formatString,
+  isEmpty,
+  isLTR,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
@@ -78,17 +83,22 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
+  private _max = 5;
+  private _value = 0;
+  private _step = 1;
+  private _single = false;
+
   @queryAssignedElements({
     selector: IgcRatingSymbolComponent.tagName,
     slot: 'symbol',
   })
-  protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
+  protected ratingSymbols!: IgcRatingSymbolComponent[];
 
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
 
   @queryAssignedNodes({ slot: 'value-label', flatten: true })
-  protected valueLabel!: Array<Node>;
+  protected valueLabel!: Node[];
 
   @state()
   protected hoverValue = -1;
@@ -117,23 +127,43 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    *
    * If there are projected symbols, the maximum value will be resolved
    * based on the number of symbols.
-   * @attr
+   * @attr max
+   * @default 5
    */
   @property({ type: Number })
-  public max = 5;
+  public set max(value: number) {
+    this._max = this.hasProjectedSymbols
+      ? this.ratingSymbols.length
+      : Math.max(0, value);
+
+    if (this._max < this.value) {
+      this.value = this._max;
+    }
+  }
+
+  public get max(): number {
+    return this._max;
+  }
 
   /**
    * The minimum value change allowed.
    *
    * Valid values are in the interval between 0 and 1 inclusive.
-   * @attr
+   * @attr step
+   * @default 1
    */
   @property({ type: Number })
-  public step = 1;
+  public set step(value: number) {
+    this._step = this.single ? 1 : clamp(value, 0.001, 1);
+  }
+
+  public get step(): number {
+    return this._step;
+  }
 
   /**
    * The label of the control.
-   * @attr
+   * @attr label
    */
   @property()
   public label!: string;
@@ -151,10 +181,24 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component
-   * @attr
+   * @attr value
+   * @default 0
    */
   @property({ type: Number })
-  public value = 0;
+  public set value(value: number) {
+    const _value = asNumber(value, 0);
+
+    this._value = this.hasUpdated
+      ? clamp(_value, 0, this.max)
+      : Math.max(_value, 0);
+
+    this._setFormValue(this.value.toString());
+    this._validate();
+  }
+
+  public get value(): number {
+    return this._value;
+  }
 
   /**
    * Sets hover preview behavior for the component
@@ -172,10 +216,22 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /**
    * Toggles single selection visual mode.
-   * @attr
+   * @attr single
+   * @default false
    */
-  @property({ type: Boolean })
-  public single = false;
+  @property({ type: Boolean, reflect: true })
+  public set single(value: boolean) {
+    this._single = Boolean(value);
+
+    if (this._single) {
+      this.step = 1;
+      this.value = Math.ceil(this.value);
+    }
+  }
+
+  public get single(): boolean {
+    return this._single;
+  }
 
   /**
    * Whether to reset the rating when the user selects the same value.
@@ -183,37 +239,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: 'allow-reset' })
   public allowReset = false;
-
-  @watch('max')
-  protected handleMaxChange() {
-    this.max = this.hasProjectedSymbols
-      ? this.ratingSymbols.length
-      : Math.max(0, this.max);
-
-    if (this.max < this.value) {
-      this.value = this.max;
-    }
-  }
-
-  @watch('value')
-  protected handleValueChange() {
-    this.value = clamp(Number.isNaN(this.value) ? 0 : this.value, 0, this.max);
-    this._setFormValue(this.value.toString());
-    this._validate();
-  }
-
-  @watch('step')
-  protected handlePrecisionChange() {
-    this.step = !this.single ? clamp(this.step, 0.001, 1) : 1;
-  }
-
-  @watch('single')
-  protected handleSelectionChange() {
-    if (this.single) {
-      this.step = 1;
-      this.value = Math.ceil(this.value);
-    }
-  }
 
   constructor() {
     super();
@@ -236,6 +261,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       )
       .set(homeKey, () => this.emitValueUpdate(this.step))
       .set(endKey, () => this.emitValueUpdate(this.max));
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this.value = clamp(this.value, 0, this.max);
   }
 
   protected handleClick({ clientX }: PointerEvent) {
@@ -279,10 +309,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   protected handleHoverDisabled() {
     this.hoverState = false;
-  }
-
-  protected override _setInitialDefaultValue(): void {
-    this._defaultValue = this.value;
   }
 
   protected calcNewValue(x: number) {
