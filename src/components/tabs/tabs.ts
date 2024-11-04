@@ -250,11 +250,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         }
       }
 
+      this._setCSSProps();
+      this._updateButtonsOnResize();
+
       if (nextSelectedTab) {
         this._selectTab(nextSelectedTab, false);
       }
 
-      this._setCSSProps();
+      this._alignIndicator();
     }
   }
 
