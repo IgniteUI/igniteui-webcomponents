@@ -84,18 +84,40 @@ const tiles = Array.from(
 );
 
 const pictures = Array.from(range(25)).map(() => ({
-  width: randomIntBetween(400, 800),
-  height: randomIntBetween(400, 800),
+  width: randomIntBetween(300, 600),
+  height: randomIntBetween(300, 600),
 }));
 
 export const AutoInfer: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
+    <style>
+      :root {
+        --ig-min-col-width: 600px;
+        /* --ig-min-row-height: 300px; */
+      }
+
+      igc-tile {
+        width: fit-content;
+      }
+
+      .picture {
+        & img {
+          margin: 0 auto;
+          object-fit: scale-down;
+        }
+      }
+    </style>
     <igc-tile-manager>
       ${pictures.map(
         ({ width, height }) => html`
           <igc-tile>
-            <img src="https://picsum.photos/${width}/${height}" alt="picture" />
+            <div class="picture">
+              <img
+                src="https://picsum.photos/${width}/${height}"
+                alt="picture"
+              />
+            </div>
           </igc-tile>
         `
       )}
@@ -153,6 +175,9 @@ function addTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
   const newTile = document.createElement('igc-tile');
+  const content = document.createElement('h2');
+  content.textContent = `Tile ${tileManager.tiles.length + 1}`;
+  newTile.append(content);
   tileManager.appendChild(newTile);
 }
 

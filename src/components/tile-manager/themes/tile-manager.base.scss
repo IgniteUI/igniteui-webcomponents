@@ -7,10 +7,11 @@
 
 [part='base'] {
     display: grid;
+    position: relative;
     width: 100%;
     height: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-    grid-template-rows: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(var(--_ig-column-count, auto-fit), minmax(var(--ig-min-col-width, 200px), 1fr));
+    grid-auto-rows: minmax(var(--ig-min-row-height, 200px), auto);
     grid-gap: 10px;
     grid-auto-flow: dense;
 
