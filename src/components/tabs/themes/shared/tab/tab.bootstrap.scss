@@ -9,11 +9,6 @@ $theme: $bootstrap;
 
     [part='tab-header'] {
         transition: none;
-
-        ::slotted(igc-icon) {
-            transition: none;
-        }
-
         border-radius: 0;
         padding: rem(8px) rem(16px);
 
@@ -23,6 +18,10 @@ $theme: $bootstrap;
             border-radius: var-get($theme, 'border-radius') var-get($theme, 'border-radius') 0 0;
             inset: 0;
             z-index: -1;
+        }
+
+        ::slotted(igc-icon) {
+            transition: none;
         }
     }
 }
