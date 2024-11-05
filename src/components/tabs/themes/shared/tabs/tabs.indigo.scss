@@ -19,7 +19,7 @@ $theme: $indigo;
     span {
         background: var-get($theme, 'indicator-color');
         height: rem(3px);
-        inset-block-end: calc(100% + #{$indicator-height});
+        inset-block-end: 100%;
     }
 
     &::before {
@@ -29,7 +29,6 @@ $theme: $indigo;
         height: $indicator-height;
         background-color: var-get($theme, 'border-color');
         inset-block-end: 100%;
-        z-index: calc(map.get($tabs-z-index, 'selected-indicator') + 1);
     }
 }
 
