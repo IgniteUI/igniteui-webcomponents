@@ -317,6 +317,30 @@ describe('Tabs component', () => {
       });
     });
 
+    it('does not change active tab when clicking inside the tab content', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const input = document.createElement('input');
+      element.tabs[1].append(input);
+
+      simulateClick(input);
+      await elementUpdated(element);
+
+      expect(eventSpy.callCount).to.equal(0);
+      verifySelection(element, element.tabs[1]);
+    });
+
+    it('does not change active tab with keyboard interaction inside the tab content', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const input = document.createElement('input');
+      element.tabs[1].append(input);
+
+      simulateKeyboard(input, arrowLeft);
+      await elementUpdated(element);
+
+      expect(eventSpy.callCount).to.equal(0);
+      verifySelection(element, element.tabs[1]);
+    });
+
     it('aligns tab headers properly when `alignment` is set to justify', async () => {
       const { container } = getTabsDOM(element);
 

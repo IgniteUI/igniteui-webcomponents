@@ -87,7 +87,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /** Used in the `update` hook to check if a dynamic ltr-rtl change has happened,
    * and calls `alignIndicator` if there is one.
    */
-  private _isLTR = true;
+  private _isLtr = true;
 
   @query('[part~="tabs"]', true)
   protected _scrollContainer!: HTMLElement;
@@ -128,11 +128,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   @queryAssignedElements({ selector: IgcTabComponent.tagName })
-  public tabs!: Array<IgcTabComponent>;
+  public tabs!: IgcTabComponent[];
 
-  /** Returns the currently selected tab label. */
+  /** Returns the currently selected tab label or id if not label is present. */
   public get selected(): string {
-    return this._activeTab?.label ?? '';
+    if (this._activeTab) {
+      return this._activeTab.label || this._activeTab.id;
+    }
+
+    return '';
   }
 
   /**
@@ -194,7 +198,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const selectedTab =
       this.tabs.findLast((tab) => tab.selected) ?? first(this._enabledTabs);
 
-    this._setCSSProps();
+    this._setCssProps();
     this._updateButtonsOnResize();
     this._selectTab(selectedTab, false);
 
@@ -207,8 +211,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected override updated() {
-    if (this._isLTR !== isLTR(this)) {
-      this._isLTR = isLTR(this);
+    if (this._isLtr !== isLTR(this)) {
+      this._isLtr = isLTR(this);
       this._alignIndicator();
     }
   }
@@ -217,7 +221,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this._updateButtonsOnResize();
     await this.updateComplete;
     this._alignIndicator();
-    this._setCSSProps();
+    this._setCssProps();
   }
 
   private _mutationCallback({
@@ -235,7 +239,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     this._selectTab(selected, false);
 
-    if (!isEmpty(removed) || !isEmpty(added)) {
+    if (!(isEmpty(removed) && isEmpty(added))) {
       let nextSelectedTab: IgcTabComponent | null = null;
 
       for (const { node: tab } of removed) {
@@ -250,7 +254,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         }
       }
 
-      this._setCSSProps();
+      this._setCssProps();
       this._updateButtonsOnResize();
 
       if (nextSelectedTab) {
@@ -318,7 +322,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     }
   }
 
-  private async _setSelectedTab(tab: IgcTabComponent) {
+  private _setSelectedTab(tab: IgcTabComponent) {
     if (this._activeTab) {
       this._activeTab.selected = false;
     }
@@ -365,7 +369,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return tab.renderRoot.querySelector<HTMLElement>('[part~="tab-header"]')!;
   }
 
-  private _setCSSProps() {
+  private _setCssProps() {
     this._cssVars = {
       '--_tabs-count': this.tabs.length.toString(),
       '--_ig-tabs-width': `${this._scrollContainer.getBoundingClientRect().width}px`,
