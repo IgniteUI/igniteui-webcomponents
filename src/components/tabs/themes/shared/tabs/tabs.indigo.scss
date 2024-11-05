@@ -11,20 +11,22 @@ $theme: $indigo;
 }
 
 [part='selected-indicator'] {
-    height: rem(1px);
+    $indicator-height: rem(1px);
+
+    height: $indicator-height;
     position: relative;
 
     span {
         background: var-get($theme, 'indicator-color');
         height: rem(3px);
-        inset-block-end: 100%;
+        inset-block-end: calc(100% + #{$indicator-height});
     }
 
     &::before {
         content: '';
         position: absolute;
         width: 100%;
-        height: 100%;
+        height: $indicator-height;
         background-color: var-get($theme, 'border-color');
         inset-block-end: 100%;
         z-index: calc(map.get($tabs-z-index, 'selected-indicator') + 1);
