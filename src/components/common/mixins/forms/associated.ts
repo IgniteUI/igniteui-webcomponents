@@ -195,6 +195,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected formResetCallback(): void {
       this._restoreDefaultValue();
+      this._pristine = true;
       this._dirty = false;
       this.performUpdate();
       this.invalid = false;

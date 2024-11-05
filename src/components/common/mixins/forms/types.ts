@@ -146,6 +146,7 @@ declare class BaseFormAssociatedElement {
 export declare class FormAssociatedElementInterface extends BaseFormAssociatedElement {
   protected _defaultValue: unknown;
 
+  /** The initial value of the component. */
   public set defaultValue(value: unknown);
   public get defaultValue(): unknown;
 }
@@ -153,6 +154,7 @@ export declare class FormAssociatedElementInterface extends BaseFormAssociatedEl
 export declare class FormAssociatedCheckboxElementInterface extends BaseFormAssociatedElement {
   protected _defaultChecked: boolean;
 
+  /** The initial checked state of the component. */
   public set defaultChecked(value: boolean);
   public get defaultChecked(): boolean;
 }
