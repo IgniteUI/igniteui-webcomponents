@@ -177,6 +177,7 @@ function addTile() {
   const newTile = document.createElement('igc-tile');
   const content = document.createElement('h2');
   content.textContent = `Tile ${tileManager.tiles.length + 1}`;
+  newTile.position = 1;
   newTile.append(content);
   tileManager.appendChild(newTile);
 }
@@ -184,7 +185,11 @@ function addTile() {
 function removeTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
-  tileManager.tiles = tileManager.tiles.slice(0, -1);
+  const lastTile = tileManager.querySelector('igc-tile:first-of-type');
+
+  if (lastTile) {
+    lastTile.remove();
+  }
 }
 
 export const DynamicTiles: Story = {
@@ -192,7 +197,7 @@ export const DynamicTiles: Story = {
     <igc-button @click=${addTile}>Add Tile</igc-button>
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
     <igc-tile-manager id="tile-manager1">
-      <igc-tile id="tile1">
+      <igc-tile id="tile1" position="1">
         <h1>Tile1</h1>
       </igc-tile>
       <igc-tile id="tile2">

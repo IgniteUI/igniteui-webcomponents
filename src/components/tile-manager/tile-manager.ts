@@ -1,6 +1,9 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { createMutationController } from '../common/controllers/mutation-observer.js';
+import {
+  type MutationControllerParams,
+  createMutationController,
+} from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -54,8 +57,22 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     );
   }
 
-  private _observerCallback() {
-    this.updateTilesFromDom();
+  private _observerCallback({
+    changes: { added },
+  }: MutationControllerParams<IgcTileComponent>) {
+    // FIX: currently the newly added tile has the specified position+1 in the layout
+    added.forEach((newTile) => {
+      const specifiedPosition = newTile.position;
+
+      if (specifiedPosition !== undefined) {
+        this.tiles.splice(specifiedPosition - 1, 0, newTile);
+      } else {
+        this.tiles.push(newTile);
+      }
+    });
+
+    this.assignPositions();
+    this.updateSlotAssignment();
   }
 
   /**
@@ -68,20 +85,18 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   @property({ type: Number })
   public columnCount = 0;
 
+  // remove this one
   @property({ type: Number })
   public rowCount = 0;
 
   /**
-   * Gets/Sets the tiles.
+   * Gets the tiles sorted by their position in the layout.
    * @attr
    */
-  @property({ type: Array })
-  public tiles: IgcTileComponent[] = [];
-
-  @watch('tiles', { waitUntilFirstUpdate: true })
-  protected updateSlotAssignment() {
-    this.syncTilesWithDom();
-    this.slotElement.assign(...this.tiles);
+  public get tiles() {
+    return Array.from(this._tiles).sort(
+      (a, b) => (a.position ?? 0) - (b.position ?? 0)
+    );
   }
 
   @watch('columnCount', { waitUntilFirstUpdate: true })
@@ -116,8 +131,19 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   protected override firstUpdated() {
+    this.assignPositions();
     this.updateRowsCols();
-    this.updateTilesFromDom();
+    this.updateSlotAssignment();
+  }
+
+  private assignPositions() {
+    this.tiles.forEach((tile, index) => {
+      tile.position = index;
+    });
+  }
+
+  private updateSlotAssignment() {
+    this.slotElement.assign(...this.tiles);
   }
 
   private handleTileDragStart(e: CustomEvent) {
@@ -139,50 +165,41 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private handleDrop(e: DragEvent) {
     e.preventDefault();
 
+    const draggedItem = this.draggedItem;
     const target = (e.target as HTMLElement).closest('igc-tile')!;
-    const tiles = this._tiles;
 
-    if (this.draggedItem && tiles && target !== this.draggedItem) {
-      const draggedIndex = tiles.indexOf(this.draggedItem);
-      const droppedIndex = tiles.indexOf(target);
+    if (draggedItem && this.tiles && target !== draggedItem) {
+      if (this.dragMode === 'swap') {
+        // Swap positions between dragged tile and drop target
+        const tempPosition = draggedItem.position;
+        draggedItem.position = target.position;
+        target.position = tempPosition;
+      } else if (this.dragMode === 'slide') {
+        // Move dragged tile and adjust positions of affected tiles
+        const draggedPos = draggedItem.position ?? 0;
+        const targetPos = target.position ?? 0;
 
-      if (draggedIndex > -1 && droppedIndex > -1) {
-        const parent = this.draggedItem.parentElement;
-        if (parent) {
-          if (this.dragMode === 'slide') {
-            parent.insertBefore(this.draggedItem, target);
-          } else if (this.dragMode === 'swap') {
-            const draggedNextSibling = this.draggedItem.nextElementSibling;
-
-            parent.insertBefore(this.draggedItem, target);
-
-            parent.insertBefore(target, draggedNextSibling);
+        this.tiles.forEach((tile) => {
+          if (tile.position) {
+            if (
+              draggedPos < targetPos &&
+              tile.position > draggedPos &&
+              tile.position <= targetPos
+            ) {
+              tile.position -= 1;
+            } else if (
+              draggedPos > targetPos &&
+              tile.position >= targetPos &&
+              tile.position < draggedPos
+            ) {
+              tile.position += 1;
+            }
           }
+        });
 
-          this.tiles = Array.from(parent.children).filter(
-            (el): el is IgcTileComponent => el.tagName === 'IGC-TILE'
-          );
-        }
+        draggedItem.position = targetPos;
       }
     }
-  }
-
-  private updateTilesFromDom() {
-    this.tiles = this._tiles;
-  }
-
-  private syncTilesWithDom() {
-    this._tiles.forEach((child) => {
-      if (!this.tiles.includes(child)) {
-        child.remove();
-      }
-    });
-
-    this.tiles.forEach((tile) => {
-      if (!this.contains(tile)) {
-        this.appendChild(tile);
-      }
-    });
   }
 
   public saveLayout() {
@@ -196,12 +213,14 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         colStart: tile.colStart,
         rowSpan: tile.rowSpan,
         rowStart: tile.rowStart,
-        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
-        gridColumn: tileStyles.gridColumn,
-        gridRow: tileStyles.gridRow,
         maximized: tile.maximized,
         disableDrag: tile.disableDrag,
         disableResize: tile.disableResize,
+        position: tile.position,
+
+        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
+        gridColumn: tileStyles.gridColumn,
+        gridRow: tileStyles.gridRow,
       };
     });
 
@@ -211,12 +230,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   public loadLayout(data: string) {
     const tilesData = JSON.parse(data);
-    const serializedTiles: IgcTileComponent[] = [];
 
-    this.tiles = [];
+    this.tiles.forEach((tile) => tile.remove());
 
     tilesData.forEach((tileInfo: any) => {
-      const tile = document.createElement('igc-tile');
+      const tile = document.createElement('igc-tile') as IgcTileComponent;
 
       tile.tileId = tileInfo.tileId;
       tile.colSpan = tileInfo.colSpan;
@@ -226,14 +244,14 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       tile.maximized = tileInfo.maximized;
       tile.disableDrag = tileInfo.disableDrag;
       tile.disableResize = tileInfo.disableResize;
+      tile.position = tileInfo.position;
+
       // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
       tile.style.gridColumn = tileInfo.gridColumn;
       tile.style.gridRow = tileInfo.gridRow;
 
-      serializedTiles.push(tile);
+      this.appendChild(tile);
     });
-
-    this.tiles = serializedTiles;
   }
 
   protected override render() {

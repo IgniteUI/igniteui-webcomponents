@@ -112,6 +112,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ attribute: 'disable-resize', type: Boolean, reflect: true })
   public disableResize = false;
 
+  /**
+   * Corresponds to the CSS order property
+   * and indicates the visual position the tile has in the layout.
+   * @attr
+   */
+  @property({ attribute: 'position', type: Number, reflect: true })
+  public position: number | undefined = undefined;
+
+  @watch('position')
+  protected updateOrder() {
+    this.style.order = `${this.position}`;
+  }
+
   @watch('maximized')
   protected maximizedChanged() {
     //TODO: When the header UI is implemented, emit the event on header button/icon click.
@@ -150,6 +163,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @watch('disableDrag')
   protected updateDragController() {
+    // add property to controller
     if (this.disableDrag) {
       this.draggable = false;
       if (this._dragController) {
