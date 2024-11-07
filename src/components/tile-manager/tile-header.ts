@@ -21,16 +21,12 @@ export default class IgcTileHeaderComponent extends LitElement {
     registerComponent(IgcTileHeaderComponent);
   }
 
-  // Should we include thumbnail as well?
   protected override render() {
     return html`
-      <section>
-        <header part="header">
-          <slot part="title" name="title"></slot>
-          <slot part="actions" name="actions"></slot>
-        </header>
-        <slot></slot>
-      </section>
+      <div part="header">
+        <slot part="title"></slot>
+        <slot part="actions" name="actions"></slot>
+      </div>
     `;
   }
 }

@@ -275,7 +275,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       bubbles: true,
     });
 
-    e.dataTransfer!.setDragImage(this, 0, 0);
+    const rect = this.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+
+    e.dataTransfer!.setDragImage(this, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
 
     this.dispatchEvent(event);
@@ -356,15 +360,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected override render() {
     const parts = partNameMap({
+      base: true,
       'drag-over': this._hasDragOver,
       fullscreen: this._isFullscreen,
     });
 
     return html`
-      <div id="base" .inert=${this._hasDragOver} part=${ifDefined(parts)}>
-        <div part="header">
-          <slot name="header"></slot>
-        </div>
+      <div .inert=${this._hasDragOver} part=${ifDefined(parts)}>
+        <slot name="header"></slot>
         <div part="content-container">
           <slot></slot>
         </div>

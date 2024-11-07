@@ -73,7 +73,7 @@ const tiles = Array.from(
     (i) => html`
       <igc-tile .colSpan=${3} .rowSpan=${9}>
         <igc-tile-header slot="header">
-          <h3 slot="title">Tile ${i + 1} Title</h3>
+          <h3>Tile ${i + 1} Title</h3>
           <igc-icon name="home" slot="actions"></igc-icon>
         </igc-tile-header>
 
