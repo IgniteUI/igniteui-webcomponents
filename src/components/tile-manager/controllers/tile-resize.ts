@@ -18,6 +18,8 @@ const PointerEvents = [
 ] as const;
 
 export class TileResizeController implements ReactiveController {
+  public enabled = true;
+
   private _host: IgcTileComponent;
   private _handlers!: Map<string, TileResizeCallback>;
   private _ref?: Ref<HTMLElement>;
@@ -39,6 +41,8 @@ export class TileResizeController implements ReactiveController {
   }
 
   public handleEvent(event: PointerEvent) {
+    if (!this.enabled) return;
+
     switch (event.type) {
       case 'pointerdown':
         return this._handlePointerDown(event);

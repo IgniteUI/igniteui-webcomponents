@@ -434,11 +434,20 @@ describe('Tile Manager component', () => {
     it('should not resize when `disableResize` is true', async () => {
       const tile = first(tileManager.tiles);
       const { x, y, width, height } = tile.getBoundingClientRect();
-      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
+      const resizeHandle = tile.shadowRoot!.querySelector(
+        '.resize-handle'
+      )! as HTMLElement;
       const eventSpy = spy(tile, 'emitEvent');
+      const tileWrapper = getTileBaseWrapper(tile);
+
+      expect(tileWrapper.getAttribute('part')).to.include('resizable');
+      expect(resizeHandle.hasAttribute('hidden')).to.be.false;
 
       tile.disableResize = true;
       await elementUpdated(tile);
+
+      expect(tileWrapper.getAttribute('part')).to.not.include('resizable');
+      expect(resizeHandle.hasAttribute('hidden')).to.be.true;
 
       simulatePointerDown(resizeHandle);
       await elementUpdated(resizeHandle);
@@ -551,9 +560,15 @@ describe('Tile Manager component', () => {
       const draggedTile = last(tileManager.tiles);
       const dropTarget = first(tileManager.tiles);
       const eventSpy = spy(tileManager, 'emitEvent');
+      const tileWrapper = getTileBaseWrapper(draggedTile);
+
+      expect(tileWrapper.getAttribute('part')).to.include('draggable');
 
       draggedTile.disableDrag = true;
       await elementUpdated(tileManager);
+
+      expect(tileWrapper.getAttribute('part')).to.not.include('draggable');
+
       await dragAndDrop(draggedTile, dropTarget);
 
       expect(eventSpy).not.calledWith('igcTileDragStarted');
