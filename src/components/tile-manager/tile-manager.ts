@@ -208,49 +208,46 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       const tileStyles = window.getComputedStyle(tile);
 
       return {
-        tileId: tile.tileId,
         colSpan: tile.colSpan,
         colStart: tile.colStart,
-        rowSpan: tile.rowSpan,
-        rowStart: tile.rowStart,
-        maximized: tile.maximized,
         disableDrag: tile.disableDrag,
         disableResize: tile.disableResize,
-        position: tile.position,
-
         // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
         gridColumn: tileStyles.gridColumn,
         gridRow: tileStyles.gridRow,
+        maximized: tile.maximized,
+        position: tile.position,
+        rowSpan: tile.rowSpan,
+        rowStart: tile.rowStart,
+        tileId: tile.tileId,
       };
     });
 
-    // console.log("tileData: " + JSON.stringify(tilesData, null, 2));
     return JSON.stringify(tilesData);
   }
 
   public loadLayout(data: string) {
     const tilesData = JSON.parse(data);
 
-    this.tiles.forEach((tile) => tile.remove());
-
     tilesData.forEach((tileInfo: any) => {
-      const tile = document.createElement('igc-tile') as IgcTileComponent;
+      const existingTile = this._tiles.find(
+        (tile) => tile.tileId === tileInfo.tileId
+      );
 
-      tile.tileId = tileInfo.tileId;
-      tile.colSpan = tileInfo.colSpan;
-      tile.colStart = tileInfo.colStart;
-      tile.rowSpan = tileInfo.rowSpan;
-      tile.rowStart = tileInfo.rowStart;
-      tile.maximized = tileInfo.maximized;
-      tile.disableDrag = tileInfo.disableDrag;
-      tile.disableResize = tileInfo.disableResize;
-      tile.position = tileInfo.position;
+      if (existingTile) {
+        existingTile.colSpan = tileInfo.colSpan;
+        existingTile.colStart = tileInfo.colStart;
+        existingTile.disableDrag = tileInfo.disableDrag;
+        existingTile.disableResize = tileInfo.disableResize;
+        existingTile.maximized = tileInfo.maximized;
+        existingTile.position = tileInfo.position;
+        existingTile.rowSpan = tileInfo.rowSpan;
+        existingTile.rowStart = tileInfo.rowStart;
 
-      // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
-      tile.style.gridColumn = tileInfo.gridColumn;
-      tile.style.gridRow = tileInfo.gridRow;
-
-      this.appendChild(tile);
+        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
+        existingTile.style.gridColumn = tileInfo.gridColumn;
+        existingTile.style.gridRow = tileInfo.gridRow;
+      }
     });
   }
 
