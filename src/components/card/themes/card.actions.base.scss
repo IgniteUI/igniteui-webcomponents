@@ -21,6 +21,10 @@
     }
 }
 
+:host([orientation='vertical']) {
+    justify-content: space-around;
+}
+
 ::slotted([slot='start']) {
     display: flex;
     align-items: center;
