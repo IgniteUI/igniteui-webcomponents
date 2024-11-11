@@ -46,6 +46,17 @@ describe('Calendar interactions', () => {
     expect(date.equalTo(calendar.value!)).to.be.true;
   });
 
+  it('setting `value` - string property binding', async () => {
+    const date = new CalendarDay({ year: 2022, month: 0, date: 19 });
+    calendar.value = date.native.toISOString();
+
+    expect(date.equalTo(calendar.value!)).to.be.true;
+
+    // Invalid date
+    calendar.value = new Date('s');
+    expect(calendar.value).to.be.null;
+  });
+
   it('setting `values` attribute', async () => {
     const date_1 = new CalendarDay({ year: 2022, month: 0, date: 19 });
     const date_2 = date_1.set({ date: 22 });
@@ -59,6 +70,25 @@ describe('Calendar interactions', () => {
     expect(calendar.values).lengthOf(2);
     expect(date_1.equalTo(first(calendar.values))).to.be.true;
     expect(date_2.equalTo(last(calendar.values))).to.be.true;
+  });
+
+  it('setting `values` - string property binding', async () => {
+    const date_1 = new CalendarDay({ year: 2022, month: 0, date: 19 });
+    const date_2 = date_1.set({ date: 22 });
+
+    calendar.selection = 'multiple';
+    calendar.values = `${date_1.native.toISOString()}, ${date_2.native.toISOString()}`;
+
+    expect(calendar.values).lengthOf(2);
+    expect(date_1.equalTo(first(calendar.values))).to.be.true;
+    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+
+    // Invalid dates
+    calendar.values = 'nope, nope again';
+    expect(calendar.values).is.empty;
+
+    calendar.values = '';
+    expect(calendar.values).is.empty;
   });
 
   it('clicking previous/next buttons in days view', async () => {
