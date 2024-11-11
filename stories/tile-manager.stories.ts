@@ -167,12 +167,14 @@ export const Maximized: Story = {
 function addTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+  const tiles = tileManager.querySelectorAll('igc-tile');
   const newTile = document.createElement('igc-tile');
   const content = document.createElement('h2');
   content.textContent = `Tile ${tileManager.tiles.length + 1}`;
-  newTile.position = 1;
+  newTile.position = 0;
   newTile.append(content);
-  tileManager.appendChild(newTile);
+  // tileManager.appendChild(newTile);
+  tileManager.insertBefore(newTile, tiles[3]);
 }
 
 function removeTile() {
@@ -195,6 +197,18 @@ export const DynamicTiles: Story = {
       </igc-tile>
       <igc-tile id="tile2">
         <h2>Tile2</h2>
+      </igc-tile>
+      <igc-tile id="tile3">
+        <h2>Tile3</h2>
+      </igc-tile>
+      <igc-tile id="tile4">
+        <h2>Tile4</h2>
+      </igc-tile>
+      <igc-tile id="tile5">
+        <h2>Tile5</h2>
+      </igc-tile>
+      <igc-tile id="tile6" position="2">
+        <h2>Tile6</h2>
       </igc-tile>
     </igc-tile-manager>
   `,

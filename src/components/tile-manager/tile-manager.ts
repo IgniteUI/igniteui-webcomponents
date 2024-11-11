@@ -42,6 +42,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private draggedItem: IgcTileComponent | null = null;
+  private finalOrder: IgcTileComponent[] = [];
+  private positionedTiles: IgcTileComponent[] = [];
 
   // @query('[part="base"]', true)
   // private _baseWrapper!: HTMLDivElement;
@@ -58,20 +60,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private _observerCallback({
-    changes: { added },
+    changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    // FIX: currently the newly added tile has the specified position+1 in the layout
-    added.forEach((newTile) => {
-      const specifiedPosition = newTile.position;
+    removed.forEach(this.handleTileRemoval.bind(this));
+    added.forEach(this.handleTileAddition.bind(this));
 
-      if (specifiedPosition !== undefined) {
-        this.tiles.splice(specifiedPosition - 1, 0, newTile);
-      } else {
-        this.tiles.push(newTile);
-      }
-    });
-
-    this.assignPositions();
     this.updateSlotAssignment();
   }
 
@@ -90,9 +83,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
    * @attr
    */
   public get tiles() {
-    return Array.from(this._tiles).sort(
-      (a, b) => (a.position ?? 0) - (b.position ?? 0)
-    );
+    return Array.from(this._tiles).sort((a, b) => a.position - b.position);
   }
 
   @watch('columnCount', { waitUntilFirstUpdate: true })
@@ -126,13 +117,113 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private assignPositions() {
-    this.tiles.forEach((tile, index) => {
-      tile.position = index;
+    const finalOrder: IgcTileComponent[] = [];
+    const unpositionedTiles = this._tiles.filter(
+      (tile) => tile.position === -1
+    );
+
+    this.positionedTiles = this._tiles.filter((tile) => tile.position !== -1);
+    this.positionedTiles.sort((a, b) => a.position - b.position);
+
+    let nextFreePosition = 0;
+
+    this.positionedTiles.forEach((tile) => {
+      // Fill any unassigned slots before the next assigned tile's position
+      while (nextFreePosition < tile.position && unpositionedTiles.length > 0) {
+        const unpositionedTile = unpositionedTiles.shift()!;
+        unpositionedTile.position = nextFreePosition++;
+        finalOrder.push(unpositionedTile);
+      }
+      tile.position = finalOrder.length;
+      finalOrder.push(tile);
+      nextFreePosition = tile.position + 1;
+    });
+
+    unpositionedTiles.forEach((tile) => {
+      tile.position = nextFreePosition++;
+      finalOrder.push(tile);
+    });
+
+    this.finalOrder = finalOrder;
+  }
+
+  private handleTileRemoval(removedTile: IgcTileComponent) {
+    const removedPosition = removedTile.position;
+
+    this.finalOrder = this.finalOrder.filter((tile) => tile !== removedTile);
+    this.positionedTiles = this.positionedTiles.filter(
+      (tile) => tile !== removedTile
+    );
+
+    // Shift only non-positioned tiles
+    this.finalOrder.forEach((tile) => {
+      if (
+        tile.position > removedPosition &&
+        !this.positionedTiles.includes(tile)
+      ) {
+        tile.position -= 1;
+      }
+    });
+
+    this.reassignUnpositionedTiles();
+  }
+
+  private handleTileAddition(newTile: IgcTileComponent) {
+    let specifiedPosition = newTile.position;
+
+    if (specifiedPosition !== -1) {
+      // Place at specified position, shift non-positioned tiles only
+      this.finalOrder.forEach((tile) => {
+        if (
+          tile.position >= specifiedPosition &&
+          !this.positionedTiles.includes(tile)
+        ) {
+          tile.position += 1;
+        }
+      });
+
+      this.finalOrder.splice(specifiedPosition, 0, newTile);
+      this.positionedTiles.push(newTile);
+    } else {
+      // Find next available position in DOM for unpositioned tile
+      specifiedPosition = this.getAvailablePosition(newTile);
+      newTile.position = specifiedPosition;
+      this.finalOrder.push(newTile);
+    }
+
+    this.reassignUnpositionedTiles();
+  }
+
+  private reassignUnpositionedTiles() {
+    let nextPosition = 0;
+
+    this.finalOrder.sort((a, b) => a.position - b.position);
+    this.finalOrder.forEach((tile) => {
+      if (!this.positionedTiles.includes(tile)) {
+        while (
+          this.finalOrder.some(
+            (posTile) =>
+              posTile.position === nextPosition &&
+              this.positionedTiles.includes(posTile)
+          )
+        ) {
+          nextPosition += 1;
+        }
+        tile.position = nextPosition++;
+      }
     });
   }
 
+  private getAvailablePosition(newTile: IgcTileComponent): number {
+    let domIndex = Array.from(this.children).indexOf(newTile);
+    while (this.positionedTiles.some((tile) => tile.position === domIndex)) {
+      domIndex += 1;
+    }
+    return domIndex;
+  }
+
   private updateSlotAssignment() {
-    this.slotElement.assign(...this.tiles);
+    this.slotElement.assign(...this._tiles);
   }
 
   private handleTileDragStart(e: CustomEvent) {
@@ -169,20 +260,18 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         const targetPos = target.position ?? 0;
 
         this.tiles.forEach((tile) => {
-          if (tile.position) {
-            if (
-              draggedPos < targetPos &&
-              tile.position > draggedPos &&
-              tile.position <= targetPos
-            ) {
-              tile.position -= 1;
-            } else if (
-              draggedPos > targetPos &&
-              tile.position >= targetPos &&
-              tile.position < draggedPos
-            ) {
-              tile.position += 1;
-            }
+          if (
+            draggedPos < targetPos &&
+            tile.position > draggedPos &&
+            tile.position <= targetPos
+          ) {
+            tile.position -= 1;
+          } else if (
+            draggedPos > targetPos &&
+            tile.position >= targetPos &&
+            tile.position < draggedPos
+          ) {
+            tile.position += 1;
           }
         });
 

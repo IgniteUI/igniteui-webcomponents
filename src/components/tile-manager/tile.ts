@@ -59,6 +59,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
   private ghostElement!: HTMLElement | null;
   private _dragController?: TileDragAndDropController;
+  private _position = -1;
   private _resizeController?: TileResizeController;
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
 
@@ -113,16 +114,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public disableResize = false;
 
   /**
-   * Corresponds to the CSS order property
-   * and indicates the visual position the tile has in the layout.
+   * Gets/sets the tile's visual position in the layout.
+   * Corresponds to the CSS order property.
    * @attr
    */
-  @property({ attribute: 'position', type: Number, reflect: true })
-  public position: number | undefined = undefined;
+  @property({ type: Number })
+  public set position(value: number) {
+    this._position = Number(value);
+    this.style.order = `${this._position}`;
+  }
 
-  @watch('position')
-  protected updateOrder() {
-    this.style.order = `${this.position}`;
+  public get position() {
+    return this._position;
   }
 
   @watch('maximized')
