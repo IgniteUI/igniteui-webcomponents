@@ -39,15 +39,10 @@ const metadata: Meta<IgcTileManagerComponent> = {
     columnCount: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: '0' } },
-    },
-    rowCount: {
-      type: 'number',
-      control: 'number',
-      table: { defaultValue: { summary: '0' } },
+      table: { defaultValue: { summary: '10' } },
     },
   },
-  args: { dragMode: 'slide', columnCount: 0, rowCount: 0 },
+  args: { dragMode: 'slide', columnCount: 10 },
 };
 
 export default metadata;
@@ -56,7 +51,6 @@ interface IgcTileManagerArgs {
   /** Determines whether the tiles slide or swap on drop. */
   dragMode: 'slide' | 'swap';
   columnCount: number;
-  rowCount: number;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -130,7 +124,6 @@ export const Default: Story = {
     <igc-tile-manager
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
-      .rowCount=${args.rowCount}
     >
       <p>This text won't be displayed in Tile Manager</p>
       ${tiles}

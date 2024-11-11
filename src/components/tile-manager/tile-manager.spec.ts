@@ -64,7 +64,6 @@ describe('Tile Manager component', () => {
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(0);
-      expect(tileManager.rowCount).to.equal(0);
       expect(tileManager.dragMode).to.equal('slide');
     });
 
@@ -186,19 +185,14 @@ describe('Tile Manager component', () => {
       expect(style.gridTemplateColumns).to.equal(
         'repeat(auto-fit, minmax(20px, 1fr))'
       );
-      expect(style.gridTemplateRows).to.equal(
-        'repeat(auto-fit, minmax(20px, 1fr))'
-      );
 
       tileManager.columnCount = 15;
-      tileManager.rowCount = 15;
 
       await elementUpdated(tileManager);
 
       style = getTileManagerBase().style;
 
       expect(style.gridTemplateColumns).to.equal('repeat(15, auto)');
-      expect(style.gridTemplateRows).to.equal('repeat(15, auto)');
     });
 
     it('should respect tile row and col start properties', async () => {

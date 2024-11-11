@@ -83,11 +83,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   public dragMode: 'slide' | 'swap' = 'slide';
 
   @property({ type: Number })
-  public columnCount = 0;
-
-  // remove this one
-  @property({ type: Number })
-  public rowCount = 0;
+  public columnCount = 10;
 
   /**
    * Gets the tiles sorted by their position in the layout.
@@ -100,21 +96,14 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   @watch('columnCount', { waitUntilFirstUpdate: true })
-  @watch('rowCount', { waitUntilFirstUpdate: true })
   protected updateRowsCols() {
     // REVIEW: Bind to internal CSS vars/parts or something
     // const gridTemplateColumns =
     //   this.columnCount > 0
     //     ? `repeat(${this.columnCount}, auto)`
     //     : 'repeat(auto-fit, minmax(20px, 1fr))';
-    // const gridTemplateRows =
-    //   this.rowCount > 0
-    //     ? `repeat(${this.rowCount}, auto)`
-    //     : 'repeat(auto-fit, minmax(20px, 1fr))';
-    // Object.assign(this._baseWrapper.style, {
-    //   gridTemplateColumns,
-    //   gridTemplateRows,
-    // });
+    //
+    // Object.assign(this._baseWrapper.style, gridTemplateColumns);
   }
 
   constructor() {
