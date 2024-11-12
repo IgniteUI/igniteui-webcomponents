@@ -15,6 +15,7 @@ import {
   type TileResizeController,
   addTileResize,
 } from './controllers/tile-resize.js';
+import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
@@ -48,7 +49,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tile';
-  public static styles = [styles];
+  public static styles = [styles, shared];
   private _emitMaximizedEvent = false;
 
   /* blazorSuppress */

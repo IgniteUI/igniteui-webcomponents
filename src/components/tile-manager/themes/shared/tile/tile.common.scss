@@ -1,0 +1,23 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
+[part='base'] {
+    background: var-get($theme, 'tile-background');
+    border-radius: var-get($theme, 'border-radius');
+    border: rem(1px) solid var-get($theme, 'border-color');
+
+    &:hover {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+}
+
+[part="content-container"] {
+    background: var-get($theme, 'content-background');
+    color: var-get($theme, 'content-color');
+}

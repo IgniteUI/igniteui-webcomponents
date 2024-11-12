@@ -275,3 +275,27 @@ addIcon('error', {
     collection: 'internal',
   },
 });
+addIcon('fullscreen', {
+  default: {
+    name: 'fullscreen',
+    collection: 'internal',
+  },
+});
+addIcon('fullscreen_exit', {
+  default: {
+    name: 'fullscreen_exit',
+    collection: 'internal',
+  },
+});
+addIcon('expand_content', {
+  default: {
+    name: 'expand_content',
+    collection: 'internal',
+  },
+});
+addIcon('collapse_content', {
+  default: {
+    name: 'collapse_content',
+    collection: 'internal',
+  },
+});

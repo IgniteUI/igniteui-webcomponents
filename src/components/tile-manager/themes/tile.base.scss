@@ -4,15 +4,23 @@
 :host {
     display: block;
     height: fit-content;
-    border: 1px solid #333;
     position: relative;
-    border-radius: 5px;
-    background: #fff;
 }
 
-[part="content-container"] {
+[part='base'] {
+    resize: both;
+    overflow: auto;
+}
+
+[part='content-container'] {
     display: block;
     overflow: auto;
+
+    ::slotted(*) {
+        @include type-style('body-1');
+
+        margin: 0;
+    }
 }
 
 :host([maximized]) {
@@ -24,18 +32,18 @@
     isolation: isolate;
 }
 
-[part="drag-over"] {
+[part='drag-over'] {
     opacity: 0.5;
     pointer-events: none;
 }
 
-.resize-handle {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    right: 0;
-    bottom: 0;
-    cursor: se-resize;
-    background: rgba(0 0 0);
-    z-index: 999;
-}
+// .resize-handle {
+//     position: absolute;
+//     width: 15px;
+//     height: 15px;
+//     right: 0;
+//     bottom: 0;
+//     cursor: se-resize;
+//     background: rgba(0 0 0);
+//     z-index: 999;
+// }

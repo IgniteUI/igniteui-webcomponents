@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import {
   type MutationControllerParams,
   createMutationController,
@@ -9,6 +10,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
+import { all } from './themes/container.js';
+import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
 
@@ -24,12 +27,13 @@ export interface IgcTileManagerComponentEventMap {
  *
  * @fires igcTileDragStarted - Fired when an owning tile begins a drag operation.
  */
+@themes(all)
 export default class IgcTileManagerComponent extends EventEmitterMixin<
   IgcTileManagerComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tile-manager';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   protected static shadowRootOptions: ShadowRootInit = {
     mode: 'open',
