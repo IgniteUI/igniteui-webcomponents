@@ -62,8 +62,17 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _observerCallback({
     changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    removed.forEach(this.handleTileRemoval.bind(this));
-    added.forEach(this.handleTileAddition.bind(this));
+    removed.forEach((removedTile) => {
+      if (removedTile instanceof IgcTileComponent) {
+        this.handleTileRemoval(removedTile);
+      }
+    });
+
+    added.forEach((addedTile) => {
+      if (addedTile instanceof IgcTileComponent) {
+        this.handleTileAddition(addedTile);
+      }
+    });
 
     this.updateSlotAssignment();
   }
