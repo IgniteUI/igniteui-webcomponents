@@ -9,6 +9,5 @@ $theme: $bootstrap;
 }
 
 [part='base'] {
-    padding: rem(8px) 0;
     border: rem(1px) solid var-get($theme, 'border-color');
 }
