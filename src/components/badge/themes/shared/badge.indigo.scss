@@ -3,13 +3,6 @@
 
 $theme: $indigo;
 
-:host([variant='info']),
-:host([variant='success']),
-:host([variant='warning']),
-:host([variant='danger']) {
-    color: var-get($theme, 'text-color');
-}
-
 [part='base'] {
     @include type-style('button');
 
