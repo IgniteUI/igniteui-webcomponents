@@ -105,14 +105,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
-  public get disableDrag() {
-    return this._disableDrag;
-  }
-
   public set disableDrag(value: boolean) {
     this._disableDrag = value;
     this._dragController.enabled = !this._disableDrag;
     this.draggable = this._dragController.enabled;
+  }
+
+  public get disableDrag() {
+    return this._disableDrag;
   }
 
   /**
@@ -120,13 +120,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'disable-resize', type: Boolean, reflect: true })
-  public get disableResize() {
-    return this._disableResize;
-  }
-
   public set disableResize(value: boolean) {
     this._disableResize = value;
     this._resizeController.enabled = !this._disableResize;
+  }
+
+  public get disableResize() {
+    return this._disableResize;
   }
 
   /**
