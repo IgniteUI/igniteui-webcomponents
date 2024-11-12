@@ -11,8 +11,8 @@ import type { TemplateResult } from 'lit';
 import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateInput,
@@ -224,7 +224,7 @@ describe('Textarea component', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcTextareaComponent>(
+    const spec = createFormAssociatedTestBed<IgcTextareaComponent>(
       html`<igc-textarea name="textarea"></igc-textarea>`
     );
 
@@ -232,44 +232,37 @@ describe('Textarea component', () => {
       await spec.setup(IgcTextareaComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if no value', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit', async () => {
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit', () => {
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: 'abc' });
 
       spec.reset();
       expect(spec.element.value).to.be.empty;
     });
 
     it('is correctly reset on form reset after setAttribute() call', () => {
-      spec.element.setAttribute('value', 'Some initial value');
-      spec.element.value = '123';
+      spec.setAttributes({ value: 'Some initial value' });
+      spec.setProperties({ value: '123' });
 
       spec.reset();
 
       expect(spec.element.value).to.equal('Some initial value');
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+      spec.assertSubmitHasValue('Some initial value');
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -277,46 +270,126 @@ describe('Textarea component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils min length constraint', async () => {
-      spec.element.minLength = 4;
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
+    it('fulfils min length constraint', () => {
+      spec.setProperties({
+        minLength: 4,
+        value: 'abc',
+      });
 
-      spec.submitFails();
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abcd';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abcd' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils max length constraint', async () => {
-      spec.element.maxLength = 3;
-      spec.element.value = 'abcd';
-      await elementUpdated(spec.element);
+    it('fulfils max length constraint', () => {
+      spec.setProperties({
+        maxLength: 3,
+        value: 'abcd',
+      });
 
-      spec.submitFails();
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcTextareaComponent>(html`
+        <igc-textarea name="textarea" .defaultValue=${'Hello'}></igc-textarea>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcTextareaComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal('Hello');
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value);
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: 'World' });
+        spec.reset();
+
+        expect(spec.element.value).to.equal('Hello');
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcTextareaComponent>(html`
+        <igc-textarea
+          name="textarea"
+          required
+          .defaultValue=${undefined}
+        ></igc-textarea>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcTextareaComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation when updating defaultValue', () => {
+        spec.setProperties({ defaultValue: 'Hello' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails minlength validation', () => {
+        spec.setProperties({ minLength: 3, defaultValue: 'ab' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes minlength validation', () => {
+        spec.setProperties({ minLength: 3, defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails maxlength validation', () => {
+        spec.setProperties({ maxLength: 3, defaultValue: 'abcd' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes maxlength validation', () => {
+        spec.setProperties({ maxLength: 3, defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 
