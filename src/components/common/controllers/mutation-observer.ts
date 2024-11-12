@@ -29,14 +29,15 @@ type MutationControllerCallback<T> = (
  * an array of selector strings or a predicate function.
  */
 type MutationControllerFilter<T> = string[] | ((node: T) => boolean);
+type MutationDOMChange<T> = { target: Element; node: T };
 
 type MutationChange<T> = {
   /** Elements that have attribute(s) changes. */
   attributes: T[];
   /** Elements that have been added. */
-  added: T[];
+  added: MutationDOMChange<T>[];
   /** Elements that have been removed. */
-  removed: T[];
+  removed: MutationDOMChange<T>[];
 };
 
 export type MutationControllerParams<T> = {
@@ -110,10 +111,14 @@ class MutationController<T> implements ReactiveController {
         );
       } else if (record.type === 'childList') {
         changes.added.push(
-          ...mutationFilter(Array.from(record.addedNodes) as T[], filter)
+          ...mutationFilter(Array.from(record.addedNodes) as T[], filter).map(
+            (node) => ({ target: record.target as Element, node })
+          )
         );
         changes.removed.push(
-          ...mutationFilter(Array.from(record.removedNodes) as T[], filter)
+          ...mutationFilter(Array.from(record.removedNodes) as T[], filter).map(
+            (node) => ({ target: record.target as Element, node })
+          )
         );
       }
     }
