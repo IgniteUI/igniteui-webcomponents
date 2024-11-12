@@ -2,19 +2,24 @@
 @use 'styles/utilities' as *;
 
 [part='header'] {
-    background-color: #2c2c2c;
     display: flex;
     align-items: center;
     box-sizing: border-box;
-    padding: 5px 10px;
+    padding-block: sizable(rem(8px), rem(13px), rem(13px));
+    padding-inline: sizable(rem(12px), rem(16px), rem(20px));
 }
 
 [part='title'] {
-    color: #f5f5f5;
     display: block;
     flex: 1 1 100%;
 }
 
+::slotted([slot='title']) {
+    @include type-style('h6');
+
+    margin-bottom: 0;
+}
+
 [part='actions'] {
-    color: #f5f5f5;
+    gap: rem(8px);
 }

@@ -39,15 +39,10 @@ const metadata: Meta<IgcTileManagerComponent> = {
     columnCount: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: '0' } },
-    },
-    rowCount: {
-      type: 'number',
-      control: 'number',
-      table: { defaultValue: { summary: '0' } },
+      table: { defaultValue: { summary: '10' } },
     },
   },
-  args: { dragMode: 'slide', columnCount: 0, rowCount: 0 },
+  args: { dragMode: 'slide', columnCount: 10 },
 };
 
 export default metadata;
@@ -56,7 +51,6 @@ interface IgcTileManagerArgs {
   /** Determines whether the tiles slide or swap on drop. */
   dragMode: 'slide' | 'swap';
   columnCount: number;
-  rowCount: number;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -78,7 +72,7 @@ const tiles = Array.from(
         .disableDrag=${i === 0}
       >
         <igc-tile-header slot="header">
-          <h3>Tile ${i + 1} Title</h3>
+          <h3 slot="title">Tile ${i + 1} Title</h3>
           <igc-icon name="home" slot="actions"></igc-icon>
         </igc-tile-header>
 
@@ -135,7 +129,6 @@ export const Default: Story = {
     <igc-tile-manager
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
-      .rowCount=${args.rowCount}
     >
       <p>This text won't be displayed in Tile Manager</p>
       ${tiles}
@@ -189,12 +182,14 @@ export const Maximized: Story = {
 function addTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
+  const tiles = tileManager.querySelectorAll('igc-tile');
   const newTile = document.createElement('igc-tile');
   const content = document.createElement('h2');
   content.textContent = `Tile ${tileManager.tiles.length + 1}`;
-  newTile.position = 1;
+  newTile.position = 0;
   newTile.append(content);
-  tileManager.appendChild(newTile);
+  // tileManager.appendChild(newTile);
+  tileManager.insertBefore(newTile, tiles[3]);
 }
 
 function removeTile() {
@@ -217,6 +212,18 @@ export const DynamicTiles: Story = {
       </igc-tile>
       <igc-tile id="tile2">
         <h2>Tile2</h2>
+      </igc-tile>
+      <igc-tile id="tile3">
+        <h2>Tile3</h2>
+      </igc-tile>
+      <igc-tile id="tile4">
+        <h2>Tile4</h2>
+      </igc-tile>
+      <igc-tile id="tile5">
+        <h2>Tile5</h2>
+      </igc-tile>
+      <igc-tile id="tile6" position="2">
+        <h2>Tile6</h2>
       </igc-tile>
     </igc-tile-manager>
   `,

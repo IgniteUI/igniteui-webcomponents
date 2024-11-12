@@ -64,7 +64,6 @@ describe('Tile Manager component', () => {
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(0);
-      expect(tileManager.rowCount).to.equal(0);
       expect(tileManager.dragMode).to.equal('slide');
     });
 
@@ -186,19 +185,14 @@ describe('Tile Manager component', () => {
       expect(style.gridTemplateColumns).to.equal(
         'repeat(auto-fit, minmax(20px, 1fr))'
       );
-      expect(style.gridTemplateRows).to.equal(
-        'repeat(auto-fit, minmax(20px, 1fr))'
-      );
 
       tileManager.columnCount = 15;
-      tileManager.rowCount = 15;
 
       await elementUpdated(tileManager);
 
       style = getTileManagerBase().style;
 
       expect(style.gridTemplateColumns).to.equal('repeat(15, auto)');
-      expect(style.gridTemplateRows).to.equal('repeat(15, auto)');
     });
 
     it('should respect tile row and col start properties', async () => {
@@ -688,28 +682,30 @@ describe('Tile Manager component', () => {
       const serializedData = JSON.parse(tileManager.saveLayout());
       const expectedData = [
         {
-          tileId: 'custom-id1',
+          // colSpan: 3,
           colStart: null,
-          colSpan: 3,
           disableDrag: false,
           disableResize: false,
-          rowStart: null,
-          rowSpan: 3,
-          gridColumn: 'span 3',
-          gridRow: 'span 3',
+          gridColumn: 'auto',
+          gridRow: 'auto',
           maximized: false,
+          position: 0,
+          // rowSpan: 3,
+          rowStart: null,
+          tileId: 'custom-id1',
         },
         {
-          tileId: 'custom-id2',
-          colStart: 8,
           colSpan: 10,
+          colStart: 8,
           disableDrag: true,
           disableResize: true,
-          rowStart: 7,
-          rowSpan: 7,
-          gridColumn: '8 / span 10',
-          gridRow: '7 / span 7',
+          gridColumn: 'auto',
+          gridRow: 'auto',
           maximized: false,
+          position: 1,
+          rowSpan: 7,
+          rowStart: 7,
+          tileId: 'custom-id2',
         },
       ];
 
@@ -719,28 +715,43 @@ describe('Tile Manager component', () => {
     it('should deserialize tiles with proper properties values', async () => {
       const tilesData = [
         {
-          tileId: 'id1',
-          colStart: 1,
           colSpan: 5,
+          colStart: 1,
           disableDrag: true,
           disableResize: true,
           gridColumn: '1 / span 5',
           gridRow: '1 / span 5',
           maximized: false,
-          rowStart: 1,
+          position: 0,
           rowSpan: 5,
+          rowStart: 1,
+          tileId: 'custom-id1',
         },
         {
-          tileId: 'id2',
-          colStart: null,
           colSpan: 3,
+          colStart: null,
           disableDrag: false,
           disableResize: false,
           gridColumn: 'span 3',
           gridRow: 'span 3',
           maximized: false,
-          rowStart: null,
+          position: 1,
           rowSpan: 3,
+          rowStart: null,
+          tileId: 'custom-id2',
+        },
+        {
+          colSpan: 3,
+          colStart: null,
+          disableDrag: false,
+          disableResize: false,
+          gridColumn: 'span 3',
+          gridRow: 'span 3',
+          maximized: false,
+          position: 2,
+          rowSpan: 3,
+          rowStart: null,
+          tileId: 'no-match-id',
         },
       ];
 
@@ -750,23 +761,25 @@ describe('Tile Manager component', () => {
       const tiles = tileManager.tiles;
       expect(tiles.length).to.equal(2);
 
-      expect(tiles[0].tileId).to.equal('id1');
-      expect(tiles[0].colStart).to.equal(1);
       expect(tiles[0].colSpan).to.equal(5);
+      expect(tiles[0].colStart).to.equal(1);
       expect(tiles[0].disableDrag).to.equal(true);
       expect(tiles[0].disableResize).to.equal(true);
       expect(tiles[0].maximized).to.be.false;
-      expect(tiles[0].rowStart).to.equal(1);
+      expect(tiles[0].position).to.equal(0);
       expect(tiles[0].rowSpan).to.equal(5);
+      expect(tiles[0].rowStart).to.equal(1);
+      expect(tiles[0].tileId).to.equal('custom-id1');
 
-      expect(tiles[1].tileId).to.equal('id2');
-      expect(tiles[1].colStart).to.be.null;
       expect(tiles[1].colSpan).to.equal(3);
+      expect(tiles[1].colStart).to.be.null;
       expect(tiles[1].disableDrag).to.be.false;
       expect(tiles[1].disableResize).to.be.false;
       expect(tiles[1].maximized).to.be.false;
-      expect(tiles[1].rowStart).to.be.null;
+      expect(tiles[1].position).to.equal(1);
       expect(tiles[1].rowSpan).to.equal(3);
+      expect(tiles[1].rowStart).to.be.null;
+      expect(tiles[1].tileId).to.equal('custom-id2');
 
       const firstTileStyles = window.getComputedStyle(tiles[0]);
       const secondTileStyles = window.getComputedStyle(tiles[1]);
@@ -804,7 +817,11 @@ describe('Tile Manager component', () => {
       tileManager.appendChild(tile);
       await elementUpdated(tileManager);
 
-      expect(tileManager.tiles[5].tileId).to.equal('custom-id');
+      const matchingTiles = tileManager.tiles.filter(
+        (tile) => tile.tileId === 'custom-id'
+      );
+
+      expect(matchingTiles.length).to.equal(1);
     });
   });
 

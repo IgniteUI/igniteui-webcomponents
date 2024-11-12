@@ -15,6 +15,7 @@ import {
   type TileResizeController,
   addTileResize,
 } from './controllers/tile-resize.js';
+import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
 
@@ -48,7 +49,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tile';
-  public static styles = [styles];
+  public static styles = [styles, shared];
   private _emitMaximizedEvent = false;
 
   /* blazorSuppress */
@@ -60,6 +61,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private ghostElement!: HTMLElement | null;
   private _dragController: TileDragAndDropController;
   private _resizeController: TileResizeController;
+  private _position = -1;
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
   private _disableResize = false;
   private _disableDrag = false;
@@ -132,16 +134,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /**
-   * Corresponds to the CSS order property
-   * and indicates the visual position the tile has in the layout.
+   * Gets/sets the tile's visual position in the layout.
+   * Corresponds to the CSS order property.
    * @attr
    */
-  @property({ attribute: 'position', type: Number, reflect: true })
-  public position: number | undefined = undefined;
+  @property({ type: Number })
+  public set position(value: number) {
+    this._position = Number(value);
+    this.style.order = `${this._position}`;
+  }
 
-  @watch('position')
-  protected updateOrder() {
-    this.style.order = `${this.position}`;
+  public get position() {
+    return this._position;
   }
 
   @watch('maximized')
