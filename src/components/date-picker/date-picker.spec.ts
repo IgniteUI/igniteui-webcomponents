@@ -900,8 +900,7 @@ describe('Date picker', () => {
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      // FIXME:
-      spec.setAttributes({ value: today.native.toISOString() as any });
+      spec.setAttributes({ value: today.native.toISOString() });
       spec.setProperties({ value: today.add('day', 180).native });
       spec.reset();
 

@@ -29,18 +29,22 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
   /**
    * The form associated component for the test bed.
    */
-  public get element() {
+  public get element(): T {
     return this._element;
   }
 
   /**
    * The form element from the test bed.
    */
-  public get form() {
+  public get form(): HTMLFormElement {
     return this._form;
   }
 
-  public get valid() {
+  public get formData(): FormData {
+    return new FormData(this._form);
+  }
+
+  public get valid(): boolean {
     return this.element.checkValidity();
   }
 
@@ -53,7 +57,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * Called in the async `beforeEach` test hook callback. Pass in the
    * query selector for the component.
    */
-  public async setup(qs: string) {
+  public async setup(qs: string): Promise<void> {
     this._form = await fixture<HTMLFormElement>(
       html`<form><fieldset>${this.template}</fieldset></form>`
     );
@@ -65,7 +69,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   /** Resets the form controls. */
-  public reset() {
+  public reset(): void {
     this.form.reset();
   }
 
@@ -116,7 +120,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
   public async setProperties(
     props: { [K in keyof T]?: T[K] },
     waitForUpdate = true
-  ) {
+  ): Promise<void> {
     Object.assign(this.element, props);
     if (waitForUpdate) {
       await elementUpdated(this.element);
@@ -131,9 +135,9 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * If the `waitForUpdate` parameter is `true`, the function waits for the element to be updated before returning.
    */
   public async setAttributes(
-    attributes: { [K in keyof T]?: T[K] },
+    attributes: { [K in keyof T]?: T[K] | string },
     waitForUpdate = true
-  ) {
+  ): Promise<void> {
     for (const [attr, value] of Object.entries(attributes)) {
       this.element.setAttribute(attr, `${value}`);
     }
@@ -146,15 +150,23 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * Whether the form is submitted and contains the given 'value'
    * in its form data.
    */
-  public assertSubmitHasValue(value: unknown, msg?: string) {
+  public assertSubmitHasValue(value: unknown, msg?: string): void {
     expect(this.submitV2().get(this.element.name), msg).to.eql(value);
+  }
+
+  /**
+   * Whether the form is submitted and contains the given 'value'
+   * in its form data.
+   */
+  public assertSubmitHasValues(value: unknown, msg?: string): void {
+    expect(this.submitV2().getAll(this.element.name), msg).to.eql(value);
   }
 
   /**
    * Whether the form fails to submit.
    * The component will be in invalid state and the form data will be empty.
    */
-  public assertSubmitFails(msg?: string) {
+  public assertSubmitFails(msg?: string): void {
     expect(this.submitV2() === initialFormData, msg).to.be.true;
     expect(this.valid, msg).to.be.false;
   }
@@ -164,17 +176,17 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * The component will be in valid state and the form data will include the
    * component name and value.
    */
-  public assertSubmitPasses(msg?: string) {
+  public assertSubmitPasses(msg?: string): void {
     expect(this.submitV2() === initialFormData, msg).to.be.false;
     expect(this.valid, msg).to.be.true;
   }
 
-  public submitValidates(msg?: string) {
+  public submitValidates(msg?: string): void {
     expect(this.submit(), msg).not.to.be.undefined;
     expect(this.valid, msg).to.be.true;
   }
 
-  public submitFails(msg?: string) {
+  public submitFails(msg?: string): void {
     expect(this.submit(), msg).to.be.undefined;
     expect(this.valid, msg).to.be.false;
   }
@@ -182,7 +194,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
   /**
    * Whether the form element is in 'pristine' state.
    */
-  public assertIsPristine(msg?: string) {
+  public assertIsPristine(msg?: string): void {
     // biome-ignore lint/complexity/useLiteralKeys: Pristine state test
     expect(this.element['_pristine'], msg).to.be.true;
   }
