@@ -64,9 +64,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _resizeController?: TileResizeController;
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
 
-  // REVIEW
-  // @state()
-  // private _isDragging = false;
+  @state()
+  private _isDragging = false;
+
+  @state()
+  private _isResizing = false;
 
   @state()
   private _hasDragOver = false;
@@ -287,6 +289,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     e.dataTransfer!.effectAllowed = 'move';
 
     this.dispatchEvent(event);
+    this._isDragging = true;
 
     requestAnimationFrame(() => {
       this.style.transform = 'scale(0)';
@@ -299,6 +302,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       bubbles: true,
     });
     this.dispatchEvent(event);
+    this._isDragging = false;
   }
 
   private createGhostElement(): HTMLElement {
@@ -321,6 +325,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private handleResizeStart() {
     if (this.emitEvent('igcResizeStart', { detail: this, cancelable: true })) {
+      this._isResizing = true;
       this.ghostElement = this.createGhostElement();
       this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
     }
@@ -352,6 +357,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.style.gridRow = this.ghostElement.style.gridRow;
       this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
       this.ghostElement = null;
+      this._isResizing = false;
     }
   }
 
@@ -367,6 +373,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       base: true,
       'drag-over': this._hasDragOver,
       fullscreen: this._isFullscreen,
+      resizing: this._isResizing,
+      dragging: this._isDragging,
     });
 
     return html`
