@@ -65,7 +65,12 @@ const tiles = Array.from(
   map(
     range(10),
     (i) => html`
-      <igc-tile .colSpan=${3} .rowSpan=${9}>
+      <igc-tile
+        .colSpan=${3}
+        .rowSpan=${9}
+        .disableResize=${i === 0}
+        .disableDrag=${i === 0}
+      >
         <igc-tile-header slot="header">
           <h3 slot="title">Tile ${i + 1} Title</h3>
           <igc-icon name="home" slot="actions"></igc-icon>
@@ -128,12 +133,22 @@ export const Default: Story = {
       <p>This text won't be displayed in Tile Manager</p>
       ${tiles}
     </igc-tile-manager>
+
+    <igc-button @click=${disableTileResize}>
+      Toggle Tile 2 Resizing
+    </igc-button>
   `,
 };
 
 function toggleMaximizedTile() {
   const tile = document.querySelector<IgcTileComponent>('#max-tile')!;
   tile.maximized = !tile.maximized;
+}
+
+function disableTileResize() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
+  tileManager.tiles[1].disableResize = !tileManager.tiles[1].disableResize;
 }
 
 function cancelStateChangeEvent(e: CustomEvent) {

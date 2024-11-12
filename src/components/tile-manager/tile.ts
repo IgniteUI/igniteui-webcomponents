@@ -59,10 +59,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private ghostElement!: HTMLElement | null;
-  private _dragController?: TileDragAndDropController;
+  private _dragController: TileDragAndDropController;
+  private _resizeController: TileResizeController;
   private _position = -1;
-  private _resizeController?: TileResizeController;
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
+  private _disableResize = false;
+  private _disableDrag = false;
 
   @state()
   private _isDragging = false;
@@ -107,14 +109,29 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
-  public disableDrag = false;
+  public set disableDrag(value: boolean) {
+    this._disableDrag = value;
+    this._dragController.enabled = !this._disableDrag;
+    this.draggable = this._dragController.enabled;
+  }
+
+  public get disableDrag() {
+    return this._disableDrag;
+  }
 
   /**
    * Indicates whether the tile can be resized.
    * @attr
    */
   @property({ attribute: 'disable-resize', type: Boolean, reflect: true })
-  public disableResize = false;
+  public set disableResize(value: boolean) {
+    this._disableResize = value;
+    this._resizeController.enabled = !this._disableResize;
+  }
+
+  public get disableResize() {
+    return this._disableResize;
+  }
 
   /**
    * Gets/sets the tile's visual position in the layout.
@@ -167,53 +184,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // }
   }
 
-  @watch('disableDrag')
-  protected updateDragController() {
-    // add property to controller
-    if (this.disableDrag) {
-      this.draggable = false;
-      if (this._dragController) {
-        this._dragController.hostDisconnected();
-        this._dragController = undefined;
-      }
-    } else if (!this._dragController) {
-      this.draggable = true;
-
-      this._dragController = addTileDragAndDrop(this, {
-        dragStart: this.handleDragStart,
-        dragEnd: this.handleDragEnd,
-        dragEnter: this.handleDragEnter,
-        dragLeave: this.handleDragLeave,
-        drop: this.handleDragLeave,
-      });
-    }
-  }
-
-  @watch('disableResize')
-  protected updateResizeController() {
-    if (this.disableResize) {
-      if (this._resizeController) {
-        this._resizeController.hostDisconnected();
-        this._resizeController = undefined;
-      }
-    } else if (!this._resizeController) {
-      this._resizeController = addTileResize(this, this._resizeHandleRef, {
-        resizeStart: this.handleResizeStart,
-        resizeMove: this.handleResize,
-        resizeEnd: this.handleResizeEnd,
-      });
-    }
-  }
-
   constructor() {
     super();
+    this._dragController = addTileDragAndDrop(this, {
+      dragStart: this.handleDragStart,
+      dragEnd: this.handleDragEnd,
+      dragEnter: this.handleDragEnter,
+      dragLeave: this.handleDragLeave,
+      drop: this.handleDragLeave,
+    });
 
-    // Moved to updateResizeController() so that we have the resize controller only when the resize is enabled
-    // addTileResize(this, this._resizeHandleRef, {
-    //   resizeStart: this.handleResizeStart,
-    //   resizeMove: this.handleResize,
-    //   resizeEnd: this.handleResizeEnd,
-    // });
+    this._resizeController = addTileResize(this, this._resizeHandleRef, {
+      resizeStart: this.handleResizeStart,
+      resizeMove: this.handleResize,
+      resizeEnd: this.handleResizeEnd,
+    });
 
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
@@ -373,6 +358,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       base: true,
       'drag-over': this._hasDragOver,
       fullscreen: this._isFullscreen,
+      draggable: !this.disableDrag,
+      resizable: !this._disableResize,
       resizing: this._isResizing,
       dragging: this._isDragging,
     });
@@ -384,12 +371,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot></slot>
         </div>
 
-        <!-- should we remove/hide the resizeHandle when disableResize is true -->
         <div
           ${ref(this._resizeHandleRef)}
           class="resize-handle"
           tabindex="-1"
           @keydown=${this.handleResizeCancelled}
+          ?hidden=${this._disableResize}
         ></div>
       </div>
     `;
