@@ -8,8 +8,8 @@ import {
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
 } from '../common/utils.spec.js';
@@ -258,7 +258,7 @@ describe('Checkbox', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
       html`<igc-checkbox name="checkbox"
         >I have reviewed ToC and I agree</igc-checkbox
       >`
@@ -268,55 +268,45 @@ describe('Checkbox', () => {
       await spec.setup(IgcCheckboxComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is associated on submit with default value "on"', async () => {
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+    it('is associated on submit with default value "on"', () => {
+      spec.setProperties({ checked: true });
+      spec.assertSubmitHasValue('on');
     });
 
-    it('is associated on submit with value (setting `checked` first)', async () => {
-      spec.element.checked = true;
-      spec.element.value = 'late-binding';
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal('late-binding');
+    it('is associated on submit with value (setting `checked` first)', () => {
+      spec.setProperties({ checked: true });
+      spec.setProperties({ value: 'late-binding' });
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('is associated on submit with passed value', async () => {
-      spec.element.checked = true;
-      spec.element.value = 'accepted';
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit with passed value', () => {
+      spec.setProperties({ checked: true, value: 'accepted' });
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('is not associated on submit if not checked', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if not checked', () => {
+      expect(spec.assertSubmitHasValue(null));
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ checked: true });
       spec.reset();
+
       expect(spec.element.checked).to.be.false;
     });
 
     it('is correctly reset on form reset after setAttribute() call', () => {
-      spec.element.setAttribute('checked', 'true');
-
+      spec.setAttributes({ checked: true });
       spec.reset();
+
       expect(spec.element.checked).to.be.true;
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -324,41 +314,35 @@ describe('Checkbox', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ checked: true });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils required constraint with indeterminate', async () => {
+    it('fulfils required constraint with indeterminate', () => {
       // See the Note mention at
       // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#indeterminate_state_checkboxes
-      spec.element.required = true;
-      spec.element.indeterminate = true;
-      await elementUpdated(spec.element);
+      spec.setProperties({ required: true, indeterminate: true });
+      spec.assertSubmitFails();
 
-      spec.submitFails();
-
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ checked: true });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
     });
   });
 
   describe('Synchronous validation', () => {
-    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
       html`<igc-checkbox required name="checkbox"
         >I have reviewed ToC and I agree</igc-checkbox
       >`
@@ -368,20 +352,20 @@ describe('Checkbox', () => {
       await spec.setup(IgcCheckboxComponent.tagName);
     });
 
-    it('synchronously validates component', async () => {
+    it('synchronously validates component', () => {
       expect(spec.form.checkValidity()).to.be.false;
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.reset();
 
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
-      spec.submitValidates();
+      spec.assertSubmitPasses();
     });
   });
 
   describe('Initial checked state is submitted', () => {
-    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
       html`<igc-checkbox
         name="checkbox"
         value="checked"
@@ -391,10 +375,58 @@ describe('Checkbox', () => {
 
     beforeEach(async () => await spec.setup(IgcCheckboxComponent.tagName));
 
-    it('initial state is submitted', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('initial state is submitted', () => {
+      spec.assertSubmitHasValue(spec.element.value);
+    });
+  });
+
+  describe('defaultChecked', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(html`
+        <igc-checkbox name="checkbox" .defaultChecked=${true}></igc-checkbox>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcCheckboxComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.checked).to.be.true;
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue('on');
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ checked: false });
+        spec.reset();
+
+        expect(spec.element.checked).to.be.true;
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(html`
+        <igc-checkbox name="checkbox" required></igc-checkbox>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcCheckboxComponent.tagName);
+      });
+
+      it('fails initial validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes validation when updating defaultChecked', () => {
+        spec.setProperties({ defaultChecked: true });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 
