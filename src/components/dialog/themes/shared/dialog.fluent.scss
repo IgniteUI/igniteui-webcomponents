@@ -6,8 +6,12 @@
 }
 
 [part='content'] {
+    @include type-style('body-2') {
+        margin: 0;
+    }
+
     padding-inline: rem(24px);
-    padding-block-end: rem(20px);
+    padding-block: 0 rem(20px);
 }
 
 [part='footer'] {
