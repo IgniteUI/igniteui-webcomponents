@@ -34,22 +34,18 @@
 
 :host([variant='info']) [part='base'] {
     background: color(info, 500);
-    color: contrast-color(info, 500);
 }
 
 :host([variant='success']) [part='base'] {
     background: color(success, 500);
-    color: contrast-color(success, 500);
 }
 
 :host([variant='warning']) [part='base'] {
     background: color(warn, 500);
-    color: contrast-color(warn, 500);
 }
 
 :host([variant='danger']) [part='base'] {
     background: color(error, 500);
-    color: contrast-color(error, 500);
 }
 
 :host([shape='rounded']),

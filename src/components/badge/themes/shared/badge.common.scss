@@ -5,6 +5,7 @@ $theme: $material;
 
 [part='base'] {
     box-shadow: var-get($theme, 'elevation');
+    color: var-get($theme, 'text-color');
 }
 
 ::slotted(igc-icon) {
@@ -13,7 +14,6 @@ $theme: $material;
 
 :host([variant='primary']) [part='base'] {
     background: var-get($theme, 'background-color');
-    color: var-get($theme, 'text-color');
 }
 
 :host([shape='square']) [part='base'] {
