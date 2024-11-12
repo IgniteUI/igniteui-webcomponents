@@ -7,14 +7,20 @@ $theme: $material;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
-[part='base'] {
+[part~='base'] {
     background: var-get($theme, 'tile-background');
     border-radius: var-get($theme, 'border-radius');
     border: rem(1px) solid var-get($theme, 'border-color');
+    box-shadow: var-get($theme, 'resting-elevation');
 
     &:hover {
         border-color: var-get($theme, 'hover-border-color');
     }
+}
+
+[part~='dragging'] {
+    opacity: .6;
+    box-shadow: var-get($theme, 'drag-elevation');
 }
 
 [part="content-container"] {
