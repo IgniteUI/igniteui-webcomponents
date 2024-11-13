@@ -22,7 +22,7 @@ export function createFormAssociatedTestBed<T extends IgcFormControl>(
 
 const initialFormData = Object.freeze(new FormData());
 
-export class FormAssociatedTestBed<T extends IgcFormControl> {
+class FormAssociatedTestBed<T extends IgcFormControl> {
   private _element!: T;
   private _form!: HTMLFormElement;
 
