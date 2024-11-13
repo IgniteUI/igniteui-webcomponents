@@ -18,7 +18,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
+  createFormAssociatedTestBed,
   simulateClick,
   simulateKeyboard,
   simulatePointerMove,
@@ -471,7 +471,7 @@ describe('Rating component', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcRatingComponent>(
+    const spec = createFormAssociatedTestBed<IgcRatingComponent>(
       html`<igc-rating name="rating" value="3"></igc-rating>`
     );
 
@@ -479,35 +479,31 @@ describe('Rating component', () => {
       await spec.setup(IgcRatingComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is associated on submit', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
+    it('is associated on submit', () => {
+      spec.assertSubmitHasValue(spec.element.value.toString());
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = 4;
-      await elementUpdated(spec.element);
-
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: 4 });
       spec.reset();
+
       expect(spec.element.value).to.equal(3);
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      spec.element.setAttribute('value', '5');
-      spec.element.value = 1;
-
+      spec.setAttributes({ value: 5 });
+      spec.setProperties({ value: 1 });
       spec.reset();
 
       expect(spec.element.value).to.equal(5);
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value.toString()
-      );
+      spec.assertSubmitHasValue(spec.element.value.toString());
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -515,12 +511,40 @@ describe('Rating component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils custom constraints', async () => {
+    it('fulfils custom constraints', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcRatingComponent>(html`
+        <igc-rating name="rating" .defaultValue=${3}></igc-rating>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcRatingComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal(3);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value.toString());
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: 5 });
+        spec.reset();
+
+        expect(spec.element.value).to.equal(3);
+      });
     });
   });
 });
