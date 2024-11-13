@@ -75,25 +75,10 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
 
   /**
    * Attempts to submit the form element.
-   * If constraint validation passes returns the form data, otherwise `undefined`.
+   * If constraint validation passes returns the form data, otherwise returns a
+   * default `initialFormData` sentinel value.
    */
-  public submit(): FormData | undefined {
-    let data!: FormData;
-
-    this.form.addEventListener(
-      'submit',
-      (e) => {
-        e.preventDefault();
-        data = new FormData(this.form);
-      },
-      { once: true }
-    );
-    this.form.requestSubmit();
-    return data;
-  }
-
-  // REVIEW: Delete the original submit and rename this after migrating the test beds
-  public submitV2(): FormData {
+  public submit(): FormData {
     let data = initialFormData;
 
     // let data = new FormData();
@@ -151,7 +136,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * in its form data.
    */
   public assertSubmitHasValue(value: unknown, msg?: string): void {
-    expect(this.submitV2().get(this.element.name), msg).to.eql(value);
+    expect(this.submit().get(this.element.name), msg).to.eql(value);
   }
 
   /**
@@ -159,7 +144,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * in its form data.
    */
   public assertSubmitHasValues(value: unknown, msg?: string): void {
-    expect(this.submitV2().getAll(this.element.name), msg).to.eql(value);
+    expect(this.submit().getAll(this.element.name), msg).to.eql(value);
   }
 
   /**
@@ -167,7 +152,7 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * The component will be in invalid state and the form data will be empty.
    */
   public assertSubmitFails(msg?: string): void {
-    expect(this.submitV2() === initialFormData, msg).to.be.true;
+    expect(this.submit() === initialFormData, msg).to.be.true;
     expect(this.valid, msg).to.be.false;
   }
 
@@ -177,18 +162,8 @@ export class FormAssociatedTestBed<T extends IgcFormControl> {
    * component name and value.
    */
   public assertSubmitPasses(msg?: string): void {
-    expect(this.submitV2() === initialFormData, msg).to.be.false;
+    expect(this.submit() === initialFormData, msg).to.be.false;
     expect(this.valid, msg).to.be.true;
-  }
-
-  public submitValidates(msg?: string): void {
-    expect(this.submit(), msg).not.to.be.undefined;
-    expect(this.valid, msg).to.be.true;
-  }
-
-  public submitFails(msg?: string): void {
-    expect(this.submit(), msg).to.be.undefined;
-    expect(this.valid, msg).to.be.false;
   }
 
   /**
