@@ -51,10 +51,6 @@ export class IgcCalendarBaseComponent extends LitElement {
   @state()
   protected _disabledDates: DateRangeDescriptor[] = [];
 
-  public get value(): Date | null {
-    return this._value ? this._value.native : null;
-  }
-
   /* blazorSuppress */
   /**
    * The current value of the calendar.
@@ -63,13 +59,13 @@ export class IgcCalendarBaseComponent extends LitElement {
    * @attr value
    */
   @property({ converter: convertToDate })
-  public set value(value: Date | string | null) {
+  public set value(value: Date | string | null | undefined) {
     const converted = convertToDate(value);
     this._value = converted ? CalendarDay.from(converted) : null;
   }
 
-  public get values(): Date[] {
-    return this._values ? this._values.map((v) => v.native) : [];
+  public get value(): Date | null {
+    return this._value ? this._value.native : null;
   }
 
   /* blazorSuppress */
@@ -80,24 +76,28 @@ export class IgcCalendarBaseComponent extends LitElement {
    * @attr values
    */
   @property({ converter: convertToDates })
-  public set values(values: Date[] | string | null) {
+  public set values(values: (Date | string)[] | string | null | undefined) {
     const converted = convertToDates(values);
     this._values = converted ? converted.map((v) => CalendarDay.from(v)) : [];
   }
 
-  public get activeDate(): Date {
-    return this._activeDate.native;
+  public get values(): Date[] {
+    return this._values ? this._values.map((v) => v.native) : [];
   }
 
   /* blazorSuppress */
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   @property({ attribute: 'active-date', converter: convertToDate })
-  public set activeDate(value: Date | string) {
+  public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
     const converted = convertToDate(value);
     this._activeDate = converted
       ? CalendarDay.from(converted)
       : CalendarDay.today;
+  }
+
+  public get activeDate(): Date {
+    return this._activeDate.native;
   }
 
   /**

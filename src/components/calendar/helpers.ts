@@ -44,23 +44,8 @@ const DaysMap = {
  * If the value is a string, it is parsed into a Date object.
  * If the value is null or undefined, null is returned.
  * If the parsing fails, null is returned.
- *
- * @param value The value to convert.
- * @returns The converted Date object, or null if the conversion fails.
- *
- * @example
- * ```typescript
- * const dateString = '2023-11-11T12:34:56Z';
- * const dateObject = new Date('2023-11-11T12:34:56Z');
- * const nullValue = null;
-
- * const result1 = convertToDate(dateString); // Date object
- * const result2 = convertToDate(dateObject); // Date object
- * const result3 = convertToDate(nullValue); // null
- * const result4 = convertToDate('invalid-date-string'); // null
- * ```
  */
-export function convertToDate(value: Date | string | null): Date | null {
+export function convertToDate(value?: Date | string | null): Date | null {
   if (!value) {
     return null;
   }
@@ -74,47 +59,21 @@ export function convertToDate(value: Date | string | null): Date | null {
  *
  * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
  * If the `value` is null or undefined, null is returned.
- *
- * @param value The Date object to convert.
- * @returns The ISO 8601 string representation of the Date object, or null if the value is null or undefined.
- *
- * @example
- * ```typescript
- * const dateObject = new Date('2023-11-11T12:34:56Z');
- * const nullValue = null;
-
- * const result1 = getDateFormValue(dateObject); // "2023-11-11T12:34:56.000Z"
- * const result2 = getDateFormValue(nullValue); // null
- * ```
  */
 export function getDateFormValue(value: Date | null) {
   return value ? value.toISOString() : null;
 }
 
 /**
- * Converts an array of Date objects or a comma-separated string of ISO 8601 dates into an array of Date objects.
-
- * If the `value` is an array of `Date` objects, it is returned directly.
- * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
+ * Converts a comma-separated string of ISO 8601 dates or an array of Date objects | ISO 8601 strings into
+ * an array of Date objects.
+ *
  * If the `value` is null or undefined, null is returned.
+ * If the `value` is an array of `Date` objects, a filtered array of valid `Date` objects is returned.
+ * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
  * If the parsing fails for any date, it is skipped.
-
- * @param value The value to convert.
- * @returns An array of Date objects, or null if the conversion fails for all values.
-
- * @example
- * ```typescript
- * const dateStrings = '2023-11-11T12:34:56Z,2023-12-12T13:45:00Z';
- * const dateObjects = [new Date('2023-11-11T12:34:56Z'), new Date('2023-12-12T13:45:00Z')];
- * const nullValue = null;
-
- * const result1 = convertToDates(dateStrings); // [Date, Date]
- * const result2 = convertToDates(dateObjects); // [Date, Date]
- * const result3 = convertToDates(nullValue); // null
- * const result4 = convertToDates('invalid-date-string,2023-11-11T12:34:56Z'); // [Date]
- * ```
  */
-export function convertToDates(value: Date[] | string | null) {
+export function convertToDates(value?: (Date | string)[] | string | null) {
   if (!value) {
     return null;
   }
@@ -134,7 +93,6 @@ export function convertToDates(value: Date[] | string | null) {
 
 /**
  * Returns the value of the selected/activated element (day/month/year) in the calendar view.
- *
  */
 export function getViewElement(event: Event) {
   const element = findElementFromEventPath<HTMLElement>('[data-value]', event);

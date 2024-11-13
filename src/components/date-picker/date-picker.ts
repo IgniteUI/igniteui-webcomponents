@@ -245,7 +245,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: convertToDate })
-  public set value(value: Date | string | null) {
+  public set value(value: Date | string | null | undefined) {
     this._value = convertToDate(value);
     this._setFormValue(getDateFormValue(this._value));
     this._validate();
@@ -260,7 +260,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * By default it is the current date.
    */
   @property({ attribute: 'active-date', converter: convertToDate })
-  public set activeDate(value: Date | null) {
+  public set activeDate(value: Date | string | null | undefined) {
     this._activeDate = convertToDate(value);
   }
 
@@ -273,7 +273,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: convertToDate })
-  public set min(value: Date | string) {
+  public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
     this.setDateConstraints();
     this._updateValidity();
@@ -288,7 +288,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property({ converter: convertToDate })
-  public set max(value: Date | string) {
+  public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
     this.setDateConstraints();
     this._updateValidity();
