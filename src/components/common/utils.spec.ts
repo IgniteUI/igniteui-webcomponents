@@ -256,7 +256,11 @@ export function simulateWheel(node: Element, options?: WheelEventInit) {
 
 export function simulateDragStart(node: Element) {
   node.dispatchEvent(
-    new DragEvent('dragstart', { bubbles: true, composed: true })
+    new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: new DataTransfer(),
+    })
   );
 }
 

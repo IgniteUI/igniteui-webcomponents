@@ -269,8 +269,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         target.position = tempPosition;
       } else if (this.dragMode === 'slide') {
         // Move dragged tile and adjust positions of affected tiles
-        const draggedPos = draggedItem.position ?? 0;
-        const targetPos = target.position ?? 0;
+        const draggedPos = draggedItem.position;
+        const targetPos = target.position;
 
         this.tiles.forEach((tile) => {
           if (
