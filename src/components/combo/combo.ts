@@ -449,11 +449,8 @@ export default class IgcComboComponent<
     return this._value;
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ): void {
-    this._defaultValue = JSON.parse(current ?? '[]');
+  protected override _setDefaultValue(current: string | null): void {
+    this.defaultValue = JSON.parse(current ?? '[]');
   }
 
   protected override _setFormValue(): void {

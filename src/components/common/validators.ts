@@ -58,7 +58,7 @@ export const patternValidator: Validator<{ pattern: string; value: string }> = {
   key: 'patternMismatch',
   message: validatorMessages.pattern,
   isValid: ({ pattern, value }) =>
-    pattern ? new RegExp(pattern, 'u').test(value) : true,
+    pattern ? new RegExp(pattern, 'v').test(value) : true,
 };
 
 export const minValidator: Validator<{

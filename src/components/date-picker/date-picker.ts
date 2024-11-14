@@ -579,11 +579,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     event.stopPropagation();
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ) {
-    this._defaultValue = dateFromISOString(current);
+  protected override _setDefaultValue(current: string | null) {
+    this.defaultValue = dateFromISOString(current);
   }
 
   private setDateConstraints() {

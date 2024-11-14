@@ -5,6 +5,10 @@ import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
 import { isEmpty, partNameMap } from '../common/util.js';
 import type { RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -46,15 +50,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
-  private get isStringType() {
-    return this.type !== 'number';
-  }
+  protected override _formValue: FormValue<string>;
 
   protected override get __validators() {
-    return this.isStringType ? stringValidators : numberValidators;
+    return this.type !== 'number' ? stringValidators : numberValidators;
   }
-
-  protected _value = '';
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -63,13 +63,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property()
   public set value(value: string) {
-    this._value = value ?? '';
-    this._setFormValue(value ? value : null);
+    this._formValue.setValueAndFormState(value);
     this._validate();
   }
 
-  public get value() {
-    return this._value;
+  public get value(): string {
+    return this._formValue.value;
   }
 
   /* alternateName: displayType */
@@ -165,6 +164,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property({ type: Number })
   public override tabIndex = 0;
+
+  constructor() {
+    super();
+
+    this._formValue = createFormValueState(this, { initialValue: '' });
+  }
 
   @watch('min', { waitUntilFirstUpdate: true })
   @watch('max', { waitUntilFirstUpdate: true })

@@ -25,6 +25,11 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import {
+  type FormValue,
+  createFormValueState,
+  defaultNumberTransformers,
+} from '../common/mixins/forms/form-value.js';
+import {
   asNumber,
   clamp,
   formatString,
@@ -83,8 +88,9 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
+  protected override _formValue: FormValue<number>;
+
   private _max = 5;
-  private _value = 0;
   private _step = 1;
   private _single = false;
 
@@ -185,19 +191,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default 0
    */
   @property({ type: Number })
-  public set value(value: number) {
-    const _value = asNumber(value, 0);
-
-    this._value = this.hasUpdated
-      ? clamp(_value, 0, this.max)
-      : Math.max(_value, 0);
-
-    this._setFormValue(this.value.toString());
+  public set value(number: number) {
+    const value = this.hasUpdated
+      ? clamp(asNumber(number), 0, this.max)
+      : Math.max(asNumber(number), 0);
+    this._formValue.setValueAndFormState(value);
     this._validate();
   }
 
   public get value(): number {
-    return this._value;
+    return this._formValue.value;
   }
 
   /**
@@ -243,6 +246,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   constructor() {
     super();
 
+    this._formValue = createFormValueState(this, {
+      initialValue: 0,
+      transformers: defaultNumberTransformers,
+    });
+
     addKeybindings(this, {
       skip: () => !this.isInteractive,
       bindingDefaults: { preventDefault: true },
@@ -265,7 +273,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    this.value = clamp(this.value, 0, this.max);
+    this._formValue.setValueAndFormState(clamp(this.value, 0, this.max));
+    this._pristine = true;
   }
 
   protected handleClick({ clientX }: PointerEvent) {

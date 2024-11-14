@@ -306,6 +306,13 @@ describe('Checkbox', () => {
       expect(spec.element.checked).to.be.true;
     });
 
+    it('is correctly reset on form reset after toggleAttribute() call', () => {
+      spec.element.toggleAttribute('checked', true);
+      spec.reset();
+
+      expect(spec.element.checked).to.be.true;
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

@@ -38,6 +38,10 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
+import {
   findElementFromEventPath,
   isString,
   partNameMap,
@@ -124,7 +128,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private _value!: string;
+  protected override _formValue: FormValue<string>;
+
   private _searchTerm = '';
   private _lastKeyTime = 0;
 
@@ -181,13 +186,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public get value(): string {
-    return this._value;
+    return this._formValue.value;
   }
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   public set value(value: string) {
     this._updateValue(value);
-    const item = this.getItem(this._value);
+    const item = this.getItem(this._formValue.value);
     item ? this.setSelectedItem(item) : this.clearSelectedItem();
   }
 
@@ -273,6 +278,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
+    this._formValue = createFormValueState(this, { initialValue: '' });
     this._rootClickController.update({ hideCallback: this.handleClosing });
 
     addKeybindings(this, {
@@ -312,7 +318,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     if (selected && selected.value !== this.value) {
-      this._defaultValue = selected.value;
+      this.defaultValue = selected.value;
       this._selectItem(selected, false);
     }
 
@@ -501,8 +507,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _updateValue(value?: string) {
-    this._value = value as string;
-    this._setFormValue(this._value ? this._value : null);
+    this._formValue.setValueAndFormState(value!);
     this._validate();
   }
 

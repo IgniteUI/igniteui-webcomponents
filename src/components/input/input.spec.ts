@@ -114,11 +114,11 @@ describe('Input component', () => {
         expect(element.name).to.equal('input');
         expect(input.name).to.equal('input');
 
-        element.name = 'tupni';
+        element.name = 'abcde';
         await elementUpdated(element);
 
-        expect(element.name).to.equal('tupni');
-        expect(input.name).to.equal('tupni');
+        expect(element.name).to.equal('abcde');
+        expect(input.name).to.equal('abcde');
       });
 
       it('sets the placeholder property', async () => {

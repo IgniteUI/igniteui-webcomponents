@@ -6,6 +6,10 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
 import { isEmpty } from '../common/util.js';
 import { checkBoxValidators } from './validators.js';
 
@@ -34,8 +38,8 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   }
 
   protected _kbFocus = addKeyboardFocusRing(this);
+  protected override _formValue: FormValue<boolean>;
   protected _value!: string;
-  protected _checked = false;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -69,13 +73,12 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ type: Boolean })
   public set checked(value: boolean) {
-    this._checked = Boolean(value);
-    this._setFormValue(this._checked ? this.value || 'on' : null);
+    this._formValue.setValueAndFormState(value);
     this._validate();
   }
 
   public get checked(): boolean {
-    return this._checked;
+    return this._formValue.value;
   }
 
   /**
@@ -84,6 +87,19 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
+
+  constructor() {
+    super();
+
+    this._formValue = createFormValueState(this, {
+      initialValue: false,
+      transformers: {
+        setValue: (checked) => Boolean(checked),
+        setDefaultValue: (checked) => Boolean(checked),
+        setFormValue: (checked) => (checked ? this._value || 'on' : null),
+      },
+    });
+  }
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
