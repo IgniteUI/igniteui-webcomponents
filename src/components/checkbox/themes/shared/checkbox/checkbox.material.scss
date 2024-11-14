@@ -52,8 +52,6 @@ label {
 }
 
 [part~='base'] {
-    gap: rem(8px);
-
     &:hover {
         [part~='control'] {
             &::before {
