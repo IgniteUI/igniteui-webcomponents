@@ -15,19 +15,6 @@
     @include type-style('body-2');
 }
 
-[part='start'],
-[part='end'] {
-    gap: rem(8px);
-}
-
-[name='start']::slotted(*) {
-    margin-inline-end: 0;
-}
-
-[name='end']::slotted(*) {
-    margin-inline-start: 0;
-}
-
 [part='header'] {
     display: flex;
     flex-direction: column;
