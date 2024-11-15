@@ -286,7 +286,7 @@ describe('Date picker', () => {
     it('should set the value trough attribute correctly', async () => {
       expect(picker.value).to.be.null;
       const expectedValue = new CalendarDay({ year: 2024, month: 2, date: 1 });
-      picker.setAttribute('value', expectedValue.native.toDateString());
+      picker.setAttribute('value', expectedValue.native.toISOString());
       await elementUpdated(picker);
 
       checkDatesEqual(picker.value!, expectedValue);

@@ -37,6 +37,24 @@ const DaysMap = {
 
 /* Converter functions */
 
+export function isValidDate(date: Date) {
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+export function parseISODate(string: string) {
+  if (/^\d{4}/.test(string)) {
+    const time = !string.includes('T') ? 'T00:00:00' : '';
+    return isValidDate(new Date(`${string}${time}`));
+  }
+
+  if (/^\d{2}/.test(string)) {
+    const date = first(new Date().toISOString().split('T'));
+    return isValidDate(new Date(`${date}T${string}`));
+  }
+
+  return null;
+}
+
 /**
  * Converts the given value to a Date object.
  *
@@ -50,8 +68,7 @@ export function convertToDate(value?: Date | string | null): Date | null {
     return null;
   }
 
-  const converted = isString(value) ? new Date(value) : value;
-  return Number.isNaN(converted.valueOf()) ? null : converted;
+  return isString(value) ? parseISODate(value) : isValidDate(value);
 }
 
 /**

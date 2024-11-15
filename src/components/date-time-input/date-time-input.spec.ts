@@ -269,6 +269,23 @@ describe('Date Time Input component', () => {
       expect(el.value).to.equal(value);
     });
 
+    it('set value - time portion only', async () => {
+      const target = new Date();
+      target.setHours(14, 0, 0, 0);
+
+      el.inputFormat = 'HH:mm';
+      el.value = '14:00';
+      await elementUpdated(el);
+
+      expect(el.value?.valueOf()).to.equal(target.valueOf());
+
+      // Invalid time portion
+      el.value = '23:60';
+      await elementUpdated(el);
+
+      expect(el.value).to.be.null;
+    });
+
     it('set value - string property binding', async () => {
       const value = new Date(2020, 2, 3);
       el.value = value.toISOString();
