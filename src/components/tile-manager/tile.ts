@@ -86,10 +86,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public tileId: string | null = null;
 
   @property({ type: Number })
-  public colSpan!: number;
+  public colSpan = 1; // review
 
   @property({ type: Number })
-  public rowSpan!: number;
+  public rowSpan = 1; // review
 
   @property({ type: Number })
   public colStart: number | null = null;
@@ -172,6 +172,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @watch('colStart', { waitUntilFirstUpdate: true })
   @watch('rowStart', { waitUntilFirstUpdate: true })
   protected updateRowsColSpan() {
+    this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`;
+    this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`;
     // if (this.colStart !== null) {
     //   this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
     // } else {
