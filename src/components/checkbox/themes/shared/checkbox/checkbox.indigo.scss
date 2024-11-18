@@ -21,10 +21,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-[part~='base'] {
-    gap: rem(16px);
-}
-
 [part~='control'] {
     --size: #{rem(16px)};
 

@@ -40,6 +40,10 @@ $mark-length: 24;
     transition: color .2s ease-in-out;
 }
 
+[part~='base'] {
+    gap: rem(8px);
+}
+
 [part~='indicator'] {
     display: flex;
     position: absolute;
@@ -65,7 +69,6 @@ label {
     align-items: center;
     cursor: pointer;
     flex-flow: row nowrap;
-    gap: rem(8px);
 }
 
 [part='indicator checked'] {
