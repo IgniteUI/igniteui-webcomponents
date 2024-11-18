@@ -1,7 +1,9 @@
+import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { tileContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -65,6 +67,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
   private _disableResize = false;
   private _disableDrag = false;
+  private _context = new ContextProvider(this, {
+    context: tileContext,
+    initialValue: this,
+  });
 
   @state()
   private _isDragging = false;
@@ -165,6 +171,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     this._emitMaximizedEvent = false;
+
+    this._context.setValue(this, true);
   }
 
   @watch('colSpan', { waitUntilFirstUpdate: true })

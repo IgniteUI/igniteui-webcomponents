@@ -598,13 +598,19 @@ export const Maximized: Story = {
     </style>
 
     <igc-tile-manager>
-      <igc-tile id="max-tile" @igcTileFullscreen=${cancelStateChangeEvent}>
+      <igc-tile
+        id="max-tile"
+        maximized
+        @igcTileFullscreen=${cancelStateChangeEvent}
+      >
+        <igc-tile-header slot="header"></igc-tile-header>
         <h1>I am Maximized</h1>
         <igc-button @click=${toggleMaximizedTile}
           >Toggle maximized state</igc-button
         >
       </igc-tile>
       <igc-tile rowStart="5">
+        <igc-tile-header slot="header"></igc-tile-header>
         <h2>I am not maximized and will be under the maximized tile</h2>
       </igc-tile>
     </igc-tile-manager>

@@ -5,11 +5,11 @@ import { property } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
+import { carouselContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, formatString, partNameMap } from '../common/util.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
-import { carouselContext } from './context.js';
 import { styles } from './themes/carousel-slide.base.css.js';
 
 /**
