@@ -1,8 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { tileContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -13,10 +11,8 @@ import {
   type TileDragAndDropController,
   addTileDragAndDrop,
 } from './controllers/tile-dnd.js';
-import {
-  type TileResizeController,
-  addTileResize,
-} from './controllers/tile-resize.js';
+import type { ResizeCallbackParams } from './resize-controller.js';
+import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
@@ -56,17 +52,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcTileComponent, IgcTileHeaderComponent);
+    registerComponent(
+      IgcTileComponent,
+      IgcTileHeaderComponent,
+      IgcResizeComponent
+    );
   }
 
   private static readonly increment = createCounter();
-  private ghostElement!: HTMLElement | null;
   private _dragController: TileDragAndDropController;
-  private _resizeController: TileResizeController;
   private _position = -1;
-  private _resizeHandleRef: Ref<HTMLDivElement> = createRef();
-  private _disableResize = false;
   private _disableDrag = false;
+
   private _context = new ContextProvider(this, {
     context: tileContext,
     initialValue: this,
@@ -74,9 +71,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @state()
   private _isDragging = false;
-
-  @state()
-  private _isResizing = false;
 
   @state()
   private _hasDragOver = false;
@@ -112,7 +106,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile can be dragged.
-   * @attr
+   * @attr disable-drag
    */
   @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
   public set disableDrag(value: boolean) {
@@ -127,17 +121,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile can be resized.
-   * @attr
+   * @attr disable-resize
    */
-  @property({ attribute: 'disable-resize', type: Boolean, reflect: true })
-  public set disableResize(value: boolean) {
-    this._disableResize = value;
-    this._resizeController.enabled = !this._disableResize;
-  }
-
-  public get disableResize() {
-    return this._disableResize;
-  }
+  @property({ type: Boolean, reflect: true, attribute: 'disable-resize' })
+  public disableResize = false;
 
   /**
    * Gets/sets the tile's visual position in the layout.
@@ -162,6 +149,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       return;
     }
 
+    // HACK
     if (this.maximized) {
       this.popover = 'manual';
       this.showPopover();
@@ -202,12 +190,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       dragEnter: this.handleDragEnter,
       dragLeave: this.handleDragLeave,
       drop: this.handleDragLeave,
-    });
-
-    this._resizeController = addTileResize(this, this._resizeHandleRef, {
-      resizeStart: this.handleResizeStart,
-      resizeMove: this.handleResize,
-      resizeEnd: this.handleResizeEnd,
     });
 
     // Will probably expose that as a dynamic binding based on a property
@@ -276,11 +258,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       bubbles: true,
     });
 
-    const rect = this.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
+    // const rect = this.getBoundingClientRect();
+    // const offsetX = e.clientX - rect.left;
+    // const offsetY = e.clientY - rect.top;
 
-    e.dataTransfer!.setDragImage(this, offsetX, offsetY);
+    e.dataTransfer!.setDragImage(this, 0, 0);
     e.dataTransfer!.effectAllowed = 'move';
 
     this.dispatchEvent(event);
@@ -300,96 +282,87 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._isDragging = false;
   }
 
-  private createGhostElement(): HTMLElement {
-    const clone = this.cloneNode(true) as HTMLElement;
-    clone.id = 'resize-ghost';
-    const { left, top } = this.getBoundingClientRect();
-
-    const styles: Partial<CSSStyleDeclaration> = {
-      // position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`,
-      pointerEvents: 'none',
-      opacity: '0.6',
-    };
-
-    Object.assign(clone.style, styles);
-
-    return clone;
+  private _handleResize(_: CustomEvent<ResizeCallbackParams>) {
+    // console.log(event.detail.state);
   }
 
-  private handleResizeStart() {
-    if (this.emitEvent('igcResizeStart', { detail: this, cancelable: true })) {
-      this._isResizing = true;
-      this.ghostElement = this.createGhostElement();
-      this.closest('igc-tile-manager')!.appendChild(this.ghostElement);
-    }
+  private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
+    const state = event.detail.state;
+    const width = state.current.width; // - state.current.x;
+    const height = state.current.height; // - state.current.y;
+
+    const resizeElement = event.target as HTMLElement;
+
+    // REVIEW
+    Object.assign(resizeElement.style, {
+      width: '',
+      height: '',
+    });
+
+    const colSpan = Math.max(1, Math.floor(width / 200));
+    const rowSpan = Math.max(1, Math.floor(height / 200));
+
+    Object.assign(this.style, {
+      gridRow: `span ${rowSpan}`,
+      gridColumn: `span ${colSpan}`,
+    });
   }
 
-  private handleResize(event: PointerEvent) {
-    if (this.emitEvent('igcResizeMove', { detail: this, cancelable: true })) {
-      const startPos = this.getBoundingClientRect();
+  // REVIEW
+  protected ghostFactory = () => {
+    const ghost = this.cloneNode(true) as IgcTileComponent;
+    Object.assign(ghost.style, {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      zIndex: 1000,
+      opacity: 0.75,
+      filter: 'drop-shadow(1px 1px 3px #333)',
+      width: '100%',
+      height: '100%',
+      gridRow: '',
+      gridColumn: '',
+    });
 
-      const newWidth = event.clientX - startPos.left;
-      const newHeight = event.clientY - startPos.top;
+    return ghost;
+  };
 
-      const colSpan = Math.max(2, Math.floor(newWidth / 30)); // 20 + 10 (gap)
-      const rowSpan = Math.max(2, Math.floor(newHeight / 30));
-
-      this.ghostElement!.style.gridColumn = `span ${colSpan}`;
-      this.ghostElement!.style.gridRow = `span ${rowSpan}`;
-    }
-  }
-
-  private handleResizeEnd() {
-    if (
-      this.ghostElement &&
-      this.emitEvent('igcResizeEnd', { detail: this, cancelable: true })
-    ) {
-      // this.colSpan = this.ghostElement.style.gridColumn.match(/span (\d+)/).parseint // Number.parseInt(this.ghostElement.style.gridColumn);
-      // this.rowSpan = Number.parseInt(this.ghostElement.style.gridRow);
-      this.style.gridColumn = this.ghostElement.style.gridColumn;
-      this.style.gridRow = this.ghostElement.style.gridRow;
-      this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
-      this.ghostElement = null;
-      this._isResizing = false;
-    }
-  }
-
-  protected handleResizeCancelled(event: KeyboardEvent) {
-    if (event.key.toLowerCase() === 'escape' && this.ghostElement) {
-      this.closest('igc-tile-manager')!.removeChild(this.ghostElement);
-      this.ghostElement = null;
-    }
-  }
-
-  protected override render() {
+  protected renderContent() {
     const parts = partNameMap({
       base: true,
       'drag-over': this._hasDragOver,
       fullscreen: this._isFullscreen,
       draggable: !this.disableDrag,
-      resizable: !this._disableResize,
-      resizing: this._isResizing,
       dragging: this._isDragging,
     });
 
     return html`
-      <div .inert=${this._hasDragOver} part=${ifDefined(parts)}>
+      <div part=${parts} .inert=${this._hasDragOver}>
         <slot name="header"></slot>
         <div part="content-container">
           <slot></slot>
         </div>
-
-        <div
-          ${ref(this._resizeHandleRef)}
-          class="resize-handle"
-          tabindex="-1"
-          @keydown=${this.handleResizeCancelled}
-          ?hidden=${this._disableResize}
-        ></div>
       </div>
     `;
+  }
+
+  protected override render() {
+    const renderResize =
+      this.disableResize || this.maximized || this._isFullscreen;
+
+    return renderResize
+      ? this.renderContent()
+      : html`
+          <igc-resize
+            part="base"
+            .ghostFactory=${this.ghostFactory}
+            mode="deferred"
+            @igcResize=${this._handleResize}
+            @igcResizeEnd=${this._handleResizeEnd}
+          >
+            ${this.renderContent()}
+          </igc-resize>
+        `;
   }
 }
 

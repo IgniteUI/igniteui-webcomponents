@@ -83,7 +83,7 @@ export class TileResizeController implements ReactiveController {
 
     this._element.setPointerCapture(event.pointerId);
     this.pointerCaptured = true;
-    this._element.focus();
+    // this._element.focus();
   }
 
   private _handlePointerMove(event: PointerEvent) {
