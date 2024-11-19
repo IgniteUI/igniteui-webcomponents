@@ -24,6 +24,12 @@
     flex-grow: 1;
 }
 
+[part='header'] {
+    display: flex;
+    flex-direction: column;
+    gap: rem(2px);
+}
+
 [part='start'],
 [part='end'] {
     display: flex;
@@ -37,5 +43,5 @@
 }
 
 [part='subtitle'] {
-    @include type-style('caption');
+    @include type-style('body-2');
 }
