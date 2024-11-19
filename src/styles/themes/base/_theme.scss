@@ -2,6 +2,12 @@
 @use 'igniteui-theming' as *;
 
 @mixin theme($palette, $elevations, $typeface, $type-scale, $variant) {
+    @property --_progress {
+        syntax: '<integer>';
+        initial-value: 0;
+        inherits: true;
+    }
+
     :root {
         --ig-theme: #{map.get($palette, '_meta', 'variant')};
         --ig-theme-variant: #{$variant};

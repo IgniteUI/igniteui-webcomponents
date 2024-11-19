@@ -12,7 +12,6 @@ import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   private __internals: ElementInternals;
-  private _ticker!: number;
 
   @queryAssignedElements()
   protected assignedElements!: Array<HTMLElement>;
@@ -80,11 +79,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected indeterminateChange() {
-    this.cancelAnimations();
-
     if (!this.indeterminate) {
       this._setProgress();
-      this.animateLabelTo(0, this.value);
+      this._updatePercentage();
     }
   }
 
@@ -99,26 +96,24 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this._setProgress();
 
     if (!this.indeterminate) {
-      cancelAnimationFrame(this._ticker);
-      this.animateLabelTo(this.max, this.value);
+      this._updatePercentage();
     }
   }
 
   @watch('value', { waitUntilFirstUpdate: true })
-  protected valueChange(previous: number) {
-    this.value = clamp(this.value, 0, this.max);
+  protected valueChange() {
+    // CSS counters only support integers, so we use Math.round to ensure the percentage value is an integer.
+    this.value = Math.round(clamp(this.value, 0, this.max));
     this._setProgress();
 
     if (!this.indeterminate) {
-      cancelAnimationFrame(this._ticker);
-      this.animateLabelTo(previous, this.value);
+      this._updatePercentage();
     }
   }
 
   constructor() {
     super();
     this.__internals = this.attachInternals();
-
     this.__internals.role = 'progressbar';
     this.__internals.ariaValueMin = '0';
   }
@@ -129,8 +124,17 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     return root;
   }
 
-  protected override updated() {
+  protected override updated(
+    changedProperties: Map<string | number | symbol, unknown>
+  ) {
     this._updateARIA();
+
+    if (changedProperties.has('animationDuration')) {
+      this.style.setProperty(
+        '--_transition-duration',
+        `${this.animationDuration}ms`
+      );
+    }
   }
 
   private _updateARIA() {
@@ -145,53 +149,27 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private _setProgress() {
-    this.progress = this.value / this.max;
+    this.progress = this.max > 0 ? this.value / this.max : 0;
+  }
+
+  private _updatePercentage() {
+    // CSS counters only support integers, so we use Math.round to ensure the percentage value is an integer.
+    const percentage = asPercent(this.value, this.max);
+
+    if (percentage !== this.percentage) {
+      this.percentage = percentage;
+      this.style.setProperty('--_progress', `${this.percentage}`);
+    }
   }
 
   public override async connectedCallback() {
     super.connectedCallback();
-
     await this.updateComplete;
+
     if (!this.indeterminate) {
-      requestAnimationFrame(() => {
-        this._setProgress();
-        this.animateLabelTo(0, this.value);
-      });
+      this._setProgress();
+      this._updatePercentage();
     }
-  }
-
-  protected cancelAnimations() {
-    cancelAnimationFrame(this._ticker);
-    this.progressIndicator?.getAnimations().forEach((animation) => {
-      if (animation instanceof CSSTransition) {
-        animation.cancel();
-      }
-    });
-  }
-
-  protected animateLabelTo(start: number, end: number) {
-    let t0: number;
-
-    const tick = (t1: number) => {
-      t0 = t0 ?? t1;
-
-      const delta = Math.min(
-        (t1 - t0) / Math.max(this.animationDuration, 1),
-        1
-      );
-
-      this.percentage = Math.floor(
-        asPercent(delta * (end - start) + start, this.max)
-      );
-
-      if (delta < 1) {
-        this._ticker = requestAnimationFrame(tick);
-      } else {
-        cancelAnimationFrame(this._ticker);
-      }
-    };
-
-    requestAnimationFrame(tick);
   }
 
   protected renderLabelFormat() {
@@ -204,13 +182,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
     return html`
       <slot part="label"></slot>
-      ${hasNoLabel
-        ? nothing
-        : html`<span part="label value">${this.renderLabelText()}</span>`}
+      ${hasNoLabel ? nothing : html`<span part="label value"></span>`}
     `;
-  }
-
-  protected renderLabelText() {
-    return this.labelFormat ? this.renderLabelFormat() : `${this.percentage}%`;
   }
 }

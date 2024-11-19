@@ -1,7 +1,6 @@
 import { html, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
@@ -58,8 +57,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     const parts = { indeterminate: this.indeterminate, track: true };
     const styles = {
       stroke: `url(#${this._gradientId})`,
-      '--percentage': `${this.progress}`,
-      '--duration': `${this.animationDuration}ms`,
     };
 
     const gradients = this._assignedGradients.length

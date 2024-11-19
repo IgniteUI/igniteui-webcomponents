@@ -163,7 +163,7 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 %host {
     align-items: center;
     justify-content: center;
-    font-family: var(--ig-font-family);
+    font-family: var(--ig-font-family), serif;
 }
 
 %label {

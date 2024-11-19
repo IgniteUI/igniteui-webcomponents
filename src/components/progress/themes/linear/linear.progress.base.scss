@@ -1,3 +1,4 @@
+@use 'sass:math';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../animations' as *;
@@ -35,9 +36,10 @@
 }
 
 [part~='fill'] {
-    transition: width var(--duration) linear, background-color var(--duration) linear;
+    width: calc(var(--_progress) * 1%);
+    transition: width var(--_transition-duration) linear, background-color var(--_transition-duration) linear;
     position: relative;
-    height: inherit;
+    height: 100%;
 }
 
 [part~='indeterminate'],
@@ -68,6 +70,8 @@
     }
 }
 
+
+
 [part~='secondary'] {
     animation: indeterminate-secondary var(--linear-animation-duration) infinite linear;
     left: -54.8888%;
@@ -79,13 +83,16 @@
     }
 }
 
+
 [part~='value'] {
     @include type-style('subtitle-2');
-}
 
-[part~='striped'][part~='primary']:not([part~='indeterminate']) {
-    width: 100%;
-    height: 100%;
+    transition: --_progress var(--_transition-duration) ease-in-out;
+    counter-reset: progress var(--_progress);
+
+    &::before {
+        content: counter(progress) '%';
+    }
 }
 
 // Label Positions

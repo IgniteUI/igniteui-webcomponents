@@ -1,7 +1,5 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
-
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
@@ -72,14 +70,9 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       info: this.variant === 'info',
     });
 
-    const animation = {
-      width: `${this.progress * 100}%`,
-      '--duration': `${this.animationDuration}ms`,
-    };
-
     return html`
       <div part="track">
-        <div part=${parts} style=${styleMap(animation)}></div>
+        <div part=${parts}></div>
         <div part="${parts} secondary"></div>
       </div>
       ${this.renderDefaultSlot()}

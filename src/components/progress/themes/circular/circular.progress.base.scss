@@ -25,6 +25,15 @@
     font-weight: 600;
 }
 
+[part~='value'] {
+    transition: --_progress var(--_transition-duration) ease-in-out;
+    counter-reset: progress var(--_progress);
+
+    &::before {
+        content: counter(progress) '%';
+    }
+}
+
 [part='svg indeterminate'] {
     transform-origin: 50% 50%;
     animation: 3s linear 0s infinite $animation-direction none running rotate-center;
@@ -61,13 +70,12 @@
 }
 
 [part~='fill'] {
-    stroke-dasharray: #{$circumference} #{$circumference};
-    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
-    transition: stroke-dashoffset var(--duration) linear;
-    stroke-width: calc(var(--stroke-thickness) + rem(0.75px));
+    --_percentage: calc(var(--_progress) / 100);
 
-    --percentage: 0;
-    --duration: 500ms;
+    stroke-dasharray: #{$circumference} #{$circumference};
+    stroke-dashoffset: calc(#{$circumference} - var(--_percentage) * #{$circumference});
+    transition: stroke-dashoffset var(--_transition-duration) linear;
+    stroke-width: calc(#{var(--stroke-thickness)} + rem(0.75px));
 }
 
 :host([dir='rtl']) {
@@ -85,6 +93,8 @@
     }
 
     [part~='fill'] {
-        stroke-dashoffset: calc(#{$circumference} + var(--percentage) * #{$circumference});
+        stroke-dashoffset: calc(#{$circumference} + var(--_percentage) * #{$circumference});
     }
 }
+
+
