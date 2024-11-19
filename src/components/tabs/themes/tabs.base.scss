@@ -4,9 +4,7 @@
 @use 'sass:map';
 
 :host {
-    // Scroll buttons
     --scroll-btn-size: #{rem(48px)};
-    --tabs-width: 100%;
     --tab-max-width: #{rem(360px)};
     --tab-min-width: #{rem(90px)};
     --_border-size: #{rem(1px)};
