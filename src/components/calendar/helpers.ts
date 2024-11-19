@@ -2,6 +2,7 @@ import {
   asNumber,
   findElementFromEventPath,
   first,
+  isString,
   last,
   modulo,
 } from '../common/util.js';
@@ -36,23 +37,79 @@ const DaysMap = {
 
 /* Converter functions */
 
-export function dateFromISOString(value: string | null) {
-  return value ? new Date(value) : null;
+export function isValidDate(date: Date) {
+  return Number.isNaN(date.valueOf()) ? null : date;
 }
 
-export function datesFromISOStrings(value: string | null) {
-  return value
-    ? value
-        .split(',')
-        .map((v) => v.trim())
-        .filter((v) => v)
-        .map((v) => new Date(v))
-    : null;
+export function parseISODate(string: string) {
+  if (/^\d{4}/.test(string)) {
+    const time = !string.includes('T') ? 'T00:00:00' : '';
+    return isValidDate(new Date(`${string}${time}`));
+  }
+
+  if (/^\d{2}/.test(string)) {
+    const date = first(new Date().toISOString().split('T'));
+    return isValidDate(new Date(`${date}T${string}`));
+  }
+
+  return null;
+}
+
+/**
+ * Converts the given value to a Date object.
+ *
+ * If the value is already a valid Date object, it is returned directly.
+ * If the value is a string, it is parsed into a Date object.
+ * If the value is null or undefined, null is returned.
+ * If the parsing fails, null is returned.
+ */
+export function convertToDate(value?: Date | string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  return isString(value) ? parseISODate(value) : isValidDate(value);
+}
+
+/**
+ * Converts a Date object to an ISO 8601 string.
+ *
+ * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
+ * If the `value` is null or undefined, null is returned.
+ */
+export function getDateFormValue(value: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+/**
+ * Converts a comma-separated string of ISO 8601 dates or an array of Date objects | ISO 8601 strings into
+ * an array of Date objects.
+ *
+ * If the `value` is null or undefined, null is returned.
+ * If the `value` is an array of `Date` objects, a filtered array of valid `Date` objects is returned.
+ * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
+ * If the parsing fails for any date, it is skipped.
+ */
+export function convertToDates(value?: (Date | string)[] | string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const values: Date[] = [];
+  const iterator = isString(value) ? value.split(',') : value;
+
+  for (const each of iterator) {
+    const date = convertToDate(isString(each) ? each.trim() : each);
+    if (date) {
+      values.push(date);
+    }
+  }
+
+  return values;
 }
 
 /**
  * Returns the value of the selected/activated element (day/month/year) in the calendar view.
- *
  */
 export function getViewElement(event: Event) {
   const element = findElementFromEventPath<HTMLElement>('[data-value]', event);

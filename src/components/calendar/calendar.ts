@@ -700,7 +700,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     }
 
     this.emitEvent('igcChange', {
-      detail: this._isSingle ? this.value : this.values,
+      detail: this._isSingle ? (this.value as Date) : this.values,
     });
   }
 

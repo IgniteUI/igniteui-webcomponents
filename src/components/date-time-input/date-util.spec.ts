@@ -177,10 +177,8 @@ describe('Date Util', () => {
       updateDate(new Date(), '11:11').getTime()
     );
 
+    expect(DateTimeUtil.parseIsoDate('23:60')).to.be.null;
     expect(DateTimeUtil.parseIsoDate('')).to.be.null;
-    expect(
-      DateTimeUtil.parseIsoDate(new Date().getTime().toString())?.getTime()
-    ).to.be.NaN;
   });
 
   it('isValidDate should properly determine if a date is valid or not', () => {

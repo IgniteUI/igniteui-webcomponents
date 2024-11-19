@@ -4,11 +4,8 @@ import { property, state } from 'lit/decorators.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
-import {
-  dateFromISOString,
-  datesFromISOStrings,
-  getWeekDayNumber,
-} from './helpers.js';
+import { first } from '../common/util.js';
+import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
 import { CalendarDay } from './model.js';
 import type { DateRangeDescriptor, WeekDays } from './types.js';
 
@@ -18,7 +15,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   private _initialActiveDateSet = false;
 
   protected get _hasValues() {
-    return this._values.length > 0;
+    return this._values && this._values.length > 0;
   }
 
   protected get _isSingle() {
@@ -43,7 +40,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   protected _activeDate = CalendarDay.today;
 
   @state()
-  protected _value?: CalendarDay;
+  protected _value: CalendarDay | null = null;
 
   @state()
   protected _values: CalendarDay[] = [];
@@ -54,10 +51,6 @@ export class IgcCalendarBaseComponent extends LitElement {
   @state()
   protected _disabledDates: DateRangeDescriptor[] = [];
 
-  public get value(): Date | undefined {
-    return this._value ? this._value.native : undefined;
-  }
-
   /* blazorSuppress */
   /**
    * The current value of the calendar.
@@ -65,13 +58,14 @@ export class IgcCalendarBaseComponent extends LitElement {
    *
    * @attr value
    */
-  @property({ converter: dateFromISOString })
-  public set value(value) {
-    this._value = value ? CalendarDay.from(value) : undefined;
+  @property({ converter: convertToDate })
+  public set value(value: Date | string | null | undefined) {
+    const converted = convertToDate(value);
+    this._value = converted ? CalendarDay.from(converted) : null;
   }
 
-  public get values(): Date[] {
-    return this._values ? this._values.map((v) => v.native) : [];
+  public get value(): Date | null {
+    return this._value ? this._value.native : null;
   }
 
   /* blazorSuppress */
@@ -81,21 +75,29 @@ export class IgcCalendarBaseComponent extends LitElement {
    *
    * @attr values
    */
-  @property({ converter: datesFromISOStrings })
-  public set values(values) {
-    this._values = values ? values.map((v) => CalendarDay.from(v)) : [];
+  @property({ converter: convertToDates })
+  public set values(values: (Date | string)[] | string | null | undefined) {
+    const converted = convertToDates(values);
+    this._values = converted ? converted.map((v) => CalendarDay.from(v)) : [];
   }
 
-  public get activeDate(): Date {
-    return this._activeDate.native;
+  public get values(): Date[] {
+    return this._values ? this._values.map((v) => v.native) : [];
   }
 
   /* blazorSuppress */
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
-  @property({ attribute: 'active-date', converter: dateFromISOString })
-  public set activeDate(value) {
+  @property({ attribute: 'active-date', converter: convertToDate })
+  public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
-    this._activeDate = value ? CalendarDay.from(value) : CalendarDay.today;
+    const converted = convertToDate(value);
+    this._activeDate = converted
+      ? CalendarDay.from(converted)
+      : CalendarDay.today;
+  }
+
+  public get activeDate(): Date {
+    return this._activeDate.native;
   }
 
   /**
@@ -154,7 +156,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   @watch('selection', { waitUntilFirstUpdate: true })
   protected selectionChanged() {
     this._rangePreviewDate = undefined;
-    this._value = undefined;
+    this._value = null;
     this._values = [];
   }
 
@@ -166,7 +168,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     if (this._isSingle) {
       this.activeDate = this.value ?? this.activeDate;
     } else {
-      this.activeDate = this.values[0] ?? this.activeDate;
+      this.activeDate = first(this.values) ?? this.activeDate;
     }
   }
 }

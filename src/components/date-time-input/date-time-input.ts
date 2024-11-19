@@ -1,8 +1,9 @@
-import { type ComplexAttributeConverter, html } from 'lit';
+import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
+import { convertToDate, getDateFormValue } from '../calendar/helpers.js';
 import {
   addKeybindings,
   altKey,
@@ -36,12 +37,6 @@ export interface IgcDateTimeInputComponentEventMap
   extends Omit<IgcInputComponentEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
-
-const converter: ComplexAttributeConverter<Date | null> = {
-  fromAttribute: (value: string) =>
-    !value ? null : DateTimeUtil.parseIsoDate(value),
-  toAttribute: (value: Date) => value.toISOString(),
-};
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -88,8 +83,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected _defaultMask!: string;
   protected _value: Date | null = null;
-
   private _oldValue: Date | null = null;
+  private _min: Date | null = null;
+  private _max: Date | null = null;
+
   private _inputDateParts!: DatePartInfo[];
   private _inputFormat!: string;
   private _datePartDeltas: DatePartDeltas = {
@@ -129,38 +126,41 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The value of the input.
    * @attr
    */
-  @property({ converter: converter })
-  public set value(val: Date | null) {
-    this._value = val
-      ? DateTimeUtil.isValidDate(val)
-        ? val
-        : DateTimeUtil.parseIsoDate(val)
-      : null;
-
+  @property({ converter: convertToDate })
+  public set value(value: Date | string | null | undefined) {
+    this._value = convertToDate(value);
+    this._setFormValue(getDateFormValue(this._value));
     this.updateMask();
-    this.updateFormValue();
     this._validate();
-  }
-
-  protected updateFormValue() {
-    this._value
-      ? this._setFormValue(this._value.toISOString())
-      : this._setFormValue(null);
   }
 
   /**
    * The minimum value required for the input to remain valid.
    * @attr
    */
-  @property({ converter: converter })
-  public min!: Date;
+  @property({ converter: convertToDate })
+  public set min(value: Date | string | null | undefined) {
+    this._min = convertToDate(value);
+    this._updateValidity();
+  }
+
+  public get min(): Date | null {
+    return this._min;
+  }
 
   /**
    * The maximum value required for the input to remain valid.
    * @attr
    */
-  @property({ converter: converter })
-  public max!: Date;
+  @property({ converter: convertToDate })
+  public set max(value: Date | string | null | undefined) {
+    this._max = convertToDate(value);
+    this._updateValidity();
+  }
+
+  public get max(): Date | null {
+    return this._max;
+  }
 
   /**
    * Format to display the value in when not editing.
@@ -217,12 +217,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     } else {
       this.parser.prompt = this.prompt;
     }
-  }
-
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  protected constraintChange() {
-    this._updateValidity();
   }
 
   protected get hasDateParts(): boolean {
