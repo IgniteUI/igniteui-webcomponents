@@ -269,6 +269,31 @@ describe('Date Time Input component', () => {
       expect(el.value).to.equal(value);
     });
 
+    it('set value - time portion only', async () => {
+      const target = new Date();
+      target.setHours(14, 0, 0, 0);
+
+      el.inputFormat = 'HH:mm';
+      el.value = '14:00';
+      await elementUpdated(el);
+
+      expect(el.value?.valueOf()).to.equal(target.valueOf());
+
+      // Invalid time portion
+      el.value = '23:60';
+      await elementUpdated(el);
+
+      expect(el.value).to.be.null;
+    });
+
+    it('set value - string property binding', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value.toISOString();
+      await elementUpdated(el);
+
+      expect(el.value?.valueOf()).to.equal(value.valueOf());
+    });
+
     it('stepUp should initialize new date if value is empty', async () => {
       const today = new Date();
 
@@ -979,6 +1004,20 @@ describe('Date Time Input component', () => {
       spec.submitValidates();
     });
 
+    it('fulfils min value constraint - string property binding', async () => {
+      spec.element.min = new Date(2025, 0, 1).toISOString();
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2022, 0, 1).toISOString();
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2025, 0, 2).toISOString();
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
     it('fulfils max value constraint', async () => {
       spec.element.max = new Date(2020, 0, 1);
       spec.element.value = new Date(Date.now());
@@ -986,6 +1025,17 @@ describe('Date Time Input component', () => {
       spec.submitFails();
 
       spec.element.value = new Date(2020, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils max value constraint - string property binding', async () => {
+      spec.element.max = new Date(2020, 0, 1).toISOString();
+      spec.element.value = new Date().toISOString();
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2020, 0, 1).toISOString();
       await elementUpdated(spec.element);
       spec.submitValidates();
     });

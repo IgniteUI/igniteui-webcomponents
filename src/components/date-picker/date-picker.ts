@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { dateFromISOString } from '../calendar/helpers.js';
+import { convertToDate, getDateFormValue } from '../calendar/helpers.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -169,10 +169,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private _value?: Date | null;
-  private _activeDate?: Date | null;
-  private _min?: Date;
-  private _max?: Date;
+  private _value: Date | null = null;
+  private _activeDate: Date | null = null;
+  private _min: Date | null = null;
+  private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
   private _displayFormat?: string;
@@ -244,24 +244,24 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The value of the picker
    * @attr
    */
-  @property({ converter: dateFromISOString })
-  public set value(value: Date | null) {
-    this._value = value;
-    this._setFormValue(value ? value.toISOString() : null);
+  @property({ converter: convertToDate })
+  public set value(value: Date | string | null | undefined) {
+    this._value = convertToDate(value);
+    this._setFormValue(getDateFormValue(this._value));
     this._validate();
   }
 
   public get value(): Date | null {
-    return this._value ?? null;
+    return this._value;
   }
 
   /**
    * Gets/Sets the date which is shown in the calendar picker and is highlighted.
    * By default it is the current date.
    */
-  @property({ attribute: 'active-date', converter: dateFromISOString })
-  public set activeDate(value: Date) {
-    this._activeDate = value;
+  @property({ attribute: 'active-date', converter: convertToDate })
+  public set activeDate(value: Date | string | null | undefined) {
+    this._activeDate = convertToDate(value);
   }
 
   public get activeDate(): Date {
@@ -272,45 +272,48 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The minimum value required for the date picker to remain valid.
    * @attr
    */
-  @property({ converter: dateFromISOString })
-  public set min(value: Date) {
-    this._min = value;
+  @property({ converter: convertToDate })
+  public set min(value: Date | string | null | undefined) {
+    this._min = convertToDate(value);
     this.setDateConstraints();
     this._updateValidity();
   }
 
-  public get min(): Date {
-    return this._min as Date;
+  public get min(): Date | null {
+    return this._min;
   }
 
   /**
    * The maximum value required for the date picker to remain valid.
    * @attr
    */
-  @property({ converter: dateFromISOString })
-  public set max(value: Date) {
-    this._max = value;
+  @property({ converter: convertToDate })
+  public set max(value: Date | string | null | undefined) {
+    this._max = convertToDate(value);
     this.setDateConstraints();
     this._updateValidity();
   }
 
-  public get max(): Date {
-    return this._max as Date;
+  public get max(): Date | null {
+    return this._max;
   }
 
-  /** The orientation of the calendar header.
+  /**
+   * The orientation of the calendar header.
    * @attr header-orientation
    */
   @property({ attribute: 'header-orientation', reflect: true })
   public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
-  /** The orientation of the multiple months displayed in the calendar's days view.
+  /**
+   * The orientation of the multiple months displayed in the calendar's days view.
    *  @attr
    */
   @property()
   public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
-  /** Determines whether the calendar hides its header.
+  /**
+   * Determines whether the calendar hides its header.
    * @attr hide-header
    */
   @property({ type: Boolean, reflect: true, attribute: 'hide-header' })
@@ -544,7 +547,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     if (this.readOnly) {
       // Wait till the calendar finishes updating and then restore the current value from the date-picker.
       await this._calendar.updateComplete;
-      this._calendar.value = this._value ?? undefined;
+      this._calendar.value = this._value;
       return;
     }
 
@@ -583,16 +586,22 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     _: string | null,
     current: string | null
   ) {
-    this._defaultValue = dateFromISOString(current);
+    this._defaultValue = convertToDate(current);
   }
 
   private setDateConstraints() {
     const dates: DateRangeDescriptor[] = [];
     if (this._min) {
-      dates.push({ type: DateRangeType.Before, dateRange: [this._min] });
+      dates.push({
+        type: DateRangeType.Before,
+        dateRange: [this._min],
+      });
     }
     if (this._max) {
-      dates.push({ type: DateRangeType.After, dateRange: [this._max] });
+      dates.push({
+        type: DateRangeType.After,
+        dateRange: [this._max],
+      });
     }
     if (this._disabledDates?.length) {
       dates.push(...this.disabledDates);
@@ -662,8 +671,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
-        .activeDate=${this.activeDate ?? this.value ?? new Date()}
-        .value=${this.value ?? undefined}
+        .activeDate=${this.activeDate ?? this.value}
+        .value=${this.value}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this.visibleMonths}
@@ -756,7 +765,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         ?required=${this.required}
-        .value=${this.value ?? null}
+        .value=${this.value}
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
