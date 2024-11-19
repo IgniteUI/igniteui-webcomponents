@@ -1,5 +1,10 @@
+@use 'styles/utilities' as *;
+
 $tabs-z-index: (
     scroll-button: 2,
     selected-indicator: 1,
     header: 1,
 );
+$tab-min-width: rem(90px);
+$tab-max-width: rem(360px);
+$tabs-animation-function: cubic-bezier(.35, 0, .25, 1);

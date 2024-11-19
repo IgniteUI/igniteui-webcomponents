@@ -288,8 +288,8 @@ export const NestedTabs: Story = {
         margin: 0 auto;
       }
       .nested {
-        padding-inline-start: 1rem;
-        padding-block-start: 1rem;
+        padding: 1rem;
+        background: var(--ig-gray-50);
       }
     </style>
     <igc-tabs

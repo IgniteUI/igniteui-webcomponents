@@ -4,7 +4,7 @@
 @use 'sass:map';
 
 [part~='tab-header'] {
-    $transition: .3s cubic-bezier(.35, 0, .25, 1);
+    $transition: .3s $tabs-animation-function;
 
     display: flex;
     scroll-snap-align: var(--_ig-tab-snap);
@@ -15,8 +15,8 @@
     justify-content: center;
     pointer-events: all;
     height: 100%;
-    max-width: var(--tab-max-width--justify, var(--tab-max-width));
-    min-width: var(--tab-min-width);
+    max-width: var(--tab-max-width--justify, $tab-max-width);
+    min-width: $tab-min-width;
     cursor: pointer;
     position: relative;
     z-index: map.get($tabs-z-index, 'header');
@@ -74,6 +74,8 @@
     height: 100%;
     grid-row: 3;
     grid-column: 1 / -1;
+
+    // The value of --_ig-tabs-width is calculated in TypeScript and represents the width of the ig-tabs component
     max-width: var(--_ig-tabs-width);
     transition: transform 250ms ease-in-out;
 }
