@@ -53,11 +53,3 @@ $theme: $material;
 [part='end'] {
     color: var-get($theme, 'item-action-color');
 }
-
-[name='start']::slotted(*) {
-    margin-inline-end: pad(rem(16px));
-}
-
-[name='end']::slotted(*) {
-    margin-inline-start: pad(rem(16px));
-}

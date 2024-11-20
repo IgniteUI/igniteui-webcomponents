@@ -269,6 +269,31 @@ describe('Date Time Input component', () => {
       expect(el.value).to.equal(value);
     });
 
+    it('set value - time portion only', async () => {
+      const target = new Date();
+      target.setHours(14, 0, 0, 0);
+
+      el.inputFormat = 'HH:mm';
+      el.value = '14:00';
+      await elementUpdated(el);
+
+      expect(el.value?.valueOf()).to.equal(target.valueOf());
+
+      // Invalid time portion
+      el.value = '23:60';
+      await elementUpdated(el);
+
+      expect(el.value).to.be.null;
+    });
+
+    it('set value - string property binding', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value.toISOString();
+      await elementUpdated(el);
+
+      expect(el.value?.valueOf()).to.equal(value.valueOf());
+    });
+
     it('stepUp should initialize new date if value is empty', async () => {
       const today = new Date();
 
@@ -967,11 +992,33 @@ describe('Date Time Input component', () => {
       spec.assertSubmitPasses();
     });
 
+    it('fulfils min value constraint - string property binding', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
+      spec.assertSubmitPasses();
+    });
+
     it('fulfils max value constraint', () => {
       spec.setProperties({ max: new Date(2020, 0, 1), value: new Date() });
       spec.assertSubmitFails();
 
       spec.setProperties({ value: new Date(2020, 0, 1) });
+      spec.assertSubmitPasses();
+    });
+
+    it('fulfils max value constraint - string property binding', () => {
+      spec.setProperties({
+        max: new Date(2020, 0, 1).toISOString(),
+        value: new Date().toISOString(),
+      });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
     });
 

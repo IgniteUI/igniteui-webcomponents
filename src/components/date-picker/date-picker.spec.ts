@@ -223,6 +223,31 @@ describe('Date picker', () => {
       checkDatesEqual(dateTimeInput.value!, expectedValue);
     });
 
+    it('should be successfully initialized with a string property binding - issue 1467', async () => {
+      const value = new CalendarDay({ year: 2000, month: 0, date: 25 });
+      picker = await fixture<IgcDatePickerComponent>(html`
+        <igc-date-picker .value=${value.native.toISOString()}></igc-date-picker>
+      `);
+
+      expect(CalendarDay.from(picker.value!).equalTo(value)).to.be.true;
+    });
+
+    it('should not set an invalid date object as a value', async () => {
+      picker = await fixture<IgcDatePickerComponent>(html`
+        <igc-date-picker value="invalid date"></igc-date-picker>
+      `);
+
+      expect(picker.value).to.be.null;
+    });
+
+    it('should not set an invalid date object as a value through property binding', async () => {
+      picker = await fixture<IgcDatePickerComponent>(html`
+        <igc-date-picker .value=${new Date('s')}></igc-date-picker>
+      `);
+
+      expect(picker.value).to.be.null;
+    });
+
     it('should be successfully initialized in open state in dropdown mode', async () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker open></igc-date-picker>`
@@ -261,7 +286,7 @@ describe('Date picker', () => {
     it('should set the value trough attribute correctly', async () => {
       expect(picker.value).to.be.null;
       const expectedValue = new CalendarDay({ year: 2024, month: 2, date: 1 });
-      picker.setAttribute('value', expectedValue.native.toDateString());
+      picker.setAttribute('value', expectedValue.native.toISOString());
       await elementUpdated(picker);
 
       checkDatesEqual(picker.value!, expectedValue);
@@ -455,7 +480,7 @@ describe('Date picker', () => {
         checkDatesEqual(picker.activeDate, currentDate);
         expect(picker.value).to.be.null;
         checkDatesEqual(calendar.activeDate, currentDate);
-        expect(calendar.value).to.be.undefined;
+        expect(calendar.value).to.be.null;
       });
 
       it('should initialize activeDate = value when it is not set, but value is', async () => {
@@ -940,6 +965,28 @@ describe('Date picker', () => {
       spec.assertSubmitFails();
 
       spec.setProperties({ value: new Date(2020, 0, 1) });
+      spec.assertSubmitPasses();
+    });
+
+    it('should enforce min value constraint with string property', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
+      spec.assertSubmitPasses();
+    });
+
+    it('should enforce max value constraint with string property', () => {
+      spec.setProperties({
+        max: new Date(2020, 0, 1).toISOString(),
+        value: today.native,
+      });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
     });
 

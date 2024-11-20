@@ -103,6 +103,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
+    this.hideLabel = isEmpty(this.label);
 
     root.addEventListener('slotchange', () => {
       this.hideLabel = isEmpty(this.label);
