@@ -11,8 +11,8 @@
     // overflow: auto;
     width: 100%;
     height: 100%;
-    // grid-column: span(var(--ig-col-span, 1));
-    // grid-row: span(var(--ig-row-span, 1));
+    grid-column: var(--ig-col-start, unset) / span(var(--ig-col-span, 1));
+    grid-row: var(--ig-row-start, unset) / span(var(--ig-row-span, 1));
 }
 
 [part='content-container'] {
