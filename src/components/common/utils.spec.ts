@@ -103,7 +103,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    * If the `waitForUpdate` parameter is `true`, the function waits for the element to be updated before returning.
    */
   public async setProperties(
-    props: { [K in keyof T]?: T[K] },
+    props: { [K in keyof T]?: T[K] | string },
     waitForUpdate = true
   ): Promise<void> {
     Object.assign(this.element, props);
