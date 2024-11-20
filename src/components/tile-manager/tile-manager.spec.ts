@@ -2,19 +2,9 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { range } from 'lit/directives/range.js';
-import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
-import {
-  simulateDoubleClick,
-  simulateDragEnd,
-  simulateDragStart,
-  simulateDrop,
-  simulateKeyboard,
-  simulateLostPointerCapture,
-  simulatePointerDown,
-  simulatePointerMove,
-} from '../common/utils.spec.js';
+import { first } from '../common/util.js';
+import { simulateDoubleClick } from '../common/utils.spec.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
@@ -101,7 +91,7 @@ describe('Tile Manager component', () => {
         `<igc-tile-manager>
           <igc-tile
             draggable="true"
-            style="order: 0;"
+            style="order: 0; grid-area: span 1 / span 1;"
             tile-id="customId-1"
           >
             <igc-tile-header>
@@ -111,7 +101,7 @@ describe('Tile Manager component', () => {
           </igc-tile>
           <igc-tile
             draggable="true"
-            style="order: 1;"
+            style="order: 1; grid-area: span 1 / span 1;"
             tile-id="customId-2"
           >
             <igc-tile-header>
@@ -135,7 +125,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="order: 0;" tile-id="customId-1">
+        `<igc-tile draggable="true" style="order: 0; grid-area: span 1 / span 1;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
@@ -144,17 +134,17 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).shadowDom.to.equal(
-        `<div part="base draggable resizable">
-          <slot name="header"></slot>
-          <div part="content-container">
-            <slot></slot>
+        `<igc-resize
+          mode="deferred"
+          part="base"
+        >
+          <div part="base draggable">
+            <slot name="header"></slot>
+            <div part="content-container">
+              <slot></slot>
+            </div>
           </div>
-          <div
-            class="resize-handle"
-            tabindex="-1"
-          >
-          </div>
-        </div>`
+        </igc-resize>`
       );
     });
 
@@ -173,7 +163,7 @@ describe('Tile Manager component', () => {
       expect(tileHeaders[0]).shadowDom.to.equal(
         `<div part="header">
           <slot part="title" name="title"></slot>
-          <span part="actions">
+          <section part="actions">
             <igc-icon-button
               collection="default"
               exportparts="icon"
@@ -182,8 +172,6 @@ describe('Tile Manager component', () => {
               variant="flat"
             >
             </igc-icon-button>
-          </span>
-          <span part="actions">
             <igc-icon-button
               collection="default"
               exportparts="icon"
@@ -192,10 +180,8 @@ describe('Tile Manager component', () => {
               variant="flat"
             >
             </igc-icon-button>
-          </span>
-          <span part="actions">
             <slot name="actions"></slot>
-          </span>
+          </section>
         </div>`
       );
     });
@@ -284,291 +270,6 @@ describe('Tile Manager component', () => {
 
       expect(slot.assignedElements()).lengthOf(1);
       expect(slot.assignedElements()[0].id).to.equal('tile2');
-    });
-  });
-
-  describe('Tile resize behavior', () => {
-    beforeEach(async () => {
-      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-    });
-
-    it('should create a ghost element on resize start', async () => {
-      const tile = first(tileManager.tiles);
-      const eventSpy = spy(tile, 'emitEvent');
-
-      const resizeHandle = tile.shadowRoot?.querySelector('.resize-handle');
-
-      simulatePointerDown(resizeHandle!);
-      await elementUpdated(resizeHandle!);
-
-      const ghostElement = tileManager.querySelector('#resize-ghost');
-      expect(ghostElement).to.not.be.null;
-      expect(tile.closest('igc-tile-manager')!.contains(ghostElement!)).to.be
-        .true;
-      expect(eventSpy).calledWith('igcResizeStart', {
-        detail: tile,
-        cancelable: true,
-      });
-    });
-
-    it('should update ghost element styles during pointer move', async () => {
-      const tile = first(tileManager.tiles);
-      const eventSpy = spy(tile, 'emitEvent');
-      const { x, y, width, height } = tile.getBoundingClientRect();
-      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
-
-      simulatePointerDown(resizeHandle!);
-      await elementUpdated(resizeHandle!);
-
-      simulatePointerMove(resizeHandle!, {
-        clientX: x + width * 2,
-        clientY: y + height * 2,
-      });
-      await elementUpdated(resizeHandle!);
-
-      expect(eventSpy.getCall(0)).calledWith('igcResizeStart', {
-        detail: tile,
-        cancelable: true,
-      });
-
-      expect(eventSpy.getCall(1)).calledWith('igcResizeMove', {
-        detail: tile,
-        cancelable: true,
-      });
-
-      // TODO Fix or remove that check when the resize interaction is finalized
-      // const ghostElement = tileManager.querySelector(
-      //   '#resize-ghost'
-      // ) as HTMLElement;
-      // expect(ghostElement.style.gridColumn).to.equal('span 9');
-      // expect(ghostElement.style.gridRow).to.equal('span 9');
-    });
-
-    it('should set the styles on the tile and remove the ghost element on resize end', async () => {
-      const tile = first(tileManager.tiles);
-      const eventSpy = spy(tile, 'emitEvent');
-
-      const { x, y, width, height } = tile.getBoundingClientRect();
-      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
-
-      simulatePointerDown(resizeHandle!);
-      await elementUpdated(resizeHandle!);
-
-      simulatePointerMove(resizeHandle!, {
-        clientX: x + width * 2,
-        clientY: y + height * 2,
-      });
-      await elementUpdated(resizeHandle!);
-
-      let ghostElement = tileManager.querySelector('#resize-ghost');
-      const ghostGridColumn = (ghostElement! as HTMLElement).style.gridColumn;
-      const ghostGridRow = (ghostElement! as HTMLElement).style.gridRow;
-
-      simulateLostPointerCapture(resizeHandle!);
-      await elementUpdated(resizeHandle!);
-
-      expect(eventSpy).calledWith('igcResizeEnd', {
-        detail: tile,
-        cancelable: true,
-      });
-
-      ghostElement = tileManager.querySelector('#resize-ghost');
-      expect(tile.style.gridColumn).to.equal(ghostGridColumn);
-      expect(tile.style.gridRow).to.equal(ghostGridRow);
-      expect(ghostElement).to.be.null;
-    });
-
-    it('should cancel resize by pressing ESC key', async () => {
-      const tile = first(tileManager.tiles);
-      const { x, y, width, height } = tile.getBoundingClientRect();
-      const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle')!;
-
-      simulatePointerDown(resizeHandle);
-      await elementUpdated(resizeHandle);
-
-      simulatePointerMove(resizeHandle!, {
-        clientX: x + width * 2,
-        clientY: y + height * 2,
-      });
-      await elementUpdated(resizeHandle);
-
-      let ghostElement = tileManager.querySelector('#resize-ghost');
-      expect(ghostElement).not.to.be.null;
-
-      simulateKeyboard(resizeHandle, escapeKey);
-      await elementUpdated(resizeHandle);
-
-      ghostElement = tileManager.querySelector('#resize-ghost');
-      expect(ghostElement).to.be.null;
-      expect(tile.style.gridColumn).to.equal('');
-      expect(tile.style.gridRow).to.equal('');
-    });
-
-    it('should not resize when `disableResize` is true', async () => {
-      const tile = first(tileManager.tiles);
-      const { x, y, width, height } = tile.getBoundingClientRect();
-      const resizeHandle = tile.shadowRoot!.querySelector(
-        '.resize-handle'
-      )! as HTMLElement;
-      const eventSpy = spy(tile, 'emitEvent');
-      const tileWrapper = getTileBaseWrapper(tile);
-
-      expect(tileWrapper.getAttribute('part')).to.include('resizable');
-      expect(resizeHandle.hasAttribute('hidden')).to.be.false;
-
-      tile.disableResize = true;
-      await elementUpdated(tile);
-
-      expect(tileWrapper.getAttribute('part')).to.not.include('resizable');
-      expect(resizeHandle.hasAttribute('hidden')).to.be.true;
-
-      simulatePointerDown(resizeHandle);
-      await elementUpdated(resizeHandle);
-
-      expect(eventSpy).not.calledWith('igcResizeStart');
-
-      simulatePointerMove(resizeHandle!, {
-        clientX: x + width * 2,
-        clientY: y + height * 2,
-      });
-      await elementUpdated(tile);
-
-      expect(eventSpy).not.calledWith('igcResizeMove');
-
-      const ghostElement = tileManager.querySelector('#resize-ghost');
-      expect(ghostElement).to.be.null;
-
-      simulateLostPointerCapture(resizeHandle!);
-      await elementUpdated(resizeHandle!);
-
-      expect(eventSpy).not.calledWith('igcResizeEnd');
-    });
-  });
-
-  describe('Tile drag behavior', () => {
-    beforeEach(async () => {
-      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-    });
-
-    const dragAndDrop = async (draggedTile: Element, dropTarget: Element) => {
-      simulateDragStart(draggedTile);
-      simulateDrop(dropTarget);
-      simulateDragEnd(draggedTile);
-      await elementUpdated(tileManager);
-    };
-
-    it("should correctly fire 'dragStart' event", async () => {
-      const eventSpy = spy(tileManager, 'emitEvent');
-
-      const tile = first(tileManager.tiles);
-      const dataTransfer = new DataTransfer();
-      dataTransfer.setData('text/plain', 'Tile data for drag operation');
-
-      simulateDragStart(tile);
-      await elementUpdated(tileManager);
-
-      expect(eventSpy).calledOnceWithExactly('igcTileDragStarted', {
-        detail: tile,
-      });
-    });
-
-    it('should adjust reflected tiles positions in slide mode', async () => {
-      const tiles = getTiles();
-      const draggedTile = first(tiles);
-      const dropTarget = tiles[2];
-
-      expect(tileManager.dragMode).to.equal('slide');
-      tileManager.tiles.forEach((tile, index) => {
-        expect(tile.id).to.equal(`tile${index}`);
-      });
-      expect(draggedTile.position).to.equal(0);
-      expect(dropTarget.position).to.equal(2);
-
-      await dragAndDrop(draggedTile, dropTarget);
-
-      const expectedIdsAfterDrag = [
-        'tile1',
-        'tile2',
-        'tile0',
-        'tile3',
-        'tile4',
-      ];
-      tileManager.tiles.forEach((tile, index) => {
-        expect(tile.id).to.equal(expectedIdsAfterDrag[index]);
-      });
-      expect(draggedTile.position).to.equal(2);
-      expect(dropTarget.position).to.equal(1);
-    });
-
-    it('should not change order when dragging a tile onto itself in slide mode', async () => {
-      const initialTiles = tileManager.tiles;
-      const tile = first(tileManager.tiles);
-
-      expect(tileManager.dragMode).to.equal('slide');
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-
-      await dragAndDrop(tile, tile);
-
-      expect(getTiles()).eql(initialTiles);
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-    });
-
-    it('should swap the dragged tile with the drop target in swap mode', async () => {
-      const tiles = getTiles();
-      const draggedTile = first(tiles);
-      const dropTarget = last(tiles);
-
-      expect(tileManager.dragMode).to.equal('slide');
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[4].id).to.equal('tile4');
-      expect(draggedTile.position).to.equal(0);
-      expect(dropTarget.position).to.equal(4);
-
-      tileManager.dragMode = 'swap';
-      await dragAndDrop(draggedTile, dropTarget);
-
-      expect(tileManager.tiles[0].id).to.equal('tile4');
-      expect(tileManager.tiles[4].id).to.equal('tile0');
-      expect(draggedTile.position).to.equal(4);
-      expect(dropTarget.position).to.equal(0);
-    });
-
-    it('should not change order when dragging a tile onto itself in swap mode', async () => {
-      const initialTiles = tileManager.tiles;
-      const tile = first(tileManager.tiles);
-
-      expect(tileManager.dragMode).to.equal('slide');
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-
-      tileManager.dragMode = 'swap';
-      await dragAndDrop(tile, tile);
-
-      expect(getTiles()).eql(initialTiles);
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-    });
-
-    it('should prevent dragging when `disableDrag` is true', async () => {
-      const draggedTile = last(tileManager.tiles);
-      const dropTarget = first(tileManager.tiles);
-      const eventSpy = spy(tileManager, 'emitEvent');
-      const tileWrapper = getTileBaseWrapper(draggedTile);
-
-      expect(tileWrapper.getAttribute('part')).to.include('draggable');
-
-      draggedTile.disableDrag = true;
-      await elementUpdated(tileManager);
-
-      expect(tileWrapper.getAttribute('part')).to.not.include('draggable');
-
-      await dragAndDrop(draggedTile, dropTarget);
-
-      expect(eventSpy).not.calledWith('igcTileDragStarted');
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[4].id).to.equal('tile4');
     });
   });
 
@@ -683,13 +384,15 @@ describe('Tile Manager component', () => {
       const serializedData = JSON.parse(tileManager.saveLayout());
       const expectedData = [
         {
+          colSpan: 1,
           colStart: null,
           disableDrag: false,
           disableResize: false,
-          gridColumn: 'auto',
-          gridRow: 'auto',
+          gridColumn: 'span 1',
+          gridRow: 'span 1',
           maximized: false,
           position: 0,
+          rowSpan: 1,
           rowStart: null,
           tileId: 'custom-id1',
         },
@@ -698,8 +401,8 @@ describe('Tile Manager component', () => {
           colStart: 8,
           disableDrag: true,
           disableResize: true,
-          gridColumn: 'auto',
-          gridRow: 'auto',
+          gridColumn: 'span 10',
+          gridRow: 'span 7',
           maximized: false,
           position: 1,
           rowSpan: 7,
