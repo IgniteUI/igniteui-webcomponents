@@ -30,6 +30,11 @@ $theme: $material;
         color: var-get($theme, 'disabled-text-color');
     }
 
+    igc-icon,
+    ::slotted(igc-icon) {
+        --component-size: var(--chip-size);
+    }
+
     ::slotted(*) {
         --default-size: var(--chip-size);
     }
@@ -40,10 +45,5 @@ $theme: $material;
 
     ::slotted(igc-circular-progress) {
         --diameter: #{sizable(rem(14px), rem(18px), rem(24px))};
-    }
-
-    igc-icon,
-    ::slotted(igc-icon) {
-        --size: #{sizable(rem(18px), rem(18px), rem(24px))};
     }
 }
