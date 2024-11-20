@@ -29,6 +29,12 @@ export default class IgcTileHeaderComponent extends LitElement {
   @consume({ context: tileContext, subscribe: true })
   private _tile?: IgcTileComponent;
 
+  private handleFullscreen() {
+    if (this._tile) {
+      this._tile.toggleFullscreen();
+    }
+  }
+
   private handleMaximize() {
     if (this._tile) {
       this._tile.toggleMaximize();
@@ -53,7 +59,8 @@ export default class IgcTileHeaderComponent extends LitElement {
             variant="flat"
             collection="default"
             exportparts="icon"
-            name="fullscreen"
+            name=${this._tile?.fullscreen ? 'fullscreen_exit' : 'fullscreen'}
+            @click=${this.handleFullscreen}
           ></igc-icon-button>
           <slot name="actions"></slot>
         </section>

@@ -63,7 +63,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _dragController: TileDragAndDropController;
   private _position = -1;
   private _disableDrag = false;
-
+  private _fullscreen = false;
   private _context = new ContextProvider(this, {
     context: tileContext,
     initialValue: this,
@@ -74,9 +74,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @state()
   private _hasDragOver = false;
-
-  @state()
-  private _isFullscreen = false;
 
   /**
    * The unique identifier of the tile.
@@ -96,6 +93,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public rowStart: number | null = null;
+
+  @property({ type: Boolean, reflect: true })
+  public set fullscreen(value: boolean) {
+    if (this._fullscreen === value) return;
+
+    this._fullscreen = value;
+    this._context.setValue(this, true);
+    this.handleFullscreenRequest();
+  }
+
+  public get fullscreen() {
+    return this._fullscreen;
+  }
 
   /**
    * Indicates whether the tile occupies all available space within the layout.
@@ -143,7 +153,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @watch('maximized')
   protected maximizedChanged() {
-    //TODO: When the header UI is implemented, emit the event on header button/icon click.
     if (this._emitMaximizedEvent && !this.emitMaximizedEvent()) {
       this.maximized = !this.maximized;
       return;
@@ -194,12 +203,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
-    this.addEventListener('dblclick', this.handleFullscreenRequest);
+    // REVIEW: fullscreen property and a tile header action button added
+    this.addEventListener('dblclick', this.handleDoubleClick);
   }
 
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+  }
+
+  public toggleFullscreen() {
+    this.fullscreen = !this.fullscreen;
+    this.emitFullScreenEvent();
   }
 
   public toggleMaximize() {
@@ -214,7 +229,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private emitFullScreenEvent() {
     return this.emitEvent('igcTileFullscreen', {
-      detail: { tile: this, state: this._isFullscreen },
+      detail: { tile: this, state: this.fullscreen },
       cancelable: true,
     });
   }
@@ -226,19 +241,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
+  private handleDoubleClick() {
+    if (!this.emitFullScreenEvent()) {
+      return;
+    }
+
+    this.fullscreen = !this.fullscreen;
+  }
+
   private async handleFullscreenRequest() {
     try {
-      if (!this.emitFullScreenEvent()) {
-        return;
-      }
-
-      if (!this._isFullscreen) {
+      if (this.fullscreen) {
         await this.requestFullscreen();
       } else {
         await document.exitFullscreen();
       }
-
-      this._isFullscreen = !this._isFullscreen;
     } catch {
       document.exitFullscreen();
     }
@@ -331,7 +348,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const parts = partNameMap({
       base: true,
       'drag-over': this._hasDragOver,
-      fullscreen: this._isFullscreen,
+      fullscreen: this.fullscreen,
       draggable: !this.disableDrag,
       dragging: this._isDragging,
     });
@@ -348,7 +365,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected override render() {
     const renderResize =
-      this.disableResize || this.maximized || this._isFullscreen;
+      this.disableResize || this.maximized || this.fullscreen;
 
     return renderResize
       ? this.renderContent()
