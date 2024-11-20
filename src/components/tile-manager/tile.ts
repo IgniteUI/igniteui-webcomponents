@@ -1,8 +1,8 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { tileContext } from '../common/context.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -48,7 +48,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-tile';
   public static styles = [styles, shared];
-  private _emitMaximizedEvent = false;
 
   /* blazorSuppress */
   public static register() {
@@ -64,6 +63,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _disableDrag = false;
   private _fullscreen = false;
+  private _maximized = false;
   private _context = new ContextProvider(this, {
     context: tileContext,
     initialValue: this,
@@ -112,7 +112,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public maximized = false;
+  public set maximized(value: boolean) {
+    this._maximized = value;
+    this._context.setValue(this, true);
+  }
+
+  public get maximized() {
+    return this._maximized;
+  }
 
   /**
    * Indicates whether the tile can be dragged.
@@ -151,45 +158,25 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._position;
   }
 
-  @watch('maximized')
-  protected maximizedChanged() {
-    if (this._emitMaximizedEvent && !this.emitMaximizedEvent()) {
-      this.maximized = !this.maximized;
-      return;
-    }
-
-    // HACK
-    if (this.maximized) {
-      this.popover = 'manual';
-      this.showPopover();
-    } else if (this.popover) {
-      this.hidePopover();
-      this.popover = null;
-    }
-
-    this._emitMaximizedEvent = false;
-
-    this._context.setValue(this, true);
-  }
-
-  @watch('colSpan', { waitUntilFirstUpdate: true })
-  @watch('rowSpan', { waitUntilFirstUpdate: true })
-  @watch('colStart', { waitUntilFirstUpdate: true })
-  @watch('rowStart', { waitUntilFirstUpdate: true })
-  protected updateRowsColSpan() {
-    this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`;
-    this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`;
-    // if (this.colStart !== null) {
-    //   this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
-    // } else {
-    //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
-    // }
-    // if (this.rowStart !== null) {
-    //   this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
-    // } else {
-    //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
-    // }
-  }
+  // HACK
+  // @watch('colSpan', { waitUntilFirstUpdate: true })
+  // @watch('rowSpan', { waitUntilFirstUpdate: true })
+  // @watch('colStart', { waitUntilFirstUpdate: true })
+  // @watch('rowStart', { waitUntilFirstUpdate: true })
+  // protected updateRowsColSpan() {
+  //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`;
+  //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`;
+  //   // if (this.colStart !== null) {
+  //   //   this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
+  //   // } else {
+  //   //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
+  //   // }
+  //   // if (this.rowStart !== null) {
+  //   //   this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
+  //   // } else {
+  //   //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
+  //   // }
+  // }
 
   constructor() {
     super();
@@ -217,26 +204,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.emitFullScreenEvent();
   }
 
-  public toggleMaximize() {
-    this._emitMaximizedEvent = true;
-    this.maximized = !this.maximized;
-  }
-
-  protected override async firstUpdated() {
-    await this.updateComplete;
-    this.updateRowsColSpan();
-  }
+  // protected override async firstUpdated() {
+  //   await this.updateComplete;
+  //   this.updateRowsColSpan();
+  // }
 
   private emitFullScreenEvent() {
     return this.emitEvent('igcTileFullscreen', {
       detail: { tile: this, state: this.fullscreen },
-      cancelable: true,
-    });
-  }
-
-  private emitMaximizedEvent() {
-    return this.emitEvent('igcTileMaximize', {
-      detail: { tile: this, state: this.maximized },
       cancelable: true,
     });
   }
@@ -351,10 +326,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
       fullscreen: this.fullscreen,
       draggable: !this.disableDrag,
       dragging: this._isDragging,
+      maximized: this.maximized,
     });
 
+    const styles = {
+      '--ig-col-span': `${this.colSpan}`,
+      '--ig-row-span': `${this.rowSpan}`,
+      '--ig-col-start': `${this.colStart}`,
+      '--ig-row-start': `${this.rowStart}`,
+    };
+
     return html`
-      <div part=${parts} .inert=${this._hasDragOver}>
+      <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
         <slot name="header"></slot>
         <div part="content-container">
           <slot></slot>

@@ -83,8 +83,23 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'number',
       table: { defaultValue: { summary: '10' } },
     },
+    minColumnWidth: {
+      type: 'number',
+      control: 'number',
+      table: { defaultValue: { summary: '150' } },
+    },
+    minRowHeight: {
+      type: 'number',
+      control: 'number',
+      table: { defaultValue: { summary: '200' } },
+    },
   },
-  args: { dragMode: 'slide', columnCount: 10 },
+  args: {
+    dragMode: 'slide',
+    columnCount: 10,
+    minColumnWidth: 150,
+    minRowHeight: 200,
+  },
 };
 
 export default metadata;
@@ -93,6 +108,8 @@ interface IgcTileManagerArgs {
   /** Determines whether the tiles slide or swap on drop. */
   dragMode: 'slide' | 'swap';
   columnCount: number;
+  minColumnWidth: number;
+  minRowHeight: number;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -171,7 +188,11 @@ export const AutoInfer: Story = {
 export const FinDashboard: Story = {
   render: (args) => html`
     <igc-tile-manager>
-      <igc-tile .colSpan=${3} .rowSpan=${5}>
+      <igc-tile
+        .colSpan=${3}
+        .rowSpan=${5}
+        @igcTileMaximize=${cancelStateChangeEvent}
+      >
         <igc-tile-header slot="header">
           <span slot="title">Good morning, John</span>
         </igc-tile-header>

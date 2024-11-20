@@ -36,9 +36,20 @@ export default class IgcTileHeaderComponent extends LitElement {
   }
 
   private handleMaximize() {
-    if (this._tile) {
-      this._tile.toggleMaximize();
+    if (!this.emitMaximizedEvent()) {
+      return;
     }
+
+    if (this._tile) {
+      this._tile.maximized = !this._tile.maximized;
+    }
+  }
+
+  private emitMaximizedEvent() {
+    return this._tile?.emitEvent('igcTileMaximize', {
+      detail: { tile: this._tile, state: this._tile.maximized },
+      cancelable: true,
+    });
   }
 
   protected override render() {

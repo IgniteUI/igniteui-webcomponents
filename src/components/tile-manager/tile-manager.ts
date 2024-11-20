@@ -1,11 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type MutationControllerParams,
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -91,23 +91,18 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   @property({ type: Number })
   public columnCount = 10;
 
+  @property({ type: Number })
+  public minColumnWidth = 150;
+
+  @property({ type: Number })
+  public minRowHeight = 200;
+
   /**
    * Gets the tiles sorted by their position in the layout.
    * @attr
    */
   public get tiles() {
     return Array.from(this._tiles).sort((a, b) => a.position - b.position);
-  }
-
-  @watch('columnCount', { waitUntilFirstUpdate: true })
-  protected updateRowsCols() {
-    // REVIEW: Bind to internal CSS vars/parts or something
-    // const gridTemplateColumns =
-    //   this.columnCount > 0
-    //     ? `repeat(${this.columnCount}, auto)`
-    //     : 'repeat(auto-fit, minmax(20px, 1fr))';
-    //
-    // Object.assign(this._baseWrapper.style, gridTemplateColumns);
   }
 
   constructor() {
@@ -125,7 +120,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this.assignPositions();
-    this.updateRowsCols();
     this.updateSlotAssignment();
   }
 
@@ -343,8 +337,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const styles = {
+      '--ig-column-count': `${this.columnCount}`,
+      '--ig-min-col-width': `${this.minColumnWidth}px`,
+      '--ig-min-row-height': `${this.minRowHeight}px`,
+    };
+
     return html`
       <div
+        style=${styleMap(styles)}
         part="base"
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
