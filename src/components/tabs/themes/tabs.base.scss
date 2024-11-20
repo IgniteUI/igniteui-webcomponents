@@ -95,9 +95,8 @@
     --tab-max-width--justify: 100%;
 
     [part~='scrollable'] {
-        /* stylelint-disable */
+        /* stylelint-disable-next-line max-line-length */
         grid-template-columns: var(--scroll-btn-size) repeat(var(--_tabs-count), minmax($tab-min-width, 1fr)) var(--scroll-btn-size);
-        /* stylelint-enable */
     }
 
     [part~='inner']:not([part~='scrollable']) {
