@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- Calendar - allow passing a string value to the backing `value`, `values` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- Date-time input - allow passing a string value to the backing `value`, `min` and `max` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- Date picker - allow passing a string value to the backing `value`, `min`, `max` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+
 ## [5.1.2] - 2024-11-04
 ### Added
 - Carousel component select method overload accepting index [#1457](https://github.com/IgniteUI/igniteui-webcomponents/issues/1457)
