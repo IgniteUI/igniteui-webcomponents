@@ -60,6 +60,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private _dragController: TileDragAndDropController;
+  private _colSpan = 1;
+  private _rowSpan = 1;
+  private _colStart: number | null = null;
+  private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
   private _fullscreen = false;
@@ -83,16 +87,84 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public tileId: string | null = null;
 
   @property({ type: Number })
-  public colSpan = 1; // review
+  public set colSpan(value: number) {
+    const oldValue = this._colSpan;
+
+    if (value <= 0) {
+      this._colSpan = 1;
+    } else {
+      this._colSpan = value;
+    }
+
+    if (oldValue !== this._colSpan) {
+      this.style.setProperty('--ig-col-span', `${value}`);
+      this.requestUpdate('colSpan', oldValue);
+    }
+  }
+
+  public get colSpan(): number {
+    return this._colSpan;
+  }
 
   @property({ type: Number })
-  public rowSpan = 1; // review
+  public set rowSpan(value: number) {
+    const oldValue = this._rowSpan;
+
+    if (value <= 0) {
+      this._rowSpan = 1;
+    } else {
+      this._rowSpan = value;
+    }
+
+    if (oldValue !== this._rowSpan) {
+      this.style.setProperty('--ig-row-span', `${value}`);
+      this.requestUpdate('rowSpan', oldValue);
+    }
+  }
+
+  public get rowSpan(): number {
+    return this._rowSpan;
+  }
 
   @property({ type: Number })
-  public colStart: number | null = null;
+  public set colStart(value: number) {
+    const oldValue = this._colStart;
+
+    if (value <= 0) {
+      this._colStart = null;
+    } else {
+      this._colStart = value;
+    }
+
+    if (oldValue !== this._colStart) {
+      this.style.setProperty('--ig-col-start', `${value}`);
+      this.requestUpdate('colStart', oldValue);
+    }
+  }
+
+  public get colStart(): number | null {
+    return this._colStart;
+  }
 
   @property({ type: Number })
-  public rowStart: number | null = null;
+  public set rowStart(value: number) {
+    const oldValue = this._rowStart;
+
+    if (value <= 0) {
+      this._rowStart = null;
+    } else {
+      this._rowStart = value;
+    }
+
+    if (oldValue !== this._rowStart) {
+      this.style.setProperty('--ig-row-start', `${value}`);
+      this.requestUpdate('rowStart', oldValue);
+    }
+  }
+
+  public get rowStart(): number | null {
+    return this._rowStart;
+  }
 
   @property({ type: Boolean, reflect: true })
   public set fullscreen(value: boolean) {

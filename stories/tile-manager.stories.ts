@@ -78,11 +78,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
     },
-    columnCount: {
-      type: 'number',
-      control: 'number',
-      table: { defaultValue: { summary: '10' } },
-    },
+    columnCount: { type: 'string', control: 'text' },
     minColumnWidth: {
       type: 'number',
       control: 'number',
@@ -94,12 +90,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
       table: { defaultValue: { summary: '200' } },
     },
   },
-  args: {
-    dragMode: 'slide',
-    columnCount: 10,
-    minColumnWidth: 150,
-    minRowHeight: 200,
-  },
+  args: { dragMode: 'slide', minColumnWidth: 150, minRowHeight: 200 },
 };
 
 export default metadata;
@@ -107,7 +98,7 @@ export default metadata;
 interface IgcTileManagerArgs {
   /** Determines whether the tiles slide or swap on drop. */
   dragMode: 'slide' | 'swap';
-  columnCount: number;
+  columnCount: string;
   minColumnWidth: number;
   minRowHeight: number;
 }
