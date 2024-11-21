@@ -48,6 +48,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private draggedItem: IgcTileComponent | null = null;
   private finalOrder: IgcTileComponent[] = [];
   private positionedTiles: IgcTileComponent[] = [];
+  private _columnCount = 10;
 
   // @query('[part="base"]', true)
   // private _baseWrapper!: HTMLDivElement;
@@ -89,7 +90,23 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   public dragMode: 'slide' | 'swap' = 'slide';
 
   @property({ type: Number })
-  public columnCount = 10;
+  public set columnCount(value: number) {
+    const oldValue = this._columnCount;
+
+    if (value <= 0) {
+      this._columnCount = 10;
+    } else {
+      this._columnCount = value;
+    }
+
+    if (oldValue !== this._columnCount) {
+      this.requestUpdate('columnCount', oldValue);
+    }
+  }
+
+  public get columnCount() {
+    return this._columnCount;
+  }
 
   @property({ type: Number })
   public minColumnWidth = 150;

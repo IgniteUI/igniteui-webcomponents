@@ -150,7 +150,7 @@ const date = new Date();
 
 export const AutoInfer: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
+  render: (args) => html`
     <style>
       :root {
         --ig-min-col-width: 600px;
@@ -168,7 +168,12 @@ export const AutoInfer: Story = {
         }
       }
     </style>
-    <igc-tile-manager>
+    <igc-tile-manager
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       ${pictures.map(
         ({ width, height }) => html`
           <igc-tile>
@@ -187,7 +192,12 @@ export const AutoInfer: Story = {
 
 export const FinDashboard: Story = {
   render: (args) => html`
-    <igc-tile-manager>
+    <igc-tile-manager
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       <igc-tile
         .colSpan=${3}
         .rowSpan=${5}
@@ -350,7 +360,7 @@ export const FinDashboard: Story = {
 
 export const FinDashboard1: Story = {
   render: (args) => html`
-    <igc-tile-manager>
+    <igc-tile-manager .dragMode=${args.dragMode} .columnCount=${args.columnCount} .minColumnWidth=${args.minColumnWidth} .minRowHeight=${args.minRowHeight}>
       <igc-tile .colSpan=${3} .rowSpan=${2}>
         <igc-tile-header slot="header">
           <span slot="title">Good morning, John</span>
@@ -582,6 +592,8 @@ export const Default: Story = {
     <igc-tile-manager
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
     >
       <p>This text won't be displayed in Tile Manager</p>
       ${tiles}
@@ -609,7 +621,7 @@ function cancelStateChangeEvent(e: CustomEvent) {
 }
 
 export const Maximized: Story = {
-  render: () => html`
+  render: (args) => html`
     <style>
       igc-tile-manager {
         margin: 0 auto;
@@ -618,7 +630,12 @@ export const Maximized: Story = {
       }
     </style>
 
-    <igc-tile-manager>
+    <igc-tile-manager
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       <igc-tile
         id="max-tile"
         maximized
