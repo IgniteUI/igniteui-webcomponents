@@ -19,8 +19,8 @@ $theme: $bootstrap;
 }
 
 [part~='indicator'] {
-    stroke-width: 3;
-    transform: scale(.7);
+    --indicator-size: #{rem(11px)};
+
     transition: none;
 }
 
@@ -28,9 +28,6 @@ $theme: $bootstrap;
     --size: #{rem(16px)};
 
     border-radius: var-get($theme, 'border-radius-ripple');
-    width: var(--size);
-    height: var(--size);
-    min-width: var(--size);
     transition: all .15s ease-in-out;
     background: var-get($theme, 'empty-fill-color');
 
@@ -92,8 +89,6 @@ $theme: $bootstrap;
     }
 
     [part~='indicator'] {
-        stroke-dashoffset: 41;
-        opacity: 1;
         transform: rotate(45deg) translateX(-.075rem) scale(.7);
     }
 }

@@ -15,6 +15,10 @@
 }
 
 ::slotted(*) {
+    // We're not able to target the control part of the checkbox
+    // that's why we exposed that css variable (https://github.com/w3c/csswg-drafts/issues/3896)
+    --control-padding: 0;
+
     margin: 0;
     font: inherit;
     opacity: inherit;

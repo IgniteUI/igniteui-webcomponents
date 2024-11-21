@@ -16,16 +16,10 @@ $theme: $material;
     @include type-style('subtitle-1');
 }
 
-label {
-    gap: rem(2px);
-}
-
 [part~='control'] {
-    --size: #{rem(20px)};
-
-    width: calc(var(--size) * 2);
-    height: calc(var(--size) * 2);
-    min-width: calc(var(--size) * 2);
+    // We expose that css variable to override the padding of
+    // the checkbox control in components that we nest it in like List and Tree.
+    padding: var(--control-padding, rem(20px));
     transition: background .15s ease-in;
 
     &::after {
@@ -52,6 +46,8 @@ label {
 }
 
 [part~='base'] {
+    gap: rem(2px);
+
     &:hover {
         [part~='control'] {
             &::before {
