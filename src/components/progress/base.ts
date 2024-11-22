@@ -114,10 +114,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this.__internals = this.attachInternals();
     this.__internals.role = 'progressbar';
     this.__internals.ariaValueMin = '0';
-
-    this.style.setProperty('--_progress-whole', '0');
-    this.style.setProperty('--_progress-integer', '0');
-    this.style.setProperty('--_progress-fraction', '0');
   }
 
   private _setCSSVariables(variables: Record<string, string>) {
