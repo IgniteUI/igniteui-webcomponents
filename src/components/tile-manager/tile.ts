@@ -166,6 +166,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._rowStart;
   }
 
+  /**
+   * Indicates whether the tile occupies the whole screen.
+   * @attr fullscreen
+   */
   @property({ type: Boolean, reflect: true })
   public set fullscreen(value: boolean) {
     if (this._fullscreen === value) return;
@@ -181,7 +185,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile occupies all available space within the layout.
-   * @attr
+   * @attr maximized
    */
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
@@ -322,11 +326,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       bubbles: true,
     });
 
-    // const rect = this.getBoundingClientRect();
-    // const offsetX = e.clientX - rect.left;
-    // const offsetY = e.clientY - rect.top;
+    const rect = this.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
 
-    e.dataTransfer!.setDragImage(this, 0, 0);
+    e.dataTransfer!.setDragImage(this, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
 
     this.dispatchEvent(event);
