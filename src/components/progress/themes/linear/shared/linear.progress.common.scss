@@ -1,6 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../vars' as *;
+@use '../../shared' as *;
 @use '../../animations' as *;
 
 $theme: $material;
@@ -14,6 +15,7 @@ $theme: $material;
     color: var-get($theme, 'text-color');
 }
 
+// PRIMARY
 [part~='primary']:not([part~='indeterminate']) {
     background-color: var-get($theme, 'fill-color-default');
 }
@@ -34,6 +36,7 @@ $theme: $material;
     }
 }
 
+// DANGER
 [part~='danger']:not([part~='indeterminate']) {
     background-color: var-get($theme, 'fill-color-danger');
 }
@@ -54,6 +57,7 @@ $theme: $material;
     }
 }
 
+// WARNING
 [part~='warning']:not([part~='indeterminate']) {
     background-color: var-get($theme, 'fill-color-warning');
 }
@@ -74,6 +78,7 @@ $theme: $material;
     }
 }
 
+// INFO
 [part~='info']:not([part~='indeterminate']) {
     background-color: var-get($theme, 'fill-color-info');
 }
@@ -94,6 +99,7 @@ $theme: $material;
     }
 }
 
+// SUCCESS
 [part~='success']:not([part~='indeterminate']) {
     background-color: var-get($theme, 'fill-color-success');
 }

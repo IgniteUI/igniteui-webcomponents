@@ -160,27 +160,29 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
     }
 }
 
-%host {
-    align-items: center;
-    justify-content: center;
-    font-family: var(--ig-font-family), serif;
+@keyframes initial-counter {
+    from {
+        --_progress-integer: 0;
+        --_progress-fraction: 0;
+    }
 }
 
-%label {
-    display: flex;
-    align-items: center;
-    color: inherit;
-    font-weight: 600;
+@keyframes initial-width {
+    from {
+        width: 0;
+    }
+
+    to {
+       width: calc(var(--_progress-whole, 0) * 1%);
+    }
 }
 
-@mixin stripe-colors($primary, $gray, $size, $deg: -45deg) {
-    /* stylelint-disable */
-    background: $primary repeating-linear-gradient(
-        $deg,
-        $primary,
-        $primary $size,
-        $gray $size,
-        $gray ($size * 2)
-    );
-    /* stylelint-enable */
+@keyframes initial-dashoffset {
+    from {
+        stroke-dashoffset: #{$circumference}; /* Start with no progress (0%) */
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference}); /* Target progress */
+    }
 }

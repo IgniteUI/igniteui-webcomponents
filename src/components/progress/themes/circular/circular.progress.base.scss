@@ -1,6 +1,7 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../animations' as *;
+@use '../shared' as *;
 @use '../vars' as *;
 
 :host {
@@ -26,11 +27,24 @@
 }
 
 [part~='value'] {
-    transition: --_progress var(--_transition-duration) ease-in-out;
-    counter-reset: progress var(--_progress);
+    animation: initial-counter var(--_transition-duration) ease-in-out;
+    transition:
+            --_progress-integer var(--_transition-duration) ease-in-out,
+            --_progress-fraction var(--_transition-duration) ease-in-out;
+    counter-reset:
+            progress-integer var(--_progress-integer, 0)
+            progress-fraction var(--_progress-fraction, 0);
+}
 
+[part~='value']:not([part~='fraction']) {
     &::before {
-        content: counter(progress) '%';
+        content: counter(progress-integer) '%';
+    }
+}
+
+[part~='fraction'] {
+    &::before {
+        content: counter(progress-integer) '.' counter(progress-fraction, decimal-leading-zero) '%';
     }
 }
 
@@ -70,12 +84,20 @@
 }
 
 [part~='fill'] {
-    --_percentage: calc(var(--_progress) / 100);
+    --_progress-percentage: calc(var(--_progress-whole, 0) / 100);
 
     stroke-dasharray: #{$circumference} #{$circumference};
-    stroke-dashoffset: calc(#{$circumference} - var(--_percentage) * #{$circumference});
+    stroke-dashoffset: calc(#{$circumference} - var(--_progress-whole, 0) * #{$circumference});
     transition: stroke-dashoffset var(--_transition-duration) linear;
     stroke-width: calc(#{var(--stroke-thickness)} + rem(0.75px));
+}
+
+[part~='svg']:not([part~='indeterminate']) {
+    [part~='fill'] {
+        animation: initial-dashoffset var(--_transition-duration) linear;
+        stroke-dasharray: #{$circumference} #{$circumference};
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference}); /* Final state */
+    }
 }
 
 :host([dir='rtl']) {
@@ -93,7 +115,7 @@
     }
 
     [part~='fill'] {
-        stroke-dashoffset: calc(#{$circumference} + var(--_percentage) * #{$circumference});
+        stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
     }
 }
 

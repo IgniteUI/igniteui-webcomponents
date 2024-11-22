@@ -1,6 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../vars' as *;
+@use '../../shared' as *;
 @use '../../animations' as *;
 
 $theme: $bootstrap;
@@ -18,10 +19,6 @@ $stripe-size: rem(5px);
     &::after {
         @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
     }
-}
-
-[part~='danger']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-default');
 }
 
 [part~='striped'][part~='danger']:not([part~='indeterminate']) {

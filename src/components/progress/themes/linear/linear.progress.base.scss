@@ -36,10 +36,15 @@
 }
 
 [part~='fill'] {
-    width: calc(var(--_progress) * 1%);
-    transition: width var(--_transition-duration) linear, background-color var(--_transition-duration) linear;
+    width: calc(var(--_progress-whole, 0) * 1%);
+    transition: width var(--_transition-duration) linear;
     position: relative;
     height: 100%;
+}
+
+[part~='fill']:not([part~='indeterminate']) {
+    overflow: hidden;
+    animation: initial-width var(--_transition-duration) linear;
 }
 
 [part~='indeterminate'],
@@ -70,8 +75,6 @@
     }
 }
 
-
-
 [part~='secondary'] {
     animation: indeterminate-secondary var(--linear-animation-duration) infinite linear;
     left: -54.8888%;
@@ -83,15 +86,33 @@
     }
 }
 
-
 [part~='value'] {
     @include type-style('subtitle-2');
 
-    transition: --_progress var(--_transition-duration) ease-in-out;
-    counter-reset: progress var(--_progress);
+    animation: initial-counter var(--_transition-duration) ease-in-out;
+    counter-reset:
+        progress-integer var(--_progress-integer, 0)
+        progress-fraction var(--_progress-fraction, 0);
+    transition:
+        --_progress-integer var(--_transition-duration) ease-in-out,
+        --_progress-fraction var(--_transition-duration) ease-in-out;
+    display: block;
 
     &::before {
-        content: counter(progress) '%';
+        // fix safari bug with label jumping
+        @include type-style('subtitle-2');
+    }
+}
+
+[part~='value']:not([part~='fraction']) {
+    &::before {
+        content: counter(progress-integer) '%';
+    }
+}
+
+[part~='fraction'] {
+    &::before {
+        content: counter(progress-integer) "." counter(progress-fraction, decimal-leading-zero) '%';
     }
 }
 

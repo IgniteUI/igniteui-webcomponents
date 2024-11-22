@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 
 import { watch } from '../common/decorators/watch.js';
-import { asPercent, clamp, formatString } from '../common/util.js';
+import { clamp, formatString } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
@@ -24,6 +24,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @state()
   protected progress = 0;
+
+  @state()
+  protected hasFraction = false;
 
   /**
    * Maximum value of the control.
@@ -80,8 +83,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected indeterminateChange() {
     if (!this.indeterminate) {
-      this._setProgress();
-      this._updatePercentage();
+      this._updateProgress();
     }
   }
 
@@ -93,21 +95,17 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       this.value = this.max;
     }
 
-    this._setProgress();
-
     if (!this.indeterminate) {
-      this._updatePercentage();
+      this._updateProgress();
     }
   }
 
   @watch('value', { waitUntilFirstUpdate: true })
   protected valueChange() {
-    // CSS counters only support integers, so we use Math.round to ensure the percentage value is an integer.
-    this.value = Math.round(clamp(this.value, 0, this.max));
-    this._setProgress();
+    this._clampValue();
 
     if (!this.indeterminate) {
-      this._updatePercentage();
+      this._updateProgress();
     }
   }
 
@@ -116,6 +114,20 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this.__internals = this.attachInternals();
     this.__internals.role = 'progressbar';
     this.__internals.ariaValueMin = '0';
+
+    this.style.setProperty('--_progress-whole', '0');
+    this.style.setProperty('--_progress-integer', '0');
+    this.style.setProperty('--_progress-fraction', '0');
+  }
+
+  private _setCSSVariables(variables: Record<string, string>) {
+    Object.entries(variables).forEach(([key, value]) => {
+      this.style.setProperty(key, value);
+    });
+  }
+
+  private _clampValue(): void {
+    this.value = clamp(this.value, 0, this.max);
   }
 
   protected override createRenderRoot() {
@@ -124,52 +136,63 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     return root;
   }
 
-  protected override updated(
-    changedProperties: Map<string | number | symbol, unknown>
-  ) {
+  protected override updated(changedProperties: Map<string, unknown>) {
     this._updateARIA();
 
     if (changedProperties.has('animationDuration')) {
-      this.style.setProperty(
-        '--_transition-duration',
-        `${this.animationDuration}ms`
-      );
+      this._setCSSVariables({
+        '--_transition-duration': `${this.animationDuration}ms`,
+      });
     }
   }
 
   private _updateARIA() {
-    const internals = this.__internals;
     const text = this.labelFormat
       ? this.renderLabelFormat()
       : `${this.percentage}%`;
 
+    const internals = this.__internals;
     internals.ariaValueMax = `${this.max}`;
     internals.ariaValueNow = this.indeterminate ? null : `${this.value}`;
     internals.ariaValueText = this.indeterminate ? null : text;
   }
 
-  private _setProgress() {
-    this.progress = this.max > 0 ? this.value / this.max : 0;
-  }
+  /**
+   * Calculates the current progress percentage and updates CSS variables
+   * Skips updates if the percentage has not changed.
+   */
+  private _updateProgress() {
+    const progress = this.max > 0 ? this.value / this.max : 0;
+    const percentage = progress * 100;
 
-  private _updatePercentage() {
-    // CSS counters only support integers, so we use Math.round to ensure the percentage value is an integer.
-    const percentage = asPercent(this.value, this.max);
+    if (percentage === this.percentage) return;
 
-    if (percentage !== this.percentage) {
-      this.percentage = percentage;
-      this.style.setProperty('--_progress', `${this.percentage}`);
-    }
+    const wholeValue = percentage;
+    const integerValue = Math.floor(percentage);
+    const fractionValue = Math.round((percentage % 1) * 100);
+
+    this._setCSSVariables({
+      '--_progress-whole': `${wholeValue}`,
+      '--_progress-integer': `${integerValue}`,
+      '--_progress-fraction': `${fractionValue}`,
+    });
+
+    this.hasFraction = fractionValue > 0;
   }
 
   public override async connectedCallback() {
     super.connectedCallback();
+    this._clampValue();
+    this._updateProgress();
+    this._updateARIA();
     await this.updateComplete;
+  }
 
-    if (!this.indeterminate) {
-      this._setProgress();
-      this._updatePercentage();
-    }
+  protected renderLabel() {
+    const basePart = 'label value';
+    const part = `${basePart}${this.hasFraction ? ' fraction' : ''}`.trim();
+
+    return html`<span part=${part}></span>`;
   }
 
   protected renderLabelFormat() {
@@ -182,7 +205,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
     return html`
       <slot part="label"></slot>
-      ${hasNoLabel ? nothing : html`<span part="label value"></span>`}
+      ${hasNoLabel ? nothing : this.renderLabel()}
     `;
   }
 }
