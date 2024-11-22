@@ -11,6 +11,7 @@ $theme: $fluent;
     border-bottom: none;
 }
 
-[part='title'] {
+[part='title'],
+[part='subtitle'] {
     @include type-style('caption');
 }
