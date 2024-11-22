@@ -165,7 +165,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     const progress = this.max > 0 ? this.value / this.max : 0;
     const percentage = progress * 100;
 
-    if (percentage === this.percentage) return;
+    if (this.value !== 0 && percentage === this.percentage) return;
 
     const wholeValue = percentage;
     const integerValue = Math.floor(percentage);
