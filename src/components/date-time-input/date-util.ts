@@ -1,3 +1,4 @@
+import { parseISODate } from '../calendar/helpers.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
 export enum FormatDesc {
@@ -190,22 +191,7 @@ export abstract class DateTimeUtil {
   }
 
   public static parseIsoDate(value: string): Date | null {
-    let regex = /^\d{4}/g;
-    const timeLiteral = 'T';
-    if (regex.test(value)) {
-      return new Date(
-        `${value}${value.indexOf(timeLiteral) === -1 ? 'T00:00:00' : ''}`
-      );
-    }
-
-    regex = /^\d{2}/g;
-    if (regex.test(value)) {
-      const dateNow = new Date().toISOString();
-      const [datePart, _timePart] = dateNow.split(timeLiteral);
-      return new Date(`${datePart}T${value}`);
-    }
-
-    return null;
+    return parseISODate(value);
   }
 
   public static isValidDate(value: any): value is Date {

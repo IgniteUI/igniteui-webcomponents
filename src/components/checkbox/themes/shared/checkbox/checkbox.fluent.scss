@@ -46,10 +46,6 @@ $disabled-color: var-get($theme, 'disabled-color');
     transform: scale(.8);
 }
 
-[part~='base'] {
-    gap: rem(16px);
-}
-
 :host(:hover) {
     [part~='indicator'] {
         opacity: 1;
