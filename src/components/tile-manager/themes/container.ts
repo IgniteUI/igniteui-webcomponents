@@ -6,17 +6,18 @@ import { styles as bootstrapDark } from './dark/tile-manager.bootstrap.css.js';
 import { styles as fluentDark } from './dark/tile-manager.fluent.css.js';
 import { styles as indigoDark } from './dark/tile-manager.indigo.css.js';
 import { styles as materialDark } from './dark/tile-manager.material.css.js';
+import { styles as sharedDark } from './dark/tile-manager.shared.css.js';
 // Light Overrides
 import { styles as bootstrapLight } from './light/tile-manager.bootstrap.css.js';
 import { styles as fluentLight } from './light/tile-manager.fluent.css.js';
 import { styles as indigoLight } from './light/tile-manager.indigo.css.js';
 import { styles as materialLight } from './light/tile-manager.material.css.js';
-import { styles as shared } from './light/tile-manager.shared.css.js';
+import { styles as sharedLight } from './light/tile-manager.shared.css.js';
 // Shared Styles
 
 const light = {
   shared: css`
-    ${shared}
+    ${sharedLight}
   `,
   bootstrap: css`
     ${bootstrapLight}
@@ -34,7 +35,7 @@ const light = {
 
 const dark = {
   shared: css`
-    ${shared}
+    ${sharedDark}
   `,
   bootstrap: css`
     ${bootstrapDark}

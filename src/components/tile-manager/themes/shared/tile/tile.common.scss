@@ -31,7 +31,7 @@ $theme: $material;
     }
 }
 
-[part="content-container"] {
+[part='content-container'] {
     background: var-get($theme, 'content-background');
     color: var-get($theme, 'content-color');
 }
