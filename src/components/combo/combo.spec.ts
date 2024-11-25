@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first } from '../common/util.js';
 import {
   type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
@@ -1258,16 +1259,14 @@ describe('Combo', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      // FIXME: The combo value setter does not update the form state in a synchronous manner
-      // FIXME: delegating to a @watch callback.
-      await spec.setProperties({ value: [] });
+    it('is not associated on submit if no value', () => {
+      spec.setProperties({ value: [] });
       spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit with value-key (single)', async () => {
-      await spec.setProperties({ singleSelect: true });
-      await spec.setProperties({ value: ['BG01', 'BG02'] });
+    it('is associated on submit with value-key (single)', () => {
+      spec.setProperties({ singleSelect: true });
+      spec.setProperties({ value: ['BG01', 'BG02'] });
       spec.assertSubmitHasValue('BG01');
     });
 
@@ -1276,44 +1275,42 @@ describe('Combo', () => {
       spec.assertSubmitHasValues(['BG01', 'BG02']);
     });
 
-    it('is associated on submit without value-key (single)', async () => {
+    it('is associated on submit without value-key (single)', () => {
       const [first, second, _] = cities;
 
-      await spec.setProperties({ valueKey: undefined, singleSelect: true });
+      spec.setProperties({ valueKey: undefined, singleSelect: true });
       spec.element.select([first, second]);
-      await elementUpdated(spec.element);
 
       expect(spec.formData.getAll(spec.element.name)).lengthOf(1);
       spec.assertSubmitPasses();
     });
 
-    it('is associated on submit without value-key (multiple)', async () => {
+    it('is associated on submit without value-key (multiple)', () => {
       const [first, second, _] = cities;
 
-      await spec.setProperties({ valueKey: undefined });
+      spec.setProperties({ valueKey: undefined });
       spec.element.select([first, second]);
-      await elementUpdated(spec.element);
 
       expect(spec.formData.getAll(spec.element.name)).lengthOf(2);
       spec.assertSubmitPasses();
     });
 
-    it('is correctly reset on form reset (multiple)', async () => {
+    it('is correctly reset on form reset (multiple)', () => {
       const initial = spec.element.value;
 
-      await spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
-      await spec.setProperties({ value: [] });
+      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
       expect(spec.element.value).to.eql(initial);
     });
 
-    it('is correctly reset on form reset (single)', async () => {
+    it('is correctly reset on form reset (single)', () => {
       // Initial value is a multiple array. The combo defaults to the first item
-      const initial = [spec.element.value[0]];
+      const initial = [first(spec.element.value)];
 
-      await spec.setProperties({ singleSelect: true });
-      await spec.setProperties({ value: ['US01'] });
+      spec.setProperties({ singleSelect: true });
+      spec.setProperties({ value: ['US01'] });
 
       expect(spec.element.value).to.eql(['US01']);
 
@@ -1321,19 +1318,19 @@ describe('Combo', () => {
       expect(spec.element.value).to.eql(initial);
     });
 
-    it('should reset to the new default value after setAttribute() call (multiple)', async () => {
-      await spec.setAttributes({ value: JSON.stringify(['US01', 'US02']) });
-      await spec.setProperties({ value: [] });
+    it('should reset to the new default value after setAttribute() call (multiple)', () => {
+      spec.setAttributes({ value: JSON.stringify(['US01', 'US02']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
       expect(spec.element.value).to.eql(['US01', 'US02']);
       spec.assertSubmitHasValues(spec.element.value);
     });
 
-    it('should reset to the new default value after setAttribute() call (single)', async () => {
-      await spec.setProperties({ singleSelect: true });
-      await spec.setAttributes({ value: JSON.stringify(['US01']) });
-      await spec.setProperties({ value: [] });
+    it('should reset to the new default value after setAttribute() call (single)', () => {
+      spec.setProperties({ singleSelect: true });
+      spec.setAttributes({ value: JSON.stringify(['US01']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
 
@@ -1349,11 +1346,11 @@ describe('Combo', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      await spec.setProperties({ value: [], required: true });
+    it('fulfils required constraint', () => {
+      spec.setProperties({ value: [], required: true });
       spec.assertSubmitFails();
 
-      await spec.setProperties({ value: ['BG01', 'BG02'] });
+      spec.setProperties({ value: ['BG01', 'BG02'] });
       spec.assertSubmitPasses();
     });
 
@@ -1369,7 +1366,40 @@ describe('Combo', () => {
   describe('defaultValue', () => {
     const value = ['BG01', 'BG02'];
 
-    describe('Form integration', () => {
+    describe('Form integration (single)', () => {
+      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
+        <igc-combo
+          name="combo"
+          .data=${cities}
+          .defaultValue=${value}
+          single-select
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcComboComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.eql([first(value)]);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(first(value));
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: [] });
+        spec.reset();
+
+        expect(spec.element.value).to.eql([first(value)]);
+      });
+    });
+
+    describe('Form integration (multiple)', () => {
       const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
         <igc-combo
           name="combo"
@@ -1393,8 +1423,8 @@ describe('Combo', () => {
         spec.assertSubmitHasValues(value);
       });
 
-      it('is correctly reset', async () => {
-        await spec.setProperties({ value: [] });
+      it('is correctly reset', () => {
+        spec.setProperties({ value: [] });
         spec.reset();
 
         expect(spec.element.value).to.eql(value);
@@ -1407,6 +1437,7 @@ describe('Combo', () => {
           name="combo"
           .data=${cities}
           .defaultValue=${[]}
+          required
           value-key="id"
           display-key="name"
         ></igc-combo>
@@ -1421,8 +1452,8 @@ describe('Combo', () => {
         spec.assertSubmitFails();
       });
 
-      it('passes required validation', async () => {
-        await spec.setProperties({ defaultValue: value });
+      it('passes required validation', () => {
+        spec.setProperties({ defaultValue: value });
         spec.assertIsPristine();
 
         spec.assertSubmitHasValues(value);
@@ -1431,7 +1462,7 @@ describe('Combo', () => {
   });
 
   describe('Validation message slots', () => {
-    it('', async () => {
+    it('', () => {
       const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot

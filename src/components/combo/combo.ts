@@ -135,9 +135,8 @@ export default class IgcComboComponent<
     return comboValidators;
   }
 
-  private _data: T[] = [];
-
   protected override _formValue: FormValue<ComboValue<T>[]>;
+  private _data: T[] = [];
 
   private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
@@ -466,15 +465,26 @@ export default class IgcComboComponent<
     );
   }
 
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    if (!this.hasUpdated && isEmpty(this._formValue.defaultValue)) {
+      this._setInitialDefaultValue();
+    }
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
+
     this._updateSelection();
-    this.updateValue(true);
+    this.updateValue(this.hasUpdated);
+    this._pristine = true;
     this._state.runPipeline();
   }
 
-  protected resetSearchTerm() {
-    this._state.searchTerm = '';
+  protected override _restoreDefaultValue(): void {
+    this._formValue.value = this._formValue.defaultValue;
+    this._updateSelection();
+    this.updateValue();
   }
 
   protected override _setDefaultValue(current: string | null): void {
@@ -499,6 +509,10 @@ export default class IgcComboComponent<
       }
       super._setFormValue(value);
     }
+  }
+
+  protected resetSearchTerm() {
+    this._state.searchTerm = '';
   }
 
   protected updateValue(initial = false) {
