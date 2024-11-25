@@ -364,14 +364,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   // REVIEW
   protected ghostFactory = () => {
+    const ghostBackground = window
+      .getComputedStyle(this)
+      .getPropertyValue('--placeholder-background');
+
+    const ghostBorder = window
+      .getComputedStyle(this)
+      .getPropertyValue('--ghost-border');
+
     const ghost = this.cloneNode(true) as IgcTileComponent;
     Object.assign(ghost.style, {
       position: 'absolute',
       top: 0,
       left: 0,
       zIndex: 1000,
-      opacity: 0.75,
-      filter: 'drop-shadow(1px 1px 3px #333)',
+      background: ghostBackground,
+      border: `1px solid ${ghostBorder}`,
+      borderRadius: '4px',
       width: '100%',
       height: '100%',
       gridRow: '',

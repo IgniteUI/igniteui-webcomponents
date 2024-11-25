@@ -29,12 +29,12 @@ export default class IgcResizeComponent extends EventEmitterMixin<
 
   public static styles = css`
     :host {
-      display: block;
+      display: contents;
     }
 
     [part='resize-base'] {
       position: relative;
-      min-height: 100%;
+      height: 100%;
     }
 
     [part='trigger'] {
