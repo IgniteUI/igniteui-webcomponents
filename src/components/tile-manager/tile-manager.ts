@@ -104,7 +104,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
-  public get columnCount() {
+  public get columnCount(): number {
     return this._columnCount;
   }
 

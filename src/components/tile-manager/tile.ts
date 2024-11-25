@@ -79,6 +79,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @state()
   private _hasDragOver = false;
 
+  @state()
+  private _isResizing = false;
+
   /**
    * The unique identifier of the tile.
    * @attr
@@ -234,26 +237,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._position;
   }
 
-  // HACK
-  // @watch('colSpan', { waitUntilFirstUpdate: true })
-  // @watch('rowSpan', { waitUntilFirstUpdate: true })
-  // @watch('colStart', { waitUntilFirstUpdate: true })
-  // @watch('rowStart', { waitUntilFirstUpdate: true })
-  // protected updateRowsColSpan() {
-  //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`;
-  //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`;
-  //   // if (this.colStart !== null) {
-  //   //   this.style.gridColumn = `${this.colStart} / span ${this.colSpan}`;
-  //   // } else {
-  //   //   this.style.gridColumn = this.style.gridColumn || `span ${this.colSpan}`; // `span ${this.colSpan}`;
-  //   // }
-  //   // if (this.rowStart !== null) {
-  //   //   this.style.gridRow = `${this.rowStart} / span ${this.rowSpan}`;
-  //   // } else {
-  //   //   this.style.gridRow = this.style.gridRow || `span ${this.rowSpan}`; // `span ${this.rowSpan}`;
-  //   // }
-  // }
-
   constructor() {
     super();
     this._dragController = addTileDragAndDrop(this, {
@@ -351,6 +334,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleResize(_: CustomEvent<ResizeCallbackParams>) {
+    this._isResizing = true;
     // console.log(event.detail.state);
   }
 
@@ -374,6 +358,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       gridRow: `span ${rowSpan}`,
       gridColumn: `span ${colSpan}`,
     });
+
+    this._isResizing = false;
   }
 
   // REVIEW
@@ -402,6 +388,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       fullscreen: this.fullscreen,
       draggable: !this.disableDrag,
       dragging: this._isDragging,
+      resizable: !this.disableResize,
+      resizing: this._isResizing,
       maximized: this.maximized,
     });
 
