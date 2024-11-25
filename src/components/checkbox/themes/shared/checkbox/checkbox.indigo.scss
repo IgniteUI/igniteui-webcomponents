@@ -25,9 +25,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     --size: #{rem(16px)};
 
     border-radius: var-get($theme, 'border-radius-ripple');
-    width: var(--size, rem(16px));
-    height: var(--size, rem(16px));
-    min-width: var(--size, rem(16px));
 
     &::after {
         border-radius: var-get($theme, 'border-radius');
@@ -41,6 +38,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='indicator'] {
+    --indicator-size: #{rem(13px)};
+
     stroke: unset;
     stroke-linecap: unset;
     stroke-width: unset;
@@ -48,7 +47,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     stroke-dashoffset: unset;
     fill: var-get($theme, 'tick-color');
     transition: none;
-    transform: scale(.8);
 
     rect {
         fill: none;
