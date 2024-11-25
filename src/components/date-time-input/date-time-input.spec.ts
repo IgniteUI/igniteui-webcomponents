@@ -12,8 +12,8 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateInput,
@@ -927,8 +927,8 @@ describe('Date Time Input component', () => {
 
   describe('Form integration', () => {
     const today = CalendarDay.today;
-    const spec = new FormAssociatedTestBed<IgcDateTimeInputComponent>(
-      html`<igc-date-time-input name="dt"></igc-date-time-input>`
+    const spec = createFormAssociatedTestBed<IgcDateTimeInputComponent>(
+      html`<igc-date-time-input name="date-time"></igc-date-time-input>`
     );
 
     beforeEach(async () => {
@@ -939,40 +939,33 @@ describe('Date Time Input component', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if no value', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit', async () => {
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value.toISOString()
-      );
+    it('is associated on submit', () => {
+      spec.setProperties({ value: today.native });
+      spec.assertSubmitHasValue(today.native.toISOString());
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: today.native });
 
       spec.reset();
       expect(spec.element.value).to.be.null;
     });
 
     it('is correctly reset to the new default value after setAttribute() call', () => {
-      spec.element.setAttribute('value', today.native.toISOString());
-      spec.element.value = today.add('day', 180).native;
+      spec.setAttributes({ value: today.native.toISOString() });
+      spec.setProperties({ value: today.add('day', 180).native });
 
       spec.reset();
 
-      expect(toCalendarDay(spec.element.value).equalTo(today)).to.be.true;
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        today.native.toISOString()
-      );
+      expect(toCalendarDay(spec.element.value!).equalTo(today)).to.be.true;
+      spec.assertSubmitHasValue(today.native.toISOString());
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -980,72 +973,161 @@ describe('Date Time Input component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(Date.now());
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date() });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils min value constraint', async () => {
-      spec.element.min = new Date(2025, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils min value constraint', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1) });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2022, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitFails();
+      spec.setProperties({ value: new Date(2022, 0, 1) });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2025, 0, 2);
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2026, 0, 2) });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils min value constraint - string property binding', async () => {
-      spec.element.min = new Date(2025, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils min value constraint - string property binding', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2022, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitFails();
+      spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2025, 0, 2).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils max value constraint', async () => {
-      spec.element.max = new Date(2020, 0, 1);
-      spec.element.value = new Date(Date.now());
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils max value constraint', () => {
+      spec.setProperties({ max: new Date(2020, 0, 1), value: new Date() });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2020, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2020, 0, 1) });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils max value constraint - string property binding', async () => {
-      spec.element.max = new Date(2020, 0, 1).toISOString();
-      spec.element.value = new Date().toISOString();
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils max value constraint - string property binding', () => {
+      spec.setProperties({
+        max: new Date(2020, 0, 1).toISOString(),
+        value: new Date().toISOString(),
+      });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2020, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    const today = CalendarDay.today;
+
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcDateTimeInputComponent>(html`
+        <igc-date-time-input
+          name="date-time"
+          .defaultValue=${today.native}
+        ></igc-date-time-input>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcDateTimeInputComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value?.toISOString()).to.equal(
+          today.native.toISOString()
+        );
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(today.native.toISOString());
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: today.add('day', 1).native });
+        spec.reset();
+
+        expect(spec.element.value?.toISOString()).to.equal(
+          today.native.toISOString()
+        );
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcDateTimeInputComponent>(html`
+        <igc-date-time-input
+          name="date-time"
+          required
+          .defaultValue=${null}
+        ></igc-date-time-input>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcDateTimeInputComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation when updating defaultValue', () => {
+        spec.setProperties({ defaultValue: today.native });
+        spec.assertIsPristine();
+
+        spec.assertSubmitPasses();
+      });
+
+      it('fails min validation', () => {
+        spec.setProperties({
+          min: today.native,
+          defaultValue: today.add('day', -1).native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes min validation', () => {
+        spec.setProperties({ min: today.native, defaultValue: today.native });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails max validation', () => {
+        spec.setProperties({
+          max: today.native,
+          defaultValue: today.native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes max validation', () => {
+        spec.setProperties({
+          max: today.native,
+          defaultValue: today.add('day', -1).native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 

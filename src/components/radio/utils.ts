@@ -10,12 +10,14 @@ type RadioQueryResult = {
   siblings: IgcRadioComponent[];
   /** Radio components under the same group name that are marked as checked */
   checked: IgcRadioComponent[];
+  defaultChecked: IgcRadioComponent[];
 };
 
 export function getGroup(member: IgcRadioComponent) {
   const result: RadioQueryResult = {
     active: [],
     checked: [],
+    defaultChecked: [],
     radios: [],
     siblings: [],
   };
@@ -27,6 +29,10 @@ export function getGroup(member: IgcRadioComponent) {
 
     if (member.checked) {
       result.checked.push(member);
+    }
+
+    if (member.defaultChecked) {
+      result.defaultChecked.push(member);
     }
 
     if (!member.disabled) {
@@ -51,6 +57,10 @@ export function getGroup(member: IgcRadioComponent) {
 
     if (each.checked) {
       result.checked.push(each);
+    }
+
+    if (each.defaultChecked) {
+      result.defaultChecked.push(each);
     }
 
     if (each !== member) {

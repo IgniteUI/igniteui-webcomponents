@@ -15,6 +15,7 @@ import {
   requiredValidator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
+import { type FormValue, createFormValueState } from './forms/form-value.js';
 import type {
   FormAssociatedElementInterface,
   FormRequiredInterface,
@@ -41,19 +42,20 @@ describe('Form associated mixin tests', () => {
   before(() => {
     tag = defineCE(
       class Foo extends FormAssociatedRequiredMixin(LitElement) {
-        protected override get __validators(): Validator<this>[] {
-          return [requiredValidator, minLengthValidator, maxLengthValidator];
-        }
-
         static override properties = {
           value: { type: String },
           minLength: { type: Number },
           maxLength: { type: Number },
         };
 
+        protected override get __validators(): Validator<this>[] {
+          return [requiredValidator, minLengthValidator, maxLengthValidator];
+        }
+
+        protected override _formValue: FormValue<string>;
+
         private _minLength!: number;
         private _maxLength!: number;
-        private _value = '';
 
         public set minLength(value: number) {
           this._minLength = value;
@@ -74,12 +76,18 @@ describe('Form associated mixin tests', () => {
         }
 
         public set value(value: string) {
-          this._value = value;
+          this._formValue.setValueAndFormState(value);
           this._updateValidity();
         }
 
         public get value() {
-          return this._value;
+          return this._formValue.value;
+        }
+
+        constructor() {
+          super();
+
+          this._formValue = createFormValueState(this, { initialValue: '' });
         }
 
         public override connectedCallback() {

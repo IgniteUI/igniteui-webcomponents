@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
@@ -17,6 +17,10 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
 import { noop, partNameMap } from '../common/util.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
@@ -81,8 +85,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
+  protected override _formValue: FormValue<Date | null>;
+
   protected _defaultMask!: string;
-  protected _value: Date | null = null;
   private _oldValue: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -118,7 +123,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   public get value(): Date | null {
-    return this._value;
+    return this._formValue.value;
   }
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
@@ -128,8 +133,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._value = convertToDate(value);
-    this._setFormValue(getDateFormValue(this._value));
+    this._formValue.setValueAndFormState(value as Date | null);
     this.updateMask();
     this._validate();
   }
@@ -275,6 +279,15 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    this._formValue = createFormValueState(this, {
+      initialValue: null,
+      transformers: {
+        setValue: convertToDate,
+        setDefaultValue: convertToDate,
+        setFormValue: getDateFormValue,
+      },
+    });
 
     addKeybindings(this, {
       skip: () => this.readOnly,
@@ -464,6 +477,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return newDate;
   }
 
+  @eventOptions({ passive: false })
   private async onWheel(event: WheelEvent) {
     if (!this.focused || this.readOnly) {
       return;
@@ -587,7 +601,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this._oldValue = this.value;
     const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
-    if (!this._value) {
+    if (!this.value) {
       this.maskedValue = this.emptyMask;
       await this.updateComplete;
       this.select();

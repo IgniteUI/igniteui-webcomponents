@@ -29,6 +29,10 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
 import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DatePart } from '../date-time-input/date-util.js';
@@ -169,7 +173,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  private _value: Date | null = null;
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -203,6 +206,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   protected get _isMaterialTheme(): boolean {
     return getThemeController(this)?.theme === 'material';
   }
+
+  protected override _formValue: FormValue<Date | null>;
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -246,13 +251,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    this._value = convertToDate(value);
-    this._setFormValue(getDateFormValue(this._value));
+    this._formValue.setValueAndFormState(value as Date | null);
     this._validate();
   }
 
   public get value(): Date | null {
-    return this._value;
+    return this._formValue.value;
   }
 
   /**
@@ -428,6 +432,15 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
+    this._formValue = createFormValueState<Date | null>(this, {
+      initialValue: null,
+      transformers: {
+        setValue: convertToDate,
+        setDefaultValue: convertToDate,
+        setFormValue: getDateFormValue,
+      },
+    });
+
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('focusout', this.handleFocusOut);
 
@@ -547,7 +560,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     if (this.readOnly) {
       // Wait till the calendar finishes updating and then restore the current value from the date-picker.
       await this._calendar.updateComplete;
-      this._calendar.value = this._value;
+      this._calendar.value = this.value;
       return;
     }
 
@@ -580,13 +593,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected handleDialogClosed(event: Event) {
     event.stopPropagation();
-  }
-
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ) {
-    this._defaultValue = convertToDate(current);
   }
 
   private setDateConstraints() {

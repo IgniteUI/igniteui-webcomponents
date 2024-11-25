@@ -13,8 +13,8 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
@@ -896,7 +896,7 @@ describe('Date picker', () => {
 
   describe('Form integration', () => {
     const today = CalendarDay.today;
-    const spec = new FormAssociatedTestBed<IgcDatePickerComponent>(
+    const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(
       html`<igc-date-picker name="datePicker"></igc-date-picker>`
     );
 
@@ -904,44 +904,36 @@ describe('Date picker', () => {
       await spec.setup(IgcDatePickerComponent.tagName);
     });
 
-    it('should be form associated', async () => {
+    it('should be form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('should not participate in form submission if the value is empty/invalid', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('should not participate in form submission if the value is empty/invalid', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('should participate in form submission if there is a value and the value adheres to the validation constraints', async () => {
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value.toISOString()
-      );
+    it('should participate in form submission if there is a value and the value adheres to the validation constraints', () => {
+      spec.setProperties({ value: today.native });
+      spec.assertSubmitHasValue(spec.element.value?.toISOString());
     });
 
-    it('should reset to its default value state on form reset', async () => {
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-
+    it('should reset to its default value state on form reset', () => {
+      spec.setProperties({ value: today.native });
       spec.reset();
+
       expect(spec.element.value).to.be.null;
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      spec.element.setAttribute('value', today.native.toISOString());
-      spec.element.value = today.add('day', 180).native;
-
+      spec.setAttributes({ value: today.native.toISOString() });
+      spec.setProperties({ value: today.add('day', 180).native });
       spec.reset();
 
-      checkDatesEqual(spec.element.value, today);
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        today.native.toISOString()
-      );
+      checkDatesEqual(spec.element.value!, today);
+      spec.assertSubmitHasValue(today.native.toISOString());
     });
 
-    it('should reflect disabled ancestor state (fieldset/form)', async () => {
+    it('should reflect disabled ancestor state (fieldset/form)', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -949,67 +941,56 @@ describe('Date picker', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('should enforce required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('should enforce required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: today.native });
+      spec.assertSubmitPasses();
     });
 
-    it('should enforce min value constraint', async () => {
-      spec.element.min = new Date(2025, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('should enforce min value constraint', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1) });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2022, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitFails();
+      spec.setProperties({ value: new Date(2022, 0, 1) });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2025, 0, 2);
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2026, 0, 2) });
+      spec.assertSubmitPasses();
     });
 
-    it('should enforce max value constraint', async () => {
-      spec.element.max = new Date(2020, 0, 1);
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('should enforce max value constraint', () => {
+      spec.setProperties({ max: new Date(2020, 0, 1), value: today.native });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2020, 0, 1);
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2020, 0, 1) });
+      spec.assertSubmitPasses();
     });
 
-    it('should enforce min value constraint with string property', async () => {
-      spec.element.min = new Date(2025, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('should enforce min value constraint with string property', () => {
+      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2022, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitFails();
+      spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2025, 0, 2).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
+      spec.assertSubmitPasses();
     });
 
-    it('should enforce max value constraint with string property', async () => {
-      spec.element.max = new Date(2020, 0, 1).toISOString();
-      spec.element.value = today.native;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('should enforce max value constraint with string property', () => {
+      spec.setProperties({
+        max: new Date(2020, 0, 1).toISOString(),
+        value: today.native,
+      });
+      spec.assertSubmitFails();
 
-      spec.element.value = new Date(2020, 0, 1).toISOString();
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
+      spec.assertSubmitPasses();
     });
 
-    it('should invalidate the component if a disabled date is typed in the input', async () => {
+    it('should invalidate the component if a disabled date is typed in the input', () => {
       const minDate = new Date(2024, 1, 1);
       const maxDate = new Date(2024, 1, 28);
 
@@ -1020,36 +1001,165 @@ describe('Date picker', () => {
         },
       ];
 
-      spec.element.disabledDates = disabledDates;
-      await elementUpdated(spec.element);
-
-      spec.element.value = new Date(2024, 1, 26);
-      await elementUpdated(spec.element);
+      spec.setProperties({ disabledDates, value: new Date(2024, 1, 26) });
 
       expect(spec.element.invalid).to.be.true;
-      spec.submitFails();
+      spec.assertSubmitFails();
     });
 
-    it('should enforce custom constraint', async () => {
+    it('should enforce custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
     });
 
-    it('synchronous form validation', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
+    it('synchronous form validation', () => {
+      spec.setProperties({ required: true }, false);
 
       expect(spec.form.checkValidity()).to.be.false;
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.reset();
 
-      spec.element.value = today.native;
+      spec.setProperties({ value: today.native }, false);
+
       expect(spec.form.checkValidity()).to.be.true;
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    const today = CalendarDay.today;
+
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
+        <igc-date-picker
+          name="datePicker"
+          .defaultValue=${today.native}
+        ></igc-date-picker>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcDatePickerComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        checkDatesEqual(spec.element.value!, today);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(today.native.toISOString());
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: today.add('day', 1).native });
+        spec.reset();
+
+        checkDatesEqual(spec.element.value!, today);
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
+        <igc-date-picker
+          name="datePicker"
+          required
+          .defaultValue=${null}
+        ></igc-date-picker>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcDatePickerComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation when updating defaultValue', () => {
+        spec.setProperties({ defaultValue: today.native });
+        spec.assertIsPristine();
+
+        spec.assertSubmitPasses();
+      });
+
+      it('fails min validation', () => {
+        spec.setProperties({
+          min: today.native,
+          defaultValue: today.add('day', -1).native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes min validation', () => {
+        spec.setProperties({ min: today.native, defaultValue: today.native });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails max validation', () => {
+        spec.setProperties({
+          max: today.native,
+          defaultValue: today.native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes max validation', () => {
+        spec.setProperties({
+          max: today.native,
+          defaultValue: today.add('day', -1).native,
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails for range constraints', () => {
+        const minDate = new Date(2024, 1, 1);
+        const maxDate = new Date(2024, 1, 28);
+
+        const disabledDates: DateRangeDescriptor[] = [
+          {
+            type: DateRangeType.Between,
+            dateRange: [minDate, maxDate],
+          },
+        ];
+
+        spec.setProperties({ disabledDates });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes for range constraints', () => {
+        const minDate = new Date(2024, 1, 1);
+        const maxDate = new Date(2024, 1, 28);
+
+        const disabledDates: DateRangeDescriptor[] = [
+          {
+            type: DateRangeType.Between,
+            dateRange: [minDate, maxDate],
+          },
+        ];
+
+        spec.setProperties({
+          disabledDates,
+          defaultValue: new Date(2024, 1, 26),
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 

@@ -4,6 +4,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
+import {
+  type FormValue,
+  createFormValueState,
+  defaultNumberTransformers,
+} from '../common/mixins/forms/form-value.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
@@ -55,7 +60,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
   }
 
-  private _value = 0;
+  protected override _formValue: FormValue<number>;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -64,26 +69,31 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
    */
   @property({ type: Number })
   public set value(value: number) {
-    this._value = this.validateValue(asNumber(value, this._value));
-    this._setFormValue(this._value.toString());
+    this._formValue.setValueAndFormState(
+      this.validateValue(asNumber(value, this._formValue.value))
+    );
   }
 
   public get value(): number {
-    return this._value;
+    return this._formValue.value;
   }
 
   protected override get activeValue(): number {
     return this.value;
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ): void {
-    this._defaultValue = this.validateValue(asNumber(current));
+  constructor() {
+    super();
+
+    this._formValue = createFormValueState(this, {
+      initialValue: 0,
+      transformers: defaultNumberTransformers,
+    });
   }
 
   protected override normalizeValue(): void {
+    // this._formValue.value = this.validateValue(this.value);
+    // REVIEW
     this.value = this.validateValue(this.value);
   }
 
