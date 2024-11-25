@@ -34,7 +34,7 @@ export default class IgcResizeComponent extends EventEmitterMixin<
 
     [part='resize-base'] {
       position: relative;
-      min-height: 100%;
+      height: 100%;
     }
 
     [part='trigger'] {

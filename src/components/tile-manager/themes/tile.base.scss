@@ -13,10 +13,6 @@
     height: 100%;
 }
 
-div[part~='base'] {
-    position: absolute;
-}
-
 [part='content-container'] {
     display: block;
     overflow: auto;
