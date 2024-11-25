@@ -335,7 +335,7 @@ describe('Combo', () => {
       const cityNames: string[] = [];
 
       items(combo).forEach((item) => {
-        cityNames.push(item.textContent!);
+        cityNames.push(item.innerText);
       });
 
       cities.forEach((city) => {
@@ -373,7 +373,7 @@ describe('Combo', () => {
       });
 
       const selected = items(combo).find((item) => item.selected);
-      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+      expect(selected?.innerText).to.equal(item[combo.displayKey!]);
 
       combo.deselect([item[combo.valueKey!]]);
 
@@ -401,7 +401,7 @@ describe('Combo', () => {
       });
 
       const selected = items(combo).find((item) => item.selected);
-      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+      expect(selected?.innerText).to.equal(item[combo.displayKey!]);
 
       combo.deselect([item]);
 
@@ -807,7 +807,7 @@ describe('Combo', () => {
       await filterCombo('sof');
 
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {
@@ -975,7 +975,7 @@ describe('Combo', () => {
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected.length).to.equal(1);
-      expect(selected[0].textContent).to.equal(match?.name);
+      expect(selected[0].innerText).to.equal(match?.name);
     });
 
     it('should deselect a single item using valueKey as argument with the Selection API', async () => {
@@ -1017,7 +1017,7 @@ describe('Combo', () => {
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected.length).to.equal(1);
-      expect(selected[0].textContent).to.equal(item?.name);
+      expect(selected[0].innerText).to.equal(item?.name);
     });
 
     it('should deselect the item passed as argument with the Selection API', async () => {
@@ -1056,7 +1056,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
 
       // Select an item not visible in the list using the API
       const selection = 'US01';
@@ -1079,7 +1079,7 @@ describe('Combo', () => {
       expect(selected.length).to.equal(1);
 
       // It should match the one selected via the API
-      expect(selected[0].textContent).to.equal('New York');
+      expect(selected[0].innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
@@ -1097,7 +1097,7 @@ describe('Combo', () => {
       expect(selected.length).to.equal(1);
 
       // It should match the one selected via the API
-      expect(selected[0].textContent).to.equal('New York');
+      expect(selected[0].innerText).to.equal('New York');
       expect(combo.value[0]).to.equal(selection);
 
       // Filter the list of items
@@ -1108,7 +1108,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
 
       // Deselect the previously selected item while the list is filtered
       combo.deselect(selection);

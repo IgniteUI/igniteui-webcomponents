@@ -91,6 +91,23 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    valueKey: {
+      type: 'string',
+      description: 'The key in the data source used when selecting items.',
+      control: 'text',
+    },
+    displayKey: {
+      type: 'string',
+      description:
+        'The key in the data source used to display items in the list.',
+      control: 'text',
+    },
+    groupKey: {
+      type: 'string',
+      description:
+        'The key in the data source used to group items in the list.',
+      control: 'text',
+    },
     groupSorting: {
       type: '"asc" | "desc" | "none"',
       description:
@@ -172,6 +189,12 @@ interface IgcComboArgs {
   placeholderSearch: string;
   /** Sets the open state of the component. */
   open: boolean;
+  /** The key in the data source used when selecting items. */
+  valueKey: string;
+  /** The key in the data source used to display items in the list. */
+  displayKey: string;
+  /** The key in the data source used to group items in the list. */
+  groupKey: string;
   /** Sorts the items in each group by ascending or descending order. */
   groupSorting: 'asc' | 'desc' | 'none';
   /** Enables the case sensitive search icon in the filtering input. */
@@ -278,12 +301,15 @@ export const Default: Story = {
     placeholder: 'Cities of interest',
     placeholderSearch: 'Search cities...',
     groupSorting: 'asc',
+    valueKey: 'id',
+    displayKey: 'name',
+    groupKey: 'country',
   },
   render: (args) => html`
     <igc-combo
-      value-key="id"
-      display-key="name"
-      group-key="country"
+      value-key=${args.valueKey}
+      display-key=${args.displayKey}
+      group-key=${args.groupKey}
       value='["BG01", "BG02"]'
       .label=${args.label}
       .name=${args.name}
