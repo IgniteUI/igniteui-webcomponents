@@ -1,5 +1,9 @@
 @use 'styles/utilities' as *;
 
+igc-checkbox {
+    --control-padding: 0;
+}
+
 [part~='select'] {
-    margin-inline-end: rem(4px);
+    margin-inline: rem(10px) rem(14px);
 }
