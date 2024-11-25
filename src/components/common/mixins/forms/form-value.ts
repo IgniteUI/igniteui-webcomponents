@@ -42,14 +42,16 @@ export class FormValue<T> {
   private _host: IgcFormControl;
   private _value: T;
   private _defaultValue: T;
-  private _transformers =
-    defaultTransformers as unknown as FormValueTransformers<T>;
+  private _transformers: FormValueTransformers<T>;
 
   constructor(host: IgcFormControl, config: FormValueConfig<T>) {
     this._host = host;
     this._value = config.initialValue;
     this._defaultValue = config.initialDefaultValue ?? this._value;
-    Object.assign(this._transformers, config.transformers);
+    this._transformers = {
+      ...defaultTransformers,
+      ...config.transformers,
+    } as FormValueTransformers<T>;
   }
 
   public setValueAndFormState(value: T) {

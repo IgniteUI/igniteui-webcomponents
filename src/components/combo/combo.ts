@@ -18,6 +18,10 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
+import {
   asArray,
   findElementFromEventPath,
   first,
@@ -133,7 +137,8 @@ export default class IgcComboComponent<
 
   private _data: T[] = [];
 
-  private _value: ComboValue<T>[] = [];
+  protected override _formValue: FormValue<ComboValue<T>[]>;
+
   private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
   private _groupKey?: Keys<T>;
@@ -178,7 +183,7 @@ export default class IgcComboComponent<
   @property({ attribute: false })
   public set data(value: T[]) {
     this._data = asArray(value);
-    this.value = asArray(this._value);
+    this.value = asArray(this.value);
     this._state.runPipeline();
   }
 
@@ -405,7 +410,7 @@ export default class IgcComboComponent<
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    this._value = asArray(items);
+    this._formValue.value = items;
     if (this.hasUpdated) {
       this._updateSelection();
       this.updateValue();
@@ -417,13 +422,13 @@ export default class IgcComboComponent<
    * represented by the value key, when provided.
    */
   public get value(): ComboValue<T>[] {
-    return this._value;
+    return this._formValue.value;
   }
 
   protected _updateSelection() {
     this._selection.deselect();
-    if (!isEmpty(this._value)) {
-      this._selection.select(this._value);
+    if (!isEmpty(this.value)) {
+      this._selection.select(this.value);
     }
   }
 
@@ -445,6 +450,14 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
+    this._formValue = createFormValueState<ComboValue<T>[]>(this, {
+      initialValue: [],
+      transformers: {
+        setValue: asArray,
+        setDefaultValue: asArray,
+      },
+    });
+
     this.addEventListener('blur', this._handleBlur);
 
     this.addEventListener(
@@ -464,27 +477,24 @@ export default class IgcComboComponent<
     this._state.searchTerm = '';
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ): void {
-    this._defaultValue = JSON.parse(current ?? '[]');
+  protected override _setDefaultValue(current: string | null): void {
+    this.defaultValue = JSON.parse(current ?? '[]');
   }
 
   protected override _setFormValue(): void {
-    if (isEmpty(this._value)) {
+    if (isEmpty(this.value)) {
       super._setFormValue(null);
       return;
     }
 
     if (this.singleSelect) {
-      super._setFormValue(`${first(this._value)}`);
+      super._setFormValue(`${first(this.value)}`);
       return;
     }
 
     if (this.name) {
       const value = new FormData();
-      for (const item of this._value) {
+      for (const item of this.value) {
         value.append(this.name, `${item}`);
       }
       super._setFormValue(value);
@@ -495,8 +505,9 @@ export default class IgcComboComponent<
     if (isEmpty(this.data)) {
       return;
     }
-
-    this._value = this._selection.getSelectedValuesByKey(this.valueKey);
+    this._formValue.value = this._selection.getSelectedValuesByKey(
+      this.valueKey
+    );
     this._displayValue = this._selection
       .getSelectedValuesByKey(this.displayKey)
       .join(', ');
@@ -778,7 +789,7 @@ export default class IgcComboComponent<
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
       this._selection.deselect(item, !isEmpty(_selection));
-      this._value = [];
+      this._formValue.value = [];
     }
   }
 
