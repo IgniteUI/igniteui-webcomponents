@@ -16,6 +16,7 @@
 [part='content-container'] {
     display: block;
     overflow: auto;
+    border-radius: inherit;
 
     ::slotted(*) {
         @include type-style('body-1');

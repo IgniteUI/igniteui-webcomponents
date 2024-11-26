@@ -372,7 +372,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
       .getComputedStyle(this)
       .getPropertyValue('--ghost-border');
 
-    const ghost = this.cloneNode(true) as IgcTileComponent;
+    const ghostBorderRadius = window
+      .getComputedStyle(this)
+      .getPropertyValue('--border-radius');
+
+    const ghostMinWidth = window
+      .getComputedStyle(this)
+      .getPropertyValue('--ig-min-col-width');
+
+    const ghostMinHeight = window
+      .getComputedStyle(this)
+      .getPropertyValue('--ig-min-row-height');
+
+    const ghost = document.createElement('div');
     Object.assign(ghost.style, {
       position: 'absolute',
       top: 0,
@@ -380,9 +392,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       zIndex: 1000,
       background: ghostBackground,
       border: `1px solid ${ghostBorder}`,
-      borderRadius: '4px',
+      borderRadius: ghostBorderRadius,
       width: '100%',
       height: '100%',
+      minWidth: ghostMinWidth,
+      minHeight: ghostMinHeight,
       gridRow: '',
       gridColumn: '',
     });
@@ -427,7 +441,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       ? this.renderContent()
       : html`
           <igc-resize
-            part="base"
+            part="resize"
             .ghostFactory=${this.ghostFactory}
             mode="deferred"
             @igcResize=${this._handleResize}
