@@ -48,7 +48,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private draggedItem: IgcTileComponent | null = null;
   private finalOrder: IgcTileComponent[] = [];
   private positionedTiles: IgcTileComponent[] = [];
-  private _columnCount = 10;
+  private _columnCount!: number;
 
   // @query('[part="base"]', true)
   // private _baseWrapper!: HTMLDivElement;
@@ -93,7 +93,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   public set columnCount(value: number) {
     const oldValue = this._columnCount;
 
-    if (value <= 0) {
+    if (value <= 0 || value === undefined) {
       this._columnCount = 10;
     } else {
       this._columnCount = value;
