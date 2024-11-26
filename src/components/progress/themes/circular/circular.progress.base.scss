@@ -26,23 +26,20 @@
     font-weight: 600;
 }
 
-[part~='value'] {
+[part~='counter'] {
     animation: initial-counter var(--_transition-duration) ease-in-out;
-    transition:
-            --_progress-integer var(--_transition-duration) ease-in-out,
-            --_progress-fraction var(--_transition-duration) ease-in-out;
-    counter-reset:
-            progress-integer var(--_progress-integer, 0)
-            progress-fraction var(--_progress-fraction, 0);
+    transition: --_progress-integer var(--_transition-duration) ease-in-out,
+    --_progress-fraction var(--_transition-duration) ease-in-out;
+    counter-reset: progress-integer var(--_progress-integer, 0) progress-fraction var(--_progress-fraction, 0);
 }
 
-[part~='value']:not([part~='fraction']) {
+[part~='counter']:not([part~='fraction']) {
     &::before {
         content: counter(progress-integer) '%';
     }
 }
 
-[part~='fraction'] {
+[part~='counter'][part~='fraction'] {
     &::before {
         content: counter(progress-integer) '.' counter(progress-fraction, decimal-leading-zero) '%';
     }

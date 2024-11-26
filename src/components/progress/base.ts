@@ -188,7 +188,12 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     const basePart = 'label value';
     const part = `${basePart}${this.hasFraction ? ' fraction' : ''}`.trim();
 
-    return html`<span part=${part}></span>`;
+    if (this.labelFormat) {
+      return html` <span part=${part}>${this.renderLabelFormat()}</span> `;
+    }
+
+    // Default behavior: Render empty span (CSS handles everything)
+    return html`<span part="${part} counter"></span>`;
   }
 
   protected renderLabelFormat() {
