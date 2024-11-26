@@ -299,3 +299,9 @@ addIcon('collapse_content', {
     collection: 'internal',
   },
 });
+addIcon('resize', {
+  default: {
+    name: 'resize',
+    collection: 'internal',
+  },
+});

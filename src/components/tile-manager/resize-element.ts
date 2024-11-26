@@ -1,4 +1,4 @@
-import { LitElement, css, html } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import {
@@ -13,6 +13,8 @@ import {
   type ResizeMode,
   addResizeController,
 } from './resize-controller.js';
+import { styles } from './themes/resize.base.css.js';
+import { styles as shared } from './themes/shared/resize.common.css.js';
 
 export interface IgcResizeComponentEventMap {
   igcResizeStart: CustomEvent<ResizeCallbackParams>;
@@ -26,28 +28,7 @@ export default class IgcResizeComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static tagName = 'igc-resize';
-
-  public static styles = css`
-    :host {
-      display: contents;
-    }
-
-    [part='resize-base'] {
-      position: relative;
-      height: 100%;
-    }
-
-    [part='trigger'] {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      z-index: 1;
-    }
-
-    [part='trigger']:focus {
-      outline: none;
-    }
-  `;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -144,7 +125,9 @@ export default class IgcResizeComponent extends EventEmitterMixin<
     return html`
       <div part="resize-base">
         <slot></slot>
-        <div ${ref(this._adorner)} part="trigger" tabindex="-1">↘️</div>
+        <div ${ref(this._adorner)} part="trigger" tabindex="-1">
+          <igc-icon name="resize" collection="default"></igc-icon>
+        </div>
       </div>
     `;
   }
