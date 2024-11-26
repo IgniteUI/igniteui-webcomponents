@@ -1,6 +1,9 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-import { findElementFromEventPath } from '../common/util.js';
+import {
+  findElementFromEventPath,
+  getElementByIdFromRoot,
+} from '../common/util.js';
 
 export type ResizeMode = 'immediate' | 'deferred';
 
@@ -57,6 +60,11 @@ class ResizeController implements ReactiveController {
   protected _initialState!: DOMRect;
   private _state!: DOMRect;
 
+  private _initialPointerX!: number;
+  private _initialPointerY!: number;
+  private _minWidth!: string;
+  private _minHeight!: string;
+
   protected get _element() {
     return this._config?.ref ? this._config.ref.value! : this._host;
   }
@@ -92,10 +100,21 @@ class ResizeController implements ReactiveController {
   }
 
   private _setInitialState(event: PointerEvent) {
-    const rect = this._host.getBoundingClientRect();
+    const resizableElement = this._host.querySelector('div[part~="base"]');
+
+    const rect = resizableElement!.getBoundingClientRect();
     this._initialState = structuredClone(rect);
     this._state = rect;
+    this._initialPointerX = event.clientX;
+    this._initialPointerY = event.clientY;
     this._id = event.pointerId;
+
+    this._minWidth = getComputedStyle(resizableElement!).getPropertyValue(
+      '--ig-min-col-width'
+    );
+    this._minHeight = getComputedStyle(resizableElement!).getPropertyValue(
+      '--ig-min-row-height'
+    );
   }
 
   private _createCallbackParams(event: PointerEvent): ResizeCallbackParams {
@@ -150,8 +169,17 @@ class ResizeController implements ReactiveController {
     // REVIEW: Sequencing
 
     if (this._config?.resize) {
-      this._state.width = event.clientX;
-      this._state.height = event.clientY;
+      const deltaX = event.clientX - this._initialPointerX;
+      const deltaY = event.clientY - this._initialPointerY;
+
+      this._state.width = Math.max(
+        this._initialState.width + deltaX,
+        Number.parseFloat(this._minWidth)
+      );
+      this._state.height = Math.max(
+        this._initialState.height + deltaY,
+        Number.parseFloat(this._minHeight)
+      );
 
       this._config.resize.call(this._host, this._createCallbackParams(event));
     }
