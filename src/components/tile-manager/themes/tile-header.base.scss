@@ -4,14 +4,9 @@
 [part='header'] {
     display: flex;
     align-items: center;
-    box-sizing: border-box;
+    gap: sizable(rem(12px), rem(16px), rem(16px));
     padding-block: sizable(rem(8px), rem(13px), rem(13px));
     padding-inline: sizable(rem(12px), rem(16px), rem(20px));
-}
-
-[part='title'] {
-    display: block;
-    flex: 1 1 100%;
 }
 
 ::slotted([slot='title']) {
@@ -23,4 +18,5 @@
 [part='actions'] {
     display: flex;
     gap: rem(8px);
+    margin-inline-start: auto;
 }

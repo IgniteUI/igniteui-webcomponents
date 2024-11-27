@@ -117,18 +117,18 @@ const tiles = Array.from(
   map(
     range(10),
     (i) => html`
-      <igc-tile
-        .colSpan=${3}
-        .rowSpan=${9}
-        .disableResize=${i === 0}
-        .disableDrag=${i === 0}
-      >
+      <igc-tile .disableResize=${i === 0} .disableDrag=${i === 0}>
         <igc-tile-header slot="header">
           <h3 slot="title">Tile ${i + 1} Title</h3>
           <igc-icon name="home" slot="actions"></igc-icon>
         </igc-tile-header>
 
         <p>Text in Tile ${i + 1}</p>
+        <div class="picture">
+          <img
+            src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
+          />
+        </div>
       </igc-tile>
     `
   )
@@ -145,19 +145,19 @@ export const AutoInfer: Story = {
   argTypes: disableStoryControls(metadata),
   render: (args) => html`
     <style>
-      :root {
-        --ig-min-col-width: 600px;
-        /* --ig-min-row-height: 300px; */
-      }
-
-      igc-tile {
-        width: fit-content;
+      igc-tile::part(content-container) {
+        height: 100%;
       }
 
       .picture {
-        & img {
-          margin: 0 auto;
-          object-fit: scale-down;
+        display: flex;
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       }
     </style>
@@ -558,6 +558,19 @@ export const FinDashboard1: Story = {
 
 export const Default: Story = {
   render: (args) => html`
+    <style>
+      .picture {
+        display: flex;
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    </style>
     <igc-tile-manager
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
@@ -591,14 +604,6 @@ function cancelStateChangeEvent(e: CustomEvent) {
 
 export const Maximized: Story = {
   render: (args) => html`
-    <style>
-      igc-tile-manager {
-        margin: 0 auto;
-        height: 75lvh;
-        width: 75lvw;
-      }
-    </style>
-
     <igc-tile-manager
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
@@ -648,10 +653,16 @@ function removeTile() {
 }
 
 export const DynamicTiles: Story = {
-  render: () => html`
+  render: (args) => html`
     <igc-button @click=${addTile}>Add Tile</igc-button>
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
-    <igc-tile-manager id="tile-manager1">
+    <igc-tile-manager
+      id="tile-manager1"
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       <igc-tile id="tile1" position="1">
         <h1>Tile1</h1>
       </igc-tile>
@@ -691,12 +702,18 @@ function loadTileManager() {
 }
 
 export const Serialization: Story = {
-  render: () => html`
+  render: (args) => html`
     <igc-button @click=${saveTileManager}>Save Layout</igc-button>
     <igc-button @click=${loadTileManager}>Load Layout</igc-button>
     <igc-button @click=${addTile}>Add Tile</igc-button>
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
-    <igc-tile-manager id="tile-manager1">
+    <igc-tile-manager
+      id="tile-manager1"
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       <igc-tile disable-drag disable-resize>
         <igc-tile-header>Header 1</igc-tile-header>
         <h1>Tile1</h1>

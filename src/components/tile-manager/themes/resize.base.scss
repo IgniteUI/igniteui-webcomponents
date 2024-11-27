@@ -2,6 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --resize-display: none;
+
     display: contents;
 }
 
@@ -11,7 +13,8 @@
 }
 
 [part='trigger'] {
-    display: inline-flex;
+    display: var(--resize-display);
+    cursor: nwse-resize;
     position: absolute;
     bottom: rem(2px);
     right: rem(2px);

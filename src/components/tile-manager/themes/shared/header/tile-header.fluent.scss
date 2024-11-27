@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+[part='header'] {
+    padding-block: sizable(rem(8px), rem(12px), rem(12px));
+}

@@ -8,14 +8,20 @@
     grid-row: var(--ig-row-start, auto) / span var(--ig-row-span, 1);
 }
 
+:host(:hover) {
+    igc-resize {
+        --resize-display: inline-flex;
+    }
+}
+
 [part~='base'] {
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 [part='content-container'] {
     display: block;
-    overflow: auto;
     border-radius: inherit;
 
     ::slotted(*) {
@@ -43,15 +49,4 @@
 // [part~='drag-over'] {
 //     opacity: 0.5;
 //     pointer-events: none;
-// }
-
-// .resize-handle {
-//     position: absolute;
-//     width: 15px;
-//     height: 15px;
-//     right: 0;
-//     bottom: 0;
-//     cursor: se-resize;
-//     background: rgba(0 0 0);
-//     z-index: 999;
 // }

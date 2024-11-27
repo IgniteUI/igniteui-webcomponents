@@ -12,3 +12,7 @@ $theme: $material;
 [part='title'] {
     color: var-get($theme, 'title-color');
 }
+
+igc-divider {
+    --color: var-get($theme, 'divider-color');
+}
