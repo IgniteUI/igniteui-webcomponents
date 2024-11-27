@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   type FormValue,
@@ -56,6 +55,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number' ? stringValidators : numberValidators;
   }
 
+  private _min?: number;
+  private _max?: number;
+  private _minLength?: number;
+  private _maxLength?: number;
+  private _pattern?: string;
+  private _step?: number;
+
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
@@ -99,42 +105,84 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * @attr
    */
   @property()
-  public pattern!: string;
+  public set pattern(value: string | undefined) {
+    this._pattern = value;
+    this._validate();
+  }
+
+  public get pattern(): string | undefined {
+    return this._pattern;
+  }
 
   /**
    * The minimum string length required by the control.
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public minLength!: number;
+  public set minLength(value: number | undefined) {
+    this._minLength = value;
+    this._validate();
+  }
+
+  public get minLength(): number | undefined {
+    return this._minLength;
+  }
 
   /**
    * The maximum string length of the control.
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public maxLength!: number;
+  public set maxLength(value: number | undefined) {
+    this._maxLength = value;
+    this._validate();
+  }
+
+  public get maxLength(): number | undefined {
+    return this._maxLength;
+  }
 
   /**
    * The min attribute of the control.
    * @attr
    */
-  @property()
-  public min!: number | string;
+  @property({ type: Number })
+  public set min(value: number | undefined) {
+    this._min = value;
+    this._validate();
+  }
+
+  public get min(): number | undefined {
+    return this._min;
+  }
 
   /**
    * The max attribute of the control.
    * @attr
    */
-  @property()
-  public max!: number | string;
+  @property({ type: Number })
+  public set max(value: number | undefined) {
+    this._max = value;
+    this._validate();
+  }
+
+  public get max(): number | undefined {
+    return this._max;
+  }
 
   /**
    * The step attribute of the control.
    * @attr
    */
   @property({ type: Number })
-  public step!: number;
+  public set step(value: number | undefined) {
+    this._step = value;
+    this._validate();
+  }
+
+  public get step(): number | undefined {
+    return this._step;
+  }
 
   /**
    * The autofocus attribute of the control.
@@ -167,18 +215,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   constructor() {
     super();
-
     this._formValue = createFormValueState(this, { initialValue: '' });
-  }
-
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('minLength', { waitUntilFirstUpdate: true })
-  @watch('maxLength', { waitUntilFirstUpdate: true })
-  @watch('pattern', { waitUntilFirstUpdate: true })
-  @watch('step', { waitUntilFirstUpdate: true })
-  protected constraintsChanged() {
-    this._validate();
   }
 
   /* blazorSuppress */

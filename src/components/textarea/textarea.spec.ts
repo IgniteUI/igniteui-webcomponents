@@ -399,7 +399,7 @@ describe('Textarea component', () => {
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
           { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          { slots: ['tooShort'], props: { minLength: 3, value: '12' } }, // too-short slot
           { slots: ['customError'] }, // custom-error slot
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];

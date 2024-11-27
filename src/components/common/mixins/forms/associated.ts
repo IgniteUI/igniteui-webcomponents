@@ -145,6 +145,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected _restoreDefaultValue(): void {
       this._formValue.setValueAndFormState(this._formValue.defaultValue);
+      this.requestUpdate();
     }
 
     protected _validate(message?: string): void {

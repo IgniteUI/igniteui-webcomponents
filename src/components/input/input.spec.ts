@@ -140,21 +140,16 @@ describe('Input component', () => {
         await createFixture(
           html`<igc-input type="number" min="3" max="6"></igc-input>`
         );
+        expect([element.min, element.max]).to.eql([3, 6]);
+        expect([input.min, input.max]).to.eql(['3', '6']);
 
-        expect(element.min).to.equal('3');
-        expect(element.max).to.equal('6');
-        expect(input.min).to.equal('3');
-        expect(input.max).to.equal('6');
+        expect(element.checkValidity()).to.be.true;
 
-        expect(element.checkValidity()).to.be.false;
-
-        Object.assign(element, { min: '1', max: '2' });
+        Object.assign(element, { min: 1, max: 2, value: 8 });
         await elementUpdated(element);
 
-        expect(element.min).to.equal('1');
-        expect(element.max).to.equal('2');
-        expect(input.min).to.equal('1');
-        expect(input.max).to.equal('2');
+        expect([element.min, element.max]).to.eql([1, 2]);
+        expect([input.min, input.max]).to.eql(['1', '2']);
 
         expect(element.checkValidity()).to.be.false;
       });
@@ -164,26 +159,22 @@ describe('Input component', () => {
           html`<igc-input minlength="2" maxlength="4"></igc-input>`
         );
 
-        expect(element.minLength).to.equal(2);
-        expect(element.maxLength).to.equal(4);
-        expect(input.minLength).to.equal(2);
-        expect(input.maxLength).to.equal(4);
+        expect([element.minLength, element.maxLength]).to.eql([2, 4]);
+        expect([input.minLength, input.maxLength]).to.eql([2, 4]);
+        expect(element.checkValidity()).to.be.true;
 
-        expect(element.checkValidity()).to.be.false;
-
-        Object.assign(element, { minLength: 1, maxLength: 2 });
+        Object.assign(element, { minLength: 2, maxLength: 2, value: 'a' });
         await elementUpdated(element);
 
-        expect(element.minLength).to.equal(1);
-        expect(element.maxLength).to.equal(2);
-        expect(input.minLength).to.equal(1);
-        expect(input.maxLength).to.equal(2);
-
+        expect([element.minLength, element.maxLength]).to.eql([2, 2]);
+        expect([input.minLength, input.maxLength]).to.eql([2, 2]);
         expect(element.checkValidity()).to.be.false;
       });
 
       it('sets the pattern property', async () => {
-        await createFixture(html`<igc-input pattern="d{3}"></igc-input>`);
+        await createFixture(
+          html`<igc-input pattern="d{3}" value="a"></igc-input>`
+        );
 
         expect(element.pattern).to.equal('d{3}');
         expect(input.pattern).to.equal('d{3}');
@@ -420,7 +411,7 @@ describe('Input component', () => {
     });
 
     it('fulfils min value constraint', () => {
-      spec.setProperties({ type: 'number', min: 3 });
+      spec.setProperties({ type: 'number', min: 3, value: '2' });
       spec.assertSubmitFails();
 
       spec.setProperties({ value: '5' });
@@ -444,7 +435,7 @@ describe('Input component', () => {
     });
 
     it('fulfils minimum length constraint', () => {
-      spec.setProperties({ minLength: 3 });
+      spec.setProperties({ minLength: 3, value: 'a' });
       spec.assertSubmitFails();
 
       spec.setProperties({ value: 'abc' });
@@ -667,15 +658,21 @@ describe('Input component', () => {
       const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['typeMismatch'], props: { type: 'email' } }, // type-mismatch slot
-          { slots: ['patternMismatch'], props: { pattern: 'd{3}' } }, // pattern-mismatch slot
+          { slots: ['typeMismatch'], props: { type: 'email', value: 'a' } }, // type-mismatch slot
+          {
+            slots: ['patternMismatch'],
+            props: { pattern: 'd{3}', value: 'a' },
+          }, // pattern-mismatch slot
           { slots: ['tooLong'], props: { maxLength: 3, value: '123123' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          { slots: ['tooShort'], props: { minLength: 3, value: 'a' } }, // too-short slot
           {
             slots: ['rangeOverflow'],
             props: { type: 'number', max: 3, value: '5' }, // range-overflow slot
           },
-          { slots: ['rangeUnderflow'], props: { type: 'number', min: 3 } }, // range-underflow
+          {
+            slots: ['rangeUnderflow'],
+            props: { type: 'number', min: 3, value: '-3' },
+          }, // range-underflow
           {
             slots: ['stepMismatch'],
             props: { type: 'number', step: 2, value: '3' }, // step-mismatch slot
@@ -684,7 +681,7 @@ describe('Input component', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
           {
             slots: ['typeMismatch', 'tooShort'],
-            props: { type: 'email', minLength: 8 }, // multiple validation slots
+            props: { type: 'email', minLength: 8, value: 'a' }, // multiple validation slots
           },
         ];
 
