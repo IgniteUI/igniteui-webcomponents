@@ -62,7 +62,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='filter-input'] {
-    padding: pad-inline(rem(12px));
+    padding: pad(rem(12px));
 }
 
 :host(:focus-within) {
