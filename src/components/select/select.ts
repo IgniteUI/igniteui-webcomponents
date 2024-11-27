@@ -43,6 +43,7 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import {
   findElementFromEventPath,
+  isEmpty,
   isString,
   partNameMap,
 } from '../common/util.js';
@@ -128,7 +129,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  protected override _formValue: FormValue<string>;
+  protected override _formValue: FormValue<string | undefined>;
 
   private _searchTerm = '';
   private _lastKeyTime = 0;
@@ -157,43 +158,31 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   @query(IgcInputComponent.tagName, true)
-  protected input!: IgcInputComponent;
+  protected _input!: IgcInputComponent;
 
   @queryAssignedElements({ slot: 'suffix' })
-  protected inputSuffix!: Array<HTMLElement>;
+  protected _inputSuffix!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'prefix' })
-  protected inputPrefix!: Array<HTMLElement>;
+  protected _inputPrefix!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'toggle-icon-expanded' })
   protected _expandedIconSlot!: Array<HTMLElement>;
 
-  protected get hasExpandedIcon() {
-    return this._expandedIconSlot.length > 0;
-  }
-
-  protected get hasPrefixes() {
-    return this.inputPrefix.length > 0;
-  }
-
-  protected get hasSuffixes() {
-    return this.inputSuffix.length > 0;
-  }
-
+  /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
    * The value attribute of the control.
    * @attr
    */
   @property()
-  public get value(): string {
-    return this._formValue.value;
+  public set value(value: string | undefined) {
+    this._updateValue(value);
+    const item = this.getItem(this._formValue.value!);
+    item ? this.setSelectedItem(item) : this.clearSelectedItem();
   }
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
-  public set value(value: string) {
-    this._updateValue(value);
-    const item = this.getItem(this._formValue.value);
-    item ? this.setSelectedItem(item) : this.clearSelectedItem();
+  public get value(): string | undefined {
+    return this._formValue.value;
   }
 
   /**
@@ -278,7 +267,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    this._formValue = createFormValueState(this, { initialValue: '' });
+    this._formValue = createFormValueState<string | undefined>(this, {
+      initialValue: undefined,
+      transformers: {
+        setValue: (value) => value || undefined,
+        setDefaultValue: (value) => value || undefined,
+      },
+    });
+
     this._rootClickController.update({ hideCallback: this.handleClosing });
 
     addKeybindings(this, {
@@ -420,13 +416,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private async altArrowUp() {
     if (this.open && (await this._hide(true))) {
-      this.input.focus();
+      this._input.focus();
     }
   }
 
   protected async onEscapeKey() {
     if (await this._hide(true)) {
-      this.input.focus();
+      this._input.focus();
     }
   }
 
@@ -483,7 +479,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const shouldHide = emit && !this.keepOpenOnSelect;
 
     if (this._selectedItem === item) {
-      if (shouldFocus) this.input.focus();
+      if (shouldFocus) this._input.focus();
       return this._selectedItem;
     }
 
@@ -492,7 +488,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._updateValue(newItem.value);
 
     if (emit) this.handleChange(newItem);
-    if (shouldFocus) this.input.focus();
+    if (shouldFocus) this._input.focus();
     if (shouldHide) this._hide(true);
 
     return this._selectedItem;
@@ -530,19 +526,19 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
-    this.input.focus(options);
+    this._input.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur() {
-    this.input.blur();
+    this._input.blur();
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
   public override reportValidity() {
     const valid = super.reportValidity();
-    if (!valid) this.input.focus();
+    if (!valid) this._input.focus();
     return valid;
   }
 
@@ -584,8 +580,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderInputSlots() {
-    const prefixName = this.hasPrefixes ? 'prefix' : '';
-    const suffixName = this.hasSuffixes ? 'suffix' : '';
+    const prefixName = isEmpty(this._inputPrefix) ? '' : 'prefix';
+    const suffixName = isEmpty(this._inputSuffix) ? '' : 'suffix';
 
     return html`
       <span slot=${prefixName}>
@@ -600,8 +596,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected renderToggleIcon() {
     const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
-    const iconHidden = this.open && this.hasExpandedIcon;
-    const iconExpandedHidden = !(this.hasExpandedIcon && this.open);
+    const iconHidden = this.open && !isEmpty(this._expandedIconSlot);
+    const iconExpandedHidden = !iconHidden;
 
     return html`
       <span slot="suffix" part=${parts} aria-hidden="true">
