@@ -1,9 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-import {
-  findElementFromEventPath,
-  getElementByIdFromRoot,
-} from '../common/util.js';
+import { findElementFromEventPath } from '../common/util.js';
 
 export type ResizeMode = 'immediate' | 'deferred';
 
@@ -14,6 +11,7 @@ export type ResizeCallbackParams = {
     current: DOMRect;
     dx: number;
     dy: number;
+    ghost: HTMLElement | null;
   };
 };
 
@@ -60,11 +58,6 @@ class ResizeController implements ReactiveController {
   protected _initialState!: DOMRect;
   private _state!: DOMRect;
 
-  private _initialPointerX!: number;
-  private _initialPointerY!: number;
-  private _minWidth!: string;
-  private _minHeight!: string;
-
   protected get _element() {
     return this._config?.ref ? this._config.ref.value! : this._host;
   }
@@ -105,16 +98,7 @@ class ResizeController implements ReactiveController {
     const rect = resizableElement!.getBoundingClientRect();
     this._initialState = structuredClone(rect);
     this._state = rect;
-    this._initialPointerX = event.clientX;
-    this._initialPointerY = event.clientY;
     this._id = event.pointerId;
-
-    this._minWidth = getComputedStyle(resizableElement!).getPropertyValue(
-      '--ig-min-col-width'
-    );
-    this._minHeight = getComputedStyle(resizableElement!).getPropertyValue(
-      '--ig-min-row-height'
-    );
   }
 
   private _createCallbackParams(event: PointerEvent): ResizeCallbackParams {
@@ -125,6 +109,7 @@ class ResizeController implements ReactiveController {
         current: this._state,
         dx: this._state.width - this._initialState.width,
         dy: this._state.height - this._initialState.height,
+        ghost: this._ghost,
       },
     };
   }
@@ -152,9 +137,10 @@ class ResizeController implements ReactiveController {
 
     if (this._config?.start) {
       this._setInitialState(event);
-      this._config.start.call(this._host, this._createCallbackParams(event));
-
       this._createGhost();
+
+      const params = this._createCallbackParams(event);
+      this._config.start.call(this._host, params);
 
       this._element.setPointerCapture(this._id);
       this._toggleSubsequentEvents(true);
@@ -169,19 +155,9 @@ class ResizeController implements ReactiveController {
     // REVIEW: Sequencing
 
     if (this._config?.resize) {
-      const deltaX = event.clientX - this._initialPointerX;
-      const deltaY = event.clientY - this._initialPointerY;
-
-      this._state.width = Math.max(
-        this._initialState.width + deltaX,
-        Number.parseFloat(this._minWidth)
-      );
-      this._state.height = Math.max(
-        this._initialState.height + deltaY,
-        Number.parseFloat(this._minHeight)
-      );
-
-      this._config.resize.call(this._host, this._createCallbackParams(event));
+      const params = this._createCallbackParams(event);
+      this._config.resize.call(this._host, params);
+      this._state = params.state.current;
     }
 
     const target = this._config.mode === 'deferred' ? this._ghost! : this._host;

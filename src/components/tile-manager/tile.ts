@@ -68,6 +68,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _disableDrag = false;
   private _fullscreen = false;
   private _maximized = false;
+  private _initialPointerX: number | null = null;
+  private _initialPointerY: number | null = null;
+  private _cachedStyles: {
+    ghostBackground?: string;
+    ghostBorder?: string;
+    ghostBorderRadius?: string;
+    ghostMinWidth?: string;
+    ghostMinHeight?: string;
+  } = {};
   private _context = new ContextProvider(this, {
     context: tileContext,
     initialValue: this,
@@ -333,9 +342,43 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._isDragging = false;
   }
 
-  private _handleResize(_: CustomEvent<ResizeCallbackParams>) {
+  private cacheStyles() {
+    const computedStyle = window.getComputedStyle(this);
+
+    this._cachedStyles = {
+      ghostBackground: computedStyle.getPropertyValue(
+        '--placeholder-background'
+      ),
+      ghostBorder: computedStyle.getPropertyValue('--ghost-border'),
+      ghostBorderRadius: computedStyle.getPropertyValue('--border-radius'),
+      ghostMinWidth: computedStyle.getPropertyValue('--ig-min-col-width'),
+      ghostMinHeight: computedStyle.getPropertyValue('--ig-min-row-height'),
+    };
+  }
+
+  private _handleResizeStart(event: CustomEvent<ResizeCallbackParams>) {
+    const ghostElement = event.detail.state.ghost;
+    this._initialPointerX = event.detail.event.clientX;
+    this._initialPointerY = event.detail.event.clientY;
+
+    if (ghostElement) {
+      ghostElement.style.minWidth = this._cachedStyles.ghostMinWidth!;
+      ghostElement.style.minHeight = this._cachedStyles.ghostMinHeight!;
+    }
+  }
+
+  private _handleResize(event: CustomEvent<ResizeCallbackParams>) {
     this._isResizing = true;
-    // console.log(event.detail.state);
+
+    const ghostElement = event.detail.state.current;
+
+    if (ghostElement) {
+      const deltaX = event.detail.event.clientX - this._initialPointerX!;
+      const deltaY = event.detail.event.clientY - this._initialPointerY!;
+
+      ghostElement.width = event.detail.state.initial.width + deltaX;
+      ghostElement.height = event.detail.state.initial.height + deltaY;
+    }
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
@@ -360,29 +403,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
 
     this._isResizing = false;
+    this._initialPointerX = null;
+    this._initialPointerY = null;
+    this._cachedStyles = {};
   }
 
   // REVIEW
   protected ghostFactory = () => {
-    const ghostBackground = window
-      .getComputedStyle(this)
-      .getPropertyValue('--placeholder-background');
-
-    const ghostBorder = window
-      .getComputedStyle(this)
-      .getPropertyValue('--ghost-border');
-
-    const ghostBorderRadius = window
-      .getComputedStyle(this)
-      .getPropertyValue('--border-radius');
-
-    const ghostMinWidth = window
-      .getComputedStyle(this)
-      .getPropertyValue('--ig-min-col-width');
-
-    const ghostMinHeight = window
-      .getComputedStyle(this)
-      .getPropertyValue('--ig-min-row-height');
+    this.cacheStyles();
 
     const ghost = document.createElement('div');
     Object.assign(ghost.style, {
@@ -390,13 +418,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       top: 0,
       left: 0,
       zIndex: 1000,
-      background: ghostBackground,
-      border: `1px solid ${ghostBorder}`,
-      borderRadius: ghostBorderRadius,
+      background: this._cachedStyles.ghostBackground,
+      border: `1px solid ${this._cachedStyles.ghostBorder}`,
+      borderRadius: this._cachedStyles.ghostBorderRadius,
       width: '100%',
       height: '100%',
-      minWidth: ghostMinWidth,
-      minHeight: ghostMinHeight,
       gridRow: '',
       gridColumn: '',
     });
@@ -444,6 +470,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
             part="resize"
             .ghostFactory=${this.ghostFactory}
             mode="deferred"
+            @igcResizeStart=${this._handleResizeStart}
             @igcResize=${this._handleResize}
             @igcResizeEnd=${this._handleResizeEnd}
           >

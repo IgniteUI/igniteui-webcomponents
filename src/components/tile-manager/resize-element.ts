@@ -89,11 +89,11 @@ export default class IgcResizeComponent extends EventEmitterMixin<
 
   private _handleResizeStart(params: ResizeCallbackParams) {
     params.event.preventDefault();
+    this.emitEvent('igcResizeStart', { bubbles: false, detail: params });
 
     this._isResizing = true;
     this._setState(params.state);
     this._adorner.value!.focus();
-    this.emitEvent('igcResizeStart', { bubbles: false, detail: params });
   }
 
   private _handleResize(params: ResizeCallbackParams) {
