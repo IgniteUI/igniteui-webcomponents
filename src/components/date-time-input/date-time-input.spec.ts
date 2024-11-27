@@ -1071,7 +1071,6 @@ describe('Date Time Input component', () => {
       const spec = createFormAssociatedTestBed<IgcDateTimeInputComponent>(html`
         <igc-date-time-input
           name="date-time"
-          required
           .defaultValue=${null}
         ></igc-date-time-input>
       `);
@@ -1081,12 +1080,13 @@ describe('Date Time Input component', () => {
       });
 
       it('fails required validation', () => {
+        spec.setProperties({ required: true });
         spec.assertIsPristine();
         spec.assertSubmitFails();
       });
 
       it('passes required validation when updating defaultValue', () => {
-        spec.setProperties({ defaultValue: today.native });
+        spec.setProperties({ required: true, defaultValue: today.native });
         spec.assertIsPristine();
 
         spec.assertSubmitPasses();
@@ -1112,7 +1112,7 @@ describe('Date Time Input component', () => {
       it('fails max validation', () => {
         spec.setProperties({
           max: today.native,
-          defaultValue: today.native,
+          defaultValue: today.add('day', 1).native,
         });
 
         spec.assertIsPristine();
@@ -1122,7 +1122,7 @@ describe('Date Time Input component', () => {
       it('passes max validation', () => {
         spec.setProperties({
           max: today.native,
-          defaultValue: today.add('day', -1).native,
+          defaultValue: today.native,
         });
 
         spec.assertIsPristine();

@@ -3,7 +3,7 @@ import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { convertToDate, getDateFormValue } from '../calendar/helpers.js';
+import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
   altKey,
@@ -20,6 +20,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   type FormValue,
   createFormValueState,
+  defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import { noop, partNameMap } from '../common/util.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
@@ -282,11 +283,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     this._formValue = createFormValueState(this, {
       initialValue: null,
-      transformers: {
-        setValue: convertToDate,
-        setDefaultValue: convertToDate,
-        setFormValue: getDateFormValue,
-      },
+      transformers: defaultDateTimeTransformers,
     });
 
     addKeybindings(this, {
