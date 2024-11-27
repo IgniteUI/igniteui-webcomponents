@@ -14,7 +14,7 @@ type FormValueTransformers<T> = {
   getValue: (value: T) => T;
   setDefaultValue: (value: T) => T;
   getDefaultValue: (value: T) => T;
-  setFormValue: (value: T) => FormValueType;
+  setFormValue: (value: T, host: IgcFormControl) => FormValueType;
 };
 
 type FormValueConfig<T> = {
@@ -28,16 +28,25 @@ const defaultTransformers: FormValueTransformers<string> = {
   getValue: (value) => value,
   setDefaultValue: (value) => value || '',
   getDefaultValue: (value) => value,
-  setFormValue: (value) => value || null,
+  setFormValue: (value, _: IgcFormControl) => value || null,
 };
 
-export const defaultNumberTransformers: FormValueTransformers<number> = {
-  setValue: (value) => value,
-  getValue: (value) => value,
-  setDefaultValue: (value) => asNumber(value),
-  getDefaultValue: (value) => value,
-  setFormValue: (value) => value.toString(),
+export const defaultBooleanTransformers: Partial<
+  FormValueTransformers<boolean>
+> = {
+  setValue: Boolean,
+  setDefaultValue: Boolean,
+  setFormValue: (checked, host) => {
+    return checked && 'value' in host ? (host.value as string) || 'on' : null;
+  },
 };
+
+export const defaultNumberTransformers: Partial<FormValueTransformers<number>> =
+  {
+    setValue: asNumber,
+    setDefaultValue: asNumber,
+    setFormValue: (value) => value.toString(),
+  };
 
 export const defaultDateTimeTransformers: Partial<
   FormValueTransformers<Date | null>
@@ -67,7 +76,9 @@ export class FormValue<T> {
     this.value = value;
     // FIXME
     // @ts-expect-error: protected access
-    this._host._setFormValue(this._transformers.setFormValue(this.value));
+    this._host._setFormValue(
+      this._transformers.setFormValue(this.value, this._host)
+    );
   }
 
   public set defaultValue(value: T) {

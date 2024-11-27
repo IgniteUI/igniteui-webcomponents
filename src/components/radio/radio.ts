@@ -19,6 +19,7 @@ import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/asso
 import {
   type FormValue,
   createFormValueState,
+  defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
 import {
   createCounter,
@@ -193,11 +194,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     this._formValue = createFormValueState(this, {
       initialValue: false,
-      transformers: {
-        setValue: (checked) => Boolean(checked),
-        setDefaultValue: (checked) => Boolean(checked),
-        setFormValue: (checked) => (checked ? this._value || 'on' : null),
-      },
+      transformers: defaultBooleanTransformers,
     });
 
     addKeybindings(this, {

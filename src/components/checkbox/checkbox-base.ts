@@ -9,6 +9,7 @@ import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/asso
 import {
   type FormValue,
   createFormValueState,
+  defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty } from '../common/util.js';
 import { checkBoxValidators } from './validators.js';
@@ -93,11 +94,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
     this._formValue = createFormValueState(this, {
       initialValue: false,
-      transformers: {
-        setValue: (checked) => Boolean(checked),
-        setDefaultValue: (checked) => Boolean(checked),
-        setFormValue: (checked) => (checked ? this._value || 'on' : null),
-      },
+      transformers: defaultBooleanTransformers,
     });
   }
 
