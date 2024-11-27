@@ -950,42 +950,57 @@ describe('Date picker', () => {
     });
 
     it('should enforce min value constraint', () => {
+      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1) });
-      spec.assertSubmitFails();
+      spec.assertSubmitPasses();
 
+      // Invalid min constraint
       spec.setProperties({ value: new Date(2022, 0, 1) });
       spec.assertSubmitFails();
 
+      // Valid value
       spec.setProperties({ value: new Date(2026, 0, 2) });
       spec.assertSubmitPasses();
     });
 
     it('should enforce max value constraint', () => {
-      spec.setProperties({ max: new Date(2020, 0, 1), value: today.native });
+      // No value - submit passes
+      spec.setProperties({ max: new Date(2020, 0, 1) });
+      spec.assertSubmitPasses();
+
+      // Invalid max constraint
+      spec.setProperties({ value: today.native });
       spec.assertSubmitFails();
 
+      // Valid value
       spec.setProperties({ value: new Date(2020, 0, 1) });
       spec.assertSubmitPasses();
     });
 
     it('should enforce min value constraint with string property', () => {
+      // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
-      spec.assertSubmitFails();
+      spec.assertSubmitPasses();
 
+      // Invalid min constraint
       spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
       spec.assertSubmitFails();
 
+      // Valid value
       spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
       spec.assertSubmitPasses();
     });
 
     it('should enforce max value constraint with string property', () => {
-      spec.setProperties({
-        max: new Date(2020, 0, 1).toISOString(),
-        value: today.native,
-      });
+      // No value - submit passes
+      spec.setProperties({ max: new Date(2020, 0, 1).toISOString() });
+      spec.assertSubmitPasses();
+
+      // Invalid max constraint
+      spec.setProperties({ value: today.native });
       spec.assertSubmitFails();
 
+      // Valid value
       spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
     });
@@ -1066,7 +1081,6 @@ describe('Date picker', () => {
       const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
         <igc-date-picker
           name="datePicker"
-          required
           .defaultValue=${null}
         ></igc-date-picker>
       `);
@@ -1076,12 +1090,13 @@ describe('Date picker', () => {
       });
 
       it('fails required validation', () => {
+        spec.setProperties({ required: true });
         spec.assertIsPristine();
         spec.assertSubmitFails();
       });
 
       it('passes required validation when updating defaultValue', () => {
-        spec.setProperties({ defaultValue: today.native });
+        spec.setProperties({ required: true, defaultValue: today.native });
         spec.assertIsPristine();
 
         spec.assertSubmitPasses();
@@ -1107,7 +1122,7 @@ describe('Date picker', () => {
       it('fails max validation', () => {
         spec.setProperties({
           max: today.native,
-          defaultValue: today.native,
+          defaultValue: today.add('day', 1).native,
         });
 
         spec.assertIsPristine();
@@ -1117,7 +1132,7 @@ describe('Date picker', () => {
       it('passes max validation', () => {
         spec.setProperties({
           max: today.native,
-          defaultValue: today.add('day', -1).native,
+          defaultValue: today.native,
         });
 
         spec.assertIsPristine();
@@ -1135,7 +1150,10 @@ describe('Date picker', () => {
           },
         ];
 
-        spec.setProperties({ disabledDates });
+        spec.setProperties({
+          disabledDates,
+          defaultValue: new Date(2024, 1, 28),
+        });
 
         spec.assertIsPristine();
         spec.assertSubmitFails();
@@ -1154,7 +1172,7 @@ describe('Date picker', () => {
 
         spec.setProperties({
           disabledDates,
-          defaultValue: new Date(2024, 1, 26),
+          defaultValue: new Date(2024, 1, 29),
         });
 
         spec.assertIsPristine();
@@ -1187,7 +1205,7 @@ describe('Date picker', () => {
   });
 
   describe('Validation message slots', () => {
-    it('', async () => {
+    it('', () => {
       const now = CalendarDay.today;
       const tomorrow = now.add('day', 1);
       const yesterday = now.add('day', -1);

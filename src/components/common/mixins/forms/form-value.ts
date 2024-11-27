@@ -1,3 +1,4 @@
+import { convertToDate, getDateFormValue } from '../../../calendar/helpers.js';
 import { asNumber } from '../../util.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
@@ -36,6 +37,14 @@ export const defaultNumberTransformers: FormValueTransformers<number> = {
   setDefaultValue: (value) => asNumber(value),
   getDefaultValue: (value) => value,
   setFormValue: (value) => value.toString(),
+};
+
+export const defaultDateTimeTransformers: Partial<
+  FormValueTransformers<Date | null>
+> = {
+  setValue: convertToDate,
+  setDefaultValue: convertToDate,
+  setFormValue: getDateFormValue,
 };
 
 export class FormValue<T> {

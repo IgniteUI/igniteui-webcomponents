@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { convertToDate, getDateFormValue } from '../calendar/helpers.js';
+import { convertToDate } from '../calendar/helpers.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -32,6 +32,7 @@ import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-r
 import {
   type FormValue,
   createFormValueState,
+  defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -434,11 +435,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     this._formValue = createFormValueState<Date | null>(this, {
       initialValue: null,
-      transformers: {
-        setValue: convertToDate,
-        setDefaultValue: convertToDate,
-        setFormValue: getDateFormValue,
-      },
+      transformers: defaultDateTimeTransformers,
     });
 
     this.addEventListener('focusin', this.handleFocusIn);
