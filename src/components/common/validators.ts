@@ -33,67 +33,68 @@ export const requiredBooleanValidator: Validator<{
 };
 
 export const minLengthValidator: Validator<{
-  minLength: number;
+  minLength?: number;
   value: string;
 }> = {
   key: 'tooShort',
   message: ({ minLength }) =>
     formatString(validatorMessages.minLength, minLength),
   isValid: ({ minLength, value }) =>
-    minLength ? value.length >= minLength : true,
+    minLength && value ? value.length >= asNumber(minLength) : true,
 };
 
 export const maxLengthValidator: Validator<{
-  maxLength: number;
+  maxLength?: number;
   value: string;
 }> = {
   key: 'tooLong',
   message: ({ maxLength }) =>
     formatString(validatorMessages.maxLength, maxLength),
   isValid: ({ maxLength, value }) =>
-    maxLength ? value.length <= maxLength : true,
+    maxLength && value ? value.length <= asNumber(maxLength) : true,
 };
 
-export const patternValidator: Validator<{ pattern: string; value: string }> = {
-  key: 'patternMismatch',
-  message: validatorMessages.pattern,
-  isValid: ({ pattern, value }) =>
-    pattern ? new RegExp(pattern, 'v').test(value) : true,
-};
+export const patternValidator: Validator<{ pattern?: string; value: string }> =
+  {
+    key: 'patternMismatch',
+    message: validatorMessages.pattern,
+    isValid: ({ pattern, value }) =>
+      pattern && value ? new RegExp(pattern, 'u').test(value) : true,
+  };
 
 export const minValidator: Validator<{
-  min: number | string;
+  min?: number;
   value: number | string;
 }> = {
   key: 'rangeUnderflow',
   message: ({ min }) => formatString(validatorMessages.min, min),
   isValid: ({ min, value }) =>
-    isDefined(min)
-      ? isDefined(value) && asNumber(value) >= asNumber(min)
+    isDefined(value) && value !== '' && isDefined(min)
+      ? asNumber(value) >= asNumber(min)
       : true,
 };
 
 export const maxValidator: Validator<{
-  max: number | string;
+  max?: number;
   value: number | string;
 }> = {
   key: 'rangeOverflow',
   message: ({ max }) => formatString(validatorMessages.max, max),
   isValid: ({ max, value }) =>
-    isDefined(max)
-      ? isDefined(value) && asNumber(value) <= asNumber(max)
+    isDefined(value) && value !== '' && isDefined(max)
+      ? asNumber(value) <= asNumber(max)
       : true,
 };
 
 export const stepValidator: Validator<{
-  min: number | string;
-  step: number | string;
+  min?: number;
+  step?: number;
   value: number | string;
 }> = {
   key: 'stepMismatch',
   message: 'Value does not conform to step constraint',
   isValid: ({ min, step, value }) =>
-    isDefined(step)
+    isDefined(value) && value !== '' && isDefined(step)
       ? (asNumber(value) - asNumber(min)) % asNumber(step, 1) === 0
       : true,
 };
@@ -101,13 +102,13 @@ export const stepValidator: Validator<{
 export const emailValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
   message: validatorMessages.email,
-  isValid: ({ value }) => emailRegex.test(value),
+  isValid: ({ value }) => (value ? emailRegex.test(value) : true),
 };
 
 export const urlValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
   message: validatorMessages.url,
-  isValid: ({ value }) => URL.canParse(value),
+  isValid: ({ value }) => (value ? URL.canParse(value) : true),
 };
 
 export const minDateValidator: Validator<{

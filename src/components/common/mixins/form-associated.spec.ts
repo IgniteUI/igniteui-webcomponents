@@ -121,7 +121,7 @@ describe('Form associated mixin tests', () => {
   });
 
   it('initial invalid with constraints', async () => {
-    await createFixture({ minLength: 3 });
+    await createFixture({ minLength: 3, value: 'a' });
 
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'tooShort')).to.be.true;
