@@ -47,7 +47,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private draggedItem: IgcTileComponent | null = null;
   private positionedTiles: IgcTileComponent[] = [];
-  private _columnCount!: number;
+  private _columnCount = 10;
 
   // @query('[part="base"]', true)
   // private _baseWrapper!: HTMLDivElement;

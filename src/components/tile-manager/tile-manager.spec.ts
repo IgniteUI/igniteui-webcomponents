@@ -83,6 +83,8 @@ describe('Tile Manager component', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(10);
       expect(tileManager.dragMode).to.equal('slide');
+      expect(tileManager.minColumnWidth).to.equal(150);
+      expect(tileManager.minRowHeight).to.equal(200);
       expect(tileManager.tiles).lengthOf(2);
     });
 
@@ -115,7 +117,7 @@ describe('Tile Manager component', () => {
       expect(tileManager).shadowDom.to.equal(
         `<div
           part="base"
-          style="--ig-column-count:undefined;--ig-min-col-width:150px;--ig-min-row-height:200px;"
+          style="--ig-column-count:10;--ig-min-col-width:150px;--ig-min-row-height:200px;"
         >
           <slot></slot>
         </div>`
