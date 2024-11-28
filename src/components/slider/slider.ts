@@ -92,8 +92,6 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override normalizeValue(): void {
-    // this._formValue.value = this.validateValue(this.value);
-    // REVIEW
     this.value = this.validateValue(this.value);
   }
 
