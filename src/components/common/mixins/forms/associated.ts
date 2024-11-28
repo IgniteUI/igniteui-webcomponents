@@ -199,10 +199,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected formResetCallback(): void {
       this._restoreDefaultValue();
-      // REVIEW: Refactor the code below. `performUpdate` is probably not needed anymore
       this._pristine = true;
       this._dirty = false;
-      this.performUpdate();
       this.invalid = false;
     }
 
@@ -307,7 +305,6 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
     ): void {
       super.attributeChangedCallback(name, prev, current);
       if (name === 'checked') {
-        // REVIEW
         this._setDefaultValue(isString(current) ? 'true' : null);
       }
     }
