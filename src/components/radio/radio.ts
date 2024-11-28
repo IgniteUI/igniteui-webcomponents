@@ -11,6 +11,7 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
+  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -23,9 +24,11 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import {
   createCounter,
+  isDefined,
   isEmpty,
   isLTR,
   last,
+  noop,
   partNameMap,
   wrap,
 } from '../common/util.js';
@@ -102,13 +105,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @state()
   protected hideLabel = false;
 
-  private get _isLastChecked() {
-    return this === last(this._checkedRadios);
-  }
-
-  private get _isLastDefaultChecked() {
-    return this === last(this._defaultCheckedRadios);
-  }
+  @state()
+  private _tabIndex = 0;
 
   /** Returns all radio elements from the group, that is having the same name property. */
   private get _radios() {
@@ -128,10 +126,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   /** All checked radio elements from the group. */
   private get _checkedRadios() {
     return getGroup(this).checked;
-  }
-
-  private get _defaultCheckedRadios() {
-    return getGroup(this).defaultChecked;
   }
 
   @property({ type: Boolean, reflect: true })
@@ -172,9 +166,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    */
   @property({ type: Boolean })
   public set checked(value: boolean) {
-    this._formValue.value = value;
-    if (this.hasUpdated) {
-      this.checked ? this._updateCheckedState() : this._updateUncheckedState();
+    this._formValue.setValueAndFormState(value);
+    this._tabIndex = this.checked ? 0 : -1;
+    this._validate();
+    if (this.hasUpdated && this.checked) {
+      this._updateCheckedState();
     }
   }
 
@@ -201,6 +197,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
+      .set(tabKey, noop, { preventDefault: false })
       .set(arrowLeft, () => this.navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this.navigate(-1))
@@ -219,7 +216,22 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    this._isLastChecked ? this._updateCheckedState() : this._updateValidity();
+
+    if (this.checked && this === last(this._checkedRadios)) {
+      for (const radio of this._siblings) {
+        radio.checked = false;
+        radio.defaultChecked = false;
+      }
+    } else {
+      this._updateValidity();
+    }
+  }
+
+  protected override _setDefaultValue(current: string | null): void {
+    this._formValue.defaultValue = isDefined(current);
+    for (const radio of this._siblings) {
+      radio.defaultChecked = false;
+    }
   }
 
   /** Simulates a click on the radio control. */
@@ -250,39 +262,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   private _updateCheckedState() {
-    this._setFormValue(this.value || 'on');
-    this._validate();
-
-    this.tabIndex = 0;
-    this.input.focus();
-
     for (const radio of this._siblings) {
       radio.checked = false;
-      radio.tabIndex = -1;
-      radio._validate();
     }
-  }
-
-  private _updateUncheckedState() {
-    this._setFormValue(null);
-    this._validate();
-    this.tabIndex = -1;
-
-    for (const radio of this._siblings) {
-      radio._updateValidity();
-    }
-  }
-
-  protected override _restoreDefaultValue(): void {
-    if (!this._isLastDefaultChecked) {
-      return;
-    }
-
-    for (const radio of this._siblings) {
-      radio.defaultChecked = false;
-    }
-
-    this.checked = true;
   }
 
   protected override formResetCallback() {
@@ -292,8 +274,16 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /** Called after a form reset callback to restore default keyboard navigation. */
   private _resetTabIndexes() {
-    for (const radio of this._radios) {
-      radio.tabIndex = 0;
+    const radios = this._radios;
+
+    if (isEmpty(this._checkedRadios)) {
+      for (const radio of radios) {
+        radio._tabIndex = 0;
+      }
+    } else {
+      for (const radio of radios) {
+        radio._tabIndex = radio.checked ? 0 : -1;
+      }
     }
   }
 
@@ -305,6 +295,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
 
     this.checked = true;
+    this.input.focus();
     this.emitEvent('igcChange', {
       detail: {
         checked: this.checked,
@@ -355,7 +346,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           .required=${this.required}
           .disabled=${this.disabled}
           .checked=${live(checked)}
-          tabindex=${this.tabIndex}
+          tabindex=${this._tabIndex}
           aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
