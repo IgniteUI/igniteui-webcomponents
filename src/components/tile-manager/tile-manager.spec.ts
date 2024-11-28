@@ -26,6 +26,7 @@ describe('Tile Manager component', () => {
   function getTiles() {
     return Array.from(tileManager.querySelectorAll('igc-tile'));
   }
+
   function getTileBaseWrapper(element: IgcTileComponent) {
     return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
   }
@@ -90,7 +91,7 @@ describe('Tile Manager component', () => {
         `<igc-tile-manager>
           <igc-tile
             draggable="true"
-            style="order: 0; grid-area: span 1 / span 1;"
+            style="order: 0;"
             tile-id="customId-1"
           >
             <igc-tile-header>
@@ -100,7 +101,7 @@ describe('Tile Manager component', () => {
           </igc-tile>
           <igc-tile
             draggable="true"
-            style="order: 1; grid-area: span 1 / span 1;"
+            style="order: 1;"
             tile-id="customId-2"
           >
             <igc-tile-header>
@@ -112,7 +113,10 @@ describe('Tile Manager component', () => {
       );
 
       expect(tileManager).shadowDom.to.equal(
-        `<div part="base">
+        `<div
+          part="base"
+          style="--ig-column-count:undefined;--ig-min-col-width:150px;--ig-min-row-height:200px;"
+        >
           <slot></slot>
         </div>`
       );
@@ -124,7 +128,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="order: 0; grid-area: span 1 / span 1;" tile-id="customId-1">
+        `<igc-tile draggable="true" style="order: 0;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
@@ -135,9 +139,12 @@ describe('Tile Manager component', () => {
       expect(tiles[0]).shadowDom.to.equal(
         `<igc-resize
           mode="deferred"
-          part="base"
+          part="resize"
         >
-          <div part="base draggable">
+          <div
+            part="base draggable resizable"
+            style="--ig-col-span:1;--ig-row-span:1;--ig-col-start:null;--ig-row-start:null;"
+          >
             <slot name="header"></slot>
             <div part="content-container">
               <slot></slot>
@@ -181,7 +188,9 @@ describe('Tile Manager component', () => {
             </igc-icon-button>
             <slot name="actions"></slot>
           </section>
-        </div>`
+        </div>
+        <igc-divider type="solid">
+        </igc-divider>`
       );
     });
   });
@@ -389,8 +398,8 @@ describe('Tile Manager component', () => {
           colStart: null,
           disableDrag: false,
           disableResize: false,
-          gridColumn: 'span 1',
-          gridRow: 'span 1',
+          gridColumn: 'auto / span 1',
+          gridRow: 'auto / span 1',
           maximized: false,
           position: 0,
           rowSpan: 1,
@@ -402,8 +411,8 @@ describe('Tile Manager component', () => {
           colStart: 8,
           disableDrag: true,
           disableResize: true,
-          gridColumn: 'span 10',
-          gridRow: 'span 7',
+          gridColumn: '8 / span 10',
+          gridRow: '7 / span 7',
           maximized: false,
           position: 1,
           rowSpan: 7,
@@ -535,7 +544,7 @@ describe('Tile Manager component', () => {
       await elementUpdated(tileManager);
 
       expect(tileManager.tiles).lengthOf(6);
-      expect(tileManager.tiles[0].id).to.equal('tile5');
+      expect(tileManager.tiles[5].id).to.equal('tile5');
     });
 
     it('should update the tiles collection when a tile is removed from the light DOM', async () => {
@@ -574,11 +583,10 @@ describe('Tile Manager component', () => {
       const tiles = getTiles();
       expect(tiles[5]).to.equal(newTile);
       expect(tiles[5].position).to.equal(3);
-      expect(tiles[4].position).to.equal(4);
+      expect(tiles[4].position).to.equal(5);
     });
 
-    xit('should adjust positions correctly when a tile is removed', async () => {
-      // TODO needs adjustment in the if statements in _observerCallback to handle the tile removal/addition properly
+    it('should adjust positions correctly when a tile is removed', async () => {
       const removedTile = getTiles()[2];
       tileManager.removeChild(removedTile);
       await elementUpdated(tileManager);

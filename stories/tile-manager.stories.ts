@@ -645,10 +645,10 @@ function addTile() {
 function removeTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
-  const lastTile = tileManager.querySelector('igc-tile:first-of-type');
+  const firstTile = tileManager.querySelector('igc-tile:first-of-type');
 
-  if (lastTile) {
-    lastTile.remove();
+  if (firstTile) {
+    firstTile.remove();
   }
 }
 

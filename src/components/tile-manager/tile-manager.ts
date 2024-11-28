@@ -46,7 +46,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private draggedItem: IgcTileComponent | null = null;
-  private finalOrder: IgcTileComponent[] = [];
   private positionedTiles: IgcTileComponent[] = [];
   private _columnCount!: number;
 
@@ -67,17 +66,38 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _observerCallback({
     changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    removed.forEach((removedTile) => {
-      if (removedTile instanceof IgcTileComponent) {
-        this.handleTileRemoval(removedTile);
-      }
-    });
+    const ownAdded = added.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
+    const ownRemoved = removed.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
 
-    added.forEach((addedTile) => {
-      if (addedTile instanceof IgcTileComponent) {
-        this.handleTileAddition(addedTile);
+    for (const { node: removedTile } of ownRemoved) {
+      const removedPosition = removedTile.position;
+
+      this.tiles.forEach((tile) => {
+        if (tile.position > removedPosition) {
+          tile.position -= 1;
+        }
+      });
+    }
+
+    for (const { node: tile } of ownAdded) {
+      const specifiedPosition = tile.position;
+
+      if (specifiedPosition !== -1) {
+        this._tiles
+          .filter((existingTile) => existingTile !== tile)
+          .forEach((existingTile) => {
+            if (existingTile.position >= specifiedPosition) {
+              existingTile.position += 1;
+            }
+          });
+      } else {
+        tile.position = this._tiles.length - 1;
       }
-    });
+    }
 
     this.updateSlotAssignment();
   }
@@ -167,83 +187,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       tile.position = nextFreePosition++;
       finalOrder.push(tile);
     });
-
-    this.finalOrder = finalOrder;
-  }
-
-  private handleTileRemoval(removedTile: IgcTileComponent) {
-    const removedPosition = removedTile.position;
-
-    this.finalOrder = this.finalOrder.filter((tile) => tile !== removedTile);
-    this.positionedTiles = this.positionedTiles.filter(
-      (tile) => tile !== removedTile
-    );
-
-    // Shift only non-positioned tiles
-    this.finalOrder.forEach((tile) => {
-      if (
-        tile.position > removedPosition &&
-        !this.positionedTiles.includes(tile)
-      ) {
-        tile.position -= 1;
-      }
-    });
-
-    this.reassignUnpositionedTiles();
-  }
-
-  private handleTileAddition(newTile: IgcTileComponent) {
-    let specifiedPosition = newTile.position;
-
-    if (specifiedPosition !== -1) {
-      // Place at specified position, shift non-positioned tiles only
-      this.finalOrder.forEach((tile) => {
-        if (
-          tile.position >= specifiedPosition &&
-          !this.positionedTiles.includes(tile)
-        ) {
-          tile.position += 1;
-        }
-      });
-
-      this.finalOrder.splice(specifiedPosition, 0, newTile);
-      this.positionedTiles.push(newTile);
-    } else {
-      // Find next available position in DOM for unpositioned tile
-      specifiedPosition = this.getAvailablePosition(newTile);
-      newTile.position = specifiedPosition;
-      this.finalOrder.push(newTile);
-    }
-
-    this.reassignUnpositionedTiles();
-  }
-
-  private reassignUnpositionedTiles() {
-    let nextPosition = 0;
-
-    this.finalOrder.sort((a, b) => a.position - b.position);
-    this.finalOrder.forEach((tile) => {
-      if (!this.positionedTiles.includes(tile)) {
-        while (
-          this.finalOrder.some(
-            (posTile) =>
-              posTile.position === nextPosition &&
-              this.positionedTiles.includes(posTile)
-          )
-        ) {
-          nextPosition += 1;
-        }
-        tile.position = nextPosition++;
-      }
-    });
-  }
-
-  private getAvailablePosition(newTile: IgcTileComponent): number {
-    let domIndex = Array.from(this.children).indexOf(newTile);
-    while (this.positionedTiles.some((tile) => tile.position === domIndex)) {
-      domIndex += 1;
-    }
-    return domIndex;
   }
 
   private updateSlotAssignment() {
