@@ -71,11 +71,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
   private _cachedStyles: {
-    ghostBackground?: string;
-    ghostBorder?: string;
-    ghostBorderRadius?: string;
-    ghostMinWidth?: string;
-    ghostMinHeight?: string;
+    columnCount?: number;
+    minWidth?: number;
+    minHeight?: number;
+    background?: string;
+    border?: string;
+    borderRadius?: string;
   } = {};
   private _context = new ContextProvider(this, {
     context: tileContext,
@@ -343,16 +344,22 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private cacheStyles() {
-    const computedStyle = window.getComputedStyle(this);
+    //use util
+    const computedStyle = getComputedStyle(this);
 
     this._cachedStyles = {
-      ghostBackground: computedStyle.getPropertyValue(
-        '--placeholder-background'
+      columnCount: Number.parseFloat(
+        computedStyle.getPropertyValue('--ig-column-count')
       ),
-      ghostBorder: computedStyle.getPropertyValue('--ghost-border'),
-      ghostBorderRadius: computedStyle.getPropertyValue('--border-radius'),
-      ghostMinWidth: computedStyle.getPropertyValue('--ig-min-col-width'),
-      ghostMinHeight: computedStyle.getPropertyValue('--ig-min-row-height'),
+      background: computedStyle.getPropertyValue('--placeholder-background'),
+      border: computedStyle.getPropertyValue('--ghost-border'),
+      borderRadius: computedStyle.getPropertyValue('--border-radius'),
+      minWidth: Number.parseFloat(
+        computedStyle.getPropertyValue('--ig-min-col-width')
+      ),
+      minHeight: Number.parseFloat(
+        computedStyle.getPropertyValue('--ig-min-row-height')
+      ),
     };
   }
 
@@ -362,8 +369,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._initialPointerY = event.detail.event.clientY;
 
     if (ghostElement) {
-      ghostElement.style.minWidth = this._cachedStyles.ghostMinWidth!;
-      ghostElement.style.minHeight = this._cachedStyles.ghostMinHeight!;
+      ghostElement.style.minWidth = `${this._cachedStyles.minWidth!}px`;
+      ghostElement.style.minHeight = `${this._cachedStyles.minHeight!}px`;
     }
   }
 
@@ -375,10 +382,70 @@ export default class IgcTileComponent extends EventEmitterMixin<
     if (ghostElement) {
       const deltaX = event.detail.event.clientX - this._initialPointerX!;
       const deltaY = event.detail.event.clientY - this._initialPointerY!;
+      const minWidth = this._cachedStyles.minWidth!;
+      const minHeight = this._cachedStyles.minHeight!;
+      const columnGap = 10;
 
-      ghostElement.width = event.detail.state.initial.width + deltaX;
-      ghostElement.height = event.detail.state.initial.height + deltaY;
+      const snappedWidth = this._calculateSnappedWidth(
+        deltaX,
+        event.detail.state.initial.width,
+        minWidth,
+        columnGap
+      );
+      const snappedHeight = this._calculateSnappedHeight(
+        deltaY,
+        event.detail.state.initial.height,
+        minHeight,
+        columnGap
+      );
+
+      ghostElement.width = snappedWidth;
+      ghostElement.height = snappedHeight;
     }
+  }
+
+  private _calculateSnappedWidth(
+    deltaX: number,
+    initialWidth: number,
+    minWidth: number,
+    gap: number
+  ): number {
+    const newSize = initialWidth + deltaX;
+    const wholeUnits = Math.floor(newSize / (minWidth + gap));
+    const fraction = newSize / (minWidth + gap) - wholeUnits;
+    const gapMultiplier =
+      fraction > 0.5 ? wholeUnits : wholeUnits > 1 ? wholeUnits - 1 : 0;
+
+    return fraction > 0.5
+      ? (wholeUnits + 1) * minWidth + gapMultiplier * gap
+      : wholeUnits * minWidth + gapMultiplier * gap;
+  }
+
+  private _calculateSnappedHeight(
+    deltaY: number,
+    initialHeight: number,
+    minHeight: number,
+    rowGap: number
+  ): number {
+    let snappedHeight = initialHeight;
+
+    if (deltaY > 0) {
+      // For resizing down, add the gaps and the rows multiplied by min height to the initial tile height
+      const wholeRows = Math.floor(deltaY / minHeight);
+      const totalGaps = Math.max(wholeRows - 1, 0) * rowGap;
+      snappedHeight = initialHeight + wholeRows * minHeight + totalGaps;
+    } else if (deltaY < 0 && initialHeight > minHeight) {
+      // For resizing up, subtract the gaps and the rows multiplied by min height from the initial tile height
+      const extraHeight = Math.abs(deltaY);
+      const wholeRows = Math.floor(extraHeight / minHeight);
+      const totalGaps = Math.max(wholeRows - 1, 0) * rowGap;
+      snappedHeight = Math.max(
+        initialHeight - (wholeRows * minHeight + totalGaps),
+        minHeight
+      );
+    }
+
+    return snappedHeight;
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
@@ -388,14 +455,30 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const resizeElement = event.target as HTMLElement;
 
+    const parentWrapper =
+      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
+    const computedStyle = window.getComputedStyle(parentWrapper);
+    const tm = parentWrapper.getBoundingClientRect();
+
+    tm.height -=
+      Number.parseFloat(computedStyle.paddingTop) +
+      Number.parseFloat(computedStyle.paddingBottom);
+    tm.width -=
+      Number.parseFloat(computedStyle.paddingLeft) +
+      Number.parseFloat(computedStyle.paddingRight);
+
+    const gridColumnWidth = tm.width / this._cachedStyles.columnCount!;
+    let colSpan = Math.round(width / gridColumnWidth);
+    colSpan = Math.max(1, Math.min(colSpan, this._cachedStyles.columnCount!));
+
+    const minH = this._cachedStyles.minHeight;
+    const rowSpan = Math.max(1, Math.floor(height / minH!));
+
     // REVIEW
     Object.assign(resizeElement.style, {
       width: '',
       height: '',
     });
-
-    const colSpan = Math.max(1, Math.floor(width / 200));
-    const rowSpan = Math.max(1, Math.floor(height / 200));
 
     Object.assign(this.style, {
       gridRow: `span ${rowSpan}`,
@@ -418,9 +501,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
       top: 0,
       left: 0,
       zIndex: 1000,
-      background: this._cachedStyles.ghostBackground,
-      border: `1px solid ${this._cachedStyles.ghostBorder}`,
-      borderRadius: this._cachedStyles.ghostBorderRadius,
+      background: this._cachedStyles.background,
+      border: `1px solid ${this._cachedStyles.border}`,
+      borderRadius: this._cachedStyles.borderRadius,
       width: '100%',
       height: '100%',
       gridRow: '',
