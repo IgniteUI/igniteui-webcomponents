@@ -16,6 +16,9 @@ $mark-length: 24;
 [part~='control'] {
     --size: #{rem(20px)};
 
+    width: var(--size);
+    height: var(--size);
+    min-width: var(--size);
     position: relative;
     display: inline-flex;
     user-select: none;
@@ -45,22 +48,25 @@ $mark-length: 24;
 }
 
 [part~='indicator'] {
+    --indicator-size: #{rem(18px)};
+
     display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     inset: 0;
     stroke-linecap: square;
-    stroke-width: 3;
+    stroke-width: var(--mark-stroke, 3);
     stroke-dasharray: $mark-length;
     stroke-dashoffset: $mark-length;
     fill: none;
     opacity: 0;
     z-index: 1;
-    transform: scale(.45);
     transform-origin: center;
 
     svg {
-        width: 100%;
-        height: 100%;
+        width: var(--indicator-size);
+        height: var(--indicator-size);
     }
 }
 
@@ -82,6 +88,11 @@ label {
         stroke-dashoffset: 41;
         opacity: 1;
         transform: rotate(45deg) scale(.45) translateX(-.25rem);
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
     }
 }
 

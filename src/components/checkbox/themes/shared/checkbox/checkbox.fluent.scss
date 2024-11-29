@@ -19,10 +19,6 @@ $disabled-color: var-get($theme, 'disabled-color');
 }
 
 [part~='control'] {
-    width: var(--size, rem(20px));
-    height: var(--size, rem(20px));
-    min-width: var(--size, rem(20px));
-
     // Removing visual artifacts, to understand the problem see
     // https://stackoverflow.com/questions/69658462/inset-box-shadow-visual-artifacts-in-google-chrome
     transform: translate3d(0, 0, 0);
@@ -42,8 +38,8 @@ $disabled-color: var-get($theme, 'disabled-color');
 }
 
 [part~='indicator'] {
-    stroke-width: 1.5;
-    transform: scale(.8);
+    --indicator-size: #{rem(16px)};
+    --mark-stroke: 1.5;
 }
 
 :host(:hover) {
