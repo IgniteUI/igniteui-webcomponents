@@ -84,15 +84,15 @@ const metadata: Meta<IgcTileManagerComponent> = {
     minColumnWidth: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: '150' } },
+      table: { defaultValue: { summary: '200' } },
     },
     minRowHeight: {
       type: 'number',
       control: 'number',
-      table: { defaultValue: { summary: '200' } },
+      table: { defaultValue: { summary: '40' } },
     },
   },
-  args: { dragMode: 'slide', minColumnWidth: 150, minRowHeight: 200 },
+  args: { dragMode: 'slide', minColumnWidth: 200, minRowHeight: 40 },
 };
 
 export default metadata;
