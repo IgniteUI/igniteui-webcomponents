@@ -13,7 +13,7 @@ interface IgcBaseComboBoxEventMap {
 }
 
 export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
-  public declare emitEvent: <
+  declare public emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
     D extends UnpackCustomEvent<IgcBaseComboBoxEventMap[K]>,
   >(
