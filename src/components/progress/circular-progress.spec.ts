@@ -67,27 +67,6 @@ describe('Circular progress component', () => {
         expect(progress).to.have.attribute('variant', variant);
       }
     });
-
-    // it('handles indeterminate state transitions', async () => {
-    //   await updateProgress('value', 30);
-    //   expect(progress.getAttribute('aria-valuenow')).to.equal('30'); // Ensure value is set
-    //
-    //   await updateProgress('indeterminate', true);
-    //   expect(progress.getAttribute('aria-valuenow')).to.be.null; // Indeterminate clears aria-valuenow
-    //
-    //   await updateProgress('indeterminate', false);
-    //   expect(progress.getAttribute('aria-valuenow')).to.equal('30'); // Restores value
-    // });
-
-    // it('applies custom label format', async () => {
-    //   // Set a custom label format
-    //   await updateProgress('labelFormat', 'Completed {0} of {1}');
-    //   await updateProgress('value', 75);
-    //   await updateProgress('max', 100);
-    //
-    //   const label = getLabelPart();
-    //   expect(label?.textContent?.trim()).to.equal('Completed 75 of 100');
-    // });
   });
 
   describe('Rendering and Gradients', () => {
