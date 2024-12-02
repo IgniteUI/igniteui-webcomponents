@@ -11,8 +11,10 @@
 
 ::slotted([slot='title']) {
     @include type-style('h6');
+    @include ellipsis();
 
     margin-bottom: 0;
+    min-width: 2ch;
 }
 
 [part='actions'] {

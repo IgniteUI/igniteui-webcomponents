@@ -129,10 +129,10 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   @property({ type: Number })
-  public minColumnWidth = 150;
+  public minColumnWidth = 200;
 
   @property({ type: Number })
-  public minRowHeight = 200;
+  public minRowHeight = 40;
 
   /**
    * Gets the tiles sorted by their position in the layout.
