@@ -1,4 +1,4 @@
-%host {
+%base {
     align-items: center;
     justify-content: center;
     font-family: var(--ig-font-family), serif;
@@ -12,7 +12,6 @@
 }
 
 @mixin stripe-colors($primary, $gray, $size, $deg: -45deg) {
-    /* stylelint-disable */
     background: $primary repeating-linear-gradient(
         $deg,
         $primary,
@@ -20,5 +19,4 @@
         $gray $size,
         $gray ($size * 2)
     );
-    /* stylelint-enable */
 }

@@ -1,10 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../../animations' as *;
+@use '../../vars' as *;
 
 $theme: $fluent;
 
 // TODO If possible make the animation the same as the MS fluent
-
 :host {
     --stroke-thickness: 2px;
     --scale-factor: 2.75;
@@ -17,4 +18,20 @@ $theme: $fluent;
 
 [part~='fill'] {
     stroke-width: var(--stroke-thickness);
+}
+
+[part='svg indeterminate'] {
+    animation: none;
+
+    [part~='fill'] {
+        stroke-linecap: round;
+        animation: 2s linear 0s infinite normal none running indeterminate-circular-fluent
+    }
+}
+
+:host-context([dir='rtl']),
+:host([dir='rtl']) {
+    [part='svg indeterminate'] [part~='fill'] {
+        animation-name: indeterminate-circular-fluent-rtl;
+    }
 }

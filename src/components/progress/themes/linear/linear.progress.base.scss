@@ -5,18 +5,21 @@
 @use '../vars' as *;
 
 :host {
-    @extend %host !optional;
+    --track-size: #{rem(4px)};
+    --linear-animation-duration: 2000ms;
+}
+
+[part~='base'] {
+    @extend %base !optional;
 
     display: flex;
     position: relative;
     width: 100%;
     flex-direction: column;
     flex: 1 1 100%;
-
-    --track-size: #{rem(4px)};
-    --linear-animation-duration: 2000ms;
 }
 
+:host-context([dir='rtl'])[indeterminate],
 :host([dir='rtl'][indeterminate]) {
     [part~='track'] {
         transform: rotateY(180deg);

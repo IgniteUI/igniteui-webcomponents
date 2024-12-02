@@ -4,8 +4,8 @@
 @use '../shared' as *;
 @use '../vars' as *;
 
-:host {
-    @extend %host !optional;
+[part~='base'] {
+    @extend %base !optional;
 
     display: inline-flex;
     position: relative;
@@ -18,6 +18,8 @@
     transform: translate(-50%, -50%);
     top: 50%;
     left: 50%;
+    line-height: normal;
+    font-weight: 600;
 }
 
 [part~='label'],
@@ -28,37 +30,37 @@
 
 [part~='counter'] {
     animation: initial-counter var(--_transition-duration) ease-in-out;
-    transition: --_progress-integer var(--_transition-duration) ease-in-out,
-    --_progress-fraction var(--_transition-duration) ease-in-out;
-    counter-reset: progress-integer var(--_progress-integer, 0) progress-fraction var(--_progress-fraction, 0);
-}
+    transition:
+            --_progress-integer var(--_transition-duration) ease-in-out,
+            --_progress-fraction var(--_transition-duration) ease-in-out;
+    counter-reset:
+            progress-integer var(--_progress-integer, 0)
+            progress-fraction var(--_progress-fraction, 0);
 
-[part~='counter']:not([part~='fraction']) {
     &::before {
-        content: counter(progress-integer) '%';
+        @include type-style('subtitle-2');
     }
 }
 
-[part~='counter'][part~='fraction'] {
-    &::before {
-        content: counter(progress-integer) '.' counter(progress-fraction, decimal-leading-zero) '%';
-    }
+[part~='counter']:not([part~='fraction'])::before {
+    content: counter(progress-integer) '%';
 }
 
-[part='svg indeterminate'] {
-    transform-origin: 50% 50%;
-    animation: 3s linear 0s infinite $animation-direction none running rotate-center;
-}
-
-[part='svg indeterminate'] [part~='fill'] {
-    stroke-dashoffset: calc(#{$circumference} * 2);
-    animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+[part~='counter'][part~='fraction']::before {
+    content: counter(progress-integer) '.' counter(progress-fraction, decimal-leading-zero) '%';
 }
 
 [part~='svg'] {
     width: $diameter;
     height: $diameter;
     transform: rotate(-90deg);
+    transform-origin: center;
+
+    &:not([part~='indeterminate']) [part~='fill'] {
+        animation: initial-dashoffset var(--_transition-duration) linear;
+        stroke-dasharray: #{$circumference} #{$circumference};
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference});
+    }
 }
 
 [part~='track'],
@@ -69,10 +71,6 @@
     cx: calc(#{$diameter} / 2);
     cy: calc(#{$diameter} / 2);
     r: $radius;
-
-    // Do not use % values inside transform origin
-    // This will break the component in Safari
-    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     transform-origin: center;
 }
 
@@ -89,14 +87,17 @@
     stroke-width: calc(#{var(--stroke-thickness)} + rem(0.75px));
 }
 
-[part~='svg']:not([part~='indeterminate']) {
+[part='svg indeterminate'] {
+    transform-origin: 50% 50%;
+    animation: 3s linear 0s infinite $animation-direction none running rotate-center;
+
     [part~='fill'] {
-        animation: initial-dashoffset var(--_transition-duration) linear;
-        stroke-dasharray: #{$circumference} #{$circumference};
-        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference}); /* Final state */
+        stroke-dashoffset: calc(#{$circumference} * 2);
+        animation: indeterminate-accordion 1.5s cubic-bezier(0, 0.085, 0.68, 0.53) $animation-direction infinite;
     }
 }
 
+:host-context([dir='rtl']),
 :host([dir='rtl']) {
     [part='svg indeterminate'] [part~='fill'] {
         animation-name: indeterminate-accordion-rtl;
@@ -104,16 +105,13 @@
 
     [part~='indeterminate'] {
         animation-direction: $animation-direction-rtl;
-    }
 
-    // Valid only for circular progress bar
-    [part~='indeterminate'] [part~='track'] {
-        animation-direction: $animation-direction-rtl;
-    }
+        [part~='track'] {
+            animation-direction: $animation-direction-rtl;
+        }
 
-    [part~='fill'] {
-        stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
+        [part~='fill'] {
+            stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
+        }
     }
 }
-
-

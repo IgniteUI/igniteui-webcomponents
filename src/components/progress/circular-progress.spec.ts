@@ -113,7 +113,7 @@ describe('Circular progress component', () => {
       );
     });
 
-    it('switches animation direction based on text direction', async () => {
+    it('switches animation direction based on the writing direction direction', async () => {
       progress.dir = 'rtl';
       await updateProgress('indeterminate', true);
 

@@ -71,11 +71,13 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     });
 
     return html`
-      <div part="track">
-        <div part=${parts}></div>
-        <div part="${parts} secondary"></div>
+      <div part="base">
+        <div part="track">
+          <div part=${parts}></div>
+          <div part="${parts} secondary"></div>
+        </div>
+        ${this.renderDefaultSlot()}
       </div>
-      ${this.renderDefaultSlot()}
     `;
   }
 }

@@ -11,52 +11,21 @@ $stripe-size: rem(5px);
     --track-size: #{rem(16px)};
 }
 
-[part~='striped'][part~='primary']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='primary'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
+// Define a mixin for generating striped styles
+@mixin striped-styles($part, $color-key) {
+    [part~='striped'][part~='#{$part}']:not([part~='indeterminate']) {
+        @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
+    }
+    [part~='striped'][part~='#{$part}'] {
+        &::after {
+            @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
+        }
     }
 }
 
-[part~='striped'][part~='danger']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='danger'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='warning']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='warning'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='info']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='info'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='success']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='success'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
+// Apply the mixin for each part
+@include striped-styles('primary', 'fill-color-default');
+@include striped-styles('danger', 'fill-color-danger');
+@include striped-styles('warning', 'fill-color-warning');
+@include striped-styles('info', 'fill-color-info');
+@include striped-styles('success', 'fill-color-success');

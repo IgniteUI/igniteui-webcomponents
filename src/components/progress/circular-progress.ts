@@ -88,9 +88,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     };
 
     return html`
-      <svg part=${partNameMap(parts)}>${this.renderSvg()}</svg>
-      <slot name="gradient"></slot>
-      ${this.renderDefaultSlot()}
+      <div part="base">
+        <svg part=${partNameMap(parts)}>${this.renderSvg()}</svg>
+        <slot name="gradient"></slot>
+        ${this.renderDefaultSlot()}
+      </div>
     `;
   }
 

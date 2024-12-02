@@ -5,19 +5,19 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-
+import { styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators/watch.js';
 import { clamp, formatString } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
-  private __internals: ElementInternals;
+  private readonly __internals: ElementInternals;
 
   @queryAssignedElements()
   protected assignedElements!: Array<HTMLElement>;
 
-  @query('[part~="fill"]', true)
-  protected progressIndicator!: Element;
+  @query('[part="base"]', true)
+  protected base!: HTMLElement;
 
   @state()
   protected percentage = 0;
@@ -27,6 +27,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @state()
   protected hasFraction = false;
+
+  @state()
+  protected styleInfo: Record<string, string> = {};
 
   /**
    * Maximum value of the control.
@@ -80,35 +83,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected indeterminateChange() {
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
-  }
-
-  @watch('max', { waitUntilFirstUpdate: true })
-  protected maxChange() {
-    this.max = Math.max(0, this.max);
-
-    if (this.value > this.max) {
-      this.value = this.max;
-    }
-
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
-  }
-
-  @watch('value', { waitUntilFirstUpdate: true })
-  protected valueChange() {
-    this._clampValue();
-
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
-  }
-
   constructor() {
     super();
     this.__internals = this.attachInternals();
@@ -116,36 +90,44 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this.__internals.ariaValueMin = '0';
   }
 
-  private _setCSSVariables(variables: Record<string, string>) {
-    Object.entries(variables).forEach(([key, value]) => {
-      this.style.setProperty(key, value);
-    });
+  override connectedCallback() {
+    super.connectedCallback();
+    this._clampValue();
+    this._updateARIA();
+  }
+
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
+  protected indeterminateChange() {
+    if (!this.indeterminate) {
+      this.requestUpdate();
+    }
+  }
+
+  @watch('max', { waitUntilFirstUpdate: true })
+  protected maxChange() {
+    this.max = Math.max(0, this.max);
+    if (this.value > this.max) {
+      this.value = this.max;
+    }
+    if (!this.indeterminate) {
+      this.requestUpdate();
+    }
+  }
+
+  @watch('value', { waitUntilFirstUpdate: true })
+  protected valueChange() {
+    this._clampValue();
+    if (!this.indeterminate) {
+      this.requestUpdate();
+    }
   }
 
   private _clampValue(): void {
     this.value = clamp(this.value, 0, this.max);
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  protected override updated(changedProperties: Map<string, unknown>) {
-    this._updateARIA();
-
-    if (changedProperties.has('animationDuration')) {
-      this._setCSSVariables({
-        '--_transition-duration': `${this.animationDuration}ms`,
-      });
-    }
-  }
-
   private _updateARIA() {
-    const text = this.labelFormat
-      ? this.renderLabelFormat()
-      : `${this.percentage}%`;
+    const text = this.labelFormat ? this.renderLabelFormat() : `${this.value}%`;
 
     const internals = this.__internals;
     internals.ariaValueMax = `${this.max}`;
@@ -153,35 +135,38 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     internals.ariaValueText = this.indeterminate ? null : text;
   }
 
-  /**
-   * Calculates the current progress percentage and updates CSS variables
-   * Skips updates if the percentage has not changed.
-   */
   private _updateProgress() {
     const progress = this.max > 0 ? this.value / this.max : 0;
     const percentage = progress * 100;
 
-    if (this.value !== 0 && percentage === this.percentage) return;
-
-    const wholeValue = percentage;
-    const integerValue = Math.floor(percentage);
     const fractionValue = Math.round((percentage % 1) * 100);
 
-    this._setCSSVariables({
-      '--_progress-whole': `${wholeValue}`,
-      '--_progress-integer': `${integerValue}`,
+    this.styleInfo = {
+      '--_progress-whole': `${percentage.toFixed(2)}`,
+      '--_progress-integer': `${Math.floor(percentage)}`,
       '--_progress-fraction': `${fractionValue}`,
-    });
+      '--_transition-duration': `${this.animationDuration}ms`,
+    };
 
     this.hasFraction = fractionValue > 0;
   }
 
-  public override async connectedCallback() {
-    super.connectedCallback();
-    this._clampValue();
-    this._updateProgress();
-    this._updateARIA();
-    await this.updateComplete;
+  protected override updated(changedProperties: Map<string, unknown>) {
+    if (
+      changedProperties.has('animationDuration') ||
+      changedProperties.has('value') ||
+      changedProperties.has('max')
+    ) {
+      this._updateProgress();
+      this._updateARIA();
+
+      // Apply style directly to base element after updating styleInfo
+      if (this.base) {
+        Object.entries(this.styleInfo).forEach(([key, value]) => {
+          this.base.style.setProperty(key, value);
+        });
+      }
+    }
   }
 
   protected renderLabel() {
@@ -189,10 +174,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     const part = `${basePart}${this.hasFraction ? ' fraction' : ''}`.trim();
 
     if (this.labelFormat) {
-      return html` <span part=${part}>${this.renderLabelFormat()}</span> `;
+      return html`<span part=${part}>${this.renderLabelFormat()}</span>`;
     }
 
-    // Default behavior: Render empty span (CSS handles everything)
     return html`<span part="${part} counter"></span>`;
   }
 
@@ -207,6 +191,14 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     return html`
       <slot part="label"></slot>
       ${hasNoLabel ? nothing : this.renderLabel()}
+    `;
+  }
+
+  protected override render() {
+    return html`
+      <div part="base" style=${styleMap(this.styleInfo)}>
+        ${this.renderDefaultSlot()}
+      </div>
     `;
   }
 }
