@@ -12,7 +12,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private _internals: ElementInternals;
   protected _autoHideTimeout?: number;
 
-  protected declare abstract _animationPlayer: ReturnType<
+  declare protected abstract _animationPlayer: ReturnType<
     typeof addAnimationController
   >;
 
