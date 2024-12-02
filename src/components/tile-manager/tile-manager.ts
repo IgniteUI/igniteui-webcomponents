@@ -45,9 +45,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
-  private draggedItem: IgcTileComponent | null = null;
   private positionedTiles: IgcTileComponent[] = [];
   private _columnCount = 10;
+
+  /** @private @hidden @internal */
+  public draggedItem: IgcTileComponent | null = null;
 
   // @query('[part="base"]', true)
   // private _baseWrapper!: HTMLDivElement;
@@ -200,7 +202,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private handleTileDragEnd() {
     if (this.draggedItem) {
-      this.draggedItem.style.transform = ''; // Reset transformation
       this.draggedItem = null;
     }
   }
@@ -221,28 +222,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         const tempPosition = draggedItem.position;
         draggedItem.position = target.position;
         target.position = tempPosition;
-      } else if (this.dragMode === 'slide') {
-        // Move dragged tile and adjust positions of affected tiles
-        const draggedPos = draggedItem.position;
-        const targetPos = target.position;
-
-        this.tiles.forEach((tile) => {
-          if (
-            draggedPos < targetPos &&
-            tile.position > draggedPos &&
-            tile.position <= targetPos
-          ) {
-            tile.position -= 1;
-          } else if (
-            draggedPos > targetPos &&
-            tile.position >= targetPos &&
-            tile.position < draggedPos
-          ) {
-            tile.position += 1;
-          }
-        });
-
-        draggedItem.position = targetPos;
       }
     }
   }

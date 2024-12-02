@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { tileContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -16,6 +16,7 @@ import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import IgcTileHeaderComponent from './tile-header.js';
+import type IgcTileManagerComponent from './tile-manager.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -60,6 +61,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private _dragController: TileDragAndDropController;
+  private _tileManager?: IgcTileManagerComponent;
   private _colSpan = 1;
   private _rowSpan = 1;
   private _colStart: number | null = null;
@@ -82,6 +84,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
     context: tileContext,
     initialValue: this,
   });
+
+  @query('[part="ghost"]', true)
+  public _ghost!: HTMLElement;
 
   @state()
   private _isDragging = false;
@@ -254,6 +259,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       dragEnd: this.handleDragEnd,
       dragEnter: this.handleDragEnter,
       dragLeave: this.handleDragLeave,
+      dragOver: this.handleDragOver,
       drop: this.handleDragLeave,
     });
 
@@ -266,6 +272,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+    // RIVIEW: Should we use lit context instead?
+    this._tileManager = this.closest(
+      'igc-tile-manager'
+    ) as IgcTileManagerComponent;
   }
 
   public toggleFullscreen() {
@@ -305,14 +315,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  private handleDragEnter() {
-    this._hasDragOver = true;
-  }
-
-  private handleDragLeave() {
-    this._hasDragOver = false;
-  }
-
   private handleDragStart(e: DragEvent) {
     const event = new CustomEvent('tileDragStart', {
       detail: { tile: this },
@@ -330,8 +332,43 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._isDragging = true;
 
     requestAnimationFrame(() => {
-      this.style.transform = 'scale(0)';
+      this._ghost.style.transform = 'scale(1)';
     });
+  }
+
+  private handleDragEnter() {
+    const draggedId = this._tileManager?.draggedItem?.tileId;
+    if (this._tileManager && this.tileId !== draggedId) {
+      const draggedItem = this._tileManager.draggedItem;
+      if (this._tileManager?.dragMode === 'slide' && draggedItem) {
+        requestAnimationFrame(() => {
+          this._ghost.style.transform = 'scale(0)';
+        });
+      } else {
+        this._hasDragOver = true;
+      }
+    }
+  }
+
+  private handleDragOver() {
+    const draggedId = this._tileManager?.draggedItem?.tileId;
+    if (
+      this._tileManager &&
+      this.tileId !== draggedId &&
+      this._tileManager?.dragMode === 'slide'
+    ) {
+      const draggedItem = this._tileManager?.draggedItem;
+      const draggedPosition = draggedItem ? draggedItem.position : -1;
+      if (draggedPosition >= 0) {
+        const tempPosition = this._tileManager?.tiles[draggedPosition].position;
+        this._tileManager.tiles[draggedPosition].position = this.position;
+        this.position = tempPosition;
+      }
+    }
+  }
+
+  private handleDragLeave() {
+    this._hasDragOver = false;
   }
 
   private handleDragEnd() {
@@ -341,6 +378,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
     this.dispatchEvent(event);
     this._isDragging = false;
+
+    requestAnimationFrame(() => {
+      this._ghost.style.transform = 'scale(0)';
+    });
   }
 
   private cacheStyles() {
@@ -533,10 +574,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
     };
 
     return html`
-      <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
-        <slot name="header"></slot>
-        <div part="content-container">
-          <slot></slot>
+      <div
+        part="tile-container"
+        .inert=${this._hasDragOver}
+        style=${styleMap(styles)}
+      >
+        <div part="ghost"></div>
+        <div part=${parts}>
+          <slot name="header"></slot>
+          <div part="content-container">
+            <slot></slot>
+          </div>
         </div>
       </div>
     `;

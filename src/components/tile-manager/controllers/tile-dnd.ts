@@ -8,10 +8,18 @@ type TileDragAndDropConfig = {
   dragEnd: TileDragCallback;
   dragEnter: TileDragCallback;
   dragLeave: TileDragCallback;
+  dragOver: TileDragCallback;
   drop: TileDragCallback;
 };
 
-const DragEvents = ['dragstart', 'dragend', 'dragenter', 'dragleave', 'drop'];
+const DragEvents = [
+  'dragstart',
+  'dragend',
+  'dragenter',
+  'dragleave',
+  'dragover',
+  'drop',
+];
 
 export class TileDragAndDropController implements ReactiveController {
   public enabled = true;

@@ -264,6 +264,15 @@ export function simulateDragStart(node: Element) {
   );
 }
 
+export function simulateDragOver(node: Element) {
+  node.dispatchEvent(
+    new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+    })
+  );
+}
+
 export function simulateDragEnd(node: Element) {
   node.dispatchEvent(
     new DragEvent('dragend', { bubbles: true, composed: true })

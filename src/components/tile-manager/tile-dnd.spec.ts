@@ -6,6 +6,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   simulateDragEnd,
+  simulateDragOver,
   simulateDragStart,
   simulateDrop,
 } from '../common/utils.spec.js';
@@ -60,6 +61,7 @@ describe('Tile drag and drop', () => {
 
     const dragAndDrop = async (draggedTile: Element, dropTarget: Element) => {
       simulateDragStart(draggedTile);
+      simulateDragOver(dropTarget);
       simulateDrop(dropTarget);
       simulateDragEnd(draggedTile);
       await elementUpdated(tileManager);
@@ -83,29 +85,29 @@ describe('Tile drag and drop', () => {
     it('should adjust reflected tiles positions in slide mode', async () => {
       const tiles = getTiles();
       const draggedTile = first(tiles);
-      const dropTarget = tiles[2];
+      const dropTarget = tiles[1];
 
       expect(tileManager.dragMode).to.equal('slide');
       tileManager.tiles.forEach((tile, index) => {
         expect(tile.id).to.equal(`tile${index}`);
       });
       expect(draggedTile.position).to.equal(0);
-      expect(dropTarget.position).to.equal(2);
+      expect(dropTarget.position).to.equal(1);
 
       await dragAndDrop(draggedTile, dropTarget);
 
       const expectedIdsAfterDrag = [
         'tile1',
-        'tile2',
         'tile0',
+        'tile2',
         'tile3',
         'tile4',
       ];
       tileManager.tiles.forEach((tile, index) => {
         expect(tile.id).to.equal(expectedIdsAfterDrag[index]);
       });
-      expect(draggedTile.position).to.equal(2);
-      expect(dropTarget.position).to.equal(1);
+      expect(draggedTile.position).to.equal(1);
+      expect(dropTarget.position).to.equal(0);
     });
 
     it('should not change order when dragging a tile onto itself in slide mode', async () => {
