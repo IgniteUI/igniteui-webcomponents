@@ -10,9 +10,9 @@
     box-sizing: border-box;
 
     @include ig-scrollbar(
-        var(--ig-scrollbar-size),
-        var(--ig-scrollbar-track-background),
-        var(--ig-scrollbar-thumb-background)
+        var(--ig-scrollbar-size, var(--sb-size)),
+        var(--ig-scrollbar-track-background, var(--sb-track-bg-color)),
+        var(--ig-scrollbar-thumb-background, var(--sb-thumb-bg-color))
     );
 
     *,
