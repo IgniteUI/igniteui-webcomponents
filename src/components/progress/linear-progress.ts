@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
@@ -59,19 +60,16 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     | 'bottom-end' = 'top-start';
 
   protected override render() {
+    const variant = this.variant || 'primary';
     const parts = partNameMap({
       fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
-      primary: this.variant === 'primary',
-      success: this.variant === 'success',
-      danger: this.variant === 'danger',
-      warning: this.variant === 'warning',
-      info: this.variant === 'info',
+      [variant]: variant,
     });
 
     return html`
-      <div part="base">
+      <div part="base" style=${styleMap(this._styleInfo)}>
         <div part="track">
           <div part=${parts}></div>
           <div part="${parts} secondary"></div>

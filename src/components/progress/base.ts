@@ -5,31 +5,42 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import type { StyleInfo } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators/watch.js';
-import { clamp, formatString } from '../common/util.js';
+import {
+  asPercent,
+  clamp,
+  formatString,
+  isEmpty,
+  partNameMap,
+} from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   private readonly __internals: ElementInternals;
 
   @queryAssignedElements()
-  protected assignedElements!: Array<HTMLElement>;
+  protected _assignedElements!: HTMLElement[];
 
   @query('[part="base"]', true)
-  protected base!: HTMLElement;
+  protected _base!: HTMLElement;
 
   @state()
-  protected percentage = 0;
+  protected _percentage = 0;
 
   @state()
-  protected progress = 0;
+  protected _progress = 0;
 
   @state()
-  protected hasFraction = false;
+  protected _hasFraction = false;
 
   @state()
-  protected styleInfo: Record<string, string> = {};
+  protected _styleInfo: StyleInfo = {
+    '--_progress-whole': '0.00',
+    '--_progress-integer': '0',
+    '--_progress-fraction': '0',
+    '--_transition-duration': '0ms',
+  };
 
   /**
    * Maximum value of the control.
@@ -83,101 +94,88 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
-  constructor() {
-    super();
-    this.__internals = this.attachInternals();
-    this.__internals.role = 'progressbar';
-    this.__internals.ariaValueMin = '0';
-  }
-
-  override connectedCallback() {
-    super.connectedCallback();
-    this._clampValue();
-    this._updateARIA();
-  }
-
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
+  @watch('indeterminate')
   protected indeterminateChange() {
     if (!this.indeterminate) {
-      this.requestUpdate();
+      this._updateProgress();
     }
   }
 
-  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('max')
   protected maxChange() {
     this.max = Math.max(0, this.max);
     if (this.value > this.max) {
       this.value = this.max;
     }
+
     if (!this.indeterminate) {
-      this.requestUpdate();
+      this._updateProgress();
     }
   }
 
-  @watch('value', { waitUntilFirstUpdate: true })
+  @watch('value')
   protected valueChange() {
-    this._clampValue();
+    this.value = clamp(this.value, 0, this.max);
+
     if (!this.indeterminate) {
-      this.requestUpdate();
+      this._updateProgress();
     }
   }
 
-  private _clampValue(): void {
-    this.value = clamp(this.value, 0, this.max);
+  constructor() {
+    super();
+    this.__internals = this.attachInternals();
+
+    Object.assign(this.__internals, {
+      role: 'progressbar',
+      ariaValueMin: '0',
+      ariaValueNow: '0',
+    });
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
+  protected override updated() {
+    this._updateARIA();
   }
 
   private _updateARIA() {
     const text = this.labelFormat ? this.renderLabelFormat() : `${this.value}%`;
 
-    const internals = this.__internals;
-    internals.ariaValueMax = `${this.max}`;
-    internals.ariaValueNow = this.indeterminate ? null : `${this.value}`;
-    internals.ariaValueText = this.indeterminate ? null : text;
+    Object.assign(this.__internals, {
+      ariaValueMax: this.max.toString(),
+      ariaValueNow: this.indeterminate ? null : this.value.toString(),
+      ariaValueText: this.indeterminate ? null : text,
+    });
   }
 
   private _updateProgress() {
-    const progress = this.max > 0 ? this.value / this.max : 0;
-    const percentage = progress * 100;
-
+    const percentage = asPercent(this.value, Math.max(1, this.max));
     const fractionValue = Math.round((percentage % 1) * 100);
+    this._hasFraction = fractionValue > 0;
 
-    this.styleInfo = {
-      '--_progress-whole': `${percentage.toFixed(2)}`,
-      '--_progress-integer': `${Math.floor(percentage)}`,
-      '--_progress-fraction': `${fractionValue}`,
+    this._styleInfo = {
+      '--_progress-whole': percentage.toFixed(2),
+      '--_progress-integer': Math.floor(percentage),
+      '--_progress-fraction': fractionValue,
       '--_transition-duration': `${this.animationDuration}ms`,
     };
-
-    this.hasFraction = fractionValue > 0;
-  }
-
-  protected override updated(changedProperties: Map<string, unknown>) {
-    if (
-      changedProperties.has('animationDuration') ||
-      changedProperties.has('value') ||
-      changedProperties.has('max')
-    ) {
-      this._updateProgress();
-      this._updateARIA();
-
-      // Apply style directly to base element after updating styleInfo
-      if (this.base) {
-        Object.entries(this.styleInfo).forEach(([key, value]) => {
-          this.base.style.setProperty(key, value);
-        });
-      }
-    }
   }
 
   protected renderLabel() {
-    const basePart = 'label value';
-    const part = `${basePart}${this.hasFraction ? ' fraction' : ''}`.trim();
+    const parts = partNameMap({
+      label: true,
+      value: true,
+      fraction: this._hasFraction,
+    });
 
-    if (this.labelFormat) {
-      return html`<span part=${part}>${this.renderLabelFormat()}</span>`;
-    }
-
-    return html`<span part="${part} counter"></span>`;
+    return this.labelFormat
+      ? html`<span part=${parts}>${this.renderLabelFormat()}</span>`
+      : html`<span part="${parts} counter"></span>`;
   }
 
   protected renderLabelFormat() {
@@ -185,20 +183,12 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderDefaultSlot() {
-    const hasNoLabel =
-      this.indeterminate || this.hideLabel || this.assignedElements.length;
+    const hideDefaultLabel =
+      this.indeterminate || this.hideLabel || !isEmpty(this._assignedElements);
 
     return html`
       <slot part="label"></slot>
-      ${hasNoLabel ? nothing : this.renderLabel()}
-    `;
-  }
-
-  protected override render() {
-    return html`
-      <div part="base" style=${styleMap(this.styleInfo)}>
-        ${this.renderDefaultSlot()}
-      </div>
+      ${hideDefaultLabel ? nothing : this.renderLabel()}
     `;
   }
 }
