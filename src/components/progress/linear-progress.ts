@@ -60,12 +60,11 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     | 'bottom-end' = 'top-start';
 
   protected override render() {
-    const variant = this.variant || 'primary';
     const parts = partNameMap({
       fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
-      [variant]: variant,
+      [this.variant]: true,
     });
 
     return html`
