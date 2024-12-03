@@ -8,6 +8,7 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import IgcIconComponent from '../icon/icon.js';
 import {
   type ResizeCallbackParams,
   type ResizeMode,
@@ -32,7 +33,7 @@ export default class IgcResizeComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcResizeComponent);
+    registerComponent(IgcResizeComponent, IgcIconComponent);
   }
 
   private _resizeController: ReturnType<typeof addResizeController>;

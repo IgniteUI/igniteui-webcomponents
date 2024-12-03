@@ -80,19 +80,27 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
     },
-    columnCount: { type: 'number', control: 'number' },
-    minColumnWidth: {
+    columnCount: {
       type: 'number',
+      description:
+        'Sets the number of columns for the tile manager.\nSetting value <= than zero will trigger a responsive layout.',
       control: 'number',
-      table: { defaultValue: { summary: '200' } },
+      table: { defaultValue: { summary: '0' } },
+    },
+    minColumnWidth: {
+      type: 'string',
+      description:
+        'Sets the minimum width for a column unit in the tile manager.',
+      control: 'text',
     },
     minRowHeight: {
-      type: 'number',
-      control: 'number',
-      table: { defaultValue: { summary: '40' } },
+      type: 'string',
+      description:
+        'Sets the minimum height for a row unit in the tile manager.',
+      control: 'text',
     },
   },
-  args: { dragMode: 'slide', minColumnWidth: 200, minRowHeight: 40 },
+  args: { dragMode: 'slide', columnCount: 0 },
 };
 
 export default metadata;
@@ -100,9 +108,15 @@ export default metadata;
 interface IgcTileManagerArgs {
   /** Determines whether the tiles slide or swap on drop. */
   dragMode: 'slide' | 'swap';
+  /**
+   * Sets the number of columns for the tile manager.
+   * Setting value <= than zero will trigger a responsive layout.
+   */
   columnCount: number;
-  minColumnWidth: number;
-  minRowHeight: number;
+  /** Sets the minimum width for a column unit in the tile manager. */
+  minColumnWidth: string;
+  /** Sets the minimum height for a row unit in the tile manager. */
+  minRowHeight: string;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 

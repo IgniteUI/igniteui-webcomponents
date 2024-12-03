@@ -3,6 +3,9 @@
 
 :host {
     display: block;
+
+    --ig-min-col-width: 200px;
+    --ig-min-row-height: 200px;
 }
 
 [part='base'] {

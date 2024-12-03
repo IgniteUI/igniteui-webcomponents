@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type MutationControllerParams,
@@ -9,7 +9,9 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { asNumber } from '../common/util.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
+import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
@@ -45,8 +47,13 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
+  private _internalStyles: StyleInfo = {};
+
   private positionedTiles: IgcTileComponent[] = [];
-  private _columnCount = 10;
+  private _columnCount = 0;
+  private _minColWidth?: string;
+  private _minRowHeight?: string;
+  private _serializer = createSerializer(this);
 
   /** @private @hidden @internal */
   public draggedItem: IgcTileComponent | null = null;
@@ -106,35 +113,61 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   /**
    * Determines whether the tiles slide or swap on drop.
-   * @attr
+   * @attr drag-mode
    */
-  @property()
+  @property({ attribute: 'drag-mode' })
   public dragMode: 'slide' | 'swap' = 'slide';
 
-  @property({ type: Number })
+  /**
+   * Sets the number of columns for the tile manager.
+   * Setting value <= than zero will trigger a responsive layout.
+   *
+   * @attr column-count
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'column-count' })
   public set columnCount(value: number) {
-    const oldValue = this._columnCount;
-
-    if (value <= 0 || value === undefined) {
-      this._columnCount = 10;
-    } else {
-      this._columnCount = value;
-    }
-
-    if (oldValue !== this._columnCount) {
-      this.requestUpdate('columnCount', oldValue);
-    }
+    this._columnCount = Math.max(0, asNumber(value));
+    Object.assign(this._internalStyles, {
+      '--ig-column-count': this._columnCount || undefined,
+    });
   }
 
   public get columnCount(): number {
     return this._columnCount;
   }
 
-  @property({ type: Number })
-  public minColumnWidth = 200;
+  /**
+   * Sets the minimum width for a column unit in the tile manager.
+   * @attr min-column-width
+   */
+  @property({ attribute: 'min-column-width' })
+  public set minColumnWidth(value: string | undefined) {
+    this._minColWidth = value ?? undefined;
+    Object.assign(this._internalStyles, {
+      '--ig-min-col-width': this._minColWidth,
+    });
+  }
 
-  @property({ type: Number })
-  public minRowHeight = 40;
+  public get minColumnWidth(): string | undefined {
+    return this._minColWidth;
+  }
+
+  /**
+   * Sets the minimum height for a row unit in the tile manager.
+   * @attr min-row-height
+   */
+  @property({ attribute: 'min-row-height' })
+  public set minRowHeight(value: string | undefined) {
+    this._minRowHeight = value ?? undefined;
+    Object.assign(this._internalStyles, {
+      '--ig-min-row-height': this._minRowHeight,
+    });
+  }
+
+  public get minRowHeight(): string | undefined {
+    return this._minRowHeight;
+  }
 
   /**
    * Gets the tiles sorted by their position in the layout.
@@ -226,65 +259,18 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
-  public saveLayout() {
-    // TODO: serialize fullscreen when added
-    const tilesData = this.tiles.map((tile) => {
-      const tileStyles = window.getComputedStyle(tile);
-
-      return {
-        colSpan: tile.colSpan,
-        colStart: tile.colStart,
-        disableDrag: tile.disableDrag,
-        disableResize: tile.disableResize,
-        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
-        gridColumn: tileStyles.gridColumn,
-        gridRow: tileStyles.gridRow,
-        maximized: tile.maximized,
-        position: tile.position,
-        rowSpan: tile.rowSpan,
-        rowStart: tile.rowStart,
-        tileId: tile.tileId,
-      };
-    });
-
-    return JSON.stringify(tilesData);
+  public saveLayout(): string {
+    return this._serializer.saveAsJSON();
   }
 
-  public loadLayout(data: string) {
-    const tilesData = JSON.parse(data);
-
-    tilesData.forEach((tileInfo: any) => {
-      const existingTile = this._tiles.find(
-        (tile) => tile.tileId === tileInfo.tileId
-      );
-
-      if (existingTile) {
-        existingTile.colSpan = tileInfo.colSpan;
-        existingTile.colStart = tileInfo.colStart;
-        existingTile.disableDrag = tileInfo.disableDrag;
-        existingTile.disableResize = tileInfo.disableResize;
-        existingTile.maximized = tileInfo.maximized;
-        existingTile.position = tileInfo.position;
-        existingTile.rowSpan = tileInfo.rowSpan;
-        existingTile.rowStart = tileInfo.rowStart;
-
-        // TODO: Review. We are saving gridColumn and gridRow as they keep the size of the resized tiles.
-        existingTile.style.gridColumn = tileInfo.gridColumn;
-        existingTile.style.gridRow = tileInfo.gridRow;
-      }
-    });
+  public loadLayout(data: string): void {
+    this._serializer.loadFromJSON(data);
   }
 
   protected override render() {
-    const styles = {
-      '--ig-column-count': `${this.columnCount}`,
-      '--ig-min-col-width': `${this.minColumnWidth}px`,
-      '--ig-min-row-height': `${this.minRowHeight}px`,
-    };
-
     return html`
       <div
-        style=${styleMap(styles)}
+        style=${styleMap(this._internalStyles)}
         part="base"
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
