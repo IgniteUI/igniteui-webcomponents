@@ -4,6 +4,7 @@ import { html } from 'lit';
 import {
   IgcButtonComponent,
   IgcInputComponent,
+  type IgcStepComponent,
   IgcStepperComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
@@ -122,19 +123,35 @@ const BasicTemplate = ({
   verticalAnimation,
   horizontalAnimation,
 }: IgcStepperArgs) => {
-  const next = () => {
+  document.addEventListener('DOMContentLoaded', () => {
     const stepper = document.getElementById('stepper') as IgcStepperComponent;
-    stepper.next();
-  };
 
-  const prev = () => {
+    stepper.addEventListener('igcInput', () => {
+      checkValidity();
+    });
+    stepper.addEventListener('igcChange', () => {
+      checkValidity();
+    });
+  });
+
+  function checkValidity() {
     const stepper = document.getElementById('stepper') as IgcStepperComponent;
-    stepper.prev();
-  };
+    const activeStep = stepper.steps.find(
+      (step) => step.active
+    ) as IgcStepComponent;
+    const form = activeStep!.querySelector('form') as HTMLFormElement;
+    const isFormInvalid = !form.checkValidity();
+
+    if (activeStep!.optional) {
+      return;
+    }
+
+    if (stepper.linear) {
+      activeStep!.invalid = isFormInvalid;
+    }
+  }
 
   return html`
-    <span>test content top</span>
-
     <igc-stepper
       id="stepper"
       .orientation=${orientation}
@@ -146,31 +163,30 @@ const BasicTemplate = ({
       .verticalAnimation=${verticalAnimation}
       .horizontalAnimation=${horizontalAnimation}
     >
-      <igc-step complete>
+      <igc-step invalid>
         <span slot="title">Step1</span>
         <span slot="subtitle">(completed)</span>
-        <igc-input
-          label="First Name"
-          id="first-name"
-          name="first-name"
-          required
-        ></igc-input>
-        <br /><br />
-        <igc-button @click=${next}>Next</igc-button>
+        <form id="form">
+          <igc-input
+            label="First Name"
+            id="first-name"
+            name="first-name"
+            required
+          ></igc-input>
+        </form>
       </igc-step>
 
-      <igc-step active>
+      <igc-step invalid>
         <span slot="title">Step 2</span>
         <span slot="subtitle">(default)</span>
-        <igc-input
-          label="Last Name"
-          id="last-name"
-          name="last-name"
-          required
-        ></igc-input>
-        <br /><br />
-        <igc-button @click=${prev}>Prev</igc-button>
-        <igc-button @click=${next}>Next</igc-button>
+        <form id="form">
+          <igc-input
+            label="Last Name"
+            id="last-name"
+            name="last-name"
+            required
+          ></igc-input>
+        </form>
       </igc-step>
 
       <igc-step optional>
@@ -180,9 +196,6 @@ const BasicTemplate = ({
         soluta nulla asperiores, officia ullam recusandae voluptatem omnis
         perferendis vitae non magni magnam praesentium placeat nemo quas
         repudiandae. Nisi, quo ex!
-        <br /><br />
-        <igc-button @click=${prev}>Prev</igc-button>
-        <igc-button @click=${next}>Next</igc-button>
       </igc-step>
 
       <igc-step disabled>
@@ -197,11 +210,8 @@ const BasicTemplate = ({
           repudiandae. Nisi, quo ex!
         </div>
         <br />
-        <igc-button @click=${prev}>Prev</igc-button>
       </igc-step>
     </igc-stepper>
-
-    <span>test content bottom</span>
   `;
 };
 
