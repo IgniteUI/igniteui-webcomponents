@@ -423,20 +423,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
     if (ghostElement) {
       const deltaX = event.detail.event.clientX - this._initialPointerX!;
       const deltaY = event.detail.event.clientY - this._initialPointerY!;
-      const minWidth = this._cachedStyles.minWidth!;
-      const minHeight = this._cachedStyles.minHeight!;
       const columnGap = 10;
 
       const snappedWidth = this._calculateSnappedWidth(
         deltaX,
         event.detail.state.initial.width,
-        minWidth,
         columnGap
       );
       const snappedHeight = this._calculateSnappedHeight(
         deltaY,
         event.detail.state.initial.height,
-        minHeight,
         columnGap
       );
 
@@ -448,42 +444,46 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _calculateSnappedWidth(
     deltaX: number,
     initialWidth: number,
-    minWidth: number,
     gap: number
   ): number {
     const newSize = initialWidth + deltaX;
-    const wholeUnits = Math.floor(newSize / (minWidth + gap));
-    const fraction = newSize / (minWidth + gap) - wholeUnits;
-    const gapMultiplier =
-      fraction > 0.5 ? wholeUnits : wholeUnits > 1 ? wholeUnits - 1 : 0;
+    const tileManager =
+      this.closest('igc-tile-manager')!.shadowRoot!.querySelector(
+        "[part~='base']"
+      )!;
+    const styles = getComputedStyle(tileManager);
 
-    return fraction > 0.5
-      ? (wholeUnits + 1) * minWidth + gapMultiplier * gap
-      : wholeUnits * minWidth + gapMultiplier * gap;
+    const colWidth =
+      Number.parseFloat(
+        styles.getPropertyValue('grid-template-columns').split(' ')[0]
+      ) || this._cachedStyles.minWidth!;
+    const totalSpan = Math.round(newSize / (colWidth + gap));
+    const snappedWidth = totalSpan * colWidth + (totalSpan - 1) * gap;
+    return snappedWidth < colWidth ? colWidth : snappedWidth;
   }
 
   private _calculateSnappedHeight(
     deltaY: number,
     initialHeight: number,
-    minHeight: number,
     rowGap: number
   ): number {
+    const minHeight = this._cachedStyles.minHeight!;
     let snappedHeight = initialHeight;
 
     if (deltaY > 0) {
       // For resizing down, add the gaps and the rows multiplied by min height to the initial tile height
-      const wholeRows = Math.floor(deltaY / minHeight);
-      const totalGaps = Math.max(wholeRows - 1, 0) * rowGap;
-      snappedHeight = initialHeight + wholeRows * minHeight + totalGaps;
+      const additionalHeight = initialHeight + deltaY;
+      const wholeRows = Math.floor(additionalHeight / (minHeight + rowGap));
+      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
+
+      snappedHeight = Math.max(totalHeight, minHeight); // Ensure it at least snaps to minHeight
     } else if (deltaY < 0 && initialHeight > minHeight) {
       // For resizing up, subtract the gaps and the rows multiplied by min height from the initial tile height
-      const extraHeight = Math.abs(deltaY);
-      const wholeRows = Math.floor(extraHeight / minHeight);
-      const totalGaps = Math.max(wholeRows - 1, 0) * rowGap;
-      snappedHeight = Math.max(
-        initialHeight - (wholeRows * minHeight + totalGaps),
-        minHeight
-      );
+      const reducedHeight = initialHeight + deltaY;
+      const wholeRows = Math.floor(reducedHeight / (minHeight + rowGap));
+      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
+
+      snappedHeight = Math.max(totalHeight, minHeight);
     }
 
     return snappedHeight;
@@ -498,22 +498,29 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const parentWrapper =
       this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
-    const computedStyle = window.getComputedStyle(parentWrapper);
-    const tm = parentWrapper.getBoundingClientRect();
+    const tileManagerRect = parentWrapper.getBoundingClientRect();
+    const computedStyles = getComputedStyle(parentWrapper);
 
-    tm.height -=
-      Number.parseFloat(computedStyle.paddingTop) +
-      Number.parseFloat(computedStyle.paddingBottom);
-    tm.width -=
-      Number.parseFloat(computedStyle.paddingLeft) +
-      Number.parseFloat(computedStyle.paddingRight);
+    tileManagerRect.height -=
+      Number.parseFloat(computedStyles.paddingTop) +
+      Number.parseFloat(computedStyles.paddingBottom);
+    tileManagerRect.width -=
+      Number.parseFloat(computedStyles.paddingLeft) +
+      Number.parseFloat(computedStyles.paddingRight);
 
-    const gridColumnWidth = tm.width / this._cachedStyles.columnCount!;
-    let colSpan = Math.round(width / gridColumnWidth);
-    colSpan = Math.max(1, Math.min(colSpan, this._cachedStyles.columnCount!));
+    const gridTemplateColumnsWidth = Number.parseFloat(
+      computedStyles.getPropertyValue('grid-template-columns').split(' ')[0]
+    );
+    const targetWidth = this._cachedStyles.columnCount
+      ? tileManagerRect.width / this._cachedStyles.columnCount!
+      : gridTemplateColumnsWidth;
 
-    const minH = this._cachedStyles.minHeight;
-    const rowSpan = Math.max(1, Math.floor(height / minH!));
+    let colSpan = Math.round(width / targetWidth);
+    colSpan = Math.max(1, colSpan);
+
+    const minHeight = this._cachedStyles.minHeight!;
+    let rowSpan = Math.round(height / minHeight);
+    rowSpan = Math.max(1, rowSpan);
 
     // REVIEW
     Object.assign(resizeElement.style, {
