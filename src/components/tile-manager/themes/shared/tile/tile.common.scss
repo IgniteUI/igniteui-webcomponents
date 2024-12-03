@@ -47,3 +47,9 @@ $theme: $material;
     background: var-get($theme, 'content-background');
     color: var-get($theme, 'content-color');
 }
+
+[part='ghost'] {
+    border-radius: var-get($theme, 'border-radius');
+    border: rem(1px) solid var-get($theme, 'ghost-border');
+    background: var-get($theme, 'overlay-background');
+}

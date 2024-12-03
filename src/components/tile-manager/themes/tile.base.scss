@@ -51,14 +51,12 @@
     }
 }
 
-[part="ghost"] {
+[part='ghost'] {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(137 196 244);
-    border: 2px dashed #007bff;
     transform: scale(0);
 
     // transition: transform 0.5s ease-in-out;

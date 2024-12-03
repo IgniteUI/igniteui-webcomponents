@@ -2,6 +2,7 @@ import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { tileContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -15,6 +16,7 @@ import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
+import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
@@ -43,6 +45,7 @@ export interface IgcTileComponentEventMap {
  * @fires igcResizeMove - Fired when tile is being resized.
  * @fires igcResizeEnd - Fired when tile finishes resizing.
  */
+@themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
   Constructor<LitElement>

@@ -4,6 +4,7 @@ import type { Themes } from '../../../theming/types.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/header/tile-header.bootstrap.css.js';
 import { styles as fluent } from './shared/header/tile-header.fluent.css.js';
+import { styles as indigo } from './shared/header/tile-header.indigo.css.js';
 
 const light = {
   bootstrap: css`
@@ -11,6 +12,9 @@ const light = {
   `,
   fluent: css`
     ${fluent}
+  `,
+  indigo: css`
+    ${indigo}
   `,
 };
 
@@ -20,6 +24,9 @@ const dark = {
   `,
   fluent: css`
     ${fluent}
+  `,
+  indigo: css`
+    ${indigo}
   `,
 };
 
