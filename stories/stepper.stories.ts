@@ -165,7 +165,6 @@ const BasicTemplate = ({
     >
       <igc-step invalid>
         <span slot="title">Step1</span>
-        <span slot="subtitle">(completed)</span>
         <form id="form">
           <igc-input
             label="First Name"
@@ -178,7 +177,6 @@ const BasicTemplate = ({
 
       <igc-step invalid>
         <span slot="title">Step 2</span>
-        <span slot="subtitle">(default)</span>
         <form id="form">
           <igc-input
             label="Last Name"
