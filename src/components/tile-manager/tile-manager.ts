@@ -9,7 +9,7 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber } from '../common/util.js';
+import { asNumber, findElementFromEventPath } from '../common/util.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
@@ -228,9 +228,9 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this.slotElement.assign(...this._tiles);
   }
 
-  private handleTileDragStart(e: CustomEvent) {
-    this.emitEvent('igcTileDragStarted', { detail: e.detail.tile });
-    this.draggedItem = e.detail.tile;
+  private handleTileDragStart(event: CustomEvent) {
+    this.emitEvent('igcTileDragStarted', { detail: event.detail.tile });
+    this.draggedItem = event.detail.tile;
   }
 
   private handleTileDragEnd() {
@@ -239,22 +239,25 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
-  private handleDragOver(e: DragEvent) {
-    e.preventDefault(); // Allow dropping
+  private handleDragOver(event: DragEvent) {
+    event.preventDefault(); // Allow dropping
   }
 
-  private handleDrop(e: DragEvent) {
-    e.preventDefault();
+  private handleDrop(event: DragEvent) {
+    event.preventDefault();
 
     const draggedItem = this.draggedItem;
-    const target = (e.target as HTMLElement).closest('igc-tile')!;
+    const target = findElementFromEventPath<IgcTileComponent>(
+      IgcTileComponent.tagName,
+      event
+    );
 
-    if (draggedItem && this.tiles && target !== draggedItem) {
+    if (target && draggedItem && target !== draggedItem) {
       if (this.dragMode === 'swap') {
-        // Swap positions between dragged tile and drop target
-        const tempPosition = draggedItem.position;
-        draggedItem.position = target.position;
-        target.position = tempPosition;
+        [draggedItem.position, target.position] = [
+          target.position,
+          draggedItem.position,
+        ];
       }
     }
   }

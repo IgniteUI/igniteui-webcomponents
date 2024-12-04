@@ -37,6 +37,20 @@ export default class IgcTileHeaderComponent extends LitElement {
   @consume({ context: tileContext, subscribe: true })
   private _tile?: IgcTileComponent;
 
+  private get _isMaximized() {
+    return this._tile ? this._tile.maximized : false;
+  }
+
+  private get _isFullscreen() {
+    return this._tile ? this._tile.fullscreen : false;
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
   private handleFullscreen() {
     if (this._tile) {
       this._tile.toggleFullscreen();
@@ -60,27 +74,39 @@ export default class IgcTileHeaderComponent extends LitElement {
     });
   }
 
+  protected _renderAction({
+    icon,
+    handler,
+  }: {
+    icon: string;
+    handler: () => unknown;
+  }) {
+    return html`
+      <igc-icon-button
+        variant="flat"
+        collection="default"
+        exportparts="icon"
+        name=${icon}
+        @click=${handler}
+      ></igc-icon-button>
+    `;
+  }
+
   protected override render() {
+    const maximize = {
+      icon: this._isMaximized ? 'collapse_content' : 'expand_content',
+      handler: this.handleMaximize,
+    };
+    const fullscreen = {
+      icon: this._isFullscreen ? 'fullscreen_exit' : 'fullscreen',
+      handler: this.handleFullscreen,
+    };
+
     return html`
       <div part="header">
         <slot part="title" name="title"></slot>
         <section part="actions">
-          <igc-icon-button
-            variant="flat"
-            collection="default"
-            exportparts="icon"
-            name=${this._tile?.maximized
-              ? 'collapse_content'
-              : 'expand_content'}
-            @click=${this.handleMaximize}
-          ></igc-icon-button>
-          <igc-icon-button
-            variant="flat"
-            collection="default"
-            exportparts="icon"
-            name=${this._tile?.fullscreen ? 'fullscreen_exit' : 'fullscreen'}
-            @click=${this.handleFullscreen}
-          ></igc-icon-button>
+          ${this._renderAction(maximize)} ${this._renderAction(fullscreen)}
           <slot name="actions"></slot>
         </section>
       </div>

@@ -7,7 +7,7 @@ import { tileContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import {
   type TileDragAndDropController,
   addTileDragAndDrop,
@@ -109,18 +109,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public set colSpan(value: number) {
-    const oldValue = this._colSpan;
-
-    if (value <= 0) {
-      this._colSpan = 1;
-    } else {
-      this._colSpan = value;
-    }
-
-    if (oldValue !== this._colSpan) {
-      this.style.setProperty('--ig-col-span', `${value}`);
-      this.requestUpdate('colSpan', oldValue);
-    }
+    this._colSpan = Math.max(1, asNumber(value));
+    this.style.setProperty('--ig-col-span', this._colSpan.toString());
   }
 
   public get colSpan(): number {
@@ -129,18 +119,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public set rowSpan(value: number) {
-    const oldValue = this._rowSpan;
-
-    if (value <= 0) {
-      this._rowSpan = 1;
-    } else {
-      this._rowSpan = value;
-    }
-
-    if (oldValue !== this._rowSpan) {
-      this.style.setProperty('--ig-row-span', `${value}`);
-      this.requestUpdate('rowSpan', oldValue);
-    }
+    this._rowSpan = Math.max(1, asNumber(value));
+    this.style.setProperty('--ig-row-span', this._rowSpan.toString());
   }
 
   public get rowSpan(): number {
@@ -149,18 +129,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public set colStart(value: number) {
-    const oldValue = this._colStart;
-
-    if (value <= 0) {
-      this._colStart = null;
-    } else {
-      this._colStart = value;
-    }
-
-    if (oldValue !== this._colStart) {
-      this.style.setProperty('--ig-col-start', `${value}`);
-      this.requestUpdate('colStart', oldValue);
-    }
+    this._colStart = Math.max(0, asNumber(value)) || null;
+    this.style.setProperty(
+      '--ig-col-start',
+      this._colStart ? this._colStart.toString() : null
+    );
   }
 
   public get colStart(): number | null {
@@ -169,18 +142,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @property({ type: Number })
   public set rowStart(value: number) {
-    const oldValue = this._rowStart;
-
-    if (value <= 0) {
-      this._rowStart = null;
-    } else {
-      this._rowStart = value;
-    }
-
-    if (oldValue !== this._rowStart) {
-      this.style.setProperty('--ig-row-start', `${value}`);
-      this.requestUpdate('rowStart', oldValue);
-    }
+    this._rowStart = Math.max(0, asNumber(value)) || null;
+    this.style.setProperty(
+      '--ig-row-start',
+      this._rowStart ? this._rowStart.toString() : null
+    );
   }
 
   public get rowStart(): number | null {
@@ -275,7 +241,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
-    // RIVIEW: Should we use lit context instead?
+    // REVIEW: Should we use lit context instead?
     this._tileManager = this.closest(
       'igc-tile-manager'
     ) as IgcTileManagerComponent;
@@ -577,10 +543,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
 
     const styles = {
-      '--ig-col-span': `${this.colSpan}`,
-      '--ig-row-span': `${this.rowSpan}`,
-      '--ig-col-start': `${this.colStart}`,
-      '--ig-row-start': `${this.rowStart}`,
+      '--ig-col-span': this._colSpan,
+      '--ig-row-span': this._rowSpan,
+      '--ig-col-start': this._colStart,
+      '--ig-row-start': this._rowStart,
     };
 
     return html`

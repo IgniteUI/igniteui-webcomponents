@@ -56,7 +56,11 @@ describe('Tile Manager component', () => {
   describe('Initialization', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
-        <igc-tile-manager>
+        <igc-tile-manager
+          column-count="10"
+          min-column-width="150px"
+          min-row-height="200px"
+        >
           <igc-tile tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
@@ -79,18 +83,19 @@ describe('Tile Manager component', () => {
     //   await expect(tileManager).shadowDom.to.be.accessible();
     // });
 
+    // TODO: Add an initialization test with non-defined column count and minimum dimension constraints
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(10);
       expect(tileManager.dragMode).to.equal('slide');
-      expect(tileManager.minColumnWidth).to.equal(150);
-      expect(tileManager.minRowHeight).to.equal(200);
+      expect(tileManager.minColumnWidth).to.equal('150px');
+      expect(tileManager.minRowHeight).to.equal('200px');
       expect(tileManager.tiles).lengthOf(2);
     });
 
     it('should render properly', () => {
       expect(tileManager).dom.to.equal(
-        `<igc-tile-manager>
+        `<igc-tile-manager column-count="10" min-column-width="150px" min-row-height="200px">
           <igc-tile
             draggable="true"
             style="order: 0;"
@@ -145,7 +150,7 @@ describe('Tile Manager component', () => {
         >
           <div
             part="tile-container"
-            style="--ig-col-span:1;--ig-row-span:1;--ig-col-start:null;--ig-row-start:null;"
+            style="--ig-col-span:1;--ig-row-span:1;"
           >
             <div part="ghost">
             </div>
