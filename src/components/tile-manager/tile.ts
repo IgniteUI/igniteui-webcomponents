@@ -436,24 +436,66 @@ export default class IgcTileComponent extends EventEmitterMixin<
     initialHeight: number,
     rowGap: number
   ): number {
-    const minHeight = this._cachedStyles.minHeight!;
-    let snappedHeight = initialHeight;
+    const rowHeights = getComputedStyle(
+      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!
+    )
+      .gridTemplateRows.split(' ')
+      .map((height) => Number.parseFloat(height.trim()));
+
+    let snappedHeight = initialHeight + deltaY;
+    let accumulatedHeight = 0;
+    let targetRowIndex = -1;
+
+    // Determine which row the tile is in based on current height
+    for (let i = 0; i < rowHeights.length; i++) {
+      accumulatedHeight += rowHeights[i] + (i > 0 ? rowGap : 0);
+      if (snappedHeight <= accumulatedHeight) {
+        targetRowIndex = i;
+        break;
+      }
+    }
+
+    // Fallback in case the initial height exceeds all rows
+    if (targetRowIndex === -1) {
+      targetRowIndex = rowHeights.length - 1;
+    }
+
+    let previousRowsHeight = 0;
+    for (let i = 0; i < targetRowIndex; i++) {
+      previousRowsHeight += rowHeights[i] + (i > 0 ? rowGap : 0);
+    }
 
     if (deltaY > 0) {
-      // For resizing down, add the gaps and the rows multiplied by min height to the initial tile height
-      const additionalHeight = initialHeight + deltaY;
-      const wholeRows = Math.floor(additionalHeight / (minHeight + rowGap));
-      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
+      if (targetRowIndex < rowHeights.length) {
+        const rowHeight = rowHeights[targetRowIndex];
+        const halfwayThreshold = previousRowsHeight + rowGap + rowHeight / 2;
 
-      snappedHeight = Math.max(totalHeight, minHeight); // Ensure it at least snaps to minHeight
-    } else if (deltaY < 0 && initialHeight > minHeight) {
-      // For resizing up, subtract the gaps and the rows multiplied by min height from the initial tile height
-      const reducedHeight = initialHeight + deltaY;
-      const wholeRows = Math.floor(reducedHeight / (minHeight + rowGap));
-      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
+        // Snap to the next row height if we are more than halfway into it,
+        // otherwise keep the size as all previous rows height
+        if (snappedHeight >= halfwayThreshold) {
+          snappedHeight = accumulatedHeight;
+        } else {
+          snappedHeight = previousRowsHeight;
+        }
+      }
+    } else if (deltaY < 0) {
+      const currentRowHeight = rowHeights[targetRowIndex];
+      const halfwayThreshold =
+        accumulatedHeight - currentRowHeight / 2 - rowGap;
 
-      snappedHeight = Math.max(totalHeight, minHeight);
+      // Snap to the previous row height if we are more than halfway out of the current row
+      // Otherwise keep the size as all previous rows height + current row height
+      if (snappedHeight <= halfwayThreshold && targetRowIndex > 0) {
+        snappedHeight = accumulatedHeight - currentRowHeight - rowGap;
+      } else {
+        snappedHeight =
+          previousRowsHeight +
+          rowHeights[targetRowIndex] +
+          (targetRowIndex > 0 ? rowGap : 0);
+      }
     }
+
+    snappedHeight = Math.max(snappedHeight, rowHeights[targetRowIndex]);
 
     return snappedHeight;
   }
