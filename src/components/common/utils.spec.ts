@@ -285,7 +285,7 @@ export function simulateDrop(node: Element) {
 
 export function simulateDoubleClick(node: Element) {
   node.dispatchEvent(
-    new MouseEvent('dblclick', { bubbles: true, composed: true })
+    new PointerEvent('dblclick', { bubbles: true, composed: true })
   );
 }
 

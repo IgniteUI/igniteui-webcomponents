@@ -1,9 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
-import { spy } from 'sinon';
+import { match, restore, spy, stub } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
-import { simulateDoubleClick } from '../common/utils.spec.js';
+import { simulateClick, simulateDoubleClick } from '../common/utils.spec.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
@@ -27,9 +27,9 @@ describe('Tile Manager component', () => {
     return Array.from(tileManager.querySelectorAll('igc-tile'));
   }
 
-  function getTileBaseWrapper(element: IgcTileComponent) {
-    return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
-  }
+  // function getTileBaseWrapper(element: IgcTileComponent) {
+  //   return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
+  // }
 
   function createTileManager() {
     const result = Array.from(range(5)).map(
@@ -86,10 +86,10 @@ describe('Tile Manager component', () => {
     // TODO: Add an initialization test with non-defined column count and minimum dimension constraints
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
-      expect(tileManager.columnCount).to.equal(10);
+      expect(tileManager.columnCount).to.equal(0);
       expect(tileManager.dragMode).to.equal('slide');
-      expect(tileManager.minColumnWidth).to.equal('150px');
-      expect(tileManager.minRowHeight).to.equal('200px');
+      expect(tileManager.minColumnWidth).to.equal(undefined);
+      expect(tileManager.minRowHeight).to.equal(undefined);
       expect(tileManager.tiles).lengthOf(2);
     });
 
@@ -122,7 +122,7 @@ describe('Tile Manager component', () => {
       expect(tileManager).shadowDom.to.equal(
         `<div
           part="base"
-          style="--ig-column-count:10;--ig-min-col-width:150px;--ig-min-row-height:200px;"
+          style=""
         >
           <slot></slot>
         </div>`
@@ -293,45 +293,117 @@ describe('Tile Manager component', () => {
   });
 
   describe('Tile state change behavior', () => {
+    let tile: any;
+
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+      tile = first(tileManager.tiles);
+
+      // Mock `requestFullscreen`
+      tile.requestFullscreen = stub().callsFake(() => {
+        Object.defineProperty(document, 'fullscreenElement', {
+          value: tile,
+          configurable: true,
+        });
+        return Promise.resolve();
+      });
+
+      // Mock `exitFullscreen`
+      Object.defineProperty(document, 'exitFullscreen', {
+        value: stub().callsFake(() => {
+          Object.defineProperty(document, 'fullscreenElement', {
+            value: null,
+            configurable: true,
+          });
+          return Promise.resolve();
+        }),
+        configurable: true,
+      });
     });
 
-    // TODO Mockup browser requestFullscreen/exitFullscreen
-    xit('should correctly fire `igcTileFullscreen` event', async () => {
-      const tile = first(tileManager.tiles);
-      const tileWrapper = getTileBaseWrapper(tile);
+    afterEach(() => {
+      Object.defineProperty(document, 'fullscreenElement', {
+        value: null,
+        configurable: true,
+      });
 
+      restore();
+    });
+
+    it('should correctly change fullscreen state on double click', async () => {
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+
+      expect(tile.requestFullscreen).to.have.been.calledOnce;
+      expect(document.exitFullscreen).to.not.have.been.called;
+      expect(tile.fullscreen).to.be.true;
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+
+      expect(document.exitFullscreen).to.have.been.calledOnce;
+      expect(tile.fullscreen).to.be.false;
+    });
+
+    it('should correctly fire `igcTileFullscreen` event', async () => {
+      const tile = first(tileManager.tiles);
+      const tileHeader = tile.querySelector('igc-tile-header');
+      const fullscreenButton =
+        tileHeader?.renderRoot.querySelectorAll('igc-icon-button')[1];
       const eventSpy = spy(tile, 'emitEvent');
 
-      simulateDoubleClick(tileWrapper);
-      await elementUpdated(tile);
+      simulateClick(fullscreenButton!);
+      await elementUpdated(tileManager);
 
       expect(eventSpy).calledWith('igcTileFullscreen', {
         detail: { tile: tile, state: true },
         cancelable: true,
       });
+      expect(tile.fullscreen).to.be.true;
 
-      // check if tile is fullscreen
-    });
-
-    // TODO Mockup browser requestFullscreen/exitFullscreen
-    xit('can cancel `igcTileFullscreen` event', async () => {
-      const tile = first(tileManager.tiles);
-      const eventSpy = spy(tile, 'emitEvent');
-
-      tile.addEventListener('igcTileFullscreen', (ev) => {
-        ev.preventDefault();
-      });
-
-      simulateDoubleClick(tile);
+      simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
       expect(eventSpy).calledWith('igcTileFullscreen', {
         detail: { tile: tile, state: false },
         cancelable: true,
       });
-      // check if tile is not fullscreen
+      expect(tile.fullscreen).to.be.false;
+    });
+
+    it('can cancel `igcTileFullscreen` event', async () => {
+      const eventSpy = spy(tile, 'emitEvent');
+
+      tile.addEventListener('igcTileFullscreen', (ev: CustomEvent) => {
+        ev.preventDefault();
+      });
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+
+      expect(eventSpy).to.have.been.calledWith(
+        'igcTileFullscreen',
+        match({
+          detail: { tile: tile, state: true },
+          cancelable: true,
+        })
+      );
+      expect(tile.fullscreen).to.be.false;
+      expect(tile.requestFullscreen).not.to.have.been.called;
+    });
+
+    it('should update fullscreen property on fullscreenchange (e.g. Esc key is pressed)', async () => {
+      tile.fullscreen = true;
+
+      // Mock the browser removing fullscreen element and firing a fullscreenchange event
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        value: null,
+      });
+      tile.dispatchEvent(new Event('fullscreenchange'));
+      await elementUpdated(tileManager);
+
+      expect(tile.fullscreen).to.be.false;
     });
 
     //TODO Fix test by selecting header icon and simulate click on it
