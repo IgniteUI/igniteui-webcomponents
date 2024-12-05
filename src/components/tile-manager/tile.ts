@@ -72,6 +72,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _disableDrag = false;
   private _fullscreen = false;
+  private _isUserTriggered = false;
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
@@ -162,8 +163,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     if (this._fullscreen === value) return;
 
     this._fullscreen = value;
+
+    if (this._isUserTriggered && !this.emitFullScreenEvent()) {
+      this._isUserTriggered = false;
+      this._fullscreen = !value; // Rollback state if event is canceled
+      return;
+    }
+
+    if (this._fullscreen) {
+      this.requestFullscreen();
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+
+    this._isUserTriggered = false;
     this._context.setValue(this, true);
-    this.handleFullscreenRequest();
   }
 
   public get fullscreen() {
@@ -235,7 +249,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // Will probably expose that as a dynamic binding based on a property
     // and as a response to some UI element interaction
     // REVIEW: fullscreen property and a tile header action button added
-    this.addEventListener('dblclick', this.handleDoubleClick);
+    this.addEventListener('dblclick', this.toggleFullscreen);
+    this.addEventListener('fullscreenchange', this.handleFullscreenChange);
   }
 
   public override connectedCallback() {
@@ -248,8 +263,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   public toggleFullscreen() {
+    this._isUserTriggered = true;
     this.fullscreen = !this.fullscreen;
-    this.emitFullScreenEvent();
+  }
+
+  private handleFullscreenChange() {
+    const isFullscreen = document.fullscreenElement === this;
+    if (!isFullscreen && this._fullscreen) {
+      // If exited fullscreen (e.g., via ESC key), update state
+      this._isUserTriggered = true;
+      this.fullscreen = false;
+    }
   }
 
   // protected override async firstUpdated() {
@@ -262,26 +286,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       detail: { tile: this, state: this.fullscreen },
       cancelable: true,
     });
-  }
-
-  private handleDoubleClick() {
-    if (!this.emitFullScreenEvent()) {
-      return;
-    }
-
-    this.fullscreen = !this.fullscreen;
-  }
-
-  private async handleFullscreenRequest() {
-    try {
-      if (this.fullscreen) {
-        await this.requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch {
-      document.exitFullscreen();
-    }
   }
 
   private handleDragStart(e: DragEvent) {
