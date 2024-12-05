@@ -147,6 +147,7 @@ describe('Tile Manager component', () => {
         `<igc-resize
           mode="deferred"
           part="resize"
+          style="--resize-display: inline-flex;"
         >
           <div
             part="tile-container"
@@ -154,7 +155,10 @@ describe('Tile Manager component', () => {
           >
             <div part="ghost">
             </div>
-            <div part="base draggable resizable">
+            <div
+              part="base draggable resizable"
+              style="transform:;"
+            >
               <slot name="header"></slot>
               <div part="content-container">
                 <slot></slot>

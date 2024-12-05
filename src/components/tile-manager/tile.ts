@@ -113,6 +113,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @query('[part="ghost"]', true)
   public _ghost!: HTMLElement;
 
+  @query('[part~="base"]', true)
+  public _tileContent!: HTMLElement;
+
   @state()
   private _isDragging = false;
 
@@ -305,7 +308,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
 
-    e.dataTransfer!.setDragImage(this, offsetX, offsetY);
+    e.dataTransfer!.setDragImage(this._tileContent, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
 
     this.emitEvent('tileDragStart', { detail: this });
@@ -550,6 +553,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
       '--ig-row-start': this._rowStart,
     };
 
+    const baseStyles = {
+      // REVIEW: Using the hacky transform to 'hide' the base element
+      // and still have it as drag image added with setDragImage()
+      transform: this._isDragging ? 'translateX(-99999px)' : '',
+    };
+
     return html`
       <div
         part="tile-container"
@@ -557,7 +566,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         style=${styleMap(styles)}
       >
         <div part="ghost"></div>
-        <div part=${parts}>
+        <div part=${parts} style=${styleMap(baseStyles)}>
           <slot name="header"></slot>
           <div part="content-container">
             <slot></slot>
@@ -576,6 +585,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : html`
           <igc-resize
             part="resize"
+            style="--resize-display: ${this._isDragging
+              ? 'none'
+              : 'inline-flex'};"
             .ghostFactory=${this.ghostFactory}
             mode="deferred"
             @igcResizeStart=${this._handleResizeStart}
