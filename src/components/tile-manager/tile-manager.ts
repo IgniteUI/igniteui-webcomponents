@@ -1,7 +1,9 @@
+import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { tileManagerContext } from '../common/context.js';
 import {
   type MutationControllerParams,
   createMutationController,
@@ -21,6 +23,11 @@ import IgcTileComponent from './tile.js';
 export interface IgcTileManagerComponentEventMap {
   igcTileDragStarted: CustomEvent<IgcTileComponent>;
 }
+
+export type TileManagerContext = {
+  instance: IgcTileManagerComponent;
+  draggedItem: IgcTileComponent | null;
+};
 
 /**
  * The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.
@@ -53,13 +60,17 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _columnCount = 0;
   private _minColWidth?: string;
   private _minRowHeight?: string;
+  private _draggedItem: IgcTileComponent | null = null;
+
   private _serializer = createSerializer(this);
 
-  /** @private @hidden @internal */
-  public draggedItem: IgcTileComponent | null = null;
-
-  // @query('[part="base"]', true)
-  // private _baseWrapper!: HTMLDivElement;
+  private _context = new ContextProvider(this, {
+    context: tileManagerContext,
+    initialValue: {
+      instance: this,
+      draggedItem: this._draggedItem,
+    },
+  });
 
   @query('slot', true)
   private slotElement!: HTMLSlotElement;
@@ -69,6 +80,13 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       this.querySelectorAll<IgcTileComponent>(
         `:scope > ${IgcTileComponent.tagName}`
       )
+    );
+  }
+
+  private _setManagerContext() {
+    this._context.setValue(
+      { instance: this, draggedItem: this._draggedItem },
+      true
     );
   }
 
@@ -228,14 +246,16 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this.slotElement.assign(...this._tiles);
   }
 
-  private handleTileDragStart(event: CustomEvent) {
-    this.emitEvent('igcTileDragStarted', { detail: event.detail.tile });
-    this.draggedItem = event.detail.tile;
+  private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
+    this.emitEvent('igcTileDragStarted', { detail });
+    this._draggedItem = detail;
+    this._setManagerContext();
   }
 
   private handleTileDragEnd() {
-    if (this.draggedItem) {
-      this.draggedItem = null;
+    if (this._draggedItem) {
+      this._draggedItem = null;
+      this._setManagerContext();
     }
   }
 
@@ -246,7 +266,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private handleDrop(event: DragEvent) {
     event.preventDefault();
 
-    const draggedItem = this.draggedItem;
+    const draggedItem = this._draggedItem;
     const target = findElementFromEventPath<IgcTileComponent>(
       IgcTileComponent.tagName,
       event

@@ -1,9 +1,9 @@
-import { ContextProvider } from '@lit/context';
+import { ContextProvider, consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { tileContext } from '../common/context.js';
+import { tileContext, tileManagerContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -18,16 +18,19 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import type IgcTileManagerComponent from './tile-manager.js';
+import type { TileManagerContext } from './tile-manager.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
   state: boolean;
 };
 
+// REVIEW: Decide whether to re-emit the events from the manager of leave them up to bubble naturally
 export interface IgcTileComponentEventMap {
   igcTileFullscreen: CustomEvent<IgcTileChangeState>;
   igcTileMaximize: CustomEvent<IgcTileChangeState>;
+  tileDragStart: CustomEvent<IgcTileComponent>;
+  tileDragEnd: CustomEvent<IgcTileComponent>;
   igcResizeStart: CustomEvent<IgcTileComponent>;
   igcResizeMove: CustomEvent<IgcTileComponent>;
   igcResizeEnd: CustomEvent<IgcTileComponent>;
@@ -64,7 +67,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private _dragController: TileDragAndDropController;
-  private _tileManager?: IgcTileManagerComponent;
   private _colSpan = 1;
   private _rowSpan = 1;
   private _colStart: number | null = null;
@@ -87,6 +89,25 @@ export default class IgcTileComponent extends EventEmitterMixin<
     context: tileContext,
     initialValue: this,
   });
+
+  // Tile manager context properties and helpers
+
+  @consume({ context: tileManagerContext, subscribe: true })
+  private _managerContext?: TileManagerContext;
+
+  private get _draggedItem(): IgcTileComponent | null {
+    return this._managerContext?.draggedItem ?? null;
+  }
+
+  private get _tiles(): IgcTileComponent[] {
+    return this._managerContext?.instance.tiles ?? [];
+  }
+
+  private get _isSlideMode(): boolean {
+    return this._managerContext
+      ? this._managerContext.instance.dragMode === 'slide'
+      : true;
+  }
 
   @query('[part="ghost"]', true)
   public _ghost!: HTMLElement;
@@ -241,21 +262,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
-    // REVIEW: Should we use lit context instead?
-    this._tileManager = this.closest(
-      'igc-tile-manager'
-    ) as IgcTileManagerComponent;
   }
 
   public toggleFullscreen() {
     this.fullscreen = !this.fullscreen;
     this.emitFullScreenEvent();
   }
-
-  // protected override async firstUpdated() {
-  //   await this.updateComplete;
-  //   this.updateRowsColSpan();
-  // }
 
   private emitFullScreenEvent() {
     return this.emitEvent('igcTileFullscreen', {
@@ -285,11 +297,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragStart(e: DragEvent) {
-    const event = new CustomEvent('tileDragStart', {
-      detail: { tile: this },
-      bubbles: true,
-    });
-
     const rect = this.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
@@ -297,7 +304,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     e.dataTransfer!.setDragImage(this, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
 
-    this.dispatchEvent(event);
+    this.emitEvent('tileDragStart', { detail: this });
     this._isDragging = true;
 
     requestAnimationFrame(() => {
@@ -306,33 +313,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnter() {
-    const draggedId = this._tileManager?.draggedItem?.tileId;
-    if (this._tileManager && this.tileId !== draggedId) {
-      const draggedItem = this._tileManager.draggedItem;
-      if (this._tileManager?.dragMode === 'slide' && draggedItem) {
-        requestAnimationFrame(() => {
-          this._ghost.style.transform = 'scale(0)';
-        });
-      } else {
-        this._hasDragOver = true;
-      }
+    if (!this._draggedItem || this._draggedItem.tileId === this.tileId) {
+      return;
+    }
+
+    if (this._isSlideMode) {
+      requestAnimationFrame(() => {
+        this._ghost.style.transform = 'scale(0)';
+      });
+    } else {
+      this._hasDragOver = true;
     }
   }
 
   private handleDragOver() {
-    const draggedId = this._tileManager?.draggedItem?.tileId;
-    if (
-      this._tileManager &&
-      this.tileId !== draggedId &&
-      this._tileManager?.dragMode === 'slide'
-    ) {
-      const draggedItem = this._tileManager?.draggedItem;
-      const draggedPosition = draggedItem ? draggedItem.position : -1;
-      if (draggedPosition >= 0) {
-        const tempPosition = this._tileManager?.tiles[draggedPosition].position;
-        this._tileManager.tiles[draggedPosition].position = this.position;
-        this.position = tempPosition;
-      }
+    if (!this._draggedItem || this._draggedItem.tileId === this.tileId) {
+      return;
+    }
+
+    if (this._isSlideMode) {
+      const target = this._tiles[this._draggedItem.position];
+      [target.position, this.position] = [this.position, target.position];
     }
   }
 
@@ -341,11 +342,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnd() {
-    const event = new CustomEvent('tileDragEnd', {
-      detail: { tile: this },
-      bubbles: true,
-    });
-    this.dispatchEvent(event);
+    this.emitEvent('tileDragEnd', { detail: this });
     this._isDragging = false;
 
     requestAnimationFrame(() => {
