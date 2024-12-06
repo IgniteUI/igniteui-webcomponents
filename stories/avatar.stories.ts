@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 
-import { IgcAvatarComponent, defineComponents } from 'igniteui-webcomponents';
+import {
+  IgcAvatarComponent,
+  IgcIconComponent,
+  defineComponents,
+  registerIcon,
+} from 'igniteui-webcomponents';
+import { html } from 'lit';
 
-defineComponents(IgcAvatarComponent);
+defineComponents(IgcAvatarComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcAvatarComponent> = {
@@ -57,6 +63,11 @@ interface IgcAvatarArgs {
 }
 type Story = StoryObj<IgcAvatarArgs>;
 
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
 // endregion
 
 export const Image: Story = {
@@ -64,6 +75,14 @@ export const Image: Story = {
     src: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
     alt: 'Image of a man',
   },
+};
+
+export const WithIcon: Story = {
+  render: () => html`
+    <igc-avatar>
+      <igc-icon name="home"></igc-icon>
+    </igc-avatar>
+  `,
 };
 
 export const WithInitials: Story = {
