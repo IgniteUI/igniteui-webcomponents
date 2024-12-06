@@ -27,8 +27,6 @@ $theme: $material;
 }
 
 [part~='dragging'] {
-    --resize-display: none;
-
     opacity: .6;
     box-shadow: var-get($theme, 'drag-elevation');
 }
