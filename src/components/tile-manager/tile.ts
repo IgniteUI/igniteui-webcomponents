@@ -1,5 +1,5 @@
 import { ContextProvider, consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -280,6 +280,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+  }
+
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    const parts = partNameMap({
+      dragging: this._isDragging,
+      resizing: this._isResizing,
+    });
+
+    if (parts.trim()) {
+      this.setAttribute('part', parts);
+    } else {
+      this.removeAttribute('part');
+    }
   }
 
   public toggleFullscreen() {
@@ -565,7 +580,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         .inert=${this._hasDragOver}
         style=${styleMap(styles)}
       >
-        <div part="ghost"></div>
+        <div part="ghost" .inert=${true}></div>
         <div part=${parts} style=${styleMap(baseStyles)}>
           <slot name="header"></slot>
           <div part="content-container">
@@ -585,9 +600,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : html`
           <igc-resize
             part="resize"
-            style="--resize-display: ${this._isDragging
-              ? 'none'
-              : 'inline-flex'};"
             .ghostFactory=${this.ghostFactory}
             mode="deferred"
             @igcResizeStart=${this._handleResizeStart}
