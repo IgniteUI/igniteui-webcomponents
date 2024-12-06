@@ -15,8 +15,8 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
   maxDateValidator,
   {
     key: 'badInput',
-    message: (host) => formatString(messages.disabledDate, host.value),
-    isValid: (host) =>
-      host.value ? !isDateInRanges(host.value, host.disabledDates ?? []) : true,
+    message: ({ value }) => formatString(messages.disabledDate, value),
+    isValid: ({ value, disabledDates }) =>
+      value && disabledDates ? !isDateInRanges(value, disabledDates) : true,
   },
 ];
