@@ -1,10 +1,9 @@
 import { html, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { createCounter, isEmpty, partNameMap } from '../common/util.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
@@ -52,17 +51,18 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   private _gradientId = `circular-progress-${IgcCircularProgressComponent.increment()}`;
 
   @queryAssignedElements({ slot: 'gradient' })
-  private _assignedGradients!: Array<IgcCircularGradientComponent>;
+  private _assignedGradients!: IgcCircularGradientComponent[];
 
   protected renderSvg() {
-    const parts = { indeterminate: this.indeterminate, track: true };
+    const parts = partNameMap({
+      indeterminate: this.indeterminate,
+      track: true,
+    });
     const styles = {
       stroke: `url(#${this._gradientId})`,
-      '--percentage': `${this.progress}`,
-      '--duration': `${this.animationDuration}ms`,
     };
 
-    const gradients = this._assignedGradients.length
+    const gradients = !isEmpty(this._assignedGradients)
       ? this._assignedGradients.map(
           ({ offset, color, opacity }) =>
             svg`<stop offset=${offset} stop-color=${color} stop-opacity=${opacity}/>`
@@ -73,7 +73,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       `;
 
     return svg`
-      <circle part=${partNameMap(parts)}/>
+      <circle part=${parts}/>
       <circle style=${styleMap(styles)} part="fill"/>
 
       <defs>
@@ -84,21 +84,19 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     `;
   }
 
-  protected renderWrapper() {
-    const parts = {
+  protected override render() {
+    const parts = partNameMap({
       svg: true,
       indeterminate: this.indeterminate,
-    };
+    });
 
     return html`
-      <svg part=${partNameMap(parts)}>${this.renderSvg()}</svg>
-      <slot name="gradient"></slot>
-      ${this.renderDefaultSlot()}
+      <div part="base" style=${styleMap(this._styleInfo)}>
+        <svg part=${parts}>${this.renderSvg()}</svg>
+        <slot name="gradient"></slot>
+        ${this.renderDefaultSlot()}
+      </div>
     `;
-  }
-
-  protected override render() {
-    return this.renderWrapper();
   }
 }
 
