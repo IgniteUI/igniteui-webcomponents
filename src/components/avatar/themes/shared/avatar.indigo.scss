@@ -8,7 +8,5 @@ $theme: $indigo;
 
     ::slotted(igc-icon) {
         --ig-size: 1;
-
-        color: var-get($theme, 'icon-color');
     }
 }
