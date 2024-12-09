@@ -4,10 +4,10 @@
 $theme: $indigo;
 
 :host {
-    --stroke-thickness: 2px;
+    --stroke-thickness: 3px;
     --scale-factor: 3.4;
 }
 
 [part~='fill'] {
-    stroke-width: calc(var(--stroke-thickness) + rem(1px));
+    stroke-width: var(--stroke-thickness);
 }

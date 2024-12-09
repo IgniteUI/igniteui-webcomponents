@@ -1,21 +1,25 @@
+@use 'sass:math';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../animations' as *;
 @use '../vars' as *;
 
 :host {
-    @extend %host !optional;
+    --track-size: #{rem(4px)};
+    --linear-animation-duration: 2000ms;
+}
+
+[part~='base'] {
+    @extend %base !optional;
 
     display: flex;
     position: relative;
     width: 100%;
     flex-direction: column;
     flex: 1 1 100%;
-
-    --track-size: #{rem(4px)};
-    --linear-animation-duration: 2000ms;
 }
 
+:host-context([dir='rtl'])[indeterminate],
 :host([dir='rtl'][indeterminate]) {
     [part~='track'] {
         transform: rotateY(180deg);
@@ -35,9 +39,15 @@
 }
 
 [part~='fill'] {
-    transition: width var(--duration) linear, background-color var(--duration) linear;
+    width: calc(var(--_progress-whole, 0) * 1%);
+    transition: width var(--_transition-duration) linear;
     position: relative;
-    height: inherit;
+    height: 100%;
+}
+
+[part~='fill']:not([part~='indeterminate']) {
+    overflow: hidden;
+    animation: initial-width var(--_transition-duration) linear;
 }
 
 [part~='indeterminate'],
@@ -83,9 +93,32 @@
     @include type-style('subtitle-2');
 }
 
-[part~='striped'][part~='primary']:not([part~='indeterminate']) {
-    width: 100%;
-    height: 100%;
+[part~='counter'] {
+    animation: initial-counter var(--_transition-duration) ease-in-out;
+    counter-reset:
+            progress-integer var(--_progress-integer, 0)
+            progress-fraction var(--_progress-fraction, 0);
+    transition:
+            --_progress-integer var(--_transition-duration) ease-in-out,
+            --_progress-fraction var(--_transition-duration) ease-in-out;
+    display: block;
+
+    &::before {
+        // fix safari bug with label jumping
+        @include type-style('subtitle-2');
+    }
+}
+
+[part~='counter']:not([part~='fraction']) {
+    &::before {
+        content: counter(progress-integer) '%';
+    }
+}
+
+[part~='counter'][part~='fraction'] {
+    &::before {
+        content: counter(progress-integer) "." counter(progress-fraction, decimal-leading-zero) '%';
+    }
 }
 
 // Label Positions
