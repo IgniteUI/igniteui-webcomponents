@@ -1,0 +1,53 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
+[part~='base'] {
+    background: var-get($theme, 'tile-background');
+    border-radius: var-get($theme, 'border-radius');
+    box-shadow: var-get($theme, 'resting-elevation');
+
+    &:hover {
+        &::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            border-radius: inherit;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: rem(1px) solid var-get($theme, 'hover-border-color');
+        }
+    }
+}
+
+[part~='dragging'] {
+    opacity: .6;
+    box-shadow: var-get($theme, 'drag-elevation');
+}
+
+[part~='base'][part~='resizing']{
+    opacity: .3;
+
+    &:hover {
+        &::after {
+            display: none;
+        }
+    }
+}
+
+[part='content-container'] {
+    background: var-get($theme, 'content-background');
+    color: var-get($theme, 'content-color');
+}
+
+[part='ghost'] {
+    border-radius: var-get($theme, 'border-radius');
+    border: rem(1px) solid var-get($theme, 'ghost-border');
+    background: var-get($theme, 'overlay-background');
+}
