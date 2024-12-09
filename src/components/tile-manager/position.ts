@@ -1,15 +1,13 @@
 import { partition } from '../common/util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
-import IgcTileComponent from './tile.js';
+import type IgcTileComponent from './tile.js';
 
 class TilesState {
   public manager: IgcTileManagerComponent;
 
   private get _tiles(): IgcTileComponent[] {
     return Array.from(
-      this.manager.querySelectorAll<IgcTileComponent>(
-        `:scope > ${IgcTileComponent.tagName}`
-      )
+      this.manager.querySelectorAll<IgcTileComponent>(':scope > igc-tile')
     );
   }
 
