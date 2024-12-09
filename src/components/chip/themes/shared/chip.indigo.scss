@@ -23,7 +23,8 @@ $theme: $indigo;
         border-color: var-get($theme, 'disabled-border-color');
     }
 
-    igc-icon {
+    igc-icon,
+    ::slotted(igc-icon) {
         --size: #{sizable(rem(14px), rem(14px), rem(16px))};
     }
 }
