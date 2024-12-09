@@ -20,8 +20,8 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateClick,
@@ -1238,51 +1238,44 @@ describe('Select', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcSelectComponent>(
-      createBasicSelect()
-    );
+    const spec =
+      createFormAssociatedTestBed<IgcSelectComponent>(createBasicSelect());
 
     beforeEach(async () => {
       await spec.setup(IgcSelectComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if not value is present', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if not value is present', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit', async () => {
-      spec.element.value = 'spec';
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit', () => {
+      spec.setProperties({ value: 'spec' });
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
     it('is correctly reset on form reset', () => {
-      spec.element.value = 'spec';
-
+      spec.setProperties({ value: 'spec' });
       spec.reset();
+
       expect(spec.element.value).to.equal(undefined);
     });
 
     it('is correctly reset on form reset after setAttribute() call', () => {
-      spec.element.setAttribute('value', 'implementation');
-      spec.element.value = 'spec';
-
+      spec.setAttributes({ value: 'implementation' });
+      spec.setProperties({ value: 'spec' });
       spec.reset();
 
       expect(spec.element.value).to.equal('implementation');
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
     it('is correctly reset of form reset with selection through attribute on item', async () => {
-      const bed = new FormAssociatedTestBed<IgcSelectComponent>(
+      const bed = createFormAssociatedTestBed<IgcSelectComponent>(
         html`<igc-select name="with-item-selection">
           <igc-select-item value="1">1</igc-select-item>
           <igc-select-item value="2">2</igc-select-item>
@@ -1291,17 +1284,16 @@ describe('Select', () => {
       );
 
       await bed.setup(IgcSelectComponent.tagName);
+      expect(bed.element.value).to.equal('3');
 
-      expect(bed.element.value).to.eq('3');
-
-      bed.element.value = '1';
-      expect(bed.element.value).to.eq('1');
+      bed.setProperties({ value: '1' });
+      expect(bed.element.value).to.equal('1');
 
       bed.reset();
-      expect(bed.element.value).to.eq('3');
+      expect(bed.element.value).to.equal('3');
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -1309,22 +1301,78 @@ describe('Select', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'spec';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'spec' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcSelectComponent>(html`
+        <igc-select name="select" .defaultValue=${'1'}>
+          <igc-select-item value="1">1</igc-select-item>
+          <igc-select-item value="2">2</igc-select-item>
+          <igc-select-item value="3">3</igc-select-item>
+        </igc-select>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcSelectComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal('1');
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value);
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: '3' });
+        spec.reset();
+
+        expect(spec.element.value).to.equal('1');
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcSelectComponent>(html`
+        <igc-select name="select" required .defaultValue=${undefined}>
+          <igc-select-item value="1">1</igc-select-item>
+          <igc-select-item value="2">2</igc-select-item>
+          <igc-select-item value="3">3</igc-select-item>
+        </igc-select>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcSelectComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation', () => {
+        spec.setProperties({ defaultValue: '1' });
+        spec.assertIsPristine();
+
+        spec.assertSubmitPasses();
+      });
     });
   });
 

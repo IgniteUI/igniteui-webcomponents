@@ -2,6 +2,7 @@ import type { ReactiveController } from 'lit';
 
 import type IgcComboListComponent from '../combo-list.js';
 import type { ComboHost, ComboRecord } from '../types.js';
+import type { DataController } from './data.js';
 
 const START_INDEX: Readonly<number> = -1;
 
@@ -55,12 +56,11 @@ export class NavigationController<T extends object>
 
   public get input() {
     // @ts-expect-error protected access
-    return this.host.singleSelect ? this.host.target : this.host.input;
+    return this.host.singleSelect ? this.host._input : this.host._searchInput;
   }
 
   public get dataState() {
-    // @ts-expect-error protected access
-    return this.host.dataState;
+    return this.state.dataState;
   }
 
   public show() {
@@ -117,7 +117,10 @@ export class NavigationController<T extends object>
     this.host.requestUpdate();
   }
 
-  constructor(protected host: ComboHost<T>) {
+  constructor(
+    protected host: ComboHost<T>,
+    protected state: DataController<T>
+  ) {
     this.host.addController(this);
   }
 
