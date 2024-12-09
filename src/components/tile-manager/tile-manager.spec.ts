@@ -155,13 +155,12 @@ describe('Tile Manager component', () => {
         `<igc-resize
           mode="deferred"
           part="resize"
-          style="--resize-display: inline-flex;"
         >
           <div
             part="tile-container"
             style="--ig-col-span:1;--ig-row-span:1;"
           >
-            <div part="ghost">
+            <div inert part="ghost">
             </div>
             <div
               part="base draggable resizable"
