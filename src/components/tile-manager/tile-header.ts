@@ -87,6 +87,7 @@ export default class IgcTileHeaderComponent extends LitElement {
         collection="default"
         exportparts="icon"
         name=${icon}
+        aria-label=${icon}
         @click=${handler}
       ></igc-icon-button>
     `;
