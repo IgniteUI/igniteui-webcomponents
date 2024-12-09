@@ -280,10 +280,18 @@ addIcon('fullscreen', {
     name: 'fullscreen',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_fullscreen',
+    collection: 'internal',
+  },
 });
 addIcon('fullscreen_exit', {
   default: {
     name: 'fullscreen_exit',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_fullscreen_exit',
     collection: 'internal',
   },
 });
@@ -292,10 +300,18 @@ addIcon('expand_content', {
     name: 'expand_content',
     collection: 'internal',
   },
+  indigo: {
+    name: 'indigo_expand_content',
+    collection: 'internal',
+  },
 });
 addIcon('collapse_content', {
   default: {
     name: 'collapse_content',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_collapse_content',
     collection: 'internal',
   },
 });

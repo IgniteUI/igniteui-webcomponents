@@ -18,5 +18,6 @@
     grid-auto-rows: minmax(var(--ig-min-row-height), auto);
     grid-gap: rem(10px);
     grid-auto-flow: dense;
-    overflow-x: scroll;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
