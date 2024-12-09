@@ -12,6 +12,7 @@ import {
   type TileDragAndDropController,
   addTileDragAndDrop,
 } from './controllers/tile-dnd.js';
+import { isSameTile, swapTiles } from './position.js';
 import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
@@ -98,10 +99,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private get _draggedItem(): IgcTileComponent | null {
     return this._managerContext?.draggedItem ?? null;
-  }
-
-  private get _tiles(): IgcTileComponent[] {
-    return this._managerContext?.instance.tiles ?? [];
   }
 
   private get _isSlideMode(): boolean {
@@ -335,7 +332,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnter() {
-    if (!this._draggedItem || this._draggedItem.tileId === this.tileId) {
+    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
       return;
     }
 
@@ -349,13 +346,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragOver() {
-    if (!this._draggedItem || this._draggedItem.tileId === this.tileId) {
+    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
       return;
     }
 
     if (this._isSlideMode) {
-      const target = this._tiles[this._draggedItem.position];
-      [target.position, this.position] = [this.position, target.position];
+      swapTiles(this, this._draggedItem!);
     }
   }
 
