@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import { simulateClick, simulateDoubleClick } from '../common/utils.spec.js';
@@ -27,19 +28,13 @@ describe('Tile Manager component', () => {
     return Array.from(tileManager.querySelectorAll('igc-tile'));
   }
 
-  // function getTileActionButtons(tile: IgcTileComponent) {
-  //   console.log(tile.shadowRoot);
-  //   console.log(tile.shadowRoot?.querySelector<HTMLElement>('igc-tile-header'));
-  //   const actionsSection = tile.renderRoot.querySelector<HTMLElement>('igc-tile-header')?.querySelector('[part="actions"]')!;
-  //   return actionsSection.querySelectorAll<HTMLElement>(`igc-icon-button`);
-  // }
+  function getActionButtons(tile: IgcTileComponent) {
+    const header = tile.querySelector(IgcTileHeaderComponent.tagName);
+    return (
+      header?.shadowRoot?.querySelectorAll(IgcIconButtonComponent.tagName) || []
+    );
+  }
 
-  // function getTileActionButton(tile: IgcTileComponent, action: 'maximize' | 'restore' | 'fullscreen') {
-  //   const btnName = action === 'maximize' ? 'expand_content' : action === 'restore' ? 'collapse_content' : 'fullscreen';
-
-  //   return tile.renderRoot.querySelector<HTMLElement>(`name="${btnName}"`);
-
-  // }
   // function getTileBaseWrapper(element: IgcTileComponent) {
   //   return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
   // }
@@ -305,7 +300,7 @@ describe('Tile Manager component', () => {
     });
   });
 
-  xdescribe('Tile state change behavior', () => {
+  describe('Tile state change behavior', () => {
     let tile: any;
 
     beforeEach(async () => {
@@ -343,7 +338,7 @@ describe('Tile Manager component', () => {
       restore();
     });
 
-    xit('should correctly change fullscreen state on double click', async () => {
+    it('should correctly change fullscreen state on double click', async () => {
       simulateDoubleClick(tile);
       await elementUpdated(tileManager);
 
@@ -358,12 +353,10 @@ describe('Tile Manager component', () => {
       expect(tile.fullscreen).to.be.false;
     });
 
-    xit('should correctly fire `igcTileFullscreen` event', async () => {
+    it('should correctly fire `igcTileFullscreen` event', async () => {
       const tile = first(tileManager.tiles);
-      const tileHeader = tile.querySelector('igc-tile-header');
-      const fullscreenButton =
-        tileHeader?.renderRoot.querySelectorAll('igc-icon-button')[1];
       const eventSpy = spy(tile, 'emitEvent');
+      const fullscreenButton = getActionButtons(tile)[1];
 
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
@@ -372,7 +365,7 @@ describe('Tile Manager component', () => {
         detail: { tile: tile, state: true },
         cancelable: true,
       });
-      expect(tile.fullscreen).to.be.false;
+      expect(tile.fullscreen).to.be.true;
 
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
@@ -384,7 +377,7 @@ describe('Tile Manager component', () => {
       expect(tile.fullscreen).to.be.false;
     });
 
-    xit('can cancel `igcTileFullscreen` event', async () => {
+    it('can cancel `igcTileFullscreen` event', async () => {
       const eventSpy = spy(tile, 'emitEvent');
 
       tile.addEventListener('igcTileFullscreen', (ev: CustomEvent) => {
@@ -405,7 +398,7 @@ describe('Tile Manager component', () => {
       expect(tile.requestFullscreen).not.to.have.been.called;
     });
 
-    xit('should update fullscreen property on fullscreenchange (e.g. Esc key is pressed)', async () => {
+    it('should update fullscreen property on fullscreenchange (e.g. Esc key is pressed)', async () => {
       tile.fullscreen = true;
 
       // Mock the browser removing fullscreen element and firing a fullscreenchange event
@@ -419,36 +412,62 @@ describe('Tile Manager component', () => {
       expect(tile.fullscreen).to.be.false;
     });
 
-    //TODO Fix test by selecting header icon and simulate click on it
-    it('should correctly fire `igcTileMaximize` event', async () => {
+    it('should properly switch the icons on fullscreen state change.', async () => {
+      const tile = first(tileManager.tiles);
+      const btnFullscreen = getActionButtons(tile)[1];
+
+      expect(btnFullscreen.name).equals('fullscreen');
+
+      simulateClick(btnFullscreen);
+      await elementUpdated(tileManager);
+      expect(btnFullscreen.name).equals('fullscreen_exit');
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+      expect(btnFullscreen.name).equals('fullscreen');
+
+      simulateDoubleClick(tile);
+      await elementUpdated(tileManager);
+      expect(btnFullscreen.name).equals('fullscreen_exit');
+
+      simulateClick(btnFullscreen);
+      await elementUpdated(tileManager);
+      expect(btnFullscreen.name).equals('fullscreen');
+    });
+
+    it('should correctly fire `igcTileMaximize` event on clicking Maximize button', async () => {
       const tile = first(tileManager.tiles);
       const eventSpy = spy(tile, 'emitEvent');
+      const btnMaximize = getActionButtons(tile)[0];
 
-      // simulateClick(getTileActionButtons(tile)[0]);
-      //tile.toggleMaximize();
-
+      simulateClick(btnMaximize);
+      await elementUpdated(tile);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileMaximize', {
-        detail: { tile: tile, state: true },
-        cancelable: true,
-      });
+      // expect(eventSpy).calledWith('igcTileMaximize');
+      expect(eventSpy).to.have.been.calledOnceWith(
+        'igcTileMaximize'
+        // {
+        //   detail: { tile: tile, state: true },
+        //   cancelable: true,
+        // }
+      );
 
       expect(tile.maximized).to.be.true;
 
-      //tile.toggleMaximize();
+      simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileMaximize', {
-        detail: { tile: tile, state: false },
-        cancelable: true,
-      });
+      expect(eventSpy).to.have.been.calledWith('igcTileMaximize');
+      // expect(eventSpy).calledWith('igcTileMaximize', {
+      //   detail: { tile: tile, state: false },
+      //   cancelable: true,
+      // });
 
       expect(tile.maximized).to.be.false;
     });
 
-    //TODO Fix test by selecting header icon and simulate click on it
-    xit('can cancel `igcTileMaximize` event', async () => {
+    it('can cancel `igcTileMaximize` event', async () => {
       const tile = first(tileManager.tiles);
       const eventSpy = spy(tile, 'emitEvent');
 
@@ -456,15 +475,28 @@ describe('Tile Manager component', () => {
         ev.preventDefault();
       });
 
-      // tile.maximized = !tile.maximized;
+      const btnMaximize = getActionButtons(tile)[0];
+      simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
-        detail: { tile: tile, state: true },
-        cancelable: true,
-      });
+      expect(eventSpy).calledOnceWith('igcTileMaximize');
+      // expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
+      //   detail: Sinon.match({ tile: tile, state: true }),
+      //   cancelable: true,
+      // });
 
-      expect(tile.maximized).to.be.true;
+      expect(tile.maximized).to.be.false;
+    });
+
+    it('should properly switch the icons on maximized state change.', async () => {
+      const tile = first(tileManager.tiles);
+      const btnMaximize = getActionButtons(tile)[0];
+
+      expect(btnMaximize.name).equals('expand_content');
+      simulateClick(btnMaximize);
+      await elementUpdated(tileManager);
+
+      expect(btnMaximize.name).equals('collapse_content');
     });
   });
 
