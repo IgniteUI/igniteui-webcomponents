@@ -97,7 +97,7 @@
     }
 }
 
-:host-context([dir='rtl']),
+:host(:dir(rtl)),
 :host([dir='rtl']) {
     [part='svg indeterminate'] [part~='fill'] {
         animation-name: indeterminate-accordion-rtl;

@@ -8,11 +8,14 @@ $track-color: color(gray, 200);
 
 :host {
     --track-size: #{rem(2px)};
-    --linear-animation-duration: 3000ms;
 }
 
-:host-context([dir='rtl']),
+:host(:dir(rtl)[indeterminate]),
 :host([dir='rtl']) {
+    [part~='track'] {
+        transform: rotateY(0deg);
+    }
+
     [part~='indeterminate'] {
         animation-name: indeterminate-bar-fluent-rtl;
     }

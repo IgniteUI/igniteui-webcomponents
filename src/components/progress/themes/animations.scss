@@ -190,31 +190,26 @@ $easing-curves: (
 
 @keyframes indeterminate-circular-fluent-rtl {
     0% {
-        // Start the stroke at the correct position by adjusting the dasharray and dashoffset
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
-        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
 
-        // Start at 12 o'clock and rotate in opposite direction
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
         transform: rotate(90deg);
     }
 
     50% {
         stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
 
-        // Adjust to keep starting point correct
-        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
-
-        // Continue rotating smoothly in the opposite direction
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
         transform: rotate(-360deg);
     }
 
     100% {
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
 
-        // Reset properly
-        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
-
-        // Complete the full rotation in the opposite direction
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
         transform: rotate(-990deg);
     }
 }

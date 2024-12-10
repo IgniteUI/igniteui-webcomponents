@@ -28,8 +28,12 @@ $theme: $fluent;
     }
 }
 
-:host-context([dir='rtl']),
+:host(:dir(rtl)),
 :host([dir='rtl']) {
+    // [part='svg'] {
+    //     transform: rotate(-260deg);
+    // }
+
     [part='svg indeterminate'] [part~='fill'] {
         animation-name: indeterminate-circular-fluent-rtl;
     }

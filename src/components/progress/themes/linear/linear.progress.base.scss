@@ -19,7 +19,7 @@
     flex: 1 1 100%;
 }
 
-:host-context([dir='rtl'])[indeterminate],
+:host(:dir(rtl)[indeterminate]),
 :host([dir='rtl'][indeterminate]) {
     [part~='track'] {
         transform: rotateY(180deg);
