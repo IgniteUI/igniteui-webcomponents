@@ -134,13 +134,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public override autocapitalize!:
-    | 'off'
-    | 'none'
-    | 'on'
-    | 'sentences'
-    | 'words'
-    | 'characters';
+  public override autocapitalize!: string;
 
   /**
    * Hints at the type of data that might be entered by the user while editing the element or its contents.
@@ -151,15 +145,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr inputmode
    */
   @property({ attribute: 'inputmode' })
-  public override inputMode!:
-    | 'none'
-    | 'text'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  public override inputMode!: string;
 
   /**
    * The label for the control.
