@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [6.0.0] - 2025-04-29
 ### Changed
 - Minimum Node version required is now >= 20.
+- #### Stepper
+  - Stepper Step's `titlePosition` now defaults to `auto`, instead of being undefined, which has the same behavior.
 
 ### Removed
 - #### Library
