@@ -23,6 +23,11 @@ $easing-curves: (
     secondary-scale-smooth-end: cubic-bezier(0.4, 0.627, 0.6, 0.902)
 );
 
+// Helper function to retrieve easing curves
+@function timing-function($key) {
+    @return map.get($easing-curves, $key);
+}
+
 // Primary animation
 @keyframes indeterminate-primary {
     0% {
@@ -30,12 +35,12 @@ $easing-curves: (
     }
 
     20% {
-        animation-timing-function: map.get($easing-curves, primary-translate-start);
+        animation-timing-function: timing-function('primary-translate-start');
         transform: translateX(0);
     }
 
     59.15% {
-        animation-timing-function: map.get($easing-curves, primary-translate-mid);
+        animation-timing-function: timing-function('primary-translate-mid');
         transform: translateX(83.671%);
     }
 
@@ -50,12 +55,12 @@ $easing-curves: (
     }
 
     36.65% {
-        animation-timing-function: map.get($easing-curves, primary-scale-slow-start);
+        animation-timing-function: timing-function('primary-scale-slow-start');
         transform: scaleX(0.08);
     }
 
     69.15% {
-        animation-timing-function: map.get($easing-curves, primary-scale-quick-end);
+        animation-timing-function: timing-function('primary-scale-quick-end');
         transform: scaleX(0.6614);
     }
 
@@ -67,17 +72,17 @@ $easing-curves: (
 // Secondary animation
 @keyframes indeterminate-secondary {
     0% {
-        animation-timing-function: map.get($easing-curves, secondary-translate-step-1);
+        animation-timing-function: timing-function('secondary-translate-start');
         transform: translateX(0);
     }
 
     25% {
-        animation-timing-function: map.get($easing-curves, secondary-translate-step-2);
+        animation-timing-function: timing-function('secondary-translate-mid');
         transform: translateX(37.6519%);
     }
 
     48.35% {
-        animation-timing-function: map.get($easing-curves, secondary-translate-step-3);
+        animation-timing-function: timing-function('secondary-translate-end');
         transform: translateX(84.3861%);
     }
 
@@ -88,17 +93,17 @@ $easing-curves: (
 
 @keyframes indeterminate-secondary-scale {
     0% {
-        animation-timing-function: map.get($easing-curves, secondary-scale-step-1);
+        animation-timing-function: timing-function('secondary-scale-slow-start');
         transform: scaleX(0.08);
     }
 
     19.15% {
-        animation-timing-function: map.get($easing-curves, secondary-scale-step-2);
+        animation-timing-function: timing-function('secondary-scale-mid');
         transform: scaleX(0.4571);
     }
 
     44.15% {
-        animation-timing-function: map.get($easing-curves, secondary-scale-step-3);
+        animation-timing-function: timing-function('secondary-scale-smooth-end');
         transform: scaleX(0.727);
     }
 
@@ -244,10 +249,11 @@ $easing-curves: (
 
 @keyframes initial-dashoffset {
     from {
-        stroke-dashoffset: #{$circumference}; /* Start with no progress (0%) */
+        /* Start with no progress (0%) */
+        stroke-dashoffset: #{$circumference};
     }
 
     to {
-        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference}); /* Target progress */
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference});
     }
 }
