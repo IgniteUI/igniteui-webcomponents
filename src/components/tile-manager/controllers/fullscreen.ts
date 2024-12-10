@@ -1,39 +1,61 @@
-import type { ReactiveController } from 'lit';
-import { isElement } from '../../common/util.js';
-import type IgcTileManagerComponent from '../tile-manager.js';
-import IgcTileComponent from '../tile.js';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-class TileManagerFullscreenController implements ReactiveController {
-  private _host: IgcTileManagerComponent;
+type FullscreenControllerCallback = (state: boolean) => boolean;
 
-  constructor(host: IgcTileManagerComponent) {
+class FullscreenController implements ReactiveController {
+  private _host: ReactiveControllerHost & HTMLElement;
+  private _callback?: FullscreenControllerCallback;
+
+  private _fullscreen = false;
+
+  public get fullscreen(): boolean {
+    return this._fullscreen;
+  }
+
+  constructor(
+    host: ReactiveControllerHost & HTMLElement,
+    callback?: FullscreenControllerCallback
+  ) {
     this._host = host;
-    this._host.addController(this);
+    this._callback = callback;
+    host.addController(this);
   }
 
-  private _isOwnTile(node: unknown): node is IgcTileComponent {
-    return (
-      isElement(node) &&
-      node.matches(IgcTileComponent.tagName) &&
-      this._host.contains(node)
-    );
+  public setState(fullscreen: boolean, isUserTriggered = false): void {
+    if (isUserTriggered && this._callback) {
+      if (!this._callback.call(this._host, fullscreen)) {
+        return;
+      }
+    }
+
+    this._fullscreen = fullscreen;
+
+    if (this._fullscreen) {
+      this._host.requestFullscreen();
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
   }
 
-  public handleEvent({ target }: Event): void {
-    if (this._isOwnTile(target)) {
-      target.draggable = !target.draggable;
+  public handleEvent() {
+    const isFullscreen = document.fullscreenElement === this._host;
+    if (!isFullscreen && this._fullscreen) {
+      this.setState(false, true);
     }
   }
 
   public hostConnected(): void {
-    document.addEventListener('fullscreenchange', this);
+    this._host.addEventListener('fullscreenchange', this);
   }
 
   public hostDisconnected(): void {
-    document.addEventListener('fullscreenchange', this);
+    this._host.removeEventListener('fullscreenchange', this);
   }
 }
 
-export function addFullscreenController(host: IgcTileManagerComponent) {
-  return new TileManagerFullscreenController(host);
+export function addFullscreenController(
+  host: ReactiveControllerHost & HTMLElement,
+  callback?: FullscreenControllerCallback
+) {
+  return new FullscreenController(host, callback);
 }

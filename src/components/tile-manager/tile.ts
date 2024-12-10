@@ -3,15 +3,17 @@ import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { tileContext, tileManagerContext } from '../common/context.js';
+import {
+  type TileManagerContext,
+  tileContext,
+  tileManagerContext,
+} from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
-import {
-  type TileDragAndDropController,
-  addTileDragAndDrop,
-} from './controllers/tile-dnd.js';
+import { addFullscreenController } from './controllers/fullscreen.js';
+import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { isSameTile, swapTiles } from './position.js';
 import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
@@ -19,7 +21,6 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import type { TileManagerContext } from './tile-manager.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -67,15 +68,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private static readonly increment = createCounter();
-  private _dragController: TileDragAndDropController;
+
+  private _dragController = addTileDragAndDrop(this, {
+    dragStart: this.handleDragStart,
+    dragEnd: this.handleDragEnd,
+    dragEnter: this.handleDragEnter,
+    dragLeave: this.handleDragLeave,
+    dragOver: this.handleDragOver,
+    drop: this.handleDragLeave,
+  });
+
+  private _fullscreenController = addFullscreenController(
+    this,
+    this.emitFullScreenEvent
+  );
+
   private _colSpan = 1;
   private _rowSpan = 1;
   private _colStart: number | null = null;
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _fullscreen = false;
-  private _isUserTriggered = false;
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
@@ -87,10 +100,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     border?: string;
     borderRadius?: string;
   } = {};
-  private _context = new ContextProvider(this, {
-    context: tileContext,
-    initialValue: this,
-  });
 
   // Tile manager context properties and helpers
 
@@ -181,28 +190,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true })
   public set fullscreen(value: boolean) {
-    if (this._fullscreen === value) return;
-
-    this._fullscreen = value;
-
-    if (this._isUserTriggered && !this.emitFullScreenEvent()) {
-      this._isUserTriggered = false;
-      this._fullscreen = !value; // Rollback state if event is canceled
-      return;
-    }
-
-    if (this._fullscreen) {
-      this.requestFullscreen();
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-
-    this._isUserTriggered = false;
-    this._context.setValue(this, true);
+    this._fullscreenController.setState(value);
   }
 
-  public get fullscreen() {
-    return this._fullscreen;
+  public get fullscreen(): boolean {
+    return this._fullscreenController.fullscreen;
   }
 
   /**
@@ -212,7 +204,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
     this._maximized = value;
-    this._context.setValue(this, true);
   }
 
   public get maximized() {
@@ -258,20 +249,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this._dragController = addTileDragAndDrop(this, {
-      dragStart: this.handleDragStart,
-      dragEnd: this.handleDragEnd,
-      dragEnter: this.handleDragEnter,
-      dragLeave: this.handleDragLeave,
-      dragOver: this.handleDragOver,
-      drop: this.handleDragLeave,
-    });
 
-    // Will probably expose that as a dynamic binding based on a property
-    // and as a response to some UI element interaction
-    // REVIEW: fullscreen property and a tile header action button added
-    this.addEventListener('dblclick', this.toggleFullscreen);
-    this.addEventListener('fullscreenchange', this.handleFullscreenChange);
+    new ContextProvider(this, {
+      context: tileContext,
+      initialValue: {
+        instance: this,
+        setFullscreenState: (fullscreen, isUserTriggered) =>
+          this._fullscreenController.setState(fullscreen, isUserTriggered),
+      },
+    });
   }
 
   public override connectedCallback() {
@@ -294,23 +280,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  public toggleFullscreen() {
-    this._isUserTriggered = true;
-    this.fullscreen = !this.fullscreen;
-  }
-
-  private handleFullscreenChange() {
-    const isFullscreen = document.fullscreenElement === this;
-    if (!isFullscreen && this._fullscreen) {
-      // If exited fullscreen (e.g., via ESC key), update state
-      this._isUserTriggered = true;
-      this.fullscreen = false;
-    }
-  }
-
-  private emitFullScreenEvent() {
+  private emitFullScreenEvent(state: boolean) {
     return this.emitEvent('igcTileFullscreen', {
-      detail: { tile: this, state: this.fullscreen },
+      detail: { tile: this, state },
       cancelable: true,
     });
   }

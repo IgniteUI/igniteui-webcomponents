@@ -1,16 +1,29 @@
 import { createContext } from '@lit/context';
 import type IgcCarouselComponent from '../carousel/carousel.js';
-import type { TileManagerContext } from '../tile-manager/tile-manager.js';
+import type IgcTileManagerComponent from '../tile-manager/tile-manager.js';
 import type IgcTileComponent from '../tile-manager/tile.js';
 
-export const carouselContext = createContext<IgcCarouselComponent>(
+export type TileManagerContext = {
+  instance: IgcTileManagerComponent;
+  draggedItem: IgcTileComponent | null;
+};
+
+export type TileContext = {
+  instance: IgcTileComponent;
+  setFullscreenState: (
+    fullscreen: boolean,
+    isUserTriggered?: boolean
+  ) => unknown;
+};
+
+const carouselContext = createContext<IgcCarouselComponent>(
   Symbol('carousel-context')
 );
 
-export const tileContext = createContext<IgcTileComponent>(
-  Symbol('tile-context')
-);
+const tileContext = createContext<TileContext>(Symbol('tile-context'));
 
-export const tileManagerContext = createContext<TileManagerContext>(
+const tileManagerContext = createContext<TileManagerContext>(
   Symbol('tile-manager-context')
 );
+
+export { carouselContext, tileContext, tileManagerContext };

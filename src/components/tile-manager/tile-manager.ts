@@ -12,7 +12,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, findElementFromEventPath } from '../common/util.js';
-import { addFullscreenController } from './controllers/fullscreen.js';
 import { createTilesState, isSameTile, swapTiles } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
@@ -24,11 +23,6 @@ import IgcTileComponent from './tile.js';
 export interface IgcTileManagerComponentEventMap {
   igcTileDragStarted: CustomEvent<IgcTileComponent>;
 }
-
-export type TileManagerContext = {
-  instance: IgcTileManagerComponent;
-  draggedItem: IgcTileComponent | null;
-};
 
 /**
  * The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.
@@ -169,7 +163,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    addFullscreenController(this);
 
     createMutationController(this, {
       callback: this._observerCallback,

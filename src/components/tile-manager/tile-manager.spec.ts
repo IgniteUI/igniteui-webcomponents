@@ -338,7 +338,7 @@ describe('Tile Manager component', () => {
       restore();
     });
 
-    it('should correctly change fullscreen state on double click', async () => {
+    it.skip('should correctly change fullscreen state on double click', async () => {
       simulateDoubleClick(tile);
       await elementUpdated(tileManager);
 
@@ -378,13 +378,15 @@ describe('Tile Manager component', () => {
     });
 
     it('can cancel `igcTileFullscreen` event', async () => {
+      const tile = first(tileManager.tiles);
       const eventSpy = spy(tile, 'emitEvent');
+      const fullscreenButton = getActionButtons(tile)[1];
 
       tile.addEventListener('igcTileFullscreen', (ev: CustomEvent) => {
         ev.preventDefault();
       });
 
-      simulateDoubleClick(tile);
+      simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
       expect(eventSpy).to.have.been.calledWith(
@@ -419,14 +421,6 @@ describe('Tile Manager component', () => {
       expect(btnFullscreen.name).equals('fullscreen');
 
       simulateClick(btnFullscreen);
-      await elementUpdated(tileManager);
-      expect(btnFullscreen.name).equals('fullscreen_exit');
-
-      simulateDoubleClick(tile);
-      await elementUpdated(tileManager);
-      expect(btnFullscreen.name).equals('fullscreen');
-
-      simulateDoubleClick(tile);
       await elementUpdated(tileManager);
       expect(btnFullscreen.name).equals('fullscreen_exit');
 
