@@ -5,15 +5,17 @@
 @use '../vars' as *;
 
 [part~='base'] {
-    @extend %base !optional;
-
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--ig-font-family), serif;
     position: relative;
 }
 
 [part~='label'] {
-    @extend %label !optional;
-
+    display: flex;
+    align-items: center;
+    color: inherit;
     position: absolute;
     transform: translate(-50%, -50%);
     top: 50%;
@@ -111,6 +113,14 @@
         }
 
         [part~='fill'] {
+            stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
+        }
+    }
+
+    [part~='svg'] {
+        &:not([part~='indeterminate']) [part~='fill'] {
+            animation: initial-dashoffset-rtl var(--_transition-duration) linear;
+            stroke-dasharray: #{$circumference} #{$circumference};
             stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
         }
     }

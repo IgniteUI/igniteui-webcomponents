@@ -28,20 +28,18 @@ $theme: $material;
 
 // Mixin for Gradient Colors
 @mixin gradient-variant($variant, $color) {
-    :host([variant='#{$variant}']) [part~='gradient_start'],
-    :host([variant='#{$variant}']) [part~='gradient_end'] {
-        stop-color: $color;
+    :host([variant='#{$variant}']) {
+        --gradient-stop-color: #{$color};
     }
 }
 
-// Default Gradient Colors
-[part~='gradient_start'],
-[part~='gradient_end'] {
-    stop-color: var-get($theme, 'progress-circle-color');
-}
-
-// Apply Gradient Variants
 @include gradient-variant('danger', color(error, 500));
 @include gradient-variant('warning', color(warn, 500));
 @include gradient-variant('info', color(info, 500));
 @include gradient-variant('success', color(success, 500));
+
+[part~='gradient_start'],
+[part~='gradient_end'] {
+    stop-color: var(--gradient-stop-color, var-get($theme, 'progress-circle-color'));
+}
+
