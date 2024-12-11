@@ -8,7 +8,7 @@
     --ig-min-row-height: 200px;
 }
 
-[part='base'] {
+[part~='base'] {
     display: grid;
     position: relative;
     padding: rem(20px);
@@ -18,5 +18,5 @@
     grid-auto-rows: minmax(var(--ig-min-row-height), auto);
     grid-gap: rem(10px);
     grid-auto-flow: dense;
-    overflow-x: scroll;
+    overflow: auto hidden;
 }

@@ -14,6 +14,13 @@
     }
 }
 
+:host([part='resizing']),
+:host([part='dragging']) {
+    igc-resize {
+        --resize-display: none;
+    }
+}
+
 [part~='tile-container'] {
     width: 100%;
     height: 100%;

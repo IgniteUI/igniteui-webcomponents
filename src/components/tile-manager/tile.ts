@@ -1,33 +1,38 @@
-import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { ContextProvider, consume } from '@lit/context';
+import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { tileContext } from '../common/context.js';
+import {
+  type TileManagerContext,
+  tileContext,
+  tileManagerContext,
+} from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
-import {
-  type TileDragAndDropController,
-  addTileDragAndDrop,
-} from './controllers/tile-dnd.js';
+import { addFullscreenController } from './controllers/fullscreen.js';
+import { addTileDragAndDrop } from './controllers/tile-dnd.js';
+import { isSameTile, swapTiles } from './position.js';
 import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import type IgcTileManagerComponent from './tile-manager.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
   state: boolean;
 };
 
+// REVIEW: Decide whether to re-emit the events from the manager of leave them up to bubble naturally
 export interface IgcTileComponentEventMap {
   igcTileFullscreen: CustomEvent<IgcTileChangeState>;
   igcTileMaximize: CustomEvent<IgcTileChangeState>;
+  tileDragStart: CustomEvent<IgcTileComponent>;
+  tileDragEnd: CustomEvent<IgcTileComponent>;
   igcResizeStart: CustomEvent<IgcTileComponent>;
   igcResizeMove: CustomEvent<IgcTileComponent>;
   igcResizeEnd: CustomEvent<IgcTileComponent>;
@@ -63,15 +68,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private static readonly increment = createCounter();
-  private _dragController: TileDragAndDropController;
-  private _tileManager?: IgcTileManagerComponent;
+
+  private _dragController = addTileDragAndDrop(this, {
+    dragStart: this.handleDragStart,
+    dragEnd: this.handleDragEnd,
+    dragEnter: this.handleDragEnter,
+    dragLeave: this.handleDragLeave,
+    dragOver: this.handleDragOver,
+    drop: this.handleDragLeave,
+  });
+
+  private _fullscreenController = addFullscreenController(
+    this,
+    this.emitFullScreenEvent
+  );
+
   private _colSpan = 1;
   private _rowSpan = 1;
   private _colStart: number | null = null;
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _fullscreen = false;
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
@@ -83,13 +100,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     border?: string;
     borderRadius?: string;
   } = {};
-  private _context = new ContextProvider(this, {
-    context: tileContext,
-    initialValue: this,
-  });
+
+  // Tile manager context properties and helpers
+
+  @consume({ context: tileManagerContext, subscribe: true })
+  private _managerContext?: TileManagerContext;
+
+  private get _draggedItem(): IgcTileComponent | null {
+    return this._managerContext?.draggedItem ?? null;
+  }
+
+  private get _isSlideMode(): boolean {
+    return this._managerContext
+      ? this._managerContext.instance.dragMode === 'slide'
+      : true;
+  }
 
   @query('[part="ghost"]', true)
   public _ghost!: HTMLElement;
+
+  @query('[part~="base"]', true)
+  public _tileContent!: HTMLElement;
 
   @state()
   private _isDragging = false;
@@ -159,15 +190,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true })
   public set fullscreen(value: boolean) {
-    if (this._fullscreen === value) return;
-
-    this._fullscreen = value;
-    this._context.setValue(this, true);
-    this.handleFullscreenRequest();
+    this._fullscreenController.setState(value);
   }
 
-  public get fullscreen() {
-    return this._fullscreen;
+  public get fullscreen(): boolean {
+    return this._fullscreenController.fullscreen;
   }
 
   /**
@@ -177,7 +204,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
     this._maximized = value;
-    this._context.setValue(this, true);
+
+    if (this._managerContext) {
+      this._managerContext.instance.requestUpdate();
+    }
   }
 
   public get maximized() {
@@ -223,81 +253,53 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this._dragController = addTileDragAndDrop(this, {
-      dragStart: this.handleDragStart,
-      dragEnd: this.handleDragEnd,
-      dragEnter: this.handleDragEnter,
-      dragLeave: this.handleDragLeave,
-      dragOver: this.handleDragOver,
-      drop: this.handleDragLeave,
-    });
 
-    // Will probably expose that as a dynamic binding based on a property
-    // and as a response to some UI element interaction
-    // REVIEW: fullscreen property and a tile header action button added
-    this.addEventListener('dblclick', this.handleDoubleClick);
+    new ContextProvider(this, {
+      context: tileContext,
+      initialValue: {
+        instance: this,
+        setFullscreenState: (fullscreen, isUserTriggered) =>
+          this._fullscreenController.setState(fullscreen, isUserTriggered),
+      },
+    });
   }
 
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
-    // REVIEW: Should we use lit context instead?
-    this._tileManager = this.closest(
-      'igc-tile-manager'
-    ) as IgcTileManagerComponent;
   }
 
-  public toggleFullscreen() {
-    this.fullscreen = !this.fullscreen;
-    this.emitFullScreenEvent();
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    const parts = partNameMap({
+      dragging: this._isDragging,
+      resizing: this._isResizing,
+    });
+
+    if (parts.trim()) {
+      this.setAttribute('part', parts);
+    } else {
+      this.removeAttribute('part');
+    }
   }
 
-  // protected override async firstUpdated() {
-  //   await this.updateComplete;
-  //   this.updateRowsColSpan();
-  // }
-
-  private emitFullScreenEvent() {
+  private emitFullScreenEvent(state: boolean) {
     return this.emitEvent('igcTileFullscreen', {
-      detail: { tile: this, state: this.fullscreen },
+      detail: { tile: this, state },
       cancelable: true,
     });
   }
 
-  private handleDoubleClick() {
-    if (!this.emitFullScreenEvent()) {
-      return;
-    }
-
-    this.fullscreen = !this.fullscreen;
-  }
-
-  private async handleFullscreenRequest() {
-    try {
-      if (this.fullscreen) {
-        await this.requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
-    } catch {
-      document.exitFullscreen();
-    }
-  }
-
   private handleDragStart(e: DragEvent) {
-    const event = new CustomEvent('tileDragStart', {
-      detail: { tile: this },
-      bubbles: true,
-    });
-
     const rect = this.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
 
-    e.dataTransfer!.setDragImage(this, offsetX, offsetY);
+    e.dataTransfer!.setDragImage(this._tileContent, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
 
-    this.dispatchEvent(event);
+    this.emitEvent('tileDragStart', { detail: this });
     this._isDragging = true;
 
     requestAnimationFrame(() => {
@@ -306,33 +308,26 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnter() {
-    const draggedId = this._tileManager?.draggedItem?.tileId;
-    if (this._tileManager && this.tileId !== draggedId) {
-      const draggedItem = this._tileManager.draggedItem;
-      if (this._tileManager?.dragMode === 'slide' && draggedItem) {
-        requestAnimationFrame(() => {
-          this._ghost.style.transform = 'scale(0)';
-        });
-      } else {
-        this._hasDragOver = true;
-      }
+    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
+      return;
+    }
+
+    if (this._isSlideMode) {
+      requestAnimationFrame(() => {
+        this._ghost.style.transform = 'scale(0)';
+      });
+    } else {
+      this._hasDragOver = true;
     }
   }
 
   private handleDragOver() {
-    const draggedId = this._tileManager?.draggedItem?.tileId;
-    if (
-      this._tileManager &&
-      this.tileId !== draggedId &&
-      this._tileManager?.dragMode === 'slide'
-    ) {
-      const draggedItem = this._tileManager?.draggedItem;
-      const draggedPosition = draggedItem ? draggedItem.position : -1;
-      if (draggedPosition >= 0) {
-        const tempPosition = this._tileManager?.tiles[draggedPosition].position;
-        this._tileManager.tiles[draggedPosition].position = this.position;
-        this.position = tempPosition;
-      }
+    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
+      return;
+    }
+
+    if (this._isSlideMode) {
+      swapTiles(this, this._draggedItem!);
     }
   }
 
@@ -341,11 +336,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnd() {
-    const event = new CustomEvent('tileDragEnd', {
-      detail: { tile: this },
-      bubbles: true,
-    });
-    this.dispatchEvent(event);
+    this.emitEvent('tileDragEnd', { detail: this });
     this._isDragging = false;
 
     requestAnimationFrame(() => {
@@ -591,14 +582,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
       '--ig-row-start': this._rowStart,
     };
 
+    const baseStyles = {
+      // REVIEW: Using the hacky transform to 'hide' the base element
+      // and still have it as drag image added with setDragImage()
+      transform: this._isDragging ? 'translateX(-99999px)' : '',
+    };
+
     return html`
       <div
         part="tile-container"
         .inert=${this._hasDragOver}
         style=${styleMap(styles)}
       >
-        <div part="ghost"></div>
-        <div part=${parts}>
+        <div part="ghost" .inert=${true}></div>
+        <div part=${parts} style=${styleMap(baseStyles)}>
           <slot name="header"></slot>
           <div part="content-container">
             <slot></slot>

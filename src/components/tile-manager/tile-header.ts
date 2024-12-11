@@ -2,13 +2,12 @@ import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { tileContext } from '../common/context.js';
+import { type TileContext, tileContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcDividerComponent from '../divider/divider.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/tile-header.common.css.js';
 import { styles } from './themes/tile-header.base.css.js';
-import type IgcTileComponent from './tile.js';
 
 /** A container for tile's header
  * @element igc-tile-header
@@ -35,7 +34,11 @@ export default class IgcTileHeaderComponent extends LitElement {
   }
 
   @consume({ context: tileContext, subscribe: true })
-  private _tile?: IgcTileComponent;
+  private _tileContext?: TileContext;
+
+  private get _tile() {
+    return this._tileContext?.instance;
+  }
 
   private get _isMaximized() {
     return this._tile ? this._tile.maximized : false;
@@ -52,8 +55,10 @@ export default class IgcTileHeaderComponent extends LitElement {
   }
 
   private handleFullscreen() {
-    if (this._tile) {
-      this._tile.toggleFullscreen();
+    if (this._tileContext) {
+      this._tileContext.setFullscreenState(!this._isFullscreen, true);
+      // REVIEW: Leave the `requestUpdate` call or trigger through `setValue` from the tile context?
+      this.requestUpdate();
     }
   }
 
@@ -64,6 +69,8 @@ export default class IgcTileHeaderComponent extends LitElement {
 
     if (this._tile) {
       this._tile.maximized = !this._tile.maximized;
+      // REVIEW: Leave the `requestUpdate` call or trigger through `setValue` from the tile context?
+      this.requestUpdate();
     }
   }
 
@@ -87,6 +94,7 @@ export default class IgcTileHeaderComponent extends LitElement {
         collection="default"
         exportparts="icon"
         name=${icon}
+        aria-label=${icon}
         @click=${handler}
       ></igc-icon-button>
     `;

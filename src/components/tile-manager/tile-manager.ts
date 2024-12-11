@@ -1,7 +1,9 @@
+import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { tileManagerContext } from '../common/context.js';
 import {
   type MutationControllerParams,
   createMutationController,
@@ -9,8 +11,12 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, findElementFromEventPath } from '../common/util.js';
-import { addFullscreenController } from './controllers/fullscreen.js';
+import {
+  asNumber,
+  findElementFromEventPath,
+  partNameMap,
+} from '../common/util.js';
+import { createTilesState, isSameTile, swapTiles } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
@@ -49,26 +55,26 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private _internalStyles: StyleInfo = {};
 
-  private positionedTiles: IgcTileComponent[] = [];
   private _columnCount = 0;
   private _minColWidth?: string;
   private _minRowHeight?: string;
+  private _draggedItem: IgcTileComponent | null = null;
+
   private _serializer = createSerializer(this);
+  private _tilesState = createTilesState(this);
 
-  /** @private @hidden @internal */
-  public draggedItem: IgcTileComponent | null = null;
+  private _context = new ContextProvider(this, {
+    context: tileManagerContext,
+    initialValue: {
+      instance: this,
+      draggedItem: this._draggedItem,
+    },
+  });
 
-  // @query('[part="base"]', true)
-  // private _baseWrapper!: HTMLDivElement;
-
-  @query('slot', true)
-  private slotElement!: HTMLSlotElement;
-
-  private get _tiles() {
-    return Array.from(
-      this.querySelectorAll<IgcTileComponent>(
-        `:scope > ${IgcTileComponent.tagName}`
-      )
+  private _setManagerContext() {
+    this._context.setValue(
+      { instance: this, draggedItem: this._draggedItem },
+      true
     );
   }
 
@@ -82,33 +88,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       ({ target }) => target.closest(this.tagName) === this
     );
 
-    for (const { node: removedTile } of ownRemoved) {
-      const removedPosition = removedTile.position;
-
-      this.tiles.forEach((tile) => {
-        if (tile.position > removedPosition) {
-          tile.position -= 1;
-        }
-      });
+    for (const remove of ownRemoved) {
+      this._tilesState.remove(remove.node);
     }
 
-    for (const { node: tile } of ownAdded) {
-      const specifiedPosition = tile.position;
-
-      if (specifiedPosition !== -1) {
-        this._tiles
-          .filter((existingTile) => existingTile !== tile)
-          .forEach((existingTile) => {
-            if (existingTile.position >= specifiedPosition) {
-              existingTile.position += 1;
-            }
-          });
-      } else {
-        tile.position = this._tiles.length - 1;
-      }
+    for (const added of ownAdded) {
+      this._tilesState.add(added.node);
     }
 
-    this.updateSlotAssignment();
+    this._tilesState.assignTiles();
   }
 
   /**
@@ -174,12 +162,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
    * @attr
    */
   public get tiles() {
-    return Array.from(this._tiles).sort((a, b) => a.position - b.position);
+    return this._tilesState.tiles;
   }
 
   constructor() {
     super();
-    addFullscreenController(this);
 
     createMutationController(this, {
       callback: this._observerCallback,
@@ -191,51 +178,20 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   protected override firstUpdated() {
-    this.assignPositions();
-    this.updateSlotAssignment();
+    this._tilesState.assignPositions();
+    this._tilesState.assignTiles();
   }
 
-  private assignPositions() {
-    const finalOrder: IgcTileComponent[] = [];
-    const unpositionedTiles = this._tiles.filter(
-      (tile) => tile.position === -1
-    );
-
-    this.positionedTiles = this._tiles.filter((tile) => tile.position !== -1);
-    this.positionedTiles.sort((a, b) => a.position - b.position);
-
-    let nextFreePosition = 0;
-
-    this.positionedTiles.forEach((tile) => {
-      // Fill any unassigned slots before the next assigned tile's position
-      while (nextFreePosition < tile.position && unpositionedTiles.length > 0) {
-        const unpositionedTile = unpositionedTiles.shift()!;
-        unpositionedTile.position = nextFreePosition++;
-        finalOrder.push(unpositionedTile);
-      }
-      tile.position = finalOrder.length;
-      finalOrder.push(tile);
-      nextFreePosition = tile.position + 1;
-    });
-
-    unpositionedTiles.forEach((tile) => {
-      tile.position = nextFreePosition++;
-      finalOrder.push(tile);
-    });
-  }
-
-  private updateSlotAssignment() {
-    this.slotElement.assign(...this._tiles);
-  }
-
-  private handleTileDragStart(event: CustomEvent) {
-    this.emitEvent('igcTileDragStarted', { detail: event.detail.tile });
-    this.draggedItem = event.detail.tile;
+  private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
+    this.emitEvent('igcTileDragStarted', { detail });
+    this._draggedItem = detail;
+    this._setManagerContext();
   }
 
   private handleTileDragEnd() {
-    if (this.draggedItem) {
-      this.draggedItem = null;
+    if (this._draggedItem) {
+      this._draggedItem = null;
+      this._setManagerContext();
     }
   }
 
@@ -246,19 +202,14 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private handleDrop(event: DragEvent) {
     event.preventDefault();
 
-    const draggedItem = this.draggedItem;
+    const draggedItem = this._draggedItem;
     const target = findElementFromEventPath<IgcTileComponent>(
       IgcTileComponent.tagName,
       event
     );
 
-    if (target && draggedItem && target !== draggedItem) {
-      if (this.dragMode === 'swap') {
-        [draggedItem.position, target.position] = [
-          target.position,
-          draggedItem.position,
-        ];
-      }
+    if (!isSameTile(draggedItem, target) && this.dragMode === 'swap') {
+      swapTiles(draggedItem!, target!);
     }
   }
 
@@ -271,10 +222,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const parts = partNameMap({
+      base: true,
+      'maximized-tile': this.tiles.some((tile) => tile.maximized),
+    });
+
     return html`
       <div
         style=${styleMap(this._internalStyles)}
-        part="base"
+        part=${parts}
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
         @dragover=${this.handleDragOver}

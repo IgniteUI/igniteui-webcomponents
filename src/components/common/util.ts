@@ -283,3 +283,17 @@ export function isEmpty<T, U extends string>(
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;
 }
+
+export function partition<T>(
+  array: T[],
+  isTruthy: (value: T) => boolean
+): [truthy: T[], falsy: T[]] {
+  const truthy: T[] = [];
+  const falsy: T[] = [];
+
+  for (const item of array) {
+    (isTruthy(item) ? truthy : falsy).push(item);
+  }
+
+  return [truthy, falsy];
+}

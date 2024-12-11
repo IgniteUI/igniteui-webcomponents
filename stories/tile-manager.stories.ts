@@ -362,6 +362,9 @@ export const FinDashboard: Story = {
     <igc-button @click=${disableTileResize}>
       Toggle Tile 2 Resizing
     </igc-button>
+    <igc-button @click=${toggleFullscreen}>
+      Toggle Tile 1 Fullscreen prop
+    </igc-button>
   `,
 };
 
@@ -610,6 +613,12 @@ function disableTileResize() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
   tileManager.tiles[1].disableResize = !tileManager.tiles[1].disableResize;
+}
+
+function toggleFullscreen() {
+  const tileManager =
+    document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
+  tileManager.tiles[1].fullscreen = !tileManager.tiles[1].fullscreen;
 }
 
 function cancelStateChangeEvent(e: CustomEvent) {
