@@ -1245,7 +1245,6 @@ describe('Combo', () => {
       html`<igc-combo
         name="combo"
         .data=${cities}
-        value='["BG01", "BG02"]'
         value-key="id"
         display-key="name"
       ></igc-combo>`
@@ -1253,6 +1252,7 @@ describe('Combo', () => {
 
     beforeEach(async () => {
       await spec.setup(IgcComboComponent.tagName);
+      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
     });
 
     it('is form associated', () => {
