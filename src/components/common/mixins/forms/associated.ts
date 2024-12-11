@@ -100,9 +100,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       super.connectedCallback();
       this._dirty = false;
       this._updateValidity();
-      if (!this.hasUpdated && !this._formValue.defaultValue) {
-        this._setInitialDefaultValue();
-      }
     }
 
     private _handleInvalid(event: Event) {
@@ -135,16 +132,13 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return { validity, message };
     }
 
-    protected _setInitialDefaultValue(): void {
-      this._formValue.defaultValue = this._formValue.value;
-    }
-
     protected _setDefaultValue(current: string | null): void {
       this._formValue.defaultValue = current;
     }
 
     protected _restoreDefaultValue(): void {
       this._formValue.setValueAndFormState(this._formValue.defaultValue);
+      this._updateValidity();
       this.requestUpdate();
     }
 

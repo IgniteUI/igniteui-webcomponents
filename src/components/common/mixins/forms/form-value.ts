@@ -56,27 +56,32 @@ export const defaultDateTimeTransformers: Partial<
   setFormValue: getDateFormValue,
 };
 
+/* blazorSuppress */
 export class FormValue<T> {
+  private static readonly setFormValueKey = '_setFormValue' as const;
+
   private _host: IgcFormControl;
   private _value: T;
   private _defaultValue: T;
   private _transformers: FormValueTransformers<T>;
+  private _setFormValue: IgcFormControl[typeof FormValue.setFormValueKey];
 
   constructor(host: IgcFormControl, config: FormValueConfig<T>) {
     this._host = host;
     this._value = config.initialValue;
     this._defaultValue = config.initialDefaultValue ?? this._value;
+    this._setFormValue = host[FormValue.setFormValueKey];
+
     this._transformers = {
       ...defaultTransformers,
       ...config.transformers,
     } as FormValueTransformers<T>;
   }
 
-  public setValueAndFormState(value: T) {
+  public setValueAndFormState(value: T): void {
     this.value = value;
-    // REVIEW
-    // @ts-expect-error: protected access
-    this._host._setFormValue(
+    this._setFormValue.call(
+      this._host,
       this._transformers.setFormValue(this.value, this._host)
     );
   }

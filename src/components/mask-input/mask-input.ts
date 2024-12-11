@@ -133,7 +133,12 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   protected override _restoreDefaultValue(): void {
-    this.value = this.defaultValue as string;
+    const value = this.defaultValue as string;
+
+    this.maskedValue = this.parser.apply(value);
+    this.updateMaskedValue();
+    this._formValue.setValueAndFormState(value);
+    this._updateValidity();
   }
 
   protected async updateInput(string: string, range: MaskRange) {

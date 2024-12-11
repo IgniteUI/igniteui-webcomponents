@@ -1245,7 +1245,7 @@ describe('Combo', () => {
       html`<igc-combo
         name="combo"
         .data=${cities}
-        .value=${['BG01', 'BG02']}
+        value='["BG01", "BG02"]'
         value-key="id"
         display-key="name"
       ></igc-combo>`

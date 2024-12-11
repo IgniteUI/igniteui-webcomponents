@@ -465,13 +465,6 @@ export default class IgcComboComponent<
     );
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    if (!this.hasUpdated && isEmpty(this._formValue.defaultValue)) {
-      this._setInitialDefaultValue();
-    }
-  }
-
   protected override async firstUpdated() {
     await this.updateComplete;
 
@@ -484,7 +477,8 @@ export default class IgcComboComponent<
   protected override _restoreDefaultValue(): void {
     this._formValue.value = this._formValue.defaultValue;
     this._updateSelection();
-    this.updateValue();
+    this.updateValue(true);
+    this._updateValidity();
   }
 
   protected override _setDefaultValue(current: string | null): void {
