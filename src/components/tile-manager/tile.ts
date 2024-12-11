@@ -21,6 +21,7 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
+import { ResizeUtil } from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -99,6 +100,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     background?: string;
     border?: string;
     borderRadius?: string;
+    rowHeights?: number[];
+    initialTop?: number;
   } = {};
 
   // Tile manager context properties and helpers
@@ -347,6 +350,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private cacheStyles() {
     //use util
     const computedStyle = getComputedStyle(this);
+    const parentWrapper =
+      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
+
+    const rowHeights = getComputedStyle(parentWrapper)
+      .gridTemplateRows.split(' ')
+      .map((height) => Number.parseFloat(height.trim()));
 
     this._cachedStyles = {
       columnCount: Number.parseFloat(
@@ -361,6 +370,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       minHeight: Number.parseFloat(
         computedStyle.getPropertyValue('--ig-min-row-height')
       ),
+      rowHeights,
+      initialTop: parentWrapper.getBoundingClientRect().top,
     };
   }
 
@@ -379,6 +390,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._isResizing = true;
 
     const ghostElement = event.detail.state.current;
+    const rowHeights = this._cachedStyles.rowHeights!;
 
     if (ghostElement) {
       const deltaX = event.detail.event.clientX - this._initialPointerX!;
@@ -390,10 +402,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
         event.detail.state.initial.width,
         columnGap
       );
-      const snappedHeight = this._calculateSnappedHeight(
+
+      const actualTop = this._cachedStyles.initialTop! + window.scrollY;
+      const initialTop = event.detail.state.initial.top + window.scrollY;
+      const actualBottom = event.detail.state.initial.bottom + window.scrollY;
+
+      const startingY = actualBottom - actualTop;
+
+      const snappedHeight = ResizeUtil.calculateSnappedHeight(
         deltaY,
-        event.detail.state.initial.height,
-        columnGap
+        startingY,
+        rowHeights,
+        columnGap,
+        initialTop,
+        event.detail.state.initial.height
       );
 
       ghostElement.width = snappedWidth;
@@ -420,75 +442,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const totalSpan = Math.round(newSize / (colWidth + gap));
     const snappedWidth = totalSpan * colWidth + (totalSpan - 1) * gap;
     return snappedWidth < colWidth ? colWidth : snappedWidth;
-  }
-
-  private _calculateSnappedHeight(
-    deltaY: number,
-    initialHeight: number,
-    rowGap: number
-  ): number {
-    const rowHeights = getComputedStyle(
-      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!
-    )
-      .gridTemplateRows.split(' ')
-      .map((height) => Number.parseFloat(height.trim()));
-
-    let snappedHeight = initialHeight + deltaY;
-    let accumulatedHeight = 0;
-    let targetRowIndex = -1;
-
-    // Determine which row the tile is in based on current height
-    for (let i = 0; i < rowHeights.length; i++) {
-      accumulatedHeight += rowHeights[i] + (i > 0 ? rowGap : 0);
-      if (snappedHeight <= accumulatedHeight) {
-        targetRowIndex = i;
-        break;
-      }
-    }
-
-    // Fallback in case the initial height exceeds all rows
-    if (targetRowIndex === -1) {
-      targetRowIndex = rowHeights.length - 1;
-    }
-
-    let previousRowsHeight = 0;
-    for (let i = 0; i < targetRowIndex; i++) {
-      previousRowsHeight += rowHeights[i] + (i > 0 ? rowGap : 0);
-    }
-
-    if (deltaY > 0) {
-      if (targetRowIndex < rowHeights.length) {
-        const rowHeight = rowHeights[targetRowIndex];
-        const halfwayThreshold = previousRowsHeight + rowGap + rowHeight / 2;
-
-        // Snap to the next row height if we are more than halfway into it,
-        // otherwise keep the size as all previous rows height
-        if (snappedHeight >= halfwayThreshold) {
-          snappedHeight = accumulatedHeight;
-        } else {
-          snappedHeight = previousRowsHeight;
-        }
-      }
-    } else if (deltaY < 0) {
-      const currentRowHeight = rowHeights[targetRowIndex];
-      const halfwayThreshold =
-        accumulatedHeight - currentRowHeight / 2 - rowGap;
-
-      // Snap to the previous row height if we are more than halfway out of the current row
-      // Otherwise keep the size as all previous rows height + current row height
-      if (snappedHeight <= halfwayThreshold && targetRowIndex > 0) {
-        snappedHeight = accumulatedHeight - currentRowHeight - rowGap;
-      } else {
-        snappedHeight =
-          previousRowsHeight +
-          rowHeights[targetRowIndex] +
-          (targetRowIndex > 0 ? rowGap : 0);
-      }
-    }
-
-    snappedHeight = Math.max(snappedHeight, rowHeights[targetRowIndex]);
-
-    return snappedHeight;
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
