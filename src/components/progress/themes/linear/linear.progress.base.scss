@@ -10,12 +10,13 @@
 }
 
 [part~='base'] {
-    @extend %base !optional;
-
     display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    font-family: var(--ig-font-family), serif;
     position: relative;
     width: 100%;
-    flex-direction: column;
     flex: 1 1 100%;
 }
 
@@ -27,7 +28,10 @@
 }
 
 [part~='label'] {
-    @extend %label !optional;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    font-weight: 600;
 }
 
 [part~='track'] {
