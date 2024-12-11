@@ -13,13 +13,13 @@ $theme: $bootstrap;
     font-weight: 700;
 }
 
-[part~='svg'][part~='indeterminate'] {
+[part='svg indeterminate']  {
     animation-duration: .75s;
-}
 
-[part='svg indeterminate'] [part~='fill'] {
-    stroke-dashoffset: 60% !important;
-    animation: none;
+    [part~='fill'] {
+        stroke-dashoffset: 60% !important;
+        animation: none;
+    }
 }
 
 [part~='track'][part~='indeterminate'] {
