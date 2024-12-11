@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { tileManagerContext } from '../common/context.js';
@@ -99,9 +99,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._tilesState.assignTiles();
   }
 
-  @state()
-  private _isAnyTileMaximized = false;
-
   /**
    * Determines whether the tiles slide or swap on drop.
    * @attr drag-mode
@@ -180,11 +177,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateIsAnyTileMaximized();
-  }
-
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
@@ -221,11 +213,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
-  /** @private @hidden @internal */
-  public updateIsAnyTileMaximized() {
-    this._isAnyTileMaximized = this.tiles.some((tile) => tile.maximized);
-  }
-
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
@@ -237,7 +224,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   protected override render() {
     const parts = partNameMap({
       base: true,
-      'maximized-tile': this._isAnyTileMaximized,
+      'maximized-tile': this.tiles.some((tile) => tile.maximized),
     });
 
     return html`
