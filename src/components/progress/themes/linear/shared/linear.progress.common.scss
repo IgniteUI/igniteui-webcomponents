@@ -1,7 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../vars' as *;
-@use '../../shared' as *;
 @use '../../animations' as *;
 
 $theme: $material;
@@ -15,31 +14,27 @@ $theme: $material;
     color: var-get($theme, 'text-color');
 }
 
-// Mixin for base background styles
-@mixin background-styles($part, $color-key) {
-    [part~='#{$part}']:not([part~='indeterminate']) {
-        background-color: var-get($theme, $color-key);
+:host([striped]) {
+    --stripe-size: #{rem(16px)};
+}
+
+@mixin part-styles($part, $color-key) {
+    :host([variant='#{$part}']) {
+        --fill-bg: #{var-get($theme, $color-key)};
     }
-    [part~='#{$part}'] {
-        &::after {
-            background-color: var-get($theme, $color-key);
-        }
+
+    :host([striped][variant='#{$part}']) {
+        --striped-bg: #{var-get($theme, $color-key) repeating-linear-gradient(
+            -45deg,
+            var-get($theme, $color-key),
+            var-get($theme, $color-key) var(--stripe-size),
+            var-get($theme, 'stripes-color') var(--stripe-size),
+            var-get($theme, 'stripes-color') calc(var(--stripe-size) * 2)
+        )};
     }
 }
 
-// Mixin for striped styles
-@mixin striped-styles($part, $color-key) {
-    [part~='striped'][part~='#{$part}']:not([part~='indeterminate']) {
-        @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-    }
-    [part~='striped'][part~='#{$part}'] {
-        &::after {
-            @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-        }
-    }
-}
-
-// Apply styles for different parts
+// Generate styles for each variant
 @each $part, $color-key in (
     'primary': 'fill-color-default',
     'danger': 'fill-color-danger',
@@ -47,6 +42,23 @@ $theme: $material;
     'info': 'fill-color-info',
     'success': 'fill-color-success'
 ) {
-    @include background-styles($part, $color-key);
-    @include striped-styles($part, $color-key);
+    @include part-styles($part, $color-key);
+}
+
+:host(:not([indeterminate])) {
+    [part~='fill'] {
+        background-color: var(--fill-bg);
+    }
+}
+
+[part~='fill'] {
+    &::after {
+        background-color: var(--fill-bg);
+    }
+}
+
+:host([striped]:not([indeterminate])) {
+    [part~='fill'] {
+        background: var(--striped-bg);
+    }
 }

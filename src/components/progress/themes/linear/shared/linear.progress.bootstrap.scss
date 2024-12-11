@@ -1,31 +1,14 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use '../../vars' as *;
-@use '../../shared' as *;
 @use '../../animations' as *;
 
 $theme: $bootstrap;
-$stripe-size: rem(5px);
 
 :host {
     --track-size: #{rem(16px)};
 }
 
-// Define a mixin for generating striped styles
-@mixin striped-styles($part, $color-key) {
-    [part~='striped'][part~='#{$part}']:not([part~='indeterminate']) {
-        @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-    [part~='striped'][part~='#{$part}'] {
-        &::after {
-            @include stripe-colors(var-get($theme, $color-key), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-        }
-    }
+:host([striped]) {
+    --stripe-size: #{rem(5px)};
 }
-
-// Apply the mixin for each part
-@include striped-styles('primary', 'fill-color-default');
-@include striped-styles('danger', 'fill-color-danger');
-@include striped-styles('warning', 'fill-color-warning');
-@include striped-styles('info', 'fill-color-info');
-@include striped-styles('success', 'fill-color-success');

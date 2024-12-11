@@ -1,7 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../animations' as *;
-@use '../shared' as *;
 @use '../vars' as *;
 
 [part~='base'] {
