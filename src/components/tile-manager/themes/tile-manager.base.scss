@@ -8,7 +8,7 @@
     --ig-min-row-height: 200px;
 }
 
-[part='base'] {
+[part~='base'] {
     display: grid;
     position: relative;
     padding: rem(20px);

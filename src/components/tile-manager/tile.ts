@@ -204,6 +204,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
     this._maximized = value;
+
+    if (this._managerContext) {
+      this._managerContext.instance.updateIsAnyTileMaximized();
+    }
   }
 
   public get maximized() {

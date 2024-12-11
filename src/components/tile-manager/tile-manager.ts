@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { tileManagerContext } from '../common/context.js';
@@ -11,7 +11,11 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, findElementFromEventPath } from '../common/util.js';
+import {
+  asNumber,
+  findElementFromEventPath,
+  partNameMap,
+} from '../common/util.js';
 import { createTilesState, isSameTile, swapTiles } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
@@ -95,6 +99,9 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._tilesState.assignTiles();
   }
 
+  @state()
+  private _isAnyTileMaximized = false;
+
   /**
    * Determines whether the tiles slide or swap on drop.
    * @attr drag-mode
@@ -173,6 +180,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.updateIsAnyTileMaximized();
+  }
+
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
@@ -209,6 +221,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
+  /** @private @hidden @internal */
+  public updateIsAnyTileMaximized() {
+    this._isAnyTileMaximized = this.tiles.some((tile) => tile.maximized);
+  }
+
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
@@ -218,10 +235,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const parts = partNameMap({
+      base: true,
+      'maximized-tile': this._isAnyTileMaximized,
+    });
+
     return html`
       <div
         style=${styleMap(this._internalStyles)}
-        part="base"
+        part=${parts}
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
         @dragover=${this.handleDragOver}
