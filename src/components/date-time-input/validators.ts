@@ -12,7 +12,7 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
   {
     ...minDateValidator,
     isValid: (host) =>
-      host.min
+      host.value && host.min
         ? !DateTimeUtil.lessThanMinValue(
             host.value || new Date(),
             host.min,
@@ -26,7 +26,7 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
   {
     ...maxDateValidator,
     isValid: (host) =>
-      host.max
+      host.value && host.max
         ? !DateTimeUtil.greaterThanMaxValue(
             host.value || new Date(),
             host.max,

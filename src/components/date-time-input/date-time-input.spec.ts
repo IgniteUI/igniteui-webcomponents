@@ -982,7 +982,7 @@ describe('Date Time Input component', () => {
     });
 
     it('fulfils min value constraint', () => {
-      spec.setProperties({ min: new Date(2026, 0, 1) });
+      spec.setProperties({ min: new Date(2026, 0, 1), value: today.native });
       spec.assertSubmitFails();
 
       spec.setProperties({ value: new Date(2022, 0, 1) });
@@ -993,7 +993,10 @@ describe('Date Time Input component', () => {
     });
 
     it('fulfils min value constraint - string property binding', () => {
-      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
+      spec.setProperties({
+        min: new Date(2026, 0, 1).toISOString(),
+        value: today.native.toISOString(),
+      });
       spec.assertSubmitFails();
 
       spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
