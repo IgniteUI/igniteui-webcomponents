@@ -674,8 +674,7 @@ describe('Masked input', () => {
       expect(input.placeholder).to.equal(spec.element.mask);
 
       // User provided placeholder
-
-      await spec.setProperties({ placeholder });
+      await spec.setProperties({ placeholder }, true);
 
       expect(input.value).to.be.empty;
       expect(input.placeholder).to.equal(placeholder);
