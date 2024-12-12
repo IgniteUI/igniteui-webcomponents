@@ -45,12 +45,14 @@
 
 :host([maximized]) {
     position: absolute;
-    inset: unset;
+    inset: 0;
     width: 100%;
     height: 100%;
-    overflow: visible;
-    isolation: isolate;
     z-index: 10;
+
+    //Fix for Firefox
+    grid-column: unset;
+    grid-row: unset;
 
     [part~='base'] {
         width: 100%;
