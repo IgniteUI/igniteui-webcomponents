@@ -301,6 +301,37 @@ describe('Radio Group Component', () => {
           expect(group.value).to.equal(first(radios).value);
         });
 
+        it('form reset with defaultValue set', async () => {
+          form = await fixture(html`
+            <form>
+              <igc-radio-group name="fruit" .defaultValue=${'apple'}>
+                <igc-radio value="apple">Apple</igc-radio>
+                <igc-radio value="banana">Banana</igc-radio>
+                <igc-radio value="orange">Orange</igc-radio>
+              </igc-radio-group>
+            </form>
+          `);
+          group = form.querySelector(IgcRadioGroupComponent.tagName)!;
+          radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
+          setFormListener();
+
+          expect(first(radios).checked).to.be.true;
+
+          form.requestSubmit();
+          expect(formData.get('fruit')).to.equal(first(radios).value);
+
+          last(radios).click();
+          await elementUpdated(last(radios));
+
+          expect(group.value).to.equal(last(radios).value);
+          form.requestSubmit();
+          expect(formData.get('fruit')).to.equal(last(radios).value);
+
+          form.reset();
+          expect(first(radios).checked).to.be.true;
+          expect(group.value).to.equal(first(radios).value);
+        });
+
         it('form reset with multiple checked radios', async () => {
           form = await fixture(html`
             <form>

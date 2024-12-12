@@ -1,7 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import {
+  createFormAssociatedTestBed,
+  isFocused,
+} from '../common/utils.spec.js';
+import IgcInputComponent from '../input/input.js';
 import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
@@ -14,7 +18,7 @@ const Types: Array<IgcButtonComponent['type']> = ['button', 'reset', 'submit'];
 
 describe('Button tests', () => {
   let button: IgcButtonComponent;
-  before(() => defineComponents(IgcButtonComponent));
+  before(() => defineComponents(IgcButtonComponent, IgcInputComponent));
 
   describe('Button component', () => {
     const ignored_DOM_parts = {
@@ -214,25 +218,25 @@ describe('Button tests', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed(
-      html`<input type="text" name="username" value="John Doe" />
-        <igc-button type="submit">Submit</igc-button>`
-    );
+    let button: IgcButtonComponent;
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+      <igc-input type="text" name="username" value="John Doe"></igc-input>
+      <igc-button type="submit">Submit</igc-button>
+    `);
 
-    beforeEach(async () => await spec.setup(IgcButtonComponent.tagName));
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+      button = spec.form.querySelector(IgcButtonComponent.tagName)!;
+    });
 
     it('is form associated', async () => {
-      expect(spec.element.form).to.equal(spec.form);
+      expect(button.form).to.equal(spec.form);
     });
 
     it('submits the associated form', async () => {
-      const button = spec.element as unknown as IgcButtonComponent;
-
       const handler = (event: SubmitEvent) => {
         event.preventDefault();
-        expect(
-          new FormData(event.target as HTMLFormElement).get('username')
-        ).to.equal('John Doe');
+        expect(new FormData(spec.form).get('username')).to.equal('John Doe');
       };
 
       spec.form.addEventListener('submit', handler, { once: true });
@@ -240,23 +244,21 @@ describe('Button tests', () => {
     });
 
     it('resets the associated form', async () => {
-      const button = spec.element as unknown as IgcButtonComponent;
-      const input = spec.form.querySelector('input') as HTMLInputElement;
-
-      input.value = 'Jane Doe';
+      spec.setProperties({ value: 'Jane Doe' });
       button.type = 'reset';
-      await elementUpdated(button);
 
       button.click();
-      expect(input.value).to.equal('John Doe');
+      expect(spec.element.value).to.equal('John Doe');
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
+      expect(button.disabled).to.be.true;
 
       spec.setAncestorDisabledState(false);
       expect(spec.element.disabled).to.be.false;
+      expect(button.disabled).to.be.false;
     });
   });
 });

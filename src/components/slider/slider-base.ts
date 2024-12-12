@@ -329,11 +329,6 @@ export class IgcSliderBaseComponent extends LitElement {
     this.activeThumb?.part.add('focused');
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.normalizeValue();
-  }
-
   protected handleSlotChange() {
     this.labels = this.labelElements.map((label) => label.textContent ?? '');
     if (this.hasLabels) {
