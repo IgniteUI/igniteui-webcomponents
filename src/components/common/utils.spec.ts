@@ -81,7 +81,6 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   public submit(): FormData {
     let data = initialFormData;
 
-    // let data = new FormData();
     this.form.addEventListener(
       'submit',
       (e) => {
@@ -104,7 +103,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    */
   public async setProperties(
     props: { [K in keyof T]?: T[K] | string },
-    waitForUpdate = true
+    waitForUpdate = false
   ): Promise<void> {
     Object.assign(this.element, props);
     if (waitForUpdate) {
@@ -121,7 +120,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    */
   public async setAttributes(
     attributes: { [K in keyof T]?: T[K] | string },
-    waitForUpdate = true
+    waitForUpdate = false
   ): Promise<void> {
     for (const [attr, value] of Object.entries(attributes)) {
       this.element.setAttribute(attr, `${value}`);
