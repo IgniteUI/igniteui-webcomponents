@@ -284,6 +284,11 @@ export function isEmpty<T, U extends string>(
   return 'length' in x ? x.length < 1 : x.size < 1;
 }
 
+export function asArray<T>(value?: T | T[]): T[] {
+  if (!isDefined(value)) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
 export function partition<T>(
   array: T[],
   isTruthy: (value: T) => boolean

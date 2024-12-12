@@ -20,7 +20,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { asPercent } from '../common/util.js';
 import {
-  FormAssociatedTestBed,
+  createFormAssociatedTestBed,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
@@ -1107,7 +1107,7 @@ describe('Slider component', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcSliderComponent>(
+    const spec = createFormAssociatedTestBed<IgcSliderComponent>(
       html`<igc-slider name="slider" value="3"></igc-slider>`
     );
 
@@ -1115,40 +1115,34 @@ describe('Slider component', () => {
       await spec.setup(IgcSliderComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is associated on submit', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
+    it('is associated on submit', () => {
+      spec.assertSubmitHasValue(spec.element.value.toString());
+      spec.setProperties({ value: 66 });
 
-      spec.element.value = 66;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal('66');
+      spec.assertSubmitHasValue('66');
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = 4;
-      await elementUpdated(spec.element);
-
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: 4 });
       spec.reset();
+
       expect(spec.element.value).to.equal(3);
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      spec.element.setAttribute('value', '17');
-      spec.element.value = 50;
-
+      spec.setAttributes({ value: 17 });
+      spec.setProperties({ value: 50 });
       spec.reset();
 
       expect(spec.element.value).to.equal(17);
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value.toString()
-      );
+      spec.assertSubmitHasValue(spec.element.value.toString());
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -1156,12 +1150,40 @@ describe('Slider component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils custom constraints', async () => {
+    it('fulfils custom constraints', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcSliderComponent>(
+        html`<igc-slider name="slider" .defaultValue=${3}></igc-slider>`
+      );
+
+      beforeEach(async () => {
+        await spec.setup(IgcSliderComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal(3);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value.toString());
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: 55 });
+        spec.reset();
+
+        expect(spec.element.value).to.equal(3);
+      });
     });
   });
 });

@@ -4,8 +4,8 @@ import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateClick,
@@ -240,7 +240,7 @@ describe('Radio Component', () => {
   describe('Form integration', () => {
     const values = [1, 2, 3];
     let radios: IgcRadioComponent[] = [];
-    const spec = new FormAssociatedTestBed<IgcRadioComponent>(
+    const spec = createFormAssociatedTestBed<IgcRadioComponent>(
       html`${values.map(
         (e) => html`<igc-radio name="radio" value=${e}>${e}</igc-radio>`
       )}`
@@ -253,50 +253,41 @@ describe('Radio Component', () => {
       );
     });
 
-    it('is form associated', async () => {
-      for (const radio of radios) {
-        expect(radio.form).to.eql(spec.form);
-      }
+    it('is form associated', () => {
+      radios.every((radio) => expect(radio.form).to.equal(spec.form));
     });
 
-    it('is not associated on submit if not checked', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if not checked', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit with default value "on"', async () => {
-      radios.forEach((r) => {
-        r.value = '';
+    it('is associated on submit with default value "on"', () => {
+      radios.forEach((radio) => {
+        radio.value = '';
       });
-      radios.at(0)!.checked = true;
-      await elementUpdated(spec.element);
 
-      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+      first(radios).checked = true;
+      spec.assertSubmitHasValue('on');
     });
 
-    it('is associated on submit with default value "on" (setting `checked` first)', async () => {
-      radios.at(0)!.checked = true;
-      radios.forEach((r) => {
-        r.value = '';
+    it('is associated on submit with default value "on" (setting `checked` first)', () => {
+      first(radios).checked = true;
+      radios.forEach((radio) => {
+        radio.value = '';
       });
-      await elementUpdated(spec.element);
 
-      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+      spec.assertSubmitHasValue('on');
     });
 
-    it('is associated on submit with passed value', async () => {
-      radios.at(0)!.checked = true;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        radios.at(0)!.value
-      );
+    it('is associated on submit with passed value', () => {
+      first(radios).checked = true;
+      spec.assertSubmitHasValue(first(radios).value);
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ checked: true });
       spec.reset();
+
       expect(spec.element.checked).to.be.false;
     });
 
@@ -311,60 +302,79 @@ describe('Radio Component', () => {
       expect(last(radios).checked).to.be.true;
       expect(first(radios).checked).to.be.false;
 
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        last(radios).value
-      );
+      spec.assertSubmitHasValue(last(radios).value);
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
-      for (const radio of radios) {
-        expect(radio.disabled).to.be.true;
-      }
+      radios.every((radio) => expect(radio.disabled).to.be.true);
 
       spec.setAncestorDisabledState(false);
-      for (const radio of radios) {
-        expect(radio.disabled).to.be.false;
-      }
+      radios.every((radio) => expect(radio.disabled).to.be.false);
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
+      radios.every((radio) => expect(radio.invalid).to.be.true);
 
-      for (const radio of radios) {
-        expect(radio.invalid).to.be.true;
-      }
-
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-      spec.submitValidates();
-
-      for (const radio of radios) {
-        expect(radio.invalid).to.be.false;
-      }
+      spec.setProperties({ checked: true });
+      spec.assertSubmitPasses();
+      radios.every((radio) => expect(radio.invalid).to.be.false);
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
-
-      for (const radio of radios) {
-        expect(radio.invalid).to.be.true;
-      }
+      spec.assertSubmitFails();
+      radios.every((radio) => expect(radio.invalid).to.be.true);
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+      radios.every((radio) => expect(radio.invalid).to.be.false);
+    });
+  });
 
-      for (const radio of radios) {
-        expect(radio.invalid).to.be.false;
-      }
+  describe('defaultChecked', () => {
+    describe('Form integration', () => {
+      const values = [1, 2, 3];
+      let radios: IgcRadioComponent[] = [];
+      const spec = createFormAssociatedTestBed<IgcRadioComponent>(
+        html`${values.map(
+          (e) => html`
+            <igc-radio name="radio" value=${e} .defaultChecked=${e === 1}
+              >${e}</igc-radio
+            >
+          `
+        )}`
+      );
+
+      beforeEach(async () => {
+        await spec.setup(IgcRadioComponent.tagName);
+        radios = Array.from(
+          spec.form.querySelectorAll(IgcRadioComponent.tagName)
+        );
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.checked).to.be.true;
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue('1');
+      });
+
+      it('is correctly reset', () => {
+        last(radios).checked = true;
+        spec.reset();
+
+        expect(spec.element.checked).to.be.true;
+      });
     });
   });
 
   describe('issue-1122', () => {
-    const spec = new FormAssociatedTestBed<IgcRadioComponent>(
+    const spec = createFormAssociatedTestBed<IgcRadioComponent>(
       html`<igc-radio name="selection" value="1" required></igc-radio>`
     );
 
@@ -372,17 +382,17 @@ describe('Radio Component', () => {
       await spec.setup(IgcRadioComponent.tagName);
     });
 
-    it('synchronously validates component', async () => {
+    it('synchronously validates component', () => {
       // Invalid state
       expect(spec.form.checkValidity()).to.be.false;
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.reset();
 
       // Passes
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
-      spec.submitValidates();
+      spec.assertSubmitPasses();
     });
   });
 
