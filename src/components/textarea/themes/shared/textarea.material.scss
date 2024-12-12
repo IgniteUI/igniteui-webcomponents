@@ -33,6 +33,38 @@ textarea {
     padding-inline: rem(4px);
 }
 
+[part='label'] {
+    transform-origin: top left;
+    top: calc($input-top-padding - #{rem(2px)});
+    position: absolute;
+    max-width: 100%;
+    padding-inline-end: rem(4px);
+    line-height: normal;
+    backface-visibility: hidden;
+    transition:
+        transform 150ms cubic-bezier(.4, 0, .2, 1),
+        color 150ms cubic-bezier(.4, 0, .2, 1),
+        font-size 150ms cubic-bezier(.4, 0, .2, 1);
+    will-change: font-size, color, transform;
+}
+
+%label-filled {
+    transform: translateY(0);
+    top: calc(#{$input-top-padding} / 4);
+    font-size: rem(12px);
+}
+
+%label-outlined-filled {
+    top: 0;
+    transform: translateY(-50%);
+    margin-block-end: auto;
+    padding-inline-end: 0;
+    display: inline-block;
+    position: relative;
+    background: transparent;
+    font-size: rem(12px);
+}
+
 :host(:not([outlined])) {
     [part~='container'] {
         overflow: hidden;
@@ -56,6 +88,12 @@ textarea {
             margin-block-end: rem(2px);
             grid-area: 1 / 2 / span 1 / span 3;
         }
+    }
+
+    textarea:placeholder-shown ~ [part='notch'] [part='label'],
+    textarea:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] [part='notch'] [part='label'] {
+        @extend %label-filled;
     }
 }
 
@@ -104,6 +142,8 @@ textarea {
 
 :host(:focus-within) {
     [part~='label'] {
+        @extend %label-filled;
+
         color: var-get($theme, 'focused-secondary-color');
     }
 }
@@ -140,19 +180,6 @@ textarea {
             border-block-end-color: var-get($theme, 'error-secondary-color');
         }
     }
-}
-
-[part~='label'] {
-    position: absolute;
-    max-width: 100%;
-    padding-inline-end: rem(4px);
-    line-height: normal;
-    backface-visibility: hidden;
-    will-change: transform;
-    transform-origin: top left;
-    transform: translateY(0);
-    top: calc(#{$input-top-padding} / 4);
-    font-size: rem(12px);
 }
 
 [part='start'],
@@ -212,6 +239,10 @@ textarea {
     background: var-get($theme, 'border-background');
     overflow: initial;
 
+    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) {
+        grid-template-columns: auto 1fr 1fr auto;
+    }
+
     [part~='container'] {
         grid-template-columns: auto auto 1fr auto;
         display: grid;
@@ -222,6 +253,16 @@ textarea {
             grid-column: 2 / -1;
             max-width: calc(100% - #{rem(2px)});
         }
+    }
+
+    textarea:placeholder-shown + [part='notch'] [part='label'],
+    textarea:placeholder-shown ~ [part='notch'] [part='label'],
+    [part~='filled'] [part='notch'] [part='label'] {
+        @extend %label-outlined-filled;
+    }
+
+    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) [part='notch'] {
+        border-block: rem(1px) solid var-get($theme, 'border-color');
     }
 
     [part='start'] {
@@ -244,16 +285,6 @@ textarea {
                 start-radius: var-get($theme, 'border-border-radius');
             }
         }
-    }
-
-    [part~='label'] {
-        top: 0;
-        transform: translateY(-50%);
-        margin-block-end: auto;
-        padding-inline-end: 0;
-        display: inline-block;
-        position: relative;
-        background: transparent;
     }
 
     [part='filler'] {
@@ -313,6 +344,10 @@ textarea {
         border-block-width: rem(2px);
     }
 
+    [part='label'] {
+        @extend %label-outlined-filled;
+    }
+
     [part='filler'] {
         border-block-color: var-get($theme, 'focused-border-color');
     }
@@ -365,7 +400,8 @@ textarea {
     [part='start'],
     [part='filler'],
     [part='notch'],
-    [part='end'] {
+    [part='end'],
+    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) [part='notch'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
 }
