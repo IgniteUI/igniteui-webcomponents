@@ -7,7 +7,10 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed, isFocused } from '../common/utils.spec.js';
+import {
+  createFormAssociatedTestBed,
+  isFocused,
+} from '../common/utils.spec.js';
 import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
@@ -203,7 +206,7 @@ describe('Switch', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcSwitchComponent>(
+    const spec = createFormAssociatedTestBed<IgcSwitchComponent>(
       html`<igc-switch name="checkbox"
         >I have reviewed ToC and I agree</igc-switch
       >`
@@ -217,43 +220,35 @@ describe('Switch', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is associated on submit with default value "on"', async () => {
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+    it('is associated on submit with default value "on"', () => {
+      spec.setProperties({ checked: true });
+      spec.assertSubmitHasValue('on');
     });
 
-    it('is associated on submit with passed value', async () => {
-      spec.element.checked = true;
-      spec.element.value = 'accepted';
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit with passed value', () => {
+      spec.setProperties({ checked: true, value: 'accepted' });
+      spec.assertSubmitHasValue('accepted');
     });
 
-    it('is not associated on submit if not checked', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if not checked', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ checked: true });
       spec.reset();
+
       expect(spec.element.checked).to.be.false;
     });
 
     it('is correctly reset on form reset after setAttribute() call', () => {
-      spec.element.setAttribute('checked', 'true');
-
+      spec.setAttributes({ checked: true });
       spec.reset();
+
       expect(spec.element.checked).to.be.true;
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -261,22 +256,70 @@ describe('Switch', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.checked = true;
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ checked: true });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultChecked', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcSwitchComponent>(html`
+        <igc-switch name="checkbox" .defaultChecked=${true}></igc-switch>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcSwitchComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.checked).to.be.true;
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue('on');
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ checked: false });
+        spec.reset();
+
+        expect(spec.element.checked).to.be.true;
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcSwitchComponent>(html`
+        <igc-switch name="checkbox" required></igc-switch>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcSwitchComponent.tagName);
+      });
+
+      it('fails initial validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes validation when updating defaultChecked', () => {
+        spec.setProperties({ defaultChecked: true });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 });

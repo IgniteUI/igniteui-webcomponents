@@ -16,6 +16,10 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
+import {
   asNumber,
   createCounter,
   isEmpty,
@@ -79,19 +83,21 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
-  protected override get __validators() {
-    return textAreaValidators;
-  }
-
-  private static readonly increment = createCounter();
-  protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
-
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
 
-  private _value = '';
+  private static readonly increment = createCounter();
+
+  protected override get __validators() {
+    return textAreaValidators;
+  }
+
+  protected override _formValue: FormValue<string>;
+
+  protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
+
   private observer!: ResizeObserver;
 
   @queryAssignedNodes({ flatten: true })
@@ -235,13 +241,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public set value(value: string) {
-    this._value = value ?? '';
-    this._setFormValue(this._value ? this._value : null);
+    this._formValue.setValueAndFormState(value);
     this._validate();
   }
 
   public get value(): string {
-    return this._value;
+    return this._formValue.value;
   }
 
   /**
@@ -296,6 +301,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
+
+    this._formValue = createFormValueState(this, { initialValue: '' });
+
     this.addEventListener('focus', this.handleFocus);
     this.addEventListener('blur', this.handleBlur);
   }

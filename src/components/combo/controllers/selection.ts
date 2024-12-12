@@ -1,6 +1,6 @@
 import type { ReactiveController } from 'lit';
 
-import { isEmpty } from '../../common/util.js';
+import { asArray, isEmpty } from '../../common/util.js';
 import type {
   ComboHost,
   ComboValue,
@@ -9,19 +9,35 @@ import type {
   Keys,
   Values,
 } from '../types.js';
+import type { DataController } from './data.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
 {
   private _selected: Set<T> = new Set();
 
-  public get data() {
-    return this.host.data;
+  /** Whether the current selection is empty */
+  public get isEmpty() {
+    return isEmpty(this._selected);
   }
 
-  public resetSearchTerm() {
-    // @ts-expect-error protected access
-    this.host.resetSearchTerm();
+  /** Returns the current selection as an array */
+  public get asArray() {
+    return Array.from(this._selected);
+  }
+
+  /** Whether the current selection has the given item */
+  public has(item?: T) {
+    return this._selected.has(item!);
+  }
+
+  /** Clears the current selection */
+  public clear() {
+    this._selected.clear();
+  }
+
+  public getSelectedValuesByKey(key?: Keys<T>) {
+    return this.asArray.map((item) => item[key!] ?? item);
   }
 
   public getValue(items: T[], key: Keys<T>): ComboValue<T>[] {
@@ -33,75 +49,89 @@ export class SelectionController<T extends object>
   }
 
   private getItemsByValueKey(keys: Values<T>[]) {
-    return keys.map((key) =>
-      this.data.find((i) => i[this.host.valueKey!] === key)
+    const _keys = new Set(keys);
+    return this.host.data.filter((item) =>
+      _keys.has(item[this.host.valueKey!])
     );
   }
 
   private selectValueKeys(keys: Values<T>[]) {
-    if (isEmpty(keys)) return;
+    if (isEmpty(keys)) {
+      return;
+    }
 
-    this.getItemsByValueKey(keys).forEach((item) => {
-      return item && this._selected.add(item);
-    });
+    for (const item of this.getItemsByValueKey(keys)) {
+      this._selected.add(item);
+    }
   }
 
   private deselectValueKeys(keys: Values<T>[]) {
-    if (isEmpty(keys)) return;
+    if (isEmpty(keys)) {
+      return;
+    }
 
-    this.getItemsByValueKey(keys).forEach((item) => {
-      return item && this._selected.delete(item);
-    });
+    for (const item of this.getItemsByValueKey(keys)) {
+      this._selected.delete(item);
+    }
   }
 
   private selectObjects(items: T[]) {
-    if (isEmpty(items)) return;
+    if (isEmpty(items)) {
+      return;
+    }
 
-    items.forEach((item) => {
-      const i = this.data.includes(item);
-      if (i) {
+    const dataSet = new Set(this.host.data);
+
+    for (const item of items) {
+      if (dataSet.has(item)) {
         this._selected.add(item);
       }
-    });
+    }
   }
 
   private deselectObjects(items: T[]) {
-    if (isEmpty(items)) return;
+    if (isEmpty(items)) {
+      return;
+    }
 
-    items.forEach((item) => {
-      const i = this.data.includes(item);
-      if (i) {
+    const dataSet = new Set(this.host.data);
+
+    for (const item of items) {
+      if (dataSet.has(item)) {
         this._selected.delete(item);
       }
-    });
+    }
   }
 
   private selectAll() {
-    this.data.forEach((item) => {
-      this._selected.add(item);
-    });
+    this._selected = new Set(this.host.data);
     this.host.requestUpdate();
   }
 
   private deselectAll() {
-    this._selected.clear();
+    this.clear();
     this.host.requestUpdate();
   }
 
-  public async select(items?: Item<T>[], emit = false) {
-    const { singleSelect } = this.host;
+  public async select(items?: Item<T> | Item<T>[], emit = false) {
+    let _items = asArray(items);
+    const singleSelect = this.host.singleSelect;
 
     if (singleSelect) {
-      this._selected.clear();
-      this.resetSearchTerm();
+      this.clear();
+      this.state.searchTerm = '';
     }
 
-    if (!items || isEmpty(items)) {
-      !singleSelect && this.selectAll();
+    if (isEmpty(_items)) {
+      if (!singleSelect) {
+        this.selectAll();
+      }
       return;
     }
 
-    const _items = singleSelect ? items.slice(0, 1) : items;
+    if (singleSelect) {
+      _items = _items.slice(0, 1);
+    }
 
     const values = this.host.valueKey
       ? this.getItemsByValueKey(_items as Values<T>[])
@@ -129,13 +159,15 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async deselect(items?: Item<T>[], emit = false) {
-    if (!items || isEmpty(items)) {
+  public async deselect(items?: Item<T> | Item<T>[], emit = false) {
+    let _items = asArray(items);
+
+    if (isEmpty(_items)) {
       if (
         emit &&
         !this.handleChange({
           newValue: [],
-          items: Array.from(this.selected),
+          items: this.asArray,
           type: 'deselection',
         })
       ) {
@@ -146,7 +178,10 @@ export class SelectionController<T extends object>
       return;
     }
 
-    const _items = this.host.singleSelect ? items.slice(0, 1) : items;
+    if (this.host.singleSelect) {
+      _items = _items.slice(0, 1);
+    }
+
     const values = this.host.valueKey
       ? this.getItemsByValueKey(_items as Values<T>[])
       : _items;
@@ -173,35 +208,25 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public get selected(): Set<T> {
-    return this._selected;
-  }
-
   public changeSelection(index: number) {
-    const item = this.data[index];
+    const valueKey = this.host.valueKey;
+    const record = this.host.data[index];
+    const item = valueKey ? record[valueKey] : record;
 
-    if (this.host.valueKey) {
-      !this.selected.has(item)
-        ? this.select([item[this.host.valueKey]], true)
-        : this.deselect([item[this.host.valueKey]], true);
-    } else {
-      !this.selected.has(item)
-        ? this.select([item], true)
-        : this.deselect([item], true);
-    }
+    this.has(record) ? this.deselect(item, true) : this.select(item, true);
   }
 
   public selectByIndex(index: number) {
-    const item = this.data[index];
+    const valueKey = this.host.valueKey;
+    const item = this.host.data[index];
 
-    if (this.host.valueKey) {
-      this.select([item[this.host.valueKey]], true);
-    } else {
-      this.select([item], true);
-    }
+    this.select(valueKey ? item[valueKey] : item, true);
   }
 
-  constructor(protected host: ComboHost<T>) {
+  constructor(
+    protected host: ComboHost<T>,
+    protected state: DataController<T>
+  ) {
     this.host.addController(this);
   }
 

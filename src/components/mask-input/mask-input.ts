@@ -5,6 +5,10 @@ import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
 import { isEmpty, partNameMap } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
@@ -49,7 +53,11 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     return maskValidators;
   }
 
-  protected _value = '';
+  protected override _formValue: FormValue<string>;
+
+  protected get _isRawMode() {
+    return this.valueMode === 'raw';
+  }
 
   /**
    * Dictates the behavior when retrieving the value of the control:
@@ -68,16 +76,22 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * @attr
    */
   public get value(): string {
-    return this.valueMode !== 'raw' ? this.maskedValue : this._value;
+    const value = this._formValue.value;
+
+    if (this._isRawMode) {
+      return value;
+    }
+    return value ? this.maskedValue : value;
   }
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   @property()
   public set value(string: string) {
-    this._value = string ?? '';
-    this.maskedValue = this.parser.apply(this._value);
+    const value = string ?? '';
+    this.maskedValue = this.parser.apply(value);
     this.updateMaskedValue();
-    this.updateFormValue();
+    this._formValue.setValueAndFormState(value);
+    this._validate();
   }
 
   /**
@@ -94,30 +108,37 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this._mask = value;
     this.parser.mask = value;
     if (this.value) {
-      this.maskedValue = this.parser.apply(this._value);
+      this.maskedValue = this.parser.apply(this._formValue.value);
     }
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ): void {
-    this._defaultValue = current;
-  }
+  constructor() {
+    super();
 
-  protected updateFormValue() {
-    this.valueMode === 'raw'
-      ? this._setFormValue(this.value || null)
-      : this._setFormValue(this.maskedValue || null);
-    this._validate();
+    this._formValue = createFormValueState(this, {
+      initialValue: '',
+      transformers: {
+        setFormValue: (value) =>
+          this._isRawMode ? value || null : this.maskedValue || null,
+      },
+    });
   }
 
   @watch('prompt')
   protected promptChange() {
     this.parser.prompt = this.prompt;
     if (this.value) {
-      this.maskedValue = this.parser.apply(this._value);
+      this.maskedValue = this.parser.apply(this._formValue.value);
     }
+  }
+
+  protected override _restoreDefaultValue(): void {
+    const value = this.defaultValue as string;
+
+    this.maskedValue = this.parser.apply(value);
+    this.updateMaskedValue();
+    this._formValue.setValueAndFormState(value);
+    this._updateValidity();
   }
 
   protected async updateInput(string: string, range: MaskRange) {
@@ -129,9 +150,8 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     );
 
     this.maskedValue = value;
-    this._value = this.parser.parse(value);
-
-    this.updateFormValue();
+    this._formValue.setValueAndFormState(this.parser.parse(value));
+    this._validate();
     this.requestUpdate();
 
     if (range.start !== this.mask.length) {
@@ -143,7 +163,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   protected handleDragEnter() {
-    if (!this.focused && !this._value) {
+    if (!this.focused && !this._formValue.value) {
       this.maskedValue = this.emptyMask;
     }
   }
@@ -161,7 +181,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
       return;
     }
 
-    if (!this._value) {
+    if (!this._formValue.value) {
       // In case of empty value, select the whole mask
       this.maskedValue = this.emptyMask;
 
