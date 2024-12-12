@@ -278,6 +278,24 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host([outlined][type='search']) {
+    [part~='labelled'] [part~='input'] {
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
+    }
+
+    input:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] + [part='notch'] [part='label'] {
+        transform: translateY(-73%);
+    }
+}
+
+:host([outlined][type='search']:focus-within) {
+    [part='notch'] [part='label'] {
+        transform: translateY(-73%);
+    }
+}
+
 :host(:disabled[type='search']),
 :host([disabled][type='search']) {
     [part^='container'] {
@@ -287,7 +305,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined]) {
+:host(:not([type='search'])[outlined]) {
     [part^='container'] {
         border-radius: var-get($theme, 'border-border-radius');
         background: var-get($theme, 'border-background');
@@ -360,7 +378,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([readonly][outlined]:focus-within) {
+:host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
             transform: translate(0);
@@ -376,7 +394,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined]:focus-within) {
+:host(:not([type='search'])[outlined]:focus-within) {
     [part='label'] {
         margin-block-start: calc(#{$active-border-width} / 2);
     }
@@ -423,9 +441,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined]:active),
-:host([outlined]:focus),
-:host([outlined]:focus-within) {
+:host(:not([type='search'])[outlined]:active),
+:host(:not([type='search'])[outlined]:focus),
+:host(:not([type='search'])[outlined]:focus-within) {
     [part='suffix'] {
         margin-inline-end: rem(-1px);
     }
@@ -442,8 +460,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined][invalid]),
-:host([outlined][invalid]:focus-within) {
+:host(:not([type='search'])[outlined][invalid]),
+:host(:not([type='search'])[outlined][invalid]:focus-within) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -457,13 +475,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined][invalid]:focus-within) {
+:host(:not([type='search'])[outlined][invalid]:focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
     }
 }
 
-:host([readonly][outlined][invalid]:focus-within) {
+:host(:not([type='search'])[readonly][outlined][invalid]:focus-within) {
     input:not(:placeholder-shown) + [part='notch'] {
         border: {
             width: $active-border-width;
@@ -479,8 +497,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:disabled[outlined]),
-:host([disabled][outlined]) {
+:host(:not([type='search']):disabled[outlined]),
+:host(:not([type='search'])[disabled][outlined]) {
     [part='start'],
     [part='filler'],
     [part='notch'],
