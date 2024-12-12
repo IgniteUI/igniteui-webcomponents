@@ -27,7 +27,7 @@ v18.19.1
 git clone https://github.com/IgniteUI/igniteui-webcomponents.git
 cd igniteui-webcomponents
 npm ci
-npm run build
+npm start
 ```
 
 ## Making Changes

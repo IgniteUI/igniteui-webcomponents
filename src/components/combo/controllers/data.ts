@@ -15,13 +15,22 @@ export class DataController<T extends object> implements ReactiveController {
   private _searchTerm = '';
   private _compareCollator = new Intl.Collator();
 
+  public dataState: ComboRecord<T>[] = [];
+
   constructor(protected host: ComboHost<T>) {
     this.host.addController(this);
   }
 
+  public runPipeline() {
+    if (this.host.hasUpdated) {
+      this.dataState = this.apply(Array.from(this.host.data));
+      this.host.requestUpdate();
+    }
+  }
+
   public set searchTerm(value: string) {
     this._searchTerm = value;
-    this.host.requestUpdate('pipeline');
+    this.runPipeline();
   }
 
   public get searchTerm() {
@@ -55,7 +64,7 @@ export class DataController<T extends object> implements ReactiveController {
 
   public hostConnected() {}
 
-  public async apply(data: T[]): Promise<ComboRecord<T>[]> {
+  public apply(data: T[]): ComboRecord<T>[] {
     let records = this.index(data);
     records = this.filtering.apply(records, this);
     records = this.grouping.apply(records, this);

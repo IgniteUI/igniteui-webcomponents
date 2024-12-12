@@ -5,6 +5,12 @@ $theme: $material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    ::slotted(igc-icon) {
+        --ig-size: 3;
+
+        color: var-get($theme, 'icon-color');
+    }
 }
 
 [part='base'] {

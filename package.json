@@ -18,18 +18,14 @@
   },
   "scripts": {
     "start": "npm run storybook",
-    "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run cem && npm run build:meta",
     "build:publish": "npm run cem && node scripts/build.mjs",
-    "build:typescript": "tsc",
     "cem": "cem analyze --config cem.config.mjs",
     "cem:watch": "cem analyze --config cem.config.mjs --watch",
     "build:styles": "node scripts/build-styles.mjs",
-    "build:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\"",
     "build:meta": "node scripts/build-stories.mjs",
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.mjs",
-    "watch-ts": "tsc --watch --preserveWatchOutput",
-    "check": "madge --circular --warning --no-spinner dist/src/index.js",
+    "check": "madge --circular --warning --no-spinner --ts-config ./tsconfig.json --extensions ts src/index.ts",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",
@@ -41,10 +37,10 @@
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format": "biome check --fix && prettier \"**/*.ts\" --write --ignore-path .gitignore",
     "release": "node scripts/gen-changelog.mjs",
-    "test": "npm run build && wtr --coverage",
-    "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
-    "storybook": "npm run build && concurrently -k -r \"npm run cem:watch\" \"npm:watch-scss\" \"npm:watch-meta\" \"storybook dev -p 8000 --debug\"",
-    "storybook:build": "npm run build && storybook build -o ./storybook-static",
+    "test": "npm run build:styles && wtr --coverage",
+    "test:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"wtr --watch\"",
+    "storybook": "npm run build:styles && concurrently -k -r \"npm run cem:watch\" \"npm:watch-scss\" \"npm:watch-meta\" \"storybook dev -p 8000\"",
+    "storybook:build": "npm run build:styles && storybook build -o ./storybook-static",
     "build:typedoc:export": "node scripts/build-typedoc.js export",
     "build:typedoc:import": "node scripts/build-typedoc.js import",
     "build:typedoc:watch": "node scripts/build-typedoc.js watch",
@@ -64,13 +60,14 @@
     "@custom-elements-manifest/analyzer": "^0.10.3",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^8.4.6",
-    "@storybook/addon-actions": "^8.4.6",
-    "@storybook/addon-essentials": "^8.4.6",
-    "@storybook/addon-links": "^8.4.6",
-    "@storybook/web-components": "^8.4.6",
-    "@storybook/web-components-vite": "^8.4.6",
+    "@storybook/addon-a11y": "^8.4.7",
+    "@storybook/addon-actions": "^8.4.7",
+    "@storybook/addon-essentials": "^8.4.7",
+    "@storybook/addon-links": "^8.4.7",
+    "@storybook/web-components": "^8.4.7",
+    "@storybook/web-components-vite": "^8.4.7",
     "@types/mocha": "^10.0.10",
+    "@web/dev-server-esbuild": "^1.0.3",
     "@web/test-runner": "^0.19.0",
     "@web/test-runner-playwright": "^0.11.0",
     "autoprefixer": "^10.4.20",
@@ -90,12 +87,12 @@
     "node-watch": "^0.7.4",
     "playwright": "^1.49.0",
     "postcss": "^8.4.49",
-    "prettier": "^3.4.1",
+    "prettier": "^3.4.2",
     "rimraf": "^5.0.10",
     "sass": "^1.78.0",
     "sass-embedded": "^1.78.0",
     "sinon": "^19.0.2",
-    "storybook": "^8.4.6",
+    "storybook": "^8.4.7",
     "stylelint": "^16.11.0",
     "stylelint-config-standard-scss": "^14.0.0",
     "stylelint-prettier": "^5.0.2",
@@ -105,7 +102,7 @@
     "typedoc": "^0.26.11",
     "typedoc-plugin-localization": "^3.0.5",
     "typescript": "^5.6.3",
-    "vite": "^6.0.1"
+    "vite": "^6.0.3"
   },
   "browserslist": [
     "defaults"
@@ -113,9 +110,15 @@
   "lint-staged": {
     "*.{js,ts,cjs,mjs,jsx,tsx}": [
       "biome check --fix --no-errors-on-unmatched",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
+  },
+  "madge": {
+    "detectiveOptions": {
+      "ts": {
+        "skipTypeImports": true
+      }
+    }
   },
   "customElements": "custom-elements.json"
 }
