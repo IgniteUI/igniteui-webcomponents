@@ -152,19 +152,12 @@ describe('Tile Manager component', () => {
           part="resize"
         >
           <div
-            part="tile-container"
+            part="base draggable resizable"
             style="--ig-col-span:1;--ig-row-span:1;"
           >
-            <div inert part="ghost">
-            </div>
-            <div
-              part="base draggable resizable"
-              style="transform:;"
-            >
-              <slot name="header"></slot>
-              <div part="content-container">
-                <slot></slot>
-              </div>
+            <slot name="header"></slot>
+            <div part="content-container">
+              <slot></slot>
             </div>
           </div>
         </igc-resize>`

@@ -295,7 +295,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private async assignDragImage(e: DragEvent) {
+  private assignDragImage(e: DragEvent) {
     const rect = this.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
@@ -305,10 +305,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     Object.assign(this._dragImage.style, {
       width: compStyles.width,
       height: compStyles.height,
+      position: 'absolute',
+      top: '-99999px',
+      left: '-99999px',
     });
-    this._dragImage.style.position = 'absolute';
-    this._dragImage.style.top = '-99999px';
-    this._dragImage.style.left = '-99999px';
 
     document.body.append(this._dragImage);
 
@@ -316,8 +316,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     e.dataTransfer!.effectAllowed = 'move';
   }
 
-  private async handleDragStart(e: DragEvent) {
-    await this.assignDragImage(e);
+  private handleDragStart(e: DragEvent) {
+    this.assignDragImage(e);
 
     this.emitEvent('tileDragStart', { detail: this });
     this._dragGhost = this.ghostFactory();
