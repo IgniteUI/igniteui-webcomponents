@@ -11,8 +11,8 @@ import type { TemplateResult } from 'lit';
 import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateInput,
@@ -114,11 +114,11 @@ describe('Input component', () => {
         expect(element.name).to.equal('input');
         expect(input.name).to.equal('input');
 
-        element.name = 'tupni';
+        element.name = 'abcde';
         await elementUpdated(element);
 
-        expect(element.name).to.equal('tupni');
-        expect(input.name).to.equal('tupni');
+        expect(element.name).to.equal('abcde');
+        expect(input.name).to.equal('abcde');
       });
 
       it('sets the placeholder property', async () => {
@@ -140,21 +140,16 @@ describe('Input component', () => {
         await createFixture(
           html`<igc-input type="number" min="3" max="6"></igc-input>`
         );
+        expect([element.min, element.max]).to.eql([3, 6]);
+        expect([input.min, input.max]).to.eql(['3', '6']);
 
-        expect(element.min).to.equal('3');
-        expect(element.max).to.equal('6');
-        expect(input.min).to.equal('3');
-        expect(input.max).to.equal('6');
+        expect(element.checkValidity()).to.be.true;
 
-        expect(element.checkValidity()).to.be.false;
-
-        Object.assign(element, { min: '1', max: '2' });
+        Object.assign(element, { min: 1, max: 2, value: 8 });
         await elementUpdated(element);
 
-        expect(element.min).to.equal('1');
-        expect(element.max).to.equal('2');
-        expect(input.min).to.equal('1');
-        expect(input.max).to.equal('2');
+        expect([element.min, element.max]).to.eql([1, 2]);
+        expect([input.min, input.max]).to.eql(['1', '2']);
 
         expect(element.checkValidity()).to.be.false;
       });
@@ -164,26 +159,22 @@ describe('Input component', () => {
           html`<igc-input minlength="2" maxlength="4"></igc-input>`
         );
 
-        expect(element.minLength).to.equal(2);
-        expect(element.maxLength).to.equal(4);
-        expect(input.minLength).to.equal(2);
-        expect(input.maxLength).to.equal(4);
+        expect([element.minLength, element.maxLength]).to.eql([2, 4]);
+        expect([input.minLength, input.maxLength]).to.eql([2, 4]);
+        expect(element.checkValidity()).to.be.true;
 
-        expect(element.checkValidity()).to.be.false;
-
-        Object.assign(element, { minLength: 1, maxLength: 2 });
+        Object.assign(element, { minLength: 2, maxLength: 2, value: 'a' });
         await elementUpdated(element);
 
-        expect(element.minLength).to.equal(1);
-        expect(element.maxLength).to.equal(2);
-        expect(input.minLength).to.equal(1);
-        expect(input.maxLength).to.equal(2);
-
+        expect([element.minLength, element.maxLength]).to.eql([2, 2]);
+        expect([input.minLength, input.maxLength]).to.eql([2, 2]);
         expect(element.checkValidity()).to.be.false;
       });
 
       it('sets the pattern property', async () => {
-        await createFixture(html`<igc-input pattern="d{3}"></igc-input>`);
+        await createFixture(
+          html`<igc-input pattern="d{3}" value="a"></igc-input>`
+        );
 
         expect(element.pattern).to.equal('d{3}');
         expect(input.pattern).to.equal('d{3}');
@@ -328,7 +319,7 @@ describe('Input component', () => {
       (element as TestBedInput)[_expectedValidation] = state;
     }
 
-    const spec = new FormAssociatedTestBed<IgcInputComponent>(
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(
       html`<igc-input
         name="input"
         type="email"
@@ -366,7 +357,7 @@ describe('Input component', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcInputComponent>(
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(
       html`<igc-input name="input"></igc-input>`
     );
 
@@ -374,42 +365,36 @@ describe('Input component', () => {
       await spec.setup(IgcInputComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if no value', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit', async () => {
-      spec.element.value = 'abc';
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit', () => {
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitHasValue('abc');
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = 'abc';
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: 'abc' });
       spec.reset();
 
       expect(spec.element.value).to.be.empty;
     });
 
     it('is correctly reset on form reset after setAttribute() call', () => {
-      spec.element.setAttribute('value', 'Some initial value');
-      spec.element.value = '12313123';
-
+      spec.setAttributes({ value: 'Some initial value' });
+      spec.setProperties({ value: '123123' });
       spec.reset();
 
       expect(spec.element.value).to.equal('Some initial value');
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+      spec.assertSubmitHasValue('Some initial value');
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -417,120 +402,254 @@ describe('Input component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils min value constraint', async () => {
-      spec.element.type = 'number';
-      spec.element.min = 3;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils min value constraint', () => {
+      spec.setProperties({ type: 'number', min: 3, value: '2' });
+      spec.assertSubmitFails();
 
-      spec.element.value = '5';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: '5' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils max value constraint', async () => {
-      spec.element.type = 'number';
-      spec.element.max = 7;
-      spec.element.value = '17';
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils max value constraint', () => {
+      spec.setProperties({ type: 'number', max: 7, value: '17' });
+      spec.assertSubmitFails();
 
-      spec.element.value = '5';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: '5' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils step constraint', async () => {
-      spec.element.type = 'number';
-      spec.element.step = 3;
-      spec.element.value = '4';
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils step constraint', () => {
+      spec.setProperties({ type: 'number', step: 3, value: '4' });
+      spec.assertSubmitFails();
 
-      spec.element.value = '9';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: '9' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils minimum length constraint', async () => {
-      spec.element.minLength = 3;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils minimum length constraint', () => {
+      spec.setProperties({ minLength: 3, value: 'a' });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils maximum length constraint', async () => {
-      spec.element.value = 'abcd';
-      spec.element.maxLength = 3;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils maximum length constraint', () => {
+      spec.setProperties({ maxLength: 3, value: 'abcd' });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils pattern constraint', async () => {
-      spec.element.value = 'abc';
-      spec.element.pattern = '[0-9]{3}';
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils pattern constraint', () => {
+      spec.setProperties({ pattern: '[0-9]{3}', value: 'abc' });
+      spec.assertSubmitFails();
 
-      spec.element.value = '111';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: '111' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
     });
 
-    it('validates schema types - email', async () => {
-      spec.element.type = 'email';
-      spec.element.value = '123';
-      await elementUpdated(spec.element);
+    it('validates schema types - email', () => {
+      spec.setProperties({ type: 'email', value: '123' });
+      spec.assertSubmitFails();
 
-      spec.submitFails();
+      spec.setProperties({ value: '123@' });
+      spec.assertSubmitFails();
 
-      spec.element.value = '123@';
-      await elementUpdated(spec.element);
-
-      spec.submitFails();
-
-      spec.element.value = '123@321';
-      await elementUpdated(spec.element);
-
-      spec.submitValidates();
+      spec.setProperties({ value: '123@321' });
+      spec.assertSubmitPasses();
     });
 
-    it('validates schema types - url', async () => {
-      spec.element.type = 'url';
-      spec.element.value = '123';
-      await elementUpdated(spec.element);
+    it('validates schema types - url', () => {
+      spec.setProperties({ type: 'url', value: '123' });
+      spec.assertSubmitFails();
 
-      spec.submitFails();
+      spec.setProperties({
+        value: 'https://github.com/IgniteUI/igniteui-webcomponents',
+      });
+      spec.assertSubmitPasses();
+    });
+  });
 
-      spec.element.value = 'https://github.com/IgniteUI/igniteui-webcomponents';
-      await elementUpdated(spec.element);
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+        <igc-input name="input" .defaultValue=${'abc'}></igc-input>
+      `);
 
-      spec.submitValidates();
+      beforeEach(async () => {
+        await spec.setup(IgcInputComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal('abc');
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value);
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: 'cba' });
+        spec.reset();
+
+        expect(spec.element.value).to.equal('abc');
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+        <igc-input name="input" required .defaultValue=${undefined}></igc-input>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcInputComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation', () => {
+        spec.setProperties({ defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails minlength validation', () => {
+        spec.setProperties({ minLength: 3, defaultValue: 'ab' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes minlength validation', () => {
+        spec.setProperties({ minLength: 3, defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails maxlength validation', () => {
+        spec.setProperties({ maxLength: 3, defaultValue: 'abcd' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes maxlength validation', () => {
+        spec.setProperties({ maxLength: 3, defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails pattern validation', () => {
+        spec.setProperties({ pattern: '[0-9]{3}', defaultValue: 'abc' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes pattern validation', () => {
+        spec.setProperties({ pattern: '[0-9]{3}', defaultValue: '111' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails email schema validation', () => {
+        spec.setProperties({ type: 'email', defaultValue: '123' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes email schema validation', () => {
+        spec.setProperties({ type: 'email', defaultValue: '123@321' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails url schema validation', () => {
+        spec.setProperties({ type: 'url', defaultValue: '123' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes url schema validation', () => {
+        spec.setProperties({
+          type: 'url',
+          defaultValue: 'https://github.com/IgniteUI/igniteui-webcomponents',
+        });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails min validation', () => {
+        spec.setProperties({ type: 'number', min: 3, defaultValue: '1' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes min validation', () => {
+        spec.setProperties({ type: 'number', min: 3, defaultValue: '4' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails max validation', () => {
+        spec.setProperties({ type: 'number', max: 3, defaultValue: '4' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes max validation', () => {
+        spec.setProperties({ type: 'number', max: 3, defaultValue: '3' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
+
+      it('fails step validation', () => {
+        spec.setProperties({ type: 'number', step: 3, defaultValue: '4' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes step validation', () => {
+        spec.setProperties({ type: 'number', step: 3, defaultValue: '9' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitPasses();
+      });
     });
   });
 
@@ -539,15 +658,21 @@ describe('Input component', () => {
       const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['typeMismatch'], props: { type: 'email' } }, // type-mismatch slot
-          { slots: ['patternMismatch'], props: { pattern: 'd{3}' } }, // pattern-mismatch slot
+          { slots: ['typeMismatch'], props: { type: 'email', value: 'a' } }, // type-mismatch slot
+          {
+            slots: ['patternMismatch'],
+            props: { pattern: 'd{3}', value: 'a' },
+          }, // pattern-mismatch slot
           { slots: ['tooLong'], props: { maxLength: 3, value: '123123' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3 } }, // too-short slot
+          { slots: ['tooShort'], props: { minLength: 3, value: 'a' } }, // too-short slot
           {
             slots: ['rangeOverflow'],
             props: { type: 'number', max: 3, value: '5' }, // range-overflow slot
           },
-          { slots: ['rangeUnderflow'], props: { type: 'number', min: 3 } }, // range-underflow
+          {
+            slots: ['rangeUnderflow'],
+            props: { type: 'number', min: 3, value: '-3' },
+          }, // range-underflow
           {
             slots: ['stepMismatch'],
             props: { type: 'number', step: 2, value: '3' }, // step-mismatch slot
@@ -556,7 +681,7 @@ describe('Input component', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
           {
             slots: ['typeMismatch', 'tooShort'],
-            props: { type: 'email', minLength: 8 }, // multiple validation slots
+            props: { type: 'email', minLength: 8, value: 'a' }, // multiple validation slots
           },
         ];
 

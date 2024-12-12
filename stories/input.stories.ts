@@ -67,15 +67,13 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'number',
     },
     min: {
-      type: 'number | string',
+      type: 'number',
       description: 'The min attribute of the control.',
-      options: ['number', 'string'],
       control: 'number',
     },
     max: {
-      type: 'number | string',
+      type: 'number',
       description: 'The max attribute of the control.',
-      options: ['number', 'string'],
       control: 'number',
     },
     step: {
@@ -179,9 +177,9 @@ interface IgcInputArgs {
   /** The maximum string length of the control. */
   maxLength: number;
   /** The min attribute of the control. */
-  min: number | string;
+  min: number;
   /** The max attribute of the control. */
-  max: number | string;
+  max: number;
   /** The step attribute of the control. */
   step: number;
   /** The autofocus attribute of the control. */

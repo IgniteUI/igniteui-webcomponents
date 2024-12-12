@@ -29,6 +29,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     registerComponent(IgcRadioGroupComponent, IgcRadioComponent);
   }
 
+  private _defaultValue!: string;
   private _internals: ElementInternals;
   private _name!: string;
   private _value!: string;
@@ -42,6 +43,17 @@ export default class IgcRadioGroupComponent extends LitElement {
    */
   @property({ reflect: true })
   public alignment: 'vertical' | 'horizontal' = 'vertical';
+
+  /* blazorCSSuppress */
+  @property({ attribute: false })
+  public set defaultValue(value: string) {
+    this._defaultValue = value;
+    this._setRadiosDefaultChecked();
+  }
+
+  public get defaultValue(): string {
+    return this._defaultValue;
+  }
 
   /**
    * Gets/Sets the name for all child igc-radio components.
@@ -95,6 +107,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     const allRadiosUnchecked = radios.every((radio) => !radio.checked);
 
     this._setRadiosName();
+    this._setRadiosDefaultChecked();
 
     if (allRadiosUnchecked && this._value) {
       this._setSelectedRadio();
@@ -109,6 +122,14 @@ export default class IgcRadioGroupComponent extends LitElement {
         '--layout-count',
         `${slot.assignedElements({ flatten: true }).length}`
       );
+    }
+  }
+
+  private _setRadiosDefaultChecked() {
+    if (this._defaultValue) {
+      for (const radio of this._radios) {
+        radio.defaultChecked = radio.value === this._defaultValue;
+      }
     }
   }
 
