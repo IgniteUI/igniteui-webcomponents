@@ -1,8 +1,9 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { isFunction } from '../../util.js';
+import { isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
+import type { FormValue } from './form-value.js';
 import type {
   FormAssociatedCheckboxElementInterface,
   FormAssociatedElementInterface,
@@ -15,10 +16,12 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     public static readonly formAssociated = true;
 
     private __internals: ElementInternals;
+    protected _formValue!: FormValue<unknown>;
 
     protected _disabled = false;
     protected _invalid = false;
     protected _dirty = false;
+    protected _pristine = true;
 
     protected get __validators(): Validator[] {
       return [];
@@ -97,10 +100,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       super.connectedCallback();
       this._dirty = false;
       this._updateValidity();
-
-      if (!this.hasUpdated) {
-        this._setInitialDefaultValue();
-      }
     }
 
     private _handleInvalid(event: Event) {
@@ -133,17 +132,15 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return { validity, message };
     }
 
-    /* c8 ignore next 1 */
-    protected _setInitialDefaultValue(): void {}
+    protected _setDefaultValue(current: string | null): void {
+      this._formValue.defaultValue = current;
+    }
 
-    /* c8 ignore next 4 */
-    protected _setDefaultValue(
-      _prev: string | null,
-      _current: string | null
-    ): void {}
-
-    /* c8 ignore next 1 */
-    protected _restoreDefaultValue(): void {}
+    protected _restoreDefaultValue(): void {
+      this._formValue.setValueAndFormState(this._formValue.defaultValue);
+      this._updateValidity();
+      this.requestUpdate();
+    }
 
     protected _validate(message?: string): void {
       this._updateValidity(message);
@@ -183,6 +180,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
+      this._pristine = false;
       this.__internals.setFormValue(value, state);
     }
 
@@ -195,8 +193,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected formResetCallback(): void {
       this._restoreDefaultValue();
+      this._pristine = true;
       this._dirty = false;
-      this.performUpdate();
       this.invalid = false;
     }
 
@@ -239,7 +237,21 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
   class FormAssociatedElement extends BaseFormAssociated(base) {
-    protected _defaultValue: unknown;
+    /* blazorCSSuppress */
+    @property({ attribute: false })
+    public set defaultValue(value: unknown) {
+      this._formValue.defaultValue = value;
+
+      if (this._pristine && 'value' in this) {
+        this.value = this.defaultValue;
+        this._pristine = true;
+        this._validate();
+      }
+    }
+
+    public get defaultValue() {
+      return this._formValue.defaultValue;
+    }
 
     public override attributeChangedCallback(
       name: string,
@@ -248,26 +260,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     ): void {
       super.attributeChangedCallback(name, prev, current);
       if (name === 'value') {
-        this._setDefaultValue(prev, current);
-      }
-    }
-
-    protected override _setDefaultValue(
-      _: string | null,
-      current: string | null
-    ): void {
-      this._defaultValue = current;
-    }
-
-    protected override _restoreDefaultValue(): void {
-      if ('value' in this) {
-        this.value = this._defaultValue;
-      }
-    }
-
-    protected override _setInitialDefaultValue() {
-      if ('_value' in this) {
-        this._defaultValue = this._value;
+        this._setDefaultValue(current);
       }
     }
   }
@@ -283,7 +276,21 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
   class FormAssociatedCheckboxElement extends BaseFormAssociated(base) {
-    protected _defaultChecked = false;
+    /* blazorCSSuppress */
+    @property({ attribute: false })
+    public set defaultChecked(value: boolean) {
+      this._formValue.defaultValue = value;
+
+      if (this._pristine && 'checked' in this) {
+        this.checked = this.defaultChecked;
+        this._pristine = true;
+        this._validate();
+      }
+    }
+
+    public get defaultChecked(): boolean {
+      return this._formValue.defaultValue as boolean;
+    }
 
     public override attributeChangedCallback(
       name: string,
@@ -292,26 +299,7 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
     ): void {
       super.attributeChangedCallback(name, prev, current);
       if (name === 'checked') {
-        this._setDefaultValue(prev, current);
-      }
-    }
-
-    protected override _setDefaultValue(
-      _: string | null,
-      current: string | null
-    ): void {
-      this._defaultChecked = current !== null;
-    }
-
-    protected override _restoreDefaultValue(): void {
-      if ('checked' in this) {
-        this.checked = this._defaultChecked;
-      }
-    }
-
-    protected override _setInitialDefaultValue() {
-      if ('checked' in this) {
-        this._defaultChecked = this.checked as boolean;
+        this._setDefaultValue(isString(current) ? 'true' : null);
       }
     }
   }
