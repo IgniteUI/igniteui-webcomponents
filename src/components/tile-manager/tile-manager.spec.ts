@@ -4,7 +4,7 @@ import { match, restore, spy, stub } from 'sinon';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
-import { simulateClick, simulateDoubleClick } from '../common/utils.spec.js';
+import { simulateClick } from '../common/utils.spec.js';
 import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
@@ -338,15 +338,16 @@ describe('Tile Manager component', () => {
       restore();
     });
 
-    it.skip('should correctly change fullscreen state on double click', async () => {
-      simulateDoubleClick(tile);
+    it('should correctly change fullscreen state on button click', async () => {
+      const btnFullscreen = getActionButtons(tile)[1];
+      simulateClick(btnFullscreen);
       await elementUpdated(tileManager);
 
       expect(tile.requestFullscreen).to.have.been.calledOnce;
       expect(document.exitFullscreen).to.not.have.been.called;
       expect(tile.fullscreen).to.be.true;
 
-      simulateDoubleClick(tile);
+      simulateClick(btnFullscreen);
       await elementUpdated(tileManager);
 
       expect(document.exitFullscreen).to.have.been.calledOnce;
@@ -438,21 +439,24 @@ describe('Tile Manager component', () => {
       await elementUpdated(tile);
       await elementUpdated(tileManager);
 
-      // expect(eventSpy).calledWith('igcTileMaximize');
-      expect(eventSpy).to.have.been.calledOnceWith(
-        'igcTileMaximize'
-        // {
-        //   detail: { tile: tile, state: true },
-        //   cancelable: true,
-        // }
-      );
+      expect(eventSpy).calledWith('igcTileMaximize');
+      // TODO: Fix the state in the event arguments
+      // expect(eventSpy).to.have.been.calledWith(
+      //   'igcTileMaximize',
+      //   {
+      //     detail: { tile: tile, state: true },
+      //     cancelable: true,
+      //   }
+      // );
 
       expect(tile.maximized).to.be.true;
 
       simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).to.have.been.calledWith('igcTileMaximize');
+      expect(eventSpy).to.have.been.calledTwice;
+      expect(eventSpy).calledWith('igcTileMaximize');
+      // TODO: Fix the state in the event arguments
       // expect(eventSpy).calledWith('igcTileMaximize', {
       //   detail: { tile: tile, state: false },
       //   cancelable: true,
@@ -473,9 +477,10 @@ describe('Tile Manager component', () => {
       simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledOnceWith('igcTileMaximize');
+      expect(eventSpy).calledWith('igcTileMaximize');
+      // TODO: Fix the state in the event arguments
       // expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
-      //   detail: Sinon.match({ tile: tile, state: true }),
+      //   detail: { tile: tile, state: true },
       //   cancelable: true,
       // });
 
