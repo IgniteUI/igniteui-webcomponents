@@ -21,6 +21,7 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
+import { ResizeUtil } from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -101,6 +102,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     background?: string;
     border?: string;
     borderRadius?: string;
+    rowHeights?: number[];
+    initialTop?: number;
   } = {};
 
   // Tile manager context properties and helpers
@@ -371,6 +374,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private cacheStyles() {
     //use util
     const computedStyle = getComputedStyle(this);
+    const parentWrapper =
+      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
+
+    const rowHeights = getComputedStyle(parentWrapper)
+      .gridTemplateRows.split(' ')
+      .map((height) => Number.parseFloat(height.trim()));
 
     this._cachedStyles = {
       columnCount: Number.parseFloat(
@@ -385,6 +394,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       minHeight: Number.parseFloat(
         computedStyle.getPropertyValue('--ig-min-row-height')
       ),
+      rowHeights,
+      initialTop: parentWrapper.getBoundingClientRect().top,
     };
   }
 
@@ -403,6 +414,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._isResizing = true;
 
     const ghostElement = event.detail.state.current;
+    const rowHeights = this._cachedStyles.rowHeights!;
 
     if (ghostElement) {
       const deltaX = event.detail.event.clientX - this._initialPointerX!;
@@ -414,10 +426,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
         event.detail.state.initial.width,
         columnGap
       );
-      const snappedHeight = this._calculateSnappedHeight(
+
+      const actualTop = this._cachedStyles.initialTop! + window.scrollY;
+      const initialTop = event.detail.state.initial.top + window.scrollY;
+      const actualBottom = event.detail.state.initial.bottom + window.scrollY;
+
+      const startingY = actualBottom - actualTop;
+
+      const snappedHeight = ResizeUtil.calculateSnappedHeight(
         deltaY,
-        event.detail.state.initial.height,
-        columnGap
+        startingY,
+        rowHeights,
+        columnGap,
+        initialTop,
+        event.detail.state.initial.height
       );
 
       ghostElement.width = snappedWidth;
@@ -444,33 +466,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const totalSpan = Math.round(newSize / (colWidth + gap));
     const snappedWidth = totalSpan * colWidth + (totalSpan - 1) * gap;
     return snappedWidth < colWidth ? colWidth : snappedWidth;
-  }
-
-  private _calculateSnappedHeight(
-    deltaY: number,
-    initialHeight: number,
-    rowGap: number
-  ): number {
-    const minHeight = this._cachedStyles.minHeight!;
-    let snappedHeight = initialHeight;
-
-    if (deltaY > 0) {
-      // For resizing down, add the gaps and the rows multiplied by min height to the initial tile height
-      const additionalHeight = initialHeight + deltaY;
-      const wholeRows = Math.floor(additionalHeight / (minHeight + rowGap));
-      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
-
-      snappedHeight = Math.max(totalHeight, minHeight); // Ensure it at least snaps to minHeight
-    } else if (deltaY < 0 && initialHeight > minHeight) {
-      // For resizing up, subtract the gaps and the rows multiplied by min height from the initial tile height
-      const reducedHeight = initialHeight + deltaY;
-      const wholeRows = Math.floor(reducedHeight / (minHeight + rowGap));
-      const totalHeight = wholeRows * (minHeight + rowGap) - rowGap;
-
-      snappedHeight = Math.max(totalHeight, minHeight);
-    }
-
-    return snappedHeight;
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
