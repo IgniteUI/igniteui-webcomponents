@@ -13,7 +13,7 @@ $theme: $bootstrap;
     font-weight: 700;
 }
 
-[part='svg indeterminate']  {
+[part~='svg'][part~='indeterminate']  {
     animation-duration: .75s;
 
     [part~='fill'] {

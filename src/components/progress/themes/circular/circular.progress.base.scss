@@ -88,7 +88,7 @@
     stroke-width: calc(#{var(--stroke-thickness)} + rem(0.75px));
 }
 
-[part='svg indeterminate'] {
+[part~='svg'][part~='indeterminate'] {
     transform-origin: 50% 50%;
     animation: 3s linear 0s infinite $animation-direction none running rotate-center;
 
@@ -100,7 +100,7 @@
 
 :host(:dir(rtl)),
 :host([dir='rtl']) {
-    [part='svg indeterminate'] [part~='fill'] {
+    [part~='svg'][part~='indeterminate'] [part~='fill'] {
         animation-name: indeterminate-accordion-rtl;
     }
 

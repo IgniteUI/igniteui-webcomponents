@@ -19,7 +19,7 @@ $theme: $fluent;
     stroke-width: var(--stroke-thickness);
 }
 
-[part='svg indeterminate'] {
+[part~='svg'][part~='indeterminate'] {
     animation: none;
 
     [part~='fill'] {
@@ -30,7 +30,7 @@ $theme: $fluent;
 
 :host(:dir(rtl)),
 :host([dir='rtl']) {
-    [part='svg indeterminate'] [part~='fill'] {
+    [part~='svg'][part~='indeterminate'] [part~='fill'] {
         animation-name: indeterminate-circular-fluent-rtl;
     }
 }
