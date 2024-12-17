@@ -6,6 +6,9 @@
 $theme: $fluent;
 
 :host {
+    // Do not use rem values here
+    // This will break the component in Safari
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
     --stroke-thickness: 2px;
     --scale-factor: 2.75;
 }

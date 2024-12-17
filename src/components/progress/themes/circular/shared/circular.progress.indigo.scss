@@ -4,7 +4,10 @@
 $theme: $indigo;
 
 :host {
-    --stroke-thickness: rem(3px);
+    // Do not use rem values here
+    // This will break the component in Safari
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
+    --stroke-thickness: 3px;
     --scale-factor: 3.4;
 }
 
