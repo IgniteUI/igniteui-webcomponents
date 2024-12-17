@@ -4,7 +4,7 @@
 $theme: $indigo;
 
 :host {
-    --stroke-thickness: 3px;
+    --stroke-thickness: rem(3px);
     --scale-factor: 3.4;
 }
 
