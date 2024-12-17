@@ -100,7 +100,6 @@ describe('Tile Manager component', () => {
       expect(tileManager).dom.to.equal(
         `<igc-tile-manager>
           <igc-tile
-            draggable="true"
             style="order: 0;"
             tile-id="customId-1"
           >
@@ -110,7 +109,6 @@ describe('Tile Manager component', () => {
             <p>Content 1</p>
           </igc-tile>
           <igc-tile
-            draggable="true"
             style="order: 1;"
             tile-id="customId-2"
           >
@@ -138,7 +136,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="order: 0;" tile-id="customId-1">
+        `<igc-tile style="order: 0;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
@@ -152,6 +150,7 @@ describe('Tile Manager component', () => {
           part="resize"
         >
           <div
+            draggable="true"
             part="base draggable resizable"
             style="--ig-col-span:1;--ig-row-span:1;"
           >
