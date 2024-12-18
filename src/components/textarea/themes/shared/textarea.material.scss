@@ -34,13 +34,9 @@ textarea {
 }
 
 [part='label'] {
-    transform-origin: top left;
-    top: calc($input-top-padding - #{rem(2px)});
     position: absolute;
-    max-width: 100%;
+    top: calc($input-top-padding - #{rem(2px)});
     padding-inline-end: rem(4px);
-    line-height: normal;
-    backface-visibility: hidden;
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
@@ -90,7 +86,6 @@ textarea {
         }
     }
 
-    textarea:placeholder-shown ~ [part='notch'] [part='label'],
     textarea:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] [part='notch'] [part='label'] {
         @extend %label-filled;
@@ -256,7 +251,6 @@ textarea {
     }
 
     textarea:placeholder-shown + [part='notch'] [part='label'],
-    textarea:placeholder-shown ~ [part='notch'] [part='label'],
     [part~='filled'] [part='notch'] [part='label'] {
         @extend %label-outlined-filled;
     }
