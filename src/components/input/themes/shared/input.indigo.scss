@@ -180,6 +180,10 @@ $transition-duration: .25s;
             background: var-get($theme, 'error-secondary-color');
         }
     }
+
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+    }
 }
 
 :host([type='search']) {
