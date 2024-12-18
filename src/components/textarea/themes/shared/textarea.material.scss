@@ -36,7 +36,7 @@ textarea {
 [part='label'] {
     position: absolute;
     transform-origin: top left;
-    top: calc($input-top-padding - #{rem(2px)});
+    inset-block-start: calc($input-top-padding - #{rem(2px)});
     padding-inline-end: rem(4px);
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
@@ -47,7 +47,7 @@ textarea {
 
 %label-filled {
     transform: translateY(0);
-    top: calc(#{$input-top-padding} / 4);
+    inset-block-start: calc(#{$input-top-padding} / 4);
     font-size: rem(12px);
 }
 
@@ -86,9 +86,8 @@ textarea {
         }
     }
 
-    textarea:placeholder-shown + [part='notch'] [part='label'],
-    textarea:placeholder-shown ~ [part='notch'] [part='label'],
-    [part~='filled'] [part='notch'] [part='label'] {
+    [part~='placeholder'] [part='label'],
+    [part~='filled'] [part='label'] {
         @extend %label-filled;
     }
 }
@@ -250,7 +249,7 @@ textarea {
     [part~='container'][part~='filled'],
     [part~='container'][part~='placeholder'] {
         [part='notch'] {
-            border-block-start-color: transparent;
+            border-block-start:rem(2px) solid transparent;
         }
     }
 
@@ -393,12 +392,16 @@ textarea {
 :host([invalid][outlined]:not([disabled]):focus-within) {
     [part='start'],
     [part='filler'],
-    [part='end'] {
+    [part='end'],
+    [part='notch'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
+}
 
+:host([invalid][outlined]:not([disabled]):focus-within),
+:host([invalid][outlined]:not([disabled])) [part~='placeholder'] {
     [part='notch'] {
-        border-block-end-color: var-get($theme, 'error-secondary-color');
+        border-block-start-color: transparent;
     }
 }
 
