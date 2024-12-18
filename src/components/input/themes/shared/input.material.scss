@@ -332,16 +332,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='notch'] {
-        border: {
-            width: $idle-border-width;
-            style: solid;
-            color: var-get($theme, 'border-color');
-            left: none;
-            right: none;
-        }
-    }
-
     [part='filler'] {
         border: {
             width: $idle-border-width;
@@ -372,11 +362,24 @@ input:placeholder-shown + [part='notch'] [part='label'],
             };
         }
     }
+}
+
+:host([outlined]) {
+    [part='notch'] {
+        border: {
+            width: $idle-border-width;
+            style: solid;
+            color: var-get($theme, 'border-color');
+            left: none;
+            right: none;
+        }
+    }
 
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
 }
+
 
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
@@ -509,6 +512,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+}
+
+:host([type='search'][outlined]) {
+    [part='notch'] {
+        border: none
     }
 }
 
