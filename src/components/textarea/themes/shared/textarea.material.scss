@@ -35,13 +35,14 @@ textarea {
 
 [part='label'] {
     position: absolute;
+    transform-origin: top left;
     top: calc($input-top-padding - #{rem(2px)});
     padding-inline-end: rem(4px);
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
-    will-change: font-size, color, transform;
+    will-change: transform;
 }
 
 %label-filled {
@@ -51,13 +52,12 @@ textarea {
 }
 
 %label-outlined-filled {
-    top: 0;
+    display: inline-block;
+    position: relative;
+    inset-block: 0;
     transform: translateY(-50%);
     margin-block-end: auto;
     padding-inline-end: 0;
-    display: inline-block;
-    position: relative;
-    background: transparent;
     font-size: rem(12px);
 }
 
@@ -235,10 +235,6 @@ textarea {
     background: var-get($theme, 'border-background');
     overflow: initial;
 
-    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) {
-        grid-template-columns: auto 1fr 1fr auto;
-    }
-
     [part~='container'] {
         grid-template-columns: auto auto 1fr auto;
         display: grid;
@@ -251,14 +247,16 @@ textarea {
         }
     }
 
-    textarea:placeholder-shown + [part='notch'] [part='label'],
-    textarea:placeholder-shown ~ [part='notch'] [part='label'],
-    [part~='filled'] [part='notch'] [part='label'] {
-        @extend %label-outlined-filled;
+    [part~='container'][part~='filled'],
+    [part~='container'][part~='placeholder'] {
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
     }
 
-    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) [part='notch'] {
-        border-block: rem(1px) solid var-get($theme, 'border-color');
+    [part~='placeholder'] [part='label'],
+    [part~='filled'] [part='label'] {
+        @extend %label-outlined-filled;
     }
 
     [part='start'] {
@@ -294,8 +292,7 @@ textarea {
     }
 
     [part='notch'] {
-        border-block-start-color: transparent;
-        border-block-end: rem(1px) solid var-get($theme, 'border-color');
+        border-block: rem(1px) solid var-get($theme, 'border-color');
         padding: 0 rem(4px);
 
         &:empty {
@@ -349,6 +346,7 @@ textarea {
     }
 
     [part='notch'] {
+        border-block-start-color: transparent;
         border-block-end-color: var-get($theme, 'focused-border-color');
     }
 
@@ -395,10 +393,12 @@ textarea {
 :host([invalid][outlined]:not([disabled]):focus-within) {
     [part='start'],
     [part='filler'],
-    [part='notch'],
-    [part='end'],
-    [part~='labelled']:not([part~='filled']):has(textarea:not(:placeholder-shown)):not(:focus-within) [part='notch'] {
+    [part='end'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    [part='notch'] {
+        border-block-end-color: var-get($theme, 'error-secondary-color');
     }
 }
 
