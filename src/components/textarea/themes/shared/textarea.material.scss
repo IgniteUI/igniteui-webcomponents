@@ -87,6 +87,7 @@ textarea {
     }
 
     textarea:placeholder-shown + [part='notch'] [part='label'],
+    textarea:placeholder-shown ~ [part='notch'] [part='label'],
     [part~='filled'] [part='notch'] [part='label'] {
         @extend %label-filled;
     }
@@ -251,6 +252,7 @@ textarea {
     }
 
     textarea:placeholder-shown + [part='notch'] [part='label'],
+    textarea:placeholder-shown ~ [part='notch'] [part='label'],
     [part~='filled'] [part='notch'] [part='label'] {
         @extend %label-outlined-filled;
     }
