@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Combo - Rendering issue after Edge browser autofill behavior [#1497](https://github.com/IgniteUI/igniteui-webcomponents/issues/1497)
+- Input - Incorrect validation with numeric input and step attribute [#1521](https://github.com/IgniteUI/igniteui-webcomponents/issues/1521)
 
 ## [5.1.2] - 2024-11-04
 ### Added

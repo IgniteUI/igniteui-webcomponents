@@ -15,6 +15,16 @@ export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
 
+export function numberOfDecimals(number: number): number {
+  const decimals = last(number.toString().split('.'));
+  return decimals ? decimals.length : 0;
+}
+
+export function roundPrecise(number: number, magnitude = 1): number {
+  const factor = 10 ** magnitude;
+  return Math.round(number * factor) / factor;
+}
+
 export function numberInRangeInclusive(
   value: number,
   min: number,
