@@ -249,7 +249,7 @@ textarea {
     [part~='container'][part~='filled'],
     [part~='container'][part~='placeholder'] {
         [part='notch'] {
-            border-block-start:rem(2px) solid transparent;
+            border-block-start: rem(2px) solid transparent;
         }
     }
 
