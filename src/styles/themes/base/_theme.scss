@@ -2,6 +2,19 @@
 @use 'igniteui-theming' as *;
 
 @mixin theme($palette, $elevations, $typeface, $type-scale, $variant) {
+    /* Two counters for integer and fractional parts */
+    @property --_progress-integer {
+        syntax: '<integer>';
+        initial-value: 0;
+        inherits: true;
+    }
+
+    @property --_progress-fraction {
+        syntax: '<integer>';
+        initial-value: 0;
+        inherits: true;
+    }
+
     :root {
         --ig-theme: #{map.get($palette, '_meta', 'variant')};
         --ig-theme-variant: #{$variant};
