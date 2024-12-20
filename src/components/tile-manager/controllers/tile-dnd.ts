@@ -50,6 +50,8 @@ export class TileDragAndDropController implements ReactiveController {
   }
 
   public hostConnected(): void {
+    this._host.draggable = this.enabled;
+
     for (const type of DragEvents) {
       this._host.addEventListener(type, this);
     }

@@ -560,12 +560,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     };
 
     return html`
-      <div
-        part=${parts}
-        .inert=${this._hasDragOver}
-        .draggable=${this._dragController.enabled}
-        style=${styleMap(styles)}
-      >
+      <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
         <slot name="header"></slot>
         <div part="content-container">
           <slot></slot>
