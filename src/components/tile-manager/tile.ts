@@ -93,6 +93,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
+  private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
   private _cachedStyles: {
@@ -330,6 +331,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragEnter() {
+    this._dragCounter++;
     this._hasDragOver = true;
   }
 
@@ -351,7 +353,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private handleDragLeave() {
-    this._hasDragOver = false;
+    this._dragCounter--;
+
+    // The drag leave is fired on entering a child element
+    // so we need to check if the dragged item is actually leaving the tile
+    if (this._dragCounter === 0) {
+      this._hasDragOver = false;
+    }
   }
 
   private handleDragEnd() {

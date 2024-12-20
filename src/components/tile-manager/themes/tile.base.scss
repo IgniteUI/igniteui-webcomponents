@@ -72,7 +72,7 @@
     z-index: 10;
 }
 
-// [part~='drag-over'] {
-//     opacity: 0.5;
-//     pointer-events: none;
-// }
+[part~='drag-over'] {
+    opacity: 0.5;
+    pointer-events: none;
+}
