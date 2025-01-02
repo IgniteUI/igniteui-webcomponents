@@ -24,7 +24,6 @@ $stripe-space: rem(14px);
 }
 
 [part~='striped']:not([part~='indeterminate']) {
-    /* stylelint-disable */
     background: var-get($theme, 'fill-color-default') repeating-linear-gradient(
         45deg,
         var-get($theme, 'fill-color-default'),
@@ -32,5 +31,4 @@ $stripe-space: rem(14px);
         var-get($theme, 'stripes-color') $stripe-size,
         var-get($theme, 'stripes-color') $stripe-space
     );
-    /* stylelint-enable */
 }

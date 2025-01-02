@@ -57,6 +57,12 @@ $theme: $base;
 }
 /* stylelint-enable */
 
+:host([invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     [part~='input']::placeholder {
