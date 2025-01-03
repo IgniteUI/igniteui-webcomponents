@@ -256,6 +256,22 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._position;
   }
 
+  protected get gridColumnWidth(): number {
+    const tileManager =
+      this._managerContext!.instance!.shadowRoot!.querySelector(
+        "[part~='base']"
+      )!;
+
+    const gridTemplateColumns = getComputedStyle(tileManager).getPropertyValue(
+      'grid-template-columns'
+    );
+    const firstColumnWidth = Number.parseFloat(
+      gridTemplateColumns.split(' ')[0]
+    );
+
+    return firstColumnWidth || this._cachedStyles.minWidth!;
+  }
+
   constructor() {
     super();
 
@@ -429,10 +445,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       const deltaY = event.detail.event.clientY - this._initialPointerY!;
       const columnGap = 10;
 
-      const snappedWidth = this._calculateSnappedWidth(
+      const snappedWidth = ResizeUtil.calculateSnappedWidth(
         deltaX,
         event.detail.state.initial.width,
-        columnGap
+        columnGap,
+        this.gridColumnWidth
       );
 
       const actualTop = this._cachedStyles.initialTop! + window.scrollY;
@@ -455,70 +472,32 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  private _calculateSnappedWidth(
-    deltaX: number,
-    initialWidth: number,
-    gap: number
-  ): number {
-    const newSize = initialWidth + deltaX;
-    const tileManager =
-      this.closest('igc-tile-manager')!.shadowRoot!.querySelector(
-        "[part~='base']"
-      )!;
-    const styles = getComputedStyle(tileManager);
-
-    const colWidth =
-      Number.parseFloat(
-        styles.getPropertyValue('grid-template-columns').split(' ')[0]
-      ) || this._cachedStyles.minWidth!;
-    const totalSpan = Math.round(newSize / (colWidth + gap));
-    const snappedWidth = totalSpan * colWidth + (totalSpan - 1) * gap;
-    return snappedWidth < colWidth ? colWidth : snappedWidth;
-  }
-
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
     const state = event.detail.state;
-    const width = state.current.width; // - state.current.x;
-    const height = state.current.height; // - state.current.y;
+    const width = state.current.width;
+    const height = state.current.height;
+    const rowHeights = this._cachedStyles.rowHeights!;
 
-    const resizeElement = event.target as HTMLElement;
+    const colSpan = Math.max(1, Math.round(width / this.gridColumnWidth));
+    let accumulatedHeight = 0;
+    let rowSpan = 1;
 
-    const parentWrapper =
-      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
-    const tileManagerRect = parentWrapper.getBoundingClientRect();
-    const computedStyles = getComputedStyle(parentWrapper);
-
-    tileManagerRect.height -=
-      Number.parseFloat(computedStyles.paddingTop) +
-      Number.parseFloat(computedStyles.paddingBottom);
-    tileManagerRect.width -=
-      Number.parseFloat(computedStyles.paddingLeft) +
-      Number.parseFloat(computedStyles.paddingRight);
-
-    const gridTemplateColumnsWidth = Number.parseFloat(
-      computedStyles.getPropertyValue('grid-template-columns').split(' ')[0]
-    );
-    const targetWidth = this._cachedStyles.columnCount
-      ? tileManagerRect.width / this._cachedStyles.columnCount!
-      : gridTemplateColumnsWidth;
-
-    let colSpan = Math.round(width / targetWidth);
-    colSpan = Math.max(1, colSpan);
-
-    const minHeight = this._cachedStyles.minHeight!;
-    let rowSpan = Math.round(height / minHeight);
-    rowSpan = Math.max(1, rowSpan);
+    for (let i = 0; i < rowHeights.length; i++) {
+      accumulatedHeight += rowHeights[i] + (i > 0 ? 10 : 0); // use rowGap
+      if (height <= accumulatedHeight) {
+        rowSpan = i + 1;
+        break;
+      }
+    }
 
     // REVIEW
-    Object.assign(resizeElement.style, {
+    Object.assign(state.ghost!.style, {
       width: '',
       height: '',
     });
 
-    Object.assign(this.style, {
-      gridRow: `span ${rowSpan}`,
-      gridColumn: `span ${colSpan}`,
-    });
+    this.style.setProperty('grid-row', `span ${rowSpan}`);
+    this.style.setProperty('grid-column', `span ${colSpan}`);
 
     this._isResizing = false;
     this._initialPointerX = null;

@@ -61,6 +61,19 @@ export class ResizeUtil {
     return result;
   }
 
+  public static calculateSnappedWidth(
+    deltaX: number,
+    initialWidth: number,
+    gap: number,
+    gridColumnWidth: number
+  ): number {
+    const newSize = initialWidth + deltaX;
+    const totalSpan = Math.round(newSize / (gridColumnWidth + gap));
+    const snappedWidth = totalSpan * gridColumnWidth + (totalSpan - 1) * gap;
+
+    return snappedWidth < gridColumnWidth ? gridColumnWidth : snappedWidth;
+  }
+
   private static calculate(
     initialTop: number,
     rowHeights: number[],
