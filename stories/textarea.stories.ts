@@ -1,6 +1,6 @@
 import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html, render } from 'lit';
+import { html, nothing, render } from 'lit';
 
 import {
   IgcIconComponent,
@@ -267,7 +267,7 @@ export const Default: Story = {
       name=${ifDefined(args.name)}
       label=${args.label}
       rows=${args.rows}
-      placeholder=${args.placeholder}
+      placeholder=${args.placeholder || nothing}
       resize=${args.resize}
       value=${ifDefined(args.value)}
       minlength=${ifDefined(args.minLength)}

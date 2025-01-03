@@ -27,13 +27,13 @@ export default class IgcRatingSymbolComponent extends LitElement {
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.slot = this.slot.length > 0 ? this.slot : 'symbol';
+    this.slot = this.slot || 'symbol';
   }
 
   protected override render() {
     return html`
       <div part="symbol full">
-        <slot> </slot>
+        <slot></slot>
       </div>
       <div part="symbol empty">
         <slot name="empty"></slot>

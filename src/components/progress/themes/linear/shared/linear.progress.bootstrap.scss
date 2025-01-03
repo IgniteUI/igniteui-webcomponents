@@ -4,62 +4,11 @@
 @use '../../animations' as *;
 
 $theme: $bootstrap;
-$stripe-size: rem(5px);
 
 :host {
     --track-size: #{rem(16px)};
 }
 
-[part~='striped'][part~='primary']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='primary'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='danger']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-default');
-}
-
-[part~='striped'][part~='danger']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='danger'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='warning']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='warning'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='info']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='info'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='striped'][part~='success']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-}
-
-[part~='striped'][part~='success'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
+:host([striped]) {
+    --stripe-size: #{rem(5px)};
 }

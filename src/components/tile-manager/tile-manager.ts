@@ -208,7 +208,11 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       event
     );
 
-    if (!isSameTile(draggedItem, target) && this.dragMode === 'swap') {
+    if (
+      !isSameTile(draggedItem, target) &&
+      this.dragMode === 'swap' &&
+      !target?.disableDrag
+    ) {
       swapTiles(draggedItem!, target!);
     }
   }

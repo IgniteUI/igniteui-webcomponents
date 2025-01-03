@@ -8,10 +8,14 @@ $track-color: color(gray, 200);
 
 :host {
     --track-size: #{rem(2px)};
-    --linear-animation-duration: 3000ms;
 }
 
+:host(:dir(rtl)[indeterminate]),
 :host([dir='rtl']) {
+    [part~='track'] {
+        transform: rotateY(0deg);
+    }
+
     [part~='indeterminate'] {
         animation-name: indeterminate-bar-fluent-rtl;
     }
@@ -51,22 +55,20 @@ $track-color: color(gray, 200);
     display: none;
 }
 
-[part~='primary'][part~='indeterminate'] {
-    background: linear-gradient(90deg, transparent 0%, var-get($theme, 'fill-color-default') 50%, transparent 100%);
+// Mixin for Gradient Backgrounds
+@mixin gradient-indeterminate($part, $color-key) {
+    [part~='#{$part}'][part~='indeterminate'] {
+        background: linear-gradient(90deg, transparent 0%, var-get($theme, $color-key) 50%, transparent 100%);
+    }
 }
 
-[part~='danger'][part~='indeterminate'] {
-    background: linear-gradient(90deg, transparent 0%, var-get($theme, 'fill-color-danger') 50%, transparent 100%);
-}
-
-[part~='warning'][part~='indeterminate'] {
-    background: linear-gradient(90deg, transparent 0%, var-get($theme, 'fill-color-warning') 50%, transparent 100%);
-}
-
-[part~='info'][part~='indeterminate'] {
-    background: linear-gradient(90deg, transparent 0%, var-get($theme, 'fill-color-info') 50%, transparent 100%);
-}
-
-[part~='success'][part~='indeterminate'] {
-    background: linear-gradient(90deg, transparent 0%, var-get($theme, 'fill-color-success') 50%, transparent 100%);
+// Apply Gradient Backgrounds
+@each $part, $color-key in (
+        'primary': 'fill-color-default',
+        'danger': 'fill-color-danger',
+        'warning': 'fill-color-warning',
+        'info': 'fill-color-info',
+        'success': 'fill-color-success'
+) {
+    @include gradient-indeterminate($part, $color-key);
 }

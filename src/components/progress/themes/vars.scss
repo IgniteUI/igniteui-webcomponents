@@ -1,7 +1,6 @@
 @use 'styles/utilities' as *;
 
 $background-size: #{rem(40px)} #{rem(40px)};
-$stripe-size: rem(16px);
 $animation-direction: normal;
 $animation-direction-rtl: reverse;
 $diameter: calc(var(--circular-size) + var(--stroke-thickness));

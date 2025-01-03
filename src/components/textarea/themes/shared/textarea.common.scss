@@ -65,7 +65,7 @@ textarea {
         background: inherit;
     }
 
-    [part~='helper-text'] {
+    ::part(helper-text) {
         color: var-get($theme, 'disabled-text-color');
     }
 

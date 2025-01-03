@@ -5,10 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Form-associated elements now have a `defaultValue` property (`defaultChecked` for radio buttons, checkboxes, and switches). When a form is reset, components will use this property’s value as their new value or checked state.
+
 ### Changed
 - Calendar - allow passing a string value to the backing `value`, `values` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
 - Date-time input - allow passing a string value to the backing `value`, `min` and `max` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
 - Date picker - allow passing a string value to the backing `value`, `min`, `max` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- Component validation - aligned validation constraints to follow the behavior of their native HTML counterparts.
+  For example, `minlength` will no longer trigger a `tooShort` validity state, unless there is text present in the component.
+
+### Fixed
+- Combo - Rendering issue after Edge browser autofill behavior [#1497](https://github.com/IgniteUI/igniteui-webcomponents/issues/1497)
 
 ## [5.1.2] - 2024-11-04
 ### Added

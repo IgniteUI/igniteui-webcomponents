@@ -93,6 +93,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
+  private _dragCounter = 0;
+  private _dragGhost: HTMLElement | null = null;
+  private _dragImage: HTMLElement | null = null;
   private _cachedStyles: {
     columnCount?: number;
     minWidth?: number;
@@ -225,7 +228,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public set disableDrag(value: boolean) {
     this._disableDrag = value;
     this._dragController.enabled = !this._disableDrag;
-    this.draggable = this._dragController.enabled;
   }
 
   public get disableDrag() {
@@ -294,57 +296,87 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private handleDragStart(e: DragEvent) {
+  private assignDragImage(e: DragEvent) {
     const rect = this.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
+    const compStyles = getComputedStyle(this);
 
-    e.dataTransfer!.setDragImage(this._tileContent, offsetX, offsetY);
+    this._dragImage = this.cloneNode(true) as HTMLElement;
+    Object.assign(this._dragImage.style, {
+      width: compStyles.width,
+      height: compStyles.height,
+      position: 'absolute',
+      top: '-99999px',
+      left: '-99999px',
+    });
+
+    document.body.append(this._dragImage);
+
+    e.dataTransfer!.setDragImage(this._dragImage, offsetX, offsetY);
     e.dataTransfer!.effectAllowed = 'move';
+  }
+
+  private handleDragStart(e: DragEvent) {
+    this.assignDragImage(e);
 
     this.emitEvent('tileDragStart', { detail: this });
-    this._isDragging = true;
+    this._dragGhost = this.ghostFactory();
+    this._dragGhost.inert = true;
 
-    requestAnimationFrame(() => {
-      this._ghost.style.transform = 'scale(1)';
-    });
+    if (this._dragGhost) {
+      this.append(this._dragGhost);
+    }
+    this._isDragging = true;
   }
 
   private handleDragEnter() {
-    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
-      return;
-    }
-
-    if (this._isSlideMode) {
-      requestAnimationFrame(() => {
-        this._ghost.style.transform = 'scale(0)';
-      });
-    } else {
-      this._hasDragOver = true;
-    }
+    this._dragCounter++;
+    this._hasDragOver = true;
   }
 
   private handleDragOver() {
-    if (!this._draggedItem || isSameTile(this, this._draggedItem)) {
+    if (!this._draggedItem) {
       return;
     }
 
-    if (this._isSlideMode) {
+    if (isSameTile(this, this._draggedItem)) {
+      this._tileContent.style.visibility = 'hidden';
+      if (this._dragGhost) {
+        Object.assign(this._dragGhost.style, {
+          visibility: 'visible',
+        });
+      }
+    } else if (this._isSlideMode) {
       swapTiles(this, this._draggedItem!);
     }
   }
 
   private handleDragLeave() {
-    this._hasDragOver = false;
+    this._dragCounter--;
+
+    // The drag leave is fired on entering a child element
+    // so we need to check if the dragged item is actually leaving the tile
+    if (this._dragCounter === 0) {
+      this._hasDragOver = false;
+    }
   }
 
   private handleDragEnd() {
     this.emitEvent('tileDragEnd', { detail: this });
     this._isDragging = false;
 
-    requestAnimationFrame(() => {
-      this._ghost.style.transform = 'scale(0)';
-    });
+    if (this._dragGhost) {
+      this._dragGhost.remove();
+      this._dragGhost = null;
+    }
+
+    if (this._dragImage) {
+      this._dragImage.remove();
+      this._dragImage = null;
+    }
+
+    this._tileContent.style.visibility = 'visible';
   }
 
   private cacheStyles() {
@@ -535,24 +567,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
       '--ig-row-start': this._rowStart,
     };
 
-    const baseStyles = {
-      // REVIEW: Using the hacky transform to 'hide' the base element
-      // and still have it as drag image added with setDragImage()
-      transform: this._isDragging ? 'translateX(-99999px)' : '',
-    };
-
     return html`
-      <div
-        part="tile-container"
-        .inert=${this._hasDragOver}
-        style=${styleMap(styles)}
-      >
-        <div part="ghost" .inert=${true}></div>
-        <div part=${parts} style=${styleMap(baseStyles)}>
-          <slot name="header"></slot>
-          <div part="content-container">
-            <slot></slot>
-          </div>
+      <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
+        <slot name="header"></slot>
+        <div part="content-container">
+          <slot></slot>
         </div>
       </div>
     `;

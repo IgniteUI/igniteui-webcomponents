@@ -2,9 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { first } from '../common/util.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   runValidationContainerTests,
 } from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
@@ -335,7 +336,7 @@ describe('Combo', () => {
       const cityNames: string[] = [];
 
       items(combo).forEach((item) => {
-        cityNames.push(item.textContent!);
+        cityNames.push(item.innerText);
       });
 
       cities.forEach((city) => {
@@ -373,7 +374,7 @@ describe('Combo', () => {
       });
 
       const selected = items(combo).find((item) => item.selected);
-      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+      expect(selected?.innerText).to.equal(item[combo.displayKey!]);
 
       combo.deselect([item[combo.valueKey!]]);
 
@@ -401,7 +402,7 @@ describe('Combo', () => {
       });
 
       const selected = items(combo).find((item) => item.selected);
-      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+      expect(selected?.innerText).to.equal(item[combo.displayKey!]);
 
       combo.deselect([item]);
 
@@ -807,7 +808,7 @@ describe('Combo', () => {
       await filterCombo('sof');
 
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {
@@ -975,7 +976,7 @@ describe('Combo', () => {
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected.length).to.equal(1);
-      expect(selected[0].textContent).to.equal(match?.name);
+      expect(selected[0].innerText).to.equal(match?.name);
     });
 
     it('should deselect a single item using valueKey as argument with the Selection API', async () => {
@@ -1017,7 +1018,7 @@ describe('Combo', () => {
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected.length).to.equal(1);
-      expect(selected[0].textContent).to.equal(item?.name);
+      expect(selected[0].innerText).to.equal(item?.name);
     });
 
     it('should deselect the item passed as argument with the Selection API', async () => {
@@ -1056,7 +1057,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
 
       // Select an item not visible in the list using the API
       const selection = 'US01';
@@ -1079,7 +1080,7 @@ describe('Combo', () => {
       expect(selected.length).to.equal(1);
 
       // It should match the one selected via the API
-      expect(selected[0].textContent).to.equal('New York');
+      expect(selected[0].innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
@@ -1097,7 +1098,7 @@ describe('Combo', () => {
       expect(selected.length).to.equal(1);
 
       // It should match the one selected via the API
-      expect(selected[0].textContent).to.equal('New York');
+      expect(selected[0].innerText).to.equal('New York');
       expect(combo.value[0]).to.equal(selection);
 
       // Filter the list of items
@@ -1108,7 +1109,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo).length).to.equal(1);
-      expect(items(combo)[0].textContent).to.equal('Sofia');
+      expect(items(combo)[0].innerText).to.equal('Sofia');
 
       // Deselect the previously selected item while the list is filtered
       combo.deselect(selection);
@@ -1240,11 +1241,10 @@ describe('Combo', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcComboComponent<City>>(
+    const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(
       html`<igc-combo
         name="combo"
         .data=${cities}
-        .value=${['BG01', 'BG02']}
         value-key="id"
         display-key="name"
       ></igc-combo>`
@@ -1252,79 +1252,65 @@ describe('Combo', () => {
 
     beforeEach(async () => {
       await spec.setup(IgcComboComponent.tagName);
+      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      spec.element.value = [];
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if no value', () => {
+      spec.setProperties({ value: [] });
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit with value-key (single)', async () => {
-      spec.element.singleSelect = true;
-      await elementUpdated(spec.element);
-
-      spec.element.value = ['BG01', 'BG02'];
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
+    it('is associated on submit with value-key (single)', () => {
+      spec.setProperties({ singleSelect: true });
+      spec.setProperties({ value: ['BG01', 'BG02'] });
+      spec.assertSubmitHasValue('BG01');
     });
 
-    it('is associated on submit with value-key (multiple)', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
-      expect(spec.submit()?.getAll(spec.element.name)).to.eql(['BG01', 'BG02']);
+    it('is associated on submit with value-key (multiple)', () => {
+      spec.assertSubmitHasValue('BG01');
+      spec.assertSubmitHasValues(['BG01', 'BG02']);
     });
 
-    it('is associated on submit without value-key (single)', async () => {
+    it('is associated on submit without value-key (single)', () => {
       const [first, second, _] = cities;
 
-      spec.element.valueKey = undefined;
-      spec.element.singleSelect = true;
-      await elementUpdated(spec.element);
+      spec.setProperties({ valueKey: undefined, singleSelect: true });
       spec.element.select([first, second]);
-      await elementUpdated(spec.element);
 
-      expect(spec.submit()?.get(spec.element.name)).not.to.be.null;
+      expect(spec.formData.getAll(spec.element.name)).lengthOf(1);
+      spec.assertSubmitPasses();
     });
 
-    it('is associated on submit without value-key (multiple)', async () => {
+    it('is associated on submit without value-key (multiple)', () => {
       const [first, second, _] = cities;
 
-      spec.element.valueKey = undefined;
+      spec.setProperties({ valueKey: undefined });
       spec.element.select([first, second]);
-      await elementUpdated(spec.element);
 
-      expect(spec.submit()?.get(spec.element.name)).not.to.be.null;
-      expect(spec.submit()?.getAll(spec.element.name).length).to.eql(2);
+      expect(spec.formData.getAll(spec.element.name)).lengthOf(2);
+      spec.assertSubmitPasses();
     });
 
-    it('is correctly reset on form reset (multiple)', async () => {
+    it('is correctly reset on form reset (multiple)', () => {
       const initial = spec.element.value;
 
-      spec.element.setAttribute('value', '["BG01", "BG02"]');
-      await elementUpdated(spec.element);
-
-      spec.element.value = [];
-      await elementUpdated(spec.element);
+      spec.setAttributes({ value: JSON.stringify(['BG01', 'BG02']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
       expect(spec.element.value).to.eql(initial);
     });
 
-    it('is correctly reset on form reset (single)', async () => {
+    it('is correctly reset on form reset (single)', () => {
       // Initial value is a multiple array. The combo defaults to the first item
-      const initial = [spec.element.value[0]];
+      const initial = [first(spec.element.value)];
 
-      spec.element.singleSelect = true;
-      await elementUpdated(spec.element);
-
-      spec.element.value = ['US01'];
-      await elementUpdated(spec.element);
+      spec.setProperties({ singleSelect: true });
+      spec.setProperties({ value: ['US01'] });
 
       expect(spec.element.value).to.eql(['US01']);
 
@@ -1332,32 +1318,27 @@ describe('Combo', () => {
       expect(spec.element.value).to.eql(initial);
     });
 
-    it('should reset to the new default value after setAttribute() call (multiple)', async () => {
-      spec.element.setAttribute('value', JSON.stringify(['US01', 'US02']));
-      spec.element.value = [];
+    it('should reset to the new default value after setAttribute() call (multiple)', () => {
+      spec.setAttributes({ value: JSON.stringify(['US01', 'US02']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
       expect(spec.element.value).to.eql(['US01', 'US02']);
-      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
-        spec.element.value
-      );
+      spec.assertSubmitHasValues(spec.element.value);
     });
 
-    it('should reset to the new default value after setAttribute() call (single)', async () => {
-      spec.element.singleSelect = true;
-      await elementUpdated(spec.element);
-
-      spec.element.setAttribute('value', JSON.stringify(['US01']));
-      spec.element.value = [];
+    it('should reset to the new default value after setAttribute() call (single)', () => {
+      spec.setProperties({ singleSelect: true });
+      spec.setAttributes({ value: JSON.stringify(['US01']) });
+      spec.setProperties({ value: [] });
 
       spec.reset();
+
       expect(spec.element.value).to.eql(['US01']);
-      expect(spec.submit()?.getAll(spec.element.name)).to.eql(
-        spec.element.value
-      );
+      spec.assertSubmitHasValue('US01');
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -1365,28 +1346,123 @@ describe('Combo', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.value = [];
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ value: [], required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = ['BG01', 'BG02'];
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: ['BG01', 'BG02'] });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils custom constraint', async () => {
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    const value = ['BG01', 'BG02'];
+
+    describe('Form integration (single)', () => {
+      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
+        <igc-combo
+          name="combo"
+          .data=${cities}
+          .defaultValue=${value}
+          single-select
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcComboComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.eql([first(value)]);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(first(value));
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: [] });
+        spec.reset();
+
+        expect(spec.element.value).to.eql([first(value)]);
+      });
+    });
+
+    describe('Form integration (multiple)', () => {
+      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
+        <igc-combo
+          name="combo"
+          .data=${cities}
+          .defaultValue=${value}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcComboComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.eql(value);
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValues(value);
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: [] });
+        spec.reset();
+
+        expect(spec.element.value).to.eql(value);
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
+        <igc-combo
+          name="combo"
+          .data=${cities}
+          .defaultValue=${[]}
+          required
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcComboComponent.tagName);
+      });
+
+      it('fails required validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes required validation', () => {
+        spec.setProperties({ defaultValue: value });
+        spec.assertIsPristine();
+
+        spec.assertSubmitHasValues(value);
+      });
     });
   });
 
   describe('Validation message slots', () => {
-    it('', async () => {
+    it('', () => {
       const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
