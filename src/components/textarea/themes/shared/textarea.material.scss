@@ -33,6 +33,34 @@ textarea {
     padding-inline: rem(4px);
 }
 
+[part='label'] {
+    position: absolute;
+    transform-origin: top left;
+    inset-block-start: calc($input-top-padding - #{rem(2px)});
+    padding-inline-end: rem(4px);
+    transition:
+        transform 150ms cubic-bezier(.4, 0, .2, 1),
+        color 150ms cubic-bezier(.4, 0, .2, 1),
+        font-size 150ms cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+}
+
+%label-filled {
+    transform: translateY(0);
+    inset-block-start: calc(#{$input-top-padding} / 4);
+    font-size: rem(12px);
+}
+
+%label-outlined-filled {
+    display: inline-block;
+    position: relative;
+    inset-block: 0;
+    transform: translateY(-50%);
+    margin-block-end: auto;
+    padding-inline-end: 0;
+    font-size: rem(12px);
+}
+
 :host(:not([outlined])) {
     [part~='container'] {
         overflow: hidden;
@@ -56,6 +84,11 @@ textarea {
             margin-block-end: rem(2px);
             grid-area: 1 / 2 / span 1 / span 3;
         }
+    }
+
+    [part~='placeholder'] [part='label'],
+    [part~='filled'] [part='label'] {
+        @extend %label-filled;
     }
 }
 
@@ -104,6 +137,8 @@ textarea {
 
 :host(:focus-within) {
     [part~='label'] {
+        @extend %label-filled;
+
         color: var-get($theme, 'focused-secondary-color');
     }
 }
@@ -140,19 +175,6 @@ textarea {
             border-block-end-color: var-get($theme, 'error-secondary-color');
         }
     }
-}
-
-[part~='label'] {
-    position: absolute;
-    max-width: 100%;
-    padding-inline-end: rem(4px);
-    line-height: normal;
-    backface-visibility: hidden;
-    will-change: transform;
-    transform-origin: top left;
-    transform: translateY(0);
-    top: calc(#{$input-top-padding} / 4);
-    font-size: rem(12px);
 }
 
 [part='start'],
@@ -224,6 +246,18 @@ textarea {
         }
     }
 
+    [part~='container'][part~='filled'],
+    [part~='container'][part~='placeholder'] {
+        [part='notch'] {
+            border-block-start: rem(2px) solid transparent;
+        }
+    }
+
+    [part~='placeholder'] [part='label'],
+    [part~='filled'] [part='label'] {
+        @extend %label-outlined-filled;
+    }
+
     [part='start'] {
         width: auto;
         border: {
@@ -246,16 +280,6 @@ textarea {
         }
     }
 
-    [part~='label'] {
-        top: 0;
-        transform: translateY(-50%);
-        margin-block-end: auto;
-        padding-inline-end: 0;
-        display: inline-block;
-        position: relative;
-        background: transparent;
-    }
-
     [part='filler'] {
         border: {
             width: rem(1px);
@@ -267,8 +291,7 @@ textarea {
     }
 
     [part='notch'] {
-        border-block-start-color: transparent;
-        border-block-end: rem(1px) solid var-get($theme, 'border-color');
+        border-block: rem(1px) solid var-get($theme, 'border-color');
         padding: 0 rem(4px);
 
         &:empty {
@@ -313,11 +336,16 @@ textarea {
         border-block-width: rem(2px);
     }
 
+    [part='label'] {
+        @extend %label-outlined-filled;
+    }
+
     [part='filler'] {
         border-block-color: var-get($theme, 'focused-border-color');
     }
 
     [part='notch'] {
+        border-block-start-color: transparent;
         border-block-end-color: var-get($theme, 'focused-border-color');
     }
 
@@ -364,9 +392,16 @@ textarea {
 :host([invalid][outlined]:not([disabled]):focus-within) {
     [part='start'],
     [part='filler'],
-    [part='notch'],
-    [part='end'] {
+    [part='end'],
+    [part='notch'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host([invalid][outlined]:not([disabled]):focus-within),
+:host([invalid][outlined]:not([disabled])) [part~='placeholder'] {
+    [part='notch'] {
+        border-block-start-color: transparent;
     }
 }
 

@@ -14,102 +14,51 @@ $theme: $material;
     color: var-get($theme, 'text-color');
 }
 
-[part~='primary']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-default');
+:host([striped]) {
+    --stripe-size: #{rem(16px)};
 }
 
-[part~='primary'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-default');
+@mixin part-styles($part, $color-key) {
+    :host([variant='#{$part}']) {
+        --fill-bg: #{var-get($theme, $color-key)};
+    }
+
+    :host([striped][variant='#{$part}']) {
+        --striped-bg: #{var-get($theme, $color-key) repeating-linear-gradient(
+            -45deg,
+            var-get($theme, $color-key),
+            var-get($theme, $color-key) var(--stripe-size),
+            var-get($theme, 'stripes-color') var(--stripe-size),
+            var-get($theme, 'stripes-color') calc(var(--stripe-size) * 2)
+        )};
     }
 }
 
-[part~='striped'][part~='primary']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
+// Generate styles for each variant
+@each $part, $color-key in (
+    'primary': 'fill-color-default',
+    'danger': 'fill-color-danger',
+    'warning': 'fill-color-warning',
+    'info': 'fill-color-info',
+    'success': 'fill-color-success'
+) {
+    @include part-styles($part, $color-key);
 }
 
-[part~='striped'][part~='primary'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
+:host(:not([indeterminate])) {
+    [part~='fill'] {
+        background-color: var(--fill-bg);
     }
 }
 
-[part~='danger']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-danger');
-}
-
-[part~='danger'] {
+[part~='fill'] {
     &::after {
-        background-color: var-get($theme, 'fill-color-danger');
+        background-color: var(--fill-bg);
     }
 }
 
-[part~='striped'][part~='danger']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='danger'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-    }
-}
-
-[part~='warning']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-warning');
-}
-
-[part~='warning'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-warning');
-    }
-}
-
-[part~='striped'][part~='warning']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='warning'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-warning'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-    }
-}
-
-[part~='info']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-info');
-}
-
-[part~='info'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-info');
-    }
-}
-
-[part~='striped'][part~='info']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='info'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-    }
-}
-
-[part~='success']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-success');
-}
-
-[part~='success'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-success');
-    }
-}
-
-[part~='striped'][part~='success']:not([part~='indeterminate']) {
-    @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='success'] {
-    &::after {
-        @include stripe-colors(var-get($theme, 'fill-color-success'), var-get($theme, 'stripes-color'), $stripe-size, -45deg);
+:host([striped]:not([indeterminate])) {
+    [part~='fill'] {
+        background: var(--striped-bg);
     }
 }

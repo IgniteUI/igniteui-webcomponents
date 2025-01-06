@@ -456,11 +456,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         part=${partNameMap({
           ...this.resolvePartNames(),
           labelled: this.label,
+          placeholder: this.placeholder,
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
-        <div part="notch">${this.renderLabel()}</div>
         ${this.renderInput()}
+        <div part="notch">${this.renderLabel()}</div>
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
