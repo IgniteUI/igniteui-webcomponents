@@ -59,6 +59,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _minColWidth?: string;
   private _minRowHeight?: string;
   private _draggedItem: IgcTileComponent | null = null;
+  private _lastSwapTile: IgcTileComponent | null = null;
 
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
@@ -68,12 +69,17 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     initialValue: {
       instance: this,
       draggedItem: this._draggedItem,
+      lastSwapTile: this._lastSwapTile,
     },
   });
 
   private _setManagerContext() {
     this._context.setValue(
-      { instance: this, draggedItem: this._draggedItem },
+      {
+        instance: this,
+        draggedItem: this._draggedItem,
+        lastSwapTile: this._lastSwapTile,
+      },
       true
     );
   }

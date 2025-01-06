@@ -347,11 +347,12 @@ export function simulateDragStart(node: Element) {
   );
 }
 
-export function simulateDragOver(node: Element) {
+export function simulateDragOver(node: Element, options?: PointerEventInit) {
   node.dispatchEvent(
     new DragEvent('dragover', {
       bubbles: true,
       composed: true,
+      ...options,
     })
   );
 }

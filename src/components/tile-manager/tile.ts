@@ -351,7 +351,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._hasDragOver = true;
   }
 
-  private handleDragOver() {
+  private handleDragOver(event: DragEvent) {
     if (!this._draggedItem) {
       return;
     }
@@ -363,8 +363,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
           visibility: 'visible',
         });
       }
+      if (this._managerContext) {
+        this._managerContext.lastSwapTile = null;
+      }
     } else if (this._isSlideMode) {
-      swapTiles(this, this._draggedItem!);
+      if (
+        this._managerContext &&
+        (!this._managerContext.lastSwapTile ||
+          this.hasPointerLeftLastSwapTile(
+            event,
+            this._managerContext.lastSwapTile
+          ))
+      ) {
+        this._managerContext.lastSwapTile = this;
+        swapTiles(this, this._draggedItem!);
+      }
     }
   }
 
@@ -372,7 +385,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._dragCounter--;
 
     // The drag leave is fired on entering a child element
-    // so we need to check if the dragged item is actually leaving the tile
+    // so we check if the dragged item is actually leaving the tile
     if (this._dragCounter === 0) {
       this._hasDragOver = false;
     }
@@ -393,6 +406,31 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     this._tileContent.style.visibility = 'visible';
+  }
+
+  private hasPointerLeftLastSwapTile(
+    event: DragEvent,
+    lastSwapTile: IgcTileComponent | null
+  ) {
+    if (!lastSwapTile) return false;
+
+    // Check if the pointer is outside the boundaries of the last swapped tile
+
+    const rect = lastSwapTile.getBoundingClientRect();
+    const pointerX = event.clientX;
+    const pointerY = event.clientY;
+
+    const outsideBoundaries =
+      pointerX < rect.left ||
+      pointerX > rect.right ||
+      pointerY < rect.top ||
+      pointerY > rect.bottom;
+
+    if (outsideBoundaries && this._managerContext) {
+      this._managerContext.lastSwapTile = null;
+    }
+
+    return outsideBoundaries;
   }
 
   private cacheStyles() {
@@ -530,7 +568,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected renderContent() {
     const parts = partNameMap({
       base: true,
-      'drag-over': this._hasDragOver,
+      'drag-over': this._hasDragOver && !this._isSlideMode,
       fullscreen: this.fullscreen,
       draggable: !this.disableDrag,
       dragging: this._isDragging,

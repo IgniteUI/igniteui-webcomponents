@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { spy, stub } from 'sinon';
 
 import { range } from 'lit/directives/range.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -9,7 +9,10 @@ import {
   simulateDragOver,
   simulateDragStart,
   simulateDrop,
+  simulatePointerDown,
+  simulatePointerMove,
 } from '../common/utils.spec.js';
+import * as PositionUtils from './position.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
 
@@ -17,6 +20,8 @@ describe('Tile drag and drop', () => {
   before(() => {
     defineComponents(IgcTileManagerComponent);
   });
+
+  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
 
   let tileManager: IgcTileManagerComponent;
 
@@ -179,6 +184,35 @@ describe('Tile drag and drop', () => {
       expect(eventSpy).not.calledWith('igcTileDragStarted');
       expect(tileManager.tiles[0].id).to.equal('tile0');
       expect(tileManager.tiles[4].id).to.equal('tile4');
+    });
+
+    it('should swap positions only once while dragging smaller tile over bigger tile in slide mode', async () => {
+      tileManager.columnCount = 5;
+      const draggedTile = first(tileManager.tiles);
+      const dropTarget = tileManager.tiles[1];
+
+      draggedTile.rowSpan = 1;
+      draggedTile.colSpan = 1;
+
+      dropTarget.rowSpan = 3;
+      dropTarget.colSpan = 3;
+      await elementUpdated(tileManager);
+
+      const dropTargetRect = dropTarget.getBoundingClientRect();
+
+      simulateDragStart(draggedTile);
+      simulateDragOver(dropTarget);
+      await elementUpdated(tileManager);
+
+      // Simulate second dragover event (inside dropTarget bounds)
+      simulateDragOver(dropTarget, {
+        clientX: dropTargetRect.left + dropTargetRect.width / 2,
+        clientY: dropTargetRect.top + dropTargetRect.height / 3,
+      });
+      await elementUpdated(tileManager);
+
+      expect(draggedTile.position).to.equal(1);
+      expect(dropTarget.position).to.equal(0);
     });
   });
 });

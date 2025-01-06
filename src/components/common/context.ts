@@ -6,6 +6,7 @@ import type IgcTileComponent from '../tile-manager/tile.js';
 export type TileManagerContext = {
   instance: IgcTileManagerComponent;
   draggedItem: IgcTileComponent | null;
+  lastSwapTile: IgcTileComponent | null;
 };
 
 export type TileContext = {
