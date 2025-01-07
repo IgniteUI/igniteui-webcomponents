@@ -52,10 +52,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @queryAssignedElements({ slot: 'helper-text' })
   protected _helperText!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'prefix' })
+  @queryAssignedElements({
+    slot: 'prefix',
+    selector: '[slot="prefix"]:not([hidden])',
+  })
   protected prefixes!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'suffix' })
+  @queryAssignedElements({
+    slot: 'suffix',
+    selector: '[slot="suffix"]:not([hidden])',
+  })
   protected suffixes!: Array<HTMLElement>;
 
   protected get _isMaterial() {
