@@ -16,6 +16,10 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
+import {
   asNumber,
   createCounter,
   isEmpty,
@@ -79,28 +83,36 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
-  protected override get __validators() {
-    return textAreaValidators;
-  }
-
-  private static readonly increment = createCounter();
-  protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
-
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
 
-  private _value = '';
+  private static readonly increment = createCounter();
+
+  protected override get __validators() {
+    return textAreaValidators;
+  }
+
+  protected override _formValue: FormValue<string>;
+
+  protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
+
   private observer!: ResizeObserver;
 
   @queryAssignedNodes({ flatten: true })
   private projected!: Array<Node>;
 
-  @queryAssignedElements({ slot: 'prefix' })
+  @queryAssignedElements({
+    slot: 'prefix',
+    selector: '[slot="prefix"]:not([hidden])',
+  })
   protected prefixes!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'suffix' })
+  @queryAssignedElements({
+    slot: 'suffix',
+    selector: '[slot="suffix"]:not([hidden])',
+  })
   protected suffixes!: Array<HTMLElement>;
 
   @query('textarea', true)
@@ -235,13 +247,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public set value(value: string) {
-    this._value = value ?? '';
-    this._setFormValue(this._value ? this._value : null);
+    this._formValue.setValueAndFormState(value);
     this._validate();
   }
 
   public get value(): string {
-    return this._value;
+    return this._formValue.value;
   }
 
   /**
@@ -296,6 +307,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
+
+    this._formValue = createFormValueState(this, { initialValue: '' });
+
     this.addEventListener('focus', this.handleFocus);
     this.addEventListener('blur', this.handleBlur);
   }
@@ -448,11 +462,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         part=${partNameMap({
           ...this.resolvePartNames(),
           labelled: this.label,
+          placeholder: this.placeholder,
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
-        <div part="notch">${this.renderLabel()}</div>
         ${this.renderInput()}
+        <div part="notch">${this.renderLabel()}</div>
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>

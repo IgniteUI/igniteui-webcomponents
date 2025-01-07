@@ -4,8 +4,8 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  FormAssociatedTestBed,
   type ValidationContainerTestsParams,
+  createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
@@ -620,7 +620,7 @@ describe('Masked input', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<IgcMaskInputComponent>(
+    const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(
       html`<igc-mask-input name="mask"></igc-mask-input>`
     );
 
@@ -628,41 +628,35 @@ describe('Masked input', () => {
       await spec.setup(IgcMaskInputComponent.tagName);
     });
 
-    it('is form associated', async () => {
+    it('is form associated', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('is not associated on submit if no value', async () => {
-      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    it('is not associated on submit if no value', () => {
+      spec.assertSubmitHasValue(null);
     });
 
-    it('is associated on submit', async () => {
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+    it('is associated on submit', () => {
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('is associated on submit with value formatting enabled', async () => {
-      spec.element.valueMode = 'withFormatting';
-      spec.element.mask = 'C - C - C';
-      spec.element.value = 'A';
-      await elementUpdated(spec.element);
+    it('is associated on submit with value formatting enabled', () => {
+      spec.setProperties({
+        valueMode: 'withFormatting',
+        mask: 'C - C - C',
+        value: 'A',
+      });
 
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
       expect(spec.element.value).to.equal('A - _ - _');
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('is correctly reset on form reset', async () => {
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: 'abc' });
 
       spec.reset();
-      expect(spec.element.value).to.equal('');
+      expect(spec.element.value).to.be.empty;
     });
 
     it('is with correct input value and placeholder after a form reset', async () => {
@@ -680,9 +674,7 @@ describe('Masked input', () => {
       expect(input.placeholder).to.equal(spec.element.mask);
 
       // User provided placeholder
-
-      spec.element.placeholder = placeholder;
-      await elementUpdated(spec.element);
+      await spec.setProperties({ placeholder }, true);
 
       expect(input.value).to.be.empty;
       expect(input.placeholder).to.equal(placeholder);
@@ -694,7 +686,7 @@ describe('Masked input', () => {
     });
 
     it('is correctly reset on form reset with value formatting enabled', async () => {
-      const bed = new FormAssociatedTestBed<IgcMaskInputComponent>(
+      const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
         html`<igc-mask-input
           name="formatted-mask"
           mask="(CCC) (CCC)"
@@ -706,8 +698,7 @@ describe('Masked input', () => {
 
       expect(bed.element.value).to.eql('(123) (456)');
 
-      bed.element.value = '111';
-      await elementUpdated(bed.element);
+      bed.setProperties({ value: '111' });
 
       expect(bed.element.value).to.eql('(111) (___)');
 
@@ -716,18 +707,16 @@ describe('Masked input', () => {
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      spec.element.setAttribute('value', '1111');
-      spec.element.value = '2222';
+      spec.setAttributes({ value: '1111' });
+      spec.setProperties({ value: '2222' });
 
       spec.reset();
 
       expect(spec.element.value).to.equal('1111');
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+      spec.assertSubmitHasValue(spec.element.value);
     });
 
-    it('reflects disabled ancestor state', async () => {
+    it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
 
@@ -735,37 +724,116 @@ describe('Masked input', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
-    it('fulfils required constraint', async () => {
-      spec.element.required = true;
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
 
-      spec.element.value = 'abc';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitPasses();
     });
 
-    it('fulfils mask pattern constraint', async () => {
-      spec.element.mask = '00 99';
-      spec.element.value = '1';
-      await elementUpdated(spec.element);
-      spec.submitFails();
+    it('required constraint with value formatting', () => {
+      spec.setProperties({
+        valueMode: 'withFormatting',
+        mask: 'C - C - C',
+        required: true,
+      });
 
-      spec.element.value = 'aa';
-      await elementUpdated(spec.element);
-      spec.submitFails();
+      spec.assertSubmitFails();
 
-      spec.element.value = '11';
-      await elementUpdated(spec.element);
-      spec.submitValidates();
+      spec.setProperties({ value: 'abc' });
+      spec.assertSubmitHasValue(spec.element.value);
+
+      expect(spec.element.value).to.equal('a - b - c');
     });
 
-    it('fulfils custom constraint', async () => {
+    it('required pattern constraint with value formatting', () => {
+      spec.setProperties({
+        valueMode: 'withFormatting',
+        required: false,
+        mask: '(000)',
+        value: 'abc',
+      });
+
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: '123' });
+      spec.assertSubmitHasValue(spec.element.value);
+      expect(spec.element.value).to.equal('(123)');
+    });
+
+    it('fulfils mask pattern constraint', () => {
+      spec.setProperties({ mask: '00 99', value: '1' });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: 'aa' });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: '11' });
+      spec.assertSubmitPasses();
+    });
+
+    it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
-      spec.submitFails();
+      spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
-      spec.submitValidates();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('defaultValue', () => {
+    describe('Form integration', () => {
+      const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(html`
+        <igc-mask-input name="mask" .defaultValue=${'abc'}></igc-mask-input>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcMaskInputComponent.tagName);
+      });
+
+      it('correct initial state', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal('abc');
+      });
+
+      it('is correctly submitted', () => {
+        spec.assertSubmitHasValue(spec.element.value);
+      });
+
+      it('is correctly reset', () => {
+        spec.setProperties({ value: '123' });
+        spec.reset();
+
+        expect(spec.element.value).to.equal('abc');
+      });
+    });
+
+    describe('Validation', () => {
+      const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(html`
+        <igc-mask-input
+          name="mask"
+          mask="LL"
+          required
+          .defaultValue=${undefined}
+        ></igc-mask-input>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcMaskInputComponent.tagName);
+      });
+
+      it('fails initial validation', () => {
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+      });
+
+      it('passes validation when updating defaultValue', () => {
+        spec.setProperties({ defaultValue: 'ab' });
+        spec.assertIsPristine();
+
+        spec.assertSubmitPasses();
+      });
     });
   });
 

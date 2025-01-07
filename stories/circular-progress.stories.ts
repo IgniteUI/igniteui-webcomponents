@@ -137,7 +137,7 @@ const Template = ({
       </igc-circular-gradient>
       <igc-circular-gradient slot="gradient" offset="100%" color="#ff0079">
       </igc-circular-gradient>
-      <span>${value}</span>
+      <span>SVG</span>
     </igc-circular-progress>
     <igc-circular-progress
       style="--diameter: 72px; --stroke-thickness: 12px;"

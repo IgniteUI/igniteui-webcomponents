@@ -12,8 +12,9 @@ declare class BaseFormAssociatedElement {
   private __internals: ElementInternals;
 
   // Properties
-
+  protected _formValue: unknown;
   protected _dirty: boolean;
+  protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;
 
@@ -60,16 +61,10 @@ declare class BaseFormAssociatedElement {
   // Methods
 
   /**
-   * Invoked on the first `connectedCallback` run before the component has been through the
-   * firstUpdate lifecycle hook. Sets the default value to the **property** state of the value/checked member.
-   */
-  protected _setInitialDefaultValue(): void;
-
-  /**
    * Sets the default value of the component.
    * Called in `attributeChangedCallback`(i.e. when the `value` attribute of the control is set).
    */
-  protected _setDefaultValue(prev: string | null, current: string | null): void;
+  protected _setDefaultValue(current: string | null): void;
 
   /**
    * Called when the associated parent form is reset.
@@ -143,11 +138,15 @@ declare class BaseFormAssociatedElement {
 }
 
 export declare class FormAssociatedElementInterface extends BaseFormAssociatedElement {
-  protected _defaultValue: unknown;
+  /** The initial value of the component. */
+  public set defaultValue(value: unknown);
+  public get defaultValue(): unknown;
 }
 
 export declare class FormAssociatedCheckboxElementInterface extends BaseFormAssociatedElement {
-  protected _defaultChecked: boolean;
+  /** The initial checked state of the component. */
+  public set defaultChecked(value: boolean);
+  public get defaultChecked(): boolean;
 }
 
 export declare class FormRequiredInterface {

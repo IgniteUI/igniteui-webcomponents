@@ -1,37 +1,46 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'vars' as *;
 
-// Linear animation //
-// primary translate
-$indeterminate-primary-translate-step-2: cubic-bezier(.5, 0, .7017, .4958);
-$indeterminate-primary-translate-step-3: cubic-bezier(.3024, .3813, .55, .9563);
+// Animation easing curves
+$easing-curves: (
+    // Primary translate easing curves
+    primary-translate-start: cubic-bezier(0.5, 0, 0.7017, 0.4958),
+    primary-translate-mid: cubic-bezier(0.3024, 0.3813, 0.55, 0.9563),
 
-// primary scale
-$indeterminate-primary-scale-step-2: cubic-bezier(.3347, .124, .7858, 1);
-$indeterminate-primary-scale-step-3: cubic-bezier(.06, .11, .6, 1);
+    // Primary scale easing curves
+    primary-scale-slow-start: cubic-bezier(0.3347, 0.124, 0.7858, 1),
+    primary-scale-quick-end: cubic-bezier(0.06, 0.11, 0.6, 1),
 
-// secondary translate
-$indeterminate-secondary-translate-step-1: cubic-bezier(.15, 0, .515, .4096);
-$indeterminate-secondary-translate-step-2: cubic-bezier(.31, .284, .8, .7337);
-$indeterminate-secondary-translate-step-3: cubic-bezier(.4, .627, .6, .902);
+    // Secondary translate easing curves
+    secondary-translate-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
+    secondary-translate-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
+    secondary-translate-end: cubic-bezier(0.4, 0.627, 0.6, 0.902),
 
-// secondary scale
-$indeterminate-secondary-scale-step-1: cubic-bezier(.15, 0, .515, .4096);
-$indeterminate-secondary-scale-step-2: cubic-bezier(.31, .284, .8, .7337);
-$indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
+    // Secondary scale easing curves
+    secondary-scale-slow-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
+    secondary-scale-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
+    secondary-scale-smooth-end: cubic-bezier(0.4, 0.627, 0.6, 0.902)
+);
 
+// Helper function to retrieve easing curves
+@function timing-function($key) {
+    @return map.get($easing-curves, $key);
+}
+
+// Primary animation
 @keyframes indeterminate-primary {
     0% {
         transform: translateX(0);
     }
 
     20% {
-        animation-timing-function: $indeterminate-primary-translate-step-2;
+        animation-timing-function: timing-function('primary-translate-start');
         transform: translateX(0);
     }
 
     59.15% {
-        animation-timing-function: $indeterminate-primary-translate-step-3;
+        animation-timing-function: timing-function('primary-translate-mid');
         transform: translateX(83.671%);
     }
 
@@ -42,37 +51,38 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 
 @keyframes indeterminate-primary-scale {
     0% {
-        transform: scaleX(.08);
+        transform: scaleX(0.08);
     }
 
     36.65% {
-        animation-timing-function: $indeterminate-primary-scale-step-2;
-        transform: scaleX(.08);
+        animation-timing-function: timing-function('primary-scale-slow-start');
+        transform: scaleX(0.08);
     }
 
     69.15% {
-        animation-timing-function: $indeterminate-primary-scale-step-2;
-        transform: scaleX(.6614);
+        animation-timing-function: timing-function('primary-scale-quick-end');
+        transform: scaleX(0.6614);
     }
 
     100% {
-        transform: scaleX(.08);
+        transform: scaleX(0.08);
     }
 }
 
+// Secondary animation
 @keyframes indeterminate-secondary {
     0% {
-        animation-timing-function: $indeterminate-secondary-translate-step-1;
+        animation-timing-function: timing-function('secondary-translate-start');
         transform: translateX(0);
     }
 
     25% {
-        animation-timing-function: $indeterminate-secondary-translate-step-2;
+        animation-timing-function: timing-function('secondary-translate-mid');
         transform: translateX(37.6519%);
     }
 
     48.35% {
-        animation-timing-function: $indeterminate-secondary-translate-step-3;
+        animation-timing-function: timing-function('secondary-translate-end');
         transform: translateX(84.3861%);
     }
 
@@ -83,26 +93,26 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 
 @keyframes indeterminate-secondary-scale {
     0% {
-        animation-timing-function: $indeterminate-secondary-scale-step-1;
-        transform: scaleX(.08);
+        animation-timing-function: timing-function('secondary-scale-slow-start');
+        transform: scaleX(0.08);
     }
 
     19.15% {
-        animation-timing-function: $indeterminate-secondary-scale-step-2;
-        transform: scaleX(.4571);
+        animation-timing-function: timing-function('secondary-scale-mid');
+        transform: scaleX(0.4571);
     }
 
     44.15% {
-        animation-timing-function: $indeterminate-secondary-scale-step-3;
-        transform: scaleX(.727);
+        animation-timing-function: timing-function('secondary-scale-smooth-end');
+        transform: scaleX(0.727);
     }
 
     100% {
-        transform: scaleX(.08);
+        transform: scaleX(0.08);
     }
 }
 
-// Fluent linear animation
+// Fluent linear animations
 @keyframes indeterminate-bar-fluent {
     0% {
         transform: translateX(-100%);
@@ -117,17 +127,17 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 
 @keyframes indeterminate-bar-fluent-rtl {
     0% {
-        transform: translateX(-310%);
+        transform: translateX(100%);
         transform-origin: right;
     }
 
     100% {
-        transform: translateX(100%);
+        transform: translateX(-310%);
         transform-origin: left;
     }
 }
 
-// Circular animation
+// Circular animations
 @keyframes indeterminate-accordion {
     0% {
         stroke-dashoffset: calc(#{$circumference} * 2);
@@ -150,6 +160,66 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
     }
 }
 
+// Fluent: Circular progress animation for indeterminate state.
+// Dynamically changes stroke-dasharray and rotates for a smooth spinning effect.
+@keyframes indeterminate-circular-fluent {
+    0% {
+        // Start the stroke at the correct position by adjusting the dasharray and dashoffset
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+
+        // Start at 12 o'clock
+        transform: rotate(-90deg);
+    }
+
+    50% {
+        stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
+
+        // Adjust to keep starting point correct
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+
+        // Continue rotating smoothly
+        transform: rotate(360deg);
+    }
+
+    100% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+
+        // Reset properly
+        stroke-dashoffset: calc(-1 * #{$circumference} / 4);
+
+        // Complete the full rotation
+        transform: rotate(990deg);
+    }
+}
+
+@keyframes indeterminate-circular-fluent-rtl {
+    0% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(90deg);
+    }
+
+    50% {
+        stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
+
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(-360deg);
+    }
+
+    100% {
+        stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
+
+        // Positive offset for opposite direction
+        stroke-dashoffset: calc(#{$circumference} / 4);
+        transform: rotate(-990deg);
+    }
+}
+
+// Generic animations
 @keyframes rotate-center {
     0% {
         transform: rotate(0);
@@ -160,27 +230,30 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
     }
 }
 
-%host {
-    align-items: center;
-    justify-content: center;
-    font-family: var(--ig-font-family);
+@keyframes initial-counter {
+    from {
+        --_progress-integer: 0;
+        --_progress-fraction: 0;
+    }
 }
 
-%label {
-    display: flex;
-    align-items: center;
-    color: inherit;
-    font-weight: 600;
+@keyframes initial-width {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: calc(var(--_progress-whole, 0) * 1%);
+    }
 }
 
-@mixin stripe-colors($primary, $gray, $size, $deg: -45deg) {
-    /* stylelint-disable */
-    background: $primary repeating-linear-gradient(
-        $deg,
-        $primary,
-        $primary $size,
-        $gray $size,
-        $gray ($size * 2)
-    );
-    /* stylelint-enable */
+@keyframes initial-dashoffset {
+    from {
+        /* Start with no progress (0%) */
+        stroke-dashoffset: #{$circumference};
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference});
+    }
 }

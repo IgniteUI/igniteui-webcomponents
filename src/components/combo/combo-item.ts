@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
@@ -21,6 +20,7 @@ export default class IgcComboItemComponent extends LitElement {
   }
 
   private _internals: ElementInternals;
+  private _selected = false;
 
   @property({ attribute: false })
   public index!: number;
@@ -28,9 +28,17 @@ export default class IgcComboItemComponent extends LitElement {
   /**
    * Determines whether the item is selected.
    * @attr selected
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public selected = false;
+  public set selected(value: boolean) {
+    this._selected = value;
+    this._internals.ariaSelected = this._selected.toString();
+  }
+
+  public get selected(): boolean {
+    return this._selected;
+  }
 
   /**
    * Determines whether the item is active.
@@ -42,19 +50,15 @@ export default class IgcComboItemComponent extends LitElement {
    * Determines whether the item is active.
    * @attr hide-checkbox
    */
-  @property({ attribute: 'hide-checkbox', type: Boolean, reflect: false })
+  @property({ type: Boolean, attribute: 'hide-checkbox' })
   public hideCheckbox = false;
-
-  @watch('selected')
-  protected selectedChange() {
-    this._internals.ariaSelected = `${this.selected}`;
-  }
 
   constructor() {
     super();
 
     this._internals = this.attachInternals();
     this._internals.role = 'option';
+    this._internals.ariaSelected = 'false';
   }
 
   public override connectedCallback() {
@@ -63,13 +67,15 @@ export default class IgcComboItemComponent extends LitElement {
   }
 
   private renderCheckbox() {
-    return html`<section part="prefix">
-      <igc-checkbox
-        inert
-        ?checked=${this.selected}
-        exportparts="control: checkbox, indicator: checkbox-indicator, checked"
-      ></igc-checkbox>
-    </section>`;
+    return html`
+      <section part="prefix">
+        <igc-checkbox
+          .inert=${true}
+          ?checked=${this.selected}
+          exportparts="control: checkbox, indicator: checkbox-indicator, checked"
+        ></igc-checkbox>
+      </section>
+    `;
   }
 
   protected override render() {

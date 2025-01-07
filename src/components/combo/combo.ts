@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -18,7 +18,13 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
+  type FormValue,
+  createFormValueState,
+} from '../common/mixins/forms/form-value.js';
+import {
+  asArray,
   findElementFromEventPath,
+  first,
   isEmpty,
   partNameMap,
 } from '../common/util.js';
@@ -125,7 +131,26 @@ export default class IgcComboComponent<
     );
   }
 
-  private _value: ComboValue<T>[] = [];
+  protected override get __validators() {
+    return comboValidators;
+  }
+
+  protected override _formValue: FormValue<ComboValue<T>[]>;
+  private _data: T[] = [];
+
+  private _valueKey?: Keys<T>;
+  private _displayKey?: Keys<T>;
+  private _groupKey?: Keys<T>;
+
+  private _disableFiltering = false;
+  private _singleSelect = false;
+
+  private _groupSorting: GroupingDirection = 'asc';
+  private _filteringOptions: FilteringOptions<T> = {
+    filterKey: this.displayKey,
+    caseSensitive: false,
+    matchDiacritics: false,
+  };
 
   @state()
   private _activeDescendant!: string;
@@ -133,19 +158,9 @@ export default class IgcComboComponent<
   @state()
   private _displayValue = '';
 
-  private _filteringOptions: FilteringOptions<T> = {
-    filterKey: this.displayKey,
-    caseSensitive: false,
-    matchDiacritics: false,
-  };
-
-  protected override get __validators() {
-    return comboValidators;
-  }
-
-  protected navigationController = new NavigationController<T>(this);
-  protected selectionController = new SelectionController<T>(this);
-  protected dataController = new DataController<T>(this);
+  protected _state = new DataController<T>(this);
+  protected _selection = new SelectionController<T>(this, this._state);
+  protected _navigation = new NavigationController<T>(this, this._state);
 
   @queryAssignedElements({ slot: 'suffix' })
   protected inputSuffix!: Array<HTMLElement>;
@@ -154,32 +169,53 @@ export default class IgcComboComponent<
   protected inputPrefix!: Array<HTMLElement>;
 
   @query('[part="search-input"]')
-  protected input!: IgcInputComponent;
+  protected _searchInput!: IgcInputComponent;
 
-  @query('igc-input#target')
-  private target!: IgcInputComponent;
+  @query('#target', true)
+  private _input!: IgcInputComponent;
 
-  @query('igc-combo-list')
-  private list!: IgcComboListComponent;
+  @query(IgcComboListComponent.tagName, true)
+  private _list!: IgcComboListComponent;
 
   /** The data source used to generate the list of options. */
   /* treatAsRef */
   @property({ attribute: false })
-  public data: Array<T> = [];
+  public set data(value: T[]) {
+    this._data = asArray(value);
+    this.value = asArray(this.value);
+    this._state.runPipeline();
+  }
+
+  public get data() {
+    return this._data;
+  }
 
   /**
    * The outlined attribute of the control.
    * @attr outlined
    */
-  @property({ reflect: true, type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public outlined = false;
 
   /**
    * Enables single selection mode and moves item filtering to the main input.
    * @attr single-select
+   * @default false
    */
-  @property({ attribute: 'single-select', reflect: true, type: Boolean })
-  public singleSelect = false;
+  @property({ type: Boolean, reflect: true, attribute: 'single-select' })
+  public set singleSelect(value: boolean) {
+    this._singleSelect = value;
+    this._selection.clear();
+    if (this.hasUpdated) {
+      this.updateValue();
+      this.resetSearchTerm();
+      this._navigation.active = -1;
+    }
+  }
+
+  public get singleSelect(): boolean {
+    return this._singleSelect;
+  }
 
   /**
    * The autofocus attribute of the control.
@@ -192,65 +228,96 @@ export default class IgcComboComponent<
    * Focuses the list of options when the menu opens.
    * @attr autofocus-list
    */
-  @property({ attribute: 'autofocus-list', type: Boolean })
+  @property({ type: Boolean, attribute: 'autofocus-list' })
   public autofocusList = false;
 
   /**
    * The label attribute of the control.
    * @attr label
    */
-  @property({ type: String })
+  @property()
   public label!: string;
 
   /**
    * The placeholder attribute of the control.
    * @attr placeholder
    */
-  @property({ type: String })
+  @property()
   public placeholder!: string;
 
   /**
    * The placeholder attribute of the search input.
    * @attr placeholder-search
    */
-  @property({ attribute: 'placeholder-search', type: String })
+  @property({ attribute: 'placeholder-search' })
   public placeholderSearch = 'Search';
 
   /**
    * Sets the open state of the component.
    * @attr open
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public open = false;
 
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
    */
-  @property({ attribute: 'value-key', reflect: false })
-  public valueKey?: Keys<T>;
+  @property({ attribute: 'value-key' })
+  public set valueKey(value: Keys<T> | undefined) {
+    this._valueKey = value;
+    this._displayKey = this._displayKey ?? this._valueKey;
+  }
+
+  public get valueKey() {
+    return this._valueKey;
+  }
 
   /**
    * The key in the data source used to display items in the list.
    * @attr display-key
    */
-  @property({ attribute: 'display-key', reflect: false })
-  public displayKey?: Keys<T> = this.valueKey;
+  @property({ attribute: 'display-key' })
+  public set displayKey(value: Keys<T> | undefined) {
+    this._displayKey = value;
+    if (!this.filteringOptions.filterKey) {
+      this.filteringOptions = { filterKey: this.displayKey };
+    }
+  }
+
+  public get displayKey() {
+    return this._displayKey ?? this._valueKey;
+  }
 
   /**
    * The key in the data source used to group items in the list.
    * @attr group-key
    */
-  @property({ attribute: 'group-key', reflect: false })
-  public groupKey?: Keys<T> = this.displayKey;
+  @property({ attribute: 'group-key' })
+  public set groupKey(value: Keys<T> | undefined) {
+    this._groupKey = value;
+    this._state.runPipeline();
+  }
+
+  public get groupKey() {
+    return this._groupKey;
+  }
 
   /**
    * Sorts the items in each group by ascending or descending order.
    * @attr group-sorting
+   * @default asc
    * @type {"asc" | "desc" | "none"}
    */
-  @property({ attribute: 'group-sorting', reflect: false })
-  public groupSorting: GroupingDirection = 'asc';
+  @property({ attribute: 'group-sorting' })
+  public set groupSorting(value: GroupingDirection) {
+    this._groupSorting = value;
+    this._state.runPipeline();
+  }
+
+  public get groupSorting() {
+    return this._groupSorting;
+  }
 
   /**
    * An object that configures the filtering of the combo.
@@ -260,29 +327,37 @@ export default class IgcComboComponent<
    * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
    * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
-  @property({ attribute: 'filtering-options', type: Object })
-  public get filteringOptions(): FilteringOptions<T> {
-    return this._filteringOptions;
-  }
-
+  @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
     this._filteringOptions = { ...this._filteringOptions, ...value };
-    this.requestUpdate('pipeline');
+    this._state.runPipeline();
+  }
+
+  public get filteringOptions(): FilteringOptions<T> {
+    return this._filteringOptions;
   }
 
   /**
    * Enables the case sensitive search icon in the filtering input.
    * @attr case-sensitive-icon
    */
-  @property({ type: Boolean, attribute: 'case-sensitive-icon', reflect: false })
+  @property({ type: Boolean, attribute: 'case-sensitive-icon' })
   public caseSensitiveIcon = false;
 
   /**
    * Disables the filtering of the list of options.
    * @attr disable-filtering
+   * @default false
    */
-  @property({ type: Boolean, attribute: 'disable-filtering', reflect: false })
-  public disableFiltering = false;
+  @property({ type: Boolean, attribute: 'disable-filtering' })
+  public set disableFiltering(value: boolean) {
+    this._disableFiltering = value;
+    this.resetSearchTerm();
+  }
+
+  public get disableFiltering(): boolean {
+    return this._disableFiltering;
+  }
 
   /* blazorSuppress */
   /**
@@ -290,10 +365,8 @@ export default class IgcComboComponent<
    * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public itemTemplate: ComboItemTemplate<T> = ({ item }) => {
-    const template = this.displayKey ? `${item[this.displayKey]}` : `${item}`;
-    return html`${template}`;
-  };
+  public itemTemplate: ComboItemTemplate<T> = ({ item }) =>
+    html`${this.displayKey ? item[this.displayKey] : item}`;
 
   /* blazorSuppress */
   /**
@@ -301,108 +374,8 @@ export default class IgcComboComponent<
    * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: ComboItemTemplate<T> = ({ item }) => {
-    return html`${this.groupKey && item[this.groupKey]}`;
-  };
-
-  @state()
-  protected dataState: Array<ComboRecord<T>> = [];
-
-  @watch('data')
-  protected dataChanged() {
-    if (isEmpty(this.data)) return;
-    this.dataState = structuredClone(this.data) as ComboRecord<T>[];
-
-    if (this.hasUpdated) {
-      this.pipeline();
-    }
-
-    this.requestUpdate('value');
-  }
-
-  @watch('valueKey')
-  protected updateDisplayKey() {
-    this.displayKey = this.displayKey ?? this.valueKey;
-  }
-
-  @watch('displayKey')
-  protected updateFilterKey() {
-    if (!this.filteringOptions.filterKey) {
-      this.filteringOptions = { filterKey: this.displayKey };
-    }
-  }
-
-  @watch('groupKey')
-  @watch('groupSorting')
-  @watch('pipeline')
-  protected async pipeline() {
-    this.dataState = await this.dataController.apply([...this.data]);
-  }
-
-  @watch('open')
-  protected toggleDirectiveChange() {
-    this._rootClickController.update();
-  }
-
-  @watch('disableFiltering')
-  protected updateOnDisableFiltering() {
-    this.resetSearchTerm();
-    this.pipeline();
-  }
-
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: async () => {
-      if (!this.handleClosing()) return;
-      this.open = false;
-
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    },
-  });
-
-  constructor() {
-    super();
-
-    this.addEventListener('blur', () => {
-      const { selected } = this.selectionController;
-
-      if (isEmpty(selected)) {
-        this._displayValue = '';
-        this.resetSearchTerm();
-      }
-
-      this.invalid = !this.checkValidity();
-    });
-
-    this.addEventListener(
-      'keydown',
-      this.navigationController.navigateHost.bind(this.navigationController)
-    );
-  }
-
-  protected resetSearchTerm() {
-    this.dataController.searchTerm = '';
-  }
-
-  @watch('singleSelect', { waitUntilFirstUpdate: true })
-  protected resetState() {
-    this.selectionController.selected.clear();
-    this.updateValue();
-    this.resetSearchTerm();
-    this.navigationController.active = -1;
-  }
-
-  @watch('value')
-  protected selectItems() {
-    if (!this._value || isEmpty(this._value)) {
-      this.selectionController.deselect([]);
-    } else {
-      this.selectionController.deselect([]);
-      this.selectionController.select(this._value as Item<T>[]);
-    }
-
-    this.updateValue();
-  }
+  public groupHeaderTemplate: ComboItemTemplate<T> = ({ item }) =>
+    html`${this.groupKey && item[this.groupKey]}`;
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
@@ -434,95 +407,144 @@ export default class IgcComboComponent<
   /* blazorByValueArray */
   /* blazorGenericType */
   /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
+  @property({ type: Array })
   public set value(items: ComboValue<T>[]) {
-    const oldValue = this._value;
-    this._value = items;
-    this.requestUpdate('value', oldValue);
+    this._formValue.value = items;
+    if (this.hasUpdated) {
+      this._updateSelection();
+      this.updateValue();
+    }
   }
 
   /**
    * Returns the current selection as a list of comma separated values,
    * represented by the value key, when provided.
    */
-  @property({ attribute: true, type: Array })
   public get value(): ComboValue<T>[] {
-    return this._value;
+    return this._formValue.value;
   }
 
-  protected override _setDefaultValue(
-    _: string | null,
-    current: string | null
-  ): void {
-    this._defaultValue = JSON.parse(current ?? '[]');
+  protected _updateSelection() {
+    this._selection.deselect();
+    if (!isEmpty(this.value)) {
+      this._selection.select(this.value);
+    }
+  }
+
+  @watch('open')
+  protected toggleDirectiveChange() {
+    this._rootClickController.update();
+  }
+
+  private _rootClickController = addRootClickHandler(this, {
+    hideCallback: async () => {
+      if (!this.handleClosing()) return;
+      this.open = false;
+
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
+    },
+  });
+
+  constructor() {
+    super();
+
+    this._formValue = createFormValueState<ComboValue<T>[]>(this, {
+      initialValue: [],
+      transformers: {
+        setValue: asArray,
+        setDefaultValue: asArray,
+      },
+    });
+
+    this.addEventListener('blur', this._handleBlur);
+
+    this.addEventListener(
+      'keydown',
+      this._navigation.navigateHost.bind(this._navigation)
+    );
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+
+    this._updateSelection();
+    this.updateValue(this.hasUpdated);
+    this._pristine = true;
+    this._state.runPipeline();
+  }
+
+  protected override _restoreDefaultValue(): void {
+    this._formValue.value = this._formValue.defaultValue;
+    this._updateSelection();
+    this.updateValue(true);
+    this._updateValidity();
+  }
+
+  protected override _setDefaultValue(current: string | null): void {
+    this.defaultValue = JSON.parse(current ?? '[]');
   }
 
   protected override _setFormValue(): void {
-    if (!this.name) {
-      return;
-    }
-
-    const items = this._value;
-
-    if (isEmpty(items)) {
+    if (isEmpty(this.value)) {
       super._setFormValue(null);
       return;
     }
 
-    const data = new FormData();
-
     if (this.singleSelect) {
-      data.set(this.name, `${items[0]}`);
-    } else {
-      for (const item of items) {
-        data.append(this.name, `${item}`);
-      }
+      super._setFormValue(`${first(this.value)}`);
+      return;
     }
 
-    super._setFormValue(data);
+    if (this.name) {
+      const value = new FormData();
+      for (const item of this.value) {
+        value.append(this.name, `${item}`);
+      }
+      super._setFormValue(value);
+    }
   }
 
-  protected async updateValue() {
-    if (isEmpty(this.data)) return;
-    const selected = Array.from(this.selectionController.selected);
+  protected resetSearchTerm() {
+    this._state.searchTerm = '';
+  }
 
-    this._value = this.selectionController.getValue(selected, this.valueKey!);
-    this._displayValue = this.selectionController
-      .getValue(selected, this.displayKey!)
+  protected updateValue(initial = false) {
+    if (isEmpty(this.data)) {
+      return;
+    }
+    this._formValue.value = this._selection.getSelectedValuesByKey(
+      this.valueKey
+    );
+    this._displayValue = this._selection
+      .getSelectedValuesByKey(this.displayKey)
       .join(', ');
 
-    if (this.target && this.singleSelect) {
-      this.target.value = this._displayValue;
-    }
-
     this._setFormValue();
-    this._validate();
 
-    await this.updateComplete;
-    this.list.requestUpdate();
+    if (!initial) {
+      this._validate();
+      this._list.requestUpdate();
+    }
   }
 
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
-    this.target.focus(options);
+    this._input.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur() {
-    this.target.blur();
-    super.blur();
-  }
-
-  protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
-    return Array.isArray(items) ? items : [items];
+    this._input.blur();
   }
 
   /**
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
-  public get selection(): Array<T> {
-    return Array.from(this.selectionController.selected.values());
+  public get selection(): T[] {
+    return this._selection.asArray;
   }
 
   /**
@@ -548,8 +570,7 @@ export default class IgcComboComponent<
    * ```
    */
   public select(items?: Item<T> | Item<T>[]) {
-    const _items = this.normalizeSelection(items);
-    this.selectionController.select(_items, false);
+    this._selection.select(items);
     this.updateValue();
   }
 
@@ -576,30 +597,37 @@ export default class IgcComboComponent<
    * ```
    */
   public deselect(items?: Item<T> | Item<T>[]) {
-    const _items = this.normalizeSelection(items);
-    this.selectionController.deselect(_items, false);
+    this._selection.deselect(items);
     this.updateValue();
   }
 
-  protected async handleMainInput(e: CustomEvent) {
+  protected async handleMainInput({ detail }: CustomEvent<string>) {
     this._show();
-    this.dataController.searchTerm = e.detail;
+    this._state.searchTerm = detail;
 
     // wait for the dataState to update after filtering
     await this.updateComplete;
 
-    const matchIndex = this.dataState.findIndex((i) => !i.header);
-    this.navigationController.active = e.detail.length > 0 ? matchIndex : -1;
+    const matchIndex = this._state.dataState.findIndex((i) => !i.header);
+    this._navigation.active = detail ? matchIndex : -1;
 
     // update the list after changing the active item
-    this.list.requestUpdate();
+    this._list.requestUpdate();
 
     // clear the selection upon typing
     this.clearSingleSelection();
   }
 
-  protected handleSearchInput(e: CustomEvent) {
-    this.dataController.searchTerm = e.detail;
+  private _handleBlur() {
+    if (this._selection.isEmpty) {
+      this._displayValue = '';
+      this.resetSearchTerm();
+    }
+    this.checkValidity();
+  }
+
+  protected handleSearchInput({ detail }: CustomEvent<string>) {
+    this._state.searchTerm = detail;
   }
 
   protected handleOpening() {
@@ -623,11 +651,11 @@ export default class IgcComboComponent<
     }
 
     if (!this.singleSelect) {
-      this.list.focus();
+      this._list.focus();
     }
 
     if (!this.autofocusList) {
-      this.input.focus();
+      this._searchInput.focus();
     }
 
     return true;
@@ -649,7 +677,7 @@ export default class IgcComboComponent<
     if (emitEvent) {
       this.emitEvent('igcClosed');
     }
-    this.navigationController.active = -1;
+    this._navigation.active = -1;
     return true;
   }
 
@@ -667,138 +695,138 @@ export default class IgcComboComponent<
     return this._toggle(false);
   }
 
+  private _getActiveDescendantId(index: number) {
+    const position = index + 1;
+    const id = this.id ? `${this.id}-item-${position}` : `item-${position}`;
+
+    return { id, position };
+  }
+
   protected itemRenderer: ComboRenderFunction<T> = (
     item: ComboRecord<T>,
     index: number
-  ): TemplateResult => {
-    const record = item;
-    const dataItem = this.data.at(record.dataIndex);
-    const active = this.navigationController.active === index;
-    const selected = this.selectionController.selected.has(dataItem!);
-    const headerTemplate = html`<igc-combo-header part="group-header"
-      >${this.groupHeaderTemplate({ item: record.value })}</igc-combo-header
-    >`;
-
-    const itemPosition = index + 1;
-    const itemId = this.id
-      ? `${this.id}-item-${itemPosition}`
-      : `item-${itemPosition}`;
-
-    if (active) {
-      this._activeDescendant = itemId;
+  ) => {
+    if (!item) {
+      return html`${nothing}`;
     }
 
-    const itemTemplate = html`<igc-combo-item
-      id=${itemId}
-      part=${partNameMap({ item: true, selected, active })}
-      aria-setsize=${this.dataState.length}
-      aria-posinset=${itemPosition}
-      exportparts="checkbox, checkbox-indicator, checked"
-      @click=${this.itemClickHandler.bind(this)}
-      .index=${index}
-      ?active=${active}
-      ?selected=${selected}
-      ?hide-checkbox=${this.singleSelect}
-      >${this.itemTemplate({ item: record.value })}</igc-combo-item
-    >`;
+    if (this.groupKey && item.header) {
+      return html`
+        <igc-combo-header part="group-header">
+          ${this.groupHeaderTemplate({ item: item.value })}
+        </igc-combo-header>
+      `;
+    }
 
-    return html`${this.groupKey && record.header
-      ? headerTemplate
-      : itemTemplate}`;
+    const { id, position } = this._getActiveDescendantId(index);
+    const active = this._navigation.active === index;
+    const selected = this._selection.has(this.data.at(item.dataIndex));
+
+    if (active) {
+      this._activeDescendant = id;
+    }
+
+    return html`
+      <igc-combo-item
+        id=${id}
+        part=${partNameMap({ item: true, selected, active })}
+        aria-setsize=${this._state.dataState.length}
+        aria-posinset=${position}
+        exportparts="checkbox, checkbox-indicator, checked"
+        .index=${index}
+        ?active=${active}
+        ?selected=${selected}
+        ?hide-checkbox=${this.singleSelect}
+      >
+        ${this.itemTemplate({ item: item.value })}
+      </igc-combo-item>
+    `;
   };
 
   protected listKeydownHandler(event: KeyboardEvent) {
-    const target = event
-      .composedPath()
-      .find(
-        (el) => el instanceof IgcComboListComponent
-      ) as IgcComboListComponent;
+    const target = findElementFromEventPath<IgcComboListComponent>(
+      IgcComboListComponent.tagName,
+      event
+    );
 
     if (target) {
-      this.navigationController.navigateList(event, target);
+      this._navigation.navigateList(event, target);
     }
   }
 
-  protected itemClickHandler(event: MouseEvent) {
-    const input = this.singleSelect ? this.target : this.input;
+  protected itemClickHandler(event: PointerEvent) {
     const target = findElementFromEventPath<IgcComboItemComponent>(
       IgcComboItemComponent.tagName,
       event
-    )!;
+    );
+
+    if (!target) {
+      return;
+    }
 
     this.toggleSelect(target.index);
-    input.focus();
 
     if (this.singleSelect) {
+      this._input.focus();
       this._hide();
+    } else {
+      this._searchInput.focus();
     }
   }
 
   protected toggleSelect(index: number) {
-    const { dataIndex } = this.dataState.at(index)!;
+    const { dataIndex } = this._state.dataState.at(index)!;
 
-    this.selectionController.changeSelection(dataIndex);
-    this.navigationController.active = index;
+    this._selection.changeSelection(dataIndex);
+    this._navigation.active = index;
     this.updateValue();
   }
 
   protected selectByIndex(index: number) {
-    const { dataIndex } = this.dataState.at(index)!;
+    const { dataIndex } = this._state.dataState.at(index)!;
 
-    this.selectionController.selectByIndex(dataIndex);
-    this.navigationController.active = index;
+    this._selection.selectByIndex(dataIndex);
+    this._navigation.active = index;
     this.updateValue();
   }
 
-  protected navigateTo(item: T) {
-    this.navigationController.navigateTo(item, this.list);
-  }
-
   protected clearSingleSelection() {
-    const { selected } = this.selectionController;
-    const selection = selected.values().next().value;
+    const _selection = this._selection.asArray;
+    const selection = first(_selection);
 
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
-      this.selectionController.deselect([item], !isEmpty(selected));
-      this._value = [];
+      this._selection.deselect(item, !isEmpty(_selection));
+      this._formValue.value = [];
     }
   }
 
-  protected handleClearIconClick(e: MouseEvent) {
+  protected handleClearIconClick(e: PointerEvent) {
     e.stopPropagation();
 
     if (this.singleSelect) {
       this.resetSearchTerm();
       this.clearSingleSelection();
     } else {
-      this.selectionController.deselect([], true);
+      this._selection.deselect([], true);
     }
 
     this.updateValue();
-    this.navigationController.active = -1;
+    this._navigation.active = -1;
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
-    this.navigationController.navigateMainInput(e, this.list);
+    this._navigation.navigateMainInput(e, this._list);
   }
 
   protected handleSearchInputKeydown(e: KeyboardEvent) {
-    this.navigationController.navigateSearchInput(e, this.list);
+    this._navigation.navigateSearchInput(e, this._list);
   }
 
   protected toggleCaseSensitivity() {
     this.filteringOptions = {
       caseSensitive: !this.filteringOptions.caseSensitive,
     };
-  }
-
-  protected get hasPrefixes() {
-    return this.inputPrefix.length > 0;
-  }
-
-  protected get hasSuffixes() {
-    return this.inputSuffix.length > 0;
   }
 
   private _stopPropagation(e: Event) {
@@ -809,10 +837,10 @@ export default class IgcComboComponent<
     return html`
       <span
         slot="suffix"
-        part="${partNameMap({
+        part=${partNameMap({
           'toggle-icon': true,
-          filled: this.value.length > 0,
-        })}"
+          filled: !isEmpty(this.value),
+        })}
       >
         <slot name="toggle-icon">
           <igc-icon
@@ -826,131 +854,130 @@ export default class IgcComboComponent<
   }
 
   private renderClearIcon() {
-    const { selected } = this.selectionController;
-
-    return html`<span
-      slot="suffix"
-      part="clear-icon"
-      @click=${this.handleClearIconClick}
-      ?hidden=${isEmpty(selected)}
-    >
-      <slot name="clear-icon">
-        <igc-icon
-          name="input_clear"
-          collection="default"
-          aria-hidden="true"
-        ></igc-icon>
-      </slot>
-    </span>`;
+    return html`
+      <span
+        slot="suffix"
+        part="clear-icon"
+        @click=${this.handleClearIconClick}
+        ?hidden=${this._selection.isEmpty}
+      >
+        <slot name="clear-icon">
+          <igc-icon
+            name="input_clear"
+            collection="default"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </span>
+    `;
   }
 
   private renderMainInput() {
-    return html`<igc-input
-      id="target"
-      slot="anchor"
-      role="combobox"
-      aria-controls="dropdown"
-      aria-owns="dropdown"
-      aria-expanded=${this.open ? 'true' : 'false'}
-      aria-describedby="combo-helper-text"
-      aria-disabled=${this.disabled}
-      exportparts="container: input, input: native-input, label, prefix, suffix"
-      @click=${(e: MouseEvent) => {
-        e.preventDefault();
-        this._toggle(true);
-      }}
-      placeholder=${ifDefined(this.placeholder)}
-      label=${ifDefined(this.label)}
-      @igcChange=${this._stopPropagation}
-      @focus=${() => {
-        requestAnimationFrame(() => {
-          this.target.select();
-        });
-      }}
-      @igcInput=${this.handleMainInput}
-      @keydown=${this.handleMainInputKeydown}
-      .value=${this._displayValue}
-      .disabled=${this.disabled}
-      .required=${this.required}
-      .invalid=${live(this.invalid)}
-      .outlined=${this.outlined}
-      .autofocus=${this.autofocus}
-      ?readonly=${!this.singleSelect}
-    >
-      <span slot=${this.hasPrefixes && 'prefix'}>
-        <slot name="prefix"></slot>
-      </span>
-      ${this.renderClearIcon()}
-      <span slot=${this.hasSuffixes && 'suffix'}>
-        <slot name="suffix"></slot>
-      </span>
-      ${this.renderToggleIcon()}
-    </igc-input>`;
+    return html`
+      <igc-input
+        id="target"
+        slot="anchor"
+        role="combobox"
+        aria-controls="dropdown"
+        aria-owns="dropdown"
+        aria-expanded=${this.open ? 'true' : 'false'}
+        aria-describedby="combo-helper-text"
+        aria-disabled=${this.disabled}
+        exportparts="container: input, input: native-input, label, prefix, suffix"
+        @click=${this._toggle}
+        placeholder=${ifDefined(this.placeholder)}
+        label=${ifDefined(this.label)}
+        @igcChange=${this._stopPropagation}
+        @igcInput=${this.handleMainInput}
+        @keydown=${this.handleMainInputKeydown}
+        .value=${this._displayValue}
+        .disabled=${this.disabled}
+        .required=${this.required}
+        .invalid=${live(this.invalid)}
+        .outlined=${this.outlined}
+        .autofocus=${this.autofocus}
+        ?readonly=${!this.singleSelect}
+      >
+        <span slot=${!isEmpty(this.inputPrefix) && 'prefix'}>
+          <slot name="prefix"></slot>
+        </span>
+        ${this.renderClearIcon()}
+        <span slot=${!isEmpty(this.inputSuffix) && 'suffix'}>
+          <slot name="suffix"></slot>
+        </span>
+        ${this.renderToggleIcon()}
+      </igc-input>
+    `;
   }
 
   private renderSearchInput() {
-    return html`<div
-      part="filter-input"
-      ?hidden=${this.disableFiltering || this.singleSelect}
-    >
-      <igc-input
-        .value=${this.dataController.searchTerm}
-        part="search-input"
-        placeholder=${this.placeholderSearch}
-        exportparts="input: search-input"
-        @igcInput=${this.handleSearchInput}
-        @keydown=${this.handleSearchInputKeydown}
+    return html`
+      <div
+        part="filter-input"
+        ?hidden=${this.disableFiltering || this.singleSelect}
       >
-        <igc-icon
-          slot=${this.caseSensitiveIcon && 'suffix'}
-          name="case_sensitive"
-          collection="default"
-          part=${partNameMap({
-            'case-icon': true,
-            active: this.filteringOptions.caseSensitive ?? false,
-          })}
-          @click=${this.toggleCaseSensitivity}
-        ></igc-icon>
-      </igc-input>
-    </div>`;
+        <igc-input
+          .value=${this._state.searchTerm}
+          part="search-input"
+          placeholder=${this.placeholderSearch}
+          exportparts="input: search-input"
+          @igcInput=${this.handleSearchInput}
+          @keydown=${this.handleSearchInputKeydown}
+        >
+          <igc-icon
+            slot=${this.caseSensitiveIcon && 'suffix'}
+            name="case_sensitive"
+            collection="default"
+            part=${partNameMap({
+              'case-icon': true,
+              active: this.filteringOptions.caseSensitive ?? false,
+            })}
+            @click=${this.toggleCaseSensitivity}
+          ></igc-icon>
+        </igc-input>
+      </div>
+    `;
   }
 
   private renderEmptyTemplate() {
-    return html`<div part="empty" ?hidden=${this.dataState.length > 0}>
-      <slot name="empty">The list is empty</slot>
-    </div>`;
+    return html`
+      <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
+        <slot name="empty">The list is empty</slot>
+      </div>
+    `;
   }
 
   private renderList() {
-    const hasItems = this.dataState.length > 0;
-
-    return html`<div
-      .inert=${!this.open}
-      @keydown=${this.listKeydownHandler}
-      part="list-wrapper"
-    >
-      ${this.renderSearchInput()}
-      <div part="header">
-        <slot name="header"></slot>
-      </div>
-      <igc-combo-list
-        aria-multiselectable=${!this.singleSelect}
-        id="dropdown"
-        part="list"
-        role="listbox"
-        tabindex="0"
-        aria-labelledby="target"
-        aria-activedescendant=${ifDefined(this._activeDescendant)}
-        .items=${this.dataState}
-        .renderItem=${this.itemRenderer}
-        ?hidden=${!hasItems}
+    return html`
+      <div
+        .inert=${!this.open}
+        @keydown=${this.listKeydownHandler}
+        part="list-wrapper"
       >
-      </igc-combo-list>
-      ${this.renderEmptyTemplate()}
-      <div part="footer">
-        <slot name="footer"></slot>
+        ${this.renderSearchInput()}
+        <div part="header">
+          <slot name="header"></slot>
+        </div>
+        <igc-combo-list
+          aria-multiselectable=${!this.singleSelect}
+          id="dropdown"
+          part="list"
+          role="listbox"
+          tabindex="0"
+          aria-labelledby="target"
+          aria-activedescendant=${ifDefined(this._activeDescendant)}
+          .items=${this._state.dataState}
+          .renderItem=${this.itemRenderer}
+          ?hidden=${isEmpty(this._state.dataState)}
+          @click=${this.itemClickHandler}
+        >
+        </igc-combo-list>
+        ${this.renderEmptyTemplate()}
+        <div part="footer">
+          <slot name="footer"></slot>
+        </div>
       </div>
-    </div>`;
+    `;
   }
 
   private renderHelperText(): TemplateResult {
