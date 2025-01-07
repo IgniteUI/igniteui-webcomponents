@@ -31,7 +31,11 @@ export class IconsStateBroadcast {
   }
 
   public handleEvent({ data }: MessageEvent<BroadcastIconsChangeMessage>) {
-    if (data.actionType !== ActionType.SyncState) {
+    // no need to sync with other wc icon services, just with angular elements
+    if (
+      data.actionType !== ActionType.SyncState ||
+      data.origin === 'igniteui-webcomponents'
+    ) {
       return;
     }
 
@@ -39,6 +43,7 @@ export class IconsStateBroadcast {
       actionType: ActionType.SyncState,
       collections: this.getUserSetCollection(this.collections).toMap(),
       references: this.getUserRefsCollection(this.refsCollection).toMap(),
+      origin: 'igniteui-webcomponents',
     });
   }
 

@@ -35,6 +35,7 @@ export interface BroadcastIconsChangeMessage {
   actionType: ActionType;
   collections?: Map<string, Map<string, SvgIcon>>;
   references?: Map<string, Map<string, IconMeta>>;
+  origin?: string;
 }
 
 // Exported public types
