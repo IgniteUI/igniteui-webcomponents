@@ -103,10 +103,16 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @queryAssignedNodes({ flatten: true })
   private projected!: Array<Node>;
 
-  @queryAssignedElements({ slot: 'prefix' })
+  @queryAssignedElements({
+    slot: 'prefix',
+    selector: '[slot="prefix"]:not([hidden])',
+  })
   protected prefixes!: Array<HTMLElement>;
 
-  @queryAssignedElements({ slot: 'suffix' })
+  @queryAssignedElements({
+    slot: 'suffix',
+    selector: '[slot="suffix"]:not([hidden])',
+  })
   protected suffixes!: Array<HTMLElement>;
 
   @query('textarea', true)

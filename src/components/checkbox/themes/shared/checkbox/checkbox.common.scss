@@ -29,4 +29,8 @@ $theme: $base;
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
     }
+
+    [part~='indicator'] {
+        stroke: var-get($theme, 'disabled-tick-color');
+    }
 }
