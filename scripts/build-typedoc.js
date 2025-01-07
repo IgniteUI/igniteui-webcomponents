@@ -1,15 +1,18 @@
 import path from 'node:path';
 import { create } from 'browser-sync';
 import watch from 'node-watch';
-import TypeDoc from 'typedoc';
+import { Application } from 'typedoc';
 
 const browserSync = create();
 const ROOT = path.join.bind(null, path.resolve('./'));
 
 const TYPEDOC = {
   PLUGINS: {
-    THEME: ROOT('node_modules', 'ig-typedoc-theme'),
-    LOCALIZATION: ROOT('node_modules', 'typedoc-plugin-localization'),
+    THEME: ROOT('node_modules', 'ig-typedoc-theme/dist/index.js'),
+    LOCALIZATION: ROOT(
+      'node_modules',
+      'typedoc-plugin-localization/dist/index.js'
+    ),
   },
   OUTPUT: ROOT('dist', 'docs', 'typescript'),
   EXPORT_JSON_PATH: ROOT(
@@ -90,7 +93,7 @@ async function main() {
     entryPointStrategy = 'merge';
   }
 
-  const app = await TypeDoc.Application.bootstrapWithPlugins({
+  const app = await Application.bootstrapWithPlugins({
     entryPoints,
     entryPointStrategy,
     plugin: [TYPEDOC.PLUGINS.THEME, TYPEDOC.PLUGINS.LOCALIZATION],
