@@ -143,7 +143,7 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public visited = false;
 
-  /** @hidden @intrnal @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public animation: Animation = 'fade';
 
