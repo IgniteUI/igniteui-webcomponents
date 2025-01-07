@@ -21,7 +21,17 @@ describe('Tile resize', () => {
 
   let tileManager: IgcTileManagerComponent;
 
+  function getTiles() {
+    return Array.from(tileManager.querySelectorAll('igc-tile'));
+  }
+
   function getTileBaseWrapper(element: IgcTileComponent) {
+    const resizeElement = element.renderRoot.querySelector('igc-resize');
+
+    if (resizeElement) {
+      return resizeElement.querySelector<HTMLDivElement>('[part~="base"]')!;
+    }
+
     return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
   }
 
@@ -48,68 +58,60 @@ describe('Tile resize', () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
     });
 
-    it('should create a ghost element on resize start', async () => {
-      const tile = first(tileManager.tiles);
-      // const eventSpy = spy(tile, 'emitEvent');
+    const resize = async (tile: Element, clientX: number, clientY: number) => {
+      const resizer = tile.shadowRoot?.querySelector('igc-resize');
+      const resizeHandle =
+        resizer?.shadowRoot?.querySelector('[part="trigger"]');
 
-      await elementUpdated(tile);
+      simulatePointerDown(resizeHandle!);
+
+      await elementUpdated(resizer!);
+
+      simulatePointerMove(resizeHandle!, { clientX });
+
+      await elementUpdated(resizer!);
+    };
+
+    it('should create a ghost element on resize start', async () => {
+      const tile = first(getTiles());
       const resizer = tile.renderRoot.querySelector('igc-resize')!;
-      const resizeHandle = resizer?.shadowRoot?.querySelector('igc-icon');
+      const eventSpy = spy(resizer, 'emitEvent');
+      const resizeHandle =
+        resizer?.shadowRoot?.querySelector('[part="trigger"]');
       const resizerChildren = resizer.children;
       expect(resizerChildren).lengthOf(1);
 
       simulatePointerDown(resizeHandle!);
-      await elementUpdated(resizeHandle!);
+      await elementUpdated(resizer!);
 
       expect(resizerChildren).lengthOf(2);
       const ghostElement = resizerChildren[1];
-      expect(ghostElement).to.not.be.null;
 
-      simulatePointerMove(resizeHandle!, { clientX: 10, clientY: 10 });
-      // expect(eventSpy).calledWith('igcResizeStart');
-      // expect(eventSpy).to.have.been.calledWith('igcResizeStart'
-      //   // {
-      //   //   detail: tile,
-      //   //   cancelable: true,
-      //   // }
-      // );
+      expect(ghostElement).to.not.be.null;
+      expect(eventSpy).calledWith('igcResizeStart');
     });
 
-    it('should update ghost element styles during pointer move', async () => {
-      const tile = first(tileManager.tiles);
-      // const eventSpy = spy(tile, 'emitEvent');
-      const { x, y, width, height } = tile.getBoundingClientRect();
-      // const resizeHandle = tile.shadowRoot!.querySelector('.resize-handle');
-
+    it('should update ghost element styles during pointer move - columns', async () => {
+      const tile = first(getTiles());
       const resizer = tile.renderRoot.querySelector('igc-resize')!;
-      const resizeHandle = resizer?.shadowRoot?.querySelector('igc-icon');
+      //const resizeHandle = resizer?.shadowRoot?.querySelector('[part="trigger"]');
 
-      simulatePointerDown(resizeHandle!);
-      await elementUpdated(resizeHandle!);
+      const eventSpy = spy(resizer, 'emitEvent');
 
-      simulatePointerMove(resizeHandle!, {
-        clientX: x + width * 2,
-        clientY: y + height * 2,
-      });
-      await elementUpdated(resizeHandle!);
+      const { x, width } = tile.getBoundingClientRect();
+      resize(tile, x + width * 2, 0);
 
-      // expect(eventSpy).calledWith('igcResizeStart');
-      // expect(eventSpy.getCall(0)).calledWith('igcResizeStart', {
-      //   detail: tile,
-      //   cancelable: true,
-      // });
+      await elementUpdated(tile);
 
-      // expect(eventSpy.getCall(1)).calledWith('igcResizeMove', {
-      //   detail: tile,
-      //   cancelable: true,
-      // });
+      const updatedGhostElement = resizer.children[1] as HTMLElement;
+      //debugger
 
-      // TODO Fix or remove that check when the resize interaction is finalized
-      // const ghostElement = tileManager.querySelector(
-      //   '#resize-ghost'
-      // ) as HTMLElement;
-      // expect(ghostElement.style.gridColumn).to.equal('span 9');
-      // expect(ghostElement.style.gridRow).to.equal('span 9');
+      expect(eventSpy).calledWith('igcResize');
+
+      // Check if styles are updated, also check values
+      expect(updatedGhostElement.style.width).to.not.be.empty;
+      expect(updatedGhostElement.style.height).to.not.be.empty;
+      // Check values
     });
 
     xit('should set the styles on the tile and remove the ghost element on resize end', async () => {
