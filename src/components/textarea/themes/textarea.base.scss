@@ -92,21 +92,17 @@ textarea {
 
 [part~='prefixed'] {
     [part='prefix'] {
-        grid-area: 1 / 1 / auto / auto;
+        @extend %prefix;
 
-        ::slotted(*) {
-            @extend %prefix;
-        }
+        grid-area: 1 / 1 / auto / auto;
     }
 }
 
 [part~='suffixed'] {
     [part='suffix'] {
-        grid-area: 1 / 3 / auto / auto;
+        @extend %suffix;
 
-        ::slotted(*) {
-            @extend %suffix;
-        }
+        grid-area: 1 / 3 / auto / auto;
     }
 }
 

@@ -211,17 +211,13 @@ textarea {
 
 [part~='prefixed'] {
     [part~='prefix'] {
-        ::slotted(*) {
-            padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
-        }
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
 [part~='suffixed'] {
     [part~='suffix'] {
-        ::slotted(*) {
-            padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
-        }
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 

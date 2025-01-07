@@ -109,9 +109,7 @@ textarea {
 
 [part~='prefixed'] [part='prefix'],
 [part~='suffixed'] [part='suffix'] {
-    ::slotted(*) {
-        padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
-    }
+    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
 }
 
 [part~='prefixed'] textarea {
