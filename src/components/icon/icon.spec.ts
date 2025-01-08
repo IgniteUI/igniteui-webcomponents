@@ -9,6 +9,7 @@ import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -16,6 +17,7 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import { createIconDefaultMap } from './registry/default-map.js';
 import {
   ActionType,
   type BroadcastIconsChangeMessage,
@@ -250,6 +252,53 @@ describe('Icon broadcast service', () => {
       await nextFrame();
 
       expect(events.length).to.equal(0);
+    });
+
+    it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
+      const collections = createIconDefaultMap<string, SvgIcon>();
+      const references = createIconDefaultMap<string, IconMeta>();
+
+      const evt1 = [];
+      const broadcast1 = new IconsStateBroadcast(collections, references);
+      (broadcast1 as any).channel.addEventListener(
+        'message',
+        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
+          evt1.push(e);
+        }
+      );
+
+      const evt2 = [];
+      const broadcast2 = new IconsStateBroadcast(collections, references);
+      (broadcast2 as any).channel.addEventListener(
+        'message',
+        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
+          evt2.push(e);
+        }
+      );
+
+      const evt3 = [];
+      const broadcast3 = new IconsStateBroadcast(collections, references);
+      (broadcast3 as any).channel.addEventListener(
+        'message',
+        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
+          evt3.push(e);
+        }
+      );
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await nextFrame();
+
+      // all icon broadcasts must respond once on the channel with their state
+      // so 1 event from the peer + 1 response event with state per broadcast service.
+      expect(evt1.length).to.equal(4);
+      expect(evt2.length).to.equal(4);
+      expect(evt3.length).to.equal(4);
+
+      // dispose of mock services.
+      (broadcast1 as any).dispose();
+      (broadcast2 as any).dispose();
+      (broadcast3 as any).dispose();
     });
   });
 
