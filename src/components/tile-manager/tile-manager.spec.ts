@@ -383,7 +383,7 @@ describe('Tile Manager component', () => {
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).to.have.been.calledWith(
+      expect(eventSpy).calledWith(
         'igcTileFullscreen',
         match({
           detail: { tile: tile, state: true },
@@ -432,29 +432,20 @@ describe('Tile Manager component', () => {
       await elementUpdated(tile);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileMaximize');
-      // TODO: Fix the state in the event arguments
-      // expect(eventSpy).to.have.been.calledWith(
-      //   'igcTileMaximize',
-      //   {
-      //     detail: { tile: tile, state: true },
-      //     cancelable: true,
-      //   }
-      // );
-
+      expect(eventSpy).calledWith('igcTileMaximize', {
+        detail: { tile: tile, state: true },
+        cancelable: true,
+      });
       expect(tile.maximized).to.be.true;
 
       simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
       expect(eventSpy).to.have.been.calledTwice;
-      expect(eventSpy).calledWith('igcTileMaximize');
-      // TODO: Fix the state in the event arguments
-      // expect(eventSpy).calledWith('igcTileMaximize', {
-      //   detail: { tile: tile, state: false },
-      //   cancelable: true,
-      // });
-
+      expect(eventSpy).calledWith('igcTileMaximize', {
+        detail: { tile: tile, state: false },
+        cancelable: true,
+      });
       expect(tile.maximized).to.be.false;
     });
 
@@ -470,13 +461,10 @@ describe('Tile Manager component', () => {
       simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileMaximize');
-      // TODO: Fix the state in the event arguments
-      // expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
-      //   detail: { tile: tile, state: true },
-      //   cancelable: true,
-      // });
-
+      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
+        detail: { tile: tile, state: true },
+        cancelable: true,
+      });
       expect(tile.maximized).to.be.false;
     });
 

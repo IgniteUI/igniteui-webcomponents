@@ -76,7 +76,7 @@ export default class IgcTileHeaderComponent extends LitElement {
 
   private emitMaximizedEvent() {
     return this._tile?.emitEvent('igcTileMaximize', {
-      detail: { tile: this._tile, state: this._tile.maximized },
+      detail: { tile: this._tile, state: !this._tile.maximized },
       cancelable: true,
     });
   }
