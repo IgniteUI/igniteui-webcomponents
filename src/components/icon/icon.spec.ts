@@ -1,4 +1,5 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
@@ -257,48 +258,26 @@ describe('Icon broadcast service', () => {
     it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
       const collections = createIconDefaultMap<string, SvgIcon>();
       const references = createIconDefaultMap<string, IconMeta>();
-
-      const evt1 = [];
+      // 2 new broadcasts
       const broadcast1 = new IconsStateBroadcast(collections, references);
-      (broadcast1 as any).channel.addEventListener(
-        'message',
-        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
-          evt1.push(e);
-        }
-      );
-
-      const evt2 = [];
       const broadcast2 = new IconsStateBroadcast(collections, references);
-      (broadcast2 as any).channel.addEventListener(
-        'message',
-        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
-          evt2.push(e);
-        }
-      );
-
-      const evt3 = [];
-      const broadcast3 = new IconsStateBroadcast(collections, references);
-      (broadcast3 as any).channel.addEventListener(
-        'message',
-        (e: MessageEvent<BroadcastIconsChangeMessage>) => {
-          evt3.push(e);
-        }
-      );
+      // 1 global one, initialized when you get the icon registry first time.
+      const iconReg = getIconRegistry();
+      // total - 3 services now.
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await nextFrame();
+      await aTimeout(20);
 
-      // all icon broadcasts must respond once on the channel with their state
-      // so 1 event from the peer + 1 response event with state per broadcast service.
-      expect(evt1.length).to.equal(4);
-      expect(evt2.length).to.equal(4);
-      expect(evt3.length).to.equal(4);
+      // all icon broadcasts must respond with their state
+      // 2 from broadcast service + 1 from global.
+      expect(events.length).to.equal(3);
 
       // dispose of mock services.
-      (broadcast1 as any).dispose();
-      (broadcast2 as any).dispose();
-      (broadcast3 as any).dispose();
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast1['dispose']();
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast2['dispose']();
     });
   });
 
