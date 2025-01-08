@@ -220,7 +220,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part~='indicator'] {
-        stroke-opacity: 0.4;
+        stroke: unset;
+        fill: var-get($theme, 'disabled-tick-color');
     }
 }
 
@@ -229,5 +230,13 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     [part~='control']::after {
         background: $disabled-indeterminate-color;
         border-color: transparent;
+    }
+
+    [part~='indicator'] {
+        fill: none;
+
+        rect {
+            fill: var-get($theme, 'disabled-tick-color');
+        }
     }
 }
