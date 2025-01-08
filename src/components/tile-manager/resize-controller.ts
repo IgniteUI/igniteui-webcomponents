@@ -27,7 +27,7 @@ type ResizeControllerConfig = {
 };
 
 class ResizeController implements ReactiveController {
-  private static auxiliaryEvents = [
+  private static readonly auxiliaryEvents = [
     'pointermove',
     'lostpointercapture',
   ] as const;
@@ -52,13 +52,14 @@ class ResizeController implements ReactiveController {
 
   private _host: ReactiveControllerHost & HTMLElement;
   private _config: ResizeControllerConfig = {};
-  private _id!: number;
+  private _id = -1;
+  private _hasPointerCapture = false;
 
   private _ghost: HTMLElement | null = null;
   protected _initialState!: DOMRect;
   private _state!: DOMRect;
 
-  protected get _element() {
+  protected get _element(): HTMLElement {
     return this._config?.ref ? this._config.ref.value! : this._host;
   }
 
@@ -74,7 +75,7 @@ class ResizeController implements ReactiveController {
 
   // Internal state helpers
 
-  private _createGhost() {
+  private _createGhost(): void {
     if (this._config.mode !== 'deferred') {
       return;
     }
@@ -85,20 +86,32 @@ class ResizeController implements ReactiveController {
     this._host.append(this._ghost);
   }
 
-  private _disposeGhost() {
+  private _disposeGhost(): void {
     if (this._ghost) {
       this._ghost.remove();
       this._ghost = null;
     }
   }
 
-  private _setInitialState(event: PointerEvent) {
-    const resizableElement = this._host.querySelector('div[part~="base"]');
+  private _setPointerCaptureState(state: boolean): void {
+    this._hasPointerCapture = state;
+    state
+      ? this._element.setPointerCapture(this._id)
+      : this._element.releasePointerCapture(this._id);
 
-    const rect = resizableElement!.getBoundingClientRect();
-    this._initialState = structuredClone(rect);
-    this._state = rect;
-    this._id = event.pointerId;
+    for (const event of ResizeController.auxiliaryEvents) {
+      state
+        ? this._host.addEventListener(event, this)
+        : this._host.removeEventListener(event, this);
+    }
+  }
+
+  private _setInitialState({ pointerId }: PointerEvent): void {
+    const resizableElement = this._host.querySelector('div[part~="base"]')!;
+
+    this._initialState = resizableElement.getBoundingClientRect();
+    this._state = structuredClone(this._initialState);
+    this._id = pointerId;
   }
 
   private _createCallbackParams(event: PointerEvent): ResizeCallbackParams {
@@ -114,22 +127,13 @@ class ResizeController implements ReactiveController {
     };
   }
 
-  private _toggleSubsequentEvents(set: boolean) {
-    const method = set
-      ? this._host.addEventListener
-      : this._host.removeEventListener;
-    for (const type of ResizeController.auxiliaryEvents) {
-      method(type, this);
-    }
-  }
-
   private _shouldSkip(event: PointerEvent): boolean {
     return !findElementFromEventPath((e) => e === this._element, event);
   }
 
   // Event handlers
 
-  private _handlePointerDown(event: PointerEvent) {
+  private _handlePointerDown(event: PointerEvent): void {
     // Non-primary buttons are ignored
     if (event.button) {
       return;
@@ -138,17 +142,13 @@ class ResizeController implements ReactiveController {
     if (this._config?.start) {
       this._setInitialState(event);
       this._createGhost();
-
-      const params = this._createCallbackParams(event);
-      this._config.start.call(this._host, params);
-
-      this._element.setPointerCapture(this._id);
-      this._toggleSubsequentEvents(true);
+      this._config.start.call(this._host, this._createCallbackParams(event));
+      this._setPointerCaptureState(true);
     }
   }
 
-  private _handlePointerMove(event: PointerEvent) {
-    if (!this._element.hasPointerCapture(this._id)) {
+  private _handlePointerMove(event: PointerEvent): void {
+    if (!this._hasPointerCapture) {
       return;
     }
 
@@ -168,7 +168,7 @@ class ResizeController implements ReactiveController {
     });
   }
 
-  private _handlePointerEnd(event: PointerEvent) {
+  private _handlePointerEnd(event: PointerEvent): void {
     Object.assign(this._host.style, {
       width: `${this._state.width}px`,
       height: `${this._state.height}px`,
@@ -181,34 +181,37 @@ class ResizeController implements ReactiveController {
     this.dispose();
   }
 
-  public handleEvent(event: PointerEvent) {
+  public handleEvent(event: PointerEvent): void {
     if (this._shouldSkip(event)) {
       return;
     }
 
     switch (event.type) {
       case 'touchstart':
-        return event.preventDefault();
+        event.preventDefault();
+        break;
 
       case 'pointerdown':
-        return this._handlePointerDown(event);
+        this._handlePointerDown(event);
+        break;
       case 'pointermove':
-        return this._handlePointerMove(event);
+        this._handlePointerMove(event);
+        break;
       case 'lostpointercapture':
-        return this._handlePointerEnd(event);
+        this._handlePointerEnd(event);
+        break;
     }
   }
 
   // Public API
 
-  public setConfig(config?: ResizeControllerConfig) {
+  public setConfig(config?: ResizeControllerConfig): void {
     Object.assign(this._config, config);
   }
 
-  public dispose() {
+  public dispose(): void {
     this._disposeGhost();
-    this._toggleSubsequentEvents(false);
-    this._element.releasePointerCapture(this._id);
+    this._setPointerCaptureState(false);
   }
 
   public hostConnected(): void {
@@ -225,6 +228,6 @@ class ResizeController implements ReactiveController {
 export function addResizeController(
   host: ReactiveControllerHost & HTMLElement,
   config?: ResizeControllerConfig
-) {
+): ResizeController {
   return new ResizeController(host, config);
 }

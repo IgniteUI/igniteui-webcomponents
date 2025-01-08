@@ -24,11 +24,15 @@ export interface IgcResizeComponentEventMap {
   igcResizeCancel: CustomEvent<unknown>;
 }
 
+/* blazorSuppress */
+/**
+ * @element igc-resize
+ */
 export default class IgcResizeComponent extends EventEmitterMixin<
   IgcResizeComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static tagName = 'igc-resize';
+  public static readonly tagName = 'igc-resize';
   public static styles = [styles, shared];
 
   /* blazorSuppress */
