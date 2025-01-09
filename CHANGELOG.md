@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - helper-text color in disabled state [#1519](https://github.com/IgniteUI/igniteui-webcomponents/pull/1519)
   - remove layout space for hidden content in prefix/suffix slots [#1526](https://github.com/IgniteUI/igniteui-webcomponents/pull/1526)
 - #### Icon service
-  - reduce sync events between copies of the service. Sync with Angular elements peers only [#1532](https://github.com/IgniteUI/igniteui-webcomponents/pull/1532)
+  - reduce sync events between copies of the service in different tabs [#1532](https://github.com/IgniteUI/igniteui-webcomponents/pull/1532)
 
 ## [5.1.2] - 2024-11-04
 ### Added
