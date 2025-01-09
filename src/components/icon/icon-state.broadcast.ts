@@ -11,6 +11,7 @@ export class IconsStateBroadcast {
   private channel!: BroadcastChannel | null;
   private collections: IconsCollection<SvgIcon>;
   private refsCollection: IconsCollection<IconMeta>;
+  private static readonly origin = 'igniteui-webcomponents';
 
   constructor(
     collections: IconsCollection<SvgIcon>,
@@ -31,7 +32,11 @@ export class IconsStateBroadcast {
   }
 
   public handleEvent({ data }: MessageEvent<BroadcastIconsChangeMessage>) {
-    if (data.actionType !== ActionType.SyncState) {
+    // no need to sync with other wc icon services, just with angular elements
+    if (
+      data.actionType !== ActionType.SyncState ||
+      data.origin === IconsStateBroadcast.origin
+    ) {
       return;
     }
 
@@ -39,6 +44,7 @@ export class IconsStateBroadcast {
       actionType: ActionType.SyncState,
       collections: this.getUserSetCollection(this.collections).toMap(),
       references: this.getUserRefsCollection(this.refsCollection).toMap(),
+      origin: IconsStateBroadcast.origin,
     });
   }
 
