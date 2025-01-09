@@ -4,20 +4,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.2.0] - 2025-01-09
 ### Added
 - Form-associated elements now have a `defaultValue` property (`defaultChecked` for radio buttons, checkboxes, and switches). When a form is reset, components will use this property’s value as their new value or checked state.
 
 ### Changed
-- Calendar - allow passing a string value to the backing `value`, `values` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
-- Date-time input - allow passing a string value to the backing `value`, `min` and `max` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
-- Date picker - allow passing a string value to the backing `value`, `min`, `max` and `activeDate` properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
-- Component validation - aligned validation constraints to follow the behavior of their native HTML counterparts.
-  For example, `minlength` will no longer trigger a `tooShort` validity state, unless there is text present in the component.
+- #### Calendar
+  - enabled passing string values to the **value**, **values**, and **activeDate** properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- #### Checkbox
+  - updated style implementation and improved slotted checkbox styles [#1489](https://github.com/IgniteUI/igniteui-webcomponents/pull/1489)
+- #### Date-time input
+  - enabled passing string values to the **value**, **min**, and **max** properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- #### Date picker
+  - enabled passing string values to the **value**, **min**, **max** and **activeDate** properties [#1467](https://github.com/IgniteUI/igniteui-webcomponents/issues/1467)
+- #### List
+  - updated list item internal slots gaps and sizing [#1480](https://github.com/IgniteUI/igniteui-webcomponents/pull/1480)
+- #### Progressbar
+  - the default value label animation now uses CSS counters and animations [#1492](https://github.com/IgniteUI/igniteui-webcomponents/pull/1492)
+- #### Validation
+  - Updated validation constraints to align with the behavior of native HTML elements. For instance, the minlength attribute will now only trigger a tooShort validity state if the component contains a value.
 
 ### Fixed
-- Combo - Rendering issue after Edge browser autofill behavior [#1497](https://github.com/IgniteUI/igniteui-webcomponents/issues/1497)
-- Input - Incorrect validation with numeric input and step attribute [#1521](https://github.com/IgniteUI/igniteui-webcomponents/issues/1521)
+- #### Avatar
+  - slotted icon size [#1504](https://github.com/IgniteUI/igniteui-webcomponents/pull/1504)
+- #### Badge
+  - aligned colors with UI kits [#1466](https://github.com/IgniteUI/igniteui-webcomponents/pull/1466)
+- #### Card
+  - actions content alignment in vertical orientation [#1472](https://github.com/IgniteUI/igniteui-webcomponents/pull/1472)
+- #### Combo
+  - rendering issue after Edge browser autofill behavior [#1497](https://github.com/IgniteUI/igniteui-webcomponents/issues/1497)
+- #### Checkbox
+  - removed extra gap between the checkbox and the label [#1479](https://github.com/IgniteUI/igniteui-webcomponents/pull/1479)
+  - tick color in disabled state [#1528](https://github.com/IgniteUI/igniteui-webcomponents/pull/1528)
+- #### Dialog
+  - removed vertical padding in Bootstrap theme [#1471](https://github.com/IgniteUI/igniteui-webcomponents/pull/1471)
+  - Fluent theme typography [#1475](https://github.com/IgniteUI/igniteui-webcomponents/pull/1475)
+- #### Dropdown
+  - remove vertical padding in Bootstrap theme [#1471](https://github.com/IgniteUI/igniteui-webcomponents/pull/1471)
+- #### Input
+  - input type search does not interfere with the outline variant in Material theme [#1520](https://github.com/IgniteUI/igniteui-webcomponents/pull/1520)
+  - step validation for numeric input [#1522](https://github.com/IgniteUI/igniteui-webcomponents/pull/1522)
+  - helper-text color in invalid state [#1525](https://github.com/IgniteUI/igniteui-webcomponents/pull/1525)
+- #### List
+  - discrepancies between the list and the UI kits [#1488](https://github.com/IgniteUI/igniteui-webcomponents/pull/1488)
+- #### Radio
+  - remove label part when there is not slotted content [#1482](https://github.com/IgniteUI/igniteui-webcomponents/pull/1482)
+- #### Textarea
+  - label position in Material theme [#1518](https://github.com/IgniteUI/igniteui-webcomponents/pull/1518)
+  - helper-text color in disabled state [#1519](https://github.com/IgniteUI/igniteui-webcomponents/pull/1519)
+  - remove layout space for hidden content in prefix/suffix slots [#1526](https://github.com/IgniteUI/igniteui-webcomponents/pull/1526)
+- #### Icon service
+  - reduce sync events between copies of the service in different tabs [#1532](https://github.com/IgniteUI/igniteui-webcomponents/pull/1532)
 
 ## [5.1.2] - 2024-11-04
 ### Added
@@ -624,6 +661,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.2...5.2.0
 [5.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.1...5.1.2
 [5.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.0.2...5.1.0
