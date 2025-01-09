@@ -26,11 +26,6 @@ $theme: $material;
     }
 }
 
-[part~='dragging'] {
-    opacity: .6;
-    box-shadow: var-get($theme, 'drag-elevation');
-}
-
 [part~='base'][part~='resizing']{
     opacity: .3;
 
@@ -50,4 +45,19 @@ $theme: $material;
     border-radius: var-get($theme, 'border-radius');
     border: rem(1px) solid var-get($theme, 'ghost-border');
     background: var-get($theme, 'overlay-background');
+}
+
+[part~='drag-over'] {
+    &::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        border-radius: inherit;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        border: rem(1px) solid var-get($theme, 'ghost-border');
+        background: var-get($theme, 'overlay-background');
+    }
 }

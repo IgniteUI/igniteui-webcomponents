@@ -67,12 +67,5 @@
     width: 100%;
     height: 100%;
     transform: scale(0);
-
-    // transition: transform 0.5s ease-in-out;
     z-index: 10;
-}
-
-[part~='drag-over'] {
-    opacity: 0.5;
-    pointer-events: none;
 }

@@ -101,6 +101,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     minWidth?: number;
     minHeight?: number;
     background?: string;
+    tileBackground?: string;
+    tileBorder?: string;
     border?: string;
     borderRadius?: string;
     rowHeights?: number[];
@@ -317,6 +319,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
     const compStyles = getComputedStyle(this);
+    this.cacheStyles();
 
     this._dragImage = this.cloneNode(true) as HTMLElement;
     Object.assign(this._dragImage.style, {
@@ -325,6 +328,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
       position: 'absolute',
       top: '-99999px',
       left: '-99999px',
+      background: this._cachedStyles.tileBackground,
+      border: `1px solid ${this._cachedStyles.tileBorder}`,
+      borderRadius: this._cachedStyles.borderRadius,
+      overflow: 'hidden',
     });
 
     document.body.append(this._dragImage);
@@ -448,6 +455,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
         computedStyle.getPropertyValue('--ig-column-count')
       ),
       background: computedStyle.getPropertyValue('--placeholder-background'),
+      tileBackground: computedStyle.getPropertyValue('--tile-background'),
+      tileBorder: computedStyle.getPropertyValue('--hover-border-color'),
       border: computedStyle.getPropertyValue('--ghost-border'),
       borderRadius: computedStyle.getPropertyValue('--border-radius'),
       minWidth: Number.parseFloat(
