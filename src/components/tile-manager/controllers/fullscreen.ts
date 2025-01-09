@@ -22,6 +22,8 @@ class FullscreenController implements ReactiveController {
   }
 
   public setState(fullscreen: boolean, isUserTriggered = false): void {
+    if (!this._host.isConnected) return;
+
     if (isUserTriggered && this._callback) {
       if (!this._callback.call(this._host, fullscreen)) {
         return;
