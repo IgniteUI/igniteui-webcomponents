@@ -1,4 +1,5 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
@@ -9,6 +10,7 @@ import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -16,6 +18,7 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import { createIconDefaultMap } from './registry/default-map.js';
 import {
   ActionType,
   type BroadcastIconsChangeMessage,
@@ -250,6 +253,31 @@ describe('Icon broadcast service', () => {
       await nextFrame();
 
       expect(events.length).to.equal(0);
+    });
+
+    it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
+      const collections = createIconDefaultMap<string, SvgIcon>();
+      const references = createIconDefaultMap<string, IconMeta>();
+      // 2 new broadcasts
+      const broadcast1 = new IconsStateBroadcast(collections, references);
+      const broadcast2 = new IconsStateBroadcast(collections, references);
+      // 1 global one, initialized when you get the icon registry first time.
+      const iconReg = getIconRegistry();
+      // total - 3 services now.
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(20);
+
+      // all icon broadcasts must respond with their state
+      // 2 from broadcast service + 1 from global.
+      expect(events.length).to.equal(3);
+
+      // dispose of mock services.
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast1['dispose']();
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast2['dispose']();
     });
   });
 
