@@ -80,6 +80,7 @@ export default class IgcResizeComponent extends EventEmitterMixin<
       start: this._handleResizeStart,
       resize: this._handleResize,
       end: this._handleResizeEnd,
+      resizableElement: () => this.querySelector('div[part~="base"]')!,
     });
 
     addKeybindings(this, {

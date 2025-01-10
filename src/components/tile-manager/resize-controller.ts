@@ -24,6 +24,7 @@ type ResizeControllerConfig = {
   start?: ResizeControllerCallback;
   resize?: ResizeControllerCallback;
   end?: ResizeControllerCallback;
+  resizableElement?: () => Element;
 };
 
 class ResizeController implements ReactiveController {
@@ -107,7 +108,9 @@ class ResizeController implements ReactiveController {
   }
 
   private _setInitialState({ pointerId }: PointerEvent): void {
-    const resizableElement = this._host.querySelector('div[part~="base"]')!;
+    const resizableElement = this._config.resizableElement
+      ? this._config.resizableElement()
+      : this._host;
 
     this._initialState = resizableElement.getBoundingClientRect();
     this._state = structuredClone(this._initialState);
