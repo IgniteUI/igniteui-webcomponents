@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { type TileContext, tileContext } from '../common/context.js';
@@ -114,7 +114,8 @@ export default class IgcTileHeaderComponent extends LitElement {
       <div part="header">
         <slot part="title" name="title"></slot>
         <section part="actions">
-          ${this._renderAction(maximize)} ${this._renderAction(fullscreen)}
+          ${!this._isFullscreen ? this._renderAction(maximize) : nothing}
+          ${this._renderAction(fullscreen)}
           <slot name="actions"></slot>
         </section>
       </div>
