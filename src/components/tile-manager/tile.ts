@@ -97,16 +97,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
   private _cachedStyles: {
-    columnCount?: number;
-    minWidth?: number;
-    minHeight?: number;
     background?: string;
-    tileBackground?: string;
-    tileBorder?: string;
     border?: string;
     borderRadius?: string;
-    rowHeights?: number[];
+    columnCount?: number;
+    gap?: number;
     initialTop?: number;
+    minHeight?: number;
+    minWidth?: number;
+    tileBackground?: string;
+    tileBorder?: string;
+    rowHeights?: number[];
   } = {};
 
   // Tile manager context properties and helpers
@@ -442,31 +443,39 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private cacheStyles() {
     //use util
-    const computedStyle = getComputedStyle(this);
+    const tileComputedStyle = getComputedStyle(this);
     const parentWrapper =
       this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
+    const tileManagerComputedStyle = getComputedStyle(parentWrapper);
 
-    const rowHeights = getComputedStyle(parentWrapper)
-      .gridTemplateRows.split(' ')
+    const gap =
+      Number.parseFloat(
+        tileManagerComputedStyle.getPropertyValue('grid-gap')
+      ) || 0;
+    const rowHeights = tileManagerComputedStyle.gridTemplateRows
+      .split(' ')
       .map((height) => Number.parseFloat(height.trim()));
 
     this._cachedStyles = {
       columnCount: Number.parseFloat(
-        computedStyle.getPropertyValue('--ig-column-count')
+        tileComputedStyle.getPropertyValue('--ig-column-count')
       ),
-      background: computedStyle.getPropertyValue('--placeholder-background'),
-      tileBackground: computedStyle.getPropertyValue('--tile-background'),
-      tileBorder: computedStyle.getPropertyValue('--hover-border-color'),
-      border: computedStyle.getPropertyValue('--ghost-border'),
-      borderRadius: computedStyle.getPropertyValue('--border-radius'),
+      background: tileComputedStyle.getPropertyValue(
+        '--placeholder-background'
+      ),
+      tileBackground: tileComputedStyle.getPropertyValue('--tile-background'),
+      tileBorder: tileComputedStyle.getPropertyValue('--hover-border-color'),
+      border: tileComputedStyle.getPropertyValue('--ghost-border'),
+      borderRadius: tileComputedStyle.getPropertyValue('--border-radius'),
       minWidth: Number.parseFloat(
-        computedStyle.getPropertyValue('--ig-min-col-width')
+        tileComputedStyle.getPropertyValue('--ig-min-col-width')
       ),
       minHeight: Number.parseFloat(
-        computedStyle.getPropertyValue('--ig-min-row-height')
+        tileComputedStyle.getPropertyValue('--ig-min-row-height')
       ),
-      rowHeights,
       initialTop: parentWrapper.getBoundingClientRect().top,
+      rowHeights,
+      gap,
     };
   }
 
@@ -490,12 +499,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
     if (ghostElement) {
       const deltaX = event.detail.event.clientX - this._initialPointerX!;
       const deltaY = event.detail.event.clientY - this._initialPointerY!;
-      const columnGap = 10;
 
       const snappedWidth = ResizeUtil.calculateSnappedWidth(
         deltaX,
         event.detail.state.initial.width,
-        columnGap,
+        this._cachedStyles.gap!,
         this.gridColumnWidth
       );
 
@@ -509,7 +517,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         deltaY,
         startingY,
         rowHeights,
-        columnGap,
+        this._cachedStyles.gap!,
         initialTop,
         event.detail.state.initial.height
       );
@@ -530,7 +538,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     let rowSpan = 1;
 
     for (let i = 0; i < rowHeights.length; i++) {
-      accumulatedHeight += rowHeights[i] + (i > 0 ? 10 : 0); // use rowGap
+      accumulatedHeight +=
+        rowHeights[i] + (i > 0 ? this._cachedStyles.gap! : 0);
       if (height <= accumulatedHeight) {
         rowSpan = i + 1;
         break;
