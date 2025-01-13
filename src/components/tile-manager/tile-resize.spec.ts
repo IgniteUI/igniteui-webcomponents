@@ -204,5 +204,27 @@ describe('Tile resize', () => {
 
       expect(tileDOM.resizeElement).to.not.exist;
     });
+
+    it('should update tile parts on resizing', async () => {
+      const tile = first(getTiles());
+      const tileDOM = getTileDOM(tile);
+      const tileRect = tile.getBoundingClientRect();
+      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+
+      simulatePointerDown(tileDOM.resizeTrigger);
+      await elementUpdated(tileDOM.resizeElement);
+
+      expect(tile.getAttribute('part')).to.be.null;
+      expect(eventSpy).calledWith('igcResizeStart');
+
+      simulatePointerMove(tileDOM.resizeTrigger, {
+        clientX: (tileRect.x + tileRect.width) * 2,
+        clientY: (tileRect.y + tileRect.height) * 2,
+      });
+      await elementUpdated(tileDOM.resizeElement);
+
+      expect(eventSpy).calledWith('igcResize');
+      expect(tile.getAttribute('part')).to.include('resizing');
+    });
   });
 });
