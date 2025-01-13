@@ -56,6 +56,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _internalStyles: StyleInfo = {};
 
   private _columnCount = 0;
+  private _gap?: string;
   private _minColWidth?: string;
   private _minRowHeight?: string;
   private _draggedItem: IgcTileComponent | null = null;
@@ -161,6 +162,21 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   public get minRowHeight(): string | undefined {
     return this._minRowHeight;
+  }
+
+  /**
+   * Sets the gap size of the the tile manager.
+   */
+  @property()
+  public set gap(value: string | undefined) {
+    this._gap = value ?? undefined;
+    Object.assign(this._internalStyles, {
+      '--ig-gap': this._gap,
+    });
+  }
+
+  public get gap(): string | undefined {
+    return this._gap;
   }
 
   /**

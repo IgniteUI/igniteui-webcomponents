@@ -99,6 +99,11 @@ const metadata: Meta<IgcTileManagerComponent> = {
         'Sets the minimum height for a row unit in the tile manager.',
       control: 'text',
     },
+    gap: {
+      type: 'string',
+      description: 'Sets the gap size of the the tile manager.',
+      control: 'text',
+    },
   },
   args: { dragMode: 'slide', columnCount: 0 },
 };
@@ -117,6 +122,8 @@ interface IgcTileManagerArgs {
   minColumnWidth: string;
   /** Sets the minimum height for a row unit in the tile manager. */
   minRowHeight: string;
+  /** Sets the gap size of the the tile manager. */
+  gap: string;
 }
 type Story = StoryObj<IgcTileManagerArgs>;
 
@@ -176,6 +183,7 @@ export const AutoInfer: Story = {
       }
     </style>
     <igc-tile-manager
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -200,6 +208,7 @@ export const AutoInfer: Story = {
 export const FinDashboard: Story = {
   render: (args) => html`
     <igc-tile-manager
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -370,7 +379,13 @@ export const FinDashboard: Story = {
 
 export const FinDashboard1: Story = {
   render: (args) => html`
-    <igc-tile-manager .dragMode=${args.dragMode} .columnCount=${args.columnCount} .minColumnWidth=${args.minColumnWidth} .minRowHeight=${args.minRowHeight}>
+    <igc-tile-manager
+      .gap=${args.gap}
+      .dragMode=${args.dragMode}
+      .columnCount=${args.columnCount}
+      .minColumnWidth=${args.minColumnWidth}
+      .minRowHeight=${args.minRowHeight}
+    >
       <!-- <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
         <igc-tile-header slot="header">
           <span slot="title">Accounts</span>
@@ -589,6 +604,7 @@ export const Default: Story = {
       }
     </style>
     <igc-tile-manager
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -628,6 +644,7 @@ function cancelStateChangeEvent(e: CustomEvent) {
 export const Maximized: Story = {
   render: (args) => html`
     <igc-tile-manager
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -681,6 +698,7 @@ export const DynamicTiles: Story = {
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
     <igc-tile-manager
       id="tile-manager1"
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -732,6 +750,7 @@ export const Serialization: Story = {
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
     <igc-tile-manager
       id="tile-manager1"
+      .gap=${args.gap}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
