@@ -2,7 +2,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --resize-display: none;
+    --resize-visibility: hidden;
 
     display: contents;
 }
@@ -13,7 +13,8 @@
 }
 
 [part='trigger'] {
-    display: var(--resize-display);
+    display: inline-flex;
+    visibility: var(--resize-visibility);
     cursor: nwse-resize;
     position: absolute;
     bottom: rem(2px);

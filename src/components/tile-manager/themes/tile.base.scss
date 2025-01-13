@@ -10,14 +10,14 @@
 
 :host(:hover) {
     igc-resize {
-        --resize-display: inline-flex;
+        --resize-visibility: visible;
     }
 }
 
 :host([part='resizing']),
 :host([part='dragging']) {
     igc-resize {
-        --resize-display: none;
+        --resize-visibility: hidden;
     }
 }
 
