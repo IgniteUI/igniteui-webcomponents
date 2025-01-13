@@ -180,24 +180,30 @@ describe('Tile Manager component', () => {
         `<div part="header">
           <slot part="title" name="title"></slot>
           <section part="actions">
-            <igc-icon-button
-              aria-label="expand_content"
-              collection="default"
-              exportparts="icon"
-              name="expand_content"
-              type="button"
-              variant="flat"
-            >
-            </igc-icon-button>
-            <igc-icon-button
-              aria-label="fullscreen"
-              collection="default"
-              exportparts="icon"
-              name="fullscreen"
-              type="button"
-              variant="flat"
-            >
-            </igc-icon-button>
+            <slot name="default-actions">
+              <slot name="maximize_action">
+                <igc-icon-button
+                  aria-label="expand_content"
+                  collection="default"
+                  exportparts="icon"
+                  name="expand_content"
+                  type="button"
+                  variant="flat"
+                >
+                </igc-icon-button>
+              </slot>
+              <slot name="fullscreen_action">
+                <igc-icon-button
+                  aria-label="fullscreen"
+                  collection="default"
+                  exportparts="icon"
+                  name="fullscreen"
+                  type="button"
+                  variant="flat"
+                >
+                </igc-icon-button>
+              </slot>
+            </slot>
             <slot name="actions"></slot>
           </section>
         </div>

@@ -114,8 +114,14 @@ export default class IgcTileHeaderComponent extends LitElement {
       <div part="header">
         <slot part="title" name="title"></slot>
         <section part="actions">
-          ${!this._isFullscreen ? this._renderAction(maximize) : nothing}
-          ${this._renderAction(fullscreen)}
+          <slot name="default-actions">
+            <slot name="maximize_action">
+              ${!this._isFullscreen ? this._renderAction(maximize) : nothing}
+            </slot>
+            <slot name="fullscreen_action">
+              ${this._renderAction(fullscreen)}
+            </slot>
+          </slot>
           <slot name="actions"></slot>
         </section>
       </div>
