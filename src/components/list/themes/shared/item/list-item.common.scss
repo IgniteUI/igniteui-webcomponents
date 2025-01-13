@@ -7,19 +7,33 @@ $theme: $material;
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
+    border-bottom: var-get($theme, 'border-width') solid var-get($theme, 'border-color');
 }
 
-::slotted(igc-icon) {
+:host(:last-of-type) {
+    border-bottom: none;
+}
+
+[part='title'] {
+    color: var-get($theme, 'item-title-color');
+}
+
+[part='subtitle'] {
+    color: var-get($theme, 'item-subtitle-color');
+}
+
+[part='start'] {
+    color: var-get($theme, 'item-thumbnail-color');
+}
+
+[part='end'] {
     color: var-get($theme, 'item-action-color');
 }
 
 :host(:hover),
 :host(:focus-within) {
     background: var-get($theme, 'item-background-hover');
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-action-color-hover');
-    }
+    color: var-get($theme, 'item-text-color-hover');
 
     [part='title'] {
         color: var-get($theme, 'item-title-color-hover');
@@ -38,18 +52,23 @@ $theme: $material;
     }
 }
 
-[part='title'] {
-    color: var-get($theme, 'item-title-color');
-}
+:host(:active) {
+    color: var-get($theme, 'item-text-color-active');
+    background: var-get($theme, 'item-background-active');
 
-[part='subtitle'] {
-    color: var-get($theme, 'item-subtitle-color');
-}
+    [part='title'] {
+        color: var-get($theme, 'item-title-color-active');
+    }
 
-[part='start'] {
-    color: var-get($theme, 'item-thumbnail-color');
-}
+    [part='subtitle'] {
+        color: var-get($theme, 'item-subtitle-color-active');
+    }
 
-[part='end'] {
-    color: var-get($theme, 'item-action-color');
+    [part='start'] {
+        color: var-get($theme, 'item-thumbnail-color-active');
+    }
+
+    [part='end'] {
+        color: var-get($theme, 'item-action-color-active');
+    }
 }
