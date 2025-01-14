@@ -865,7 +865,7 @@ export const CustomActions: Story = {
       <igc-tile colSpan="2">
         <igc-tile-header slot="header">
           <h3 slot="title">Empty Fullscreen Action</h3>
-          <div slot="fullscreen_action"></div>
+          <div slot="fullscreen-action"></div>
         </igc-tile-header>
 
         <p>Empty div added to the fullscreen action slot</p>

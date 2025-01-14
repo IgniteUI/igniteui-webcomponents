@@ -181,7 +181,7 @@ describe('Tile Manager component', () => {
           <slot part="title" name="title"></slot>
           <section part="actions">
             <slot name="default-actions">
-              <slot name="maximize_action">
+              <slot name="maximize-action">
                 <igc-icon-button
                   aria-label="expand_content"
                   collection="default"
@@ -192,7 +192,7 @@ describe('Tile Manager component', () => {
                 >
                 </igc-icon-button>
               </slot>
-              <slot name="fullscreen_action">
+              <slot name="fullscreen-action">
                 <igc-icon-button
                   aria-label="fullscreen"
                   collection="default"
