@@ -483,6 +483,11 @@ describe('Tile Manager component', () => {
       await elementUpdated(tileManager);
 
       expect(btnMaximize.name).equals('collapse_content');
+
+      tile.maximized = !tile.maximized;
+      await elementUpdated(tileManager);
+
+      expect(btnMaximize.name).equals('expand_content');
     });
   });
 

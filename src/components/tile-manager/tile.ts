@@ -115,6 +115,26 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @consume({ context: tileManagerContext, subscribe: true })
   private _managerContext?: TileManagerContext;
 
+  private _context = new ContextProvider(this, {
+    context: tileContext,
+    initialValue: {
+      instance: this,
+      setFullscreenState: (fullscreen, isUserTriggered) =>
+        this._fullscreenController.setState(fullscreen, isUserTriggered),
+    },
+  });
+
+  private _setTileContext() {
+    this._context.setValue(
+      {
+        instance: this,
+        setFullscreenState: (fullscreen, isUserTriggered) =>
+          this._fullscreenController.setState(fullscreen, isUserTriggered),
+      },
+      true
+    );
+  }
+
   private get _draggedItem(): IgcTileComponent | null {
     return this._managerContext?.draggedItem ?? null;
   }
@@ -213,6 +233,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
     this._maximized = value;
+    this._setTileContext();
 
     if (this._managerContext) {
       this._managerContext.instance.requestUpdate();
@@ -277,15 +298,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-
-    new ContextProvider(this, {
-      context: tileContext,
-      initialValue: {
-        instance: this,
-        setFullscreenState: (fullscreen, isUserTriggered) =>
-          this._fullscreenController.setState(fullscreen, isUserTriggered),
-      },
-    });
+    this._setTileContext();
   }
 
   public override connectedCallback() {
