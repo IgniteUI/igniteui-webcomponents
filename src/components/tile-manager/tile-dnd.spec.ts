@@ -172,11 +172,13 @@ describe('Tile drag and drop', () => {
       const eventSpy = spy(tileManager, 'emitEvent');
       const tileWrapper = getTileBaseWrapper(draggedTile);
 
+      expect(draggedTile.draggable).to.be.true;
       expect(tileWrapper.getAttribute('part')).to.include('draggable');
 
       draggedTile.disableDrag = true;
       await elementUpdated(tileManager);
 
+      expect(draggedTile.draggable).to.be.false;
       expect(tileWrapper.getAttribute('part')).to.not.include('draggable');
 
       await dragAndDrop(draggedTile, dropTarget);
