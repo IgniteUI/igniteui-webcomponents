@@ -74,7 +74,7 @@ export class ResizeUtil {
     return snappedWidth < gridColumnWidth ? gridColumnWidth : snappedWidth;
   }
 
-  private static calculate(
+  public static calculate(
     initialTop: number,
     rowHeights: number[],
     rowGap: number

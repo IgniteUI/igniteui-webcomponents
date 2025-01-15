@@ -544,20 +544,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const state = event.detail.state;
     const width = state.current.width;
     const height = state.current.height;
-    const rowHeights = this._cachedStyles.rowHeights!;
 
     const colSpan = Math.max(1, Math.round(width / this.gridColumnWidth));
-    let accumulatedHeight = 0;
-    let rowSpan = 1;
 
-    for (let i = 0; i < rowHeights.length; i++) {
-      accumulatedHeight +=
-        rowHeights[i] + (i > 0 ? this._cachedStyles.gap! : 0);
-      if (height <= accumulatedHeight) {
-        rowSpan = i + 1;
-        break;
-      }
-    }
+    const initialTop = event.detail.state.initial.top + window.scrollY;
+    const startRowIndex = ResizeUtil.calculate(
+      initialTop,
+      this._cachedStyles.rowHeights!,
+      this._cachedStyles.gap!
+    ).targetIndex;
+
+    const initialSpan = this._calculateRowSpan(
+      state.initial.height,
+      startRowIndex
+    );
+    const currentSpan = this._calculateRowSpan(height, startRowIndex);
+
+    const deltaY = event.detail.event.clientY - this._initialPointerY!;
+    const rowSpan =
+      deltaY > 0
+        ? Math.max(initialSpan, currentSpan)
+        : Math.min(initialSpan, currentSpan);
 
     // REVIEW
     Object.assign(state.ghost!.style, {
@@ -572,6 +579,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._initialPointerX = null;
     this._initialPointerY = null;
     this._cachedStyles = {};
+  }
+
+  private _calculateRowSpan(height: number, startRowIndex: number): number {
+    const gap = this._cachedStyles.gap!;
+    const rowHeights = this._cachedStyles.rowHeights!;
+    let accumulatedHeight = 0;
+
+    for (let i = 0; i < rowHeights.length; i++) {
+      const rowHeight = rowHeights[startRowIndex + i];
+      const rowGap = startRowIndex + i > 0 ? gap : 0;
+      const halfwayThreshold = accumulatedHeight + rowHeight / 2 + rowGap;
+
+      accumulatedHeight += rowHeight + rowGap;
+
+      if (height >= halfwayThreshold && height <= accumulatedHeight) {
+        return i + 1;
+      }
+    }
+
+    // Default to the first row
+    return 1;
   }
 
   // REVIEW
