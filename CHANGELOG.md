@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+- #### Dialog
+  - A new `message` slot that renders text content inside the dialog component has been added.
+
 ## [5.2.0] - 2025-01-09
 ### Added
 - Form-associated elements now have a `defaultValue` property (`defaultChecked` for radio buttons, checkboxes, and switches). When a form is reset, components will use this property’s value as their new value or checked state.

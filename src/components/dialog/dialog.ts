@@ -37,6 +37,7 @@ export interface IgcDialogComponentEventMap {
  *
  * @slot - Renders content inside the default slot.
  * @slot title - Renders the title of the dialog header.
+ * @slot message - Renders the message content of the dialog.
  * @slot footer - Renders the dialog footer.
  *
  * @csspart base - The base wrapper of the dialog.
