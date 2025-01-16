@@ -1,20 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $bootstrap;
-
-:host {
-    border-bottom: rem(1px) solid var-get($theme, 'border-color');
-}
-
-:host(:last-of-type) {
-    border-bottom: none;
-}
 
 [part='title'] {
     @include type-style('body-1');
-}
-
-[part='subtitle'] {
-    @include type-style('body-2');
 }
