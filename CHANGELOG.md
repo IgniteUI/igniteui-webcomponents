@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 - #### Dialog
-  - A new `message` slot that renders text content inside the dialog component has been added. The enhancement was introduced to align the design behavior between IgniteUI for WC and IgniteUI for Angular, ensuring a consistent user experience across products. The newly added `message' slot comes with additional styling with a max-width of 40 characters. The default slot is also still available for rendering content inside the dialog without limiting the component's width.
+  - A new `message` slot that renders text content inside the dialog component has been added. The enhancement was introduced to align the design behavior between Ignite UI for WC and Ignite UI for Angular, ensuring a consistent user experience across products. The newly added `message' slot comes with additional styling with a max-width of 40 characters. The default slot is also still available for rendering content inside the dialog without limiting the component's width.
 
 ## [5.2.0] - 2025-01-09
 ### Added
