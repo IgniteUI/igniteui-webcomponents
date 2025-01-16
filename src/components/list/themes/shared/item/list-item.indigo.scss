@@ -10,8 +10,7 @@
     }
 }
 
-[part='title'],
-[part='subtitle'] {
+[part='title'] {
     @include type-style('body-2');
 }
 
