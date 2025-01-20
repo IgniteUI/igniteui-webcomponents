@@ -685,6 +685,21 @@ describe('Tile Manager component', () => {
       });
     });
 
+    it('should correctly position tiles added dynamically after initialization', async () => {
+      tileManager.replaceChildren();
+      const tiles = Array.from(range(5)).map(() =>
+        document.createElement(IgcTileComponent.tagName)
+      );
+
+      tiles.forEach((tile) => tileManager.appendChild(tile));
+      await elementUpdated(tileManager);
+
+      tileManager.tiles.forEach((tile, index) => {
+        expect(tile.position).to.equal(index);
+        expect(tile.style.order).to.equal(index.toString());
+      });
+    });
+
     it('should set proper CSS order based on position', async () => {
       const firstTile = first(getTiles());
       firstTile.position = 6;

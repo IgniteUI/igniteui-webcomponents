@@ -3,6 +3,8 @@ import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
 
 class TilesState {
+  private _nextEmptyPosition = 0;
+
   public manager: IgcTileManagerComponent;
 
   private get _tiles(): IgcTileComponent[] {
@@ -62,7 +64,11 @@ class TilesState {
         }
       }
     } else {
-      tile.position = tiles.length;
+      const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
+      tile.position =
+        positionedTiles.length > 1
+          ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
+          : this._nextEmptyPosition++;
     }
   }
 
