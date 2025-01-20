@@ -37,10 +37,6 @@
     counter-reset:
             progress-integer var(--_progress-integer, 0)
             progress-fraction var(--_progress-fraction, 0);
-
-    &::before {
-        @include type-style('subtitle-2');
-    }
 }
 
 [part~='counter']:not([part~='fraction'])::before {
