@@ -29,7 +29,7 @@ $easing-curves: (
 }
 
 // Primary animation
-@keyframes indeterminate-primary {
+@keyframes igc-indeterminate-primary {
     0% {
         transform: translateX(0);
     }
@@ -49,7 +49,7 @@ $easing-curves: (
     }
 }
 
-@keyframes indeterminate-primary-scale {
+@keyframes igc-indeterminate-primary-scale {
     0% {
         transform: scaleX(0.08);
     }
@@ -70,7 +70,7 @@ $easing-curves: (
 }
 
 // Secondary animation
-@keyframes indeterminate-secondary {
+@keyframes igc-indeterminate-secondary {
     0% {
         animation-timing-function: timing-function('secondary-translate-start');
         transform: translateX(0);
@@ -91,7 +91,7 @@ $easing-curves: (
     }
 }
 
-@keyframes indeterminate-secondary-scale {
+@keyframes igc-indeterminate-secondary-scale {
     0% {
         animation-timing-function: timing-function('secondary-scale-slow-start');
         transform: scaleX(0.08);
@@ -113,7 +113,7 @@ $easing-curves: (
 }
 
 // Fluent linear animations
-@keyframes indeterminate-bar-fluent {
+@keyframes igc-indeterminate-bar-fluent {
     0% {
         transform: translateX(-100%);
         transform-origin: left;
@@ -125,7 +125,7 @@ $easing-curves: (
     }
 }
 
-@keyframes indeterminate-bar-fluent-rtl {
+@keyframes igc-indeterminate-bar-fluent-rtl {
     0% {
         transform: translateX(100%);
         transform-origin: right;
@@ -138,7 +138,7 @@ $easing-curves: (
 }
 
 // Circular animations
-@keyframes indeterminate-accordion {
+@keyframes igc-indeterminate-accordion {
     0% {
         stroke-dashoffset: calc(#{$circumference} * 2);
         stroke-dasharray: calc(#{$circumference} * 9 / 10);
@@ -149,7 +149,7 @@ $easing-curves: (
     }
 }
 
-@keyframes indeterminate-accordion-rtl {
+@keyframes igc-indeterminate-accordion-rtl {
     0% {
         stroke-dashoffset: calc(#{$circumference} * -2);
         stroke-dasharray: calc(#{$circumference} * 9 / 10);
@@ -162,7 +162,7 @@ $easing-curves: (
 
 // Fluent: Circular progress animation for indeterminate state.
 // Dynamically changes stroke-dasharray and rotates for a smooth spinning effect.
-@keyframes indeterminate-circular-fluent {
+@keyframes igc-indeterminate-circular-fluent {
     0% {
         // Start the stroke at the correct position by adjusting the dasharray and dashoffset
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
@@ -193,7 +193,7 @@ $easing-curves: (
     }
 }
 
-@keyframes indeterminate-circular-fluent-rtl {
+@keyframes igc-indeterminate-circular-fluent-rtl {
     0% {
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
 
@@ -220,7 +220,7 @@ $easing-curves: (
 }
 
 // Generic animations
-@keyframes rotate-center {
+@keyframes igc-rotate-center {
     0% {
         transform: rotate(0);
     }
@@ -230,14 +230,14 @@ $easing-curves: (
     }
 }
 
-@keyframes initial-counter {
+@keyframes igc-initial-counter {
     from {
         --_progress-integer: 0;
         --_progress-fraction: 0;
     }
 }
 
-@keyframes initial-width {
+@keyframes igc-initial-width {
     from {
         width: 0;
     }
@@ -247,7 +247,7 @@ $easing-curves: (
     }
 }
 
-@keyframes initial-dashoffset {
+@keyframes igc-initial-dashoffset {
     from {
         /* Start with no progress (0%) */
         stroke-dashoffset: #{$circumference};
