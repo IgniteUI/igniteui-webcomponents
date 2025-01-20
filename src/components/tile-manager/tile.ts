@@ -542,10 +542,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
     const state = event.detail.state;
-    const width = state.current.width;
     const height = state.current.height;
+    let width = state.current.width;
 
-    const colSpan = Math.max(1, Math.round(width / this.gridColumnWidth));
+    if (width > this.parentElement!.getBoundingClientRect().width) {
+      width =
+        this.parentElement!.getBoundingClientRect().width - state.current.x;
+    }
+
+    let colSpan = Math.max(
+      1,
+      Math.round(width / (this.gridColumnWidth + this._cachedStyles.gap!))
+    );
+    colSpan = this._cachedStyles.columnCount
+      ? Math.min(colSpan, this._cachedStyles.columnCount!)
+      : colSpan;
 
     const initialTop = event.detail.state.initial.top + window.scrollY;
     const startRowIndex = ResizeUtil.calculate(
