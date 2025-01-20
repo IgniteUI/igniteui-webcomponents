@@ -7,6 +7,12 @@
 :host {
     --track-size: #{rem(4px)};
     --linear-animation-duration: 2000ms;
+    --linear-strips-orientation: -45deg;
+}
+
+:host(:dir(rtl)),
+:host([dir='rtl']) {
+    --linear-strips-orientation: 45deg;
 }
 
 [part~='base'] {
