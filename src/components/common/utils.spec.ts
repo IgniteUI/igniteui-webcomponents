@@ -174,6 +174,34 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 }
 
+export function simulatePointerEnter(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerenter', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+export function simulatePointerLeave(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerleave', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
