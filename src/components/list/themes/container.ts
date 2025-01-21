@@ -17,7 +17,6 @@ import { styles as sharedLight } from './light/container/list.shared.css.js';
 import { styles as bootstrap } from './shared/container/list.bootstrap.css.js';
 import { styles as fluent } from './shared/container/list.fluent.css.js';
 import { styles as indigo } from './shared/container/list.indigo.css.js';
-import { styles as material } from './shared/container/list.material.css.js';
 
 const light = {
   shared: css`
@@ -27,7 +26,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -45,7 +44,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

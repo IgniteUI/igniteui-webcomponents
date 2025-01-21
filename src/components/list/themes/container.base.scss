@@ -1,8 +1,5 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use './light/themes' as *;
-
-$theme: $material;
 
 :host {
     display: flex;
@@ -10,6 +7,4 @@ $theme: $material;
     font-family: var(--ig-font-family);
     overflow: hidden auto;
     height: auto;
-    background: var-get($theme, 'background');
-    border-radius: var-get($theme, 'border-radius');
 }
