@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type Sinon from 'sinon';
 import { spy } from 'sinon';
 
 import { escapeKey } from '../common/controllers/key-bindings.js';
@@ -11,7 +12,9 @@ import {
   simulatePointerLeave,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import IgcResizeContainerComponent from './resize-container.js';
+import IgcResizeContainerComponent, {
+  type IgcResizeContainerComponentEventMap,
+} from './resize-container.js';
 import type { ResizeCallbackParams } from './types.js';
 
 describe('Resize container', () => {
@@ -49,9 +52,7 @@ describe('Resize container', () => {
     function createResizeContainer() {
       return html`
         <igc-resize-container>
-          <div id="target" style="width: 200px; height: 200px">
-            Immediate mode
-          </div>
+          <div id="target" style="height: 200px">Immediate mode</div>
         </igc-resize-container>
       `;
     }
@@ -102,6 +103,18 @@ describe('Resize container', () => {
         expect(eventSpy).not.calledWith('igcResizeStart');
       });
 
+      it('should not start resize behavior with non-primary "button"', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner, { button: 1 });
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcResizeStart');
+      });
+
       it('should not have a ghost element when in immediate mode', async () => {
         await setResizeActiveState(element);
 
@@ -111,8 +124,8 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const params: ResizeCallbackParams = eventSpy.lastCall.lastArg.detail;
-        expect(params.state.ghost).to.be.null;
+        const { ghost } = getResizeEventState(eventSpy);
+        expect(ghost).to.be.null;
       });
 
       it('should fire `resizeStart` on pointer interaction', async () => {
@@ -168,7 +181,7 @@ describe('Resize container', () => {
         expect(eventSpy).not.calledWith('igcResizeCancel');
 
         // While in "active" state but not in resize mode
-        await setResizeActiveState(element, true);
+        await setResizeActiveState(element);
 
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
@@ -193,13 +206,156 @@ describe('Resize container', () => {
         expect(eventSpy).calledWith('igcResizeCancel');
       });
     });
+
+    describe('Events - dimensions and parameters', () => {
+      it('`resizeStart` event parameters match initial state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+
+        const targetRect = DOM.container.getBoundingClientRect();
+        const { initial, current, deltaX, deltaY } =
+          getResizeEventState(eventSpy);
+
+        // Assert the resize container DOM rect matches the event parameters state
+        expect(initial).to.eql(targetRect);
+        expect(current).to.eql(targetRect);
+
+        // No initial deltas
+        expect([deltaX, deltaY]).to.eql([0, 0]);
+      });
+
+      it('`resize` event parameters match resize target state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let rect = DOM.container.getBoundingClientRect();
+        let current: ResizeCallbackParams['state'];
+
+        for (let i = 1, delta = 10; i <= 10; i++) {
+          simulatePointerMove(DOM.adorners.corner, {
+            clientX: rect.right + delta,
+            clientY: rect.bottom + delta,
+          });
+          await elementUpdated(element);
+
+          rect = DOM.container.getBoundingClientRect();
+          current = getResizeEventState(eventSpy);
+
+          // Correct deltas
+          expect([current.deltaX, current.deltaY]).to.eql([
+            delta * i,
+            delta * i,
+          ]);
+
+          // Correct dimensions
+          expect([current.current.width, current.current.height]).to.eql([
+            rect.width,
+            rect.height,
+          ]);
+        }
+      });
+
+      it('`resizeEnd` event parameters match resize target end state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let state = getResizeEventState(eventSpy);
+
+        simulatePointerMove(
+          DOM.adorners.corner,
+          { clientX: state.initial.right, clientY: state.initial.bottom },
+          { x: 10, y: 10 },
+          10
+        );
+        await elementUpdated(element);
+
+        simulateLostPointerCapture(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+        const rect = DOM.container.getBoundingClientRect();
+
+        expect([
+          state.current.width - state.initial.width,
+          state.current.height - state.initial.height,
+        ]).to.eql([state.deltaX, state.deltaY]);
+
+        expect([state.current.width, state.current.height]).to.eql([
+          rect.width,
+          rect.height,
+        ]);
+      });
+
+      it('`resizeCancel` correctly restores initial state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let rect: DOMRect;
+        let state = getResizeEventState(eventSpy);
+
+        simulatePointerMove(
+          DOM.adorners.corner,
+          {
+            clientX: state.initial.right,
+            clientY: state.initial.bottom,
+          },
+          { x: -200, y: -200 }
+        );
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+        rect = DOM.container.getBoundingClientRect();
+
+        expect([rect.width, rect.height]).to.eql([
+          state.current.width,
+          state.current.height,
+        ]);
+        expect([state.deltaX, state.deltaY]).to.eql([-200, -200]);
+
+        simulateKeyboard(element, escapeKey);
+        await elementUpdated(element);
+
+        rect = DOM.container.getBoundingClientRect();
+
+        expect([rect.width, rect.height]).to.not.eql([
+          state.current.width,
+          state.current.height,
+        ]);
+        expect([rect.width, rect.height]).to.eql([
+          state.initial.width,
+          state.initial.height,
+        ]);
+      });
+    });
   });
 
   describe('Deferred mode', () => {
     function createDeferredResizeContainer() {
       return html`
         <igc-resize-container mode="deferred">
-          <div style="width: 200px; height: 200px">Deferred mode</div>
+          <div style="height: 200px">Deferred mode</div>
         </igc-resize-container>
       `;
     }
@@ -245,6 +401,18 @@ describe('Resize container', () => {
         const eventSpy = spy(element, 'emitEvent');
 
         simulatePointerDown(element);
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcResizeStart');
+      });
+
+      it('should not start resize behavior with non-primary "button"', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner, { button: 1 });
         await elementUpdated(element);
 
         expect(eventSpy).not.calledWith('igcResizeStart');
@@ -352,7 +520,7 @@ describe('Resize container', () => {
         expect(eventSpy).not.calledWith('igcResizeCancel');
 
         // While in "active" state but not in resize mode
-        await setResizeActiveState(element, true);
+        await setResizeActiveState(element);
 
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
@@ -394,6 +562,149 @@ describe('Resize container', () => {
         expect(DOM.ghostElement).to.not.exist;
       });
     });
+
+    describe('Events - dimensions and parameters', () => {
+      it('`resizeStart` event parameters match initial state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+
+        const targetRect = DOM.ghostElement.getBoundingClientRect();
+        const { initial, current, deltaX, deltaY } =
+          getResizeEventState(eventSpy);
+
+        // Assert the resize container DOM rect matches the event parameters state
+        expect(initial).to.eql(targetRect);
+        expect(current).to.eql(targetRect);
+
+        // No initial deltas
+        expect([deltaX, deltaY]).to.eql([0, 0]);
+      });
+
+      it('`resize` event parameters match resize target state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let rect = DOM.ghostElement.getBoundingClientRect();
+        let current: ResizeCallbackParams['state'];
+
+        for (let i = 1, delta = 10; i <= 10; i++) {
+          simulatePointerMove(DOM.adorners.corner, {
+            clientX: rect.right + delta,
+            clientY: rect.bottom + delta,
+          });
+          await elementUpdated(element);
+
+          rect = DOM.ghostElement.getBoundingClientRect();
+          current = getResizeEventState(eventSpy);
+
+          // Correct deltas
+          expect([current.deltaX, current.deltaY]).to.eql([
+            delta * i,
+            delta * i,
+          ]);
+
+          // Correct dimensions
+          expect([current.current.width, current.current.height]).to.eql([
+            rect.width,
+            rect.height,
+          ]);
+        }
+      });
+
+      it('`resizeEnd` event parameters match resize target end state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let state = getResizeEventState(eventSpy);
+
+        simulatePointerMove(
+          DOM.adorners.corner,
+          { clientX: state.initial.right, clientY: state.initial.bottom },
+          { x: 10, y: 10 },
+          10
+        );
+        await elementUpdated(element);
+
+        simulateLostPointerCapture(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+        const rect = DOM.container.getBoundingClientRect();
+
+        expect([
+          state.current.width - state.initial.width,
+          state.current.height - state.initial.height,
+        ]).to.eql([state.deltaX, state.deltaY]);
+
+        expect([state.current.width, state.current.height]).to.eql([
+          rect.width,
+          rect.height,
+        ]);
+      });
+
+      it('`resizeCancel` correctly restores initial state', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const DOM = getDOM(element);
+
+        simulatePointerDown(DOM.adorners.corner);
+        await elementUpdated(element);
+
+        let rect: DOMRect;
+        let state = getResizeEventState(eventSpy);
+
+        simulatePointerMove(
+          DOM.adorners.corner,
+          {
+            clientX: state.initial.right,
+            clientY: state.initial.bottom,
+          },
+          { x: -200, y: -200 }
+        );
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+        rect = DOM.ghostElement.getBoundingClientRect();
+
+        expect([rect.width, rect.height]).to.eql([
+          state.current.width,
+          state.current.height,
+        ]);
+        expect([state.deltaX, state.deltaY]).to.eql([-200, -200]);
+
+        simulateKeyboard(element, escapeKey);
+        await elementUpdated(element);
+
+        rect = DOM.container.getBoundingClientRect();
+
+        expect([rect.width, rect.height]).to.not.eql([
+          state.current.width,
+          state.current.height,
+        ]);
+        expect([rect.width, rect.height]).to.eql([
+          state.initial.width,
+          state.initial.height,
+        ]);
+      });
+    });
   });
 });
 
@@ -418,25 +729,28 @@ function getDOM(resizeElement: IgcResizeContainerComponent) {
     },
     /** The ghost element when in deferred mode */
     get ghostElement() {
-      return resizeElement.querySelector<HTMLElement>('[data-resize-ghost]');
+      return resizeElement.querySelector<HTMLElement>('[data-resize-ghost]')!;
     },
   };
 }
 
 async function setResizeActiveState(
-  resizeContainer: IgcResizeContainerComponent,
+  resizeElement: IgcResizeContainerComponent,
   state = true
 ) {
-  const { container } = getDOM(resizeContainer);
+  const { container } = getDOM(resizeElement);
   state ? simulatePointerEnter(container) : simulatePointerLeave(container);
-  await elementUpdated(resizeContainer);
+  await elementUpdated(resizeElement);
 }
 
-function getTargetXY(element: HTMLElement) {
-  const rect = element.getBoundingClientRect();
-
-  return {
-    clientX: rect.right,
-    clientY: rect.bottom,
-  };
+function getResizeEventState(
+  eventSpy: Sinon.SinonSpy<
+    [
+      type: keyof IgcResizeContainerComponentEventMap,
+      eventInitDict?: CustomEventInit<unknown> | undefined,
+    ],
+    boolean
+  >
+): ResizeCallbackParams['state'] {
+  return eventSpy.lastCall.lastArg.detail.state;
 }
