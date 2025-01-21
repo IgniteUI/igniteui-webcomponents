@@ -14,6 +14,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   createCounter,
+  isEmpty,
   numberInRangeInclusive,
   partNameMap,
 } from '../common/util.js';
@@ -36,6 +37,7 @@ export interface IgcDialogComponentEventMap {
  *
  * @slot - Renders content inside the default slot.
  * @slot title - Renders the title of the dialog header.
+ * @slot message - Renders the message content of the dialog.
  * @slot footer - Renders the dialog footer.
  *
  * @csspart base - The base wrapper of the dialog.
@@ -75,6 +77,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   @queryAssignedElements({ slot: 'title' })
   private titleElements!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'message' })
+  private messageElements!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'footer' })
   private footerElements!: Array<HTMLElement>;
@@ -262,6 +267,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           <slot name="title"><span>${this.title}</span></slot>
         </header>
         <section part="content">
+          <slot name="message" .hidden=${isEmpty(this.messageElements)}></slot>
           <slot @slotchange=${this.handleContentChange}></slot>
         </section>
         <footer part="footer">

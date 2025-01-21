@@ -124,10 +124,12 @@ const Template = ({
         .open=${open}
         title=${ifDefined(title)}
       >
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus rerum
-        enim, incidunt magni ea asperiores laudantium, ducimus itaque quisquam
-        dolore hic labore facere qui unde aliquam, dignissimos perspiciatis?
-        Iusto, iure.
+        <span slot="message">
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus
+          rerum enim, incidunt magni ea asperiores laudantium, ducimus itaque
+          quisquam dolore hic labore facere qui unde aliquam, dignissimos
+          perspiciatis? Iusto, iure.
+        </span>
       </igc-dialog>
 
       <igc-dialog
