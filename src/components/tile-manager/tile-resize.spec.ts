@@ -226,5 +226,34 @@ describe('Tile resize', () => {
       expect(eventSpy).calledWith('igcResize');
       expect(tile.getAttribute('part')).to.include('resizing');
     });
+
+    it('tile should not span more columns than the column count', async () => {
+      const tile = first(getTiles());
+      const tileDOM = getTileDOM(tile);
+      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+
+      tileManager.columnCount = 3;
+
+      simulatePointerDown(tileDOM.resizeTrigger);
+      await elementUpdated(tileDOM.resizeElement);
+
+      expect(eventSpy).calledWith('igcResizeStart');
+
+      simulatePointerMove(tileDOM.resizeTrigger, {
+        clientX: 3000,
+      });
+      await elementUpdated(tileDOM.resizeElement);
+
+      expect(eventSpy).calledWith('igcResize');
+
+      simulateLostPointerCapture(tileDOM.resizeTrigger);
+      await elementUpdated(tileDOM.resizeElement);
+
+      expect(eventSpy).calledWith('igcResizeEnd');
+
+      expect(
+        Number.parseFloat(getComputedStyle(tile).gridColumn.split(' ')[1])
+      ).to.equal(tileManager.columnCount);
+    });
   });
 });

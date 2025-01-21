@@ -6,7 +6,5 @@ $theme: $bootstrap;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')}) !important;
 
-    background: var-get($theme, 'background');
-    border: rem(1px) solid var-get($theme, 'border-color');
-    border-radius: var-get($theme, 'border-radius');
+    border: var-get($theme, 'border-width') solid var-get($theme, 'border-color');
 }
