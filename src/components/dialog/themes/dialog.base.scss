@@ -65,6 +65,11 @@ slot[name='footer'] {
     }
 }
 
+[name='message']::slotted(*) {
+    max-width: 40ch;
+    display: inline-block;
+}
+
 dialog::backdrop {
     opacity: 0;
 }
