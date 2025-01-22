@@ -16,7 +16,7 @@ export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
 
 export function numberOfDecimals(number: number): number {
-  const decimals = last(number.toString().split('.'));
+  const [_, decimals] = number.toString().split('.');
   return decimals ? decimals.length : 0;
 }
 
