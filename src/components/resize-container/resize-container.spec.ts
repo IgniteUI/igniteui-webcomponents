@@ -349,6 +349,80 @@ describe('Resize container', () => {
         ]);
       });
     });
+
+    describe('Events - horizontal and vertical adorners', () => {
+      it('horizontal adorner behavior', async () => {
+        await setResizeActiveState(element);
+
+        const DOM = getDOM(element);
+        const eventSpy = spy(element, 'emitEvent');
+        const rect = DOM.container.getBoundingClientRect();
+
+        simulatePointerDown(DOM.adorners.side);
+        await elementUpdated(element);
+
+        let state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+        expect(state.trigger).to.equal(DOM.adorners.side);
+
+        simulatePointerMove(DOM.adorners.side, {
+          clientX: rect.right + 500,
+          clientY: rect.bottom + 500,
+        });
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResize');
+        expect(state.current.height).to.equal(rect.height);
+        expect(state.current.width).to.equal(rect.width + 500);
+
+        simulateLostPointerCapture(DOM.adorners.side);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeEnd');
+        expect(state.current).to.eql(DOM.container.getBoundingClientRect());
+      });
+
+      it('vertical adorner behavior', async () => {
+        await setResizeActiveState(element);
+
+        const DOM = getDOM(element);
+        const eventSpy = spy(element, 'emitEvent');
+        const rect = DOM.container.getBoundingClientRect();
+
+        simulatePointerDown(DOM.adorners.bottom);
+        await elementUpdated(element);
+
+        let state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+        expect(state.trigger).to.equal(DOM.adorners.bottom);
+
+        simulatePointerMove(DOM.adorners.bottom, {
+          clientX: rect.right + 500,
+          clientY: rect.bottom + 500,
+        });
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResize');
+        expect(state.current.width).to.equal(rect.width);
+        expect(state.current.height).to.equal(rect.height + 500);
+
+        simulateLostPointerCapture(DOM.adorners.bottom);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeEnd');
+        expect(state.current).to.eql(DOM.container.getBoundingClientRect());
+      });
+    });
   });
 
   describe('Deferred mode', () => {
@@ -703,6 +777,82 @@ describe('Resize container', () => {
           state.initial.width,
           state.initial.height,
         ]);
+      });
+    });
+
+    describe('Events - horizontal and vertical adorners', () => {
+      it('horizontal adorner behavior', async () => {
+        await setResizeActiveState(element);
+
+        const DOM = getDOM(element);
+        const eventSpy = spy(element, 'emitEvent');
+        const rect = DOM.container.getBoundingClientRect();
+
+        simulatePointerDown(DOM.adorners.side);
+        await elementUpdated(element);
+
+        const ghostRect = DOM.ghostElement.getBoundingClientRect();
+        let state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+        expect(state.trigger).to.equal(DOM.adorners.side);
+
+        simulatePointerMove(DOM.adorners.side, {
+          clientX: rect.right + 500,
+          clientY: rect.bottom + 500,
+        });
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResize');
+        expect(state.current.height).to.equal(ghostRect.height);
+        expect(state.current.width).to.equal(ghostRect.width + 500);
+
+        simulateLostPointerCapture(DOM.adorners.side);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeEnd');
+        expect(state.current).to.eql(DOM.container.getBoundingClientRect());
+      });
+
+      it('vertical adorner behavior', async () => {
+        await setResizeActiveState(element);
+
+        const DOM = getDOM(element);
+        const eventSpy = spy(element, 'emitEvent');
+        const rect = DOM.container.getBoundingClientRect();
+
+        simulatePointerDown(DOM.adorners.bottom);
+        await elementUpdated(element);
+
+        const ghostRect = DOM.ghostElement.getBoundingClientRect();
+        let state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeStart');
+        expect(state.trigger).to.equal(DOM.adorners.bottom);
+
+        simulatePointerMove(DOM.adorners.bottom, {
+          clientX: rect.right + 500,
+          clientY: rect.bottom + 500,
+        });
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResize');
+        expect(state.current.width).to.equal(ghostRect.width);
+        expect(state.current.height).to.equal(ghostRect.height + 500);
+
+        simulateLostPointerCapture(DOM.adorners.bottom);
+        await elementUpdated(element);
+
+        state = getResizeEventState(eventSpy);
+
+        expect(eventSpy).calledWith('igcResizeEnd');
+        expect(state.current).to.eql(DOM.container.getBoundingClientRect());
       });
     });
   });
