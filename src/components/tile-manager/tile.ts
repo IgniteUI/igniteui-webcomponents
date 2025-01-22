@@ -12,11 +12,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import IgcResizeContainerComponent from '../resize-container/resize-container.js';
+import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { isSameTile, swapTiles } from './position.js';
-import type { ResizeCallbackParams } from './resize-controller.js';
-import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
@@ -64,7 +64,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     registerComponent(
       IgcTileComponent,
       IgcTileHeaderComponent,
-      IgcResizeComponent
+      IgcResizeContainerComponent
     );
   }
 

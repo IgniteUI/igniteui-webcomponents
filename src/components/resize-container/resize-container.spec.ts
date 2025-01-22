@@ -29,12 +29,12 @@ describe('Resize container', () => {
 
     beforeEach(async () => {
       resizeContainer = await fixture<IgcResizeContainerComponent>(html`
-        <igc-resize-container></igc-resize-container>
+        <igc-resize></igc-resize>
       `);
     });
 
     it('should be defined', () => {
-      expect(resizeContainer).to.exist;
+      expect(resizeContainer).to.not.be.null;
     });
 
     it('should initialize with correct default state', () => {
@@ -51,9 +51,9 @@ describe('Resize container', () => {
   describe('Immediate mode', () => {
     function createResizeContainer() {
       return html`
-        <igc-resize-container>
+        <igc-resize>
           <div id="target" style="height: 200px">Immediate mode</div>
-        </igc-resize-container>
+        </igc-resize>
       `;
     }
 
@@ -354,9 +354,9 @@ describe('Resize container', () => {
   describe('Deferred mode', () => {
     function createDeferredResizeContainer() {
       return html`
-        <igc-resize-container mode="deferred">
+        <igc-resize mode="deferred">
           <div style="height: 200px">Deferred mode</div>
-        </igc-resize-container>
+        </igc-resize>
       `;
     }
 
@@ -426,7 +426,7 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(DOM.ghostElement).to.exist;
+        expect(DOM.ghostElement).to.not.be.null;
         expect(DOM.ghostElement?.style.background).to.equal('pink');
       });
 
@@ -445,7 +445,7 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(DOM.ghostElement).to.exist;
+        expect(DOM.ghostElement).to.not.be.null;
         expect(DOM.ghostElement?.classList.contains('custom-ghost')).to.be.true;
       });
 
@@ -507,7 +507,7 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         expect(eventSpy).calledWith('igcResizeEnd');
-        expect(DOM.ghostElement).to.not.exist;
+        expect(DOM.ghostElement).to.be.null;
       });
 
       it('should not fire `resizeCancel` when escape key is pressed without active resizing', async () => {
@@ -559,7 +559,7 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         expect(eventSpy).calledWith('igcResizeCancel');
-        expect(DOM.ghostElement).to.not.exist;
+        expect(DOM.ghostElement).to.be.null;
       });
     });
 

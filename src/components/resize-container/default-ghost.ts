@@ -1,5 +1,5 @@
 /**
- * Default ghost element factory for the igc-resize-container implementation.
+ * Default ghost element factory for the igc-resize implementation.
  */
 export function createDefaultGhostElement(
   width: number,

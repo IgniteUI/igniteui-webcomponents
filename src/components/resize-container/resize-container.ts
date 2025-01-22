@@ -30,7 +30,7 @@ export interface IgcResizeContainerComponentEventMap {
 
 /* blazorSuppress */
 /**
- * @element igc-resize-container
+ * @element igc-resize
  *
  * @slot - renders the element(s) that should be resized
  */
@@ -38,7 +38,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   IgcResizeContainerComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static readonly tagName = 'igc-resize-container';
+  public static readonly tagName = 'igc-resize';
   public static styles = [styles];
 
   /* blazorSuppress */
@@ -241,6 +241,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-resize-container': IgcResizeContainerComponent;
+    'igc-resize': IgcResizeContainerComponent;
   }
 }
