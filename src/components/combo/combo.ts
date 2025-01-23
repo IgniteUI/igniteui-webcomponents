@@ -182,7 +182,9 @@ export default class IgcComboComponent<
   @property({ attribute: false })
   public set data(value: T[]) {
     this._data = asArray(value);
+    const pristine = this._pristine;
     this.value = asArray(this.value);
+    this._pristine = pristine;
     this._state.runPipeline();
   }
 
