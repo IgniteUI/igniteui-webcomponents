@@ -305,7 +305,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
-    this.style.viewTransitionName = `tile-transition-${crypto.randomUUID()}`;
+    // REVIEW
+    // this.style.viewTransitionName = `tile-transition-${crypto.randomUUID()}`;
   }
 
   protected override updated(changedProperties: PropertyValues) {
