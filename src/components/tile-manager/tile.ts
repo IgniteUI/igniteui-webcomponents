@@ -272,11 +272,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
    */
   @property({ type: Number })
   public set position(value: number) {
-    this._position = Number(value);
-    this.style.order = `${this._position}`;
+    this._position = asNumber(value);
+    this.style.order = this._position.toString();
   }
 
-  public get position() {
+  public get position(): number {
     return this._position;
   }
 
@@ -304,6 +304,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+
+    this.style.viewTransitionName = `tile-transition-${crypto.randomUUID()}`;
   }
 
   protected override updated(changedProperties: PropertyValues) {
@@ -578,10 +580,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
         : Math.min(initialSpan, currentSpan);
 
     // REVIEW
-    Object.assign(state.ghost!.style, {
-      width: '',
-      height: '',
-    });
+    // startViewTransition(() => {
+    //   this.style.setProperty('grid-row', `span ${rowSpan}`);
+    //   this.style.setProperty('grid-column', `span ${colSpan}`);
+    // });
 
     this.style.setProperty('grid-row', `span ${rowSpan}`);
     this.style.setProperty('grid-column', `span ${colSpan}`);
