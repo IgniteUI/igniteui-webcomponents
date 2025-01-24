@@ -217,28 +217,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     }
   }
 
-  private handleDragOver(event: DragEvent) {
-    event.preventDefault(); // Allow dropping
-  }
-
-  private handleDrop(event: DragEvent) {
-    event.preventDefault();
-
-    const draggedItem = this._draggedItem;
-    const target = findElementFromEventPath<IgcTileComponent>(
-      IgcTileComponent.tagName,
-      event
-    );
-
-    if (
-      !isSameTile(draggedItem, target) &&
-      this.dragMode === 'swap' &&
-      !target?.disableDrag
-    ) {
-      swapTiles(draggedItem!, target!);
-    }
-  }
-
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
@@ -259,8 +237,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         part=${parts}
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
-        @dragover=${this.handleDragOver}
-        @drop=${this.handleDrop}
       >
         <slot></slot>
       </div>

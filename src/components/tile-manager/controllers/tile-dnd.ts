@@ -1,31 +1,24 @@
 import type { ReactiveController } from 'lit';
 import type IgcTileComponent from '../tile.js';
 
-type TileDragCallback = (event: DragEvent) => unknown;
+type TileDragCallback = (
+  event: PointerEvent,
+  tile: IgcTileComponent
+) => unknown;
 
 type TileDragAndDropConfig = {
   dragStart: TileDragCallback;
+  dragMove: TileDragCallback;
   dragEnd: TileDragCallback;
-  dragEnter: TileDragCallback;
-  dragLeave: TileDragCallback;
-  dragOver: TileDragCallback;
-  drop: TileDragCallback;
 };
-
-const DragEvents = [
-  'dragstart',
-  'dragend',
-  'dragenter',
-  'dragleave',
-  'dragover',
-  'drop',
-];
 
 export class TileDragAndDropController implements ReactiveController {
   public enabled = true;
 
   private _host: IgcTileComponent;
   private _handlers!: Map<string, TileDragCallback>;
+  private _isDragging = false;
+  private _draggedTile: IgcTileComponent | null = null;
 
   constructor(host: IgcTileComponent, config: Partial<TileDragAndDropConfig>) {
     this._host = host;
@@ -41,28 +34,41 @@ export class TileDragAndDropController implements ReactiveController {
     }
   }
 
-  public handleEvent(event: DragEvent) {
-    if (!this.enabled) return;
+  private _onPointerDown = (event: PointerEvent) => {
+    if (!this.enabled || this._isDragging) return;
 
-    if (this._handlers.has(event.type)) {
-      this._handlers.get(event.type)!.call(this._host, event);
-    }
-  }
+    this._isDragging = true;
+    this._draggedTile = this._host;
+    this._handlers.get('dragstart')?.call(this._host, event, this._host);
 
-  public hostUpdate(): void {
-    this._host.draggable = this.enabled;
-  }
+    document.addEventListener('pointermove', this._onPointerMove);
+    document.addEventListener('pointerup', this._onPointerUp);
+  };
+
+  private _onPointerMove = (event: PointerEvent) => {
+    if (!this._isDragging || !this._draggedTile) return;
+
+    this._handlers.get('dragmove')?.call(this._host, event, this._draggedTile);
+  };
+
+  private _onPointerUp = (event: PointerEvent) => {
+    if (!this._isDragging || !this._draggedTile) return;
+
+    this._handlers.get('dragend')?.call(this._host, event, this._draggedTile);
+
+    this._isDragging = false;
+    this._draggedTile = null;
+
+    document.removeEventListener('pointermove', this._onPointerMove);
+    document.removeEventListener('pointerup', this._onPointerUp);
+  };
 
   public hostConnected(): void {
-    for (const type of DragEvents) {
-      this._host.addEventListener(type, this);
-    }
+    this._host.addEventListener('pointerdown', this._onPointerDown);
   }
 
   public hostDisconnected(): void {
-    for (const type of DragEvents) {
-      this._host.removeEventListener(type, this);
-    }
+    this._host.removeEventListener('pointerdown', this._onPointerDown);
   }
 }
 
