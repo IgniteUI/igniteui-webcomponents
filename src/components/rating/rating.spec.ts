@@ -306,6 +306,18 @@ describe('Rating component', () => {
       expect(el.value).to.equal(2.5);
     });
 
+    it('issue-1548 - Inaccurate value calculation when precision == 1', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+
+      const symbol = getRatingSymbols(el).item(2);
+      const { x, width } = getBoundingRect(symbol);
+      // Simulate offset click when precision == 1
+      simulateClick(symbol, { clientX: x + width / 4 });
+
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+      expect(el.value).to.equal(3);
+    });
+
     it('correctly reflects hover state', async () => {
       const eventSpy = spy(el, 'emitEvent');
       el.value = 2;

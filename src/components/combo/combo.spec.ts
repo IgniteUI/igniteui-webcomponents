@@ -1431,6 +1431,45 @@ describe('Combo', () => {
       });
     });
 
+    describe('Form integration with delayed data', () => {
+      const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
+        <igc-combo name="combo" value-key="id" display-key="name"></igc-combo>
+      `);
+
+      function initDataDefaultValue(single = false) {
+        spec.element.singleSelect = single;
+        // assign data after init to simulate async data
+        spec.element.data = cities;
+        spec.element.defaultValue = value;
+      }
+
+      beforeEach(async () => {
+        await spec.setup(IgcComboComponent.tagName);
+      });
+
+      it('correct initial state (single)', () => {
+        initDataDefaultValue(true);
+        spec.assertIsPristine();
+        expect(spec.element.value).to.eql([first(value)]);
+      });
+
+      it('correct initial state (multiple)', () => {
+        initDataDefaultValue();
+        spec.assertIsPristine();
+        expect(spec.element.value).to.eql(value);
+      });
+
+      it('is correctly submitted (single)', () => {
+        initDataDefaultValue(true);
+        spec.assertSubmitHasValue(first(value));
+      });
+
+      it('is correctly submitted (multiple)', () => {
+        initDataDefaultValue();
+        spec.assertSubmitHasValues(value);
+      });
+    });
+
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(html`
         <igc-combo
