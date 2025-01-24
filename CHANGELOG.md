@@ -4,12 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [5.2.1] - 2025-01-23
 ### Added
 - #### Dialog
   - A new `message` slot that renders text content inside the dialog component has been added. The enhancement was introduced to align the design behavior between Ignite UI for WC and Ignite UI for Angular, ensuring a consistent user experience across products. The newly added `message' slot comes with additional styling with a max-width of 40 characters. The default slot is also still available for rendering content inside the dialog without limiting the component's width.
 
 ### Fixed
+- #### List
+  - CSS variables are correctly consumed from internal schemas [#1538](https://github.com/IgniteUI/igniteui-webcomponents/pull/1538)
 - #### Rating
   - Inaccurate value calculation on selection when step is set to 1 [#1548](https://github.com/IgniteUI/igniteui-webcomponents/issues/1548)
 
@@ -670,6 +672,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.0...5.2.1
 [5.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.2...5.2.0
 [5.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.1...5.1.2
 [5.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.0...5.1.1
