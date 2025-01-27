@@ -15,11 +15,10 @@ export type TileManagerContext = {
 };
 
 export type TileContext = {
+  /** The igc-tile component instance. */
   instance: IgcTileComponent;
-  setFullscreenState: (
-    fullscreen: boolean,
-    isUserTriggered?: boolean
-  ) => unknown;
+  /** Sets the current fullscreen state of the igc-tile element. */
+  setFullscreenState: (fullscreen: boolean) => unknown;
 };
 
 const carouselContext = createContext<IgcCarouselComponent>(

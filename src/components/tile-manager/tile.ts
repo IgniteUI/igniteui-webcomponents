@@ -4,6 +4,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
+  type TileContext,
   type TileManagerContext,
   tileContext,
   tileManagerContext,
@@ -79,10 +80,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     drop: this.handleDragLeave,
   });
 
-  private _fullscreenController = addFullscreenController(
-    this,
-    this.emitFullScreenEvent
-  );
+  private _fullscreenController = addFullscreenController(this, {
+    onEnterFullscreen: this.emitFullScreenEvent,
+    onExitFullscreen: this.emitFullScreenEvent,
+  });
 
   private _colSpan = 1;
   private _rowSpan = 1;
@@ -115,24 +116,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @consume({ context: tileManagerContext, subscribe: true })
   private _managerContext?: TileManagerContext;
 
+  private _createContext(): TileContext {
+    return {
+      instance: this,
+      setFullscreenState: (fullscreen) =>
+        this._fullscreenController.setState(fullscreen),
+    };
+  }
+
   private _context = new ContextProvider(this, {
     context: tileContext,
-    initialValue: {
-      instance: this,
-      setFullscreenState: (fullscreen, isUserTriggered) =>
-        this._fullscreenController.setState(fullscreen, isUserTriggered),
-    },
+    initialValue: this._createContext(),
   });
 
-  private _setTileContext() {
-    this._context.setValue(
-      {
-        instance: this,
-        setFullscreenState: (fullscreen, isUserTriggered) =>
-          this._fullscreenController.setState(fullscreen, isUserTriggered),
-      },
-      true
-    );
+  private _setTileContext(): void {
+    this._context.setValue(this._createContext(), true);
   }
 
   private get _draggedItem(): IgcTileComponent | null {
@@ -215,13 +213,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile occupies the whole screen.
-   * @attr fullscreen
    */
-  @property({ type: Boolean, reflect: true })
-  public set fullscreen(value: boolean) {
-    this._fullscreenController.setState(value);
-  }
-
   public get fullscreen(): boolean {
     return this._fullscreenController.fullscreen;
   }
@@ -296,11 +288,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return firstColumnWidth || this._cachedStyles.minWidth!;
   }
 
-  constructor() {
-    super();
-    this._setTileContext();
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
@@ -325,6 +312,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private emitFullScreenEvent(state: boolean) {
+    this._setTileContext();
     return this.emitEvent('igcTileFullscreen', {
       detail: { tile: this, state },
       cancelable: true,
