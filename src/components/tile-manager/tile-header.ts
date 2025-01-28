@@ -56,9 +56,7 @@ export default class IgcTileHeaderComponent extends LitElement {
 
   private handleFullscreen() {
     if (this._tileContext) {
-      this._tileContext.setFullscreenState(!this._isFullscreen, true);
-      // REVIEW: Leave the `requestUpdate` call or trigger through `setValue` from the tile context?
-      this.requestUpdate();
+      this._tileContext.setFullscreenState(!this._isFullscreen);
     }
   }
 
@@ -69,8 +67,6 @@ export default class IgcTileHeaderComponent extends LitElement {
 
     if (this._tile) {
       this._tile.maximized = !this._tile.maximized;
-      // REVIEW: Leave the `requestUpdate` call or trigger through `setValue` from the tile context?
-      this.requestUpdate();
     }
   }
 
