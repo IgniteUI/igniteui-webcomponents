@@ -306,6 +306,19 @@ describe('Rating component', () => {
       expect(el.value).to.equal(2.5);
     });
 
+    it('rounds correctly to the next step [precision != 1]', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.step = 0.4;
+      await elementUpdated(el);
+
+      const symbol = getRatingSymbols(el).item(0);
+      const { x, width } = getBoundingRect(symbol);
+      simulateClick(symbol, { clientX: x + width * 0.55 }); // Click 55% across the width of the symbol
+
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
+      expect(el.value).to.equal(0.8);
+    });
+
     it('issue-1548 - Inaccurate value calculation when precision == 1', async () => {
       const eventSpy = spy(el, 'emitEvent');
 

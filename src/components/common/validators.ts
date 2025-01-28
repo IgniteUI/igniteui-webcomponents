@@ -5,7 +5,7 @@ import {
   formatString,
   isDefined,
   numberOfDecimals,
-  roundPrecise,
+  roundPreciseUpToStep,
 } from './util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
@@ -104,8 +104,9 @@ export const stepValidator: Validator<{
       const _value = asNumber(value) - asNumber(min);
       const _step = asNumber(step);
       const magnitude = numberOfDecimals(_step) + 1;
-      const rem = roundPrecise(
+      const rem = roundPreciseUpToStep(
         Math.abs(_value - _step * Math.round(_value / _step)),
+        _step,
         magnitude
       );
 

@@ -20,9 +20,14 @@ export function numberOfDecimals(number: number): number {
   return decimals ? decimals.length : 0;
 }
 
-export function roundPrecise(number: number, magnitude = 1): number {
+export function roundPreciseUpToStep(
+  number: number,
+  step: number,
+  magnitude = 1
+): number {
   const factor = 10 ** magnitude;
-  return Math.round(number * factor) / factor;
+  const upToStep = Math.ceil(number / step) * step;
+  return Math.round(upToStep * factor) / factor;
 }
 
 export function numberInRangeInclusive(
