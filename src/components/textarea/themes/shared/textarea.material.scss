@@ -17,7 +17,7 @@ $input-bottom-padding: rem(6px);
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: rem(4px);
-        padding-inline-start: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 }
 
