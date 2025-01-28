@@ -132,10 +132,11 @@ class RefactoredResizeController implements ReactiveController {
       this._state.current = params.state.current;
     }
 
-    Object.assign(this._getResizeTarget().style, {
-      width: `${this._state.current.width}px`,
-      height: `${this._state.current.height}px`,
-    });
+    // REVIEW
+    // Object.assign(this._getResizeTarget().style, {
+    //   width: `${this._state.current.width}px`,
+    //   height: `${this._state.current.height}px`,
+    // });
 
     this.dispose();
   }

@@ -1,4 +1,67 @@
+import type { ResizeState } from '../resize-container/types.js';
+
 export class ResizeUtil {
+  public static calculateSnappedWidth(
+    deltaX: number,
+    state: ResizeState,
+    gap: number,
+    columns: number[]
+  ): number {
+    let snappedWidth = state.current.width;
+    let accumulatedWidth = 0;
+
+    for (let i = 0; i < columns.length; i++) {
+      const currentColWidth = columns[i];
+      const nextColWidth = columns[i + 1] || currentColWidth;
+      const prevColWidth = i > 0 ? columns[i - 1] : currentColWidth;
+
+      const halfwayExpand =
+        accumulatedWidth + currentColWidth + gap + nextColWidth / 2;
+      const halfwayShrink = accumulatedWidth + prevColWidth / 2;
+      const columnEnd = accumulatedWidth + currentColWidth + gap;
+
+      if (deltaX > 0) {
+        if (
+          state.current.width >= halfwayExpand &&
+          state.current.width <= columnEnd + nextColWidth
+        ) {
+          snappedWidth = columnEnd + nextColWidth;
+        }
+      } else if (deltaX < 0) {
+        if (
+          state.current.width <= halfwayShrink &&
+          state.current.width > accumulatedWidth
+        ) {
+          snappedWidth = accumulatedWidth - gap;
+        }
+      }
+
+      accumulatedWidth += currentColWidth + gap;
+    }
+
+    return snappedWidth;
+  }
+
+  public static calculateTileStartingColumn(
+    startingPoint: number,
+    gap: number,
+    columns: number[]
+  ): number {
+    let accumulatedWidth = 0;
+
+    for (let i = 0; i < columns.length; i++) {
+      const colWidth = columns[i];
+      accumulatedWidth += colWidth + (i > 0 ? gap : 0);
+
+      if (startingPoint < accumulatedWidth) {
+        return i;
+      }
+    }
+
+    return 1;
+  }
+
+  // REVIEW
   public static calculateSnappedHeight(
     deltaY: number,
     startingY: number,
@@ -61,19 +124,7 @@ export class ResizeUtil {
     return result;
   }
 
-  public static calculateSnappedWidth(
-    deltaX: number,
-    initialWidth: number,
-    gap: number,
-    gridColumnWidth: number
-  ): number {
-    const newSize = initialWidth + deltaX;
-    const totalSpan = Math.round(newSize / (gridColumnWidth + gap));
-    const snappedWidth = totalSpan * gridColumnWidth + (totalSpan - 1) * gap;
-
-    return snappedWidth < gridColumnWidth ? gridColumnWidth : snappedWidth;
-  }
-
+  // REVIEW
   public static calculate(
     initialTop: number,
     rowHeights: number[],
@@ -93,6 +144,7 @@ export class ResizeUtil {
     return { targetIndex, accumulatedHeight };
   }
 
+  // REVIEW
   private static accumulateHeight(
     rowIndex: number,
     rowHeights: number[],
