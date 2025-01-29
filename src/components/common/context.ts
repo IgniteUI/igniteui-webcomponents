@@ -1,5 +1,6 @@
 import { createContext } from '@lit/context';
 import type IgcCarouselComponent from '../carousel/carousel.js';
+import type { addFullscreenController } from '../tile-manager/controllers/fullscreen.js';
 import type IgcTileManagerComponent from '../tile-manager/tile-manager.js';
 import type IgcTileComponent from '../tile-manager/tile.js';
 
@@ -12,8 +13,8 @@ export type TileManagerContext = {
 export type TileContext = {
   /** The igc-tile component instance. */
   instance: IgcTileComponent;
-  /** Sets the current fullscreen state of the igc-tile element. */
-  setFullscreenState: (fullscreen: boolean) => unknown;
+  /** The fullscreen controller of the igc-tile instance. */
+  fullscreenController: ReturnType<typeof addFullscreenController>;
 };
 
 const carouselContext = createContext<IgcCarouselComponent>(
