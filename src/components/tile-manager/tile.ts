@@ -479,33 +479,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._colWidths = columnWidths.slice(startingColumn);
   }
 
-  private _handleResize(event: CustomEvent<ResizeCallbackParams>) {
+  private _handleResize({
+    detail: { state },
+  }: CustomEvent<ResizeCallbackParams>) {
+    const trigger = state.trigger!;
+
     this._isResizing = true;
 
-    const ghostElement = event.detail.state.current;
-    const trigger = event.detail.state.trigger?.getAttribute('part');
+    // horizontal resize
+    if (trigger.matches('[part*="side"]')) {
+      const dX = state.deltaX - this._startDeltaX;
+      const snapped = ResizeUtil.calculateSnappedWidth(
+        dX,
+        state,
+        this._cachedStyles.gap,
+        this._colWidths
+      );
 
-    if (ghostElement) {
-      //width
-      if (trigger!.indexOf('side') > 0) {
-        //export to func
-        const deltaX = event.detail.state.deltaX - this._startDeltaX;
-
-        const snappedWidth = ResizeUtil.calculateSnappedWidth(
-          deltaX,
-          event.detail.state,
-          this._cachedStyles.gap,
-          this._colWidths
-        );
-
-        ghostElement.width = snappedWidth;
-        this._startDeltaX = event.detail.state.deltaX;
-      } else if (trigger!.indexOf('bottom') > 0) {
-        // height
-        //ghostElement.height = snappedHeight;
-      }
-      // handle corner trigger
+      state.current.width = snapped;
+      this._startDeltaX = state.deltaX;
     }
+    // TODO: vertical resize + diagonal resize
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {

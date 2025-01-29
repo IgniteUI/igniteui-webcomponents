@@ -168,7 +168,7 @@ export function createTileGhost(): HTMLDivElement {
     left: 0,
     zIndex: 1000,
     background: 'var(--placeholder-background)',
-    border: `2px solid ${'var(--ghost-border)'}`,
+    border: '2px solid var(--ghost-border)',
     borderRadius: 'var(--border-radius)',
     width: '100%',
     height: '100%',
