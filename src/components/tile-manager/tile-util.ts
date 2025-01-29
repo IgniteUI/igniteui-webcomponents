@@ -158,3 +158,21 @@ export class ResizeUtil {
     return accumulatedHeight;
   }
 }
+
+export function createTileGhost(): HTMLDivElement {
+  const element = document.createElement('div');
+
+  Object.assign(element.style, {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 1000,
+    background: 'var(--placeholder-background)',
+    border: `2px solid ${'var(--ghost-border)'}`,
+    borderRadius: 'var(--border-radius)',
+    width: '100%',
+    height: '100%',
+  });
+
+  return element;
+}

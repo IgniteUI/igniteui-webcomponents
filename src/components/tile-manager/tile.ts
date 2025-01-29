@@ -2,6 +2,7 @@ import { ContextProvider } from '@lit/context';
 import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type TileContext,
@@ -22,7 +23,7 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import { ResizeUtil } from './tile-util.js';
+import { ResizeUtil, createTileGhost } from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -92,20 +93,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _disableDrag = false;
   private _maximized = false;
-  private _startDeltaX: number | null = null;
-  private _startDeltaY: number | null = null;
+  private _startDeltaX = 0;
+  private _startDeltaY = 0;
   private _colWidths: number[] = [];
   private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
   private _cachedStyles: {
-    columnsArray?: string;
-    columnCount?: number;
-    gap?: number;
-    minHeight?: number;
-    minWidth?: number;
-    rowHeights?: number[];
-  } = {};
+    columnWidths: number[];
+    columnCount: number;
+    gap: number;
+    minHeight: number;
+    minWidth: number;
+    rowHeights: number[];
+  } = {
+    gap: 0,
+    rowHeights: [],
+    columnWidths: [],
+    columnCount: 0,
+    minWidth: 0,
+    minHeight: 0,
+  };
 
   // Tile manager context properties and helpers
 
@@ -289,7 +297,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
     // REVIEW
-    // this.style.viewTransitionName = `tile-transition-${crypto.randomUUID()}`;
+    this.style.viewTransitionName = `tile-transition-${this.tileId}`;
   }
 
   protected override updated(changedProperties: PropertyValues) {
@@ -344,7 +352,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.assignDragImage(e);
 
     this.emitEvent('tileDragStart', { detail: this });
-    this._dragGhost = this.ghostFactory();
+    this._dragGhost = createTileGhost();
     this._dragGhost.inert = true;
 
     if (this._dragGhost) {
@@ -436,51 +444,34 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return outsideBoundaries;
   }
 
-  private cacheStyles() {
-    //use util
-    const tileComputedStyle = getComputedStyle(this);
-    const parentWrapper =
-      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
-    const tileManagerComputedStyle = getComputedStyle(parentWrapper);
+  private _cacheResizeStyles() {
+    const tileStyles = getComputedStyle(this);
+    const managerStyles = getComputedStyle(this._tileManager!.grid.value!);
 
-    const gap =
-      Number.parseFloat(
-        tileManagerComputedStyle.getPropertyValue('grid-gap')
-      ) || 0;
-    const rowHeights = tileManagerComputedStyle.gridTemplateRows
-      .split(' ')
-      .map((height) => Number.parseFloat(height.trim()));
-
-    this._cachedStyles = {
-      columnsArray: tileManagerComputedStyle.getPropertyValue(
-        'grid-template-columns'
-      ),
-      columnCount: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-column-count')
-      ),
-      minWidth: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-min-col-width')
-      ),
-      minHeight: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-min-row-height')
-      ),
-      rowHeights,
-      gap,
-    };
+    return Object.assign(this._cachedStyles, {
+      gap: asNumber(managerStyles.gap),
+      rowHeights: managerStyles.gridTemplateRows.split(' ').map(asNumber),
+      columnWidths: managerStyles.gridTemplateColumns.split(' ').map(asNumber),
+      columnCount: asNumber(tileStyles.getPropertyValue('--ig-column-count')),
+      minWidth: asNumber(tileStyles.getPropertyValue('--ig-min-col-width')),
+      minHeight: asNumber(tileStyles.getPropertyValue('--ig-min-row-height')),
+    });
   }
 
-  private _handleResizeStart(event: CustomEvent<ResizeCallbackParams>) {
-    this.cacheStyles();
-    this._startDeltaX = event.detail.state.deltaX;
-    this._startDeltaY = event.detail.state.deltaY;
+  private _handleResizeStart({
+    detail: { state },
+  }: CustomEvent<ResizeCallbackParams>) {
+    const { gap, columnWidths } = this._cacheResizeStyles();
 
-    const columnWidths = this._cachedStyles
-      .columnsArray!.split(' ')
-      .map((c) => Number.parseFloat(c));
+    // XXX: `startViewTransition` fix since the tile is in another layer??
+    this.style.zIndex = '1';
+
+    this._startDeltaX = state.deltaX;
+    this._startDeltaY = state.deltaY;
 
     const startingColumn = ResizeUtil.calculateTileStartingColumn(
-      event.detail.state.initial.left,
-      this._cachedStyles.gap!,
+      state.initial.left,
+      gap,
       columnWidths
     );
 
@@ -498,12 +489,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
       //width
       if (trigger!.indexOf('side') > 0) {
         //export to func
-        const deltaX = event.detail.state.deltaX - this._startDeltaX!;
+        const deltaX = event.detail.state.deltaX - this._startDeltaX;
 
         const snappedWidth = ResizeUtil.calculateSnappedWidth(
           deltaX,
           event.detail.state,
-          this._cachedStyles.gap!,
+          this._cachedStyles.gap,
           this._colWidths
         );
 
@@ -532,15 +523,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const colSpan = Math.max(
       1,
-      Math.ceil(width / (this.gridColumnWidth + this._cachedStyles.gap!))
+      Math.ceil(width / (this.gridColumnWidth + this._cachedStyles.gap))
     );
 
     // REVIEW & REWORK height logic
     const initialTop = event.detail.state.initial.top + window.scrollY;
     const startRowIndex = ResizeUtil.calculate(
       initialTop,
-      this._cachedStyles.rowHeights!,
-      this._cachedStyles.gap!
+      this._cachedStyles.rowHeights,
+      this._cachedStyles.gap
     ).targetIndex;
 
     const initialSpan = this._calculateRowSpan(
@@ -556,18 +547,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
         : Math.min(initialSpan, currentSpan);
 
     // REVIEW
-    // startViewTransition(() => {
-    //   this.style.setProperty('grid-row', `span ${rowSpan}`);
-    //   this.style.setProperty('grid-column', `span ${colSpan}`);
-    // });
+    startViewTransition(() => {
+      this.style.setProperty('grid-row', `span ${rowSpan}`);
+      this.style.setProperty('grid-column', `span ${colSpan}`);
+    });
 
-    this.style.setProperty('grid-row', `span ${rowSpan}`);
-    this.style.setProperty('grid-column', `span ${colSpan}`);
-
+    this.style.zIndex = '';
     this._isResizing = false;
-    this._startDeltaX = null;
-    this._startDeltaY = null;
-    this._cachedStyles = {};
+    this._startDeltaX = 0;
+    this._startDeltaY = 0;
   }
 
   private _calculateRowSpan(height: number, startRowIndex: number): number {
@@ -590,25 +578,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     // Default to the first row
     return 1;
   }
-
-  // REVIEW
-  protected ghostFactory = () => {
-    const ghost = document.createElement('div');
-
-    Object.assign(ghost.style, {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      zIndex: 1000,
-      background: 'var(--placeholder-background)',
-      border: `2px solid ${'var(--ghost-border)'}`,
-      borderRadius: 'var(--border-radius)',
-      width: '100%',
-      height: '100%',
-    });
-
-    return ghost;
-  };
 
   protected renderContent() {
     const parts = partNameMap({
@@ -648,7 +617,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : html`
           <igc-resize
             part="resize"
-            .ghostFactory=${this.ghostFactory}
+            .ghostFactory=${createTileGhost}
             mode="deferred"
             @igcResizeStart=${this._handleResizeStart}
             @igcResize=${this._handleResize}
