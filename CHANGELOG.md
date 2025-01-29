@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+- #### Rating
+  - Inaccurate value rounding calculation when step is not 1 [#1560](https://github.com/IgniteUI/igniteui-webcomponents/issues/1560)
+
 ## [5.2.1] - 2025-01-23
 ### Added
 - #### Dialog
