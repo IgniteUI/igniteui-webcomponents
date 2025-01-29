@@ -16,7 +16,7 @@ $dropdown-theme: dropdown-theme.$material;
 
         margin-block-start: rem(4px);
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 
     ::slotted([slot='prefix']),

@@ -24,7 +24,7 @@ $active-border-width: rem(2px) !default;
         @include type-style('caption');
 
         margin-block-start: rem(4px);
-        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }

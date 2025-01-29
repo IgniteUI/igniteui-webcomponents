@@ -65,8 +65,7 @@ class FullscreenController implements ReactiveController {
 
   /** @internal */
   public handleEvent(): void {
-    const isFullscreen = document.fullscreenElement === this._host;
-    if (!isFullscreen && this._fullscreen) {
+    if (!document.fullscreenElement && this._fullscreen) {
       this.setState(false);
     }
   }

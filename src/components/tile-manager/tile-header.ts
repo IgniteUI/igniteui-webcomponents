@@ -1,8 +1,8 @@
-import { consume } from '@lit/context';
 import { LitElement, html, nothing } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { type TileContext, tileContext } from '../common/context.js';
+import { tileContext } from '../common/context.js';
+import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcDividerComponent from '../divider/divider.js';
 import { all } from './themes/header.js';
@@ -33,11 +33,10 @@ export default class IgcTileHeaderComponent extends LitElement {
     );
   }
 
-  @consume({ context: tileContext, subscribe: true })
-  private _tileContext?: TileContext;
+  private _context = createAsyncContext(this, tileContext);
 
   private get _tile() {
-    return this._tileContext?.instance;
+    return this._context?.value?.instance;
   }
 
   private get _isMaximized() {
@@ -55,8 +54,8 @@ export default class IgcTileHeaderComponent extends LitElement {
   }
 
   private handleFullscreen() {
-    if (this._tileContext) {
-      this._tileContext.setFullscreenState(!this._isFullscreen);
+    if (this._context) {
+      this._context.value!.fullscreenController.setState(!this._isFullscreen);
     }
   }
 
