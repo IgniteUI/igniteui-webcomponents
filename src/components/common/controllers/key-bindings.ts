@@ -179,6 +179,7 @@ class KeyBindingController implements ReactiveController {
   protected _observedElement?: Element;
   protected _options?: KeyBindingControllerOptions;
   private bindings = new Map<string, KeyBinding>();
+  private allowedKeys = new Set<string>();
   private pressedKeys = new Set<string>();
 
   protected get _element() {
@@ -249,6 +250,10 @@ class KeyBindingController implements ReactiveController {
   private shouldSkip(event: KeyboardEvent) {
     const skip = this._options?.skip;
 
+    if (!this.allowedKeys.has(event.key.toLowerCase())) {
+      return true;
+    }
+
     if (!findElementFromEventPath((e) => e === this._element, event)) {
       return true;
     }
@@ -268,7 +273,9 @@ class KeyBindingController implements ReactiveController {
     }
 
     const key = event.key.toLowerCase();
-    Modifiers.has(key) ? this.pressedKeys.clear() : this.pressedKeys.add(key);
+    if (!Modifiers.has(key)) {
+      this.pressedKeys.add(key);
+    }
 
     const pendingKeys = Array.from(this.pressedKeys);
     const modifiers = Array.from(Modifiers.values()).filter(
@@ -304,6 +311,10 @@ class KeyBindingController implements ReactiveController {
     const { keys, modifiers } = parseKeys(key);
     const combination = createCombinationKey(keys, modifiers);
     const _options = { ...this._options?.bindingDefaults, ...options };
+
+    for (const key of [...keys, ...modifiers]) {
+      this.allowedKeys.add(key);
+    }
 
     this.bindings.set(combination, {
       keys,
