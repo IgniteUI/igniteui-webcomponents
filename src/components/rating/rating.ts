@@ -325,13 +325,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
-    const value = this.round(this.max * percent + this.step / 2);
+    const value = this.round(this.max * percent);
 
     return clamp(value, this.step, this.max);
   }
 
   protected round(value: number) {
-    return roundPrecise(value, numberOfDecimals(this.step));
+    return roundPrecise(
+      Math.ceil(value / this.step) * this.step,
+      numberOfDecimals(this.step)
+    );
   }
 
   protected clipSymbol(index: number, isLTR = true) {
