@@ -25,7 +25,7 @@ $theme: $material;
 
     :host([striped][variant='#{$part}']) {
         --striped-bg: #{var-get($theme, $color-key) repeating-linear-gradient(
-            -45deg,
+            var(--linear-strips-orientation),
             var-get($theme, $color-key),
             var-get($theme, $color-key) var(--stripe-size),
             var-get($theme, 'stripes-color') var(--stripe-size),
