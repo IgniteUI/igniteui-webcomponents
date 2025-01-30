@@ -27,8 +27,8 @@
     visibility: var(--resize-visibility);
     cursor: e-resize;
     position: absolute;
-    top: calc(50% - rem(8px));
-    right: rem(-8px);
+    top: calc(50% - rem(12px));
+    right: rem(-12px);
     z-index: 1;
 
     igc-icon {
@@ -45,8 +45,8 @@
     visibility: var(--resize-visibility);
     cursor: se-resize;
     position: absolute;
-    bottom: rem(-8px);
-    right: rem(-8px);
+    bottom: rem(-12px);
+    right: rem(-12px);
     z-index: 1;
 
     igc-icon {
@@ -65,8 +65,8 @@
     visibility: var(--resize-visibility);
     cursor: s-resize;
     position: absolute;
-    left: calc(50% - rem(8px));
-    bottom: rem(-8px);
+    left: calc(50% - rem(12px));
+    bottom: rem(-12px);
     z-index: 1;
 
     igc-icon {

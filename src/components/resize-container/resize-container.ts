@@ -210,11 +210,11 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
     return html`
       <div ${ref(this._adorners.side)} part="trigger-side" tabindex="-1">
-        ➡️
+        🔵
       </div>
-      <div ${ref(this._adorners.corner)} part="trigger" tabindex="-1">↘️</div>
+      <div ${ref(this._adorners.corner)} part="trigger" tabindex="-1">🔵</div>
       <div ${ref(this._adorners.bottom)} part="trigger-bottom" tabindex="-1">
-        ⬇️
+        🔵
       </div>
     `;
   }
