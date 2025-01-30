@@ -6,6 +6,8 @@ $theme: $material;
 $input-theme: input-theme.$material;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     igc-dialog {
         box-shadow: none;
         border: none;
