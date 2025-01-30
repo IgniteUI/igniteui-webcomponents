@@ -23,7 +23,11 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import { ResizeUtil, createTileGhost } from './tile-util.js';
+import {
+  ResizeUtil,
+  createTileGhost,
+  createTileResizeState,
+} from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -93,27 +97,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _disableDrag = false;
   private _maximized = false;
-  private _startDeltaX = 0;
-  private _startDeltaY = 0;
   private _colWidths: number[] = [];
   private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
-  private _cachedStyles: {
-    columnWidths: number[];
-    columnCount: number;
-    gap: number;
-    minHeight: number;
-    minWidth: number;
-    rowHeights: number[];
-  } = {
-    gap: 0,
-    rowHeights: [],
-    columnWidths: [],
-    columnCount: 0,
-    minWidth: 0,
-    minHeight: 0,
-  };
+  private _resizeState = createTileResizeState();
 
   // Tile manager context properties and helpers
 
@@ -289,14 +277,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
       gridTemplateColumns.split(' ')[0]
     );
 
-    return firstColumnWidth || this._cachedStyles.minWidth!;
+    return firstColumnWidth || this._resizeState.columns.minWidth;
   }
 
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
-    // REVIEW
+    // REVIEW: View transitions
     this.style.viewTransitionName = `tile-transition-${this.tileId}`;
   }
 
@@ -444,39 +432,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return outsideBoundaries;
   }
 
-  private _cacheResizeStyles() {
-    const tileStyles = getComputedStyle(this);
-    const managerStyles = getComputedStyle(this._tileManager!.grid.value!);
-
-    return Object.assign(this._cachedStyles, {
-      gap: asNumber(managerStyles.gap),
-      rowHeights: managerStyles.gridTemplateRows.split(' ').map(asNumber),
-      columnWidths: managerStyles.gridTemplateColumns.split(' ').map(asNumber),
-      columnCount: asNumber(tileStyles.getPropertyValue('--ig-column-count')),
-      minWidth: asNumber(tileStyles.getPropertyValue('--ig-min-col-width')),
-      minHeight: asNumber(tileStyles.getPropertyValue('--ig-min-row-height')),
-    });
-  }
-
   private _handleResizeStart({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    const { gap, columnWidths } = this._cacheResizeStyles();
+    this._resizeState.updateState(this, this._tileManager!.grid.value!);
+    this._resizeState.getPosition(state.initial);
 
-    // XXX: `startViewTransition` fix since the tile is in another layer??
+    const { position, columns } = this._resizeState;
+
+    // REVIEW: `startViewTransition` fix since the tile is in another layer??
     this.style.zIndex = '1';
 
-    this._startDeltaX = state.deltaX;
-    this._startDeltaY = state.deltaY;
-
-    const startingColumn = ResizeUtil.calculateTileStartingColumn(
-      state.initial.left,
-      gap,
-      columnWidths
-    );
-
-    //REVIEW use columnsArray directly?
-    this._colWidths = columnWidths.slice(startingColumn);
+    // REVIEW: Refactor as internal logic in resize state for snapping behavior
+    this._colWidths = columns.entries.slice(position.column);
   }
 
   private _handleResize({
@@ -488,16 +456,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     // horizontal resize
     if (trigger.matches('[part*="side"]')) {
-      const dX = state.deltaX - this._startDeltaX;
       const snapped = ResizeUtil.calculateSnappedWidth(
-        dX,
+        state.deltaX,
         state,
-        this._cachedStyles.gap,
+        this._resizeState.gap,
         this._colWidths
       );
 
       state.current.width = snapped;
-      this._startDeltaX = state.deltaX;
     }
     // TODO: vertical resize + diagonal resize
   }
@@ -505,6 +471,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
     const state = event.detail.state;
     const height = state.current.height;
+
+    const { gap, rows } = this._resizeState;
 
     //col Span logic
     let width = state.current.width;
@@ -517,15 +485,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const colSpan = Math.max(
       1,
-      Math.ceil(width / (this.gridColumnWidth + this._cachedStyles.gap))
+      Math.ceil(width / (this.gridColumnWidth + gap))
     );
 
     // REVIEW & REWORK height logic
     const initialTop = event.detail.state.initial.top + window.scrollY;
     const startRowIndex = ResizeUtil.calculate(
       initialTop,
-      this._cachedStyles.rowHeights,
-      this._cachedStyles.gap
+      rows.entries,
+      gap
     ).targetIndex;
 
     const initialSpan = this._calculateRowSpan(
@@ -534,13 +502,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
     const currentSpan = this._calculateRowSpan(height, startRowIndex);
 
-    const deltaY = event.detail.event.clientY - this._startDeltaY!;
     const rowSpan =
-      deltaY > 0
+      state.deltaY > 0
         ? Math.max(initialSpan, currentSpan)
         : Math.min(initialSpan, currentSpan);
 
-    // REVIEW
+    // REVIEW: View transitions
     startViewTransition(() => {
       this.style.setProperty('grid-row', `span ${rowSpan}`);
       this.style.setProperty('grid-column', `span ${colSpan}`);
@@ -548,13 +515,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this.style.zIndex = '';
     this._isResizing = false;
-    this._startDeltaX = 0;
-    this._startDeltaY = 0;
   }
 
   private _calculateRowSpan(height: number, startRowIndex: number): number {
-    const gap = this._cachedStyles.gap!;
-    const rowHeights = this._cachedStyles.rowHeights!;
+    const { gap, rows } = this._resizeState;
+
+    const rowHeights = rows.entries;
     let accumulatedHeight = 0;
 
     for (let i = 0; i < rowHeights.length; i++) {

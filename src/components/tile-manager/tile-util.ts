@@ -1,4 +1,6 @@
+import { asNumber } from '../common/util.js';
 import type { ResizeState } from '../resize-container/types.js';
+import type IgcTileComponent from './tile.js';
 
 export class ResizeUtil {
   public static calculateSnappedWidth(
@@ -40,25 +42,6 @@ export class ResizeUtil {
     }
 
     return snappedWidth;
-  }
-
-  public static calculateTileStartingColumn(
-    startingPoint: number,
-    gap: number,
-    columns: number[]
-  ): number {
-    let accumulatedWidth = 0;
-
-    for (let i = 0; i < columns.length; i++) {
-      const colWidth = columns[i];
-      accumulatedWidth += colWidth + (i > 0 ? gap : 0);
-
-      if (startingPoint < accumulatedWidth) {
-        return i;
-      }
-    }
-
-    return 1;
   }
 
   // REVIEW
@@ -157,6 +140,90 @@ export class ResizeUtil {
 
     return accumulatedHeight;
   }
+}
+
+type TileGridPosition = { column: number; row: number };
+type TileGridColumns = { count: number; entries: number[]; minWidth: number };
+type TileGridRows = { count: number; entries: number[]; minHeight: number };
+
+class TileResizeState {
+  protected _position: TileGridPosition = { column: 0, row: 0 };
+  protected _gap = 0;
+  protected _columns: TileGridColumns = {
+    count: 0,
+    entries: [],
+    minWidth: 0,
+  };
+  protected _rows: TileGridRows = {
+    count: 0,
+    entries: [],
+    minHeight: 0,
+  };
+
+  public get gap() {
+    return this._gap;
+  }
+
+  public get position(): TileGridPosition {
+    return structuredClone(this._position);
+  }
+
+  public get columns(): TileGridColumns {
+    return structuredClone(this._columns);
+  }
+
+  public get rows(): TileGridRows {
+    return structuredClone(this._rows);
+  }
+
+  public updateState(tile: IgcTileComponent, grid: HTMLElement): void {
+    const styles = getComputedStyle(tile);
+    const gridStyles = getComputedStyle(grid);
+
+    const columns = gridStyles.gridTemplateColumns.split(' ');
+    const rows = gridStyles.gridTemplateRows.split(' ');
+
+    this._gap = asNumber(gridStyles.gap);
+
+    Object.assign(this._columns, {
+      count: columns.length,
+      entries: columns.map(asNumber),
+      minWidth: asNumber(styles.getPropertyValue('--ig-min-col-width')),
+    });
+
+    Object.assign(this._rows, {
+      count: rows.length,
+      entries: rows.map(asNumber),
+      minHeight: asNumber(styles.getPropertyValue('--ig-min-row-height')),
+    });
+  }
+
+  /**
+   * Updates and returns the current column/row position of a tile component
+   * based on its DOM rect and the parent CSS grid container.
+   */
+  public getPosition(rect: DOMRect): TileGridPosition {
+    const points = { column: 0, row: 0 };
+    let width = 0;
+
+    for (const [i, value] of this._columns.entries.entries()) {
+      width += value + this._gap;
+
+      if (Math.trunc(rect.left) < Math.trunc(width - this._gap)) {
+        points.column = i;
+        break;
+      }
+    }
+
+    // TODO: Same for rows
+
+    Object.assign(this._position, points);
+    return points;
+  }
+}
+
+export function createTileResizeState(): TileResizeState {
+  return new TileResizeState();
 }
 
 export function createTileGhost(): HTMLDivElement {
