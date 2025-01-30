@@ -30,7 +30,8 @@ $theme: $material;
         color: var-get($theme, 'disabled-text-color');
     }
 
-    igc-icon {
+    igc-icon,
+    ::slotted(igc-icon) {
         --component-size: var(--chip-size);
     }
 
