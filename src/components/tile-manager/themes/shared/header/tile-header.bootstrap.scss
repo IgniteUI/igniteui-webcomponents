@@ -1,0 +1,11 @@
+@use 'styles/utilities' as *;
+
+[part='header'] {
+    padding-block: sizable(rem(8px), rem(9px), rem(9px));
+}
+
+::slotted([slot='title']) {
+    @include type-style('h5');
+
+    margin: 0;
+}
