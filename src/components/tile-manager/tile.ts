@@ -98,6 +98,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _disableDrag = false;
   private _maximized = false;
   private _colWidths: number[] = [];
+  private _rowHeights: number[] = [];
   private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
@@ -438,13 +439,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._resizeState.updateState(this, this._tileManager!.grid.value!);
     this._resizeState.getPosition(state.initial);
 
-    const { position, columns } = this._resizeState;
+    const { position, columns, rows } = this._resizeState;
 
     // REVIEW: `startViewTransition` fix since the tile is in another layer??
     this.style.zIndex = '1';
 
     // REVIEW: Refactor as internal logic in resize state for snapping behavior
     this._colWidths = columns.entries.slice(position.column);
+    this._rowHeights = rows.entries.slice(position.row);
   }
 
   private _handleResize({
@@ -454,58 +456,37 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this._isResizing = true;
 
-    // horizontal resize
-    if (trigger.matches('[part*="side"]')) {
-      const snapped = ResizeUtil.calculateSnappedWidth(
+    const isWidthResize = trigger.matches('[part*="side"], [part="trigger"]');
+    const isHeightResize = trigger.matches(
+      '[part*="bottom"], [part="trigger"]'
+    );
+
+    if (isWidthResize) {
+      state.current.width = ResizeUtil.calculateSnappedWidth(
         state.deltaX,
         state,
         this._resizeState.gap,
         this._colWidths
       );
-
-      state.current.width = snapped;
     }
-    // TODO: vertical resize + diagonal resize
+
+    if (isHeightResize) {
+      state.current.height = ResizeUtil.calculateSnappedHeight(
+        state.deltaY,
+        state,
+        this._resizeState.gap,
+        this._rowHeights
+      );
+    }
   }
 
   private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
     const state = event.detail.state;
-    const height = state.current.height;
-
-    const { gap, rows } = this._resizeState;
-
-    //col Span logic
-    let width = state.current.width;
-    const totalWidth = state.current.x + state.current.width;
-
-    // If total width is greater than the tile manager -> do not resize
-    if (totalWidth > this.parentElement!.getBoundingClientRect().width) {
-      width = state.initial.width;
-    }
-
-    const colSpan = Math.max(
-      1,
-      Math.ceil(width / (this.gridColumnWidth + gap))
-    );
-
-    // REVIEW & REWORK height logic
-    const initialTop = event.detail.state.initial.top + window.scrollY;
-    const startRowIndex = ResizeUtil.calculate(
-      initialTop,
-      rows.entries,
-      gap
-    ).targetIndex;
-
-    const initialSpan = this._calculateRowSpan(
-      state.initial.height,
-      startRowIndex
-    );
-    const currentSpan = this._calculateRowSpan(height, startRowIndex);
-
-    const rowSpan =
-      state.deltaY > 0
-        ? Math.max(initialSpan, currentSpan)
-        : Math.min(initialSpan, currentSpan);
+    const { column: colSpan, row: rowSpan } =
+      this._resizeState.getResizedPosition(
+        state.current,
+        this._resizeState.position
+      );
 
     // REVIEW: View transitions
     startViewTransition(() => {
@@ -515,28 +496,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this.style.zIndex = '';
     this._isResizing = false;
-  }
-
-  private _calculateRowSpan(height: number, startRowIndex: number): number {
-    const { gap, rows } = this._resizeState;
-
-    const rowHeights = rows.entries;
-    let accumulatedHeight = 0;
-
-    for (let i = 0; i < rowHeights.length; i++) {
-      const rowHeight = rowHeights[startRowIndex + i];
-      const rowGap = startRowIndex + i > 0 ? gap : 0;
-      const halfwayThreshold = accumulatedHeight + rowHeight / 2 + rowGap;
-
-      accumulatedHeight += rowHeight + rowGap;
-
-      if (height >= halfwayThreshold && height <= accumulatedHeight) {
-        return i + 1;
-      }
-    }
-
-    // Default to the first row
-    return 1;
   }
 
   protected renderContent() {

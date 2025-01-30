@@ -44,101 +44,45 @@ export class ResizeUtil {
     return snappedWidth;
   }
 
-  // REVIEW
   public static calculateSnappedHeight(
     deltaY: number,
-    startingY: number,
-    rowHeights: number[],
-    rowGap: number,
-    initialTop: number,
-    initialHeight: number
+    state: ResizeState,
+    gap: number,
+    rows: number[]
   ): number {
-    const snappedHeight = startingY + deltaY;
-    const rowsAbove =
-      ResizeUtil.calculate(initialTop, rowHeights, rowGap).targetIndex || 0;
-    const res = ResizeUtil.calculate(snappedHeight, rowHeights, rowGap)!;
-    const accumulatedHeight = res.accumulatedHeight;
-    const startRowIndex = res.targetIndex;
-    const aboveRowsHeight = ResizeUtil.accumulateHeight(
-      rowsAbove,
-      rowHeights,
-      rowGap
-    );
+    let snappedHeight = state.current.height;
+    let accumulatedHeight = 0;
 
-    let result = initialHeight;
-    let previousRowsHeight = ResizeUtil.accumulateHeight(
-      startRowIndex,
-      rowHeights,
-      rowGap
-    );
+    for (let i = 0; i < rows.length; i++) {
+      const currentColHeight = rows[i];
+      const nextColHeight = rows[i + 1] || currentColHeight;
+      const prevColHeight = i > 0 ? rows[i - 1] : currentColHeight;
 
-    if (deltaY > 0) {
-      const rowHeight = rowHeights[startRowIndex];
-      const halfwayThreshold = previousRowsHeight + rowGap + rowHeight / 2;
+      const halfwayExpand =
+        accumulatedHeight + currentColHeight + gap + nextColHeight / 2;
+      const halfwayShrink = accumulatedHeight + prevColHeight / 2;
+      const columnEnd = accumulatedHeight + currentColHeight + gap;
 
-      if (snappedHeight >= halfwayThreshold) {
-        result = accumulatedHeight - aboveRowsHeight;
-      } else {
-        result = initialHeight + deltaY;
-      }
-
-      result = result <= 0 ? rowHeights[startRowIndex - 1] : result;
-    } else if (deltaY < 0) {
-      previousRowsHeight =
-        previousRowsHeight === 0 ? rowHeights[0] : previousRowsHeight;
-      const currentRowHeight = rowHeights[startRowIndex];
-      const halfwayThreshold =
-        accumulatedHeight - currentRowHeight / 2 - rowGap;
-
-      if (startRowIndex !== 0 && startRowIndex >= startRowIndex - 1) {
-        if (snappedHeight <= halfwayThreshold) {
-          result =
-            accumulatedHeight - currentRowHeight - rowGap - aboveRowsHeight;
-        } else {
-          result = rowHeights
-            .slice(rowsAbove, startRowIndex)
-            .reduce((sum, height) => sum + height, 0);
+      if (deltaY > 0) {
+        if (
+          state.current.height >= halfwayExpand &&
+          state.current.height <= columnEnd + nextColHeight
+        ) {
+          snappedHeight = columnEnd + nextColHeight;
         }
-      } else {
-        result = snappedHeight - aboveRowsHeight;
+      } else if (deltaY < 0) {
+        if (
+          state.current.height <= halfwayShrink &&
+          state.current.height > accumulatedHeight
+        ) {
+          snappedHeight = accumulatedHeight - gap;
+        }
       }
+
+      accumulatedHeight += currentColHeight + gap;
     }
 
-    return result;
-  }
-
-  // REVIEW
-  public static calculate(
-    initialTop: number,
-    rowHeights: number[],
-    rowGap: number
-  ): any {
-    let targetIndex = 0;
-    let accumulatedHeight = 0;
-
-    for (let i = 0; i < rowHeights.length; i++) {
-      accumulatedHeight += rowHeights[i] + (i > 0 ? rowGap : 0);
-      if (initialTop <= accumulatedHeight) {
-        targetIndex = i;
-        break;
-      }
-    }
-
-    return { targetIndex, accumulatedHeight };
-  }
-
-  // REVIEW
-  private static accumulateHeight(
-    rowIndex: number,
-    rowHeights: number[],
-    rowGap: number
-  ): number {
-    let accumulatedHeight = 0;
-    for (let i = 0; i < rowIndex; i++) {
-      accumulatedHeight += rowHeights[i] + rowGap;
-    }
-
-    return accumulatedHeight;
+    return snappedHeight;
   }
 }
 
@@ -204,21 +148,70 @@ class TileResizeState {
    */
   public getPosition(rect: DOMRect): TileGridPosition {
     const points = { column: 0, row: 0 };
-    let width = 0;
 
-    for (const [i, value] of this._columns.entries.entries()) {
-      width += value + this._gap;
+    points.column = this.calculatePosition(rect.left, this._columns.entries);
 
-      if (Math.trunc(rect.left) < Math.trunc(width - this._gap)) {
-        points.column = i;
-        break;
-      }
-    }
-
-    // TODO: Same for rows
+    points.row = this.calculatePosition(
+      rect.y + window.scrollY,
+      this._rows.entries
+    );
 
     Object.assign(this._position, points);
     return points;
+  }
+
+  /**
+   * Calculates and returns the column and row spans of a tile after resizing,
+   * based on its new dimensions and starting position.
+   */
+  public getResizedPosition(
+    rect: DOMRect,
+    position: TileGridPosition
+  ): TileGridPosition {
+    const { column: startCol, row: startRow } = position;
+    const spans = { column: 1, row: 1 };
+
+    spans.column = this.calculateSpan(
+      startCol,
+      this._columns.entries,
+      rect.width
+    );
+
+    spans.row = this.calculateSpan(startRow, this._rows.entries, rect.height);
+
+    return spans;
+  }
+
+  private calculatePosition(targetPosition: number, sizes: number[]): number {
+    let accumulatedSize = 0;
+
+    for (const [i, value] of sizes.entries()) {
+      accumulatedSize += value + this._gap;
+
+      if (
+        Math.trunc(targetPosition) < Math.trunc(accumulatedSize - this._gap)
+      ) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  private calculateSpan(
+    startIndex: number,
+    sizes: number[],
+    targetSize: number
+  ): number {
+    let accumulatedSize = 0;
+
+    for (let i = startIndex; i < sizes.length; i++) {
+      accumulatedSize += sizes[i] + this._gap;
+      if (Math.trunc(targetSize) <= Math.trunc(accumulatedSize)) {
+        return i - startIndex + 1;
+      }
+    }
+
+    return 1;
   }
 }
 
