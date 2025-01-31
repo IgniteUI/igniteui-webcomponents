@@ -11,12 +11,8 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  findElementFromEventPath,
-  partNameMap,
-} from '../common/util.js';
-import { createTilesState, isSameTile, swapTiles } from './position.js';
+import { asNumber, partNameMap } from '../common/util.js';
+import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
@@ -54,6 +50,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   private _internalStyles: StyleInfo = {};
+
+  private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
 
   private _columnCount = 0;
   private _gap?: string;
@@ -107,11 +105,27 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Determines whether the tiles slide or swap on drop.
+   * Whether drag and drop operations are enabled.
+   *
    * @attr drag-mode
+   * @default none
    */
   @property({ attribute: 'drag-mode' })
-  public dragMode: 'slide' | 'swap' = 'slide';
+  public set dragMode(value: 'none' | 'tile-header' | 'tile') {
+    this._dragMode = value;
+    this._setManagerContext();
+  }
+
+  public get dragMode(): 'none' | 'tile-header' | 'tile' {
+    return this._dragMode;
+  }
+
+  /**
+   * Whether the tiles will slide or swap on drop during a drag and drop operation.
+   * @attr drag-action
+   */
+  @property({ attribute: 'drag-action' })
+  public dragAction: 'slide' | 'swap' = 'slide';
 
   /**
    * Sets the number of columns for the tile manager.
@@ -202,6 +216,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
+    this._setManagerContext();
   }
 
   private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
@@ -214,28 +229,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     if (this._draggedItem) {
       this._draggedItem = null;
       this._setManagerContext();
-    }
-  }
-
-  private handleDragOver(event: DragEvent) {
-    event.preventDefault(); // Allow dropping
-  }
-
-  private handleDrop(event: DragEvent) {
-    event.preventDefault();
-
-    const draggedItem = this._draggedItem;
-    const target = findElementFromEventPath<IgcTileComponent>(
-      IgcTileComponent.tagName,
-      event
-    );
-
-    if (
-      !isSameTile(draggedItem, target) &&
-      this.dragMode === 'swap' &&
-      !target?.disableDrag
-    ) {
-      swapTiles(draggedItem!, target!);
     }
   }
 
@@ -259,8 +252,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         part=${parts}
         @tileDragStart=${this.handleTileDragStart}
         @tileDragEnd=${this.handleTileDragEnd}
-        @dragover=${this.handleDragOver}
-        @drop=${this.handleDrop}
       >
         <slot></slot>
       </div>

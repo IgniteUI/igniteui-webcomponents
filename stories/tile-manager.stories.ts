@@ -75,8 +75,16 @@ const metadata: Meta<IgcTileManagerComponent> = {
   },
   argTypes: {
     dragMode: {
+      type: '"none" | "tile-header" | "tile"',
+      description: 'Whether drag and drop operations are enabled.',
+      options: ['none', 'tile-header', 'tile'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'none' } },
+    },
+    dragAction: {
       type: '"slide" | "swap"',
-      description: 'Determines whether the tiles slide or swap on drop.',
+      description:
+        'Whether the tiles will slide or swap on drop during a drag and drop operation.',
       options: ['slide', 'swap'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
@@ -106,14 +114,16 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'text',
     },
   },
-  args: { dragMode: 'slide', columnCount: 0 },
+  args: { dragMode: 'none', dragAction: 'slide', columnCount: 0 },
 };
 
 export default metadata;
 
 interface IgcTileManagerArgs {
-  /** Determines whether the tiles slide or swap on drop. */
-  dragMode: 'slide' | 'swap';
+  /** Whether drag and drop operations are enabled. */
+  dragMode: 'none' | 'tile-header' | 'tile';
+  /** Whether the tiles will slide or swap on drop during a drag and drop operation. */
+  dragAction: 'slide' | 'swap';
   /**
    * Sets the number of columns for the tile manager.
    * Setting value <= than zero will trigger a responsive layout.
