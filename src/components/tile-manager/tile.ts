@@ -1,14 +1,14 @@
-import { ContextProvider, consume } from '@lit/context';
+import { ContextProvider } from '@lit/context';
 import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type TileContext,
-  type TileManagerContext,
   tileContext,
   tileManagerContext,
 } from '../common/context.js';
+import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addDragDropController } from '../common/controllers/drag-and-drop.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -108,14 +108,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   // Tile manager context properties and helpers
 
-  @consume({ context: tileManagerContext, subscribe: true })
-  private _managerContext?: TileManagerContext;
+  private _managerContext = createAsyncContext(this, tileManagerContext);
+
+  private get _tileManager() {
+    return this._managerContext.value;
+  }
 
   private _createContext(): TileContext {
     return {
       instance: this,
-      setFullscreenState: (fullscreen) =>
-        this._fullscreenController.setState(fullscreen),
+      fullscreenController: this._fullscreenController,
     };
   }
 
@@ -129,12 +131,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   // private get _draggedItem(): IgcTileComponent | null {
-  //   return this._managerContext?.draggedItem ?? null;
+  //   return this._tileManager?.draggedItem ?? null;
   // }
 
   private get _isSlideMode(): boolean {
-    return this._managerContext
-      ? this._managerContext.instance.dragMode === 'slide'
+    return this._tileManager
+      ? this._tileManager.instance.dragAction === 'slide'
       : true;
   }
 
@@ -225,8 +227,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._maximized = value;
     this._setTileContext();
 
-    if (this._managerContext) {
-      this._managerContext.instance.requestUpdate();
+    if (this._tileManager) {
+      this._tileManager.instance.requestUpdate();
     }
   }
 
@@ -272,9 +274,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected get gridColumnWidth(): number {
     const tileManager =
-      this._managerContext!.instance!.shadowRoot!.querySelector(
-        "[part~='base']"
-      )!;
+      this._tileManager!.instance!.shadowRoot!.querySelector("[part~='base']")!;
 
     const gridTemplateColumns = getComputedStyle(tileManager).getPropertyValue(
       'grid-template-columns'
