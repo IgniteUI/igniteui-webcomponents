@@ -4,6 +4,7 @@ import type {
   ReactiveControllerHost,
 } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
+import { findElementFromEventPath } from '../util.js';
 
 type DragDropCallback = () => unknown;
 
@@ -87,7 +88,7 @@ class DragDropController implements ReactiveController {
     this._hasPointerCapture = state;
     const cssValue = state ? 'none' : '';
 
-    Object.assign(this._host.style, {
+    Object.assign(this._element.style, {
       touchAction: cssValue,
       userSelect: cssValue,
     });
@@ -123,8 +124,15 @@ class DragDropController implements ReactiveController {
     }
   }
 
+  private _shouldSkip(event: PointerEvent): boolean {
+    return (
+      this._config.skip?.call(this._host, event) ||
+      !findElementFromEventPath((e) => e === this._element, event)
+    );
+  }
+
   private _handlePointerDown(event: PointerEvent) {
-    if (this._config.skip?.call(this._host, event)) {
+    if (this._shouldSkip(event)) {
       return;
     }
 
@@ -152,6 +160,7 @@ class DragDropController implements ReactiveController {
 
     const rect = this._host.getBoundingClientRect();
 
+    // REVIEW: Simulate dragEnter, dragOver? and dragLeave based on that
     // const elements = document.elementsFromPoint(event.clientX, event.clientY);
 
     // HACK

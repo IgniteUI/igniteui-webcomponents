@@ -51,6 +51,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private _internalStyles: StyleInfo = {};
 
+  private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
+
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
@@ -103,11 +105,27 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Determines whether the tiles slide or swap on drop.
+   * Whether drag and drop operations are enabled.
+   *
    * @attr drag-mode
+   * @default none
    */
   @property({ attribute: 'drag-mode' })
-  public dragMode: 'slide' | 'swap' = 'slide';
+  public set dragMode(value: 'none' | 'tile-header' | 'tile') {
+    this._dragMode = value;
+    this._setManagerContext();
+  }
+
+  public get dragMode(): 'none' | 'tile-header' | 'tile' {
+    return this._dragMode;
+  }
+
+  /**
+   * Whether the tiles will slide or swap on drop during a drag and drop operation.
+   * @attr drag-action
+   */
+  @property({ attribute: 'drag-action' })
+  public dragAction: 'slide' | 'swap' = 'slide';
 
   /**
    * Sets the number of columns for the tile manager.
@@ -198,6 +216,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
+    this._setManagerContext();
   }
 
   private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {

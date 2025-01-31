@@ -1,10 +1,16 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, type PropertyValues, html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type TileContext,
+  type TileManagerContext,
   tileContext,
   tileManagerContext,
 } from '../common/context.js';
@@ -13,7 +19,7 @@ import { addDragDropController } from '../common/controllers/drag-and-drop.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import { asNumber, createCounter, first, partNameMap } from '../common/util.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
 import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
@@ -108,7 +114,25 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   // Tile manager context properties and helpers
 
-  private _managerContext = createAsyncContext(this, tileManagerContext);
+  /**
+   * Context consumer callback that sets the updated configuration of the internal drag controller
+   * based on the passed tile manager properties.
+   */
+  private _setDragConfiguration = ({
+    instance: { dragMode },
+  }: TileManagerContext) => {
+    this._dragController.setConfig({
+      enabled: !this.disableDrag && dragMode !== 'none',
+      trigger:
+        dragMode === 'tile-header' ? () => first(this._headers) : undefined,
+    });
+  };
+
+  private _managerContext = createAsyncContext(
+    this,
+    tileManagerContext,
+    this._setDragConfiguration
+  );
 
   private get _tileManager() {
     return this._managerContext.value;
@@ -140,11 +164,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : true;
   }
 
+  @queryAssignedElements({
+    selector: IgcTileHeaderComponent.tagName,
+    slot: 'header',
+  })
+  protected _headers!: IgcTileHeaderComponent[];
+
   @query(IgcResizeComponent.tagName)
   protected _resizeContainer?: IgcResizeComponent;
-
-  @query('[part="ghost"]', true)
-  public _ghost!: HTMLElement;
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
