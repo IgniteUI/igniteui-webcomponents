@@ -2,8 +2,51 @@ import { asNumber } from '../common/util.js';
 import type { ResizeState } from '../resize-container/types.js';
 import type IgcTileComponent from './tile.js';
 
-export class ResizeUtil {
-  public static calculateSnappedWidth(
+type TileGridPosition = {
+  column: number;
+  row: number;
+  colSpan: number;
+  rowSpan: number;
+};
+type TileGridColumns = { count: number; entries: number[]; minWidth: number };
+type TileGridRows = { count: number; entries: number[]; minHeight: number };
+
+class TileResizeState {
+  protected _position: TileGridPosition = {
+    column: 0,
+    row: 0,
+    colSpan: 0,
+    rowSpan: 0,
+  };
+  protected _gap = 0;
+  protected _columns: TileGridColumns = {
+    count: 0,
+    entries: [],
+    minWidth: 0,
+  };
+  protected _rows: TileGridRows = {
+    count: 0,
+    entries: [],
+    minHeight: 0,
+  };
+
+  public get gap() {
+    return this._gap;
+  }
+
+  public get position(): TileGridPosition {
+    return structuredClone(this._position);
+  }
+
+  public get columns(): TileGridColumns {
+    return structuredClone(this._columns);
+  }
+
+  public get rows(): TileGridRows {
+    return structuredClone(this._rows);
+  }
+
+  public calculateSnappedWidth(
     deltaX: number,
     state: ResizeState,
     gap: number,
@@ -44,7 +87,7 @@ export class ResizeUtil {
     return snappedWidth;
   }
 
-  public static calculateSnappedHeight(
+  public calculateSnappedHeight(
     deltaY: number,
     state: ResizeState,
     gap: number,
@@ -84,41 +127,6 @@ export class ResizeUtil {
 
     return snappedHeight;
   }
-}
-
-type TileGridPosition = { column: number; row: number };
-type TileGridColumns = { count: number; entries: number[]; minWidth: number };
-type TileGridRows = { count: number; entries: number[]; minHeight: number };
-
-class TileResizeState {
-  protected _position: TileGridPosition = { column: 0, row: 0 };
-  protected _gap = 0;
-  protected _columns: TileGridColumns = {
-    count: 0,
-    entries: [],
-    minWidth: 0,
-  };
-  protected _rows: TileGridRows = {
-    count: 0,
-    entries: [],
-    minHeight: 0,
-  };
-
-  public get gap() {
-    return this._gap;
-  }
-
-  public get position(): TileGridPosition {
-    return structuredClone(this._position);
-  }
-
-  public get columns(): TileGridColumns {
-    return structuredClone(this._columns);
-  }
-
-  public get rows(): TileGridRows {
-    return structuredClone(this._rows);
-  }
 
   public updateState(tile: IgcTileComponent, grid: HTMLElement): void {
     const styles = getComputedStyle(tile);
@@ -147,13 +155,24 @@ class TileResizeState {
    * based on its DOM rect and the parent CSS grid container.
    */
   public getPosition(rect: DOMRect): TileGridPosition {
-    const points = { column: 0, row: 0 };
+    const points = { column: 0, row: 0, colSpan: 1, rowSpan: 1 };
 
     points.column = this.calculatePosition(rect.left, this._columns.entries);
 
     points.row = this.calculatePosition(
       rect.y + window.scrollY,
       this._rows.entries
+    );
+
+    points.colSpan = this.calculateInitialSpan(
+      rect.width,
+      this._columns.entries,
+      points.column
+    );
+    points.rowSpan = this.calculateInitialSpan(
+      rect.height,
+      this._rows.entries,
+      points.column
     );
 
     Object.assign(this._position, points);
@@ -164,20 +183,28 @@ class TileResizeState {
    * Calculates and returns the column and row spans of a tile after resizing,
    * based on its new dimensions and starting position.
    */
-  public getResizedPosition(
-    rect: DOMRect,
-    position: TileGridPosition
-  ): TileGridPosition {
-    const { column: startCol, row: startRow } = position;
-    const spans = { column: 1, row: 1 };
+  public getResizedPosition(rect: DOMRect): TileGridPosition {
+    const spans = {
+      column: this._position.column,
+      row: this._position.row,
+      colSpan: 1,
+      rowSpan: 1,
+    };
 
-    spans.column = this.calculateSpan(
-      startCol,
-      this._columns.entries,
-      rect.width
+    const columns = this._columns.entries.slice(spans.column);
+    const rows = this._rows.entries.slice(spans.row);
+
+    spans.colSpan = this.calculateResizedSpan(
+      rect.width,
+      this._position.colSpan,
+      columns
     );
 
-    spans.row = this.calculateSpan(startRow, this._rows.entries, rect.height);
+    spans.rowSpan = this.calculateResizedSpan(
+      rect.height,
+      this._position.rowSpan,
+      rows
+    );
 
     return spans;
   }
@@ -194,24 +221,67 @@ class TileResizeState {
         return i;
       }
     }
+
     return 0;
   }
 
-  private calculateSpan(
-    startIndex: number,
+  private calculateInitialSpan(
+    size: number,
     sizes: number[],
-    targetSize: number
+    startIndex: number
   ): number {
     let accumulatedSize = 0;
+    let span = 1;
 
     for (let i = startIndex; i < sizes.length; i++) {
-      accumulatedSize += sizes[i] + this._gap;
-      if (Math.trunc(targetSize) <= Math.trunc(accumulatedSize)) {
-        return i - startIndex + 1;
+      const currentSize = sizes[i];
+      accumulatedSize += currentSize + this._gap;
+
+      if (size <= accumulatedSize) {
+        break;
       }
+
+      span++;
     }
 
-    return 1;
+    return span;
+  }
+
+  private calculateResizedSpan(
+    targetSize: number,
+    initialSpan: number,
+    sizes: number[]
+  ): number {
+    let accumulatedSize = 0;
+    let currentSpan = initialSpan;
+    const availableSize =
+      sizes.reduce((sum, s) => sum + s, 0) + (sizes.length - 1) * this._gap;
+
+    if (targetSize <= sizes[0] + this._gap) {
+      return 1;
+    }
+
+    if (targetSize > availableSize) {
+      return sizes.length;
+    }
+
+    for (let i = 0; i < sizes.length; i++) {
+      const currentSize = sizes[i];
+      const nextSize = sizes[i + 1] ?? currentSize;
+
+      const halfwayPoint =
+        accumulatedSize + currentSize + this._gap + nextSize / 2;
+
+      if (targetSize > halfwayPoint) {
+        currentSpan = i + 2;
+      } else {
+        break;
+      }
+
+      accumulatedSize += currentSize + this._gap;
+    }
+
+    return currentSpan;
   }
 }
 

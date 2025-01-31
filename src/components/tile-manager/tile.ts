@@ -23,11 +23,7 @@ import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import {
-  ResizeUtil,
-  createTileGhost,
-  createTileResizeState,
-} from './tile-util.js';
+import { createTileGhost, createTileResizeState } from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -462,7 +458,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
 
     if (isWidthResize) {
-      state.current.width = ResizeUtil.calculateSnappedWidth(
+      state.current.width = this._resizeState.calculateSnappedWidth(
         state.deltaX,
         state,
         this._resizeState.gap,
@@ -471,7 +467,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     if (isHeightResize) {
-      state.current.height = ResizeUtil.calculateSnappedHeight(
+      state.current.height = this._resizeState.calculateSnappedHeight(
         state.deltaY,
         state,
         this._resizeState.gap,
@@ -483,11 +479,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    const { column: colSpan, row: rowSpan } =
-      this._resizeState.getResizedPosition(
-        state.current,
-        this._resizeState.position
-      );
+    const { colSpan, rowSpan } = this._resizeState.getResizedPosition(
+      state.current
+    );
 
     state.commit = () =>
       // REVIEW: View transition
