@@ -1,0 +1,83 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --resize-visibility: visible;
+
+    display: contents;
+}
+
+[part~='resize-base'] {
+    position: relative;
+    height: 100%;
+}
+
+@media(hover: hover) and (pointer: fine) {
+    [part~='active'] {
+        outline: 2px solid #0047AB
+    }
+}
+
+[part~='active'] {
+    outline: 2px solid #0047AB
+}
+
+[part='trigger-side'] {
+    display: inline-flex;
+    visibility: var(--resize-visibility);
+    cursor: e-resize;
+    position: absolute;
+    top: calc(50% - rem(12px));
+    right: rem(-12px);
+    z-index: 1;
+
+    igc-icon {
+        $icon-size: rem(9px);
+
+        --size: #{$icon-size} !important;
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+    }
+}
+
+[part='trigger'] {
+    display: inline-flex;
+    visibility: var(--resize-visibility);
+    cursor: se-resize;
+    position: absolute;
+    bottom: rem(-12px);
+    right: rem(-12px);
+    z-index: 1;
+
+    igc-icon {
+        $icon-size: rem(9px);
+
+        --size: #{$icon-size} !important;
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+    }
+}
+
+
+
+[part='trigger-bottom'] {
+    display: inline-flex;
+    visibility: var(--resize-visibility);
+    cursor: s-resize;
+    position: absolute;
+    left: calc(50% - rem(12px));
+    bottom: rem(-12px);
+    z-index: 1;
+
+    igc-icon {
+        $icon-size: rem(9px);
+
+        --size: #{$icon-size} !important;
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+    }
+}
+
+[part='trigger']:focus {
+    outline: none;
+}
