@@ -9,18 +9,12 @@ import {
   tileContext,
   tileManagerContext,
 } from '../common/context.js';
+import { addDragDropController } from '../common/controllers/drag-and-drop.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  createCounter,
-  findElementFromEventPath,
-  partNameMap,
-} from '../common/util.js';
+import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
-import { addTileDragAndDrop } from './controllers/tile-dnd.js';
-import { isSameTile, swapTiles } from './position.js';
 import type { ResizeCallbackParams } from './resize-controller.js';
 import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
@@ -76,18 +70,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
 
-  // private _dragController = addTileDragAndDrop(this, {
-  //   dragStart: this.handleDragStart,
-  //   dragEnd: this.handleDragEnd,
-  //   dragEnter: this.handleDragEnter,
-  //   dragLeave: this.handleDragLeave,
-  //   dragOver: this.handleDragOver,
-  //   drop: this.handleDragLeave,
-  // });
-  private _dragController = addTileDragAndDrop(this, {
-    dragStart: this.handleDragStart,
-    dragMove: this.handleDragMove,
-    dragEnd: this.handleDragEnd,
+  private _dragController = addDragDropController(this, {
+    skip: this._skipDrag,
+    ghost: this._createDragGhost,
+    dragStart: this._handleDragStart,
+    dragMove: this._handleDragMove,
+    dragEnd: this._handleDragEnd,
   });
 
   private _fullscreenController = addFullscreenController(this, {
@@ -104,11 +92,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _maximized = false;
   private _initialPointerX: number | null = null;
   private _initialPointerY: number | null = null;
-  // private _dragCounter = 0;
-  private _dragGhost: HTMLElement | null = null;
-  private _dragImage: HTMLElement | null = null;
-  private _dragStartOffset = { x: 0, y: 0 };
-  private _previousHoveredTile!: IgcTileComponent | null;
   private _cachedStyles: {
     background?: string;
     border?: string;
@@ -145,15 +128,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._context.setValue(this._createContext(), true);
   }
 
-  private get _draggedItem(): IgcTileComponent | null {
-    return this._managerContext?.draggedItem ?? null;
-  }
+  // private get _draggedItem(): IgcTileComponent | null {
+  //   return this._managerContext?.draggedItem ?? null;
+  // }
 
   private get _isSlideMode(): boolean {
     return this._managerContext
       ? this._managerContext.instance.dragMode === 'slide'
       : true;
   }
+
+  @query(IgcResizeComponent.tagName)
+  protected _resizeContainer?: IgcResizeComponent;
 
   @query('[part="ghost"]', true)
   public _ghost!: HTMLElement;
@@ -244,7 +230,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  public get maximized() {
+  public get maximized(): boolean {
     return this._maximized;
   }
 
@@ -255,10 +241,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
   public set disableDrag(value: boolean) {
     this._disableDrag = value;
-    this._dragController.enabled = !this._disableDrag;
+    this._dragController.setConfig({ enabled: !value });
   }
 
-  public get disableDrag() {
+  public get disableDrag(): boolean {
     return this._disableDrag;
   }
 
@@ -328,240 +314,217 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private assignDragImage(event: PointerEvent) {
-    const rect = this.getBoundingClientRect();
-    const offsetX = event.clientX - rect.left;
-    const offsetY = event.clientY - rect.top;
-    const compStyles = getComputedStyle(this);
+  private _handleDragStart() {
+    this.emitEvent('tileDragStart', { detail: this });
+    this._isDragging = true;
+  }
 
-    this.cacheStyles();
-    const x = event.clientX - this._dragStartOffset.x;
-    const y = event.clientY - this._dragStartOffset.y;
+  private _handleDragMove() {}
 
-    this._dragImage = this.cloneNode(true) as HTMLElement;
+  private _handleDragEnd() {
+    this.emitEvent('tileDragEnd', { detail: this });
+    this._isDragging = false;
+  }
 
-    Object.assign(this._dragImage.style, {
-      width: compStyles.width,
-      height: compStyles.height,
+  private _skipDrag(event: PointerEvent) {
+    if (this._resizeContainer) {
+      const adorner =
+        this._resizeContainer.renderRoot.querySelector('[part="trigger"]');
+
+      return Boolean(event.composedPath().find((e) => adorner === e));
+    }
+    return false;
+  }
+
+  private _createDragGhost() {
+    const ghost = this.cloneNode(true) as HTMLElement;
+
+    ghost.inert = true;
+    ghost.id = '';
+
+    Object.assign(ghost.style, {
       position: 'absolute',
-      // top: '-99999px',
-      // left: '-99999px',
-      top: `${y}px`, // `${event.clientY - offsetY}px`,
-      left: `${x}px`, //`${event.clientX - offsetX}px`,
-      background: this._cachedStyles.tileBackground,
-      border: `1px solid ${this._cachedStyles.tileBorder}`,
-      borderRadius: this._cachedStyles.borderRadius,
-      overflow: 'hidden',
-      pointerEvents: 'none',
-      zIndex: '1000',
+      contain: 'strict',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'var(--placeholder-background)',
+      border: '1px solid var(--ghost-border)',
+      borderRadius: 'var(--border-radius)',
+      zIndex: 1000,
     });
 
-    document.body.append(this._dragImage);
-
-    // event.dataTransfer!.setDragImage(this._dragImage, offsetX, offsetY);
-    // event.dataTransfer!.effectAllowed = 'move';
+    return ghost;
   }
 
-  private handleDragStart(event: PointerEvent) {
-    const rect = this.getBoundingClientRect();
+  // XXX
+  // private assignDragImage(event: PointerEvent) {
+  //   const rect = this.getBoundingClientRect();
+  //   const offsetX = event.clientX - rect.left;
+  //   const offsetY = event.clientY - rect.top;
+  //   const compStyles = getComputedStyle(this);
 
-    this._dragStartOffset = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
+  //   this.cacheStyles();
+  //   const x = event.clientX - this._dragStartOffset.x;
+  //   const y = event.clientY - this._dragStartOffset.y;
 
-    this.assignDragImage(event);
+  //   this._dragImage = this.cloneNode(true) as HTMLElement;
 
-    this.emitEvent('tileDragStart', { detail: this });
-    this._dragGhost = this.ghostFactory();
-    this._dragGhost.inert = true;
+  //   Object.assign(this._dragImage.style, {
+  //     width: compStyles.width,
+  //     height: compStyles.height,
+  //     position: 'absolute',
+  //     // top: '-99999px',
+  //     // left: '-99999px',
+  //     top: `${y}px`, // `${event.clientY - offsetY}px`,
+  //     left: `${x}px`, //`${event.clientX - offsetX}px`,
+  //     background: this._cachedStyles.tileBackground,
+  //     border: `1px solid ${this._cachedStyles.tileBorder}`,
+  //     borderRadius: this._cachedStyles.borderRadius,
+  //     overflow: 'hidden',
+  //     pointerEvents: 'none',
+  //     zIndex: '1000',
+  //   });
 
-    if (this._dragGhost) {
-      this.append(this._dragGhost);
-    }
+  //   document.body.append(this._dragImage);
 
-    this._isDragging = true;
-
-    // document.addEventListener('pointermove', this.handleDragMove);
-    // document.addEventListener('pointerup', this.handleDragEnd);
-  }
-
-  // private handleDragEnter() {
-  //   this._dragCounter++;
-  //   this._hasDragOver = true;
+  //   // event.dataTransfer!.setDragImage(this._dragImage, offsetX, offsetY);
+  //   // event.dataTransfer!.effectAllowed = 'move';
   // }
+  // XXX
+  // private handleDragStart(event: PointerEvent) {
+  //   const rect = this.getBoundingClientRect();
 
-  private handleDragMove(event: PointerEvent) {
-    if (!this._isDragging) return;
-    event.preventDefault();
-    // Move the drag image
-    if (this._dragImage) {
-      // this._dragImage.style.top = `${event.clientY}px`;
-      // this._dragImage.style.left = `${event.clientX}px`;
+  //   this._dragStartOffset = {
+  //     x: event.clientX - rect.left,
+  //     y: event.clientY - rect.top,
+  //   };
 
-      const x = event.clientX - this._dragStartOffset.x;
-      const y = event.clientY - this._dragStartOffset.y;
+  //   this.assignDragImage(event);
 
-      Object.assign(this._dragImage.style, {
-        top: `${y}px`,
-        left: `${x}px`,
-      });
-    }
+  //   this.emitEvent('tileDragStart', { detail: this });
+  //   this._dragGhost = this.ghostFactory();
+  //   this._dragGhost.inert = true;
 
-    const hoveredTile = findElementFromEventPath<IgcTileComponent>(
-      IgcTileComponent.tagName,
-      event
-    );
-
-    if (
-      this._previousHoveredTile &&
-      this._previousHoveredTile !== hoveredTile
-    ) {
-      this._previousHoveredTile.style.pointerEvents = '';
-    }
-
-    if (this._draggedItem && hoveredTile) {
-      hoveredTile.style.pointerEvents = 'none';
-
-      if (isSameTile(hoveredTile, this._draggedItem)) {
-        this._tileContent.style.visibility = 'hidden';
-        if (this._dragGhost) {
-          this._dragGhost.style.visibility = 'visible';
-        }
-      } else if (this._isSlideMode) {
-        if (
-          this._managerContext &&
-          (!this._managerContext.lastSwapTile ||
-            this.hasPointerLeftLastSwapTile(
-              event,
-              this._managerContext.lastSwapTile
-            ))
-        ) {
-          this._managerContext.lastSwapTile = hoveredTile;
-          swapTiles(hoveredTile, this._draggedItem!);
-        }
-      }
-    }
-
-    this._previousHoveredTile = hoveredTile;
-  }
-
-  // private handleDragOver(event: PointerEvent) {
-  //   if (!this._draggedItem) {
-  //     return;
+  //   if (this._dragGhost) {
+  //     this.append(this._dragGhost);
   //   }
 
-  //   if (isSameTile(this, this._draggedItem)) {
-  //     this._tileContent.style.visibility = 'hidden';
-  //     if (this._dragGhost) {
-  //       Object.assign(this._dragGhost.style, {
-  //         visibility: 'visible',
-  //       });
-  //     }
-  //     if (this._managerContext) {
-  //       this._managerContext.lastSwapTile = null;
-  //     }
-  //   } else if (this._isSlideMode) {
-  //     if (
-  //       this._managerContext &&
-  //       (!this._managerContext.lastSwapTile ||
-  //         this.hasPointerLeftLastSwapTile(
-  //           event,
-  //           this._managerContext.lastSwapTile
-  //         ))
-  //     ) {
-  //       this._managerContext.lastSwapTile = this;
-  //       swapTiles(this, this._draggedItem!);
+  //   this._isDragging = true;
+  // }
+  // XXX
+  // private handleDragMove(event: PointerEvent) {
+  //   if (!this._isDragging) return;
+  //   event.preventDefault();
+  //   // Move the drag image
+  //   if (this._dragImage) {
+  //     const x = event.clientX - this._dragStartOffset.x;
+  //     const y = event.clientY - this._dragStartOffset.y;
+
+  //     Object.assign(this._dragImage.style, {
+  //       top: `${y}px`,
+  //       left: `${x}px`,
+  //     });
+  //   }
+
+  //   const hoveredTile = findElementFromEventPath<IgcTileComponent>(
+  //     IgcTileComponent.tagName,
+  //     event
+  //   );
+
+  //   if (
+  //     this._previousHoveredTile &&
+  //     this._previousHoveredTile !== hoveredTile
+  //   ) {
+  //     this._previousHoveredTile.style.pointerEvents = '';
+  //   }
+
+  //   if (this._draggedItem && hoveredTile) {
+  //     hoveredTile.style.pointerEvents = 'none';
+
+  //     if (isSameTile(hoveredTile, this._draggedItem)) {
+  //       this._tileContent.style.visibility = 'hidden';
+  //       if (this._dragGhost) {
+  //         this._dragGhost.style.visibility = 'visible';
+  //       }
+  //     } else if (this._isSlideMode) {
+  //       if (
+  //         this._managerContext &&
+  //         (!this._managerContext.lastSwapTile ||
+  //           this.hasPointerLeftLastSwapTile(
+  //             event,
+  //             this._managerContext.lastSwapTile
+  //           ))
+  //       ) {
+  //         this._managerContext.lastSwapTile = hoveredTile;
+  //         swapTiles(hoveredTile, this._draggedItem!);
+  //       }
   //     }
   //   }
-  // }
 
-  // private handleDragLeave(event: PointerEvent) {
-  // this._dragCounter--;
-
-  // // The drag leave is fired on entering a child element
-  // // so we check if the dragged item is actually leaving the tile
-  // if (this._dragCounter === 0) {
-  //   this._hasDragOver = false;
+  //   this._previousHoveredTile = hoveredTile;
   // }
-  // }
+  // XXX
+  // private handleDragEnd(event: PointerEvent) {
+  //   if (!this._isDragging) return;
 
-  // private hasPointerLeftTile(event: PointerEvent, tile: IgcTileComponent): boolean {
-  //   const rect = tile.getBoundingClientRect();
+  //   // Swap mode
+  //   const draggedItem = this._draggedItem;
+  //   const target = findElementFromEventPath<IgcTileComponent>(
+  //     IgcTileComponent.tagName,
+  //     event
+  //   );
+
+  //   if (
+  //     !isSameTile(draggedItem, target) &&
+  //     this._managerContext?.instance.dragMode === 'swap' &&
+  //     !target?.disableDrag
+  //   ) {
+  //     swapTiles(draggedItem!, target!);
+  //   }
+
+  //   this.emitEvent('tileDragEnd', { detail: this });
+  //   this._isDragging = false;
+
+  //   if (this._dragGhost) {
+  //     this._dragGhost.remove();
+  //     this._dragGhost = null;
+  //   }
+
+  //   if (this._dragImage) {
+  //     this._dragImage.remove();
+  //     this._dragImage = null;
+  //   }
+
+  //   this.style.pointerEvents = '';
+  //   this._tileContent.style.visibility = 'visible';
+  // }
+  // XXX
+  // private hasPointerLeftLastSwapTile(
+  //   event: PointerEvent,
+  //   lastSwapTile: IgcTileComponent | null
+  // ) {
+  //   if (!lastSwapTile) return false;
+
+  //   // Check if the pointer is outside the boundaries of the last swapped tile
+
+  //   const rect = lastSwapTile.getBoundingClientRect();
   //   const pointerX = event.clientX;
   //   const pointerY = event.clientY;
 
-  //   // Check if the pointer is outside the tile's boundaries
-  //   return (
+  //   const outsideBoundaries =
   //     pointerX < rect.left ||
   //     pointerX > rect.right ||
   //     pointerY < rect.top ||
-  //     pointerY > rect.bottom
-  //   );
+  //     pointerY > rect.bottom;
+
+  //   if (outsideBoundaries && this._managerContext) {
+  //     this._managerContext.lastSwapTile = null;
+  //   }
+
+  //   return outsideBoundaries;
   // }
-
-  private handleDragEnd(event: PointerEvent) {
-    if (!this._isDragging) return;
-
-    // Swap mode
-    const draggedItem = this._draggedItem;
-    const target = findElementFromEventPath<IgcTileComponent>(
-      IgcTileComponent.tagName,
-      event
-    );
-
-    if (
-      !isSameTile(draggedItem, target) &&
-      this._managerContext?.instance.dragMode === 'swap' &&
-      !target?.disableDrag
-    ) {
-      swapTiles(draggedItem!, target!);
-    }
-
-    this.emitEvent('tileDragEnd', { detail: this });
-    this._isDragging = false;
-
-    if (this._dragGhost) {
-      this._dragGhost.remove();
-      this._dragGhost = null;
-    }
-
-    if (this._dragImage) {
-      this._dragImage.remove();
-      this._dragImage = null;
-    }
-
-    this.style.pointerEvents = '';
-    this._tileContent.style.visibility = 'visible';
-
-    // document.removeEventListener('pointermove', this.handleDragMove);
-    // document.removeEventListener('pointerup', this.handleDragEnd);
-  }
-
-  private hasPointerLeftLastSwapTile(
-    event: PointerEvent,
-    lastSwapTile: IgcTileComponent | null
-  ) {
-    if (!lastSwapTile) return false;
-
-    // Check if the pointer is outside the boundaries of the last swapped tile
-
-    const rect = lastSwapTile.getBoundingClientRect();
-    const pointerX = event.clientX;
-    const pointerY = event.clientY;
-
-    const outsideBoundaries =
-      pointerX < rect.left ||
-      pointerX > rect.right ||
-      pointerY < rect.top ||
-      pointerY > rect.bottom;
-
-    if (outsideBoundaries && this._managerContext) {
-      this._managerContext.lastSwapTile = null;
-    }
-
-    return outsideBoundaries;
-  }
 
   private cacheStyles() {
     //use util

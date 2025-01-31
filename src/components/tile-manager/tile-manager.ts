@@ -11,12 +11,8 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  findElementFromEventPath,
-  partNameMap,
-} from '../common/util.js';
-import { createTilesState, isSameTile, swapTiles } from './position.js';
+import { asNumber, partNameMap } from '../common/util.js';
+import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
