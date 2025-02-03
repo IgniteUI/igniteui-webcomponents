@@ -27,13 +27,13 @@ $theme: $fluent;
 
     [part~='fill'] {
         stroke-linecap: round;
-        animation: 2s linear 0s infinite normal none running indeterminate-circular-fluent
+        animation: 2s linear 0s infinite normal none running igc-indeterminate-circular-fluent
     }
 }
 
 :host(:dir(rtl)),
 :host([dir='rtl']) {
     [part~='svg'][part~='indeterminate'] [part~='fill'] {
-        animation-name: indeterminate-circular-fluent-rtl;
+        animation-name: igc-indeterminate-circular-fluent-rtl;
     }
 }
