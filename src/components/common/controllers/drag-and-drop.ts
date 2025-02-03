@@ -31,6 +31,14 @@ type DragDropConfig = {
    * Contain drag and drop operations to the scope of the passed DOM element.
    */
   container?: Ref<HTMLElement>;
+  /**
+   * The DOM element that will "host" the ghost drag element when the controller
+   * is set to **deferred**.
+   *
+   * @remarks
+   * In **immediate** mode, this property is ignored.
+   */
+  layer?: () => HTMLElement;
 
   ghost?: () => HTMLElement;
 
@@ -57,18 +65,30 @@ class DragDropController implements ReactiveController {
   private _hasPointerCapture = false;
 
   private _ghost: HTMLElement | null = null;
-  private _dragElement?: Ref<HTMLElement>;
 
   private get _element(): HTMLElement {
     return this._config.trigger?.() ?? this._host;
   }
 
-  public get enabled(): boolean {
-    return Boolean(this._config.enabled);
+  // REVIEW
+  /**
+   * The DOM element that will "host" the ghost drag element when the controller
+   * is set to **deferred**.
+   *
+   * @remarks
+   * In **immediate** mode, this property is ignored.
+   */
+  private get _layer(): HTMLElement {
+    if (this._config.mode === 'immediate') {
+      return this._host;
+    }
+
+    return this._config.layer?.() ?? this._host;
   }
 
-  public get dragElement(): HTMLElement {
-    return this._dragElement ? this._dragElement.value! : this._host;
+  /** Whether the drag controller is enabled. */
+  public get enabled(): boolean {
+    return Boolean(this._config.enabled);
   }
 
   constructor(
@@ -111,10 +131,9 @@ class DragDropController implements ReactiveController {
       : createDefaultDragGhost(this._host.getBoundingClientRect());
 
     // REVIEW
-    const rect = this._host.getBoundingClientRect();
+    const rect = this._layer.getBoundingClientRect();
     this._ghost.style.transform = `translate(${x - rect.left}px, ${y - rect.top}px)`;
-
-    this._host.append(this._ghost);
+    this._layer.append(this._ghost);
   }
 
   private _removeGhost(): void {
@@ -158,7 +177,7 @@ class DragDropController implements ReactiveController {
       this._config.dragMove.call(this._host);
     }
 
-    const rect = this._host.getBoundingClientRect();
+    const rect = this._layer.getBoundingClientRect();
 
     // REVIEW: Simulate dragEnter, dragOver? and dragLeave based on that
     // const elements = document.elementsFromPoint(event.clientX, event.clientY);
@@ -168,8 +187,11 @@ class DragDropController implements ReactiveController {
   }
 
   private _handlePointerEnd(_: PointerEvent): void {
-    this._removeGhost();
-    this._setPointerCaptureState(false);
+    if (this._config.dragEnd) {
+      this._config.dragEnd.call(this._host);
+    }
+
+    this.dispose();
   }
 
   /** Updates the drag and drop controller configuration. */
@@ -198,6 +220,11 @@ class DragDropController implements ReactiveController {
         this._handlePointerEnd(event);
         break;
     }
+  }
+
+  public dispose(): void {
+    this._removeGhost();
+    this._setPointerCaptureState(false);
   }
 
   public hostConnected(): void {

@@ -1,6 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { tileManagerContext } from '../common/context.js';
@@ -60,6 +61,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _draggedItem: IgcTileComponent | null = null;
   private _lastSwapTile: IgcTileComponent | null = null;
 
+  private _overlay: Ref<HTMLElement> = createRef();
+
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
 
@@ -67,6 +70,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     context: tileManagerContext,
     initialValue: {
       instance: this,
+      overlay: this._overlay,
       draggedItem: this._draggedItem,
       lastSwapTile: this._lastSwapTile,
     },
@@ -76,6 +80,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._context.setValue(
       {
         instance: this,
+        overlay: this._overlay,
         draggedItem: this._draggedItem,
         lastSwapTile: this._lastSwapTile,
       },
@@ -240,6 +245,10 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._serializer.loadFromJSON(data);
   }
 
+  protected _renderOverlay() {
+    return html`<div ${ref(this._overlay)} part="overlay"></div>`;
+  }
+
   protected override render() {
     const parts = partNameMap({
       base: true,
@@ -247,6 +256,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
 
     return html`
+      ${this._renderOverlay()}
       <div
         style=${styleMap(this._internalStyles)}
         part=${parts}

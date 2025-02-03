@@ -78,6 +78,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _dragController = addDragDropController(this, {
     skip: this._skipDrag,
+    layer: () => this._tileManager!.overlay.value!,
     ghost: this._createDragGhost,
     dragStart: this._handleDragStart,
     dragMove: this._handleDragMove,
@@ -341,16 +342,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
+  private _setDragState(state = true) {
+    this._isDragging = state;
+    this._tileContent.style.opacity = state ? '0' : '1';
+  }
+
   private _handleDragStart() {
     this.emitEvent('tileDragStart', { detail: this });
-    this._isDragging = true;
+    this._setDragState();
   }
 
   private _handleDragMove() {}
 
   private _handleDragEnd() {
     this.emitEvent('tileDragEnd', { detail: this });
-    this._isDragging = false;
+    this._setDragState(false);
   }
 
   private _skipDrag(event: PointerEvent) {
@@ -365,6 +371,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _createDragGhost() {
     const ghost = this.cloneNode(true) as HTMLElement;
+    const { width, height } = this.getBoundingClientRect();
 
     ghost.inert = true;
     ghost.id = '';
@@ -374,8 +381,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       contain: 'strict',
       top: 0,
       left: 0,
-      width: '100%',
-      height: '100%',
+      width: `${width}px`,
+      height: `${height}px`,
       background: 'var(--placeholder-background)',
       border: '1px solid var(--ghost-border)',
       borderRadius: 'var(--border-radius)',
@@ -385,61 +392,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return ghost;
   }
 
-  // XXX
-  // private assignDragImage(event: PointerEvent) {
-  //   const rect = this.getBoundingClientRect();
-  //   const offsetX = event.clientX - rect.left;
-  //   const offsetY = event.clientY - rect.top;
-  //   const compStyles = getComputedStyle(this);
-
-  //   this.cacheStyles();
-  //   const x = event.clientX - this._dragStartOffset.x;
-  //   const y = event.clientY - this._dragStartOffset.y;
-
-  //   this._dragImage = this.cloneNode(true) as HTMLElement;
-
-  //   Object.assign(this._dragImage.style, {
-  //     width: compStyles.width,
-  //     height: compStyles.height,
-  //     position: 'absolute',
-  //     // top: '-99999px',
-  //     // left: '-99999px',
-  //     top: `${y}px`, // `${event.clientY - offsetY}px`,
-  //     left: `${x}px`, //`${event.clientX - offsetX}px`,
-  //     background: this._cachedStyles.tileBackground,
-  //     border: `1px solid ${this._cachedStyles.tileBorder}`,
-  //     borderRadius: this._cachedStyles.borderRadius,
-  //     overflow: 'hidden',
-  //     pointerEvents: 'none',
-  //     zIndex: '1000',
-  //   });
-
-  //   document.body.append(this._dragImage);
-
-  //   // event.dataTransfer!.setDragImage(this._dragImage, offsetX, offsetY);
-  //   // event.dataTransfer!.effectAllowed = 'move';
-  // }
-  // XXX
-  // private handleDragStart(event: PointerEvent) {
-  //   const rect = this.getBoundingClientRect();
-
-  //   this._dragStartOffset = {
-  //     x: event.clientX - rect.left,
-  //     y: event.clientY - rect.top,
-  //   };
-
-  //   this.assignDragImage(event);
-
-  //   this.emitEvent('tileDragStart', { detail: this });
-  //   this._dragGhost = this.ghostFactory();
-  //   this._dragGhost.inert = true;
-
-  //   if (this._dragGhost) {
-  //     this.append(this._dragGhost);
-  //   }
-
-  //   this._isDragging = true;
-  // }
   // XXX
   // private handleDragMove(event: PointerEvent) {
   //   if (!this._isDragging) return;
