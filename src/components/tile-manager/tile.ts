@@ -476,6 +476,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setResizeState(false);
   }
 
+  private _handleResizeCancel() {
+    this._setResizeState(false);
+  }
+
   protected renderContent() {
     const parts = partNameMap({
       base: true,
@@ -519,6 +523,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
             @igcResizeStart=${this._handleResizeStart}
             @igcResize=${this._handleResize}
             @igcResizeEnd=${this._handleResizeEnd}
+            @igcResizeCancel=${this._handleResizeCancel}
           >
             ${this.renderContent()}
           </igc-resize>

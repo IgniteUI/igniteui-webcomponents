@@ -1,4 +1,4 @@
-import { asNumber } from '../common/util.js';
+import { asNumber, first } from '../common/util.js';
 import type { ResizeState } from '../resize-container/types.js';
 import type IgcTileComponent from './tile.js';
 
@@ -8,8 +8,26 @@ type TileGridPosition = {
   colSpan: number;
   rowSpan: number;
 };
-type TileGridColumns = { count: number; entries: number[]; minWidth: number };
-type TileGridRows = { count: number; entries: number[]; minHeight: number };
+type TileGridDimension = { count: number; entries: number[]; minSize: number };
+
+const GRID_VALUE_REGEX = new RegExp(
+  /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi
+);
+
+function parseTileGridRect(tile: IgcTileComponent) {
+  const computed = getComputedStyle(tile);
+  const { gridColumn, gridRow } = computed;
+
+  const [column, row] = [
+    first(Array.from(gridColumn.matchAll(GRID_VALUE_REGEX))).groups!,
+    first(Array.from(gridRow.matchAll(GRID_VALUE_REGEX))).groups!,
+  ];
+
+  return {
+    column: { start: asNumber(column.start), span: asNumber(column.span) },
+    row: { start: asNumber(row.start), span: asNumber(row.span) },
+  };
+}
 
 class TileResizeState {
   protected _position: TileGridPosition = {
@@ -19,18 +37,18 @@ class TileResizeState {
     rowSpan: 0,
   };
   protected _gap = 0;
-  protected _columns: TileGridColumns = {
+  protected _columns: TileGridDimension = {
     count: 0,
     entries: [],
-    minWidth: 0,
+    minSize: 0,
   };
-  protected _rows: TileGridRows = {
+  protected _rows: TileGridDimension = {
     count: 0,
     entries: [],
-    minHeight: 0,
+    minSize: 0,
   };
 
-  public get gap() {
+  public get gap(): number {
     return this._gap;
   }
 
@@ -38,11 +56,11 @@ class TileResizeState {
     return structuredClone(this._position);
   }
 
-  public get columns(): TileGridColumns {
+  public get columns(): TileGridDimension {
     return structuredClone(this._columns);
   }
 
-  public get rows(): TileGridRows {
+  public get rows(): TileGridDimension {
     return structuredClone(this._rows);
   }
 
@@ -133,16 +151,19 @@ class TileResizeState {
 
     this._gap = asNumber(gridStyles.gap);
 
+    // TODO: Bind back to the position property
+    parseTileGridRect(tile);
+
     Object.assign(this._columns, {
       count: columns.length,
       entries: columns.map(asNumber),
-      minWidth: asNumber(styles.getPropertyValue('--ig-min-col-width')),
+      minSize: asNumber(styles.getPropertyValue('--ig-min-col-width')),
     });
 
     Object.assign(this._rows, {
       count: rows.length,
       entries: rows.map(asNumber),
-      minHeight: asNumber(styles.getPropertyValue('--ig-min-row-height')),
+      minSize: asNumber(styles.getPropertyValue('--ig-min-row-height')),
     });
   }
 
@@ -153,7 +174,10 @@ class TileResizeState {
   public getPosition(rect: DOMRect): TileGridPosition {
     const points = { column: 0, row: 0, colSpan: 1, rowSpan: 1 };
 
-    points.column = this.calculatePosition(rect.left, this._columns.entries);
+    points.column = this.calculatePosition(
+      rect.left + window.scrollX,
+      this._columns.entries
+    );
 
     points.row = this.calculatePosition(
       rect.y + window.scrollY,
