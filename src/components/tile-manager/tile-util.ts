@@ -46,12 +46,10 @@ class TileResizeState {
     return structuredClone(this._rows);
   }
 
-  public calculateSnappedWidth(
-    deltaX: number,
-    state: ResizeState,
-    gap: number,
-    columns: number[]
-  ): number {
+  public calculateSnappedWidth(state: ResizeState, columns: number[]): number {
+    const deltaX = state.deltaX;
+    const gap = this._gap;
+
     let snappedWidth = state.current.width;
     let accumulatedWidth = 0;
 
@@ -87,12 +85,10 @@ class TileResizeState {
     return snappedWidth;
   }
 
-  public calculateSnappedHeight(
-    deltaY: number,
-    state: ResizeState,
-    gap: number,
-    rows: number[]
-  ): number {
+  public calculateSnappedHeight(state: ResizeState, rows: number[]): number {
+    const deltaY = state.deltaY;
+    const gap = this._gap;
+
     let snappedHeight = state.current.height;
     let accumulatedHeight = 0;
 
@@ -289,7 +285,7 @@ export function createTileResizeState(): TileResizeState {
   return new TileResizeState();
 }
 
-export function createTileGhost(): HTMLDivElement {
+export function createTileGhost(): HTMLElement {
   const element = document.createElement('div');
 
   Object.assign(element.style, {

@@ -263,20 +263,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._position;
   }
 
-  protected get gridColumnWidth(): number {
-    const tileManager =
-      this._tileManager!.instance!.shadowRoot!.querySelector("[part~='base']")!;
-
-    const gridTemplateColumns = getComputedStyle(tileManager).getPropertyValue(
-      'grid-template-columns'
-    );
-    const firstColumnWidth = Number.parseFloat(
-      gridTemplateColumns.split(' ')[0]
-    );
-
-    return firstColumnWidth || this._resizeState.columns.minWidth;
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
@@ -290,7 +276,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const parts = partNameMap({
       dragging: this._isDragging,
-      resizing: this._isResizing,
     });
 
     if (parts.trim()) {
@@ -429,6 +414,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return outsideBoundaries;
   }
 
+  private _setResizeState(state = true) {
+    this._isResizing = state;
+    this.style.zIndex = state ? '1' : '';
+  }
+
   private _handleResizeStart({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
@@ -437,8 +427,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const { position, columns, rows } = this._resizeState;
 
-    // REVIEW: `startViewTransition` fix since the tile is in another layer??
-    this.style.zIndex = '1';
+    this._setResizeState();
 
     // REVIEW: Refactor as internal logic in resize state for snapping behavior
     this._colWidths = columns.entries.slice(position.column);
@@ -450,8 +439,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }: CustomEvent<ResizeCallbackParams>) {
     const trigger = state.trigger!;
 
-    this._isResizing = true;
-
     const isWidthResize = trigger.matches('[part*="side"], [part="trigger"]');
     const isHeightResize = trigger.matches(
       '[part*="bottom"], [part="trigger"]'
@@ -459,18 +446,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     if (isWidthResize) {
       state.current.width = this._resizeState.calculateSnappedWidth(
-        state.deltaX,
         state,
-        this._resizeState.gap,
         this._colWidths
       );
     }
 
     if (isHeightResize) {
       state.current.height = this._resizeState.calculateSnappedHeight(
-        state.deltaY,
         state,
-        this._resizeState.gap,
         this._rowHeights
       );
     }
@@ -490,8 +473,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         this.style.setProperty('grid-column', `span ${colSpan}`);
       });
 
-    this.style.zIndex = '';
-    this._isResizing = false;
+    this._setResizeState(false);
   }
 
   protected renderContent() {
