@@ -92,7 +92,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _maximized = false;
   private _colWidths: number[] = [];
   private _rowHeights: number[] = [];
   private _dragCounter = 0;
@@ -139,6 +138,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
+
+  @state()
+  private _maximized = false;
 
   @state()
   private _isDragging = false;
@@ -223,7 +225,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  public get maximized() {
+  public get maximized(): boolean {
     return this._maximized;
   }
 
@@ -237,7 +239,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._dragController.enabled = !this._disableDrag;
   }
 
-  public get disableDrag() {
+  public get disableDrag(): boolean {
     return this._disableDrag;
   }
 
@@ -263,7 +265,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._position;
   }
 
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
