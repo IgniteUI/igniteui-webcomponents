@@ -30,17 +30,13 @@
 }
 
 [part~='counter'] {
-    animation: initial-counter var(--_transition-duration) ease-in-out;
+    animation: igc-initial-counter var(--_transition-duration) ease-in-out;
     transition:
             --_progress-integer var(--_transition-duration) ease-in-out,
             --_progress-fraction var(--_transition-duration) ease-in-out;
     counter-reset:
             progress-integer var(--_progress-integer, 0)
             progress-fraction var(--_progress-fraction, 0);
-
-    &::before {
-        @include type-style('subtitle-2');
-    }
 }
 
 [part~='counter']:not([part~='fraction'])::before {
@@ -58,7 +54,7 @@
     transform-origin: center;
 
     &:not([part~='indeterminate']) [part~='fill'] {
-        animation: initial-dashoffset var(--_transition-duration) linear;
+        animation: igc-initial-dashoffset var(--_transition-duration) linear;
         stroke-dasharray: #{$circumference} #{$circumference};
         stroke-dashoffset: calc(#{$circumference} - var(--_progress-percentage) * #{$circumference});
     }
@@ -90,18 +86,18 @@
 
 [part~='svg'][part~='indeterminate'] {
     transform-origin: 50% 50%;
-    animation: 3s linear 0s infinite $animation-direction none running rotate-center;
+    animation: 3s linear 0s infinite $animation-direction none running igc-rotate-center;
 
     [part~='fill'] {
         stroke-dashoffset: calc(#{$circumference} * 2);
-        animation: indeterminate-accordion 1.5s cubic-bezier(0, 0.085, 0.68, 0.53) $animation-direction infinite;
+        animation: igc-indeterminate-accordion 1.5s cubic-bezier(0, 0.085, 0.68, 0.53) $animation-direction infinite;
     }
 }
 
 :host(:dir(rtl)),
 :host([dir='rtl']) {
     [part~='svg'][part~='indeterminate'] [part~='fill'] {
-        animation-name: indeterminate-accordion-rtl;
+        animation-name: igc-indeterminate-accordion-rtl;
     }
 
     [part~='indeterminate'] {
@@ -118,7 +114,7 @@
 
     [part~='svg'] {
         &:not([part~='indeterminate']) [part~='fill'] {
-            animation: initial-dashoffset-rtl var(--_transition-duration) linear;
+            animation: igc-initial-dashoffset var(--_transition-duration) linear;
             stroke-dasharray: #{$circumference} #{$circumference};
             stroke-dashoffset: calc(#{$circumference} + var(--_progress-percentage) * #{$circumference});
         }
