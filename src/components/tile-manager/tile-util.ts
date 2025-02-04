@@ -3,45 +3,75 @@ import type { ResizeState } from '../resize-container/types.js';
 import type IgcTileComponent from './tile.js';
 
 type TileGridPosition = {
-  column: number;
-  row: number;
-  colSpan: number;
-  rowSpan: number;
+  column: {
+    start: number;
+    span: number;
+  };
+  row: {
+    start: number;
+    span: number;
+  };
 };
 type TileGridDimension = { count: number; entries: number[]; minSize: number };
 
-const GRID_VALUE_REGEX = new RegExp(
-  /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi
-);
+const CssValues = new RegExp(/(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi);
 
-function parseTileGridRect(tile: IgcTileComponent) {
+function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   const computed = getComputedStyle(tile);
   const { gridColumn, gridRow } = computed;
 
   const [column, row] = [
-    first(Array.from(gridColumn.matchAll(GRID_VALUE_REGEX))).groups!,
-    first(Array.from(gridRow.matchAll(GRID_VALUE_REGEX))).groups!,
+    first(Array.from(gridColumn.matchAll(CssValues))).groups!,
+    first(Array.from(gridRow.matchAll(CssValues))).groups!,
   ];
 
   return {
-    column: { start: asNumber(column.start), span: asNumber(column.span) },
-    row: { start: asNumber(row.start), span: asNumber(row.span) },
+    column: {
+      start: asNumber(column.start, -1),
+      span: asNumber(column.span, -1),
+    },
+    row: { start: asNumber(row.start, -1), span: asNumber(row.span, -1) },
+  };
+}
+
+function parseTileParentGrid(gridContainer: HTMLElement) {
+  const computed = getComputedStyle(gridContainer);
+  const { gap, gridTemplateColumns, gridTemplateRows } = computed;
+
+  const columns = gridTemplateColumns.split(' ').map(asNumber);
+  const rows = gridTemplateRows.split(' ').map(asNumber);
+
+  return {
+    gap: asNumber(gap),
+    columns: {
+      count: columns.length,
+      entries: columns,
+      minSize: asNumber(computed.getPropertyValue('--ig-min-col-width')),
+    },
+    rows: {
+      count: rows.length,
+      entries: rows,
+      minSize: asNumber(computed.getPropertyValue('--ig-min-row-height')),
+    },
   };
 }
 
 class TileResizeState {
-  protected _position: TileGridPosition = {
-    column: 0,
-    row: 0,
-    colSpan: 0,
-    rowSpan: 0,
-  };
+  private _initialPosition!: TileGridPosition;
+
   protected _gap = 0;
+
+  protected _position: TileGridPosition = {
+    column: { start: 0, span: 0 },
+    row: { start: 0, span: 0 },
+  };
+
   protected _columns: TileGridDimension = {
     count: 0,
     entries: [],
     minSize: 0,
   };
+
   protected _rows: TileGridDimension = {
     count: 0,
     entries: [],
@@ -64,14 +94,20 @@ class TileResizeState {
     return structuredClone(this._rows);
   }
 
-  public calculateSnappedWidth(state: ResizeState, columns: number[]): number {
+  public calculateSnappedWidth(state: ResizeState): number {
     const deltaX = state.deltaX;
     const gap = this._gap;
+    const columns = this._columns.entries;
 
     let snappedWidth = state.current.width;
     let accumulatedWidth = 0;
 
-    for (let i = 0; i < columns.length; i++) {
+    // REVIEW: Don't fall below column minSize
+    if (Math.trunc(state.current.width) < this._columns.minSize) {
+      return this._columns.entries[this._position.column.start];
+    }
+
+    for (let i = this._position.column.start; i < columns.length; i++) {
       const currentColWidth = columns[i];
       const nextColWidth = columns[i + 1] || currentColWidth;
       const prevColWidth = i > 0 ? columns[i - 1] : currentColWidth;
@@ -103,14 +139,20 @@ class TileResizeState {
     return snappedWidth;
   }
 
-  public calculateSnappedHeight(state: ResizeState, rows: number[]): number {
+  public calculateSnappedHeight(state: ResizeState): number {
     const deltaY = state.deltaY;
     const gap = this._gap;
+    const rows = this._rows.entries;
 
     let snappedHeight = state.current.height;
     let accumulatedHeight = 0;
 
-    for (let i = 0; i < rows.length; i++) {
+    // REVIEW: Don't fall below row minSize
+    if (Math.trunc(state.current.height) < this._rows.minSize) {
+      return this._rows.entries[this._position.row.start];
+    }
+
+    for (let i = this._position.row.start; i < rows.length; i++) {
       const currentColHeight = rows[i];
       const nextColHeight = rows[i + 1] || currentColHeight;
       const prevColHeight = i > 0 ? rows[i - 1] : currentColHeight;
@@ -142,129 +184,74 @@ class TileResizeState {
     return snappedHeight;
   }
 
-  public updateState(tile: IgcTileComponent, grid: HTMLElement): void {
-    const styles = getComputedStyle(tile);
-    const gridStyles = getComputedStyle(grid);
+  public updateState(
+    tileRect: DOMRect,
+    tile: IgcTileComponent,
+    grid: HTMLElement
+  ): void {
+    const { gap, columns, rows } = parseTileParentGrid(grid);
 
-    const columns = gridStyles.gridTemplateColumns.split(' ');
-    const rows = gridStyles.gridTemplateRows.split(' ');
+    this._initialPosition = parseTileGridRect(tile);
+    this._position = structuredClone(this._initialPosition);
 
-    this._gap = asNumber(gridStyles.gap);
+    this._gap = gap;
+    this._columns = columns;
+    this._rows = rows;
 
-    // TODO: Bind back to the position property
-    parseTileGridRect(tile);
+    if (this._position.column.start < 0) {
+      this._position.column.start = this.calculatePosition(
+        tileRect.left + window.scrollX,
+        this._columns.entries
+      );
+    }
 
-    Object.assign(this._columns, {
-      count: columns.length,
-      entries: columns.map(asNumber),
-      minSize: asNumber(styles.getPropertyValue('--ig-min-col-width')),
-    });
-
-    Object.assign(this._rows, {
-      count: rows.length,
-      entries: rows.map(asNumber),
-      minSize: asNumber(styles.getPropertyValue('--ig-min-row-height')),
-    });
+    if (this._position.row.start < 0) {
+      this._position.row.start = this.calculatePosition(
+        tileRect.y + window.scrollY,
+        this._rows.entries
+      );
+    }
   }
 
   /**
-   * Updates and returns the current column/row position of a tile component
-   * based on its DOM rect and the parent CSS grid container.
-   */
-  public getPosition(rect: DOMRect): TileGridPosition {
-    const points = { column: 0, row: 0, colSpan: 1, rowSpan: 1 };
-
-    points.column = this.calculatePosition(
-      rect.left + window.scrollX,
-      this._columns.entries
-    );
-
-    points.row = this.calculatePosition(
-      rect.y + window.scrollY,
-      this._rows.entries
-    );
-
-    points.colSpan = this.calculateInitialSpan(
-      rect.width,
-      this._columns.entries,
-      points.column
-    );
-    points.rowSpan = this.calculateInitialSpan(
-      rect.height,
-      this._rows.entries,
-      points.column
-    );
-
-    Object.assign(this._position, points);
-    return points;
-  }
-
-  /**
-   * Calculates and returns the column and row spans of a tile after resizing,
+   * Calculates and returns the CSS column and row properties of a tile after resizing,
    * based on its new dimensions and starting position.
    */
-  public getResizedPosition(rect: DOMRect): TileGridPosition {
-    const spans = {
-      column: this._position.column,
-      row: this._position.row,
-      colSpan: 1,
-      rowSpan: 1,
-    };
+  public getResizedPosition(rect: DOMRect) {
+    const columns = this._columns.entries.slice(this._position.column.start);
+    const rows = this._rows.entries.slice(this._position.row.start);
+    const { column, row } = this._initialPosition;
 
-    const columns = this._columns.entries.slice(spans.column);
-    const rows = this._rows.entries.slice(spans.row);
-
-    spans.colSpan = this.calculateResizedSpan(
+    this._position.column.span = this.calculateResizedSpan(
       rect.width,
-      this._position.colSpan,
+      this._position.column.span,
       columns
     );
-
-    spans.rowSpan = this.calculateResizedSpan(
+    this._position.row.span = this.calculateResizedSpan(
       rect.height,
-      this._position.rowSpan,
+      this._position.row.span,
       rows
     );
 
-    return spans;
+    const cssColumn = `${column.start < 0 ? 'auto' : column.start} / span ${this._position.column.span}`;
+    const cssRow = `${row.start < 0 ? 'auto' : row.start} / span ${this._position.row.span}`;
+
+    return { column: cssColumn, row: cssRow };
   }
 
   private calculatePosition(targetPosition: number, sizes: number[]): number {
+    const gap = this._gap;
     let accumulatedSize = 0;
 
-    for (const [i, value] of sizes.entries()) {
-      accumulatedSize += value + this._gap;
+    for (const [i, size] of sizes.entries()) {
+      accumulatedSize += size + gap;
 
-      if (
-        Math.trunc(targetPosition) < Math.trunc(accumulatedSize - this._gap)
-      ) {
+      if (Math.trunc(targetPosition) < Math.trunc(accumulatedSize - gap)) {
         return i;
       }
     }
 
     return 0;
-  }
-
-  private calculateInitialSpan(
-    size: number,
-    sizes: number[],
-    startIndex: number
-  ): number {
-    let accumulatedSize = 0;
-    let span = 1;
-
-    for (let i = startIndex; i < sizes.length; i++) {
-      const currentSize = sizes[i];
-      accumulatedSize += currentSize + this._gap;
-
-      if (size <= accumulatedSize) {
-        break;
-      }
-
-      span++;
-    }
-
-    return span;
   }
 
   private calculateResizedSpan(

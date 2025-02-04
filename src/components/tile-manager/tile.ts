@@ -92,8 +92,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _colWidths: number[] = [];
-  private _rowHeights: number[] = [];
   private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
@@ -105,6 +103,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private get _tileManager() {
     return this._managerContext.value;
+  }
+
+  private get _cssContainer() {
+    return this._tileManager?.grid.value!;
   }
 
   private _createContext(): TileContext {
@@ -425,16 +427,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleResizeStart({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    this._resizeState.updateState(this, this._tileManager!.grid.value!);
-    this._resizeState.getPosition(state.initial);
-
-    const { position, columns, rows } = this._resizeState;
-
+    this._resizeState.updateState(state.initial, this, this._cssContainer);
     this._setResizeState();
-
-    // REVIEW: Refactor as internal logic in resize state for snapping behavior
-    this._colWidths = columns.entries.slice(position.column);
-    this._rowHeights = rows.entries.slice(position.row);
   }
 
   private _handleResize({
@@ -448,32 +442,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
 
     if (isWidthResize) {
-      state.current.width = this._resizeState.calculateSnappedWidth(
-        state,
-        this._colWidths
-      );
+      state.current.width = this._resizeState.calculateSnappedWidth(state);
     }
 
     if (isHeightResize) {
-      state.current.height = this._resizeState.calculateSnappedHeight(
-        state,
-        this._rowHeights
-      );
+      state.current.height = this._resizeState.calculateSnappedHeight(state);
     }
   }
 
   private _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    const { colSpan, rowSpan } = this._resizeState.getResizedPosition(
-      state.current
-    );
+    const { column, row } = this._resizeState.getResizedPosition(state.current);
 
     state.commit = () =>
-      // REVIEW: View transition
       startViewTransition(() => {
-        this.style.setProperty('grid-row', `span ${rowSpan}`);
-        this.style.setProperty('grid-column', `span ${colSpan}`);
+        this.style.setProperty('grid-row', row);
+        this.style.setProperty('grid-column', column);
       });
 
     this._setResizeState(false);
