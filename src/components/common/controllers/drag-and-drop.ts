@@ -18,12 +18,18 @@ type DragDropConfig = {
    * at its place until the operation completes successfully.
    */
   mode?: 'immediate' | 'deferred';
+  /**
+   * Whether drag operation should snap the dragged item top left corner
+   * to the cursor position.
+   */
   snapToCursor?: boolean;
   /**
    * Guard function invoked during the `dragStart` callback.
    * Returning a truthy value will stop the current drag and drop operation.
    */
   skip?: (event: PointerEvent) => boolean;
+  // TODO:
+  matchTarget?: () => boolean;
   /**
    *
    */
@@ -75,12 +81,16 @@ class DragDropController implements ReactiveController {
     return Boolean(this._config.snapToCursor);
   }
 
+  private get _isDeferred() {
+    return this._config.mode === 'deferred';
+  }
+
   private get _element(): HTMLElement {
     return this._config.trigger?.() ?? this._host;
   }
 
   private get _dragItem() {
-    return this._config.mode === 'deferred' ? this._ghost! : this._host;
+    return this._isDeferred ? this._ghost! : this._host;
   }
 
   // REVIEW
@@ -92,7 +102,7 @@ class DragDropController implements ReactiveController {
    * In **immediate** mode, this property is ignored.
    */
   private get _layer(): HTMLElement {
-    if (this._config.mode === 'immediate') {
+    if (!this._isDeferred) {
       return this._host;
     }
 

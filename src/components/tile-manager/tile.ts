@@ -155,10 +155,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._context.setValue(this._createContext(), true);
   }
 
-  // private get _draggedItem(): IgcTileComponent | null {
-  //   return this._tileManager?.draggedItem ?? null;
-  // }
-
   private get _isSlideMode(): boolean {
     return this._tileManager
       ? this._tileManager.instance.dragAction === 'slide'
@@ -317,6 +313,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+
+    this.style.viewTransitionName = `tile-transition-${this.tileId}`;
   }
 
   protected override updated(changedProperties: PropertyValues) {
@@ -374,6 +372,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const { width, height } = this.getBoundingClientRect();
 
     ghost.inert = true;
+    ghost.style.viewTransitionName = '';
     ghost.id = '';
 
     Object.assign(ghost.style, {
