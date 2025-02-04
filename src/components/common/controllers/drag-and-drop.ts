@@ -28,8 +28,8 @@ type DragDropConfig = {
    * Returning a truthy value will stop the current drag and drop operation.
    */
   skip?: (event: PointerEvent) => boolean;
-  // TODO:
-  matchTarget?: () => boolean;
+  // REVIEW: API signature
+  matchTarget?: (target: Element) => boolean;
   /**
    *
    */
@@ -53,8 +53,6 @@ type DragDropConfig = {
   dragStart?: DragDropCallback;
   /** Callback invoked while dragging the target element.  */
   dragMove?: DragDropCallback;
-  /** Callback invoked when passing over other elements. */
-  dragOver?: DragDropCallback;
   /** Callback invoked during a drop operation. */
   dragEnd?: DragDropCallback;
   /** Callback invoked when a drag and drop is cancelled */
@@ -77,23 +75,37 @@ class DragDropController implements ReactiveController {
 
   private _ghost: HTMLElement | null = null;
 
-  private get _hasSnapping() {
+  /** Whether `snapToCursor` is enabled for the controller. */
+  private get _hasSnapping(): boolean {
     return Boolean(this._config.snapToCursor);
   }
 
-  private get _isDeferred() {
+  /** Whether the current drag mode is deferred. */
+  private get _isDeferred(): boolean {
     return this._config.mode === 'deferred';
   }
 
+  /**
+   * The source element which will capture pointer events and initiate drag mode.
+   *
+   * @remarks
+   * By default that will be the host element itself, unless `trigger` is passed in.
+   */
   private get _element(): HTMLElement {
     return this._config.trigger?.() ?? this._host;
   }
 
-  private get _dragItem() {
+  /**
+   * The element being dragged.
+   *
+   * @remarks
+   * When in **deferred** mode this returns a reference to the drag ghost element,
+   * otherwise it is the host element.
+   */
+  private get _dragItem(): HTMLElement {
     return this._isDeferred ? this._ghost! : this._host;
   }
 
-  // REVIEW
   /**
    * The DOM element that will "host" the ghost drag element when the controller
    * is set to **deferred**.
@@ -190,7 +202,7 @@ class DragDropController implements ReactiveController {
     );
   }
 
-  private _handlePointerDown(event: PointerEvent) {
+  private _handlePointerDown(event: PointerEvent): void {
     if (this._shouldSkip(event)) {
       return;
     }
@@ -208,7 +220,7 @@ class DragDropController implements ReactiveController {
     this._setPointerCaptureState(true);
   }
 
-  private _handlePointerMove(event: PointerEvent) {
+  private _handlePointerMove(event: PointerEvent): void {
     if (!this._hasPointerCapture) {
       return;
     }
@@ -217,8 +229,19 @@ class DragDropController implements ReactiveController {
       this._config.dragMove.call(this._host);
     }
 
-    // REVIEW: Simulate dragEnter, dragOver? and dragLeave based on that
-    // const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    // REVIEW: additional event implementation here
+    // if (this._config.matchTarget) {
+    //   const dropTarget = document
+    //     .elementsFromPoint(event.clientX, event.clientY)
+    //     .find((e) =>
+    //       this._config.matchTarget!.call(this._host, e)
+    //     ) as HTMLElement;
+
+    //   if (this._dropTarget !== dropTarget) {
+    //     this._dropTarget = dropTarget;
+    //     this._config.dragOver?.call(this._host, this._dropTarget);
+    //   }
+    // }
 
     this._updateCoordinates(event.clientX, event.clientY);
   }
@@ -259,6 +282,7 @@ class DragDropController implements ReactiveController {
     }
   }
 
+  /** Stops any drag operation and cleans up state and additional elements. */
   public dispose(): void {
     this._removeGhost();
     this._setPointerCaptureState(false);
