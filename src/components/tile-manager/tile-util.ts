@@ -2,16 +2,16 @@ import { asNumber, first } from '../common/util.js';
 import type { ResizeState } from '../resize-container/types.js';
 import type IgcTileComponent from './tile.js';
 
-type TileGridPosition = {
-  column: {
-    start: number;
-    span: number;
-  };
-  row: {
-    start: number;
-    span: number;
-  };
+type TilePosition = {
+  start: number;
+  span: number;
 };
+
+type TileGridPosition = {
+  column: TilePosition;
+  row: TilePosition;
+};
+
 type TileGridDimension = { count: number; entries: number[]; minSize: number };
 
 const CssValues = new RegExp(/(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi);
@@ -60,6 +60,8 @@ class TileResizeState {
   private _initialPosition!: TileGridPosition;
 
   protected _gap = 0;
+  protected _prevDeltaX = 0;
+  protected _prevDeltaY = 0;
 
   protected _position: TileGridPosition = {
     column: { start: 0, span: 0 },
@@ -95,7 +97,9 @@ class TileResizeState {
   }
 
   public calculateSnappedWidth(state: ResizeState): number {
-    const deltaX = state.deltaX;
+    const deltaX = state.deltaX - this._prevDeltaX;
+    this._prevDeltaX = state.deltaX;
+
     const gap = this._gap;
     const columns = this._columns.entries;
 
@@ -107,7 +111,7 @@ class TileResizeState {
       return this._columns.entries[this._position.column.start];
     }
 
-    for (let i = this._position.column.start; i < columns.length; i++) {
+    for (let i = this._position.column.start - 1; i < columns.length; i++) {
       const currentColWidth = columns[i];
       const nextColWidth = columns[i + 1] || currentColWidth;
       const prevColWidth = i > 0 ? columns[i - 1] : currentColWidth;
@@ -140,7 +144,9 @@ class TileResizeState {
   }
 
   public calculateSnappedHeight(state: ResizeState): number {
-    const deltaY = state.deltaY;
+    const deltaY = state.deltaY - this._prevDeltaY;
+    this._prevDeltaY = state.deltaY;
+
     const gap = this._gap;
     const rows = this._rows.entries;
 
@@ -152,7 +158,7 @@ class TileResizeState {
       return this._rows.entries[this._position.row.start];
     }
 
-    for (let i = this._position.row.start; i < rows.length; i++) {
+    for (let i = this._position.row.start - 1; i < rows.length; i++) {
       const currentColHeight = rows[i];
       const nextColHeight = rows[i + 1] || currentColHeight;
       const prevColHeight = i > 0 ? rows[i - 1] : currentColHeight;
@@ -197,6 +203,8 @@ class TileResizeState {
     this._gap = gap;
     this._columns = columns;
     this._rows = rows;
+    this._prevDeltaX = 0;
+    this._prevDeltaY = 0;
 
     if (this._position.column.start < 0) {
       this._position.column.start = this.calculatePosition(
@@ -218,19 +226,17 @@ class TileResizeState {
    * based on its new dimensions and starting position.
    */
   public getResizedPosition(rect: DOMRect) {
-    const columns = this._columns.entries.slice(this._position.column.start);
-    const rows = this._rows.entries.slice(this._position.row.start);
     const { column, row } = this._initialPosition;
 
     this._position.column.span = this.calculateResizedSpan(
       rect.width,
-      this._position.column.span,
-      columns
+      this._position.column,
+      this._columns.entries
     );
     this._position.row.span = this.calculateResizedSpan(
       rect.height,
-      this._position.row.span,
-      rows
+      this._position.row,
+      this._rows.entries
     );
 
     const cssColumn = `${column.start < 0 ? 'auto' : column.start} / span ${this._position.column.span}`;
@@ -247,32 +253,35 @@ class TileResizeState {
       accumulatedSize += size + gap;
 
       if (Math.trunc(targetPosition) < Math.trunc(accumulatedSize - gap)) {
-        return i;
+        return i + 1;
       }
     }
 
-    return 0;
+    return 1;
   }
 
   private calculateResizedSpan(
     targetSize: number,
-    initialSpan: number,
+    tilePosition: TilePosition,
     sizes: number[]
   ): number {
     let accumulatedSize = 0;
-    let currentSpan = initialSpan;
+    let currentSpan = tilePosition.span;
+
+    const sizesAfterStart = sizes.slice(tilePosition.start - 1);
     const availableSize =
-      sizes.reduce((sum, s) => sum + s, 0) + (sizes.length - 1) * this._gap;
+      sizesAfterStart.reduce((sum, s) => sum + s, 0) +
+      (sizes.length - 1) * this._gap;
 
     if (targetSize <= sizes[0] + this._gap) {
       return 1;
     }
 
     if (targetSize > availableSize) {
-      return sizes.length;
+      return sizesAfterStart.length;
     }
 
-    for (let i = 0; i < sizes.length; i++) {
+    for (let i = tilePosition.start; i < sizes.length; i++) {
       const currentSize = sizes[i];
       const nextSize = sizes[i + 1] ?? currentSize;
 
@@ -280,7 +289,7 @@ class TileResizeState {
         accumulatedSize + currentSize + this._gap + nextSize / 2;
 
       if (targetSize > halfwayPoint) {
-        currentSpan = i + 2;
+        currentSpan = i + 2 - tilePosition.start;
       } else {
         break;
       }
