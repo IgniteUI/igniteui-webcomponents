@@ -20,7 +20,13 @@ import { addDragDropController } from '../common/controllers/drag-and-drop.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, createCounter, first, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  first,
+  isElement,
+  partNameMap,
+} from '../common/util.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
@@ -101,9 +107,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _dragCounter = 0;
-  private _dragGhost: HTMLElement | null = null;
-  private _dragImage: HTMLElement | null = null;
   private _resizeState = createTileResizeState();
 
   // Tile manager context properties and helpers
@@ -164,8 +167,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   })
   protected _headers!: IgcTileHeaderComponent[];
 
-  @query(IgcResizeComponent.tagName)
-  protected _resizeContainer?: IgcResizeComponent;
+  @query(IgcResizeContainerComponent.tagName)
+  protected _resizeContainer?: IgcResizeContainerComponent;
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
@@ -357,143 +360,44 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setDragState(false);
   }
 
-  // private hasPointerLeftLastSwapTile(
-  //   event: DragEvent,
-  //   lastSwapTile: IgcTileComponent | null
-  // ) {
-  //   if (!lastSwapTile) return false;
+  private _skipDrag(event: PointerEvent) {
+    return Boolean(
+      this._resizeContainer &&
+        event
+          .composedPath()
+          .some((e) => isElement(e) && e.matches('[part*=trigger]'))
+    );
+  }
 
-  //   // Check if the pointer is outside the boundaries of the last swapped tile
+  private _match(element: Element) {
+    return element !== this && /^igc-tile$/i.test(element.tagName);
+  }
 
-  //   const rect = lastSwapTile.getBoundingClientRect();
-  //   const pointerX = event.clientX;
-  //   const pointerY = event.clientY;
+  private _createDragGhost(): HTMLElement {
+    const ghost = this.cloneNode(true) as HTMLElement;
+    const { width, height } = this.getBoundingClientRect();
 
-  //   const outsideBoundaries =
-  //     pointerX < rect.left ||
-  //     pointerX > rect.right ||
-  //     pointerY < rect.top ||
-  //     pointerY > rect.bottom;
+    Object.assign(ghost, {
+      inert: true,
+      id: '',
+    });
 
-  //   if (outsideBoundaries && this._managerContext) {
-  //     this._managerContext.lastSwapTile = null;
-  //   }
+    Object.assign(ghost.style, {
+      position: 'absolute',
+      contain: 'strict',
+      top: 0,
+      left: 0,
+      width: `${width}px`,
+      height: `${height}px`,
+      background: 'var(--placeholder-background)',
+      border: '1px solid var(--ghost-border)',
+      borderRadius: 'var(--border-radius)',
+      zIndex: 1000,
+      viewTransitionName: '',
+    });
 
-  //   return outsideBoundaries;
-  // }
-
-  // XXX
-  // private handleDragMove(event: PointerEvent) {
-  //   if (!this._isDragging) return;
-  //   event.preventDefault();
-  //   // Move the drag image
-  //   if (this._dragImage) {
-  //     const x = event.clientX - this._dragStartOffset.x;
-  //     const y = event.clientY - this._dragStartOffset.y;
-
-  //     Object.assign(this._dragImage.style, {
-  //       top: `${y}px`,
-  //       left: `${x}px`,
-  //     });
-  //   }
-
-  //   const hoveredTile = findElementFromEventPath<IgcTileComponent>(
-  //     IgcTileComponent.tagName,
-  //     event
-  //   );
-
-  //   if (
-  //     this._previousHoveredTile &&
-  //     this._previousHoveredTile !== hoveredTile
-  //   ) {
-  //     this._previousHoveredTile.style.pointerEvents = '';
-  //   }
-
-  //   if (this._draggedItem && hoveredTile) {
-  //     hoveredTile.style.pointerEvents = 'none';
-
-  //     if (isSameTile(hoveredTile, this._draggedItem)) {
-  //       this._tileContent.style.visibility = 'hidden';
-  //       if (this._dragGhost) {
-  //         this._dragGhost.style.visibility = 'visible';
-  //       }
-  //     } else if (this._isSlideMode) {
-  //       if (
-  //         this._managerContext &&
-  //         (!this._managerContext.lastSwapTile ||
-  //           this.hasPointerLeftLastSwapTile(
-  //             event,
-  //             this._managerContext.lastSwapTile
-  //           ))
-  //       ) {
-  //         this._managerContext.lastSwapTile = hoveredTile;
-  //         swapTiles(hoveredTile, this._draggedItem!);
-  //       }
-  //     }
-  //   }
-
-  //   this._previousHoveredTile = hoveredTile;
-  // }
-  // XXX
-  // private handleDragEnd(event: PointerEvent) {
-  //   if (!this._isDragging) return;
-
-  //   // Swap mode
-  //   const draggedItem = this._draggedItem;
-  //   const target = findElementFromEventPath<IgcTileComponent>(
-  //     IgcTileComponent.tagName,
-  //     event
-  //   );
-
-  //   if (
-  //     !isSameTile(draggedItem, target) &&
-  //     this._managerContext?.instance.dragMode === 'swap' &&
-  //     !target?.disableDrag
-  //   ) {
-  //     swapTiles(draggedItem!, target!);
-  //   }
-
-  //   this.emitEvent('tileDragEnd', { detail: this });
-  //   this._isDragging = false;
-
-  //   if (this._dragGhost) {
-  //     this._dragGhost.remove();
-  //     this._dragGhost = null;
-  //   }
-
-  //   if (this._dragImage) {
-  //     this._dragImage.remove();
-  //     this._dragImage = null;
-  //   }
-
-  //   this.style.pointerEvents = '';
-  //   this._tileContent.style.visibility = 'visible';
-  // }
-  // XXX
-  // private hasPointerLeftLastSwapTile(
-  //   event: PointerEvent,
-  //   lastSwapTile: IgcTileComponent | null
-  // ) {
-  //   if (!lastSwapTile) return false;
-
-  //   // Check if the pointer is outside the boundaries of the last swapped tile
-
-  //   const rect = lastSwapTile.getBoundingClientRect();
-  //   const pointerX = event.clientX;
-  //   const pointerY = event.clientY;
-
-  //   const outsideBoundaries =
-  //     pointerX < rect.left ||
-  //     pointerX > rect.right ||
-  //     pointerY < rect.top ||
-  //     pointerY > rect.bottom;
-
-  //   if (outsideBoundaries && this._managerContext) {
-  //     this._managerContext.lastSwapTile = null;
-  //   }
-
-  //   return outsideBoundaries;
-  // }
+    return ghost;
+  }
 
   private _setResizeState(state = true) {
     this._isResizing = state;
