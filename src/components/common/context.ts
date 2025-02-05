@@ -8,8 +8,11 @@ import type IgcTileComponent from '../tile-manager/tile.js';
 export type TileManagerContext = {
   /** The igc-tile-manager instance. */
   instance: IgcTileManagerComponent;
+  /** The internal CSS grid container of the igc-tile-manager. */
+  grid: Ref<HTMLElement>;
   /** The internal igc-tile-manager overlay container. */
   overlay: Ref<HTMLElement>;
+  /** The igc-tile element being dragged. */
   draggedItem: IgcTileComponent | null;
   lastSwapTile: IgcTileComponent | null;
 };

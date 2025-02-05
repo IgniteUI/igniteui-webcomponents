@@ -1,30 +1,25 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type Sinon from 'sinon';
 import { spy } from 'sinon';
 
 import { range } from 'lit/directives/range.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { asNumber, first, last } from '../common/util.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
+  simulatePointerEnter,
+  simulatePointerLeave,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import IgcResizeComponent from './resize-element.js';
+import IgcResizeContainerComponent, {
+  type IgcResizeContainerComponentEventMap,
+} from '../resize-container/resize-container.js';
+import type { ResizeCallbackParams } from '../resize-container/types.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
-
-type ResizeCallbackParams = {
-  event: PointerEvent;
-  state: {
-    initial: DOMRect;
-    current: DOMRect;
-    dx: number;
-    dy: number;
-    ghost: HTMLElement | null;
-  };
-};
 
 describe('Tile resize', () => {
   before(() => {
@@ -32,34 +27,26 @@ describe('Tile resize', () => {
   });
 
   let tileManager: IgcTileManagerComponent;
+  let firstTile: IgcTileComponent;
+  let tileManagerStyles: CSSStyleDeclaration;
+  let columnSize: number;
+  let rowSize: number;
 
   function getTiles() {
     return Array.from(tileManager.querySelectorAll(IgcTileComponent.tagName));
   }
 
-  function getTileDOM(tile: IgcTileComponent) {
-    const root = tile.shadowRoot!;
+  function getColumns() {
+    return tileManagerStyles.gridTemplateColumns.split(' ');
+  }
 
-    return {
-      get resizeElement() {
-        return root.querySelector(IgcResizeComponent.tagName)!;
-      },
-      get resizeTrigger() {
-        return this.resizeElement.renderRoot.querySelector<HTMLElement>(
-          '[part="trigger"]'
-        )!;
-      },
-      get resizeGhost() {
-        return this.resizeElement.children.length < 2
-          ? null
-          : (this.resizeElement.children.item(1) as HTMLElement);
-      },
-    };
+  function getRows() {
+    return tileManagerStyles.gridTemplateRows.split(' ');
   }
 
   function createTileManager() {
-    const result = Array.from(range(5)).map(
-      (i) => html`
+    const result = Array.from(range(3)).map((i) => {
+      return html`
         <igc-tile id="tile${i}">
           <igc-tile-header slot="header">
             <h3 slot="title">Tile ${i + 1}</h3>
@@ -69,191 +56,396 @@ describe('Tile resize', () => {
             <p>Content in tile ${i + 1}</p>
           </div>
         </igc-tile>
-      `
-    );
-    return html`<igc-tile-manager>${result}</igc-tile-manager>`;
+      `;
+    });
+
+    return html`<div style="width: 1000px;">
+      <igc-tile-manager .minColumnWidth=${'200px'} .minRowHeight=${'200px'}
+        >${result}</igc-tile-manager
+      >
+    </div>`;
   }
 
   describe('Tile resize behavior', () => {
     beforeEach(async () => {
-      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+      tileManager = (
+        await fixture<IgcTileManagerComponent>(createTileManager())
+      ).querySelector('igc-tile-manager')!;
+      firstTile = first(getTiles());
+      tileManagerStyles = getComputedStyle(
+        tileManager.shadowRoot!.querySelector('[part~="base"]')!
+      );
+
+      const gap = Number.parseFloat(tileManagerStyles.gap);
+
+      columnSize = Number.parseFloat(first(getColumns())) + gap;
+      rowSize = Number.parseFloat(tileManager.minRowHeight!) + gap;
     });
 
     it('should create a ghost element on resize start', async () => {
-      const tileDOM = getTileDOM(first(getTiles()));
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+      await setResizeActiveState(firstTile);
 
-      expect(tileDOM.resizeGhost).to.be.null;
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      expect(DOM.ghostElement).to.be.null;
 
-      expect(tileDOM.resizeGhost).to.exist;
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(DOM.ghostElement).to.not.be.null;
       expect(eventSpy).calledWith('igcResizeStart');
     });
 
     it('should update ghost element styles during pointer move', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
-      const tileRect = tile.getBoundingClientRect();
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+      await setResizeActiveState(firstTile);
 
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+
+      const tileRect = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResizeStart');
-      expect(tileDOM.resizeGhost).to.exist;
-      expect(tileRect).to.eql(tileDOM.resizeGhost!.getBoundingClientRect());
+      expect(DOM.ghostElement.getBoundingClientRect()).to.eql(tileRect);
 
-      simulatePointerMove(tileDOM.resizeTrigger, {
-        clientX: (tileRect.x + tileRect.width) * 2,
-        clientY: (tileRect.y + tileRect.height) * 2,
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: tileRect.right * 2,
+        clientY: tileRect.bottom * 2,
       });
-      await elementUpdated(tileDOM.resizeElement);
+      await elementUpdated(DOM.resizeElement);
 
-      const resizeCall = eventSpy.getCall(1);
-      expect(resizeCall).to.exist;
-      expect(resizeCall.args[0]).to.equal('igcResize');
+      const state = getResizeEventState(eventSpy);
 
-      const { detail } = resizeCall
-        .args[1] as CustomEvent<ResizeCallbackParams>;
-      expect(detail).to.not.be.null;
-      expect(detail.event).to.be.an.instanceOf(PointerEvent);
-      expect(detail.state.initial).to.eql(tile.getBoundingClientRect());
-      // FIXME rounding issue here; why?
-      //expect(detail.state.current).to.eql(tileDOM.resizeGhost!.getBoundingClientRect());
-      expect(detail.state.ghost).to.eql(tileDOM.resizeGhost);
+      expect(eventSpy).calledWith('igcResize');
+      expect(state.ghost).to.equal(DOM.ghostElement);
+      expect(state.initial).to.eql(tileRect);
+      // FIXME: Investigate why the the delta is so great
+      assertRectsAreEqual(
+        state.current,
+        DOM.ghostElement.getBoundingClientRect()
+      );
     });
 
-    it('should set the styles on the tile and remove the ghost element on resize end', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
-      const tileRect = tile.getBoundingClientRect();
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+    it('Should correctly resize column with auto grid', async () => {
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(DOM.container);
 
       expect(eventSpy).calledWith('igcResizeStart');
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
 
-      simulatePointerMove(tileDOM.resizeTrigger, {
-        clientX: (tileRect.x + tileRect.width) * 2,
-        clientY: (tileRect.y + tileRect.height) * 2,
+      simulatePointerMove(DOM.adorners.side, {
+        clientX: columnSize * 2,
       });
-      await elementUpdated(tileDOM.resizeElement);
+
+      await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResize');
 
-      simulateLostPointerCapture(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(DOM.resizeElement);
 
-      const resizeCall = eventSpy.getCall(2);
-      expect(resizeCall).to.exist;
-      expect(resizeCall.args[0]).to.equal('igcResizeEnd');
+      expect(eventSpy).calledWith('igcResizeEnd');
+      expect(DOM.ghostElement).to.be.null;
 
-      const { detail } = resizeCall
-        .args[1] as CustomEvent<ResizeCallbackParams>;
-      expect(detail).to.not.be.null;
-      expect(detail.event).to.be.an.instanceOf(PointerEvent);
-      expect(detail.state.initial).to.eql(tileRect); // Should the initial be the current of resizeMove i.e. the updated tile?
-      // FIXME
-      //expect(detail.state.ghost).to.eql(tileDOM.resizeGhost); // Should the detail.state.ghost be null here
-      expect(tileDOM.resizeGhost).to.be.null;
-      expect(tile.getBoundingClientRect().width).to.be.greaterThan(
-        tileRect.width
-      );
-      expect(tile.getBoundingClientRect().height).to.be.greaterThan(
-        tileRect.height
-      );
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 2');
+    });
+
+    it('Should correctly create/remove implicit rows and resize row with auto grid', async () => {
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(DOM.container);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
+      expect(getColumns().length).to.eql(4);
+      expect(getRows().length).to.eql(1);
+
+      simulatePointerMove(DOM.adorners.side, {
+        clientX: columnSize * 3,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 4');
+      expect(getRows().length).to.eql(2);
+      expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 1');
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(DOM.container);
+
+      simulatePointerMove(DOM.adorners.bottom, {
+        clientY: rowSize * 2,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 2');
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(DOM.container);
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: columnSize * 2 * -1,
+        clientY: rowSize * 2 * -1,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getRows().length).to.eql(1);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
+      expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 1');
+    });
+
+    it('Should correctly set columnCount', async () => {
+      await setResizeActiveState(firstTile);
+
+      expect(getColumns().length).to.eql(4);
+
+      tileManager.columnCount = 10;
+      await elementUpdated(tileManager);
+
+      expect(getColumns().length).to.eql(10);
+    });
+
+    it('Should cap resizing to max col if greater than', async () => {
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+
+      tileManager.columnCount = 10;
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(DOM.container);
+
+      simulatePointerMove(DOM.adorners.side, {
+        clientX: columnSize * 20,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
+    });
+
+    // REVIEW
+    xit('Should initialize tile span as columnCount if it is greater than columnCount', async () => {
+      await setResizeActiveState(firstTile);
+
+      tileManager.columnCount = 10;
+      await elementUpdated(tileManager);
+
+      firstTile.colSpan = 15;
+      await elementUpdated(firstTile);
+
+      // REVIEW once we decide how to handle the scenario where colSpan is greater than column count
+      // currently 0px columns are added to cover the difference
+      expect(getColumns().length).to.eql(15);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 15');
+    });
+
+    it('Should maintain column position on resize when colStart is set', async () => {
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+
+      tileManager.columnCount = 5;
+      await elementUpdated(tileManager);
+
+      firstTile.colStart = 2;
+      await elementUpdated(firstTile);
+
+      simulatePointerDown(DOM.adorners.side);
+      await elementUpdated(DOM.container);
+
+      simulatePointerMove(DOM.adorners.side, {
+        clientX: columnSize * 3,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.side);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('2 / span 4');
+    });
+
+    it('Should maintain row position on resize when rowStart is set', async () => {
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+
+      firstTile.rowStart = 2;
+
+      const secondTile = getTiles()[1];
+      secondTile.rowStart = 3;
+
+      await elementUpdated(tileManager);
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(DOM.container);
+
+      simulatePointerMove(DOM.adorners.bottom, {
+        clientY: columnSize * 2,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(DOM.resizeElement);
+
+      expect(getComputedStyle(firstTile).gridRow).to.eql('2 / span 2');
     });
 
     it('should cancel resize by pressing ESC key', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
-      const tileRect = tile.getBoundingClientRect();
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+      await setResizeActiveState(firstTile);
 
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+
+      const tileRect = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResizeStart');
 
-      simulatePointerMove(tileDOM.resizeTrigger, {
-        clientX: (tileRect.x + tileRect.width) * 2,
-        clientY: (tileRect.y + tileRect.height) * 2,
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: tileRect.right * 2,
+        clientY: tileRect.bottom * 2,
       });
-      await elementUpdated(tileDOM.resizeElement);
+      await elementUpdated(DOM.resizeElement);
 
-      expect(tileDOM.resizeGhost).not.to.be.null;
+      expect(DOM.ghostElement).not.to.be.null;
 
-      simulateKeyboard(tileDOM.resizeElement, escapeKey);
-      await elementUpdated(tileDOM.resizeElement);
+      simulateKeyboard(DOM.resizeElement, escapeKey);
+      await elementUpdated(DOM.resizeElement);
 
-      expect(tileDOM.resizeGhost).to.be.null;
-      expect(tile.getBoundingClientRect()).to.eql(tileRect);
+      expect(eventSpy).calledWith('igcResizeCancel');
+      expect(DOM.ghostElement).to.be.null;
+      assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
     });
 
     it('should not have resizeElement when `disableResize` is true', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
+      await setResizeActiveState(firstTile);
 
-      expect(tileDOM.resizeElement).to.exist;
+      const DOM = getTileDOM(firstTile);
 
-      tile.disableResize = true;
-      await elementUpdated(tile);
+      expect(DOM.resizeElement).not.to.be.null;
 
-      expect(tileDOM.resizeElement).to.not.exist;
+      firstTile.disableResize = true;
+      await elementUpdated(firstTile);
+
+      expect(DOM.resizeElement).to.be.null;
     });
 
     it('should update tile parts on resizing', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
-      const tileRect = tile.getBoundingClientRect();
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
+      await setResizeActiveState(firstTile);
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      const tileRect = firstTile.getBoundingClientRect();
 
-      expect(tile.getAttribute('part')).to.be.null;
-      expect(eventSpy).calledWith('igcResizeStart');
-
-      simulatePointerMove(tileDOM.resizeTrigger, {
-        clientX: (tileRect.x + tileRect.width) * 2,
-        clientY: (tileRect.y + tileRect.height) * 2,
-      });
-      await elementUpdated(tileDOM.resizeElement);
-
-      expect(eventSpy).calledWith('igcResize');
-      expect(tile.getAttribute('part')).to.include('resizing');
-    });
-
-    it('tile should not span more columns than the column count', async () => {
-      const tile = first(getTiles());
-      const tileDOM = getTileDOM(tile);
-      const eventSpy = spy(tileDOM.resizeElement, 'emitEvent');
-
-      tileManager.columnCount = 3;
-
-      simulatePointerDown(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResizeStart');
+      expect(firstTile.part.length).to.equal(0);
 
-      simulatePointerMove(tileDOM.resizeTrigger, {
-        clientX: 3000,
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: tileRect.right * 2,
+        clientY: tileRect.bottom * 2,
       });
-      await elementUpdated(tileDOM.resizeElement);
+      await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResize');
-
-      simulateLostPointerCapture(tileDOM.resizeTrigger);
-      await elementUpdated(tileDOM.resizeElement);
-
-      expect(eventSpy).calledWith('igcResizeEnd');
-
-      expect(
-        Number.parseFloat(getComputedStyle(tile).gridColumn.split(' ')[1])
-      ).to.equal(tileManager.columnCount);
+      const resizeElementBaseWrapper =
+        DOM.resizeElement.querySelector('[part~="base"]')!;
+      expect(resizeElementBaseWrapper.part.contains('resizing')).to.be.true;
     });
   });
 });
+
+function getTileDOM(tile: IgcTileComponent) {
+  const root = tile.renderRoot;
+
+  return {
+    get resizeElement() {
+      return root.querySelector(IgcResizeContainerComponent.tagName)!;
+    },
+  };
+}
+
+function getResizeContainerDOM(tile: IgcTileComponent) {
+  const resizeContainer = tile.renderRoot.querySelector(
+    IgcResizeContainerComponent.tagName
+  )!;
+  const root = resizeContainer.renderRoot;
+
+  return {
+    adorners: {
+      get side() {
+        return root.querySelector<HTMLElement>('[part="trigger-side"]')!;
+      },
+      get corner() {
+        return root.querySelector<HTMLElement>('[part="trigger"]')!;
+      },
+      get bottom() {
+        return root.querySelector<HTMLElement>('[part="trigger-bottom"]')!;
+      },
+    },
+    get container() {
+      return root.querySelector<HTMLElement>('[part~="resize-base"]')!;
+    },
+    get resizeElement() {
+      return resizeContainer;
+    },
+    /** The ghost element when in deferred mode */
+    get ghostElement() {
+      return resizeContainer.querySelector<HTMLElement>('[data-resize-ghost]')!;
+    },
+  };
+}
+
+async function setResizeActiveState(tile: IgcTileComponent, state = true) {
+  const { container, resizeElement } = getResizeContainerDOM(tile);
+  state ? simulatePointerEnter(container) : simulatePointerLeave(container);
+  await elementUpdated(resizeElement);
+}
+
+function getResizeEventState(
+  eventSpy: Sinon.SinonSpy<
+    [
+      type: keyof IgcResizeContainerComponentEventMap,
+      eventInitDict?: CustomEventInit<unknown> | undefined,
+    ],
+    boolean
+  >
+): ResizeCallbackParams['state'] {
+  return eventSpy.lastCall.lastArg.detail.state;
+}
+
+function assertRectsAreEqual(a: DOMRect, b: DOMRect, delta = 0.01) {
+  const first: Record<string, number> = a.toJSON();
+  const second: Record<string, number> = b.toJSON();
+
+  for (const key of Object.keys(first)) {
+    expect(first[key]).approximately(second[key], delta);
+  }
+}
