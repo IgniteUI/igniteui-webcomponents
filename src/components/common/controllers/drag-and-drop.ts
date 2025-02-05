@@ -8,6 +8,8 @@ import { findElementFromEventPath } from '../util.js';
 
 type DragDropCallback = () => unknown;
 
+type DragEnterCallback = (target: Element) => unknown;
+
 type DragDropConfig = {
   /** Whether the drag and drop feature is enabled for the current host. */
   enabled?: boolean;
@@ -53,6 +55,13 @@ type DragDropConfig = {
   dragStart?: DragDropCallback;
   /** Callback invoked while dragging the target element.  */
   dragMove?: DragDropCallback;
+
+  dragEnter?: DragEnterCallback;
+
+  dragLeave?: DragEnterCallback;
+
+  dragOver?: DragEnterCallback;
+
   /** Callback invoked during a drop operation. */
   dragEnd?: DragDropCallback;
   /** Callback invoked when a drag and drop is cancelled */
@@ -66,9 +75,11 @@ class DragDropController implements ReactiveController {
   private _config: DragDropConfig = {
     enabled: true,
     mode: 'deferred',
+    snapToCursor: false,
   };
 
   private _dragOffset = { dx: 0, dy: 0 };
+  private _previousMatch!: Element | null;
 
   private _id = -1;
   private _hasPointerCapture = false;
@@ -171,7 +182,34 @@ class DragDropController implements ReactiveController {
     }
   }
 
-  private _updateCoordinates(x: number, y: number) {
+  // REVIEW
+  private _updateMatcher(event: PointerEvent) {
+    if (!this._config.matchTarget) {
+      return;
+    }
+
+    const match = document
+      .elementsFromPoint(event.clientX, event.clientY)
+      .find((value) => this._config.matchTarget!.call(this._host, value));
+
+    if (match && !this._previousMatch) {
+      this._previousMatch = match;
+      this._config.dragEnter?.call(this._host, this._previousMatch);
+      return;
+    }
+
+    if (!match && this._previousMatch) {
+      this._config.dragLeave?.call(this._host, this._previousMatch);
+      this._previousMatch = null;
+      return;
+    }
+
+    if (match && match === this._previousMatch) {
+      this._config.dragOver?.call(this._host, this._previousMatch);
+    }
+  }
+
+  private _setPosition(x: number, y: number) {
     const { top, left } = this._layer.getBoundingClientRect();
     const posX = this._hasSnapping ? x - left : x - left + this._dragOffset.dx;
     const posY = this._hasSnapping ? y - top : y - top + this._dragOffset.dy;
@@ -179,12 +217,12 @@ class DragDropController implements ReactiveController {
     this._dragItem.style.transform = `translate(${posX}px,${posY}px)`;
   }
 
-  private _createDragGhost(x: number, y: number): void {
+  private _createDragGhost({ clientX, clientY }: PointerEvent): void {
     this._ghost = this._config.ghost
       ? this._config.ghost.call(this._host)
       : createDefaultDragGhost(this._host.getBoundingClientRect());
 
-    this._updateCoordinates(x, y);
+    this._setPosition(clientX, clientY);
     this._layer.append(this._ghost);
   }
 
@@ -211,12 +249,9 @@ class DragDropController implements ReactiveController {
     event.preventDefault();
 
     this._setInitialState(event);
-    this._createDragGhost(event.clientX, event.clientY);
+    this._createDragGhost(event);
 
-    if (this._config.dragStart) {
-      this._config.dragStart.call(this._host);
-    }
-
+    this._config.dragStart?.call(this._host);
     this._setPointerCaptureState(true);
   }
 
@@ -225,32 +260,14 @@ class DragDropController implements ReactiveController {
       return;
     }
 
-    if (this._config.dragMove) {
-      this._config.dragMove.call(this._host);
-    }
+    this._updateMatcher(event);
+    this._config.dragMove?.call(this._host);
 
-    // REVIEW: additional event implementation here
-    // if (this._config.matchTarget) {
-    //   const dropTarget = document
-    //     .elementsFromPoint(event.clientX, event.clientY)
-    //     .find((e) =>
-    //       this._config.matchTarget!.call(this._host, e)
-    //     ) as HTMLElement;
-
-    //   if (this._dropTarget !== dropTarget) {
-    //     this._dropTarget = dropTarget;
-    //     this._config.dragOver?.call(this._host, this._dropTarget);
-    //   }
-    // }
-
-    this._updateCoordinates(event.clientX, event.clientY);
+    this._setPosition(event.clientX, event.clientY);
   }
 
   private _handlePointerEnd(_: PointerEvent): void {
-    if (this._config.dragEnd) {
-      this._config.dragEnd.call(this._host);
-    }
-
+    this._config.dragEnd?.call(this._host);
     this.dispose();
   }
 
@@ -284,6 +301,7 @@ class DragDropController implements ReactiveController {
 
   /** Stops any drag operation and cleans up state and additional elements. */
   public dispose(): void {
+    this._previousMatch = null;
     this._removeGhost();
     this._setPointerCaptureState(false);
   }
@@ -309,7 +327,7 @@ function createDefaultDragGhost(rect: DOMRect): HTMLElement {
     top: rect.y,
     width: rect.width,
     height: rect.height,
-    zIndex: 1e3,
+    zIndex: 1000,
     background: 'gold',
   });
 

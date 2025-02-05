@@ -78,10 +78,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _dragController = addDragDropController(this, {
     skip: this._skipDrag,
+    matchTarget: this._match,
     layer: () => this._tileManager!.overlay.value!,
     ghost: this._createDragGhost,
     dragStart: this._handleDragStart,
     dragMove: this._handleDragMove,
+    dragEnter: this._handleDragEnter,
+    dragLeave: this._handleDragLeave,
+    dragOver: this._handleDragOver,
     dragEnd: this._handleDragEnd,
   });
 
@@ -352,6 +356,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _handleDragMove() {}
 
+  private _handleDragEnter(tile: Element) {
+    // console.log('Entering:', tile);
+    Object.assign(tile, { _hasDragOver: true });
+  }
+
+  private _handleDragLeave(tile: Element) {
+    // console.log('Leaving:', tile);
+    Object.assign(tile, { _hasDragOver: false });
+  }
+
+  private _handleDragOver(_: Element) {
+    // console.log('DragOver');
+  }
+
   private _handleDragEnd() {
     this.emitEvent('tileDragEnd', { detail: this });
     this._setDragState(false);
@@ -367,13 +385,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return false;
   }
 
-  private _createDragGhost() {
+  private _match(element: Element) {
+    return element !== this && /^igc-tile$/i.test(element.tagName);
+  }
+
+  private _createDragGhost(): HTMLElement {
     const ghost = this.cloneNode(true) as HTMLElement;
     const { width, height } = this.getBoundingClientRect();
 
-    ghost.inert = true;
-    ghost.style.viewTransitionName = '';
-    ghost.id = '';
+    Object.assign(ghost, {
+      inert: true,
+      id: '',
+    });
 
     Object.assign(ghost.style, {
       position: 'absolute',
@@ -386,6 +409,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       border: '1px solid var(--ghost-border)',
       borderRadius: 'var(--border-radius)',
       zIndex: 1000,
+      viewTransitionName: '',
     });
 
     return ghost;
