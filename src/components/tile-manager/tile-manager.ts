@@ -1,9 +1,13 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { tileManagerContext } from '../common/context.js';
+import {
+  type TileManagerContext,
+  tileManagerContext,
+} from '../common/context.js';
 import {
   type MutationControllerParams,
   createMutationController,
@@ -62,27 +66,27 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _draggedItem: IgcTileComponent | null = null;
   private _lastSwapTile: IgcTileComponent | null = null;
 
+  private _grid = createRef<HTMLElement>();
+
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
 
-  private _context = new ContextProvider(this, {
-    context: tileManagerContext,
-    initialValue: {
+  private _createContext(): TileManagerContext {
+    return {
       instance: this,
+      grid: this._grid,
       draggedItem: this._draggedItem,
       lastSwapTile: this._lastSwapTile,
-    },
+    };
+  }
+
+  private _context = new ContextProvider(this, {
+    context: tileManagerContext,
+    initialValue: this._createContext(),
   });
 
-  private _setManagerContext() {
-    this._context.setValue(
-      {
-        instance: this,
-        draggedItem: this._draggedItem,
-        lastSwapTile: this._lastSwapTile,
-      },
-      true
-    );
+  private _setManagerContext(): void {
+    this._context.setValue(this._createContext(), true);
   }
 
   private _observerCallback({
@@ -255,6 +259,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
     return html`
       <div
+        ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
         part=${parts}
         @tileDragStart=${this.handleTileDragStart}

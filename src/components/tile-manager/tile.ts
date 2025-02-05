@@ -2,6 +2,7 @@ import { ContextProvider } from '@lit/context';
 import { LitElement, type PropertyValues, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type TileContext,
@@ -13,16 +14,16 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import IgcResizeContainerComponent from '../resize-container/resize-container.js';
+import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
 import { addTileDragAndDrop } from './controllers/tile-dnd.js';
 import { isSameTile, swapTiles } from './position.js';
-import type { ResizeCallbackParams } from './resize-controller.js';
-import IgcResizeComponent from './resize-element.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
 import IgcTileHeaderComponent from './tile-header.js';
-import { ResizeUtil } from './tile-util.js';
+import { createTileGhost, createTileResizeState } from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -65,7 +66,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     registerComponent(
       IgcTileComponent,
       IgcTileHeaderComponent,
-      IgcResizeComponent
+      IgcResizeContainerComponent
     );
   }
 
@@ -91,25 +92,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _maximized = false;
-  private _initialPointerX: number | null = null;
-  private _initialPointerY: number | null = null;
   private _dragCounter = 0;
   private _dragGhost: HTMLElement | null = null;
   private _dragImage: HTMLElement | null = null;
-  private _cachedStyles: {
-    background?: string;
-    border?: string;
-    borderRadius?: string;
-    columnCount?: number;
-    gap?: number;
-    initialTop?: number;
-    minHeight?: number;
-    minWidth?: number;
-    tileBackground?: string;
-    tileBorder?: string;
-    rowHeights?: number[];
-  } = {};
+  private _resizeState = createTileResizeState();
 
   // Tile manager context properties and helpers
 
@@ -117,6 +103,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private get _tileManager() {
     return this._managerContext.value;
+  }
+
+  private get _cssContainer() {
+    return this._tileManager?.grid.value!;
   }
 
   private _createContext(): TileContext {
@@ -150,6 +140,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
+
+  @state()
+  private _maximized = false;
 
   @state()
   private _isDragging = false;
@@ -234,7 +227,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  public get maximized() {
+  public get maximized(): boolean {
     return this._maximized;
   }
 
@@ -248,7 +241,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._dragController.enabled = !this._disableDrag;
   }
 
-  public get disableDrag() {
+  public get disableDrag(): boolean {
     return this._disableDrag;
   }
 
@@ -266,31 +259,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
    */
   @property({ type: Number })
   public set position(value: number) {
-    this._position = Number(value);
-    this.style.order = `${this._position}`;
+    this._position = asNumber(value);
+    this.style.order = this._position.toString();
   }
 
-  public get position() {
+  public get position(): number {
     return this._position;
   }
 
-  protected get gridColumnWidth(): number {
-    const tileManager =
-      this._tileManager!.instance!.shadowRoot!.querySelector("[part~='base']")!;
-
-    const gridTemplateColumns = getComputedStyle(tileManager).getPropertyValue(
-      'grid-template-columns'
-    );
-    const firstColumnWidth = Number.parseFloat(
-      gridTemplateColumns.split(' ')[0]
-    );
-
-    return firstColumnWidth || this._cachedStyles.minWidth!;
-  }
-
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+
+    // REVIEW: View transitions
+    this.style.viewTransitionName = `tile-transition-${this.tileId}`;
   }
 
   protected override updated(changedProperties: PropertyValues) {
@@ -298,7 +281,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     const parts = partNameMap({
       dragging: this._isDragging,
-      resizing: this._isResizing,
     });
 
     if (parts.trim()) {
@@ -321,7 +303,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
     const compStyles = getComputedStyle(this);
-    this.cacheStyles();
 
     this._dragImage = this.cloneNode(true) as HTMLElement;
     Object.assign(this._dragImage.style, {
@@ -330,9 +311,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
       position: 'absolute',
       top: '-99999px',
       left: '-99999px',
-      background: this._cachedStyles.tileBackground,
-      border: `1px solid ${this._cachedStyles.tileBorder}`,
-      borderRadius: this._cachedStyles.borderRadius,
+      background: 'var(--tile-background)',
+      border: `1px solid ${'var(--hover-border-color)'}`,
+      borderRadius: 'var(--border-radius)',
       overflow: 'hidden',
     });
 
@@ -346,7 +327,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.assignDragImage(e);
 
     this.emitEvent('tileDragStart', { detail: this });
-    this._dragGhost = this.ghostFactory();
+    this._dragGhost = createTileGhost();
     this._dragGhost.inert = true;
 
     if (this._dragGhost) {
@@ -438,186 +419,54 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return outsideBoundaries;
   }
 
-  private cacheStyles() {
-    //use util
-    const tileComputedStyle = getComputedStyle(this);
-    const parentWrapper =
-      this.parentElement!.shadowRoot!.querySelector('[part="base"]')!;
-    const tileManagerComputedStyle = getComputedStyle(parentWrapper);
-
-    const gap =
-      Number.parseFloat(
-        tileManagerComputedStyle.getPropertyValue('grid-gap')
-      ) || 0;
-    const rowHeights = tileManagerComputedStyle.gridTemplateRows
-      .split(' ')
-      .map((height) => Number.parseFloat(height.trim()));
-
-    this._cachedStyles = {
-      columnCount: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-column-count')
-      ),
-      background: tileComputedStyle.getPropertyValue(
-        '--placeholder-background'
-      ),
-      tileBackground: tileComputedStyle.getPropertyValue('--tile-background'),
-      tileBorder: tileComputedStyle.getPropertyValue('--hover-border-color'),
-      border: tileComputedStyle.getPropertyValue('--ghost-border'),
-      borderRadius: tileComputedStyle.getPropertyValue('--border-radius'),
-      minWidth: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-min-col-width')
-      ),
-      minHeight: Number.parseFloat(
-        tileComputedStyle.getPropertyValue('--ig-min-row-height')
-      ),
-      initialTop: parentWrapper.getBoundingClientRect().top,
-      rowHeights,
-      gap,
-    };
+  private _setResizeState(state = true) {
+    this._isResizing = state;
+    this.style.zIndex = state ? '1' : '';
   }
 
-  private _handleResizeStart(event: CustomEvent<ResizeCallbackParams>) {
-    const ghostElement = event.detail.state.ghost;
-    this._initialPointerX = event.detail.event.clientX;
-    this._initialPointerY = event.detail.event.clientY;
-
-    if (ghostElement) {
-      ghostElement.style.minWidth = `${this._cachedStyles.minWidth!}px`;
-      ghostElement.style.minHeight = `${this._cachedStyles.minHeight!}px`;
-    }
+  private _handleResizeStart({
+    detail: { state },
+  }: CustomEvent<ResizeCallbackParams>) {
+    this._resizeState.updateState(state.initial, this, this._cssContainer);
+    this._setResizeState();
   }
 
-  private _handleResize(event: CustomEvent<ResizeCallbackParams>) {
-    this._isResizing = true;
+  private _handleResize({
+    detail: { state },
+  }: CustomEvent<ResizeCallbackParams>) {
+    const trigger = state.trigger!;
 
-    const ghostElement = event.detail.state.current;
-    const rowHeights = this._cachedStyles.rowHeights!;
-
-    if (ghostElement) {
-      const deltaX = event.detail.event.clientX - this._initialPointerX!;
-      const deltaY = event.detail.event.clientY - this._initialPointerY!;
-
-      const snappedWidth = ResizeUtil.calculateSnappedWidth(
-        deltaX,
-        event.detail.state.initial.width,
-        this._cachedStyles.gap!,
-        this.gridColumnWidth
-      );
-
-      const actualTop = this._cachedStyles.initialTop! + window.scrollY;
-      const initialTop = event.detail.state.initial.top + window.scrollY;
-      const actualBottom = event.detail.state.initial.bottom + window.scrollY;
-
-      const startingY = actualBottom - actualTop;
-
-      const snappedHeight = ResizeUtil.calculateSnappedHeight(
-        deltaY,
-        startingY,
-        rowHeights,
-        this._cachedStyles.gap!,
-        initialTop,
-        event.detail.state.initial.height
-      );
-
-      ghostElement.width = snappedWidth;
-      ghostElement.height = snappedHeight;
-    }
-  }
-
-  private _handleResizeEnd(event: CustomEvent<ResizeCallbackParams>) {
-    const state = event.detail.state;
-    const height = state.current.height;
-    let width = state.current.width;
-
-    if (width > this.parentElement!.getBoundingClientRect().width) {
-      width =
-        this.parentElement!.getBoundingClientRect().width - state.current.x;
-    }
-
-    let colSpan = Math.max(
-      1,
-      Math.round(width / (this.gridColumnWidth + this._cachedStyles.gap!))
+    const isWidthResize = trigger.matches('[part*="side"], [part="trigger"]');
+    const isHeightResize = trigger.matches(
+      '[part*="bottom"], [part="trigger"]'
     );
-    colSpan = this._cachedStyles.columnCount
-      ? Math.min(colSpan, this._cachedStyles.columnCount!)
-      : colSpan;
 
-    const initialTop = event.detail.state.initial.top + window.scrollY;
-    const startRowIndex = ResizeUtil.calculate(
-      initialTop,
-      this._cachedStyles.rowHeights!,
-      this._cachedStyles.gap!
-    ).targetIndex;
-
-    const initialSpan = this._calculateRowSpan(
-      state.initial.height,
-      startRowIndex
-    );
-    const currentSpan = this._calculateRowSpan(height, startRowIndex);
-
-    const deltaY = event.detail.event.clientY - this._initialPointerY!;
-    const rowSpan =
-      deltaY > 0
-        ? Math.max(initialSpan, currentSpan)
-        : Math.min(initialSpan, currentSpan);
-
-    // REVIEW
-    Object.assign(state.ghost!.style, {
-      width: '',
-      height: '',
-    });
-
-    this.style.setProperty('grid-row', `span ${rowSpan}`);
-    this.style.setProperty('grid-column', `span ${colSpan}`);
-
-    this._isResizing = false;
-    this._initialPointerX = null;
-    this._initialPointerY = null;
-    this._cachedStyles = {};
-  }
-
-  private _calculateRowSpan(height: number, startRowIndex: number): number {
-    const gap = this._cachedStyles.gap!;
-    const rowHeights = this._cachedStyles.rowHeights!;
-    let accumulatedHeight = 0;
-
-    for (let i = 0; i < rowHeights.length; i++) {
-      const rowHeight = rowHeights[startRowIndex + i];
-      const rowGap = startRowIndex + i > 0 ? gap : 0;
-      const halfwayThreshold = accumulatedHeight + rowHeight / 2 + rowGap;
-
-      accumulatedHeight += rowHeight + rowGap;
-
-      if (height >= halfwayThreshold && height <= accumulatedHeight) {
-        return i + 1;
-      }
+    if (isWidthResize) {
+      state.current.width = this._resizeState.calculateSnappedWidth(state);
     }
 
-    // Default to the first row
-    return 1;
+    if (isHeightResize) {
+      state.current.height = this._resizeState.calculateSnappedHeight(state);
+    }
   }
 
-  // REVIEW
-  protected ghostFactory = () => {
-    this.cacheStyles();
+  private _handleResizeEnd({
+    detail: { state },
+  }: CustomEvent<ResizeCallbackParams>) {
+    const { column, row } = this._resizeState.getResizedPosition(state.current);
 
-    const ghost = document.createElement('div');
-    Object.assign(ghost.style, {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      zIndex: 1000,
-      background: this._cachedStyles.background,
-      border: `1px solid ${this._cachedStyles.border}`,
-      borderRadius: this._cachedStyles.borderRadius,
-      width: '100%',
-      height: '100%',
-      gridRow: '',
-      gridColumn: '',
-    });
+    state.commit = () =>
+      startViewTransition(() => {
+        this.style.setProperty('grid-row', row);
+        this.style.setProperty('grid-column', column);
+      });
 
-    return ghost;
-  };
+    this._setResizeState(false);
+  }
+
+  private _handleResizeCancel() {
+    this._setResizeState(false);
+  }
 
   protected renderContent() {
     const parts = partNameMap({
@@ -657,11 +506,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : html`
           <igc-resize
             part="resize"
-            .ghostFactory=${this.ghostFactory}
+            .ghostFactory=${createTileGhost}
             mode="deferred"
             @igcResizeStart=${this._handleResizeStart}
             @igcResize=${this._handleResize}
             @igcResizeEnd=${this._handleResizeEnd}
+            @igcResizeCancel=${this._handleResizeCancel}
           >
             ${this.renderContent()}
           </igc-resize>
