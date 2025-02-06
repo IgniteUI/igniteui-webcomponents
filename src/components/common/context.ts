@@ -12,9 +12,6 @@ export type TileManagerContext = {
   grid: Ref<HTMLElement>;
   /** The internal igc-tile-manager overlay container. */
   overlay: Ref<HTMLElement>;
-  /** The igc-tile element being dragged. */
-  draggedItem: IgcTileComponent | null;
-  lastSwapTile: IgcTileComponent | null;
 };
 
 export type TileContext = {

@@ -1,7 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
@@ -53,63 +53,45 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
+  // #region Internal state
+
   private _internalStyles: StyleInfo = {};
-
   private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
-
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
   private _minRowHeight?: string;
-  private _draggedItem: IgcTileComponent | null = null;
-  private _lastSwapTile: IgcTileComponent | null = null;
-
-  private _grid = createRef<HTMLElement>();
-
-  private _overlay: Ref<HTMLElement> = createRef();
 
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
 
-  private _createContext(): TileManagerContext {
-    return {
-      instance: this,
-      grid: this._grid,
-      overlay: this._overlay,
-      draggedItem: this._draggedItem,
-      lastSwapTile: this._lastSwapTile,
-    };
-  }
+  private _grid = createRef<HTMLElement>();
+  private _overlay = createRef<HTMLElement>();
+
+  // #endregion
+
+  // #region Context helpers
 
   private _context = new ContextProvider(this, {
     context: tileManagerContext,
     initialValue: this._createContext(),
   });
 
+  private _createContext(): TileManagerContext {
+    return {
+      instance: this,
+      grid: this._grid,
+      overlay: this._overlay,
+    };
+  }
+
   private _setManagerContext(): void {
     this._context.setValue(this._createContext(), true);
   }
 
-  private _observerCallback({
-    changes: { added, removed },
-  }: MutationControllerParams<IgcTileComponent>) {
-    const ownAdded = added.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
-    const ownRemoved = removed.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
+  // #endregion
 
-    for (const remove of ownRemoved) {
-      this._tilesState.remove(remove.node);
-    }
-
-    for (const added of ownAdded) {
-      this._tilesState.add(added.node);
-    }
-
-    this._tilesState.assignTiles();
-  }
+  // #region Properties and Attributes
 
   /**
    * Whether drag and drop operations are enabled.
@@ -208,6 +190,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     return this._tilesState.tiles;
   }
 
+  // #endregion
+
   constructor() {
     super();
 
@@ -226,18 +210,35 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._setManagerContext();
   }
 
-  private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
+  private _observerCallback({
+    changes: { added, removed },
+  }: MutationControllerParams<IgcTileComponent>) {
+    const ownAdded = added.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
+    const ownRemoved = removed.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
+
+    for (const remove of ownRemoved) {
+      this._tilesState.remove(remove.node);
+    }
+
+    for (const added of ownAdded) {
+      this._tilesState.add(added.node);
+    }
+
+    this._tilesState.assignTiles();
+  }
+
+  private _handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
     this.emitEvent('igcTileDragStarted', { detail });
-    this._draggedItem = detail;
     this._setManagerContext();
   }
 
-  private handleTileDragEnd() {
-    if (this._draggedItem) {
-      this._draggedItem = null;
-      this._setManagerContext();
-    }
-  }
+  private _handleTileDragEnd() {}
+
+  // #region Public API
 
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
@@ -246,6 +247,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   public loadLayout(data: string): void {
     this._serializer.loadFromJSON(data);
   }
+
+  // #endregion
 
   protected _renderOverlay() {
     return html`<div ${ref(this._overlay)} part="overlay"></div>`;
@@ -263,8 +266,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
         part=${parts}
-        @tileDragStart=${this.handleTileDragStart}
-        @tileDragEnd=${this.handleTileDragEnd}
+        @tileDragStart=${this._handleTileDragStart}
+        @tileDragEnd=${this._handleTileDragEnd}
       >
         <slot></slot>
       </div>

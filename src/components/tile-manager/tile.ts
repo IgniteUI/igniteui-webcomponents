@@ -30,6 +30,7 @@ import {
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
+import { swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
@@ -342,18 +343,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleDragMove() {}
 
   private _handleDragEnter(tile: Element) {
-    // console.log('Entering:', tile);
     Object.assign(tile, { _hasDragOver: true });
+
+    // REVIEW: Obviously not the correct place, this is just to test the feel and performance
+    startViewTransition(() => {
+      swapTiles(this, tile as IgcTileComponent);
+    });
   }
 
   private _handleDragLeave(tile: Element) {
-    // console.log('Leaving:', tile);
     Object.assign(tile, { _hasDragOver: false });
   }
 
-  private _handleDragOver(_: Element) {
-    // console.log('DragOver');
-  }
+  private _handleDragOver(_: Element) {}
 
   private _handleDragEnd() {
     this.emitEvent('tileDragEnd', { detail: this });

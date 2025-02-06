@@ -310,6 +310,7 @@ export function createTileGhost(): HTMLElement {
 
   Object.assign(element.style, {
     position: 'absolute',
+    contain: 'strict',
     top: 0,
     left: 0,
     zIndex: 1000,
