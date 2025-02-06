@@ -16,6 +16,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, partNameMap } from '../common/util.js';
+import type {
+  TileManagerDragAction,
+  TileManagerDragMode,
+  TileManagerResizeMode,
+} from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
@@ -56,8 +61,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   // #region Internal state
 
   private _internalStyles: StyleInfo = {};
-  private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
-  private _resizeMode: 'none' | 'hover' | 'always' = 'none';
+  private _dragMode: TileManagerDragMode = 'none';
+  private _resizeMode: TileManagerResizeMode = 'none';
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
@@ -101,12 +106,12 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
    * @default none
    */
   @property({ attribute: 'resize-mode' })
-  public set resizeMode(value: 'none' | 'hover' | 'always') {
+  public set resizeMode(value: TileManagerResizeMode) {
     this._resizeMode = value;
     this._setManagerContext();
   }
 
-  public get resizeMode(): 'none' | 'hover' | 'always' {
+  public get resizeMode(): TileManagerResizeMode {
     return this._resizeMode;
   }
 
@@ -117,12 +122,12 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
    * @default none
    */
   @property({ attribute: 'drag-mode' })
-  public set dragMode(value: 'none' | 'tile-header' | 'tile') {
+  public set dragMode(value: TileManagerDragMode) {
     this._dragMode = value;
     this._setManagerContext();
   }
 
-  public get dragMode(): 'none' | 'tile-header' | 'tile' {
+  public get dragMode(): TileManagerDragMode {
     return this._dragMode;
   }
 
@@ -131,7 +136,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
    * @attr drag-action
    */
   @property({ attribute: 'drag-action' })
-  public dragAction: 'slide' | 'swap' = 'slide';
+  public dragAction: TileManagerDragAction = 'slide';
 
   /**
    * Sets the number of columns for the tile manager.
