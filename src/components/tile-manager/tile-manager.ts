@@ -57,6 +57,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private _internalStyles: StyleInfo = {};
   private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
+  private _resizeMode: 'none' | 'hover' | 'always' = 'none';
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
@@ -92,6 +93,22 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   // #endregion
 
   // #region Properties and Attributes
+
+  /**
+   * Whether resize operations are enabled.
+   *
+   * @attr resize-mode
+   * @default none
+   */
+  @property({ attribute: 'resize-mode' })
+  public set resizeMode(value: 'none' | 'hover' | 'always') {
+    this._resizeMode = value;
+    this._setManagerContext();
+  }
+
+  public get resizeMode(): 'none' | 'hover' | 'always' {
+    return this._resizeMode;
+  }
 
   /**
    * Whether drag and drop operations are enabled.
@@ -169,6 +186,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   /**
    * Sets the gap size of the the tile manager.
+   *
+   * @attr gap
    */
   @property()
   public set gap(value: string | undefined) {
@@ -184,13 +203,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   /**
    * Gets the tiles sorted by their position in the layout.
-   * @attr
+   * @property
    */
   public get tiles() {
     return this._tilesState.tiles;
   }
 
   // #endregion
+
+  // #region Internal API
 
   constructor() {
     super();
@@ -238,6 +259,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   private _handleTileDragEnd() {}
 
+  // #endregion
+
   // #region Public API
 
   public saveLayout(): string {
@@ -249,6 +272,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   }
 
   // #endregion
+
+  // #region Rendering
 
   protected _renderOverlay() {
     return html`<div ${ref(this._overlay)} part="overlay"></div>`;
@@ -273,6 +298,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
       </div>
     `;
   }
+
+  // #endregion
 }
 
 declare global {

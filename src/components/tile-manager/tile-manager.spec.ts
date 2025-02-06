@@ -35,10 +35,6 @@ describe('Tile Manager component', () => {
     );
   }
 
-  // function getTileBaseWrapper(element: IgcTileComponent) {
-  //   return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
-  // }
-
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
@@ -55,11 +51,6 @@ describe('Tile Manager component', () => {
     );
     return html`<igc-tile-manager>${result}</igc-tile-manager>`;
   }
-
-  // function assertTileIsInert(element: IgcTileComponent) {
-  //   expect(element.renderRoot.querySelector<HTMLElement>('#base')!.inert).to.be
-  //     .true;
-  // }
 
   describe('Initialization', () => {
     beforeEach(async () => {
