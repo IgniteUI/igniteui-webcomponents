@@ -91,8 +91,7 @@ describe('Tile Manager component', () => {
       expect(tileManager).dom.to.equal(
         `<igc-tile-manager>
           <igc-tile
-            draggable="true"
-            style="order: 0;"
+            style="view-transition-name: tile-transition-customId-1; order: 0;"
             tile-id="customId-1"
           >
             <igc-tile-header>
@@ -101,8 +100,7 @@ describe('Tile Manager component', () => {
             <p>Content 1</p>
           </igc-tile>
           <igc-tile
-            draggable="true"
-            style="order: 1;"
+            style="view-transition-name: tile-transition-customId-2; order: 1;"
             tile-id="customId-2"
           >
             <igc-tile-header>
@@ -114,7 +112,9 @@ describe('Tile Manager component', () => {
       );
 
       expect(tileManager).shadowDom.to.equal(
-        `<div
+        `
+        <div part="overlay"></div>
+        <div
           part="base"
           style=""
         >
@@ -129,7 +129,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="order: 0;" tile-id="customId-1">
+        `<igc-tile style="view-transition-name: tile-transition-customId-1; order: 0;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>
@@ -138,10 +138,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).shadowDom.to.equal(
-        `<igc-resize
-          mode="deferred"
-          part="resize"
-        >
+        `
           <div
             part="base draggable resizable"
             style="--ig-col-span:1;--ig-row-span:1;"
@@ -151,7 +148,7 @@ describe('Tile Manager component', () => {
               <slot></slot>
             </div>
           </div>
-        </igc-resize>`
+        `
       );
     });
 
