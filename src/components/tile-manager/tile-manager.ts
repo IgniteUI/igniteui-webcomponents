@@ -15,12 +15,8 @@ import {
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  asNumber,
-  findElementFromEventPath,
-  partNameMap,
-} from '../common/util.js';
-import { createTilesState, isSameTile, swapTiles } from './position.js';
+import { asNumber, partNameMap } from '../common/util.js';
+import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
@@ -57,65 +53,85 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     registerComponent(IgcTileManagerComponent, IgcTileComponent);
   }
 
-  private _internalStyles: StyleInfo = {};
+  // #region Internal state
 
+  private _internalStyles: StyleInfo = {};
+  private _dragMode: 'none' | 'tile-header' | 'tile' = 'none';
+  private _resizeMode: 'none' | 'hover' | 'always' = 'none';
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
   private _minRowHeight?: string;
-  private _draggedItem: IgcTileComponent | null = null;
-  private _lastSwapTile: IgcTileComponent | null = null;
-
-  private _grid = createRef<HTMLElement>();
 
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
 
-  private _createContext(): TileManagerContext {
-    return {
-      instance: this,
-      grid: this._grid,
-      draggedItem: this._draggedItem,
-      lastSwapTile: this._lastSwapTile,
-    };
-  }
+  private _grid = createRef<HTMLElement>();
+  private _overlay = createRef<HTMLElement>();
+
+  // #endregion
+
+  // #region Context helpers
 
   private _context = new ContextProvider(this, {
     context: tileManagerContext,
     initialValue: this._createContext(),
   });
 
+  private _createContext(): TileManagerContext {
+    return {
+      instance: this,
+      grid: this._grid,
+      overlay: this._overlay,
+    };
+  }
+
   private _setManagerContext(): void {
     this._context.setValue(this._createContext(), true);
   }
 
-  private _observerCallback({
-    changes: { added, removed },
-  }: MutationControllerParams<IgcTileComponent>) {
-    const ownAdded = added.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
-    const ownRemoved = removed.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
+  // #endregion
 
-    for (const remove of ownRemoved) {
-      this._tilesState.remove(remove.node);
-    }
+  // #region Properties and Attributes
 
-    for (const added of ownAdded) {
-      this._tilesState.add(added.node);
-    }
+  /**
+   * Whether resize operations are enabled.
+   *
+   * @attr resize-mode
+   * @default none
+   */
+  @property({ attribute: 'resize-mode' })
+  public set resizeMode(value: 'none' | 'hover' | 'always') {
+    this._resizeMode = value;
+    this._setManagerContext();
+  }
 
-    this._tilesState.assignTiles();
+  public get resizeMode(): 'none' | 'hover' | 'always' {
+    return this._resizeMode;
   }
 
   /**
-   * Determines whether the tiles slide or swap on drop.
+   * Whether drag and drop operations are enabled.
+   *
    * @attr drag-mode
+   * @default none
    */
   @property({ attribute: 'drag-mode' })
-  public dragMode: 'slide' | 'swap' = 'slide';
+  public set dragMode(value: 'none' | 'tile-header' | 'tile') {
+    this._dragMode = value;
+    this._setManagerContext();
+  }
+
+  public get dragMode(): 'none' | 'tile-header' | 'tile' {
+    return this._dragMode;
+  }
+
+  /**
+   * Whether the tiles will slide or swap on drop during a drag and drop operation.
+   * @attr drag-action
+   */
+  @property({ attribute: 'drag-action' })
+  public dragAction: 'slide' | 'swap' = 'slide';
 
   /**
    * Sets the number of columns for the tile manager.
@@ -170,6 +186,8 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   /**
    * Sets the gap size of the the tile manager.
+   *
+   * @attr gap
    */
   @property()
   public set gap(value: string | undefined) {
@@ -185,11 +203,15 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   /**
    * Gets the tiles sorted by their position in the layout.
-   * @attr
+   * @property
    */
   public get tiles() {
     return this._tilesState.tiles;
   }
+
+  // #endregion
+
+  // #region Internal API
 
   constructor() {
     super();
@@ -206,42 +228,40 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
-  }
-
-  private handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
-    this.emitEvent('igcTileDragStarted', { detail });
-    this._draggedItem = detail;
     this._setManagerContext();
   }
 
-  private handleTileDragEnd() {
-    if (this._draggedItem) {
-      this._draggedItem = null;
-      this._setManagerContext();
-    }
-  }
-
-  private handleDragOver(event: DragEvent) {
-    event.preventDefault(); // Allow dropping
-  }
-
-  private handleDrop(event: DragEvent) {
-    event.preventDefault();
-
-    const draggedItem = this._draggedItem;
-    const target = findElementFromEventPath<IgcTileComponent>(
-      IgcTileComponent.tagName,
-      event
+  private _observerCallback({
+    changes: { added, removed },
+  }: MutationControllerParams<IgcTileComponent>) {
+    const ownAdded = added.filter(
+      ({ target }) => target.closest(this.tagName) === this
+    );
+    const ownRemoved = removed.filter(
+      ({ target }) => target.closest(this.tagName) === this
     );
 
-    if (
-      !isSameTile(draggedItem, target) &&
-      this.dragMode === 'swap' &&
-      !target?.disableDrag
-    ) {
-      swapTiles(draggedItem!, target!);
+    for (const remove of ownRemoved) {
+      this._tilesState.remove(remove.node);
     }
+
+    for (const added of ownAdded) {
+      this._tilesState.add(added.node);
+    }
+
+    this._tilesState.assignTiles();
   }
+
+  private _handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
+    this.emitEvent('igcTileDragStarted', { detail });
+    this._setManagerContext();
+  }
+
+  private _handleTileDragEnd() {}
+
+  // #endregion
+
+  // #region Public API
 
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
@@ -251,6 +271,14 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._serializer.loadFromJSON(data);
   }
 
+  // #endregion
+
+  // #region Rendering
+
+  protected _renderOverlay() {
+    return html`<div ${ref(this._overlay)} part="overlay"></div>`;
+  }
+
   protected override render() {
     const parts = partNameMap({
       base: true,
@@ -258,19 +286,20 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
 
     return html`
+      ${this._renderOverlay()}
       <div
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
         part=${parts}
-        @tileDragStart=${this.handleTileDragStart}
-        @tileDragEnd=${this.handleTileDragEnd}
-        @dragover=${this.handleDragOver}
-        @drop=${this.handleDrop}
+        @tileDragStart=${this._handleTileDragStart}
+        @tileDragEnd=${this._handleTileDragEnd}
       >
         <slot></slot>
       </div>
     `;
   }
+
+  // #endregion
 }
 
 declare global {

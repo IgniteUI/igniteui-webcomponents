@@ -1,24 +1,36 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, type PropertyValues, html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { LitElement, html } from 'lit';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   type TileContext,
+  type TileManagerContext,
   tileContext,
   tileManagerContext,
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
+import { addDragDropController } from '../common/controllers/drag-and-drop.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, createCounter, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  first,
+  isElement,
+  partNameMap,
+} from '../common/util.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
-import { addTileDragAndDrop } from './controllers/tile-dnd.js';
-import { isSameTile, swapTiles } from './position.js';
+import { swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
@@ -72,13 +84,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
 
-  private _dragController = addTileDragAndDrop(this, {
-    dragStart: this.handleDragStart,
-    dragEnd: this.handleDragEnd,
-    dragEnter: this.handleDragEnter,
-    dragLeave: this.handleDragLeave,
-    dragOver: this.handleDragOver,
-    drop: this.handleDragLeave,
+  private _dragController = addDragDropController(this, {
+    skip: this._skipDrag,
+    matchTarget: this._match,
+    layer: () => this._tileManager!.overlay.value!,
+    ghost: this._createDragGhost,
+    dragStart: this._handleDragStart,
+    dragMove: this._handleDragMove,
+    dragEnter: this._handleDragEnter,
+    dragLeave: this._handleDragLeave,
+    dragOver: this._handleDragOver,
+    dragEnd: this._handleDragEnd,
   });
 
   private _fullscreenController = addFullscreenController(this, {
@@ -92,21 +108,43 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _rowStart: number | null = null;
   private _position = -1;
   private _disableDrag = false;
-  private _dragCounter = 0;
-  private _dragGhost: HTMLElement | null = null;
-  private _dragImage: HTMLElement | null = null;
   private _resizeState = createTileResizeState();
 
   // Tile manager context properties and helpers
 
-  private _managerContext = createAsyncContext(this, tileManagerContext);
+  /**
+   * Context consumer callback that sets the updated configuration of the internal drag controller
+   * based on the passed tile manager properties.
+   */
+  private _setDragConfiguration = ({
+    instance: { dragMode },
+  }: TileManagerContext) => {
+    this._dragController.setConfig({
+      enabled: !this.disableDrag && dragMode !== 'none',
+      trigger:
+        dragMode === 'tile-header' ? () => first(this._headers) : undefined,
+    });
+  };
 
-  private get _tileManager() {
+  private _managerContext = createAsyncContext(
+    this,
+    tileManagerContext,
+    this._setDragConfiguration
+  );
+
+  /** Returns the parent tile manager. */
+  private get _tileManager(): TileManagerContext | undefined {
     return this._managerContext.value;
   }
 
-  private get _cssContainer() {
+  /** Returns the tile manager internal CSS grid container. */
+  private get _cssContainer(): HTMLElement {
     return this._tileManager?.grid.value!;
+  }
+
+  /** Returns the tile manager current resize mode. */
+  private get _resizeMode() {
+    return this._tileManager?.instance.resizeMode ?? 'none';
   }
 
   private _createContext(): TileContext {
@@ -125,18 +163,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._context.setValue(this._createContext(), true);
   }
 
-  private get _draggedItem(): IgcTileComponent | null {
-    return this._tileManager?.draggedItem ?? null;
-  }
-
+  /** Whether the parent tile manager drag action is in **slide** mode. */
   private get _isSlideMode(): boolean {
     return this._tileManager
-      ? this._tileManager.instance.dragMode === 'slide'
+      ? this._tileManager.instance.dragAction === 'slide'
       : true;
   }
 
-  @query('[part="ghost"]', true)
-  public _ghost!: HTMLElement;
+  @queryAssignedElements({
+    selector: IgcTileHeaderComponent.tagName,
+    slot: 'header',
+  })
+  protected _headers!: IgcTileHeaderComponent[];
+
+  @query(IgcResizeContainerComponent.tagName)
+  protected _resizeContainer?: IgcResizeContainerComponent;
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
@@ -153,14 +194,32 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @state()
   private _isResizing = false;
 
+  /** Whether to render the resize container based on tile and tile manager configuration. */
+  private get _resizeDisabled(): boolean {
+    return (
+      this.disableResize ||
+      this.maximized ||
+      this.fullscreen ||
+      this._resizeMode === 'none'
+    );
+  }
+
   /**
    * The unique identifier of the tile.
-   * @attr
+   * @attr tile-id
    */
   @property({ attribute: 'tile-id', type: String, reflect: true })
   public tileId: string | null = null;
 
-  @property({ type: Number })
+  /**
+   * The number of columns the tile will span.
+   *
+   * @remarks
+   * Values <= 1 will be coerced to 1.
+   *
+   * @attr col-span
+   */
+  @property({ type: Number, attribute: 'col-span' })
   public set colSpan(value: number) {
     this._colSpan = Math.max(1, asNumber(value));
     this.style.setProperty('--ig-col-span', this._colSpan.toString());
@@ -170,7 +229,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._colSpan;
   }
 
-  @property({ type: Number })
+  /**
+   * The number of rows the tile will span.
+   *
+   * @remarks
+   * Values <= 1 will be coerced to 1.
+   *
+   * @attr row-span
+   */
+  @property({ type: Number, attribute: 'row-span' })
   public set rowSpan(value: number) {
     this._rowSpan = Math.max(1, asNumber(value));
     this.style.setProperty('--ig-row-span', this._rowSpan.toString());
@@ -180,7 +247,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._rowSpan;
   }
 
-  @property({ type: Number })
+  /**
+   * The starting column for the tile.
+   *
+   * @attr col-start
+   */
+  @property({ type: Number, attribute: 'col-start' })
   public set colStart(value: number) {
     this._colStart = Math.max(0, asNumber(value)) || null;
     this.style.setProperty(
@@ -193,7 +265,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._colStart;
   }
 
-  @property({ type: Number })
+  /**
+   * The starting row for the tile.
+   *
+   * @attr row-start
+   */
+  @property({ type: Number, attribute: 'row-start' })
   public set rowStart(value: number) {
     this._rowStart = Math.max(0, asNumber(value)) || null;
     this.style.setProperty(
@@ -208,6 +285,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile occupies the whole screen.
+   *
+   * @property
    */
   public get fullscreen(): boolean {
     return this._fullscreenController.fullscreen;
@@ -215,6 +294,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether the tile occupies all available space within the layout.
+   *
    * @attr maximized
    */
   @property({ type: Boolean, reflect: true })
@@ -231,6 +311,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._maximized;
   }
 
+  // REVIEW: Drop
   /**
    * Indicates whether the tile can be dragged.
    * @attr disable-drag
@@ -238,7 +319,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
   public set disableDrag(value: boolean) {
     this._disableDrag = value;
-    this._dragController.enabled = !this._disableDrag;
+    this._dragController.setConfig({ enabled: !value });
   }
 
   public get disableDrag(): boolean {
@@ -254,8 +335,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Gets/sets the tile's visual position in the layout.
+   *
    * Corresponds to the CSS order property.
-   * @attr
+   *
+   * @attr position
    */
   @property({ type: Number })
   public set position(value: number) {
@@ -272,22 +355,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
-    // REVIEW: View transitions
     this.style.viewTransitionName = `tile-transition-${this.tileId}`;
-  }
-
-  protected override updated(changedProperties: PropertyValues) {
-    super.updated(changedProperties);
-
-    const parts = partNameMap({
-      dragging: this._isDragging,
-    });
-
-    if (parts.trim()) {
-      this.setAttribute('part', parts);
-    } else {
-      this.removeAttribute('part');
-    }
   }
 
   private emitFullScreenEvent(state: boolean) {
@@ -298,130 +366,82 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private assignDragImage(e: DragEvent) {
-    const rect = this.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-    const compStyles = getComputedStyle(this);
+  private _setDragState(state = true) {
+    this._isDragging = state;
+    this._tileContent.style.opacity = state ? '0' : '1';
+    this.part.toggle('dragging', state);
+  }
 
-    this._dragImage = this.cloneNode(true) as HTMLElement;
-    Object.assign(this._dragImage.style, {
-      width: compStyles.width,
-      height: compStyles.height,
-      position: 'absolute',
-      top: '-99999px',
-      left: '-99999px',
-      background: 'var(--tile-background)',
-      border: `1px solid ${'var(--hover-border-color)'}`,
-      borderRadius: 'var(--border-radius)',
-      overflow: 'hidden',
+  private _handleDragStart() {
+    this.emitEvent('tileDragStart', { detail: this });
+    this._setDragState();
+  }
+
+  private _handleDragMove() {}
+
+  private _handleDragEnter(tile: Element) {
+    Object.assign(tile, { _hasDragOver: true });
+  }
+
+  private _handleDragLeave(tile: Element) {
+    Object.assign(tile, { _hasDragOver: false });
+  }
+
+  private _handleDragOver(tile: Element) {
+    // REVIEW
+    startViewTransition(() => {
+      swapTiles(this, tile as IgcTileComponent);
+    });
+  }
+
+  private _handleDragEnd() {
+    this.emitEvent('tileDragEnd', { detail: this });
+    this._setDragState(false);
+  }
+
+  private _skipDrag(event: PointerEvent) {
+    return Boolean(
+      this._resizeContainer &&
+        event
+          .composedPath()
+          .some((e) => isElement(e) && e.matches('[part*=trigger]'))
+    );
+  }
+
+  private _match(element: Element) {
+    return element !== this && /^igc-tile$/i.test(element.tagName);
+  }
+
+  private _createDragGhost(): HTMLElement {
+    const ghost = this.cloneNode(true) as HTMLElement;
+    const { width, height } = this.getBoundingClientRect();
+
+    Object.assign(ghost, {
+      inert: true,
+      id: '',
     });
 
-    document.body.append(this._dragImage);
+    Object.assign(ghost.style, {
+      position: 'absolute',
+      contain: 'strict',
+      top: 0,
+      left: 0,
+      width: `${width}px`,
+      height: `${height}px`,
+      background: 'var(--placeholder-background)',
+      border: '1px solid var(--ghost-border)',
+      borderRadius: 'var(--border-radius)',
+      zIndex: 1000,
+      viewTransitionName: '',
+    });
 
-    e.dataTransfer!.setDragImage(this._dragImage, offsetX, offsetY);
-    e.dataTransfer!.effectAllowed = 'move';
-  }
-
-  private handleDragStart(e: DragEvent) {
-    this.assignDragImage(e);
-
-    this.emitEvent('tileDragStart', { detail: this });
-    this._dragGhost = createTileGhost();
-    this._dragGhost.inert = true;
-
-    if (this._dragGhost) {
-      this.append(this._dragGhost);
-    }
-    this._isDragging = true;
-  }
-
-  private handleDragEnter() {
-    this._dragCounter++;
-    this._hasDragOver = true;
-  }
-
-  private handleDragOver(event: DragEvent) {
-    if (!this._draggedItem) {
-      return;
-    }
-
-    const tileManager = this._tileManager!;
-
-    if (isSameTile(this, this._draggedItem)) {
-      this._tileContent.style.visibility = 'hidden';
-      if (this._dragGhost) {
-        Object.assign(this._dragGhost.style, {
-          visibility: 'visible',
-        });
-      }
-      tileManager.lastSwapTile = null;
-    } else if (this._isSlideMode) {
-      if (
-        !tileManager.lastSwapTile ||
-        this.hasPointerLeftLastSwapTile(event, tileManager.lastSwapTile)
-      ) {
-        tileManager.lastSwapTile = this;
-        swapTiles(this, this._draggedItem!);
-      }
-    }
-  }
-
-  private handleDragLeave() {
-    this._dragCounter--;
-
-    // The drag leave is fired on entering a child element
-    // so we check if the dragged item is actually leaving the tile
-    if (this._dragCounter === 0) {
-      this._hasDragOver = false;
-    }
-  }
-
-  private handleDragEnd() {
-    this.emitEvent('tileDragEnd', { detail: this });
-    this._isDragging = false;
-
-    if (this._dragGhost) {
-      this._dragGhost.remove();
-      this._dragGhost = null;
-    }
-
-    if (this._dragImage) {
-      this._dragImage.remove();
-      this._dragImage = null;
-    }
-
-    this._tileContent.style.visibility = 'visible';
-  }
-
-  private hasPointerLeftLastSwapTile(
-    event: DragEvent,
-    lastSwapTile: IgcTileComponent | null
-  ) {
-    if (!lastSwapTile) return false;
-
-    // Check if the pointer is outside the boundaries of the last swapped tile
-
-    const rect = lastSwapTile.getBoundingClientRect();
-    const pointerX = event.clientX;
-    const pointerY = event.clientY;
-
-    const outsideBoundaries =
-      pointerX < rect.left ||
-      pointerX > rect.right ||
-      pointerY < rect.top ||
-      pointerY > rect.bottom;
-
-    if (outsideBoundaries) {
-      this._tileManager!.lastSwapTile = null;
-    }
-
-    return outsideBoundaries;
+    return ghost;
   }
 
   private _setResizeState(state = true) {
     this._isResizing = state;
     this.style.zIndex = state ? '1' : '';
+    this.part.toggle('resizing', state);
   }
 
   private _handleResizeStart({
@@ -498,16 +518,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const renderResize =
-      this.disableResize || this.maximized || this.fullscreen;
+    const active = this._resizeMode === 'always';
 
-    return renderResize
+    return this._resizeDisabled
       ? this.renderContent()
       : html`
           <igc-resize
             part="resize"
-            .ghostFactory=${createTileGhost}
             mode="deferred"
+            ?active=${active}
+            .ghostFactory=${createTileGhost}
             @igcResizeStart=${this._handleResizeStart}
             @igcResize=${this._handleResize}
             @igcResizeEnd=${this._handleResizeEnd}

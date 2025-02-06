@@ -6,13 +6,12 @@ import type IgcTileManagerComponent from '../tile-manager/tile-manager.js';
 import type IgcTileComponent from '../tile-manager/tile.js';
 
 export type TileManagerContext = {
-  /** The igc-tile-manager element providing the context. */
+  /** The igc-tile-manager instance. */
   instance: IgcTileManagerComponent;
   /** The internal CSS grid container of the igc-tile-manager. */
   grid: Ref<HTMLElement>;
-  /** The igc-tile element being dragged. */
-  draggedItem: IgcTileComponent | null;
-  lastSwapTile: IgcTileComponent | null;
+  /** The internal igc-tile-manager overlay container. */
+  overlay: Ref<HTMLElement>;
 };
 
 export type TileContext = {

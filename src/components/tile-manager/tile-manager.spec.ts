@@ -35,10 +35,6 @@ describe('Tile Manager component', () => {
     );
   }
 
-  // function getTileBaseWrapper(element: IgcTileComponent) {
-  //   return element.renderRoot.querySelector<HTMLDivElement>('[part~="base"]')!;
-  // }
-
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
@@ -55,11 +51,6 @@ describe('Tile Manager component', () => {
     );
     return html`<igc-tile-manager>${result}</igc-tile-manager>`;
   }
-
-  // function assertTileIsInert(element: IgcTileComponent) {
-  //   expect(element.renderRoot.querySelector<HTMLElement>('#base')!.inert).to.be
-  //     .true;
-  // }
 
   describe('Initialization', () => {
     beforeEach(async () => {
@@ -90,7 +81,7 @@ describe('Tile Manager component', () => {
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(0);
-      expect(tileManager.dragMode).to.equal('slide');
+      expect(tileManager.dragAction).to.equal('slide');
       expect(tileManager.minColumnWidth).to.equal(undefined);
       expect(tileManager.minRowHeight).to.equal(undefined);
       expect(tileManager.tiles).lengthOf(2);

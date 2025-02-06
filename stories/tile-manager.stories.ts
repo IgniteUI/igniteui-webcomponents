@@ -74,9 +74,24 @@ const metadata: Meta<IgcTileManagerComponent> = {
     actions: { handles: ['igcTileDragStarted'] },
   },
   argTypes: {
+    resizeMode: {
+      type: '"none" | "hover" | "always"',
+      description: 'Whether resize operations are enabled.',
+      options: ['none', 'hover', 'always'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'none' } },
+    },
     dragMode: {
+      type: '"none" | "tile-header" | "tile"',
+      description: 'Whether drag and drop operations are enabled.',
+      options: ['none', 'tile-header', 'tile'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'none' } },
+    },
+    dragAction: {
       type: '"slide" | "swap"',
-      description: 'Determines whether the tiles slide or swap on drop.',
+      description:
+        'Whether the tiles will slide or swap on drop during a drag and drop operation.',
       options: ['slide', 'swap'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
@@ -106,14 +121,23 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'text',
     },
   },
-  args: { dragMode: 'slide', columnCount: 0 },
+  args: {
+    resizeMode: 'none',
+    dragMode: 'none',
+    dragAction: 'slide',
+    columnCount: 0,
+  },
 };
 
 export default metadata;
 
 interface IgcTileManagerArgs {
-  /** Determines whether the tiles slide or swap on drop. */
-  dragMode: 'slide' | 'swap';
+  /** Whether resize operations are enabled. */
+  resizeMode: 'none' | 'hover' | 'always';
+  /** Whether drag and drop operations are enabled. */
+  dragMode: 'none' | 'tile-header' | 'tile';
+  /** Whether the tiles will slide or swap on drop during a drag and drop operation. */
+  dragAction: 'slide' | 'swap';
   /**
    * Sets the number of columns for the tile manager.
    * Setting value <= than zero will trigger a responsive layout.
@@ -208,8 +232,15 @@ export const AutoInfer: Story = {
 
 export const FinDashboard: Story = {
   render: (args) => html`
+    <style>
+      igc-tile::part(content-container) {
+        padding: 1rem;
+      }
+    </style>
+
     <igc-tile-manager
       .gap=${args.gap}
+      .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -382,16 +413,17 @@ export const FinDashboard1: Story = {
   render: (args) => html`
     <igc-tile-manager
       .gap=${args.gap}
+      .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
     >
-      <!-- <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
+      <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
         <igc-tile-header slot="header">
           <span slot="title">Accounts</span>
         </igc-tile-header>
-      </igc-tile> -->
+      </igc-tile>
 
 
       <igc-tile .colSpan=${3} .rowSpan=${2}>
@@ -399,7 +431,7 @@ export const FinDashboard1: Story = {
           <span slot="title">Good morning, John</span>
         </igc-tile-header>
 
-        <div style="background-color: #fff">
+        <div>
           <igc-rating class="size-large" label="Your level: Basic" value="2.5" step=".5" hover-preview></igc-rating>
           <p>Total net worth: $123,000</p>
           <h4>Spending Overview</h4>
@@ -607,6 +639,7 @@ export const Default: Story = {
     <igc-tile-manager
       .gap=${args.gap}
       .dragMode=${args.dragMode}
+      .resizeMode=${args.resizeMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
@@ -700,6 +733,7 @@ export const DynamicTiles: Story = {
     <igc-tile-manager
       id="tile-manager1"
       .gap=${args.gap}
+      .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -752,6 +786,7 @@ export const Serialization: Story = {
     <igc-tile-manager
       id="tile-manager1"
       .gap=${args.gap}
+      .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -837,6 +872,7 @@ export const CustomActions: Story = {
     </style>
     <igc-tile-manager
       .dragMode=${args.dragMode}
+      .resizeMode=${args.resizeMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}

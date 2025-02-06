@@ -7,6 +7,7 @@ import type {
 
 type AsyncContextOptions<T extends Context<unknown, unknown>> = {
   context: T;
+  callback?: (value: ContextType<T>, dispose?: () => void) => void;
   subscribe?: boolean;
 };
 
@@ -39,6 +40,7 @@ export class AsyncContextConsumer<
     if (!this._consumer) {
       this._consumer = new ContextConsumer(this._host, {
         context: this._options.context,
+        callback: this._options.callback,
         subscribe: this._options.subscribe,
       });
     }
@@ -48,9 +50,14 @@ export class AsyncContextConsumer<
 export function createAsyncContext<
   T extends Context<unknown, unknown>,
   Host extends ReactiveControllerHost & LitElement,
->(host: Host, context: T): AsyncContextConsumer<T, Host> {
+>(
+  host: Host,
+  context: T,
+  callback?: (value: ContextType<T>, dispose?: () => void) => void
+): AsyncContextConsumer<T, Host> {
   return new AsyncContextConsumer(host, {
     context,
+    callback,
     subscribe: true,
   }) as AsyncContextConsumer<T, Host>;
 }

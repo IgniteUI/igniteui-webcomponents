@@ -5,7 +5,7 @@ import { spy } from 'sinon';
 import { range } from 'lit/directives/range.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { asNumber, first, last } from '../common/util.js';
+import { first } from '../common/util.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -60,7 +60,10 @@ describe('Tile resize', () => {
     });
 
     return html`<div style="width: 1000px;">
-      <igc-tile-manager .minColumnWidth=${'200px'} .minRowHeight=${'200px'}
+      <igc-tile-manager
+        resize-mode="always"
+        .minColumnWidth=${'200px'}
+        .minRowHeight=${'200px'}
         >${result}</igc-tile-manager
       >
     </div>`;
@@ -83,8 +86,6 @@ describe('Tile resize', () => {
     });
 
     it('should create a ghost element on resize start', async () => {
-      await setResizeActiveState(firstTile);
-
       const DOM = getResizeContainerDOM(firstTile);
       const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
@@ -98,8 +99,6 @@ describe('Tile resize', () => {
     });
 
     it('should update ghost element styles during pointer move', async () => {
-      await setResizeActiveState(firstTile);
-
       const DOM = getResizeContainerDOM(firstTile);
       const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
@@ -130,7 +129,6 @@ describe('Tile resize', () => {
     });
 
     it('Should correctly resize column with auto grid', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
       const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
@@ -158,7 +156,6 @@ describe('Tile resize', () => {
     });
 
     it('Should correctly create/remove implicit rows and resize row with auto grid', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
 
       simulatePointerDown(DOM.adorners.side);
@@ -214,8 +211,6 @@ describe('Tile resize', () => {
     });
 
     it('Should correctly set columnCount', async () => {
-      await setResizeActiveState(firstTile);
-
       expect(getColumns().length).to.eql(4);
 
       tileManager.columnCount = 10;
@@ -225,7 +220,6 @@ describe('Tile resize', () => {
     });
 
     it('Should cap resizing to max col if greater than', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
 
       tileManager.columnCount = 10;
@@ -247,9 +241,7 @@ describe('Tile resize', () => {
     });
 
     // REVIEW
-    xit('Should initialize tile span as columnCount if it is greater than columnCount', async () => {
-      await setResizeActiveState(firstTile);
-
+    it('Should initialize tile span as columnCount if it is greater than columnCount', async () => {
       tileManager.columnCount = 10;
       await elementUpdated(tileManager);
 
@@ -263,7 +255,6 @@ describe('Tile resize', () => {
     });
 
     it('Should maintain column position on resize when colStart is set', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
 
       tileManager.columnCount = 5;
@@ -288,7 +279,6 @@ describe('Tile resize', () => {
     });
 
     it('Should maintain row position on resize when rowStart is set', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
 
       firstTile.rowStart = 2;
@@ -314,8 +304,6 @@ describe('Tile resize', () => {
     });
 
     it('should cancel resize by pressing ESC key', async () => {
-      await setResizeActiveState(firstTile);
-
       const DOM = getResizeContainerDOM(firstTile);
       const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 
@@ -343,8 +331,6 @@ describe('Tile resize', () => {
     });
 
     it('should not have resizeElement when `disableResize` is true', async () => {
-      await setResizeActiveState(firstTile);
-
       const DOM = getTileDOM(firstTile);
 
       expect(DOM.resizeElement).not.to.be.null;
@@ -356,7 +342,6 @@ describe('Tile resize', () => {
     });
 
     it('should update tile parts on resizing', async () => {
-      await setResizeActiveState(firstTile);
       const DOM = getResizeContainerDOM(firstTile);
       const eventSpy = spy(DOM.resizeElement, 'emitEvent');
 

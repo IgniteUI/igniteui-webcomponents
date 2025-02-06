@@ -73,6 +73,12 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   @state()
   private _isActive = false;
 
+  /**
+   * Whether to always show the resize element adorners.
+   */
+  @property({ type: Boolean, reflect: true })
+  public active = false;
+
   @property({ attribute: false })
   public set ghostFactory(value: ResizeGhostFactory) {
     this._ghostFactory = value;
@@ -204,7 +210,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   }
 
   protected _renderAdorners() {
-    if (!this._isActive) {
+    if (!this._isActive && !this.active) {
       return nothing;
     }
 
@@ -222,15 +228,15 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   protected override render() {
     const parts = partNameMap({
       'resize-base': true,
-      active: this._isActive,
+      active: this._isActive || this.active,
     });
 
     return html`
       <div
         ${ref(this._container)}
         part=${parts}
-        @pointerenter=${this._handlePointerEnter}
-        @pointerleave=${this._handlePointerLeave}
+        @pointerenter=${this.active ? nothing : this._handlePointerEnter}
+        @pointerleave=${this.active ? nothing : this._handlePointerLeave}
       >
         <slot></slot>
         ${this._renderAdorners()}
