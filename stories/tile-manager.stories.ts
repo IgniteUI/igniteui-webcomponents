@@ -695,7 +695,7 @@ export const Maximized: Story = {
           >Toggle maximized state</igc-button
         >
       </igc-tile>
-      <igc-tile rowStart="5">
+      <igc-tile row-start="5">
         <igc-tile-header slot="header"></igc-tile-header>
         <h2>I am not maximized and will be under the maximized tile</h2>
       </igc-tile>
@@ -898,7 +898,7 @@ export const CustomActions: Story = {
           state of the tile
         </p>
       </igc-tile>
-      <igc-tile colSpan="2">
+      <igc-tile col-span="2">
         <igc-tile-header slot="header">
           <h3 slot="title">Empty Fullscreen Action</h3>
           <div slot="fullscreen-action"></div>
@@ -906,7 +906,7 @@ export const CustomActions: Story = {
 
         <p>Empty div added to the fullscreen action slot</p>
       </igc-tile>
-      <igc-tile colSpan="2">
+      <igc-tile col-span="2">
         <igc-tile-header slot="header">
           <h3 slot="title">Default Actions</h3>
         </igc-tile-header>

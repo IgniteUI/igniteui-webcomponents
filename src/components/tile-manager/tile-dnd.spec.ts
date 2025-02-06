@@ -40,7 +40,7 @@ describe.skip('Tile drag and drop', () => {
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
-        <igc-tile id="tile${i}" colSpan="5" rowSpan="5">
+        <igc-tile id="tile${i}" col-span="5" row-span="5">
           <igc-tile-header slot="header">
             <h3 slot="title">Tile ${i + 1}</h3>
           </igc-tile-header>
