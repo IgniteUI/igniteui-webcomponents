@@ -31,6 +31,7 @@ import IgcTileComponent from './tile.js';
 // REVIEW: WIP
 export interface IgcTileManagerComponentEventMap {
   igcTileDragStarted: CustomEvent<IgcTileComponent>;
+  igcTileDragEnded: CustomEvent<IgcTileComponent>;
 }
 
 /**
@@ -39,6 +40,7 @@ export interface IgcTileManagerComponentEventMap {
  * @element igc-tile-manager
  *
  * @fires igcTileDragStarted - Fired when an owning tile begins a drag operation.
+ * @fires igcTileDragEnded - Fired when an owning tile completes a drag operation, either by dropping onto a new position or canceling the drag.
  */
 @themes(all)
 export default class IgcTileManagerComponent extends EventEmitterMixin<
@@ -262,7 +264,9 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._setManagerContext();
   }
 
-  private _handleTileDragEnd() {}
+  private _handleTileDragEnd({ detail }: CustomEvent<IgcTileComponent>) {
+    this.emitEvent('igcTileDragEnded', { detail });
+  }
 
   // #endregion
 

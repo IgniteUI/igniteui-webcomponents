@@ -81,6 +81,7 @@ describe('Tile Manager component', () => {
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(0);
+      expect(tileManager.dragMode).to.equal('none');
       expect(tileManager.dragAction).to.equal('slide');
       expect(tileManager.minColumnWidth).to.equal(undefined);
       expect(tileManager.minRowHeight).to.equal(undefined);
@@ -91,8 +92,7 @@ describe('Tile Manager component', () => {
       expect(tileManager).dom.to.equal(
         `<igc-tile-manager>
           <igc-tile
-            draggable="true"
-            style="order: 0;"
+            style="view-transition-name: tile-transition-customId-1; order: 0;"
             tile-id="customId-1"
           >
             <igc-tile-header>
@@ -101,8 +101,7 @@ describe('Tile Manager component', () => {
             <p>Content 1</p>
           </igc-tile>
           <igc-tile
-            draggable="true"
-            style="order: 1;"
+            style="view-transition-name: tile-transition-customId-2; order: 1;"
             tile-id="customId-2"
           >
             <igc-tile-header>
@@ -114,7 +113,9 @@ describe('Tile Manager component', () => {
       );
 
       expect(tileManager).shadowDom.to.equal(
-        `<div
+        `<div part="overlay">
+        </div>
+        <div
           part="base"
           style=""
         >
@@ -129,7 +130,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile draggable="true" style="order: 0;" tile-id="customId-1">
+        `<igc-tile style="view-transition-name: tile-transition-customId-1; order: 0;" tile-id="customId-1">
             <igc-tile-header>
               <span>Tile Header 1</span>
             </igc-tile-header>

@@ -401,10 +401,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _skipDrag(event: PointerEvent) {
     return Boolean(
-      this._resizeContainer &&
+      (this._resizeContainer &&
         event
           .composedPath()
-          .some((e) => isElement(e) && e.matches('[part*=trigger]'))
+          .some((e) => isElement(e) && e.matches('[part*=trigger]'))) ||
+        this.maximized
     );
   }
 
