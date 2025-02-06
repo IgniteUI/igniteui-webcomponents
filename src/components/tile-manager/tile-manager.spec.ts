@@ -81,6 +81,7 @@ describe('Tile Manager component', () => {
     it('is correctly initialized with its default component state', () => {
       // TODO: Add checks for other settings when implemented
       expect(tileManager.columnCount).to.equal(0);
+      expect(tileManager.dragMode).to.equal('none');
       expect(tileManager.dragAction).to.equal('slide');
       expect(tileManager.minColumnWidth).to.equal(undefined);
       expect(tileManager.minRowHeight).to.equal(undefined);
@@ -112,8 +113,8 @@ describe('Tile Manager component', () => {
       );
 
       expect(tileManager).shadowDom.to.equal(
-        `
-        <div part="overlay"></div>
+        `<div part="overlay">
+        </div>
         <div
           part="base"
           style=""
