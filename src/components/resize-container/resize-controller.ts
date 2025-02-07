@@ -27,7 +27,7 @@ class RefactoredResizeController implements ReactiveController {
   }
 
   private get _isDeferred(): boolean {
-    return this._config?.mode ? this._config.mode === 'deferred' : false;
+    return this._config.mode === 'deferred';
   }
 
   constructor(
@@ -98,10 +98,7 @@ class RefactoredResizeController implements ReactiveController {
     this._setInitialState(event);
     this._createGhostElement();
 
-    if (this._config.start) {
-      this._config.start.call(this._host, this._createCallbackParams(event));
-    }
-
+    this._config.start?.call(this._host, this._createCallbackParams(event));
     this._setPointerCaptureState(true);
   }
 

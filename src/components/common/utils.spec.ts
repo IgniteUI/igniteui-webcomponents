@@ -508,3 +508,18 @@ export function runValidationContainerTests<T extends IgcFormControl>(
     runner(each);
   }
 }
+
+/**
+ * Compares and returns whether the passed in CSS `{ prop: value }` entries match against
+ * the resolved `(getComputedStyle)` styles of the element.
+ *
+ */
+export function compareStyles(
+  element: Element,
+  values: Partial<CSSStyleDeclaration>
+): boolean {
+  const computed = getComputedStyle(element);
+  return Object.entries(values).every(
+    ([key, value]) => computed.getPropertyValue(toKebabCase(key)) === value
+  );
+}

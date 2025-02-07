@@ -10,6 +10,14 @@ type DragDropCallback = () => unknown;
 
 type DragEnterCallback = (target: Element) => unknown;
 
+type DragCallback = (params: DragCallbackParams) => unknown;
+
+type DragCallbackParams = {
+  event: PointerEvent;
+};
+
+// TODO: Start providing callback params for the hooks and type them
+
 type DragDropConfig = {
   /** Whether the drag and drop feature is enabled for the current host. */
   enabled?: boolean;
@@ -52,7 +60,7 @@ type DragDropConfig = {
   ghost?: () => HTMLElement;
 
   /** Callback invoked at the beginning of a drag operation. */
-  dragStart?: DragDropCallback;
+  dragStart?: DragCallback;
   /** Callback invoked while dragging the target element.  */
   dragMove?: DragDropCallback;
 
@@ -146,6 +154,12 @@ class DragDropController implements ReactiveController {
     this.setConfig(config);
   }
 
+  private _createCallbackParams(event: PointerEvent): DragCallbackParams {
+    return {
+      event,
+    };
+  }
+
   private _setInitialState({
     pointerId,
     clientX,
@@ -218,6 +232,10 @@ class DragDropController implements ReactiveController {
   }
 
   private _createDragGhost({ clientX, clientY }: PointerEvent): void {
+    if (!this._isDeferred) {
+      return;
+    }
+
     this._ghost = this._config.ghost
       ? this._config.ghost.call(this._host)
       : createDefaultDragGhost(this._host.getBoundingClientRect());
@@ -235,6 +253,7 @@ class DragDropController implements ReactiveController {
 
   private _shouldSkip(event: PointerEvent): boolean {
     return (
+      Boolean(event.button) ||
       this._config.skip?.call(this._host, event) ||
       !findElementFromEventPath((e) => e === this._element, event)
     );
@@ -251,7 +270,8 @@ class DragDropController implements ReactiveController {
     this._setInitialState(event);
     this._createDragGhost(event);
 
-    this._config.dragStart?.call(this._host);
+    const params = this._createCallbackParams(event);
+    this._config.dragStart?.call(this._host, params);
     this._setPointerCaptureState(true);
   }
 

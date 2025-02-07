@@ -399,7 +399,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setDragState(false);
   }
 
-  private _skipDrag(event: PointerEvent) {
+  private _skipDrag(event: PointerEvent): boolean {
     return Boolean(
       (this._resizeContainer &&
         event
@@ -409,8 +409,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  private _match(element: Element) {
-    return element !== this && /^igc-tile$/i.test(element.tagName);
+  private _match(element: Element): boolean {
+    return element !== this && IgcTileComponent.tagName === element.localName;
   }
 
   private _createDragGhost(): HTMLElement {
