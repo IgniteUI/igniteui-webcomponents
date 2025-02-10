@@ -63,6 +63,9 @@ class TileResizeState {
   protected _prevDeltaX = 0;
   protected _prevDeltaY = 0;
 
+  protected _prevSnappedWidth = 0;
+  protected _prevSnappedHeight = 0;
+
   protected _position: TileGridPosition = {
     column: { start: 0, span: 0 },
     row: { start: 0, span: 0 },
@@ -111,6 +114,10 @@ class TileResizeState {
       return this._columns.entries[this._position.column.start];
     }
 
+    if (deltaX === 0 && this._prevSnappedWidth) {
+      return this._prevSnappedWidth;
+    }
+
     for (let i = this._position.column.start - 1; i < columns.length; i++) {
       const currentColWidth = columns[i];
       const nextColWidth = columns[i + 1] || currentColWidth;
@@ -140,6 +147,7 @@ class TileResizeState {
       accumulatedWidth += currentColWidth + gap;
     }
 
+    this._prevSnappedWidth = snappedWidth;
     return snappedWidth;
   }
 
@@ -156,6 +164,10 @@ class TileResizeState {
     // REVIEW: Don't fall below row minSize
     if (Math.trunc(state.current.height) < this._rows.minSize) {
       return this._rows.entries[this._position.row.start];
+    }
+
+    if (deltaY === 0 && this._prevSnappedHeight) {
+      return this._prevSnappedHeight;
     }
 
     for (let i = this._position.row.start - 1; i < rows.length; i++) {
@@ -187,6 +199,7 @@ class TileResizeState {
       accumulatedHeight += currentColHeight + gap;
     }
 
+    this._prevSnappedHeight = snappedHeight;
     return snappedHeight;
   }
 
@@ -205,6 +218,8 @@ class TileResizeState {
     this._rows = rows;
     this._prevDeltaX = 0;
     this._prevDeltaY = 0;
+    this._prevSnappedWidth = 0;
+    this._prevSnappedHeight = 0;
 
     if (this._position.column.start < 0) {
       this._position.column.start = this.calculatePosition(
