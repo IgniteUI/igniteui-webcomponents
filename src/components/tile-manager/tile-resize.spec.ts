@@ -54,9 +54,7 @@ describe('Tile resize', () => {
     const result = Array.from(range(3)).map((i) => {
       return html`
         <igc-tile id="tile${i}">
-          <igc-tile-header slot="header">
-            <h3 slot="title">Tile ${i + 1}</h3>
-          </igc-tile-header>
+          <h3 slot="title">Tile ${i + 1}</h3>
 
           <div>
             <p>Content in tile ${i + 1}</p>
