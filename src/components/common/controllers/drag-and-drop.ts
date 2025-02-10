@@ -10,6 +10,14 @@ type DragDropCallback = () => unknown;
 
 type DragEnterCallback = (target: Element) => unknown;
 
+type DragCallback = (params: DragCallbackParams) => unknown;
+
+type DragCallbackParams = {
+  event: PointerEvent;
+};
+
+// TODO: Start providing callback params for the hooks and type them
+
 type DragDropConfig = {
   /** Whether the drag and drop feature is enabled for the current host. */
   enabled?: boolean;
@@ -52,7 +60,7 @@ type DragDropConfig = {
   ghost?: () => HTMLElement;
 
   /** Callback invoked at the beginning of a drag operation. */
-  dragStart?: DragDropCallback;
+  dragStart?: DragCallback;
   /** Callback invoked while dragging the target element.  */
   dragMove?: DragDropCallback;
 
@@ -65,7 +73,7 @@ type DragDropConfig = {
   /** Callback invoked during a drop operation. */
   dragEnd?: DragDropCallback;
   /** Callback invoked when a drag and drop is cancelled */
-  dragCancel?: unknown;
+  dragCancel?: DragDropCallback;
 };
 
 const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
@@ -146,6 +154,18 @@ class DragDropController implements ReactiveController {
     this.setConfig(config);
   }
 
+  private _createCallbackParams(event: PointerEvent): DragCallbackParams {
+    return {
+      event,
+    };
+  }
+
+  private _setDragCancelListener(isDragging = true): void {
+    isDragging
+      ? globalThis.addEventListener('keydown', this)
+      : globalThis.removeEventListener('keydown', this);
+  }
+
   private _setInitialState({
     pointerId,
     clientX,
@@ -161,7 +181,7 @@ class DragDropController implements ReactiveController {
     };
   }
 
-  private _setPointerCaptureState(state: boolean): void {
+  private _setPointerCaptureState(state = true): void {
     this._hasPointerCapture = state;
     const cssValue = state ? 'none' : '';
 
@@ -218,6 +238,10 @@ class DragDropController implements ReactiveController {
   }
 
   private _createDragGhost({ clientX, clientY }: PointerEvent): void {
+    if (!this._isDeferred) {
+      return;
+    }
+
     this._ghost = this._config.ghost
       ? this._config.ghost.call(this._host)
       : createDefaultDragGhost(this._host.getBoundingClientRect());
@@ -235,6 +259,7 @@ class DragDropController implements ReactiveController {
 
   private _shouldSkip(event: PointerEvent): boolean {
     return (
+      Boolean(event.button) ||
       this._config.skip?.call(this._host, event) ||
       !findElementFromEventPath((e) => e === this._element, event)
     );
@@ -251,8 +276,10 @@ class DragDropController implements ReactiveController {
     this._setInitialState(event);
     this._createDragGhost(event);
 
-    this._config.dragStart?.call(this._host);
-    this._setPointerCaptureState(true);
+    const params = this._createCallbackParams(event);
+    this._config.dragStart?.call(this._host, params);
+    this._setPointerCaptureState();
+    this._setDragCancelListener();
   }
 
   private _handlePointerMove(event: PointerEvent): void {
@@ -271,13 +298,22 @@ class DragDropController implements ReactiveController {
     this.dispose();
   }
 
+  private _handleCancel(event: KeyboardEvent): void {
+    const key = event.key.toLowerCase();
+
+    if (this._hasPointerCapture && key === 'escape') {
+      // Reset state
+      this._config.dragCancel?.call(this._host);
+    }
+  }
+
   /** Updates the drag and drop controller configuration. */
   public setConfig(value?: DragDropConfig): void {
     Object.assign(this._config, value);
   }
 
   /** @internal */
-  public handleEvent(event: PointerEvent): void {
+  public handleEvent(event: PointerEvent & KeyboardEvent): void {
     if (!this.enabled) {
       return;
     }
@@ -286,6 +322,9 @@ class DragDropController implements ReactiveController {
       case 'touchstart':
       case 'dragstart':
         event.preventDefault();
+        break;
+      case 'keydown':
+        this._handleCancel(event);
         break;
       case 'pointerdown':
         this._handlePointerDown(event);
@@ -299,11 +338,12 @@ class DragDropController implements ReactiveController {
     }
   }
 
-  /** Stops any drag operation and cleans up state and additional elements. */
+  /** Stops any drag operation and cleans up state, additional event listeners and elements. */
   public dispose(): void {
     this._previousMatch = null;
     this._removeGhost();
     this._setPointerCaptureState(false);
+    this._setDragCancelListener(false);
   }
 
   public hostConnected(): void {
@@ -316,6 +356,7 @@ class DragDropController implements ReactiveController {
     this._host.removeEventListener('dragstart', this);
     this._host.removeEventListener('touchstart', this);
     this._host.removeEventListener('pointerdown', this);
+    globalThis.removeEventListener('keydown', this);
   }
 }
 

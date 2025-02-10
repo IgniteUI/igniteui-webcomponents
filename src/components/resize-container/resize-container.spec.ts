@@ -63,33 +63,51 @@ describe('Resize container', () => {
       );
     });
 
+    describe('API', () => {
+      it('should show the adorners when the active property is set', async () => {
+        const DOM = getDOM(element);
+
+        expect(Object.values(DOM.adorners).every((e) => !e)).is.true;
+
+        element.active = true;
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+      });
+
+      it('should not change adorners state with pointerenter/pointerleave when active is set', async () => {
+        const DOM = getDOM(element);
+
+        element.active = true;
+        await elementUpdated(element);
+
+        simulatePointerEnter(element);
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+
+        simulatePointerLeave(element);
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+      });
+    });
+
     describe('Events', () => {
       it('adorners visibility is toggled on pointer enter/leave events', async () => {
         const DOM = getDOM(element);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element === null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => !e)).is.true;
 
         // Pointerenter - adorners rendered
         await setResizeActiveState(element);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element !== null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
 
         // Pointerleave - adorners removed
         await setResizeActiveState(element, false);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element === null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => !e)).is.true;
       });
 
       it('resize behavior should only start when interacting with the trigger element', async () => {
@@ -440,33 +458,51 @@ describe('Resize container', () => {
       );
     });
 
+    describe('API', () => {
+      it('should show the adorners when the active property is set', async () => {
+        const DOM = getDOM(element);
+
+        expect(Object.values(DOM.adorners).every((e) => !e)).is.true;
+
+        element.active = true;
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+      });
+
+      it('should not change adorners state with pointerenter/pointerleave when active is set', async () => {
+        const DOM = getDOM(element);
+
+        element.active = true;
+        await elementUpdated(element);
+
+        simulatePointerEnter(element);
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+
+        simulatePointerLeave(element);
+        await elementUpdated(element);
+
+        expect(Object.values(DOM.adorners).every((e) => Boolean(e))).is.true;
+      });
+    });
+
     describe('Events', () => {
       it('adorners visibility is toggled on pointer enter/leave events', async () => {
         const DOM = getDOM(element);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element === null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e === null)).to.be.true;
 
         // Pointerenter - adorners rendered
         await setResizeActiveState(element);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element !== null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e !== null)).to.be.true;
 
         // Pointerleave - adorners removed
         await setResizeActiveState(element, false);
 
-        expect(
-          Array.from(Object.values(DOM.adorners)).every(
-            (element) => element === null
-          )
-        ).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e === null)).to.be.true;
       });
 
       it('resize behavior should only start when interacting with the trigger element', async () => {

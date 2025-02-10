@@ -21,7 +21,6 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   testFramework: {
     config: {
       timeout: 3000,
-      retries: 1,
     },
   },
 

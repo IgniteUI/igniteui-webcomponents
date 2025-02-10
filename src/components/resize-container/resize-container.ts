@@ -2,16 +2,12 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import {
-  addKeybindings,
-  escapeKey,
-} from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import { addRefactoredResizeController } from './resize-controller.js';
+import { addResizeController } from './resize-controller.js';
 import { styles } from './themes/resize-container.base.css.js';
 import type {
   ResizeCallbackParams,
@@ -46,7 +42,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     registerComponent(IgcResizeContainerComponent, IgcIconComponent);
   }
 
-  private _controller: ReturnType<typeof addRefactoredResizeController>;
+  private _controller: ReturnType<typeof addResizeController>;
 
   private _mode: ResizeMode = 'immediate';
   private _ghostFactory?: ResizeGhostFactory;
@@ -63,12 +59,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
   // REVIEW: Scroll behavior
   // private _scroll = addScrollBehavior(this);
-
-  @state()
-  private _state!: ResizeState;
-
-  @state()
-  private _isResizing = false;
 
   @state()
   private _isActive = false;
@@ -103,30 +93,22 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    this._controller = addRefactoredResizeController(this, {
+    this._controller = addResizeController(this, {
       ref: [this._adorners.side, this._adorners.corner, this._adorners.bottom],
       mode: this._mode,
       deferredFactory: this._ghostFactory,
       start: this._handleResizeStart,
       resize: this._handleResize,
       end: this._handleResizeEnd,
+      cancel: this._handleResizeCancel,
       resizeTarget: () => this._container.value!,
     });
-
-    addKeybindings(this, {
-      skip: () => !this._isResizing,
-      bindingDefaults: { preventDefault: true },
-    }).set(escapeKey, this._handleResizeCancel);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => this.requestUpdate());
     return root;
-  }
-
-  private _setState(params: ResizeCallbackParams): void {
-    this._state = params.state;
   }
 
   private _updateResizingState(params: ResizeCallbackParams): void {
@@ -138,8 +120,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     } else if (trigger === bottom.value) {
       current.width = initial.width;
     }
-
-    this._setState(params);
   }
 
   // REVIEW: Scroll behavior
@@ -177,10 +157,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     this.emitEvent('igcResizeStart', { bubbles: false, detail: params });
     // REVIEW: Scroll behavior
     // this._scroll.saveCurrentState();
-
-    this._isResizing = true;
-    this._setState(params);
-    params.state.trigger!.focus();
   }
 
   private _handleResize(params: ResizeCallbackParams): void {
@@ -190,21 +166,18 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   }
 
   private _handleResizeEnd(params: ResizeCallbackParams): void {
-    this._isResizing = false;
-    this._setState(params);
     this.emitEvent('igcResizeEnd', { bubbles: false, detail: params });
   }
 
-  private _handleResizeCancel(): void {
-    this._isResizing = false;
+  private _handleResizeCancel({ initial }: ResizeState): void {
     this._controller.dispose();
 
-    const { width, height } = this._state.initial;
-
-    Object.assign(this._container.value!.style, {
-      width: `${width}px`,
-      height: `${height}px`,
-    });
+    if (this.mode !== 'deferred') {
+      Object.assign(this._container.value!.style, {
+        width: `${initial.width}px`,
+        height: `${initial.height}px`,
+      });
+    }
 
     this.emitEvent('igcResizeCancel', { bubbles: false, cancelable: false });
   }
@@ -215,13 +188,9 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     }
 
     return html`
-      <div ${ref(this._adorners.side)} part="trigger-side" tabindex="-1">
-        🔵
-      </div>
-      <div ${ref(this._adorners.corner)} part="trigger" tabindex="-1">🔵</div>
-      <div ${ref(this._adorners.bottom)} part="trigger-bottom" tabindex="-1">
-        🔵
-      </div>
+      <div ${ref(this._adorners.side)} part="trigger-side">🔵</div>
+      <div ${ref(this._adorners.corner)} part="trigger">🔵</div>
+      <div ${ref(this._adorners.bottom)} part="trigger-bottom">🔵</div>
     `;
   }
 
