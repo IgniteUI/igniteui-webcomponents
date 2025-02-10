@@ -10,10 +10,12 @@ import { LitElement, css } from 'lit';
 import { spy } from 'sinon';
 import {
   compareStyles,
+  simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
 } from '../utils.spec.js';
 import { addDragDropController } from './drag-and-drop.js';
+import { escapeKey } from './key-bindings.js';
 
 describe('Drag and drop controller', () => {
   type DragElement = LitElement & {
@@ -114,6 +116,21 @@ describe('Drag and drop controller', () => {
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
+    });
+
+    it('should fire dragCancel when pressing Escape during a drag operation', async () => {
+      const dragCancel = spy();
+      instance.controller.setConfig({ dragStart, dragCancel });
+
+      simulatePointerDown(instance);
+      await elementUpdated(instance);
+
+      expect(dragStart.called).is.true;
+
+      simulateKeyboard(instance, escapeKey);
+      await elementUpdated(instance);
+
+      expect(dragCancel.called).is.true;
     });
   });
 });
