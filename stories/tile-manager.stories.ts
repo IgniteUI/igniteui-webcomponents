@@ -230,7 +230,38 @@ export const AutoInfer: Story = {
   `,
 };
 
+interface Visualization {
+  title: string;
+  columnSpan: string | number;
+  rowSpan: string | number;
+}
+
+const campaignVisualizations: Visualization[] = [
+  { title: 'Spend vs Budget', columnSpan: 15, rowSpan: 10 },
+  { title: 'Website Traffic', columnSpan: 15, rowSpan: 10 },
+  { title: 'Conversions', columnSpan: 15, rowSpan: 10 },
+  { title: 'New Seats', columnSpan: 15, rowSpan: 10 },
+  { title: 'Actual Spend vs Budget', columnSpan: 30, rowSpan: 30 },
+  { title: 'Website Traffic Breakdown', columnSpan: 30, rowSpan: 30 },
+  { title: 'Conversions', columnSpan: 45, rowSpan: 20 },
+  { title: 'Conversions by Territory', columnSpan: 15, rowSpan: 20 },
+];
+
+const salesVisualizations: Visualization[] = [
+  { title: 'Sales', columnSpan: 12, rowSpan: 15 },
+  { title: 'Total Opportunities', columnSpan: 12, rowSpan: 15 },
+  { title: 'Leads by Year', columnSpan: 36, rowSpan: 35 },
+  { title: 'Revenue by State', columnSpan: 24, rowSpan: 45 },
+  { title: 'New Seats Avg by Employee', columnSpan: 16, rowSpan: 25 },
+  { title: 'Sales by Product', columnSpan: 20, rowSpan: 25 },
+];
+
 export const FinDashboard: Story = {
+  args: {
+    resizeMode: 'hover',
+    dragMode: 'tile-header',
+  },
+
   render: (args) => html`
     <style>
       igc-tile::part(content-container) {
@@ -239,173 +270,30 @@ export const FinDashboard: Story = {
     </style>
 
     <igc-tile-manager
+      .columnCount=${60}
+      .rowCount=${60}
+      .minColumnWidth=${'5px'}
+      .minRowHeight=${'5px'}
       .gap=${args.gap}
       .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
-      .columnCount=${args.columnCount}
-      .minColumnWidth=${args.minColumnWidth}
-      .minRowHeight=${args.minRowHeight}
     >
-      <igc-tile
-        .colSpan=${3}
-        .rowSpan=${5}
-        @igcTileMaximize=${cancelStateChangeEvent}
-      >
-        <igc-tile-header slot="header">
-          <span slot="title">Good morning, John</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${1}>
-        <igc-tile-header slot="header">
-          <span slot="title">Spendings</span>
-        </igc-tile-header>
-
-        <p>$10,230</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Spendings</span>
-        </igc-tile-header>
-
-        <igc-list id="list" style="overflow-y: auto;">
-          <igc-list-item>
-            <igc-avatar
-              slot="start"
-              src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/building.svg"
-              shape="circle"
-              >H</igc-avatar
-            >
-            <h2 slot="title">Hotel</h2>
-            <span slot="subtitle">Jun 21, 06:15</span>
-            <div slot="end" class="stock-price">
-              <span>- 400,00 $</span>
-            </div>
-          </igc-list-item>
-
-          <igc-list-item>
-            <igc-avatar
-              slot="start"
-              src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/atm.svg"
-              shape="circle"
-              >ATM</igc-avatar
-            >
-            <h2 slot="title">Cash at ATM 000000</h2>
-            <span slot="subtitle">14:40</span>
-            <div slot="end" class="stock-price">
-              <span>- 140$</span>
-            </div>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${4}>
-        <igc-tile-header slot="header">
-          <span slot="title">Your Progress</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${3}>
-        <igc-tile-header slot="header">
-          <span slot="title">Income Source</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${1}>
-        <igc-tile-header slot="header">
-          <span slot="title">Income</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${6}>
-        <igc-tile-header slot="header">
-          <span slot="title">Notifications</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${5}>
-        <igc-tile-header slot="header">
-          <span slot="title">Incomes & Expenses</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${5}>
-        <igc-tile-header slot="header">
-          <span slot="title">Assets</span>
-        </igc-tile-header>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
+      ${campaignVisualizations?.map(
+        (viz) => html`
+          <igc-tile
+            .colSpan=${viz.columnSpan}
+            .rowSpan=${viz.rowSpan}
+            .disableResize=${false}
+            .disableDragging=${false}
+          >
+            <igc-tile-header slot="header">
+              <span slot="title">${viz.title}</span>
+            </igc-tile-header>
+            TEST CONTENT
+          </igc-tile>
+        `
+      )}
     </igc-tile-manager>
-
-    <igc-button @click=${disableTileResize}>
-      Toggle Tile 2 Resizing
-    </igc-button>
-    <igc-button @click=${toggleFullscreen}>
-      Toggle Tile 1 Fullscreen prop
-    </igc-button>
   `,
 };
 
@@ -415,208 +303,26 @@ export const FinDashboard1: Story = {
       .gap=${args.gap}
       .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
-      .columnCount=${args.columnCount}
-      .minColumnWidth=${args.minColumnWidth}
-      .minRowHeight=${args.minRowHeight}
+      .columnCount=${60}
+      .rowCount=${60}
+      .minColumnWidth=${'5px'}
+      .minRowHeight=${'5px'}
     >
-      <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Accounts</span>
-        </igc-tile-header>
-      </igc-tile>
-
-
-      <igc-tile .colSpan=${3} .rowSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Good morning, John</span>
-        </igc-tile-header>
-
-        <div>
-          <igc-rating class="size-large" label="Your level: Basic" value="2.5" step=".5" hover-preview></igc-rating>
-          <p>Total net worth: $123,000</p>
-          <h4>Spending Overview</h4>
-        </div>
-
-        <igc-divider></igc-divider>
-
-        <igc-tabs>
-          <igc-tab panel="daily">Daily</igc-tab>
-          <igc-tab panel="weekly">Weekly</igc-tab>
-          <igc-tab panel="monthly">Monthly</igc-tab>
-
-          <igc-tab-panel id="daily">
-            <igc-list id="list" style="overflow-y: auto;">
-              <igc-list-item>
-                <igc-date-picker id="date-picker" .value=${date}></igc-date-picker>
-                <igc-linear-progress value="74" label-format="Daily Limit: $1000"></igc-linear-progress>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/building.svg" shape="circle">H</igc-avatar>
-                <h2 slot="title">Hotel</h2>
-                <span slot="subtitle">Jun 21, 06:15</span>
-                <div slot="end" class="stock-price">
-                  <span>- 400,00 $</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/atm.svg" shape="circle">ATM</igc-avatar>
-                <h2 slot="title">Cash at ATM 000000</h2>
-                <span slot="subtitle">14:40</span>
-                <div slot="end" class="stock-price">
-                  <span>- 140$</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-1.svg" shape="circle">U</igc-avatar>
-                <h2 slot="title">Utilities</h2>
-                <span slot="subtitle">21/06/2021 16:00</span>
-                <div slot="end" class="stock-price">
-                  <span>- 200$</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-chip>Total amount spent: $740</igc-chip>
-              </igc-list-item>
-            </igc-list>
-
-          </igc-tab-panel>
-          <igc-tab-panel id="weekly">Details tab panel</igc-tab-panel>
-          <igc-tab-panel id="monthly">Custom tab panel</igc-tab-panel>
-        </igc-tabs>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Accounts</span>
-        </igc-tile-header>
-
-        <igc-list class="list">
-          <igc-list-item>
-            <igc-avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV7nAPFKxnp1qbtogJya1mdIzIFTZXg4P_kw&s" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              EUR
-            </p>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar src="https://media.istockphoto.com/id/1151557689/vector/vector-image-of-a-flat-isolated-icon-dollar-sign-currency-exchange-dollar-united-states.jpg?s=612x612&w=0&k=20&c=XxoU_vrc2LCsrlRnmZHysq6HG_tBIUsPVVxi0VeTCKA=" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              USD
-            </p>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar src="https://static.vecteezy.com/system/resources/thumbnails/006/060/118/small_2x/bitcoin-logo-crypto-currency-symbol-free-vector.jpg" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              BTC
-            </p>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Your Cards</span>
-        </igc-tile-header>
-        <igc-card style="overflow-y: auto;" elevated>
-          <igc-card-content>
-            <igc-button class="size-small" variant="flat" class="add-card-btn">
-              + Add Card
-            </igc-button>
-            <igc-list id="list" style="overflow-y: auto;">
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/mastercard.svg" shape="circle">MC</igc-avatar>
-                <h2 slot="title">Standard **0000</h2>
-                <span slot="subtitle">Expires on 11/26</span>
-              </igc-list-item>
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/visa.svg" shape="circle">VISA</igc-avatar>
-                <h2 slot="title">Rose gold **0000</h2>
-                <span slot="subtitle">Expires on 11/24</span>
-              </igc-list-item>
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/visa.svg" shape="circle">VISA</igc-avatar>
-                <h2 slot="title">Virtual card **0000</h2>
-                <span slot="subtitle">Expires on 10/22</span>
-              </igc-list-item>
-            </igc-list>
-          </igc-card-content>
-        </igc-card>
-      </igc-tile>
-
-      <igc-tile .colSpan=${3}>
-      <igc-tile-header slot="header">
-          <span slot="title">Latest Transactions</span>
-        </igc-tile-header>
-        <igc-list id="list" style="overflow-y: auto;">
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-2.svg" shape="circle">AMZN</igc-avatar>
-            <h2 slot="title">Money added via **0000</h2>
-            <span slot="subtitle">14:40</span>
-            <div slot="end" class="stock-price">
-              <span>+ 2000$</span>
-            </div>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-only.svg" shape="circle">SET</igc-avatar>
-            <h2 slot="title">Sports Event Tickets</h2>
-            <span slot="subtitle">Jun 21, 06:15, Declined because your card is inactive</span>
-            <div slot="end" class="stock-price">
-              <span style="text-decoration: line-through;">1017,08 $</span>
-              <span style="color: lightgray;">900,08 $</span>
-            </div>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-only.svg" shape="circle">AT</igc-avatar>
-            <h2 slot="title">Airplane Tickets</h2>
-            <span slot="subtitle">Jun 21, 06:15, Declined because your card is inactive</span>
-            <div slot="end" class="stock-price">
-              <span style="text-decoration: line-through;">985,00 $</span>
-              <span style="color: lightgray;">980,00 $</span>
-            </div>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${7} .disableDrag=${true} .disableResize=${true}>
-        <igc-tile-header slot="header">
-          <span slot="title">Get Verified</span>
-        </igc-tile-header>
-
-        <span slot="subtitle">Want to spend more and enjoy the full experience? Get verified today to lift your limits.</span>
-
-        <igc-stepper id="stepper">
-          <igc-step>
-            <span slot="title">Personal Details</span>
-            </br>
-            <form>
-              <igc-input required label="Full Name" type="text" name="fullName"></igc-input>
-              <igc-input required label="Email" type="email" name="email"></igc-input>
-              <br />
-              <igc-button class="next" onclick="stepper.next()">NEXT</igc-button>
-            </form>
-          </igc-step>
-          <igc-step>
-            <span slot="title">Address Details</span>
-            </br>
-            <form>
-              <igc-input required label="Country" type="text" name="country"></igc-input>
-              <igc-input required label="Address" type="text" name="address"></igc-input>
-              <br />
-              <igc-button onclick="stepper.prev()">PREVIOUS</igc-button>
-              <igc-button class="next" onclick="stepper.next()">NEXT</igc-button>
-            </form>
-          </igc-step>
-          <igc-step>
-            <span slot="title">KYC Verification</span>
-            </br>
-            <igc-button onclick="stepper.prev()">PREVIOUS</igc-button>
-            <igc-button onclick="stepper.reset()">RESET</igc-button>
-          </igc-step>
-        </igc-stepper>
-      </igc-tile>
+      ${salesVisualizations?.map(
+        (viz) => html`
+          <igc-tile
+            .colSpan=${viz.columnSpan}
+            .rowSpan=${viz.rowSpan}
+            .disableResize=${false}
+            .disableDragging=${false}
+          >
+            <igc-tile-header slot="header">
+              <span slot="title">${viz.title}</span>
+            </igc-tile-header>
+            TEST CONTENT
+          </igc-tile>
+        `
+      )}
     </igc-tile-manager>
   `,
 };
