@@ -528,7 +528,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected _renderHeader() {
     return html`
       <div part="header">
-        <slot ${ref(this._headerRef)} part="title" name="title"></slot>
+        <header part="title" ${ref(this._headerRef)}>
+          <slot name="title"></slot>
+        </header>
         <section part="actions">
           <slot name="default-actions">
             <slot name="maximize-action">

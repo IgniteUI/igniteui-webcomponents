@@ -22,3 +22,7 @@ $theme: $indigo;
         margin: 0;
     }
 }
+
+[part='header'] {
+    padding-block: sizable(rem(8px), rem(14px), rem(14px));
+}
