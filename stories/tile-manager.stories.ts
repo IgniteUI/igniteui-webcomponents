@@ -164,10 +164,8 @@ const tiles = Array.from(
     range(10),
     (i) => html`
       <igc-tile .disableResize=${i === 0} .disableDrag=${i === 0}>
-        <igc-tile-header slot="header">
-          <h3 slot="title">Tile ${i + 1} Title</h3>
-          <igc-icon name="home" slot="actions"></igc-icon>
-        </igc-tile-header>
+        <h3 slot="title">Tile ${i + 1} Title</h3>
+        <igc-icon name="home" slot="actions"></igc-icon>
 
         <p>Text in Tile ${i + 1}</p>
         <div class="picture">
@@ -371,12 +369,6 @@ function disableTileResize() {
   tileManager.tiles[1].disableResize = !tileManager.tiles[1].disableResize;
 }
 
-function toggleFullscreen() {
-  const tileManager =
-    document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
-  tileManager.tiles[1].fullscreen = !tileManager.tiles[1].fullscreen;
-}
-
 function cancelStateChangeEvent(e: CustomEvent) {
   e.preventDefault();
 }
@@ -395,14 +387,12 @@ export const Maximized: Story = {
         maximized
         @igcTileFullscreen=${cancelStateChangeEvent}
       >
-        <igc-tile-header slot="header"></igc-tile-header>
         <h1>I am Maximized</h1>
         <igc-button @click=${toggleMaximizedTile}
           >Toggle maximized state</igc-button
         >
       </igc-tile>
       <igc-tile row-start="5">
-        <igc-tile-header slot="header"></igc-tile-header>
         <h2>I am not maximized and will be under the maximized tile</h2>
       </igc-tile>
     </igc-tile-manager>
@@ -499,7 +489,7 @@ export const Serialization: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile disable-drag disable-resize>
-        <igc-tile-header>Header 1</igc-tile-header>
+        <span slot="title">Header 1</span>
         <h1>Tile1</h1>
       </igc-tile>
       <igc-tile id="tile2">
@@ -584,20 +574,18 @@ export const CustomActions: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile>
-        <igc-tile-header slot="header">
-          <h3 slot="title">Custom Actions</h3>
-          <div slot="default-actions" id="default-actions">
-            <igc-icon-button
-              slot="default-actions"
-              variant="flat"
-              collection="material"
-              exportparts="icon"
-              name="north_east"
-              aria-label="north_east"
-              @click=${handleMaximizeClick}
-            ></igc-icon-button>
-          </div>
-        </igc-tile-header>
+        <h3 slot="title">Custom Actions</h3>
+        <div slot="default-actions" id="default-actions">
+          <igc-icon-button
+            slot="default-actions"
+            variant="flat"
+            collection="material"
+            exportparts="icon"
+            name="north_east"
+            aria-label="north_east"
+            @click=${handleMaximizeClick}
+          ></igc-icon-button>
+        </div>
 
         <p>
           Set custom content for the default-actions slot based on maximized
@@ -605,17 +593,13 @@ export const CustomActions: Story = {
         </p>
       </igc-tile>
       <igc-tile col-span="2">
-        <igc-tile-header slot="header">
-          <h3 slot="title">Empty Fullscreen Action</h3>
-          <div slot="fullscreen-action"></div>
-        </igc-tile-header>
+        <h3 slot="title">Empty Fullscreen Action</h3>
+        <div slot="fullscreen-action"></div>
 
         <p>Empty div added to the fullscreen action slot</p>
       </igc-tile>
       <igc-tile col-span="2">
-        <igc-tile-header slot="header">
-          <h3 slot="title">Default Actions</h3>
-        </igc-tile-header>
+        <h3 slot="title">Default Actions</h3>
 
         <p>This tile has default actions</p>
       </igc-tile>

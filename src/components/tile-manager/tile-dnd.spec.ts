@@ -12,7 +12,6 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import IgcTileHeaderComponent from './tile-header.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
 
@@ -57,9 +56,7 @@ describe.skip('Tile drag and drop', () => {
     const result = Array.from(range(5)).map(
       (i) => html`
         <igc-tile id="tile${i}">
-          <igc-tile-header slot="header">
-            <h3 slot="title">Tile ${i + 1}</h3>
-          </igc-tile-header>
+          <h3 slot="title">Tile ${i + 1}</h3>
 
           <div>
             <p>Content in tile ${i + 1}</p>
@@ -283,7 +280,8 @@ describe.skip('Tile drag and drop', () => {
     });
 
     const dragAndDrop = async (draggedTile: Element, dropTarget: Element) => {
-      const header = draggedTile.querySelector(IgcTileHeaderComponent.tagName)!;
+      const header =
+        draggedTile.shadowRoot?.querySelector('div[part="header"]')!;
       const dropTargetRect = dropTarget.getBoundingClientRect();
 
       simulatePointerDown(header);
@@ -377,10 +375,10 @@ describe.skip('Tile drag and drop', () => {
         return Promise.resolve();
       });
 
-      const header = draggedTile.querySelector(IgcTileHeaderComponent.tagName);
+      const header =
+        draggedTile.shadowRoot?.querySelector('div[part="header"]');
       const actionButtons =
-        header?.shadowRoot?.querySelectorAll(IgcIconButtonComponent.tagName) ||
-        [];
+        header?.querySelectorAll(IgcIconButtonComponent.tagName) || [];
       const btnFullscreen = actionButtons[1];
       simulateClick(btnFullscreen);
       await elementUpdated(tileManager);
