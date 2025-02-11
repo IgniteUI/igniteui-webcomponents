@@ -193,7 +193,9 @@ describe('Tile Manager component', () => {
             style="--ig-col-span:1;--ig-row-span:1;"
           >
             <div part="header">
-              <slot part="title" name="title"></slot>
+              <header part="title">
+                <slot name="title"></slot>
+              </header>
               <section part="actions">
                 <slot name="default-actions">
                   <slot name="maximize-action">
