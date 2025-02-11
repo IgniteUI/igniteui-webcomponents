@@ -232,6 +232,9 @@ interface Visualization {
   title: string;
   columnSpan: string | number;
   rowSpan: string | number;
+  value?: number;
+  trend?: number;
+  img?: string;
 }
 
 const campaignVisualizations: Visualization[] = [
@@ -246,13 +249,93 @@ const campaignVisualizations: Visualization[] = [
 ];
 
 const salesVisualizations: Visualization[] = [
-  { title: 'Sales', columnSpan: 12, rowSpan: 15 },
-  { title: 'Total Opportunities', columnSpan: 12, rowSpan: 15 },
-  { title: 'Leads by Year', columnSpan: 36, rowSpan: 35 },
-  { title: 'Revenue by State', columnSpan: 24, rowSpan: 45 },
-  { title: 'New Seats Avg by Employee', columnSpan: 16, rowSpan: 25 },
-  { title: 'Sales by Product', columnSpan: 20, rowSpan: 25 },
+  {
+    title: 'Sales',
+    columnSpan: 12,
+    rowSpan: 15,
+    value: 4592177,
+    trend: -40.86,
+  },
+  {
+    title: 'Total Opportunities',
+    columnSpan: 12,
+    rowSpan: 15,
+    value: 779903,
+    trend: 1.35,
+  },
+  {
+    title: 'Leads by Year',
+    columnSpan: 36,
+    rowSpan: 35,
+    img: 'https://community.tableau.com/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId=0684T000001hlEa&operationContext=CHATTER&contentId=05T4T0000079c8R&page=0',
+  },
+  {
+    title: 'Revenue by State',
+    columnSpan: 24,
+    rowSpan: 45,
+    img: 'https://static01.nyt.com/newsgraphics/2021/02/24/state-tax-revenue-map/36b53ac5076ed3c055083850c07f5c2adbe3d43d/state-tax-revnue-map-1050.png',
+  },
+  {
+    title: 'New Seats Avg by Employee',
+    columnSpan: 16,
+    rowSpan: 25,
+    img: 'https://www.slideteam.net/media/catalog/product/cache/1280x720/h/o/horizontal_bar_graph_depicting_forecasted_and_actual_sales_slide01.jpg',
+  },
+  {
+    title: 'Sales by Product',
+    columnSpan: 20,
+    rowSpan: 25,
+    img: 'https://blog.logrocket.com/wp-content/uploads/2023/06/new-vs-recurring-revenue-chart-example-1.png',
+  },
 ];
+
+const trendContent = (value: number, trend: number) => html`
+  <style>
+    h3 {
+      margin-bottom: 0px;
+    }
+    h4,
+    h6 {
+      margin: 0px;
+    }
+
+    .trends {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .decrease {
+      color: palevioletred;
+    }
+    .increase {
+      color: lightseagreen;
+    }
+  </style>
+  <div class="trends">
+    <h3>${value.toLocaleString()}</h3>
+    <h4 class="${trend > 0 ? 'increase' : 'decrease'}">
+      ${trend.toLocaleString()}%
+    </h4>
+    <h6>vs previous year</h6>
+  </div>
+`;
+
+const imageContent = (img: string) => html`
+  <style>
+    .picture {
+      display: flex;
+      width: 100%;
+      height: 100%;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  </style>
+  <div class="picture"><img src="${img}" alt="picture" /></div>
+`;
 
 export const FinDashboard: Story = {
   args: {
@@ -284,9 +367,7 @@ export const FinDashboard: Story = {
             .disableResize=${false}
             .disableDragging=${false}
           >
-            <igc-tile-header slot="header">
-              <span slot="title">${viz.title}</span>
-            </igc-tile-header>
+            <span slot="title">${viz.title}</span>
             TEST CONTENT
           </igc-tile>
         `
@@ -314,10 +395,10 @@ export const FinDashboard1: Story = {
             .disableResize=${false}
             .disableDragging=${false}
           >
-            <igc-tile-header slot="header">
-              <span slot="title">${viz.title}</span>
-            </igc-tile-header>
-            TEST CONTENT
+            <span slot="title">${viz.title}</span>
+            ${(viz.value && trendContent(viz.value, viz.trend || 0)) ||
+            (viz.img && imageContent(viz.img)) ||
+            'TEST CONTENT'}
           </igc-tile>
         `
       )}

@@ -14,7 +14,8 @@
         --ig-size: 3;
     }
 
-    ::slotted(igc-button) {
+    ::slotted(igc-button),
+    ::slotted(igc-icon-button) {
         --ig-size: 2;
     }
 }

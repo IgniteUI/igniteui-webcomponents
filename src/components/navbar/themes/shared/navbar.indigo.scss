@@ -28,3 +28,7 @@
     padding: rem(6px);
     margin: 0;
 }
+
+::slotted(igc-avatar) {
+    --ig-size: 2;
+}

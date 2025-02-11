@@ -23,13 +23,11 @@ class ResizeController implements ReactiveController {
   private _ghost: HTMLElement | null = null;
 
   private get _element(): HTMLElement {
-    return this._activeRef || this._host;
+    return this._activeRef ?? this._host;
   }
 
   private get _resizeTarget(): HTMLElement {
-    return this._config.resizeTarget
-      ? this._config.resizeTarget.call(this._host)
-      : this._host;
+    return this._config.resizeTarget?.call(this._host) ?? this._host;
   }
 
   /** Whether the controller is in deferred mode. */
@@ -148,9 +146,8 @@ class ResizeController implements ReactiveController {
     this._config.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
 
-    parameters.state.commit
-      ? parameters.state.commit.call(this._host)
-      : this._updatePosition(this._resizeTarget);
+    parameters.state.commit?.call(this._host) ??
+      this._updatePosition(this._resizeTarget);
 
     this.dispose();
   }
@@ -173,9 +170,7 @@ class ResizeController implements ReactiveController {
   }
 
   private _setActiveRef(event: Event): void {
-    const refs = this._config.ref
-      ? this._config.ref.map(({ value }) => value)
-      : [this._host];
+    const refs = this._config.ref?.map(({ value }) => value) ?? [this._host];
 
     this._activeRef =
       findElementFromEventPath<HTMLElement>(
@@ -234,22 +229,20 @@ class ResizeController implements ReactiveController {
       return;
     }
 
-    this._ghost = this._config.deferredFactory
-      ? this._config.deferredFactory.call(this._host)
-      : createDefaultGhostElement(
-          this._state.initial.width,
-          this._state.initial.height
-        );
+    this._ghost =
+      this._config.deferredFactory?.call(this._host) ??
+      createDefaultGhostElement(
+        this._state.initial.width,
+        this._state.initial.height
+      );
 
     this._ghost.setAttribute('data-resize-ghost', '');
     this._host.append(this._ghost);
   }
 
   private _removeGhostElement(): void {
-    if (this._ghost) {
-      this._ghost.remove();
-      this._ghost = null;
-    }
+    this._ghost?.remove();
+    this._ghost = null;
   }
 
   // #endregion
