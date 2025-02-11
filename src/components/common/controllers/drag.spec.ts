@@ -14,12 +14,12 @@ import {
   simulateLostPointerCapture,
   simulatePointerDown,
 } from '../utils.spec.js';
-import { addDragDropController } from './drag-and-drop.js';
+import { addDragController } from './drag.js';
 import { escapeKey } from './key-bindings.js';
 
 describe('Drag and drop controller', () => {
   type DragElement = LitElement & {
-    controller: ReturnType<typeof addDragDropController>;
+    controller: ReturnType<typeof addDragController>;
   };
 
   let tag: string;
@@ -36,7 +36,7 @@ describe('Drag and drop controller', () => {
           }
         `;
 
-        public controller = addDragDropController(this);
+        public controller = addDragController(this);
 
         protected override render() {
           return html`<slot></slot>`;
