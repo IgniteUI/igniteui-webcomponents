@@ -4,9 +4,8 @@ import type {
   ReactiveControllerHost,
 } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-import { findElementFromEventPath } from '../util.js';
 
-type DragDropCallback = () => unknown;
+import { findElementFromEventPath } from '../util.js';
 
 type DragEnterCallback = (target: Element) => unknown;
 
@@ -16,9 +15,18 @@ type DragCallbackParams = {
   event: PointerEvent;
 };
 
+type State = {
+  initial: DOMRect;
+  current: DOMRect;
+  offset: {
+    dx: number;
+    dy: number;
+  };
+};
+
 // TODO: Start providing callback params for the hooks and type them
 
-type DragDropConfig = {
+type DragConfig = {
   /** Whether the drag and drop feature is enabled for the current host. */
   enabled?: boolean;
   /**
@@ -62,7 +70,7 @@ type DragDropConfig = {
   /** Callback invoked at the beginning of a drag operation. */
   dragStart?: DragCallback;
   /** Callback invoked while dragging the target element.  */
-  dragMove?: DragDropCallback;
+  dragMove?: DragCallback;
 
   dragEnter?: DragEnterCallback;
 
@@ -71,22 +79,23 @@ type DragDropConfig = {
   dragOver?: DragEnterCallback;
 
   /** Callback invoked during a drop operation. */
-  dragEnd?: DragDropCallback;
+  dragEnd?: DragCallback;
   /** Callback invoked when a drag and drop is cancelled */
-  dragCancel?: DragDropCallback;
+  dragCancel?: DragCallback;
 };
 
 const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
 
-class DragDropController implements ReactiveController {
+class DragController implements ReactiveController {
   private _host: ReactiveControllerHost & LitElement;
-  private _config: DragDropConfig = {
+  private _config: DragConfig = {
     enabled: true,
     mode: 'deferred',
     snapToCursor: false,
   };
 
-  private _dragOffset = { dx: 0, dy: 0 };
+  private _state!: State;
+
   private _previousMatch!: Element | null;
 
   private _id = -1;
@@ -145,10 +154,7 @@ class DragDropController implements ReactiveController {
     return Boolean(this._config.enabled);
   }
 
-  constructor(
-    host: ReactiveControllerHost & LitElement,
-    config?: DragDropConfig
-  ) {
+  constructor(host: ReactiveControllerHost & LitElement, config?: DragConfig) {
     this._host = host;
     this._host.addController(this);
     this.setConfig(config);
@@ -174,10 +180,13 @@ class DragDropController implements ReactiveController {
     const rect = this._host.getBoundingClientRect();
 
     this._id = pointerId;
-
-    this._dragOffset = {
-      dx: rect.x - clientX,
-      dy: rect.y - clientY,
+    this._state = {
+      initial: rect,
+      current: structuredClone(rect),
+      offset: {
+        dx: rect.x - clientX,
+        dy: rect.y - clientY,
+      },
     };
   }
 
@@ -231,8 +240,10 @@ class DragDropController implements ReactiveController {
 
   private _setPosition(x: number, y: number) {
     const { top, left } = this._layer.getBoundingClientRect();
-    const posX = this._hasSnapping ? x - left : x - left + this._dragOffset.dx;
-    const posY = this._hasSnapping ? y - top : y - top + this._dragOffset.dy;
+    const { offset } = this._state;
+
+    const posX = this._hasSnapping ? x - left : x - left + offset.dx;
+    const posY = this._hasSnapping ? y - top : y - top + offset.dy;
 
     this._dragItem.style.transform = `translate(${posX}px,${posY}px)`;
   }
@@ -242,19 +253,17 @@ class DragDropController implements ReactiveController {
       return;
     }
 
-    this._ghost = this._config.ghost
-      ? this._config.ghost.call(this._host)
-      : createDefaultDragGhost(this._host.getBoundingClientRect());
+    this._ghost =
+      this._config.ghost?.call(this._host) ??
+      createDefaultDragGhost(this._host.getBoundingClientRect());
 
     this._setPosition(clientX, clientY);
     this._layer.append(this._ghost);
   }
 
   private _removeGhost(): void {
-    if (this._ghost) {
-      this._ghost.remove();
-      this._ghost = null;
-    }
+    this._ghost?.remove();
+    this._ghost = null;
   }
 
   private _shouldSkip(event: PointerEvent): boolean {
@@ -308,7 +317,7 @@ class DragDropController implements ReactiveController {
   }
 
   /** Updates the drag and drop controller configuration. */
-  public setConfig(value?: DragDropConfig): void {
+  public setConfig(value?: DragConfig): void {
     Object.assign(this._config, value);
   }
 
@@ -378,9 +387,9 @@ function createDefaultDragGhost(rect: DOMRect): HTMLElement {
 /**
  * Adds a drag and drop controller to the given host
  */
-export function addDragDropController(
+export function addDragController(
   host: ReactiveControllerHost & LitElement,
-  config?: DragDropConfig
-): DragDropController {
-  return new DragDropController(host, config);
+  config?: DragConfig
+): DragController {
+  return new DragController(host, config);
 }

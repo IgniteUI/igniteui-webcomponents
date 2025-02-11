@@ -10,14 +10,14 @@ import {
   tileManagerContext,
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
-import { addDragDropController } from '../common/controllers/drag-and-drop.js';
+import { addDragController } from '../common/controllers/drag.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   asNumber,
   createCounter,
-  isElement,
+  findElementFromEventPath,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -91,10 +91,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
 
-  private _dragController = addDragDropController(this, {
+  private _dragController = addDragController(this, {
     skip: this._skipDrag,
     matchTarget: this._match,
-    layer: () => this._tileManager!.overlay.value!,
+    layer: () => this._tileOverlay,
     ghost: this._createDragGhost,
     dragStart: this._handleDragStart,
     dragMove: this._handleDragMove,
@@ -142,6 +142,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
   /** Returns the parent tile manager. */
   private get _tileManager(): TileManagerContext | undefined {
     return this._managerContext.value;
+  }
+
+  /** Returns the overlay container of the tile manager. */
+  private get _tileOverlay(): HTMLElement {
+    return this._tileManager?.overlay.value!;
   }
 
   /** Returns the tile manager internal CSS grid container. */
@@ -378,12 +383,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _skipDrag(event: PointerEvent): boolean {
+    if (this._maximized) {
+      return true;
+    }
+
     return Boolean(
-      (this._resizeContainer &&
-        event
-          .composedPath()
-          .some((e) => isElement(e) && e.matches('[part*=trigger]'))) ||
-        this.maximized
+      this._resizeContainer &&
+        findElementFromEventPath('[part*=trigger]', event)
     );
   }
 
