@@ -222,15 +222,27 @@ class TileResizeState {
     this._prevSnappedHeight = 0;
 
     if (this._position.column.start < 0) {
+      const widthOffset =
+        grid.getBoundingClientRect().left +
+        window.scrollX +
+        Number.parseFloat(getComputedStyle(grid).marginLeft) +
+        Number.parseFloat(getComputedStyle(grid).paddingLeft);
+
       this._position.column.start = this.calculatePosition(
-        tileRect.left + window.scrollX,
+        tileRect.left + window.scrollX + grid.scrollLeft - widthOffset,
         this._columns.entries
       );
     }
 
     if (this._position.row.start < 0) {
+      const heightOffset =
+        grid.getBoundingClientRect().top +
+        window.scrollY +
+        Number.parseFloat(getComputedStyle(grid).marginTop) +
+        Number.parseFloat(getComputedStyle(grid).paddingTop);
+
       this._position.row.start = this.calculatePosition(
-        tileRect.y + window.scrollY,
+        tileRect.y + window.scrollY - heightOffset,
         this._rows.entries
       );
     }
