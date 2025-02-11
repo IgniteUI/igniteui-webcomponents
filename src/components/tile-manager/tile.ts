@@ -1,18 +1,11 @@
-import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { LitElement, html, nothing } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import {
-  type TileContext,
   type TileManagerContext,
-  tileContext,
   tileManagerContext,
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
@@ -23,10 +16,10 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   asNumber,
   createCounter,
-  first,
   isElement,
   partNameMap,
 } from '../common/util.js';
+import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
@@ -34,7 +27,6 @@ import { swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
-import IgcTileHeaderComponent from './tile-header.js';
 import { createTileGhost, createTileResizeState } from './tile-util.js';
 
 type IgcTileChangeState = {
@@ -64,6 +56,19 @@ export interface IgcTileComponentEventMap {
  * @fires igcResizeStart - Fired when tile begins resizing.
  * @fires igcResizeMove - Fired when tile is being resized.
  * @fires igcResizeEnd - Fired when tile finishes resizing.
+ *
+ * @slot title - Renders the title of the tile header.
+ * @slot default-actions - Renders maximize and fullscreen action elements.
+ * @slot maximize-action - Renders the maximize action element.
+ * @slot fullscreen-action - Renders the fullscreen action element.
+ * @slot actions - Renders items after the default actions.
+ * @slot Default slot fot the tile's content.
+ *
+ * @csspart base - The wrapper for the entire tile.
+ * @csspart header - The container for the header, including title and actions.
+ * @csspart title - The title container.
+ * @csspart actions - The actions container.
+ * @csspart content-container - The container wrapping the tile’s main content.
  */
 @themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
@@ -77,7 +82,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(
       IgcTileComponent,
-      IgcTileHeaderComponent,
+      IgcIconButtonComponent,
+      IgcDividerComponent,
       IgcResizeContainerComponent
     );
   }
@@ -121,8 +127,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }: TileManagerContext) => {
     this._dragController.setConfig({
       enabled: !this.disableDrag && dragMode !== 'none',
-      trigger:
-        dragMode === 'tile-header' ? () => first(this._headers) : undefined,
+      trigger: dragMode === 'tile-header' ? () => this._header : undefined,
     });
   };
 
@@ -147,22 +152,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.instance.resizeMode ?? 'none';
   }
 
-  private _createContext(): TileContext {
-    return {
-      instance: this,
-      fullscreenController: this._fullscreenController,
-    };
-  }
-
-  private _context = new ContextProvider(this, {
-    context: tileContext,
-    initialValue: this._createContext(),
-  });
-
-  private _setTileContext(): void {
-    this._context.setValue(this._createContext(), true);
-  }
-
   /** Whether the parent tile manager drag action is in **slide** mode. */
   private get _isSlideMode(): boolean {
     return this._tileManager
@@ -170,11 +159,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : true;
   }
 
-  @queryAssignedElements({
-    selector: IgcTileHeaderComponent.tagName,
-    slot: 'header',
-  })
-  protected _headers!: IgcTileHeaderComponent[];
+  @query('[part="header"]')
+  protected _header!: HTMLDivElement;
 
   @query(IgcResizeContainerComponent.tagName)
   protected _resizeContainer?: IgcResizeContainerComponent;
@@ -300,7 +286,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set maximized(value: boolean) {
     this._maximized = value;
-    this._setTileContext();
 
     if (this._tileManager) {
       this._tileManager.instance.requestUpdate();
@@ -356,14 +341,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
     this.style.viewTransitionName = `tile-transition-${this.tileId}`;
-  }
-
-  private emitFullScreenEvent(state: boolean) {
-    this._setTileContext();
-    return this.emitEvent('igcTileFullscreen', {
-      detail: { tile: this, state },
-      cancelable: true,
-    });
   }
 
   private _setDragState(state = true) {
@@ -489,7 +466,62 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setResizeState(false);
   }
 
-  protected renderContent() {
+  private _handleFullscreen() {
+    this._fullscreenController.setState(!this.fullscreen);
+  }
+
+  private _handleMaximize() {
+    if (!this.emitMaximizedEvent()) {
+      return;
+    }
+
+    this.maximized = !this.maximized;
+  }
+
+  private emitFullScreenEvent(state: boolean) {
+    this.requestUpdate();
+
+    return this.emitEvent('igcTileFullscreen', {
+      detail: { tile: this, state },
+      cancelable: true,
+    });
+  }
+
+  private emitMaximizedEvent() {
+    return this.emitEvent('igcTileMaximize', {
+      detail: { tile: this, state: !this.maximized },
+      cancelable: true,
+    });
+  }
+
+  protected _renderAction({
+    icon,
+    handler,
+  }: {
+    icon: string;
+    handler: () => unknown;
+  }) {
+    return html`
+      <igc-icon-button
+        variant="flat"
+        collection="default"
+        exportparts="icon"
+        name=${icon}
+        aria-label=${icon}
+        @click=${handler}
+      ></igc-icon-button>
+    `;
+  }
+
+  protected _renderContent() {
+    const maximize = {
+      icon: this.maximized ? 'collapse_content' : 'expand_content',
+      handler: this._handleMaximize,
+    };
+    const fullscreen = {
+      icon: this.fullscreen ? 'fullscreen_exit' : 'fullscreen',
+      handler: this._handleFullscreen,
+    };
     const parts = partNameMap({
       base: true,
       'drag-over': this._hasDragOver && !this._isSlideMode,
@@ -510,7 +542,22 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     return html`
       <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
-        <slot name="header"></slot>
+        <div part="header">
+          <slot part="title" name="title"></slot>
+          <section part="actions">
+            <slot name="default-actions">
+              <slot name="maximize-action">
+                ${!this.fullscreen ? this._renderAction(maximize) : nothing}
+              </slot>
+              <slot name="fullscreen-action">
+                ${this._renderAction(fullscreen)}
+              </slot>
+            </slot>
+            <slot name="actions"></slot>
+          </section>
+        </div>
+        <igc-divider></igc-divider>
+
         <div part="content-container">
           <slot></slot>
         </div>
@@ -522,7 +569,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const active = this._resizeMode === 'always';
 
     return this._resizeDisabled
-      ? this.renderContent()
+      ? this._renderContent()
       : html`
           <igc-resize
             part="resize"
@@ -534,7 +581,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
             @igcResizeEnd=${this._handleResizeEnd}
             @igcResizeCancel=${this._handleResizeCancel}
           >
-            ${this.renderContent()}
+            ${this._renderContent()}
           </igc-resize>
         `;
   }

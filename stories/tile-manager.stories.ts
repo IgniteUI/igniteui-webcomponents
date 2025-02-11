@@ -164,10 +164,8 @@ const tiles = Array.from(
     range(10),
     (i) => html`
       <igc-tile .disableResize=${i === 0} .disableDrag=${i === 0}>
-        <igc-tile-header slot="header">
-          <h3 slot="title">Tile ${i + 1} Title</h3>
-          <igc-icon name="home" slot="actions"></igc-icon>
-        </igc-tile-header>
+        <h3 slot="title">Tile ${i + 1} Title</h3>
+        <igc-icon name="home" slot="actions"></igc-icon>
 
         <p>Text in Tile ${i + 1}</p>
         <div class="picture">
@@ -251,9 +249,7 @@ export const FinDashboard: Story = {
         .rowSpan=${5}
         @igcTileMaximize=${cancelStateChangeEvent}
       >
-        <igc-tile-header slot="header">
-          <span slot="title">Good morning, John</span>
-        </igc-tile-header>
+        <span slot="title">Good morning, John</span>
 
         <igc-rating
           class="size-large"
@@ -266,17 +262,13 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${1}>
-        <igc-tile-header slot="header">
-          <span slot="title">Spendings</span>
-        </igc-tile-header>
+        <span slot="title">Spendings</span>
 
         <p>$10,230</p>
       </igc-tile>
 
       <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Spendings</span>
-        </igc-tile-header>
+        <span slot="title">Spendings</span>
 
         <igc-list id="list" style="overflow-y: auto;">
           <igc-list-item>
@@ -310,9 +302,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${4}>
-        <igc-tile-header slot="header">
-          <span slot="title">Your Progress</span>
-        </igc-tile-header>
+        <span slot="title">Your Progress</span>
 
         <igc-rating
           class="size-large"
@@ -325,9 +315,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${3}>
-        <igc-tile-header slot="header">
-          <span slot="title">Income Source</span>
-        </igc-tile-header>
+        <span slot="title">Income Source</span>
 
         <igc-rating
           class="size-large"
@@ -340,9 +328,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${1}>
-        <igc-tile-header slot="header">
-          <span slot="title">Income</span>
-        </igc-tile-header>
+        <span slot="title">Income</span>
 
         <igc-rating
           class="size-large"
@@ -355,9 +341,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${6}>
-        <igc-tile-header slot="header">
-          <span slot="title">Notifications</span>
-        </igc-tile-header>
+        <span slot="title">Notifications</span>
 
         <igc-rating
           class="size-large"
@@ -370,9 +354,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${5}>
-        <igc-tile-header slot="header">
-          <span slot="title">Incomes & Expenses</span>
-        </igc-tile-header>
+        <span slot="title">Incomes & Expenses</span>
 
         <igc-rating
           class="size-large"
@@ -385,9 +367,7 @@ export const FinDashboard: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${5}>
-        <igc-tile-header slot="header">
-          <span slot="title">Assets</span>
-        </igc-tile-header>
+        <span slot="title">Assets</span>
 
         <igc-rating
           class="size-large"
@@ -403,9 +383,6 @@ export const FinDashboard: Story = {
     <igc-button @click=${disableTileResize}>
       Toggle Tile 2 Resizing
     </igc-button>
-    <igc-button @click=${toggleFullscreen}>
-      Toggle Tile 1 Fullscreen prop
-    </igc-button>
   `,
 };
 
@@ -420,16 +397,12 @@ export const FinDashboard1: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Accounts</span>
-        </igc-tile-header>
+        <span slot="title">Accounts</span>
       </igc-tile>
 
 
       <igc-tile .colSpan=${3} .rowSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Good morning, John</span>
-        </igc-tile-header>
+        <span slot="title">Good morning, John</span>
 
         <div>
           <igc-rating class="size-large" label="Your level: Basic" value="2.5" step=".5" hover-preview></igc-rating>
@@ -490,9 +463,7 @@ export const FinDashboard1: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Accounts</span>
-        </igc-tile-header>
+        <span slot="title">Accounts</span>
 
         <igc-list class="list">
           <igc-list-item>
@@ -517,9 +488,7 @@ export const FinDashboard1: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${2}>
-        <igc-tile-header slot="header">
-          <span slot="title">Your Cards</span>
-        </igc-tile-header>
+        <span slot="title">Your Cards</span>
         <igc-card style="overflow-y: auto;" elevated>
           <igc-card-content>
             <igc-button class="size-small" variant="flat" class="add-card-btn">
@@ -546,10 +515,7 @@ export const FinDashboard1: Story = {
         </igc-card>
       </igc-tile>
 
-      <igc-tile .colSpan=${3}>
-      <igc-tile-header slot="header">
-          <span slot="title">Latest Transactions</span>
-        </igc-tile-header>
+      <igc-tile .colSpan=${3}><span slot="title">Latest Transactions</span>
         <igc-list id="list" style="overflow-y: auto;">
           <igc-list-item>
             <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-2.svg" shape="circle">AMZN</igc-avatar>
@@ -581,9 +547,7 @@ export const FinDashboard1: Story = {
       </igc-tile>
 
       <igc-tile .colSpan=${7} .disableDrag=${true} .disableResize=${true}>
-        <igc-tile-header slot="header">
-          <span slot="title">Get Verified</span>
-        </igc-tile-header>
+        <span slot="title">Get Verified</span>
 
         <span slot="subtitle">Want to spend more and enjoy the full experience? Get verified today to lift your limits.</span>
 
@@ -665,12 +629,6 @@ function disableTileResize() {
   tileManager.tiles[1].disableResize = !tileManager.tiles[1].disableResize;
 }
 
-function toggleFullscreen() {
-  const tileManager =
-    document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
-  tileManager.tiles[1].fullscreen = !tileManager.tiles[1].fullscreen;
-}
-
 function cancelStateChangeEvent(e: CustomEvent) {
   e.preventDefault();
 }
@@ -689,14 +647,12 @@ export const Maximized: Story = {
         maximized
         @igcTileFullscreen=${cancelStateChangeEvent}
       >
-        <igc-tile-header slot="header"></igc-tile-header>
         <h1>I am Maximized</h1>
         <igc-button @click=${toggleMaximizedTile}
           >Toggle maximized state</igc-button
         >
       </igc-tile>
       <igc-tile row-start="5">
-        <igc-tile-header slot="header"></igc-tile-header>
         <h2>I am not maximized and will be under the maximized tile</h2>
       </igc-tile>
     </igc-tile-manager>
@@ -793,7 +749,7 @@ export const Serialization: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile disable-drag disable-resize>
-        <igc-tile-header>Header 1</igc-tile-header>
+        <span slot="title">Header 1</span>
         <h1>Tile1</h1>
       </igc-tile>
       <igc-tile id="tile2">
@@ -878,20 +834,18 @@ export const CustomActions: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile>
-        <igc-tile-header slot="header">
-          <h3 slot="title">Custom Actions</h3>
-          <div slot="default-actions" id="default-actions">
-            <igc-icon-button
-              slot="default-actions"
-              variant="flat"
-              collection="material"
-              exportparts="icon"
-              name="north_east"
-              aria-label="north_east"
-              @click=${handleMaximizeClick}
-            ></igc-icon-button>
-          </div>
-        </igc-tile-header>
+        <h3 slot="title">Custom Actions</h3>
+        <div slot="default-actions" id="default-actions">
+          <igc-icon-button
+            slot="default-actions"
+            variant="flat"
+            collection="material"
+            exportparts="icon"
+            name="north_east"
+            aria-label="north_east"
+            @click=${handleMaximizeClick}
+          ></igc-icon-button>
+        </div>
 
         <p>
           Set custom content for the default-actions slot based on maximized
@@ -899,17 +853,13 @@ export const CustomActions: Story = {
         </p>
       </igc-tile>
       <igc-tile col-span="2">
-        <igc-tile-header slot="header">
-          <h3 slot="title">Empty Fullscreen Action</h3>
-          <div slot="fullscreen-action"></div>
-        </igc-tile-header>
+        <h3 slot="title">Empty Fullscreen Action</h3>
+        <div slot="fullscreen-action"></div>
 
         <p>Empty div added to the fullscreen action slot</p>
       </igc-tile>
       <igc-tile col-span="2">
-        <igc-tile-header slot="header">
-          <h3 slot="title">Default Actions</h3>
-        </igc-tile-header>
+        <h3 slot="title">Default Actions</h3>
 
         <p>This tile has default actions</p>
       </igc-tile>
