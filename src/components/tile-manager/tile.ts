@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -127,7 +128,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }: TileManagerContext) => {
     this._dragController.setConfig({
       enabled: !this.disableDrag && dragMode !== 'none',
-      trigger: dragMode === 'tile-header' ? () => this._header : undefined,
+      trigger:
+        dragMode === 'tile-header' ? () => this._headerRef.value! : undefined,
     });
   };
 
@@ -159,8 +161,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       : true;
   }
 
-  @query('[part="header"]')
-  protected _header!: HTMLDivElement;
+  protected _headerRef = createRef<HTMLSlotElement>();
 
   @query(IgcResizeContainerComponent.tagName)
   protected _resizeContainer?: IgcResizeContainerComponent;
@@ -494,13 +495,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  protected _renderAction({
-    icon,
-    handler,
-  }: {
-    icon: string;
-    handler: () => unknown;
-  }) {
+  protected _renderDefaultAction(type: 'maximize' | 'fullscreen') {
+    const [icon, listener] =
+      type === 'fullscreen'
+        ? [
+            this.fullscreen ? 'fullscreen_exit' : 'fullscreen',
+            this._handleFullscreen,
+          ]
+        : [
+            this._maximized ? 'collapse_content' : 'expand_content',
+            this._handleMaximize,
+          ];
+
     return html`
       <igc-icon-button
         variant="flat"
@@ -508,20 +514,34 @@ export default class IgcTileComponent extends EventEmitterMixin<
         exportparts="icon"
         name=${icon}
         aria-label=${icon}
-        @click=${handler}
+        @click=${listener}
       ></igc-icon-button>
     `;
   }
 
+  protected _renderHeader() {
+    return html`
+      <div part="header">
+        <slot ${ref(this._headerRef)} part="title" name="title"></slot>
+        <section part="actions">
+          <slot name="default-actions">
+            <slot name="maximize-action">
+              ${this.fullscreen
+                ? nothing
+                : this._renderDefaultAction('maximize')}
+            </slot>
+            <slot name="fullscreen-action">
+              ${this._renderDefaultAction('fullscreen')}
+            </slot>
+          </slot>
+          <slot name="actions"></slot>
+        </section>
+      </div>
+      <igc-divider></igc-divider>
+    `;
+  }
+
   protected _renderContent() {
-    const maximize = {
-      icon: this.maximized ? 'collapse_content' : 'expand_content',
-      handler: this._handleMaximize,
-    };
-    const fullscreen = {
-      icon: this.fullscreen ? 'fullscreen_exit' : 'fullscreen',
-      handler: this._handleFullscreen,
-    };
     const parts = partNameMap({
       base: true,
       'drag-over': this._hasDragOver && !this._isSlideMode,
@@ -542,22 +562,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     return html`
       <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
-        <div part="header">
-          <slot part="title" name="title"></slot>
-          <section part="actions">
-            <slot name="default-actions">
-              <slot name="maximize-action">
-                ${!this.fullscreen ? this._renderAction(maximize) : nothing}
-              </slot>
-              <slot name="fullscreen-action">
-                ${this._renderAction(fullscreen)}
-              </slot>
-            </slot>
-            <slot name="actions"></slot>
-          </section>
-        </div>
-        <igc-divider></igc-divider>
-
+        ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>
         </div>
@@ -565,25 +570,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  protected override render() {
-    const active = this._resizeMode === 'always';
+  protected _renderResizeContainer() {
+    return html`
+      <igc-resize
+        part="resize"
+        mode="deferred"
+        ?active=${this._resizeMode === 'always'}
+        .ghostFactory=${createTileGhost}
+        @igcResizeStart=${this._handleResizeStart}
+        @igcResize=${this._handleResize}
+        @igcResizeEnd=${this._handleResizeEnd}
+        @igcResizeCancel=${this._handleResizeCancel}
+      >
+        ${this._renderContent()}
+      </igc-resize>
+    `;
+  }
 
+  protected override render() {
     return this._resizeDisabled
       ? this._renderContent()
-      : html`
-          <igc-resize
-            part="resize"
-            mode="deferred"
-            ?active=${active}
-            .ghostFactory=${createTileGhost}
-            @igcResizeStart=${this._handleResizeStart}
-            @igcResize=${this._handleResize}
-            @igcResizeEnd=${this._handleResizeEnd}
-            @igcResizeCancel=${this._handleResizeCancel}
-          >
-            ${this._renderContent()}
-          </igc-resize>
-        `;
+      : this._renderResizeContainer();
   }
 }
 
