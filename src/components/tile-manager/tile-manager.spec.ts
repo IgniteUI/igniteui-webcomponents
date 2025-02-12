@@ -28,8 +28,11 @@ describe('Tile Manager component', () => {
   }
 
   function getActionButtons(tile: IgcTileComponent) {
-    const header = tile.shadowRoot?.querySelector('div[part="header"]');
-    return header?.querySelectorAll(IgcIconButtonComponent.tagName) || [];
+    return Array.from(
+      tile.renderRoot
+        .querySelector('[part="header"]')
+        ?.querySelectorAll(IgcIconButtonComponent.tagName) ?? []
+    );
   }
 
   function createTileManager() {
@@ -192,7 +195,7 @@ describe('Tile Manager component', () => {
             part="base draggable resizable"
             style="--ig-col-span:1;--ig-row-span:1;"
           >
-            <div part="header">
+            <section part="header">
               <header part="title">
                 <slot name="title"></slot>
               </header>
@@ -221,7 +224,7 @@ describe('Tile Manager component', () => {
                 </slot>
                 <slot name="actions"></slot>
               </section>
-            </div>
+            </section>
             <igc-divider type="solid"></igc-divider>
             <div part="content-container">
               <slot></slot>
@@ -538,8 +541,8 @@ describe('Tile Manager component', () => {
     it('can cancel `igcTileMaximize` event', async () => {
       const eventSpy = spy(tile, 'emitEvent');
 
-      tile.addEventListener('igcTileMaximize', (ev) => {
-        ev.preventDefault();
+      tile.addEventListener('igcTileMaximize', (event: Event) => {
+        event.preventDefault();
       });
 
       const btnMaximize = getActionButtons(tile)[0];

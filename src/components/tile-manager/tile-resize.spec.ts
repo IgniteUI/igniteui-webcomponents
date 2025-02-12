@@ -16,8 +16,6 @@ import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
-  simulatePointerEnter,
-  simulatePointerLeave,
   simulatePointerMove,
 } from '../common/utils.spec.js';
 import IgcResizeContainerComponent, {
@@ -407,12 +405,6 @@ function getResizeContainerDOM(tile: IgcTileComponent) {
       return resizeContainer.querySelector<HTMLElement>('[data-resize-ghost]')!;
     },
   };
-}
-
-async function setResizeActiveState(tile: IgcTileComponent, state = true) {
-  const { container, resizeElement } = getResizeContainerDOM(tile);
-  state ? simulatePointerEnter(container) : simulatePointerLeave(container);
-  await elementUpdated(resizeElement);
 }
 
 function getResizeEventState(

@@ -527,7 +527,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected _renderHeader() {
     return html`
-      <div part="header">
+      <section part="header">
         <header part="title" ${ref(this._headerRef)}>
           <slot name="title"></slot>
         </header>
@@ -544,7 +544,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           </slot>
           <slot name="actions"></slot>
         </section>
-      </div>
+      </section>
       <igc-divider></igc-divider>
     `;
   }
