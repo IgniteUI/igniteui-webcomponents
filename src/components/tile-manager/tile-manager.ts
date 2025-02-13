@@ -26,6 +26,7 @@ import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
+import { DraggedTileAttribute } from './tile-util.js';
 import IgcTileComponent from './tile.js';
 
 // REVIEW: WIP
@@ -74,7 +75,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   private _tilesState = createTilesState(this);
 
   private _grid = createRef<HTMLElement>();
-  private _overlay = createRef<HTMLElement>();
 
   // #endregion
 
@@ -89,7 +89,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     return {
       instance: this,
       grid: this._grid,
-      overlay: this._overlay,
     };
   }
 
@@ -225,7 +224,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
     createMutationController(this, {
       callback: this._observerCallback,
-      filter: [IgcTileComponent.tagName],
+      filter: [`${IgcTileComponent.tagName}:not([${DraggedTileAttribute}])`],
       config: {
         childList: true,
       },
@@ -284,10 +283,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
   // #region Rendering
 
-  protected _renderOverlay() {
-    return html`<div ${ref(this._overlay)} part="overlay"></div>`;
-  }
-
   protected override render() {
     const parts = partNameMap({
       base: true,
@@ -295,7 +290,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     });
 
     return html`
-      ${this._renderOverlay()}
       <div
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}

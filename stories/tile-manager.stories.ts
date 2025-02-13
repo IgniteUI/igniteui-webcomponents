@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { type TemplateResult, html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
@@ -232,62 +232,128 @@ interface Visualization {
   title: string;
   columnSpan: string | number;
   rowSpan: string | number;
-  value?: number;
-  trend?: number;
-  img?: string;
+  content?: TemplateResult;
 }
 
-const campaignVisualizations: Visualization[] = [
-  { title: 'Spend vs Budget', columnSpan: 15, rowSpan: 10 },
-  { title: 'Website Traffic', columnSpan: 15, rowSpan: 10 },
-  { title: 'Conversions', columnSpan: 15, rowSpan: 10 },
-  { title: 'New Seats', columnSpan: 15, rowSpan: 10 },
-  { title: 'Actual Spend vs Budget', columnSpan: 30, rowSpan: 30 },
-  { title: 'Website Traffic Breakdown', columnSpan: 30, rowSpan: 30 },
-  { title: 'Conversions', columnSpan: 45, rowSpan: 20 },
-  { title: 'Conversions by Territory', columnSpan: 15, rowSpan: 20 },
+const productsData = [
+  {
+    productID: 1,
+    productName: 'Carnavon Tigers',
+    quantity: 12,
+    unitPrice: 50,
+    discount: 0,
+  },
+  {
+    productID: 2,
+    productName: 'Guarana Fantastica',
+    quantity: 10,
+    unitPrice: 4,
+    discount: 0,
+  },
+  {
+    productID: 3,
+    productName: 'Vegie-spread',
+    quantity: 5,
+    unitPrice: 35,
+    discount: 0,
+  },
+  {
+    productID: 4,
+    productName: 'Rhonbrau Klosterbier',
+    quantity: 7,
+    unitPrice: 6,
+    discount: 0,
+  },
 ];
 
-const salesVisualizations: Visualization[] = [
-  {
-    title: 'Sales',
-    columnSpan: 12,
-    rowSpan: 15,
-    value: 4592177,
-    trend: -40.86,
-  },
-  {
-    title: 'Total Opportunities',
-    columnSpan: 12,
-    rowSpan: 15,
-    value: 779903,
-    trend: 1.35,
-  },
-  {
-    title: 'Leads by Year',
-    columnSpan: 36,
-    rowSpan: 35,
-    img: 'https://community.tableau.com/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId=0684T000001hlEa&operationContext=CHATTER&contentId=05T4T0000079c8R&page=0',
-  },
-  {
-    title: 'Revenue by State',
-    columnSpan: 24,
-    rowSpan: 45,
-    img: 'https://static01.nyt.com/newsgraphics/2021/02/24/state-tax-revenue-map/36b53ac5076ed3c055083850c07f5c2adbe3d43d/state-tax-revnue-map-1050.png',
-  },
-  {
-    title: 'New Seats Avg by Employee',
-    columnSpan: 16,
-    rowSpan: 25,
-    img: 'https://www.slideteam.net/media/catalog/product/cache/1280x720/h/o/horizontal_bar_graph_depicting_forecasted_and_actual_sales_slide01.jpg',
-  },
-  {
-    title: 'Sales by Product',
-    columnSpan: 20,
-    rowSpan: 25,
-    img: 'https://blog.logrocket.com/wp-content/uploads/2023/06/new-vs-recurring-revenue-chart-example-1.png',
-  },
-];
+const listContent = () => html`
+  <style>
+    .content {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet"
+  />
+  <igc-list class="list">
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>OrderID</p>
+        <p>10293</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Customer Name</p>
+        <p>Tortuga Restaurante</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Order Date</p>
+        <p>August 29, 1996</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Shipped Date</p>
+        <p>September 11, 1996</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Product Name</p>
+        <p>Carnavon Tigers</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Shipper Name</p>
+        <p>Federal Shipping</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Ship Country</p>
+        <p>Mexico</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Required Date</p>
+        <p>September 26, 1996</p>
+      </div>
+    </igc-list-item>
+  </igc-list>
+`;
 
 const trendContent = (value: number, trend: number) => html`
   <style>
@@ -320,22 +386,211 @@ const trendContent = (value: number, trend: number) => html`
   </div>
 `;
 
+const stringContent = (value: string) => html`
+  <style>
+    .string {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+  <div class="string"><h1>${value}</h1></div>
+`;
+
 const imageContent = (img: string) => html`
   <style>
     .picture {
       display: flex;
       width: 100%;
-      height: 100%;
+      height: 80%;
+      justify-content: center;
 
       img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        max-width: 100%;
+        height: auto;
       }
     }
   </style>
   <div class="picture"><img src="${img}" alt="picture" /></div>
 `;
+
+const cardContent = () =>
+  html` <style>
+      .group {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+      .card {
+        min-height: 30px;
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
+        grid-column-start: 2;
+        grid-row-start: 2;
+        flex-direction: row;
+      }
+      .group_1 {
+        flex-grow: 1;
+      }
+      .h5 {
+        margin: 0 0 16px;
+        height: max-content;
+        min-width: min-content;
+      }
+      .body-content {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+    <div class="group">
+      ${productsData.map(
+        (item) =>
+          html` <igc-card class="card">
+            <div class="group_1">
+              <igc-card-header>
+                <div slot="thumbnail">
+                  <igc-avatar shape="circle">
+                    <span class="material-icons">
+                      production_quantity_limits
+                    </span>
+                  </igc-avatar>
+                </div>
+                <h3 slot="title">${item.productName}</h3>
+              </igc-card-header>
+              <igc-card-content class="column">
+                <div class="body-content">
+                  <span>Quantity</span> <span>${item.quantity}</span>
+                </div>
+                <div class="body-content">
+                  <span>Unit Price</span> <span>$${item.unitPrice}</span>
+                </div>
+              </igc-card-content>
+            </div>
+          </igc-card>`
+      )}
+    </div>`;
+
+const renderDashboardTM = (
+  items: Visualization[],
+  args: IgcTileManagerArgs
+) => html`
+  <igc-tile-manager
+    .gap=${args.gap}
+    .resizeMode=${args.resizeMode}
+    .dragMode=${args.dragMode}
+    .columnCount=${60}
+    .rowCount=${60}
+    .minColumnWidth=${'5px'}
+    .minRowHeight=${'5px'}
+  >
+    ${items?.map(
+      (viz) => html`
+        <igc-tile
+          .colSpan=${viz.columnSpan}
+          .rowSpan=${viz.rowSpan}
+          .disableResize=${false}
+          .disableDragging=${false}
+        >
+          <span slot="title">${viz.title}</span>
+          ${viz.content || 'TEST CONTENT'}
+        </igc-tile>
+      `
+    )}
+  </igc-tile-manager>
+`;
+
+const orderDetailsVisualizations: Visualization[] = [
+  { title: '', columnSpan: 15, rowSpan: 60, content: listContent() },
+  {
+    title: 'Order Line Items',
+    columnSpan: 45,
+    rowSpan: 20,
+    content: cardContent(),
+  },
+  {
+    title: 'Order Value',
+    columnSpan: 17,
+    rowSpan: 10,
+    content: stringContent('$8.66K'),
+  },
+  {
+    title: 'Line Items',
+    columnSpan: 13,
+    rowSpan: 10,
+    content: stringContent('4'),
+  },
+  {
+    title: 'Avg Discount',
+    columnSpan: 15,
+    rowSpan: 10,
+    content: stringContent('0.00'),
+  },
+  {
+    title: 'Products',
+    columnSpan: 45,
+    rowSpan: 30,
+    content: imageContent(
+      'https://as2.ftcdn.net/v2/jpg/05/62/32/91/1000_F_562329142_K4HsDuOo3Thhf7rab7I4E0oz8en78nd9.jpg'
+    ),
+  },
+];
+
+const salesVisualizations: Visualization[] = [
+  {
+    title: 'Sales',
+    columnSpan: 12,
+    rowSpan: 15,
+    content: trendContent(4592177, -40.86),
+  },
+  {
+    title: 'Total Opportunities',
+    columnSpan: 12,
+    rowSpan: 15,
+    content: trendContent(779903, 1.35),
+  },
+  {
+    title: 'Leads by Year',
+    columnSpan: 36,
+    rowSpan: 35,
+    content: imageContent(
+      'https://community.tableau.com/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId=0684T000001hlEa&operationContext=CHATTER&contentId=05T4T0000079c8R&page=0'
+    ),
+  },
+  {
+    title: 'Revenue by State',
+    columnSpan: 24,
+    rowSpan: 45,
+    content: imageContent(
+      'https://static01.nyt.com/newsgraphics/2021/02/24/state-tax-revenue-map/36b53ac5076ed3c055083850c07f5c2adbe3d43d/state-tax-revnue-map-1050.png'
+    ),
+  },
+  {
+    title: 'New Seats Avg by Employee',
+    columnSpan: 16,
+    rowSpan: 25,
+    content: imageContent(
+      'https://www.slideteam.net/media/catalog/product/cache/1280x720/h/o/horizontal_bar_graph_depicting_forecasted_and_actual_sales_slide01.jpg'
+    ),
+  },
+  {
+    title: 'Sales by Product',
+    columnSpan: 20,
+    rowSpan: 25,
+    content: imageContent(
+      'https://blog.logrocket.com/wp-content/uploads/2023/06/new-vs-recurring-revenue-chart-example-1.png'
+    ),
+  },
+];
 
 export const FinDashboard: Story = {
   args: {
@@ -349,61 +604,12 @@ export const FinDashboard: Story = {
         padding: 1rem;
       }
     </style>
-
-    <igc-tile-manager
-      .columnCount=${60}
-      .rowCount=${60}
-      .minColumnWidth=${'5px'}
-      .minRowHeight=${'5px'}
-      .gap=${args.gap}
-      .resizeMode=${args.resizeMode}
-      .dragMode=${args.dragMode}
-    >
-      ${campaignVisualizations?.map(
-        (viz) => html`
-          <igc-tile
-            .colSpan=${viz.columnSpan}
-            .rowSpan=${viz.rowSpan}
-            .disableResize=${false}
-            .disableDragging=${false}
-          >
-            <span slot="title">${viz.title}</span>
-            TEST CONTENT
-          </igc-tile>
-        `
-      )}
-    </igc-tile-manager>
+    ${renderDashboardTM(orderDetailsVisualizations, args)}
   `,
 };
 
 export const FinDashboard1: Story = {
-  render: (args) => html`
-    <igc-tile-manager
-      .gap=${args.gap}
-      .resizeMode=${args.resizeMode}
-      .dragMode=${args.dragMode}
-      .columnCount=${60}
-      .rowCount=${60}
-      .minColumnWidth=${'5px'}
-      .minRowHeight=${'5px'}
-    >
-      ${salesVisualizations?.map(
-        (viz) => html`
-          <igc-tile
-            .colSpan=${viz.columnSpan}
-            .rowSpan=${viz.rowSpan}
-            .disableResize=${false}
-            .disableDragging=${false}
-          >
-            <span slot="title">${viz.title}</span>
-            ${(viz.value && trendContent(viz.value, viz.trend || 0)) ||
-            (viz.img && imageContent(viz.img)) ||
-            'TEST CONTENT'}
-          </igc-tile>
-        `
-      )}
-    </igc-tile-manager>
-  `,
+  render: (args) => html` ${renderDashboardTM(salesVisualizations, args)} `,
 };
 
 export const Default: Story = {

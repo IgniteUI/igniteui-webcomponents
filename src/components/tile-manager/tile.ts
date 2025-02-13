@@ -28,7 +28,11 @@ import { swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
-import { createTileGhost, createTileResizeState } from './tile-util.js';
+import {
+  createTileDragGhost,
+  createTileGhost,
+  createTileResizeState,
+} from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -94,7 +98,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _dragController = addDragController(this, {
     skip: this._skipDrag,
     matchTarget: this._match,
-    layer: () => this._tileOverlay,
+    layer: () => this._tileManager!,
     ghost: this._createDragGhost,
     dragStart: this._handleDragStart,
     dragMove: this._handleDragMove,
@@ -133,36 +137,35 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   };
 
-  private _managerContext = createAsyncContext(
+  private _context = createAsyncContext(
     this,
     tileManagerContext,
     this._setDragConfiguration
   );
 
-  /** Returns the parent tile manager. */
-  private get _tileManager(): TileManagerContext | undefined {
-    return this._managerContext.value;
+  /** Returns the parent tile manager context. */
+  private get _tileManagerCtx(): TileManagerContext | undefined {
+    return this._context.value;
   }
 
-  /** Returns the overlay container of the tile manager. */
-  private get _tileOverlay(): HTMLElement {
-    return this._tileManager?.overlay.value!;
+  private get _tileManager() {
+    return this._tileManagerCtx?.instance;
   }
 
   /** Returns the tile manager internal CSS grid container. */
   private get _cssContainer(): HTMLElement {
-    return this._tileManager?.grid.value!;
+    return this._tileManagerCtx?.grid.value!;
   }
 
   /** Returns the tile manager current resize mode. */
   private get _resizeMode() {
-    return this._tileManager?.instance.resizeMode ?? 'none';
+    return this._tileManager?.resizeMode ?? 'none';
   }
 
   /** Whether the parent tile manager drag action is in **slide** mode. */
   private get _isSlideMode(): boolean {
-    return this._tileManager
-      ? this._tileManager.instance.dragAction === 'slide'
+    return this._tileManagerCtx
+      ? this._tileManagerCtx.instance.dragAction === 'slide'
       : true;
   }
 
@@ -293,8 +296,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public set maximized(value: boolean) {
     this._maximized = value;
 
-    if (this._tileManager) {
-      this._tileManager.instance.requestUpdate();
+    if (this._tileManagerCtx) {
+      this._tileManagerCtx.instance.requestUpdate();
     }
   }
 
@@ -346,7 +349,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
 
-    this.style.viewTransitionName = `tile-transition-${this.tileId}`;
+    this.style.viewTransitionName =
+      this.style.viewTransitionName || `tile-transition-${this.tileId}`;
   }
 
   private _setDragState(state = true) {
@@ -397,30 +401,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return element !== this && IgcTileComponent.tagName === element.localName;
   }
 
-  private _createDragGhost(): HTMLElement {
-    const ghost = this.cloneNode(true) as HTMLElement;
-    const { width, height } = this.getBoundingClientRect();
-
-    Object.assign(ghost, {
-      inert: true,
-      id: '',
-    });
-
-    Object.assign(ghost.style, {
-      position: 'absolute',
-      contain: 'strict',
-      top: 0,
-      left: 0,
-      width: `${width}px`,
-      height: `${height}px`,
-      background: 'var(--placeholder-background)',
-      border: '1px solid var(--ghost-border)',
-      borderRadius: 'var(--border-radius)',
-      zIndex: 1000,
-      viewTransitionName: '',
-    });
-
-    return ghost;
+  private _createDragGhost(): IgcTileComponent {
+    return createTileDragGhost(this);
   }
 
   private _setResizeState(state = true) {
@@ -527,8 +509,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected _renderHeader() {
     return html`
-      <div part="header">
-        <slot ${ref(this._headerRef)} part="title" name="title"></slot>
+      <section part="header">
+        <header part="title" ${ref(this._headerRef)}>
+          <slot name="title"></slot>
+        </header>
         <section part="actions">
           <slot name="default-actions">
             <slot name="maximize-action">
@@ -542,7 +526,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           </slot>
           <slot name="actions"></slot>
         </section>
-      </div>
+      </section>
       <igc-divider></igc-divider>
     `;
   }

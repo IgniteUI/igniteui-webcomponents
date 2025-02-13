@@ -12,6 +12,8 @@ type TileGridPosition = {
   row: TilePosition;
 };
 
+export const DraggedTileAttribute = 'data-drag-ghost-tile';
+
 type TileGridDimension = { count: number; entries: number[]; minSize: number };
 
 const CssValues = new RegExp(/(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi);
@@ -330,6 +332,32 @@ class TileResizeState {
 
 export function createTileResizeState(): TileResizeState {
   return new TileResizeState();
+}
+
+export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
+  const clone = tile.cloneNode(true) as IgcTileComponent;
+  const { width, height } = tile.getBoundingClientRect();
+
+  clone.removeAttribute('id');
+  clone.setAttribute(DraggedTileAttribute, '');
+  clone.inert = true;
+  clone.position = -1;
+
+  Object.assign(clone.style, {
+    position: 'absolute',
+    contain: 'strict',
+    top: 0,
+    left: 0,
+    width: `${width}px`,
+    height: `${height}px`,
+    background: 'var(--placeholder-background)',
+    border: '1px solid var(--ghost-border)',
+    borderRadius: 'var(--border-radius)',
+    zIndex: 1000,
+    viewTransitionName: 'dragged-tile-ghost',
+  });
+
+  return clone;
 }
 
 export function createTileGhost(): HTMLElement {

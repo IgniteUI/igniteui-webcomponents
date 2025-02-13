@@ -74,14 +74,17 @@
     z-index: 10;
 }
 
-// REVIEW copied from tile-header.base.scss
-
 [part='header'] {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: sizable(rem(12px), rem(16px), rem(16px));
     padding-block: sizable(rem(8px), rem(13px), rem(13px));
     padding-inline: sizable(rem(12px), rem(16px), rem(20px));
+}
+
+[part='title'] {
+    width: 100%;
 }
 
 ::slotted([slot='title']) {
@@ -95,5 +98,4 @@
 [part='actions'] {
     display: flex;
     gap: rem(8px);
-    margin-inline-start: auto;
 }
