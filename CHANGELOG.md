@@ -4,8 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [5.2.2] - 2025-02-12
 ### Fixed
+- #### Combo
+  - Incorrect defaultValue with async data-binding [#1555](https://github.com/IgniteUI/igniteui-webcomponents/pull/1555)
+- #### Circular progressbar
+  - Value label correctly scales with the diameter of the component [#1543](https://github.com/IgniteUI/igniteui-webcomponents/pull/1543)
+- #### Date picker
+  - Date picker styles for the helper-text slot based on its size [#1559](https://github.com/IgniteUI/igniteui-webcomponents/pull/1559)
+- #### Icon button
+  - Outlined border sinks behind parent element background [#1566](https://github.com/IgniteUI/igniteui-webcomponents/pull/1566)
+- #### Input
+  - helper-text slot padding styles [#1547](https://github.com/IgniteUI/igniteui-webcomponents/pull/1547)
+- ### Navbar
+  - Apply correct sizes for slotted elements from the library [#1570](https://github.com/IgniteUI/igniteui-webcomponents/pull/1570)
 - #### Rating
   - Inaccurate value rounding calculation when step is not 1 [#1560](https://github.com/IgniteUI/igniteui-webcomponents/issues/1560)
 
@@ -677,6 +689,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.1...5.2.2
 [5.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.0...5.2.1
 [5.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.2...5.2.0
 [5.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.1.1...5.1.2
