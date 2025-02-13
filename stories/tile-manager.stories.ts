@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { type TemplateResult, html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
@@ -228,361 +228,388 @@ export const AutoInfer: Story = {
   `,
 };
 
+interface Visualization {
+  title: string;
+  columnSpan: string | number;
+  rowSpan: string | number;
+  content?: TemplateResult;
+}
+
+const productsData = [
+  {
+    productID: 1,
+    productName: 'Carnavon Tigers',
+    quantity: 12,
+    unitPrice: 50,
+    discount: 0,
+  },
+  {
+    productID: 2,
+    productName: 'Guarana Fantastica',
+    quantity: 10,
+    unitPrice: 4,
+    discount: 0,
+  },
+  {
+    productID: 3,
+    productName: 'Vegie-spread',
+    quantity: 5,
+    unitPrice: 35,
+    discount: 0,
+  },
+  {
+    productID: 4,
+    productName: 'Rhonbrau Klosterbier',
+    quantity: 7,
+    unitPrice: 6,
+    discount: 0,
+  },
+];
+
+const listContent = () => html`
+  <style>
+    .content {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet"
+  />
+  <igc-list class="list">
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>OrderID</p>
+        <p>10293</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Customer Name</p>
+        <p>Tortuga Restaurante</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Order Date</p>
+        <p>August 29, 1996</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Shipped Date</p>
+        <p>September 11, 1996</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Product Name</p>
+        <p>Carnavon Tigers</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Shipper Name</p>
+        <p>Federal Shipping</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> list_alt </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Ship Country</p>
+        <p>Mexico</p>
+      </div>
+    </igc-list-item>
+    <igc-list-item>
+      <igc-avatar slot="start" shape="circle" class="avatar">
+        <span class="material-icons"> calendar_month </span>
+      </igc-avatar>
+      <div slot="title" class="content">
+        <p>Required Date</p>
+        <p>September 26, 1996</p>
+      </div>
+    </igc-list-item>
+  </igc-list>
+`;
+
+const trendContent = (value: number, trend: number) => html`
+  <style>
+    h3 {
+      margin-bottom: 0px;
+    }
+    h4,
+    h6 {
+      margin: 0px;
+    }
+
+    .trends {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .decrease {
+      color: palevioletred;
+    }
+    .increase {
+      color: lightseagreen;
+    }
+  </style>
+  <div class="trends">
+    <h3>${value.toLocaleString()}</h3>
+    <h4 class="${trend > 0 ? 'increase' : 'decrease'}">
+      ${trend.toLocaleString()}%
+    </h4>
+    <h6>vs previous year</h6>
+  </div>
+`;
+
+const stringContent = (value: string) => html`
+  <style>
+    .string {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+  <div class="string"><h1>${value}</h1></div>
+`;
+
+const imageContent = (img: string) => html`
+  <style>
+    .picture {
+      display: flex;
+      width: 100%;
+      height: 80%;
+      justify-content: center;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  </style>
+  <div class="picture"><img src="${img}" alt="picture" /></div>
+`;
+
+const cardContent = () =>
+  html` <style>
+      .group {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+      .card {
+        min-height: 30px;
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
+        grid-column-start: 2;
+        grid-row-start: 2;
+        flex-direction: row;
+      }
+      .group_1 {
+        flex-grow: 1;
+      }
+      .h5 {
+        margin: 0 0 16px;
+        height: max-content;
+        min-width: min-content;
+      }
+      .body-content {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+    <div class="group">
+      ${productsData.map(
+        (item) =>
+          html` <igc-card class="card">
+            <div class="group_1">
+              <igc-card-header>
+                <div slot="thumbnail">
+                  <igc-avatar shape="circle">
+                    <span class="material-icons">
+                      production_quantity_limits
+                    </span>
+                  </igc-avatar>
+                </div>
+                <h3 slot="title">${item.productName}</h3>
+              </igc-card-header>
+              <igc-card-content class="column">
+                <div class="body-content">
+                  <span>Quantity</span> <span>${item.quantity}</span>
+                </div>
+                <div class="body-content">
+                  <span>Unit Price</span> <span>$${item.unitPrice}</span>
+                </div>
+              </igc-card-content>
+            </div>
+          </igc-card>`
+      )}
+    </div>`;
+
+const renderDashboardTM = (
+  items: Visualization[],
+  args: IgcTileManagerArgs
+) => html`
+  <igc-tile-manager
+    .gap=${args.gap}
+    .resizeMode=${args.resizeMode}
+    .dragMode=${args.dragMode}
+    .columnCount=${60}
+    .rowCount=${60}
+    .minColumnWidth=${'5px'}
+    .minRowHeight=${'5px'}
+  >
+    ${items?.map(
+      (viz) => html`
+        <igc-tile
+          .colSpan=${viz.columnSpan}
+          .rowSpan=${viz.rowSpan}
+          .disableResize=${false}
+          .disableDragging=${false}
+        >
+          <span slot="title">${viz.title}</span>
+          ${viz.content || 'TEST CONTENT'}
+        </igc-tile>
+      `
+    )}
+  </igc-tile-manager>
+`;
+
+const orderDetailsVisualizations: Visualization[] = [
+  { title: '', columnSpan: 15, rowSpan: 60, content: listContent() },
+  {
+    title: 'Order Line Items',
+    columnSpan: 45,
+    rowSpan: 20,
+    content: cardContent(),
+  },
+  {
+    title: 'Order Value',
+    columnSpan: 17,
+    rowSpan: 10,
+    content: stringContent('$8.66K'),
+  },
+  {
+    title: 'Line Items',
+    columnSpan: 13,
+    rowSpan: 10,
+    content: stringContent('4'),
+  },
+  {
+    title: 'Avg Discount',
+    columnSpan: 15,
+    rowSpan: 10,
+    content: stringContent('0.00'),
+  },
+  {
+    title: 'Products',
+    columnSpan: 45,
+    rowSpan: 30,
+    content: imageContent(
+      'https://as2.ftcdn.net/v2/jpg/05/62/32/91/1000_F_562329142_K4HsDuOo3Thhf7rab7I4E0oz8en78nd9.jpg'
+    ),
+  },
+];
+
+const salesVisualizations: Visualization[] = [
+  {
+    title: 'Sales',
+    columnSpan: 12,
+    rowSpan: 15,
+    content: trendContent(4592177, -40.86),
+  },
+  {
+    title: 'Total Opportunities',
+    columnSpan: 12,
+    rowSpan: 15,
+    content: trendContent(779903, 1.35),
+  },
+  {
+    title: 'Leads by Year',
+    columnSpan: 36,
+    rowSpan: 35,
+    content: imageContent(
+      'https://community.tableau.com/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB720BY480&versionId=0684T000001hlEa&operationContext=CHATTER&contentId=05T4T0000079c8R&page=0'
+    ),
+  },
+  {
+    title: 'Revenue by State',
+    columnSpan: 24,
+    rowSpan: 45,
+    content: imageContent(
+      'https://static01.nyt.com/newsgraphics/2021/02/24/state-tax-revenue-map/36b53ac5076ed3c055083850c07f5c2adbe3d43d/state-tax-revnue-map-1050.png'
+    ),
+  },
+  {
+    title: 'New Seats Avg by Employee',
+    columnSpan: 16,
+    rowSpan: 25,
+    content: imageContent(
+      'https://www.slideteam.net/media/catalog/product/cache/1280x720/h/o/horizontal_bar_graph_depicting_forecasted_and_actual_sales_slide01.jpg'
+    ),
+  },
+  {
+    title: 'Sales by Product',
+    columnSpan: 20,
+    rowSpan: 25,
+    content: imageContent(
+      'https://blog.logrocket.com/wp-content/uploads/2023/06/new-vs-recurring-revenue-chart-example-1.png'
+    ),
+  },
+];
+
 export const FinDashboard: Story = {
+  args: {
+    resizeMode: 'hover',
+    dragMode: 'tile-header',
+  },
+
   render: (args) => html`
     <style>
       igc-tile::part(content-container) {
         padding: 1rem;
       }
     </style>
-
-    <igc-tile-manager
-      .gap=${args.gap}
-      .resizeMode=${args.resizeMode}
-      .dragMode=${args.dragMode}
-      .columnCount=${args.columnCount}
-      .minColumnWidth=${args.minColumnWidth}
-      .minRowHeight=${args.minRowHeight}
-    >
-      <igc-tile
-        .colSpan=${3}
-        .rowSpan=${5}
-        @igcTileMaximize=${cancelStateChangeEvent}
-      >
-        <span slot="title">Good morning, John</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${1}>
-        <span slot="title">Spendings</span>
-
-        <p>$10,230</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <span slot="title">Spendings</span>
-
-        <igc-list id="list" style="overflow-y: auto;">
-          <igc-list-item>
-            <igc-avatar
-              slot="start"
-              src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/building.svg"
-              shape="circle"
-              >H</igc-avatar
-            >
-            <h2 slot="title">Hotel</h2>
-            <span slot="subtitle">Jun 21, 06:15</span>
-            <div slot="end" class="stock-price">
-              <span>- 400,00 $</span>
-            </div>
-          </igc-list-item>
-
-          <igc-list-item>
-            <igc-avatar
-              slot="start"
-              src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/atm.svg"
-              shape="circle"
-              >ATM</igc-avatar
-            >
-            <h2 slot="title">Cash at ATM 000000</h2>
-            <span slot="subtitle">14:40</span>
-            <div slot="end" class="stock-price">
-              <span>- 140$</span>
-            </div>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${4}>
-        <span slot="title">Your Progress</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${3}>
-        <span slot="title">Income Source</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${1}>
-        <span slot="title">Income</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${6}>
-        <span slot="title">Notifications</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${5}>
-        <span slot="title">Incomes & Expenses</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-
-      <igc-tile .colSpan=${5}>
-        <span slot="title">Assets</span>
-
-        <igc-rating
-          class="size-large"
-          label="Your level: Basic"
-          value="2.5"
-          step=".5"
-          hover-preview
-        ></igc-rating>
-        <p>Total net worth: $123,000</p>
-      </igc-tile>
-    </igc-tile-manager>
-
-    <igc-button @click=${disableTileResize}>
-      Toggle Tile 2 Resizing
-    </igc-button>
+    ${renderDashboardTM(orderDetailsVisualizations, args)}
   `,
 };
 
 export const FinDashboard1: Story = {
-  render: (args) => html`
-    <igc-tile-manager
-      .gap=${args.gap}
-      .resizeMode=${args.resizeMode}
-      .dragMode=${args.dragMode}
-      .columnCount=${args.columnCount}
-      .minColumnWidth=${args.minColumnWidth}
-      .minRowHeight=${args.minRowHeight}
-    >
-      <igc-tile .colSpan=${2} .rowSpan=${1} .colStart=${2} .rowStart=${2}>
-        <span slot="title">Accounts</span>
-      </igc-tile>
-
-
-      <igc-tile .colSpan=${3} .rowSpan=${2}>
-        <span slot="title">Good morning, John</span>
-
-        <div>
-          <igc-rating class="size-large" label="Your level: Basic" value="2.5" step=".5" hover-preview></igc-rating>
-          <p>Total net worth: $123,000</p>
-          <h4>Spending Overview</h4>
-        </div>
-
-        <igc-divider></igc-divider>
-
-        <igc-tabs>
-          <igc-tab panel="daily">Daily</igc-tab>
-          <igc-tab panel="weekly">Weekly</igc-tab>
-          <igc-tab panel="monthly">Monthly</igc-tab>
-
-          <igc-tab-panel id="daily">
-            <igc-list id="list" style="overflow-y: auto;">
-              <igc-list-item>
-                <igc-date-picker id="date-picker" .value=${date}></igc-date-picker>
-                <igc-linear-progress value="74" label-format="Daily Limit: $1000"></igc-linear-progress>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/building.svg" shape="circle">H</igc-avatar>
-                <h2 slot="title">Hotel</h2>
-                <span slot="subtitle">Jun 21, 06:15</span>
-                <div slot="end" class="stock-price">
-                  <span>- 400,00 $</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/atm.svg" shape="circle">ATM</igc-avatar>
-                <h2 slot="title">Cash at ATM 000000</h2>
-                <span slot="subtitle">14:40</span>
-                <div slot="end" class="stock-price">
-                  <span>- 140$</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-1.svg" shape="circle">U</igc-avatar>
-                <h2 slot="title">Utilities</h2>
-                <span slot="subtitle">21/06/2021 16:00</span>
-                <div slot="end" class="stock-price">
-                  <span>- 200$</span>
-                </div>
-              </igc-list-item>
-
-              <igc-list-item>
-                <igc-chip>Total amount spent: $740</igc-chip>
-              </igc-list-item>
-            </igc-list>
-
-          </igc-tab-panel>
-          <igc-tab-panel id="weekly">Details tab panel</igc-tab-panel>
-          <igc-tab-panel id="monthly">Custom tab panel</igc-tab-panel>
-        </igc-tabs>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <span slot="title">Accounts</span>
-
-        <igc-list class="list">
-          <igc-list-item>
-            <igc-avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTV7nAPFKxnp1qbtogJya1mdIzIFTZXg4P_kw&s" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              EUR
-            </p>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar src="https://media.istockphoto.com/id/1151557689/vector/vector-image-of-a-flat-isolated-icon-dollar-sign-currency-exchange-dollar-united-states.jpg?s=612x612&w=0&k=20&c=XxoU_vrc2LCsrlRnmZHysq6HG_tBIUsPVVxi0VeTCKA=" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              USD
-            </p>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar src="https://static.vecteezy.com/system/resources/thumbnails/006/060/118/small_2x/bitcoin-logo-crypto-currency-symbol-free-vector.jpg" shape="rounded" slot="start"></igc-avatar>
-            <p class="typography__subtitle-2 text_1">
-              BTC
-            </p>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${2}>
-        <span slot="title">Your Cards</span>
-        <igc-card style="overflow-y: auto;" elevated>
-          <igc-card-content>
-            <igc-button class="size-small" variant="flat" class="add-card-btn">
-              + Add Card
-            </igc-button>
-            <igc-list id="list" style="overflow-y: auto;">
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/mastercard.svg" shape="circle">MC</igc-avatar>
-                <h2 slot="title">Standard **0000</h2>
-                <span slot="subtitle">Expires on 11/26</span>
-              </igc-list-item>
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/visa.svg" shape="circle">VISA</igc-avatar>
-                <h2 slot="title">Rose gold **0000</h2>
-                <span slot="subtitle">Expires on 11/24</span>
-              </igc-list-item>
-              <igc-list-item>
-                <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/visa.svg" shape="circle">VISA</igc-avatar>
-                <h2 slot="title">Virtual card **0000</h2>
-                <span slot="subtitle">Expires on 10/22</span>
-              </igc-list-item>
-            </igc-list>
-          </igc-card-content>
-        </igc-card>
-      </igc-tile>
-
-      <igc-tile .colSpan=${3}><span slot="title">Latest Transactions</span>
-        <igc-list id="list" style="overflow-y: auto;">
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-2.svg" shape="circle">AMZN</igc-avatar>
-            <h2 slot="title">Money added via **0000</h2>
-            <span slot="subtitle">14:40</span>
-            <div slot="end" class="stock-price">
-              <span>+ 2000$</span>
-            </div>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-only.svg" shape="circle">SET</igc-avatar>
-            <h2 slot="title">Sports Event Tickets</h2>
-            <span slot="subtitle">Jun 21, 06:15, Declined because your card is inactive</span>
-            <div slot="end" class="stock-price">
-              <span style="text-decoration: line-through;">1017,08 $</span>
-              <span style="color: lightgray;">900,08 $</span>
-            </div>
-          </igc-list-item>
-          <igc-list-item>
-            <igc-avatar slot="start" src="https://raw.githubusercontent.com/IgniteUI/material-icons-extended/363c7f3e2da72df5fc2eb63b762a4e69f6fbc603/src/svgs/cash-only.svg" shape="circle">AT</igc-avatar>
-            <h2 slot="title">Airplane Tickets</h2>
-            <span slot="subtitle">Jun 21, 06:15, Declined because your card is inactive</span>
-            <div slot="end" class="stock-price">
-              <span style="text-decoration: line-through;">985,00 $</span>
-              <span style="color: lightgray;">980,00 $</span>
-            </div>
-          </igc-list-item>
-        </igc-list>
-      </igc-tile>
-
-      <igc-tile .colSpan=${7} .disableDrag=${true} .disableResize=${true}>
-        <span slot="title">Get Verified</span>
-
-        <span slot="subtitle">Want to spend more and enjoy the full experience? Get verified today to lift your limits.</span>
-
-        <igc-stepper id="stepper">
-          <igc-step>
-            <span slot="title">Personal Details</span>
-            </br>
-            <form>
-              <igc-input required label="Full Name" type="text" name="fullName"></igc-input>
-              <igc-input required label="Email" type="email" name="email"></igc-input>
-              <br />
-              <igc-button class="next" onclick="stepper.next()">NEXT</igc-button>
-            </form>
-          </igc-step>
-          <igc-step>
-            <span slot="title">Address Details</span>
-            </br>
-            <form>
-              <igc-input required label="Country" type="text" name="country"></igc-input>
-              <igc-input required label="Address" type="text" name="address"></igc-input>
-              <br />
-              <igc-button onclick="stepper.prev()">PREVIOUS</igc-button>
-              <igc-button class="next" onclick="stepper.next()">NEXT</igc-button>
-            </form>
-          </igc-step>
-          <igc-step>
-            <span slot="title">KYC Verification</span>
-            </br>
-            <igc-button onclick="stepper.prev()">PREVIOUS</igc-button>
-            <igc-button onclick="stepper.reset()">RESET</igc-button>
-          </igc-step>
-        </igc-stepper>
-      </igc-tile>
-    </igc-tile-manager>
-  `,
+  render: (args) => html` ${renderDashboardTM(salesVisualizations, args)} `,
 };
 
 export const Default: Story = {
