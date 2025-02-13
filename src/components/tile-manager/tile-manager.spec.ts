@@ -166,12 +166,11 @@ describe('Tile Manager component', () => {
       );
 
       expect(tileManager).shadowDom.to.equal(
-        `<div part="overlay">
-        </div>
-        <div
-          part="base"
-          style=""
-        >
+        `</div>
+          <div
+            part="base"
+            style=""
+          >
           <slot></slot>
         </div>`
       );
