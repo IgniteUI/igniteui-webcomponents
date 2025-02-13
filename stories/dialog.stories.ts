@@ -91,10 +91,6 @@ const closeDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).hide();
 
 const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
-const authSelected = (ev: CustomEvent) => {
-  (ev.target as HTMLElement).querySelector('igc-input')!.value =
-    ev.detail.value;
-};
 
 const Template = ({
   keepOpenOnEscape,

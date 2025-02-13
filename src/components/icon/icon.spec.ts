@@ -262,8 +262,6 @@ describe('Icon broadcast service', () => {
       const broadcast1 = new IconsStateBroadcast(collections, references);
       const broadcast2 = new IconsStateBroadcast(collections, references);
       // 1 global one, initialized when you get the icon registry first time.
-      const iconReg = getIconRegistry();
-      // total - 3 services now.
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
