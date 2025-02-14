@@ -199,22 +199,14 @@ describe('Carousel', () => {
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[0]).shadowDom.to.equal(
-        `<div part="base current">
-          <slot></slot>
-        </div>`
-      );
+      expect(slides[0]).shadowDom.to.equal('<slot></slot>');
       expect(slides[1]).dom.to.equal(
         `<igc-carousel-slide>
           <span>2</span>
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[1]).shadowDom.to.equal(
-        `<div part="base">
-          <slot></slot>
-        </div>`
-      );
+      expect(slides[1]).shadowDom.to.equal('<slot></slot>');
 
       slides[1].active = true;
       await elementUpdated(slides[1]);
@@ -225,22 +217,14 @@ describe('Carousel', () => {
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[0]).shadowDom.to.equal(
-        `<div part="base">
-          <slot></slot>
-        </div>`
-      );
+      expect(slides[0]).shadowDom.to.equal('<slot></slot>');
       expect(slides[1]).dom.to.equal(
         `<igc-carousel-slide active>
           <span>2</span>
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[1]).shadowDom.to.equal(
-        `<div part="base current">
-          <slot></slot>
-        </div>`
-      );
+      expect(slides[1]).shadowDom.to.equal('<slot></slot>');
     });
 
     it('should not render indicators if `hideIndicators` is true', async () => {
