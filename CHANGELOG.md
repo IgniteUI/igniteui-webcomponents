@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - #### Carousel - **Potential visual breaking change.**
-  - Removed `[part='base']` wrapping container from slider's internal DOM. 
+  - Removed `[part='base']` wrapping container from slide's internal DOM. 
 ## [5.2.3] - 2025-02-13
 ### Fixed
 - #### Chip
