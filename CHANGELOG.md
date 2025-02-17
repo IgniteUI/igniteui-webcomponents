@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- #### Carousel - **Potential visual breaking change.**
+  - Removed `[part='base']` wrapping container from slide's internal DOM. 
 ## [5.2.3] - 2025-02-13
 ### Fixed
 - #### Chip
