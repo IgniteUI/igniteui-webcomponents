@@ -174,6 +174,34 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 }
 
+export function simulatePointerEnter(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerenter', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+export function simulatePointerLeave(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerleave', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
@@ -337,6 +365,12 @@ export function simulateWheel(node: Element, options?: WheelEventInit) {
   );
 }
 
+export function simulateDoubleClick(node: Element) {
+  node.dispatchEvent(
+    new PointerEvent('dblclick', { bubbles: true, composed: true })
+  );
+}
+
 /**
  * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
  * It can optionally return Animation objects for descendant elements too.
@@ -473,4 +507,19 @@ export function runValidationContainerTests<T extends IgcFormControl>(
   for (const each of testParams) {
     runner(each);
   }
+}
+
+/**
+ * Compares and returns whether the passed in CSS `{ prop: value }` entries match against
+ * the resolved `(getComputedStyle)` styles of the element.
+ *
+ */
+export function compareStyles(
+  element: Element,
+  values: Partial<CSSStyleDeclaration>
+): boolean {
+  const computed = getComputedStyle(element);
+  return Object.entries(values).every(
+    ([key, value]) => computed.getPropertyValue(toKebabCase(key)) === value
+  );
 }

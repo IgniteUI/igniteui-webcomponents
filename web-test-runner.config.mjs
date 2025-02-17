@@ -18,6 +18,12 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
     exclude: ['node_modules/**/*', '**/themes/**'],
   },
 
+  testFramework: {
+    config: {
+      timeout: 3000,
+    },
+  },
+
   plugins: [
     esbuildPlugin({
       ts: true,
