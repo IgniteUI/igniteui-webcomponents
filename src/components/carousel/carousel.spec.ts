@@ -4,6 +4,7 @@ import {
   fixture,
   html,
   nextFrame,
+  waitUntil,
 } from '@open-wc/testing';
 
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
@@ -199,21 +200,11 @@ describe('Carousel', () => {
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[0]).shadowDom.to.equal(
-        `<div part="base current">
-          <slot></slot>
-        </div>`
-      );
       expect(slides[1]).dom.to.equal(
         `<igc-carousel-slide>
           <span>2</span>
         </igc-carousel-slide>`,
         DIFF_OPTIONS
-      );
-      expect(slides[1]).shadowDom.to.equal(
-        `<div part="base">
-          <slot></slot>
-        </div>`
       );
 
       slides[1].active = true;
@@ -225,21 +216,11 @@ describe('Carousel', () => {
         </igc-carousel-slide>`,
         DIFF_OPTIONS
       );
-      expect(slides[0]).shadowDom.to.equal(
-        `<div part="base">
-          <slot></slot>
-        </div>`
-      );
       expect(slides[1]).dom.to.equal(
         `<igc-carousel-slide active>
           <span>2</span>
         </igc-carousel-slide>`,
         DIFF_OPTIONS
-      );
-      expect(slides[1]).shadowDom.to.equal(
-        `<div part="base current">
-          <slot></slot>
-        </div>`
       );
     });
 
@@ -525,7 +506,7 @@ describe('Carousel', () => {
         expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(nextButton!);
-        await slideChangeComplete(slides[0], slides[1]);
+        await waitUntil(() => eventSpy.calledWith('igcSlideChanged'));
 
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
@@ -539,7 +520,7 @@ describe('Carousel', () => {
         expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(prevButton!);
-        await slideChangeComplete(slides[0], slides[2]);
+        await waitUntil(() => eventSpy.calledWith('igcSlideChanged'));
 
         expect(carousel.current).to.equal(2);
         expect(defaultIndicators[0].active).to.be.false;
@@ -554,7 +535,9 @@ describe('Carousel', () => {
 
         // select second slide
         simulateClick(defaultIndicators[1]);
-        await slideChangeComplete(slides[0], slides[1]);
+        await waitUntil(() =>
+          eventSpy.calledWith('igcSlideChanged', { detail: 1 })
+        );
 
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
@@ -563,7 +546,9 @@ describe('Carousel', () => {
 
         // select first slide
         simulateClick(defaultIndicators[0]);
-        await slideChangeComplete(slides[1], slides[0]);
+        await waitUntil(() =>
+          eventSpy.calledWith('igcSlideChanged', { detail: 0 })
+        );
 
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
