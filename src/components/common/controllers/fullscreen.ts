@@ -9,22 +9,22 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 type FullscreenControllerCallback = (state: boolean) => boolean;
 
 /** Configuration object for the fullscreen controller. */
-type FullscreenControllerConfig = {
+type FullscreenControllerConfiguration = {
   /**
    * Invoked when the host element is entering fullscreen mode.
    * See the {@link FullscreenControllerCallback} for details.
    */
-  onEnterFullscreen?: FullscreenControllerCallback;
+  enter?: FullscreenControllerCallback;
   /**
    * Invoked when the host element is leaving fullscreen mode.
    * See the {@link FullscreenControllerCallback} for details.
    */
-  onExitFullscreen?: FullscreenControllerCallback;
+  exit?: FullscreenControllerCallback;
 };
 
 class FullscreenController implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _config: FullscreenControllerConfig = {};
+  private _options: FullscreenControllerConfiguration = {};
 
   private _fullscreen = false;
 
@@ -34,21 +34,19 @@ class FullscreenController implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    config?: FullscreenControllerConfig
+    options?: FullscreenControllerConfiguration
   ) {
     this._host = host;
-    Object.assign(this._config, config);
+    Object.assign(this._options, options);
     host.addController(this);
   }
 
   /**
    * Transitions the host element to/from fullscreen mode.
-   * This method **will invoke** onEnter/onExitFullscreen callbacks if present.
+   * This method **will invoke** enter/exit callbacks if present.
    */
   public setState(fullscreen: boolean): void {
-    const callback = fullscreen
-      ? this._config.onEnterFullscreen
-      : this._config.onExitFullscreen;
+    const callback = fullscreen ? this._options.enter : this._options.exit;
 
     if (callback && !callback.call(this._host, fullscreen)) {
       return;
@@ -70,10 +68,12 @@ class FullscreenController implements ReactiveController {
     }
   }
 
+  /** @internal */
   public hostConnected(): void {
     this._host.addEventListener('fullscreenchange', this);
   }
 
+  /** @internal */
   public hostDisconnected(): void {
     this._host.removeEventListener('fullscreenchange', this);
   }
@@ -81,7 +81,7 @@ class FullscreenController implements ReactiveController {
 
 export function addFullscreenController(
   host: ReactiveControllerHost & HTMLElement,
-  config?: FullscreenControllerConfig
-) {
-  return new FullscreenController(host, config);
+  options?: FullscreenControllerConfiguration
+): FullscreenController {
+  return new FullscreenController(host, options);
 }

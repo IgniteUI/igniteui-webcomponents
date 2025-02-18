@@ -11,6 +11,7 @@ import {
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addDragController } from '../common/controllers/drag.js';
+import { addFullscreenController } from '../common/controllers/fullscreen.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -23,7 +24,6 @@ import {
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
-import { addFullscreenController } from './controllers/fullscreen.js';
 import { createTileDragStack, swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
@@ -107,8 +107,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   });
 
   private _fullscreenController = addFullscreenController(this, {
-    onEnterFullscreen: this.emitFullScreenEvent,
-    onExitFullscreen: this.emitFullScreenEvent,
+    enter: this.emitFullScreenEvent,
+    exit: this.emitFullScreenEvent,
   });
 
   private _colSpan = 1;

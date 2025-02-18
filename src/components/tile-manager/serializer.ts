@@ -1,3 +1,4 @@
+import { omit, pick } from '../common/util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
 export interface SerializedTile {
@@ -67,16 +68,4 @@ class TileManagerSerializer {
 
 export function createSerializer(host: IgcTileManagerComponent) {
   return new TileManagerSerializer(host);
-}
-
-function pick<T extends object>(entry: T, ...props: Array<keyof T>) {
-  return Object.fromEntries(
-    Object.entries(entry).filter(([key, _]) => props.includes(key as keyof T))
-  );
-}
-
-function omit<T extends object>(entry: T, ...props: Array<keyof T>) {
-  return Object.fromEntries(
-    Object.entries(entry).filter(([key, _]) => !props.includes(key as keyof T))
-  );
 }

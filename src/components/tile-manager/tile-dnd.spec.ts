@@ -128,7 +128,6 @@ describe('Tile drag and drop', () => {
       });
     });
 
-    // REVIEW when the logic is implemented
     it('should cancel dragging with Escape', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(4);

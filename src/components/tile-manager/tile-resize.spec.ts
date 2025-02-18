@@ -146,7 +146,6 @@ describe('Tile resize', () => {
       expect(eventSpy).calledWith('igcResize');
       expect(state.ghost).to.equal(DOM.ghostElement);
       expect(state.initial).to.eql(tileRect);
-      // FIXME: Investigate why the the delta is so great
       assertRectsAreEqual(
         state.current,
         DOM.ghostElement.getBoundingClientRect()
