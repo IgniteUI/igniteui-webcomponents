@@ -2,12 +2,11 @@ import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { carouselContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, formatString, partNameMap } from '../common/util.js';
+import { createCounter, formatString } from '../common/util.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
@@ -18,8 +17,6 @@ import { styles } from './themes/carousel-slide.base.css.js';
  * @element igc-carousel-slide
  *
  * @slot Default slot for the carousel slide.
- *
- * @csspart base - The base wrapper of the carousel slide.
  */
 
 export default class IgcCarouselSlideComponent extends LitElement {
@@ -34,8 +31,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
   private static readonly increment = createCounter();
 
   private _internals: ElementInternals;
-  private _slideRef: Ref<HTMLElement> = createRef();
-  private _animationPlayer = addAnimationController(this, this._slideRef);
+  private _animationPlayer = addAnimationController(this);
 
   @consume({ context: carouselContext, subscribe: true })
   private _carousel?: IgcCarouselComponent;
@@ -70,7 +66,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
   public active = false;
 
   /* blazorSuppress */
-  @property({ attribute: false })
+  @property({ type: Boolean, reflect: true })
   public previous = false;
 
   public async toggleAnimation(
@@ -117,17 +113,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
   }
 
   protected override render() {
-    const parts = partNameMap({
-      base: true,
-      current: this.active,
-      previous: this.previous,
-    });
-
-    return html`
-      <div ${ref(this._slideRef)} part=${parts}>
-        <slot></slot>
-      </div>
-    `;
+    return html` <slot></slot> `;
   }
 }
 
