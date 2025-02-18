@@ -63,11 +63,10 @@ export interface IgcTileComponentEventMap {
  * @fires igcResizeEnd - Fired when tile finishes resizing.
  *
  * @slot title - Renders the title of the tile header.
- * @slot default-actions - Renders maximize and fullscreen action elements.
  * @slot maximize-action - Renders the maximize action element.
  * @slot fullscreen-action - Renders the fullscreen action element.
  * @slot actions - Renders items after the default actions.
- * @slot Default slot fot the tile's content.
+ * @slot Default slot for the tile's content.
  *
  * @csspart base - The wrapper for the entire tile.
  * @csspart header - The container for the header, including title and actions.
@@ -311,6 +310,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public disableResize = false;
 
   /**
+   * Indicates whether the fullscreen action is displayed.
+   * @attr disable-fullscreen
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'disable-fullscreen' })
+  public disableFullscreen = false;
+
+  /**
+   * Indicates whether the maximize action is displayed.
+   * @attr disable-maximize
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'disable-maximize' })
+  public disableMaximize = false;
+
+  /**
    * Gets/sets the tile's visual position in the layout.
    *
    * Corresponds to the CSS order property.
@@ -502,16 +515,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot name="title"></slot>
         </header>
         <section part="actions">
-          <slot name="default-actions">
-            <slot name="maximize-action">
-              ${this.fullscreen
-                ? nothing
-                : this._renderDefaultAction('maximize')}
-            </slot>
-            <slot name="fullscreen-action">
-              ${this._renderDefaultAction('fullscreen')}
-            </slot>
-          </slot>
+          ${!this.disableMaximize
+            ? html`<slot name="maximize-action"
+                >${this._renderDefaultAction('maximize')}</slot
+              >`
+            : nothing}
+          ${!this.disableFullscreen
+            ? html`<slot name="fullscreen-action"
+                >${this._renderDefaultAction('fullscreen')}</slot
+              >`
+            : nothing}
+
           <slot name="actions"></slot>
         </section>
       </section>

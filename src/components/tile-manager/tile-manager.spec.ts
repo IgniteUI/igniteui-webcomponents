@@ -35,6 +35,12 @@ describe('Tile Manager component', () => {
     );
   }
 
+  function getSlot(tile: IgcTileComponent, slotName: string): HTMLSlotElement {
+    return tile.shadowRoot?.querySelector(
+      `slot[name="${slotName}"]`
+    ) as HTMLSlotElement;
+  }
+
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
@@ -50,6 +56,21 @@ describe('Tile Manager component', () => {
     return html`<igc-tile-manager>${result}</igc-tile-manager>`;
   }
 
+  function expectSlotContent(
+    tile: IgcTileComponent,
+    slotName: string,
+    expectedContent: string | null
+  ) {
+    const slot = getSlot(tile, slotName);
+    if (expectedContent) {
+      expect(slot?.assignedNodes()?.[0]?.textContent?.trim()).to.equal(
+        expectedContent
+      );
+    } else {
+      expect(slot?.assignedNodes()).to.have.length(0);
+    }
+  }
+
   describe('Initialization', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
@@ -61,22 +82,6 @@ describe('Tile Manager component', () => {
           <igc-tile tile-id="customId-2">
             <h1 slot="title">Tile Header 2</h1>
             <p>Content 2</p>
-          </igc-tile>
-          <igc-tile tile-id="customId-3">
-            <span slot="title">Customize default actions</span>
-            <button slot="default-actions">Action</button>
-          </igc-tile>
-          <igc-tile tile-id="customId-4">
-            <span slot="title">Customize maximize and fullscreen</span>
-            <button slot="maximize-action">Maximize</button>
-            <button slot="fullscreen-action">Fullscreen</button>
-          </igc-tile>
-          <igc-tile tile-id="customId-5">
-            <span slot="title">Customize maximize and fullscreen</span>
-            <div slot="actions">
-              <igc-icon-button>A</igc-icon-button>
-              <igc-icon-button>B</igc-icon-button>
-            </div>
           </igc-tile>
         </igc-tile-manager>
       `);
@@ -95,7 +100,7 @@ describe('Tile Manager component', () => {
       expect(tileManager.minColumnWidth).to.equal(undefined);
       expect(tileManager.minRowHeight).to.equal(undefined);
       expect(tileManager.resizeMode).to.equal('none');
-      expect(tileManager.tiles).lengthOf(5);
+      expect(tileManager.tiles).lengthOf(2);
     });
 
     it('should render properly', () => {
@@ -115,53 +120,6 @@ describe('Tile Manager component', () => {
             <h1 slot="title">Tile Header 2</h1>
             <p>Content 2</p>
           </igc-tile>
-          <igc-tile
-          style="view-transition-name: tile-transition-customId-3; order: 2;"
-          tile-id="customId-3"
-        >
-          <span slot="title">
-            Customize default actions
-          </span>
-          <button slot="default-actions">
-            Action
-          </button>
-        </igc-tile>
-        <igc-tile
-          style="view-transition-name: tile-transition-customId-4; order: 3;"
-          tile-id="customId-4"
-        >
-          <span slot="title">
-            Customize maximize and fullscreen
-          </span>
-          <button slot="maximize-action">
-            Maximize
-          </button>
-          <button slot="fullscreen-action">
-            Fullscreen
-          </button>
-        </igc-tile>
-        <igc-tile
-          style="view-transition-name: tile-transition-customId-5; order: 4;"
-          tile-id="customId-5"
-        >
-          <span slot="title">
-            Customize maximize and fullscreen
-          </span>
-          <div slot="actions">
-            <igc-icon-button
-              type="button"
-              variant="contained"
-            >
-              A
-            </igc-icon-button>
-            <igc-icon-button
-              type="button"
-              variant="contained"
-            >
-              B
-            </igc-icon-button>
-          </div>
-        </igc-tile>
         </igc-tile-manager>`
       );
 
@@ -199,27 +157,25 @@ describe('Tile Manager component', () => {
                 <slot name="title"></slot>
               </header>
               <section part="actions">
-                <slot name="default-actions">
-                  <slot name="maximize-action">
-                    <igc-icon-button
-                      aria-label="expand_content"
-                      collection="default"
-                      exportparts="icon"
-                      name="expand_content"
-                      type="button"
-                      variant="flat"
-                    >
-                  </slot>
-                  <slot name="fullscreen-action">
-                    <igc-icon-button
-                      aria-label="fullscreen"
-                      collection="default"
-                      exportparts="icon"
-                      name="fullscreen"
-                      type="button"
-                      variant="flat"
-                    >
-                  </slot>
+                <slot name="maximize-action">
+                  <igc-icon-button
+                    aria-label="expand_content"
+                    collection="default"
+                    exportparts="icon"
+                    name="expand_content"
+                    type="button"
+                    variant="flat"
+                  >
+                </slot>
+                <slot name="fullscreen-action">
+                  <igc-icon-button
+                    aria-label="fullscreen"
+                    collection="default"
+                    exportparts="icon"
+                    name="fullscreen"
+                    type="button"
+                    variant="flat"
+                  >
                 </slot>
                 <slot name="actions"></slot>
               </section>
@@ -231,67 +187,6 @@ describe('Tile Manager component', () => {
           </div>
         `
       );
-    });
-
-    it('should slot user provided content in the title', () => {
-      const tiles = tileManager.tiles;
-      const titleSlot1 = tiles[0].shadowRoot?.querySelector(
-        'slot[name="title"]'
-      ) as HTMLSlotElement;
-      const titleSlot2 = tiles[1].shadowRoot?.querySelector(
-        'slot[name="title"]'
-      ) as HTMLSlotElement;
-
-      expect(titleSlot1.assignedNodes()?.[0]?.textContent?.trim()).to.equal(
-        'Tile Header 1'
-      );
-      expect(titleSlot2.assignedNodes()?.[0]?.textContent?.trim()).to.equal(
-        'Tile Header 2'
-      );
-    });
-
-    it('should slot custom default actions', () => {
-      const tile = tileManager.tiles[2];
-      const defaultActionsSLot = tile?.shadowRoot?.querySelector(
-        'slot[name="default-actions"]'
-      ) as HTMLSlotElement;
-      const defaultActions = defaultActionsSLot.assignedNodes();
-
-      expect(defaultActions?.[0]?.textContent?.trim()).to.equal('Action');
-    });
-
-    it('should override maximize and fullscreen actions when provided', async () => {
-      const tile = tileManager.tiles[3];
-
-      const maximizeActionSlot = tile?.shadowRoot?.querySelector(
-        'slot[name="maximize-action"]'
-      ) as HTMLSlotElement;
-      const maximizeAction = maximizeActionSlot.assignedNodes();
-      expect(maximizeAction?.[0]?.textContent?.trim()).to.equal('Maximize');
-
-      const fullscreenActionSlot = tile?.shadowRoot?.querySelector(
-        'slot[name="fullscreen-action"]'
-      ) as HTMLSlotElement;
-      const fullscreenAction = fullscreenActionSlot.assignedNodes();
-      expect(fullscreenAction?.[0]?.textContent?.trim()).to.equal('Fullscreen');
-    });
-
-    it('should slot custom actions after the default ones', () => {
-      const tile = tileManager.tiles[4];
-      const actionsSlot = (
-        tile?.shadowRoot?.querySelector(
-          'slot[name="actions"]'
-        ) as HTMLSlotElement
-      ).assignedNodes();
-
-      expect(actionsSlot).to.have.length(1);
-
-      const actionButtons = (actionsSlot?.[0] as HTMLElement).querySelectorAll(
-        'igc-icon-button'
-      );
-      expect(actionButtons).to.have.length(2);
-      expect(actionButtons?.[0].textContent?.trim()).to.equal('A');
-      expect(actionButtons?.[1].textContent?.trim()).to.equal('B');
     });
   });
 
@@ -378,6 +273,148 @@ describe('Tile Manager component', () => {
 
       expect(slot.assignedElements()).lengthOf(1);
       expect(slot.assignedElements()[0].id).to.equal('tile2');
+    });
+  });
+
+  describe('Header slot assignment', () => {
+    let tiles: IgcTileComponent[];
+
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager>
+          <igc-tile tile-id="customId-1">
+            <span>Show only default actions</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-2">
+            <h1 slot="title">Header 2</h1>
+            <span>Show title and default actions</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-3" disable-fullscreen disable-maximize>
+            <h1 slot="title">Header 3</h1>
+            <span>Show only title</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-4" disable-fullscreen disable-maximize>
+            <span>No header</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-5">
+            <span slot="title">Customize maximize and fullscreen</span>
+            <button slot="maximize-action">Maximize</button>
+            <button slot="fullscreen-action">Fullscreen</button>
+          </igc-tile>
+          <igc-tile tile-id="customId-6">
+            <igc-icon-button slot="actions">A</igc-icon-button>
+            <igc-icon-button slot="actions">B</igc-icon-button>
+            <span>Add custom actions</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-7" disable-fullscreen>
+            <span>Hide fullscreen action</span>
+          </igc-tile>
+          <igc-tile tile-id="customId-8" disable-maximize>
+            <span>Hide maximize action</span>
+          </igc-tile>
+        </igc-tile-manager>
+      `);
+
+      tiles = tileManager.tiles;
+    });
+
+    it('should render only maximize and fullscreen actions by default', () => {
+      const tile = tiles[0];
+      const titleSlot = getSlot(tile, 'title');
+      const actionButtons = getActionButtons(tile);
+      const btnMaximize = actionButtons[0];
+      const btnFullscreen = actionButtons[1];
+      const actionsSlot = getSlot(tile, 'actions');
+
+      expect(titleSlot.assignedNodes()).lengthOf(0);
+      expect(btnFullscreen.name).equals('fullscreen');
+      expect(btnMaximize.name).equals('expand_content');
+      expect(actionsSlot.assignedNodes()).lengthOf(0);
+    });
+
+    it('should slot user provided content in the title', () => {
+      expectSlotContent(tiles[1], 'title', 'Header 2');
+      expectSlotContent(tiles[2], 'title', 'Header 3');
+    });
+
+    it('should render only title when fullscreen and maximize are disabled', () => {
+      const tile = tiles[2];
+
+      expectSlotContent(tiles[2], 'title', 'Header 3');
+      expect(getActionButtons(tile)).lengthOf(0);
+    });
+
+    it('should display no header when maximize and fullscreen actions are disabled', () => {
+      const tile = tiles[3];
+      const titleSlot = getSlot(tile, 'title');
+      const actionsSlot = getSlot(tile, 'actions');
+
+      expect(titleSlot.assignedNodes()).lengthOf(0);
+      expect(getActionButtons(tile)).lengthOf(0);
+      expect(actionsSlot.assignedNodes()).lengthOf(0);
+    });
+
+    it('should override maximize and fullscreen actions', async () => {
+      const tile = tiles[4];
+
+      expectSlotContent(tile, 'maximize-action', 'Maximize');
+      expectSlotContent(tile, 'fullscreen-action', 'Fullscreen');
+    });
+
+    it('should slot custom actions after the default ones', () => {
+      const tile = tiles[5];
+      const actionsContainer =
+        tile.shadowRoot?.querySelector('[part="actions"]');
+      expect(actionsContainer).to.exist;
+
+      const elements = Array.from(actionsContainer!.childNodes).filter(
+        (node) => node.nodeType === Node.ELEMENT_NODE
+      ) as HTMLElement[];
+
+      const [maximizeSlot, fullscreenSlot, actionsSlot] = [
+        'maximize-action',
+        'fullscreen-action',
+        'actions',
+      ].map((name) =>
+        elements.find(
+          (node) => node instanceof HTMLSlotElement && node.name === name
+        )
+      );
+
+      expect(maximizeSlot).to.exist;
+      expect(fullscreenSlot).to.exist;
+      expect(actionsSlot).to.exist;
+
+      // Ensure maximize and fullscreen slots appear before actions slot
+      const maxIndex = elements.indexOf(maximizeSlot!);
+      const fullIndex = elements.indexOf(fullscreenSlot!);
+      const actionsIndex = elements.indexOf(actionsSlot!);
+
+      expect(maxIndex).to.be.lessThan(actionsIndex);
+      expect(fullIndex).to.be.lessThan(actionsIndex);
+
+      // Get assigned buttons
+      const actionButtons = getSlot(tile, 'actions').assignedNodes();
+      expect(actionButtons).to.have.length(2);
+      expect(actionButtons?.[0].textContent?.trim()).to.equal('A');
+      expect(actionButtons?.[1].textContent?.trim()).to.equal('B');
+    });
+
+    it('should hide fullscreen action when disableFullscreen is true', () => {
+      const tile = tiles[6];
+      const actionButtons = getActionButtons(tile);
+      const btnMaximize = actionButtons[0];
+
+      expect(actionButtons).lengthOf(1);
+      expect(btnMaximize.name).equals('expand_content');
+    });
+
+    it('should hide maximize action when disableMaximize is true', () => {
+      const tile = tiles[7];
+      const actionButtons = getActionButtons(tile);
+      const btnFullscreen = actionButtons[0];
+
+      expect(btnFullscreen.name).equals('fullscreen');
     });
   });
 

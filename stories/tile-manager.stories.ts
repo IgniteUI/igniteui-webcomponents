@@ -212,7 +212,7 @@ export const AutoInfer: Story = {
     >
       ${pictures.map(
         ({ width, height }) => html`
-          <igc-tile>
+          <igc-tile disable-fullscreen disable-maximize>
             <div class="picture">
               <img
                 src="https://picsum.photos/${width}/${height}"
@@ -804,18 +804,17 @@ function handleMaximizeClick(event: Event) {
   if (tile) {
     tile.maximized = !tile.maximized;
 
-    const defaultActionsSlot = tile.querySelector(
-      '[slot="default-actions"]'
-    ) as HTMLElement;
-    const currentButton = event.target as HTMLElement;
+    const actionsSlot = tile.querySelector('[slot="actions"]') as HTMLElement;
+    const currentBtn = event.target as HTMLElement;
 
-    if (currentButton) {
+    if (currentBtn) {
       if (tile.maximized) {
-        currentButton.setAttribute('name', 'south_west');
-        currentButton.setAttribute('aria-label', 'collapse');
+        currentBtn.setAttribute('name', 'south_west');
+        currentBtn.setAttribute('aria-label', 'collapse');
 
         const chartBtn = document.createElement('igc-icon-button');
         chartBtn.classList.add('additional-action');
+        chartBtn.setAttribute('slot', 'actions');
         chartBtn.setAttribute('variant', 'flat');
         chartBtn.setAttribute('collection', 'material');
         chartBtn.setAttribute('name', 'chart');
@@ -823,19 +822,20 @@ function handleMaximizeClick(event: Event) {
 
         const moreBtn = document.createElement('igc-icon-button');
         moreBtn.classList.add('additional-action');
+        moreBtn.setAttribute('slot', 'actions');
         moreBtn.setAttribute('variant', 'flat');
         moreBtn.setAttribute('collection', 'material');
         moreBtn.setAttribute('name', 'more');
         moreBtn.setAttribute('aria-label', 'more');
 
-        defaultActionsSlot.insertBefore(chartBtn, currentButton);
-        defaultActionsSlot.insertBefore(moreBtn, currentButton);
+        tile.append(chartBtn);
+        tile.append(moreBtn);
       } else {
-        currentButton.setAttribute('name', 'north_east');
-        currentButton.setAttribute('aria-label', 'expand');
+        currentBtn.setAttribute('name', 'north_east');
+        currentBtn.setAttribute('aria-label', 'expand');
 
         const additionalButtons =
-          defaultActionsSlot.querySelectorAll('.additional-action');
+          actionsSlot.querySelectorAll('.additional-action');
         additionalButtons.forEach((btn) => btn.remove());
       }
     }
@@ -856,35 +856,61 @@ export const CustomActions: Story = {
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
     >
-      <igc-tile>
+      <igc-tile disable-fullscreen disable-maximize>
         <h3 slot="title">Custom Actions</h3>
-        <div slot="default-actions" id="default-actions">
-          <igc-icon-button
-            slot="default-actions"
-            variant="flat"
-            collection="material"
-            exportparts="icon"
-            name="north_east"
-            aria-label="north_east"
-            @click=${handleMaximizeClick}
-          ></igc-icon-button>
-        </div>
+        <igc-icon-button
+          slot="actions"
+          variant="flat"
+          collection="material"
+          exportparts="icon"
+          name="north_east"
+          aria-label="north_east"
+          @click=${handleMaximizeClick}
+        ></igc-icon-button>
 
         <p>
           Set custom content for the default-actions slot based on maximized
           state of the tile
         </p>
       </igc-tile>
-      <igc-tile col-span="2">
-        <h3 slot="title">Empty Fullscreen Action</h3>
-        <div slot="fullscreen-action"></div>
+      <igc-tile col-span="2" disable-fullscreen>
+        <h3 slot="title">No Fullscreen Action</h3>
 
-        <p>Empty div added to the fullscreen action slot</p>
+        <p>Fullscreen is disabled via property</p>
       </igc-tile>
       <igc-tile col-span="2">
         <h3 slot="title">Default Actions</h3>
 
-        <p>This tile has default actions</p>
+        <p>This tile has default actions and title</p>
+      </igc-tile>
+      <igc-tile>
+        <p>Header with no title</p>
+      </igc-tile>
+      <igc-tile disable-fullscreen disable-maximize>
+        <h3 slot="title">Only title</h3>
+
+        <p>Display only title in the header</p>
+      </igc-tile>
+      <igc-tile disable-fullscreen disable-maximize>
+        <igc-icon-button
+          slot="actions"
+          variant="flat"
+          collection="material"
+          exportparts="icon"
+          name="north_east"
+        ></igc-icon-button>
+        <igc-icon-button
+          slot="actions"
+          variant="flat"
+          collection="material"
+          exportparts="icon"
+          name="south_west"
+        ></igc-icon-button>
+
+        <p>Display only custom actions in the header</p>
+      </igc-tile>
+      <igc-tile disable-fullscreen disable-maximize>
+        <p>No header</p>
       </igc-tile>
     </igc-tile-manager>
   `,
