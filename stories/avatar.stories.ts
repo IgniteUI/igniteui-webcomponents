@@ -4,7 +4,6 @@ import {
   IgcAvatarComponent,
   IgcIconComponent,
   defineComponents,
-  registerIcon,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
 

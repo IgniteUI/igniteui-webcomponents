@@ -24,7 +24,7 @@ import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import { addFullscreenController } from './controllers/fullscreen.js';
-import { swapTiles } from './position.js';
+import { createTileDragStack, swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
@@ -100,12 +100,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     matchTarget: this._match,
     layer: () => this._tileManager!,
     ghost: this._createDragGhost,
-    dragStart: this._handleDragStart,
-    dragMove: this._handleDragMove,
-    dragEnter: this._handleDragEnter,
-    dragLeave: this._handleDragLeave,
-    dragOver: this._handleDragOver,
-    dragEnd: this._handleDragEnd,
+    start: this._handleDragStart,
+    enter: this._handleDragEnter,
+    end: this._handleDragEnd,
+    cancel: this._handleDragCancel,
   });
 
   private _fullscreenController = addFullscreenController(this, {
@@ -118,8 +116,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _colStart: number | null = null;
   private _rowStart: number | null = null;
   private _position = -1;
-  private _disableDrag = false;
   private _resizeState = createTileResizeState();
+  private _dragStack = createTileDragStack();
 
   // Tile manager context properties and helpers
 
@@ -130,8 +128,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _setDragConfiguration = ({
     instance: { dragMode },
   }: TileManagerContext) => {
-    this._dragController.setConfig({
-      enabled: !this.disableDrag && dragMode !== 'none',
+    this._dragController.set({
+      enabled: dragMode !== 'none',
       trigger:
         dragMode === 'tile-header' ? () => this._headerRef.value! : undefined,
     });
@@ -305,21 +303,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._maximized;
   }
 
-  // REVIEW: Drop
-  /**
-   * Indicates whether the tile can be dragged.
-   * @attr disable-drag
-   */
-  @property({ attribute: 'disable-drag', type: Boolean, reflect: true })
-  public set disableDrag(value: boolean) {
-    this._disableDrag = value;
-    this._dragController.setConfig({ enabled: !value });
-  }
-
-  public get disableDrag(): boolean {
-    return this._disableDrag;
-  }
-
   /**
    * Indicates whether the tile can be resized.
    * @attr disable-resize
@@ -356,38 +339,43 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _setDragState(state = true) {
     this._isDragging = state;
     this._tileContent.style.opacity = state ? '0' : '1';
+    this.style.pointerEvents = state ? 'none' : '';
     this.part.toggle('dragging', state);
   }
 
   private _handleDragStart() {
     this.emitEvent('tileDragStart', { detail: this });
     this._setDragState();
+    this._dragStack.add(this);
   }
 
-  private _handleDragMove() {}
+  private _handleDragEnter(tile: Element): void {
+    const other = tile as IgcTileComponent;
+    this._dragStack.add(other);
 
-  private _handleDragEnter(tile: Element) {
-    Object.assign(tile, { _hasDragOver: true });
-  }
-
-  private _handleDragLeave(tile: Element) {
-    Object.assign(tile, { _hasDragOver: false });
-  }
-
-  private _handleDragOver(tile: Element) {
-    // REVIEW
     startViewTransition(() => {
-      swapTiles(this, tile as IgcTileComponent);
+      swapTiles(this, other);
     });
+  }
+
+  private _handleDragCancel() {
+    startViewTransition(() => {
+      this._dragStack.restore();
+      this._dragStack.reset();
+    });
+
+    this._dragController.dispose();
+    this._setDragState(false);
   }
 
   private _handleDragEnd() {
     this.emitEvent('tileDragEnd', { detail: this });
     this._setDragState(false);
+    this._dragStack.reset();
   }
 
   private _skipDrag(event: PointerEvent): boolean {
-    if (this._maximized) {
+    if (this._maximized || this.fullscreen) {
       return true;
     }
 
@@ -534,9 +522,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected _renderContent() {
     const parts = partNameMap({
       base: true,
+      draggable: true,
       'drag-over': this._hasDragOver && !this._isSlideMode,
       fullscreen: this.fullscreen,
-      draggable: !this.disableDrag,
       dragging: this._isDragging,
       resizable: !this.disableResize,
       resizing: this._isResizing,
@@ -551,7 +539,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     };
 
     return html`
-      <div part=${parts} .inert=${this._hasDragOver} style=${styleMap(styles)}>
+      <div part=${parts} style=${styleMap(styles)}>
         ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>

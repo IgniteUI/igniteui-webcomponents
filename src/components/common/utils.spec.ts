@@ -233,24 +233,16 @@ export function simulateLostPointerCapture(
   );
 }
 
-type PointerEventIncrement = {
-  x?: number;
-  y?: number;
-};
-
 export function simulatePointerMove(
   node: Element,
   options?: PointerEventInit,
-  increment?: PointerEventIncrement,
+  increment?: { x?: number; y?: number },
   times = 1
 ) {
   const { x = 0, y = 0 } = increment ?? {};
   const { clientX = 0, clientY = 0 } = options ?? {};
 
-  let i = 0;
-
-  do {
-    i += 1;
+  for (let i = 1; i <= times; i++) {
     node.dispatchEvent(
       new PointerEvent('pointermove', {
         bubbles: true,
@@ -261,7 +253,7 @@ export function simulatePointerMove(
         clientY: clientY + i * y,
       })
     );
-  } while (i < times);
+  }
 }
 
 export function simulateClick(
@@ -512,7 +504,6 @@ export function runValidationContainerTests<T extends IgcFormControl>(
 /**
  * Compares and returns whether the passed in CSS `{ prop: value }` entries match against
  * the resolved `(getComputedStyle)` styles of the element.
- *
  */
 export function compareStyles(
   element: Element,

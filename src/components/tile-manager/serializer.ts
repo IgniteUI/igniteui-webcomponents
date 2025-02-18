@@ -3,7 +3,6 @@ import type IgcTileManagerComponent from './tile-manager.js';
 export interface SerializedTile {
   colSpan: number;
   colStart: number | null;
-  disableDrag: boolean;
   disableResize: boolean;
   gridColumn: string;
   gridRow: string;
@@ -28,7 +27,6 @@ class TileManagerSerializer {
       return {
         colSpan: tile.colSpan,
         colStart: tile.colStart,
-        disableDrag: tile.disableDrag,
         disableResize: tile.disableResize,
         gridColumn,
         gridRow,

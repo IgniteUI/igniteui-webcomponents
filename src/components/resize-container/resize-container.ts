@@ -72,7 +72,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public set ghostFactory(value: ResizeGhostFactory) {
     this._ghostFactory = value;
-    this._controller.setConfig({ deferredFactory: this._ghostFactory });
+    this._controller.set({ deferredFactory: this._ghostFactory });
   }
 
   public get ghostFactory(): ResizeGhostFactory | undefined {
@@ -83,7 +83,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   @property()
   public set mode(value: ResizeMode) {
     this._mode = value;
-    this._controller.setConfig({ mode: this._mode });
+    this._controller.set({ mode: this._mode });
   }
 
   public get mode(): ResizeMode {

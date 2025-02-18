@@ -163,7 +163,7 @@ const tiles = Array.from(
   map(
     range(10),
     (i) => html`
-      <igc-tile .disableResize=${i === 0} .disableDrag=${i === 0}>
+      <igc-tile .disableResize=${i === 0}>
         <h3 slot="title">Tile ${i + 1} Title</h3>
         <igc-icon name="home" slot="actions"></igc-icon>
 
@@ -182,8 +182,6 @@ const pictures = Array.from(range(25)).map(() => ({
   width: randomIntBetween(300, 600),
   height: randomIntBetween(300, 600),
 }));
-
-const date = new Date();
 
 export const AutoInfer: Story = {
   argTypes: disableStoryControls(metadata),
@@ -489,7 +487,6 @@ const renderDashboardTM = (
     .resizeMode=${args.resizeMode}
     .dragMode=${args.dragMode}
     .columnCount=${60}
-    .rowCount=${60}
     .minColumnWidth=${'5px'}
     .minRowHeight=${'5px'}
   >
@@ -499,7 +496,6 @@ const renderDashboardTM = (
           .colSpan=${viz.columnSpan}
           .rowSpan=${viz.rowSpan}
           .disableResize=${false}
-          .disableDragging=${false}
         >
           <span slot="title">${viz.title}</span>
           ${viz.content || 'TEST CONTENT'}

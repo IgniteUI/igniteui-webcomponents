@@ -81,17 +81,37 @@ class TilesState {
   }
 }
 
-export function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
-  [a.position, b.position] = [b.position, a.position];
-}
+type TileDragStackEntry = {
+  tile: IgcTileComponent;
+  position: number;
+};
 
-export function isSameTile(
-  a?: IgcTileComponent | null,
-  b?: IgcTileComponent | null
-): boolean {
-  return a != null && b != null && a === b;
+class TileDragStack {
+  private _stack: TileDragStackEntry[] = [];
+
+  public add(tile: IgcTileComponent): void {
+    this._stack.push({ tile, position: tile.position });
+  }
+
+  public restore(): void {
+    for (const { tile, position } of this._stack.toReversed()) {
+      tile.position = position;
+    }
+  }
+
+  public reset(): void {
+    this._stack = [];
+  }
 }
 
 export function createTilesState(manager: IgcTileManagerComponent) {
   return new TilesState(manager);
+}
+
+export function createTileDragStack(): TileDragStack {
+  return new TileDragStack();
+}
+
+export function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
+  [a.position, b.position] = [b.position, a.position];
 }

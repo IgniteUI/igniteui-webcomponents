@@ -582,7 +582,6 @@ describe('Tile Manager component', () => {
             col-span="10"
             row-start="7"
             row-span="7"
-            disable-drag
             disable-resize
           >
             Tile content 2
@@ -597,7 +596,6 @@ describe('Tile Manager component', () => {
         {
           colSpan: 1,
           colStart: null,
-          disableDrag: false,
           disableResize: false,
           gridColumn: 'auto / span 1',
           gridRow: 'auto / span 1',
@@ -610,7 +608,6 @@ describe('Tile Manager component', () => {
         {
           colSpan: 10,
           colStart: 8,
-          disableDrag: true,
           disableResize: true,
           gridColumn: '8 / span 10',
           gridRow: '7 / span 7',
@@ -630,7 +627,6 @@ describe('Tile Manager component', () => {
         {
           colSpan: 5,
           colStart: 1,
-          disableDrag: true,
           disableResize: true,
           gridColumn: '1 / span 5',
           gridRow: '1 / span 5',
@@ -643,7 +639,6 @@ describe('Tile Manager component', () => {
         {
           colSpan: 3,
           colStart: null,
-          disableDrag: false,
           disableResize: false,
           gridColumn: 'span 3',
           gridRow: 'span 3',
@@ -656,7 +651,6 @@ describe('Tile Manager component', () => {
         {
           colSpan: 3,
           colStart: null,
-          disableDrag: false,
           disableResize: false,
           gridColumn: 'span 3',
           gridRow: 'span 3',
@@ -676,7 +670,6 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0].colSpan).to.equal(5);
       expect(tiles[0].colStart).to.equal(1);
-      expect(tiles[0].disableDrag).to.equal(true);
       expect(tiles[0].disableResize).to.equal(true);
       expect(tiles[0].maximized).to.be.false;
       expect(tiles[0].position).to.equal(0);
@@ -686,7 +679,6 @@ describe('Tile Manager component', () => {
 
       expect(tiles[1].colSpan).to.equal(3);
       expect(tiles[1].colStart).to.be.null;
-      expect(tiles[1].disableDrag).to.be.false;
       expect(tiles[1].disableResize).to.be.false;
       expect(tiles[1].maximized).to.be.false;
       expect(tiles[1].position).to.equal(1);

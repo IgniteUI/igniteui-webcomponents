@@ -158,6 +158,18 @@ describe('Resize container', () => {
         expect(eventSpy).calledWith('igcResizeStart');
       });
 
+      it('should not fire `resize` unless `resizeStart` is triggered', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const { adorners } = getDOM(element);
+
+        simulatePointerMove(adorners.corner);
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcResizeStart');
+      });
+
       it('should fire `resize` when resizing behavior is triggered', async () => {
         await setResizeActiveState(element);
 
@@ -569,6 +581,18 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         expect(eventSpy).calledWith('igcResizeStart');
+      });
+
+      it('should not fire `resize` unless `resizeStart` is triggered', async () => {
+        await setResizeActiveState(element);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const { adorners } = getDOM(element);
+
+        simulatePointerMove(adorners.corner);
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcResizeStart');
       });
 
       it('should fire `resize` event', async () => {

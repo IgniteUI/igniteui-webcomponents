@@ -2,7 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { findElementFromEventPath } from '../common/util.js';
 import { createDefaultGhostElement } from './default-ghost.js';
-import type { ResizeControllerConfig, ResizeState } from './types.js';
+import type { ResizeControllerConfiguration, ResizeState } from './types.js';
 
 const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
 
@@ -13,7 +13,7 @@ type State = {
 
 class ResizeController implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _config: ResizeControllerConfig = {};
+  private _options: ResizeControllerConfiguration = {};
 
   private _id = -1;
   private _hasPointerCapture = false;
@@ -27,12 +27,12 @@ class ResizeController implements ReactiveController {
   }
 
   private get _resizeTarget(): HTMLElement {
-    return this._config.resizeTarget?.call(this._host) ?? this._host;
+    return this._options.resizeTarget?.call(this._host) ?? this._host;
   }
 
   /** Whether the controller is in deferred mode. */
   private get _isDeferred(): boolean {
-    return this._config.mode === 'deferred';
+    return this._options.mode === 'deferred';
   }
 
   private get _stateParameters(): ResizeState {
@@ -50,25 +50,24 @@ class ResizeController implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    config?: ResizeControllerConfig
+    options?: ResizeControllerConfiguration
   ) {
     this._host = host;
     this._host.addController(this);
 
-    this.setConfig(config);
+    this.set(options);
   }
 
   // #region Public API
 
   /** Updates the configuration of the resize controller. */
-  public setConfig(value?: ResizeControllerConfig): void {
-    Object.assign(this._config, value);
+  public set(options?: ResizeControllerConfiguration): void {
+    Object.assign(this._options, options);
   }
 
   /** Stops any resizing operation, cleaning up any additional elements and event listeners. */
   public dispose(): void {
-    this._setResizeCancelListener(false);
-    this._setPointerCaptureState(false);
+    this._setResizeState(false);
     this._removeGhostElement();
     this._activeRef = null;
   }
@@ -83,7 +82,7 @@ class ResizeController implements ReactiveController {
   public hostDisconnected(): void {
     this._host.removeEventListener('pointerdown', this);
     this._host.removeEventListener('touchstart', this);
-    globalThis.removeEventListener('keydown', this);
+    this._setResizeCancelListener(false);
   }
 
   /** @internal */
@@ -93,7 +92,7 @@ class ResizeController implements ReactiveController {
         event.preventDefault();
         break;
       case 'keydown':
-        this._handleKeyboardEscape(event);
+        this._handleCancel(event);
         break;
       case 'pointerdown':
         this._handlePointerDown(event);
@@ -119,12 +118,11 @@ class ResizeController implements ReactiveController {
     this._setInitialState(event);
     this._createGhostElement();
 
-    this._config.start?.call(this._host, {
+    this._options.start?.call(this._host, {
       event,
       state: this._stateParameters,
     });
-    this._setPointerCaptureState();
-    this._setResizeCancelListener();
+    this._setResizeState();
   }
 
   private _handlePointerMove(event: PointerEvent): void {
@@ -135,7 +133,7 @@ class ResizeController implements ReactiveController {
     this._updateState(event);
 
     const parameters = { event, state: this._stateParameters };
-    this._config.resize?.call(this._host, parameters);
+    this._options.resize?.call(this._host, parameters);
     this._state.current = parameters.state.current;
     this._updatePosition(this._isDeferred ? this._ghost : this._resizeTarget);
   }
@@ -143,7 +141,7 @@ class ResizeController implements ReactiveController {
   private _handlePointerEnd(event: PointerEvent): void {
     const parameters = { event, state: this._stateParameters };
 
-    this._config.end?.call(this._host, parameters);
+    this._options.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
 
     parameters.state.commit?.call(this._host) ??
@@ -152,11 +150,11 @@ class ResizeController implements ReactiveController {
     this.dispose();
   }
 
-  private _handleKeyboardEscape(event: KeyboardEvent): void {
+  private _handleCancel(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
 
     if (this._hasPointerCapture && key === 'escape') {
-      this._config.cancel?.call(this._host, this._stateParameters);
+      this._options.cancel?.call(this._host, this._stateParameters);
     }
   }
 
@@ -170,7 +168,7 @@ class ResizeController implements ReactiveController {
   }
 
   private _setActiveRef(event: Event): void {
-    const refs = this._config.ref?.map(({ value }) => value) ?? [this._host];
+    const refs = this._options.ref?.map(({ value }) => value) ?? [this._host];
 
     this._activeRef =
       findElementFromEventPath<HTMLElement>(
@@ -179,23 +177,25 @@ class ResizeController implements ReactiveController {
       ) ?? null;
   }
 
-  private _setPointerCaptureState(state = true): void {
-    this._hasPointerCapture = state;
+  private _setResizeState(enabled = true): void {
+    this._hasPointerCapture = enabled;
 
-    state
+    enabled
       ? this._element.setPointerCapture(this._id)
       : this._element.releasePointerCapture(this._id);
 
+    this._setResizeCancelListener(enabled);
+
     // Toggle additional event listeners
     for (const type of additionalEvents) {
-      state
+      enabled
         ? this._host.addEventListener(type, this)
         : this._host.removeEventListener(type, this);
     }
   }
 
-  private _setResizeCancelListener(isResizing = true): void {
-    isResizing
+  private _setResizeCancelListener(enabled = true): void {
+    enabled
       ? globalThis.addEventListener('keydown', this)
       : globalThis.removeEventListener('keydown', this);
   }
@@ -230,7 +230,7 @@ class ResizeController implements ReactiveController {
     }
 
     this._ghost =
-      this._config.deferredFactory?.call(this._host) ??
+      this._options.deferredFactory?.call(this._host) ??
       createDefaultGhostElement(
         this._state.initial.width,
         this._state.initial.height
@@ -250,7 +250,7 @@ class ResizeController implements ReactiveController {
 
 export function addResizeController(
   host: ReactiveControllerHost & HTMLElement,
-  config?: ResizeControllerConfig
+  options?: ResizeControllerConfiguration
 ): ResizeController {
-  return new ResizeController(host, config);
+  return new ResizeController(host, options);
 }

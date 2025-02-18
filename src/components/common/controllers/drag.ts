@@ -9,41 +9,44 @@ import { findElementFromEventPath } from '../util.js';
 
 type DragEnterCallback = (target: Element) => unknown;
 
-type DragCallback = (params: DragCallbackParams) => unknown;
+type DragCallback = (parameters: DragCallbackParameters) => unknown;
+type DragCancelCallback = (state: DragState) => unknown;
 
-type DragCallbackParams = {
+type DragCallbackParameters = {
   event: PointerEvent;
+  state: DragState;
 };
 
 type State = {
   initial: DOMRect;
   current: DOMRect;
-  offset: {
-    dx: number;
-    dy: number;
-  };
+  position: { x: number; y: number };
+  offset: { x: number; y: number };
 };
 
-// TODO: Start providing callback params for the hooks and type them
+type DragState = State & {
+  ghost: HTMLElement | null;
+  element: Element | null;
+};
 
-type DragConfig = {
-  /** Whether the drag and drop feature is enabled for the current host. */
+type DragControllerConfiguration = {
+  /** Whether the drag feature is enabled for the current host. */
   enabled?: boolean;
   /**
-   * The mode of the drag and drop operation.
+   * The mode of the drag operation.
    *
    * Deferred will create a ghost element and keep the original element
    * at its place until the operation completes successfully.
    */
   mode?: 'immediate' | 'deferred';
   /**
-   * Whether drag operation should snap the dragged item top left corner
+   * Whether starting a drag operation should snap the dragged item's top left corner
    * to the cursor position.
    */
   snapToCursor?: boolean;
   /**
-   * Guard function invoked during the `dragStart` callback.
-   * Returning a truthy value will stop the current drag and drop operation.
+   * Guard function invoked during the `start` callback.
+   * Returning a truthy value will stop the current drag operation.
    */
   skip?: (event: PointerEvent) => boolean;
   // REVIEW: API signature
@@ -53,7 +56,7 @@ type DragConfig = {
    */
   trigger?: () => HTMLElement;
   /**
-   * Contain drag and drop operations to the scope of the passed DOM element.
+   * Contain drag operations to the scope of the passed DOM element.
    */
   container?: Ref<HTMLElement>;
   /**
@@ -68,27 +71,27 @@ type DragConfig = {
   ghost?: () => HTMLElement;
 
   /** Callback invoked at the beginning of a drag operation. */
-  dragStart?: DragCallback;
+  start?: DragCallback;
   /** Callback invoked while dragging the target element.  */
-  dragMove?: DragCallback;
+  move?: DragCallback;
 
-  dragEnter?: DragEnterCallback;
+  enter?: DragEnterCallback;
 
-  dragLeave?: DragEnterCallback;
+  leave?: DragEnterCallback;
 
-  dragOver?: DragEnterCallback;
+  over?: DragEnterCallback;
 
   /** Callback invoked during a drop operation. */
-  dragEnd?: DragCallback;
-  /** Callback invoked when a drag and drop is cancelled */
-  dragCancel?: DragCallback;
+  end?: DragCallback;
+  /** Callback invoked when a drag is cancelled */
+  cancel?: DragCancelCallback;
 };
 
 const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
 
 class DragController implements ReactiveController {
   private _host: ReactiveControllerHost & LitElement;
-  private _config: DragConfig = {
+  private _options: DragControllerConfiguration = {
     enabled: true,
     mode: 'deferred',
     snapToCursor: false,
@@ -96,7 +99,7 @@ class DragController implements ReactiveController {
 
   private _state!: State;
 
-  private _previousMatch!: Element | null;
+  private _matchedElement!: Element | null;
 
   private _id = -1;
   private _hasPointerCapture = false;
@@ -105,12 +108,12 @@ class DragController implements ReactiveController {
 
   /** Whether `snapToCursor` is enabled for the controller. */
   private get _hasSnapping(): boolean {
-    return Boolean(this._config.snapToCursor);
+    return Boolean(this._options.snapToCursor);
   }
 
   /** Whether the current drag mode is deferred. */
   private get _isDeferred(): boolean {
-    return this._config.mode === 'deferred';
+    return this._options.mode === 'deferred';
   }
 
   /**
@@ -120,7 +123,7 @@ class DragController implements ReactiveController {
    * By default that will be the host element itself, unless `trigger` is passed in.
    */
   private get _element(): HTMLElement {
-    return this._config.trigger?.() ?? this._host;
+    return this._options.trigger?.() ?? this._host;
   }
 
   /**
@@ -146,179 +149,58 @@ class DragController implements ReactiveController {
       return this._host;
     }
 
-    return this._config.layer?.() ?? this._host;
+    return this._options.layer?.() ?? this._host;
   }
+
+  private get _stateParameters(): DragState {
+    return {
+      ...this._state,
+      ghost: this._ghost,
+      element: this._matchedElement,
+    };
+  }
+
+  constructor(
+    host: ReactiveControllerHost & LitElement,
+    options?: DragControllerConfiguration
+  ) {
+    this._host = host;
+    this._host.addController(this);
+    this.set(options);
+  }
+
+  // #region Public API
 
   /** Whether the drag controller is enabled. */
   public get enabled(): boolean {
-    return Boolean(this._config.enabled);
+    return Boolean(this._options.enabled);
   }
 
-  constructor(host: ReactiveControllerHost & LitElement, config?: DragConfig) {
-    this._host = host;
-    this._host.addController(this);
-    this.setConfig(config);
+  /** Updates the drag controller configuration. */
+  public set(options?: DragControllerConfiguration): void {
+    Object.assign(this._options, options);
   }
 
-  private _createCallbackParams(event: PointerEvent): DragCallbackParams {
-    return {
-      event,
-    };
+  /** Stops any drag operation and cleans up state, additional event listeners and elements. */
+  public dispose(): void {
+    this._matchedElement = null;
+    this._removeGhost();
+    this._setDragState(false);
   }
 
-  private _setDragCancelListener(isDragging = true): void {
-    isDragging
-      ? globalThis.addEventListener('keydown', this)
-      : globalThis.removeEventListener('keydown', this);
+  /** @internal */
+  public hostConnected(): void {
+    this._host.addEventListener('dragstart', this);
+    this._host.addEventListener('touchstart', this, { passive: false });
+    this._host.addEventListener('pointerdown', this);
   }
 
-  private _setInitialState({
-    pointerId,
-    clientX,
-    clientY,
-  }: PointerEvent): void {
-    const rect = this._host.getBoundingClientRect();
-
-    this._id = pointerId;
-    this._state = {
-      initial: rect,
-      current: structuredClone(rect),
-      offset: {
-        dx: rect.x - clientX,
-        dy: rect.y - clientY,
-      },
-    };
-  }
-
-  private _setPointerCaptureState(state = true): void {
-    this._hasPointerCapture = state;
-    const cssValue = state ? 'none' : '';
-
-    Object.assign(this._element.style, {
-      touchAction: cssValue,
-      userSelect: cssValue,
-    });
-
-    state
-      ? this._element.setPointerCapture(this._id)
-      : this._element.releasePointerCapture(this._id);
-
-    // Toggle additional events
-    for (const type of additionalEvents) {
-      state
-        ? this._host.addEventListener(type, this)
-        : this._host.removeEventListener(type, this);
-    }
-  }
-
-  // REVIEW
-  private _updateMatcher(event: PointerEvent) {
-    if (!this._config.matchTarget) {
-      return;
-    }
-
-    const match = document
-      .elementsFromPoint(event.clientX, event.clientY)
-      .find((value) => this._config.matchTarget!.call(this._host, value));
-
-    if (match && !this._previousMatch) {
-      this._previousMatch = match;
-      this._config.dragEnter?.call(this._host, this._previousMatch);
-      return;
-    }
-
-    if (!match && this._previousMatch) {
-      this._config.dragLeave?.call(this._host, this._previousMatch);
-      this._previousMatch = null;
-      return;
-    }
-
-    if (match && match === this._previousMatch) {
-      this._config.dragOver?.call(this._host, this._previousMatch);
-    }
-  }
-
-  private _setPosition(x: number, y: number) {
-    const { top, left } = this._layer.getBoundingClientRect();
-    const { offset } = this._state;
-
-    const posX = this._hasSnapping ? x - left : x - left + offset.dx;
-    const posY = this._hasSnapping ? y - top : y - top + offset.dy;
-
-    this._dragItem.style.transform = `translate(${posX}px,${posY}px)`;
-  }
-
-  private _createDragGhost({ clientX, clientY }: PointerEvent): void {
-    if (!this._isDeferred) {
-      return;
-    }
-
-    this._ghost =
-      this._config.ghost?.call(this._host) ??
-      createDefaultDragGhost(this._host.getBoundingClientRect());
-
-    this._setPosition(clientX, clientY);
-    this._layer.append(this._ghost);
-  }
-
-  private _removeGhost(): void {
-    this._ghost?.remove();
-    this._ghost = null;
-  }
-
-  private _shouldSkip(event: PointerEvent): boolean {
-    return (
-      Boolean(event.button) ||
-      this._config.skip?.call(this._host, event) ||
-      !findElementFromEventPath((e) => e === this._element, event)
-    );
-  }
-
-  private _handlePointerDown(event: PointerEvent): void {
-    if (this._shouldSkip(event)) {
-      return;
-    }
-
-    // REVIEW
-    event.preventDefault();
-
-    this._setInitialState(event);
-    this._createDragGhost(event);
-
-    const params = this._createCallbackParams(event);
-    this._config.dragStart?.call(this._host, params);
-    this._setPointerCaptureState();
-    this._setDragCancelListener();
-  }
-
-  private _handlePointerMove(event: PointerEvent): void {
-    if (!this._hasPointerCapture) {
-      return;
-    }
-
-    this._updateMatcher(event);
-    this._config.dragMove?.call(this._host);
-
-    this._setPosition(event.clientX, event.clientY);
-  }
-
-  private _handlePointerEnd(_: PointerEvent): void {
-    this._config.dragEnd?.call(this._host);
-    this.dispose();
-  }
-
-  private _handleCancel(event: KeyboardEvent): void {
-    const key = event.key.toLowerCase();
-
-    if (this._hasPointerCapture && key === 'escape') {
-      // Reset state
-      this._config.dragCancel?.call(this._host);
-    }
-  }
-
-  /** Updates the drag and drop controller configuration. */
-  public setConfig(value?: DragConfig): void {
-    Object.assign(this._config, value);
+  /** @internal */
+  public hostDisconnected(): void {
+    this._host.removeEventListener('dragstart', this);
+    this._host.removeEventListener('touchstart', this);
+    this._host.removeEventListener('pointerdown', this);
+    this._setDragCancelListener(false);
   }
 
   /** @internal */
@@ -347,25 +229,177 @@ class DragController implements ReactiveController {
     }
   }
 
-  /** Stops any drag operation and cleans up state, additional event listeners and elements. */
-  public dispose(): void {
-    this._previousMatch = null;
-    this._removeGhost();
-    this._setPointerCaptureState(false);
-    this._setDragCancelListener(false);
+  // #endregion
+
+  // #region Event handlers
+
+  private _handlePointerDown(event: PointerEvent): void {
+    if (this._shouldSkip(event)) {
+      return;
+    }
+
+    this._setInitialState(event);
+    this._createDragGhost(event);
+
+    this._options.start?.call(this._host, {
+      event,
+      state: this._stateParameters,
+    });
+    this._setDragState();
   }
 
-  public hostConnected(): void {
-    this._host.addEventListener('dragstart', this);
-    this._host.addEventListener('touchstart', this, { passive: false });
-    this._host.addEventListener('pointerdown', this);
+  private _handlePointerMove(event: PointerEvent): void {
+    if (!this._hasPointerCapture) {
+      return;
+    }
+
+    this._updatePosition(event);
+    this._updateMatcher(event);
+
+    const parameters = { event, state: this._stateParameters };
+    this._options.move?.call(this._host, parameters);
+
+    this._assignPosition(this._dragItem);
   }
 
-  public hostDisconnected(): void {
-    this._host.removeEventListener('dragstart', this);
-    this._host.removeEventListener('touchstart', this);
-    this._host.removeEventListener('pointerdown', this);
-    globalThis.removeEventListener('keydown', this);
+  private _handlePointerEnd(event: PointerEvent): void {
+    this._options.end?.call(this._host, {
+      event,
+      state: this._stateParameters,
+    });
+    this.dispose();
+  }
+
+  private _handleCancel(event: KeyboardEvent): void {
+    const key = event.key.toLowerCase();
+
+    if (this._hasPointerCapture && key === 'escape') {
+      // Reset state
+      this._options.cancel?.call(this._host, this._stateParameters);
+    }
+  }
+
+  // #endregion
+
+  private _setDragCancelListener(enabled = true): void {
+    enabled
+      ? globalThis.addEventListener('keydown', this)
+      : globalThis.removeEventListener('keydown', this);
+  }
+
+  private _setInitialState({
+    pointerId,
+    clientX,
+    clientY,
+  }: PointerEvent): void {
+    const rect = this._host.getBoundingClientRect();
+    const position = { x: rect.x, y: rect.y };
+    const offset = { x: rect.x - clientX, y: rect.y - clientY };
+
+    this._id = pointerId;
+    this._state = {
+      initial: rect,
+      current: structuredClone(rect),
+      position,
+      offset,
+    };
+  }
+
+  private _setDragState(enabled = true): void {
+    this._hasPointerCapture = enabled;
+    const cssValue = enabled ? 'none' : '';
+
+    Object.assign(this._element.style, {
+      touchAction: cssValue,
+      userSelect: cssValue,
+    });
+
+    enabled
+      ? this._element.setPointerCapture(this._id)
+      : this._element.releasePointerCapture(this._id);
+
+    this._setDragCancelListener(enabled);
+
+    // Toggle additional events
+    for (const type of additionalEvents) {
+      enabled
+        ? this._host.addEventListener(type, this)
+        : this._host.removeEventListener(type, this);
+    }
+  }
+
+  // REVIEW
+  private _updateMatcher(event: PointerEvent) {
+    if (!this._options.matchTarget) {
+      return;
+    }
+
+    const matches = document.elementsFromPoint(event.clientX, event.clientY);
+
+    if (matches.length === 1) {
+      return;
+    }
+
+    const match = matches.find((value) =>
+      this._options.matchTarget!.call(this._host, value)
+    );
+
+    if (match && !this._matchedElement) {
+      this._matchedElement = match;
+      this._options.enter?.call(this._host, this._matchedElement);
+      return;
+    }
+
+    if (!match && this._matchedElement) {
+      this._options.leave?.call(this._host, this._matchedElement);
+      this._matchedElement = null;
+      return;
+    }
+
+    if (match && match === this._matchedElement) {
+      this._options.over?.call(this._host, this._matchedElement);
+    }
+  }
+
+  private _updatePosition({ clientX, clientY }: PointerEvent): void {
+    const { top, left } = this._layer.getBoundingClientRect();
+    const { x, y } = this._state.offset;
+
+    const posX = this._hasSnapping ? clientX - left : clientX - left + x;
+    const posY = this._hasSnapping ? clientY - top : clientY - top + y;
+
+    Object.assign(this._state.position, { x: posX, y: posY });
+  }
+
+  private _assignPosition(element: HTMLElement): void {
+    element.style.transform = `translate(${this._state.position.x}px,${this._state.position.y}px)`;
+  }
+
+  private _createDragGhost(event: PointerEvent): void {
+    if (!this._isDeferred) {
+      return;
+    }
+
+    this._ghost =
+      this._options.ghost?.call(this._host) ??
+      createDefaultDragGhost(this._host.getBoundingClientRect());
+
+    this._updatePosition(event);
+    this._assignPosition(this._ghost);
+    this._layer.append(this._ghost);
+  }
+
+  private _removeGhost(): void {
+    this._ghost?.remove();
+    this._ghost = null;
+  }
+
+  private _shouldSkip(event: PointerEvent): boolean {
+    return (
+      Boolean(event.button) ||
+      this._options.skip?.call(this._host, event) ||
+      !findElementFromEventPath((e) => e === this._element, event)
+    );
   }
 }
 
@@ -375,8 +409,8 @@ function createDefaultDragGhost(rect: DOMRect): HTMLElement {
     position: 'absolute',
     left: rect.x,
     top: rect.y,
-    width: rect.width,
-    height: rect.height,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
     zIndex: 1000,
     background: 'gold',
   });
@@ -389,7 +423,7 @@ function createDefaultDragGhost(rect: DOMRect): HTMLElement {
  */
 export function addDragController(
   host: ReactiveControllerHost & LitElement,
-  config?: DragConfig
+  options?: DragControllerConfiguration
 ): DragController {
-  return new DragController(host, config);
+  return new DragController(host, options);
 }
