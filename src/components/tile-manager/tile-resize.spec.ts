@@ -11,7 +11,7 @@ import { spy } from 'sinon';
 import { range } from 'lit/directives/range.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { first, last } from '../common/util.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -85,6 +85,29 @@ describe('Tile resize', () => {
 
       columnSize = Number.parseFloat(first(getColumns())) + gap;
       rowSize = Number.parseFloat(tileManager.minRowHeight!) + gap;
+    });
+
+    it('should create new rows when resizing last row', async () => {
+      const lastTile = last(getTiles());
+      const DOM = getResizeContainerDOM(lastTile);
+
+      expect(getRows().length).to.eql(1);
+      expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 1');
+
+      simulatePointerDown(DOM.adorners.bottom);
+      await elementUpdated(DOM.resizeElement);
+
+      simulatePointerMove(DOM.adorners.bottom, {
+        clientY: rowSize * 4,
+      });
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.bottom);
+      await elementUpdated(DOM.resizeElement);
+      await nextFrame();
+
+      expect(getRows().length).to.eql(4);
+      expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 4');
     });
 
     it('should create a ghost element on resize start', async () => {
@@ -169,7 +192,7 @@ describe('Tile resize', () => {
       expect(getRows().length).to.eql(1);
 
       simulatePointerMove(DOM.adorners.side, {
-        clientX: columnSize * 3,
+        clientX: columnSize * 4,
       });
 
       await elementUpdated(DOM.resizeElement);
