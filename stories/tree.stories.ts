@@ -93,7 +93,6 @@ const addChildren = (
 const log = () => {
   const item = document.getElementById('parent2');
   item?.parentElement?.removeChild(item);
-  const tree = document.getElementById('tree') as IgcTreeComponent;
 };
 
 const log1 = () => {

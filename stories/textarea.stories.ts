@@ -326,7 +326,7 @@ function getInput(event: CustomEvent<string>) {
 }
 
 export const Validation: Story = {
-  play: async (args) => {
+  play: async () => {
     setMaxChars();
   },
   render: () => html`
