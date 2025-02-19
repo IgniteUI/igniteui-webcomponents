@@ -36,6 +36,10 @@ $focused-border-width: rem(2px);
 }
 
 :host(:focus-within) {
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus');
+    }
+
     igc-input[readonly]:not([disabled])::part(container) {
         border-width: #{$focused-border-width};
     }
