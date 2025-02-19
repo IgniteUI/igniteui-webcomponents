@@ -23,6 +23,8 @@ $theme: $indigo;
     }
 }
 
-[part='header'] {
-    padding-block: sizable(rem(8px), rem(14px), rem(14px));
+:host(:not([disable-fullscreen][disable-maximize])) {
+    [part='header'] {
+        padding-block: sizable(rem(8px), rem(14px), rem(14px));
+    }
 }

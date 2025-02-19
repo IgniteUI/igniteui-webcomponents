@@ -79,8 +79,19 @@
     align-items: center;
     justify-content: space-between;
     gap: sizable(rem(12px), rem(16px), rem(16px));
-    padding-block: sizable(rem(8px), rem(13px), rem(13px));
-    padding-inline: sizable(rem(12px), rem(16px), rem(20px));
+}
+
+:host(:not([disable-fullscreen][disable-maximize])) {
+    [part='header'] {
+        padding-block: sizable(rem(8px), rem(13px), rem(13px));
+        padding-inline: sizable(rem(12px), rem(16px), rem(20px));
+    }
+}
+
+:host([disable-fullscreen][disable-maximize]) {
+    igc-divider {
+        display: none;
+    }
 }
 
 [part='title'] {
