@@ -102,107 +102,35 @@ class TileResizeState {
   }
 
   public calculateSnappedWidth(state: ResizeState): number {
-    const deltaX = state.deltaX - this._prevDeltaX;
-    this._prevDeltaX = state.deltaX;
+    const result = this.calculateSnappedDimension(
+      state.current.width,
+      state.deltaX,
+      this._prevDeltaX,
+      this._columns.entries,
+      this._position.column.start,
+      this._prevSnappedWidth,
+      this._columns.minSize
+    );
 
-    const gap = this._gap;
-    const columns = this._columns.entries;
-
-    let snappedWidth = state.current.width;
-    let accumulatedWidth = 0;
-
-    // REVIEW: Don't fall below column minSize
-    if (Math.trunc(state.current.width) < this._columns.minSize) {
-      return this._columns.entries[this._position.column.start];
-    }
-
-    if (deltaX === 0 && this._prevSnappedWidth) {
-      return this._prevSnappedWidth;
-    }
-
-    for (let i = this._position.column.start - 1; i < columns.length; i++) {
-      const currentColWidth = columns[i];
-      const nextColWidth = columns[i + 1] || currentColWidth;
-      const prevColWidth = i > 0 ? columns[i - 1] : currentColWidth;
-
-      const halfwayExpand =
-        accumulatedWidth + currentColWidth + gap + nextColWidth / 2;
-      const halfwayShrink = accumulatedWidth + prevColWidth / 2;
-      const columnEnd = accumulatedWidth + currentColWidth + gap;
-
-      if (deltaX > 0) {
-        if (
-          state.current.width >= halfwayExpand &&
-          state.current.width <= columnEnd + nextColWidth
-        ) {
-          snappedWidth = columnEnd + nextColWidth;
-        }
-      } else if (deltaX < 0) {
-        if (
-          state.current.width <= halfwayShrink &&
-          state.current.width > accumulatedWidth
-        ) {
-          snappedWidth = accumulatedWidth - gap;
-        }
-      }
-
-      accumulatedWidth += currentColWidth + gap;
-    }
-
-    this._prevSnappedWidth = snappedWidth;
-    return snappedWidth;
+    this._prevDeltaX = result.newDelta;
+    this._prevSnappedWidth = result.snapped;
+    return result.snapped;
   }
 
   public calculateSnappedHeight(state: ResizeState): number {
-    const deltaY = state.deltaY - this._prevDeltaY;
-    this._prevDeltaY = state.deltaY;
+    const result = this.calculateSnappedDimension(
+      state.current.height,
+      state.deltaY,
+      this._prevDeltaY,
+      this._rows.entries,
+      this._position.row.start,
+      this._prevSnappedHeight,
+      this._rows.minSize
+    );
 
-    const gap = this._gap;
-    const rows = this._rows.entries;
-
-    let snappedHeight = state.current.height;
-    let accumulatedHeight = 0;
-
-    // REVIEW: Don't fall below row minSize
-    if (Math.trunc(state.current.height) < this._rows.minSize) {
-      return this._rows.entries[this._position.row.start];
-    }
-
-    if (deltaY === 0 && this._prevSnappedHeight) {
-      return this._prevSnappedHeight;
-    }
-
-    for (let i = this._position.row.start - 1; i < rows.length; i++) {
-      const currentColHeight = rows[i];
-      const nextColHeight = rows[i + 1] || currentColHeight;
-      const prevColHeight = i > 0 ? rows[i - 1] : currentColHeight;
-
-      const halfwayExpand =
-        accumulatedHeight + currentColHeight + gap + nextColHeight / 2;
-      const halfwayShrink = accumulatedHeight + prevColHeight / 2;
-      const columnEnd = accumulatedHeight + currentColHeight + gap;
-
-      if (deltaY > 0) {
-        if (
-          state.current.height >= halfwayExpand &&
-          state.current.height <= columnEnd + nextColHeight
-        ) {
-          snappedHeight = columnEnd + nextColHeight;
-        }
-      } else if (deltaY < 0) {
-        if (
-          state.current.height <= halfwayShrink &&
-          state.current.height > accumulatedHeight
-        ) {
-          snappedHeight = accumulatedHeight - gap;
-        }
-      }
-
-      accumulatedHeight += currentColHeight + gap;
-    }
-
-    this._prevSnappedHeight = snappedHeight;
-    return snappedHeight;
+    this._prevDeltaY = result.newDelta;
+    this._prevSnappedHeight = result.snapped;
+    return result.snapped;
   }
 
   public updateState(
@@ -210,44 +138,8 @@ class TileResizeState {
     tile: IgcTileComponent,
     grid: HTMLElement
   ): void {
-    const { gap, columns, rows } = parseTileParentGrid(grid);
-
-    this._initialPosition = parseTileGridRect(tile);
-    this._position = structuredClone(this._initialPosition);
-
-    this._gap = gap;
-    this._columns = columns;
-    this._rows = rows;
-    this._prevDeltaX = 0;
-    this._prevDeltaY = 0;
-    this._prevSnappedWidth = 0;
-    this._prevSnappedHeight = 0;
-
-    if (this._position.column.start < 0) {
-      const widthOffset =
-        grid.getBoundingClientRect().left +
-        window.scrollX +
-        Number.parseFloat(getComputedStyle(grid).marginLeft) +
-        Number.parseFloat(getComputedStyle(grid).paddingLeft);
-
-      this._position.column.start = this.calculatePosition(
-        tileRect.left + window.scrollX + grid.scrollLeft - widthOffset,
-        this._columns.entries
-      );
-    }
-
-    if (this._position.row.start < 0) {
-      const heightOffset =
-        grid.getBoundingClientRect().top +
-        window.scrollY +
-        Number.parseFloat(getComputedStyle(grid).marginTop) +
-        Number.parseFloat(getComputedStyle(grid).paddingTop);
-
-      this._position.row.start = this.calculatePosition(
-        tileRect.y + window.scrollY - heightOffset,
-        this._rows.entries
-      );
-    }
+    this.initState(grid, tile);
+    this.calculateTileStartPosition(grid, tileRect);
   }
 
   /**
@@ -257,6 +149,7 @@ class TileResizeState {
   public getResizedPosition(rect: DOMRect) {
     const { column, row } = this._initialPosition;
 
+    // REVIEW pass col minSize and allowOverflow?
     this._position.column.span = this.calculateResizedSpan(
       rect.width,
       this._position.column,
@@ -267,6 +160,7 @@ class TileResizeState {
       rect.height,
       this._position.row,
       this._rows.entries,
+      this._rows.minSize,
       true
     );
 
@@ -300,8 +194,149 @@ class TileResizeState {
     }
   }
 
+  private calculateSnappedDimension(
+    currentSize: number,
+    currentDelta: number,
+    prevDelta: number,
+    gridEntries: number[],
+    startIndex: number,
+    prevSnapped: number,
+    minSize: number
+  ): { snapped: number; newDelta: number } {
+    const effectiveDelta = currentDelta - prevDelta;
+    let snapped = currentSize;
+
+    // If current size is below minimum, force to the size of the starting cell.
+    if (Math.trunc(currentSize) < minSize) {
+      return { snapped: gridEntries[startIndex], newDelta: currentDelta };
+    }
+
+    // If no change in delta and we have a snapped value, reuse it.
+    if (effectiveDelta === 0 && prevSnapped) {
+      return { snapped: prevSnapped, newDelta: currentDelta };
+    }
+
+    let accumulated = 0;
+    for (let i = startIndex - 1; i < gridEntries.length; i++) {
+      const currentEntry = gridEntries[i];
+      const nextEntry = gridEntries[i + 1] ?? currentEntry;
+      const prevEntry = i > 0 ? gridEntries[i - 1] : currentEntry;
+
+      // Thresholds for snapping to the next or previous tile boundary.
+      const halfwayExpand =
+        accumulated + currentEntry + this.gap + nextEntry / 2;
+      const halfwayShrink = accumulated + prevEntry / 2;
+      const entryEnd = accumulated + currentEntry + this.gap;
+
+      if (effectiveDelta > 0) {
+        // Expanding: snap when passing the halfway threshold.
+        if (
+          currentSize >= halfwayExpand &&
+          currentSize <= entryEnd + nextEntry
+        ) {
+          snapped = entryEnd + nextEntry;
+        }
+      } else if (effectiveDelta < 0) {
+        // Shrinking: snap when falling below the halfway threshold.
+        if (currentSize <= halfwayShrink && currentSize > accumulated) {
+          snapped = accumulated - this.gap;
+        }
+      }
+
+      accumulated += currentEntry + this.gap;
+    }
+
+    return { snapped, newDelta: currentDelta };
+  }
+
+  private calculateResizedSpan(
+    targetSize: number,
+    tilePosition: TilePosition,
+    sizes: number[],
+    minSize = 0,
+    allowOverflow = false
+  ): number {
+    let accumulatedSize = 0;
+    let newSpan = tilePosition.span;
+
+    const sizesAfterStart = sizes.slice(tilePosition.start - 1);
+    const availableSize =
+      sizesAfterStart.reduce((sum, s) => sum + s, 0) +
+      (sizes.length - 1) * this.gap;
+
+    if (targetSize <= sizes[0] + this.gap) {
+      return 1;
+    }
+
+    if (targetSize > availableSize) {
+      const remainingSize = targetSize - availableSize;
+      return this.calculateAdditionalSpan(
+        remainingSize,
+        sizesAfterStart.length,
+        minSize,
+        allowOverflow
+      );
+    }
+
+    for (let i = tilePosition.start - 1; i < sizes.length; i++) {
+      const currentSize = sizes[i];
+      const nextSize = sizes[i + 1] ?? currentSize;
+
+      const halfwayPoint =
+        accumulatedSize + currentSize + this.gap + nextSize / 2;
+
+      if (targetSize > halfwayPoint) {
+        newSpan = i + 3 - tilePosition.start;
+      } else {
+        break;
+      }
+
+      accumulatedSize += currentSize + this.gap;
+    }
+
+    return newSpan;
+  }
+
+  private initState(grid: HTMLElement, tile: IgcTileComponent): void {
+    const { gap, columns, rows } = parseTileParentGrid(grid);
+
+    this._initialPosition = parseTileGridRect(tile);
+    this._position = structuredClone(this._initialPosition);
+
+    this._gap = gap;
+    this._columns = columns;
+    this._rows = rows;
+    this._prevDeltaX = 0;
+    this._prevDeltaY = 0;
+    this._prevSnappedWidth = 0;
+    this._prevSnappedHeight = 0;
+  }
+
+  private calculateTileStartPosition(
+    grid: HTMLElement,
+    tileRect: DOMRect
+  ): void {
+    if (this._position.column.start < 0) {
+      const offsetX = this.getGridOffset(grid, 'horizontal');
+
+      this._position.column.start = this.calculatePosition(
+        tileRect.left + window.scrollX + grid.scrollLeft - offsetX,
+        this._columns.entries
+      );
+    }
+
+    if (this._position.row.start < 0) {
+      const offsetY = this.getGridOffset(grid, 'vertical');
+
+      this._position.row.start = this.calculatePosition(
+        tileRect.y + window.scrollY - offsetY,
+        this._rows.entries
+      );
+    }
+  }
+
   private calculatePosition(targetPosition: number, sizes: number[]): number {
-    const gap = this._gap;
+    const gap = this.gap;
     let accumulatedSize = 0;
 
     for (const [i, size] of sizes.entries()) {
@@ -315,53 +350,30 @@ class TileResizeState {
     return 1;
   }
 
-  private calculateResizedSpan(
-    targetSize: number,
-    tilePosition: TilePosition,
-    sizes: number[],
-    isRows = false
+  private calculateAdditionalSpan(
+    remainingSize: number,
+    currentSpan: number,
+    minSize: number,
+    allowOverflow: boolean
+  ) {
+    if (allowOverflow) {
+      const additionalSpan = Math.ceil(remainingSize / (minSize + this.gap));
+      return currentSpan + additionalSpan;
+    }
+
+    return currentSpan;
+  }
+
+  private getGridOffset(
+    grid: HTMLElement,
+    axis: 'horizontal' | 'vertical'
   ): number {
-    let accumulatedSize = 0;
-    let newSpan = tilePosition.span;
+    const gridRect = grid.getBoundingClientRect();
+    const computed = getComputedStyle(grid);
 
-    const sizesAfterStart = sizes.slice(tilePosition.start - 1);
-    const availableSize =
-      sizesAfterStart.reduce((sum, s) => sum + s, 0) +
-      (sizes.length - 1) * this._gap;
-
-    if (targetSize <= sizes[0] + this._gap) {
-      return 1;
-    }
-
-    if (targetSize > availableSize) {
-      if (isRows) {
-        const remainingSize = targetSize - availableSize;
-        const additionalSpan = Math.ceil(
-          remainingSize / (this._rows.minSize + this._gap)
-        );
-        return sizesAfterStart.length + additionalSpan;
-      }
-
-      return sizesAfterStart.length;
-    }
-
-    for (let i = tilePosition.start - 1; i < sizes.length; i++) {
-      const currentSize = sizes[i];
-      const nextSize = sizes[i + 1] ?? currentSize;
-
-      const halfwayPoint =
-        accumulatedSize + currentSize + this._gap + nextSize / 2;
-
-      if (targetSize > halfwayPoint) {
-        newSpan = i + 3 - tilePosition.start;
-      } else {
-        break;
-      }
-
-      accumulatedSize += currentSize + this._gap;
-    }
-
-    return newSpan;
+    return axis === 'horizontal'
+      ? gridRect.left + window.scrollX + Number.parseFloat(computed.paddingLeft)
+      : gridRect.top + window.scrollY + Number.parseFloat(computed.paddingTop);
   }
 }
 
