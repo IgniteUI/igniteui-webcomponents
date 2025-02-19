@@ -329,7 +329,7 @@ class TileResizeState {
       const offsetY = this.getGridOffset(grid, 'vertical');
 
       this._position.row.start = this.calculatePosition(
-        tileRect.y + window.scrollY - offsetY,
+        tileRect.top + window.scrollY - offsetY,
         this._rows.entries
       );
     }
@@ -372,7 +372,10 @@ class TileResizeState {
     const computed = getComputedStyle(grid);
 
     return axis === 'horizontal'
-      ? gridRect.left + window.scrollX + Number.parseFloat(computed.paddingLeft)
+      ? gridRect.left +
+          window.scrollX +
+          grid.scrollLeft +
+          Number.parseFloat(computed.paddingLeft)
       : gridRect.top + window.scrollY + Number.parseFloat(computed.paddingTop);
   }
 }
