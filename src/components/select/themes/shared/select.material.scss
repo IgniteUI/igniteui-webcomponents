@@ -29,16 +29,6 @@ $active-border-width: rem(2px) !default;
     }
 }
 
-:host(:hover) {
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background');
-    }
-
-    [part='toggle-icon filled'] {
-        color: var-get($theme, 'toggle-button-foreground-filled');
-    }
-}
-
 :host([outlined]:focus-within) {
     igc-input[readonly]:not([disabled])::part(start) {
         border: {
