@@ -95,6 +95,7 @@ class DragController implements ReactiveController {
     enabled: true,
     mode: 'deferred',
     snapToCursor: false,
+    layer: getDefaultLayer,
   };
 
   private _state!: State;
@@ -403,14 +404,19 @@ class DragController implements ReactiveController {
   }
 }
 
-function createDefaultDragGhost(rect: DOMRect): HTMLElement {
+function getDefaultLayer() {
+  return document.body;
+}
+
+function createDefaultDragGhost({ x, y, width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
+
   Object.assign(element.style, {
     position: 'absolute',
-    left: rect.x,
-    top: rect.y,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
+    left: `${x}px`,
+    top: `${y}px`,
+    width: `${width}px`,
+    height: `${height}px`,
     zIndex: 1000,
     background: 'gold',
   });

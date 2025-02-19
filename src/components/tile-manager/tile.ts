@@ -97,7 +97,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _dragController = addDragController(this, {
     skip: this._skipDrag,
     matchTarget: this._match,
-    layer: () => this._tileManager!,
     ghost: this._createDragGhost,
     start: this._handleDragStart,
     enter: this._handleDragEnter,

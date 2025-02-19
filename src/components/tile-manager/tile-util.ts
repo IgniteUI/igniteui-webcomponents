@@ -371,6 +371,8 @@ export function createTileResizeState(): TileResizeState {
 
 export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
   const clone = tile.cloneNode(true) as IgcTileComponent;
+  const computed = getComputedStyle(tile);
+
   const { width, height } = tile.getBoundingClientRect();
 
   clone.removeAttribute('id');
@@ -385,9 +387,9 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
     left: 0,
     width: `${width}px`,
     height: `${height}px`,
-    background: 'var(--placeholder-background)',
-    border: '1px solid var(--ghost-border)',
-    borderRadius: 'var(--border-radius)',
+    background: `${computed.getPropertyValue('--tile-background')}`,
+    border: `1px solid ${computed.getPropertyValue('--ghost-border')}`,
+    borderRadius: computed.getPropertyValue('--border-radius'),
     zIndex: 1000,
     viewTransitionName: 'dragged-tile-ghost',
   });
@@ -405,7 +407,7 @@ export function createTileGhost(): HTMLElement {
     left: 0,
     zIndex: 1000,
     background: 'var(--placeholder-background)',
-    border: '2px solid var(--ghost-border)',
+    border: '1px solid var(--ghost-border)',
     borderRadius: 'var(--border-radius)',
     width: '100%',
     height: '100%',
