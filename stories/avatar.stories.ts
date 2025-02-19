@@ -4,7 +4,6 @@ import {
   IgcAvatarComponent,
   IgcIconComponent,
   defineComponents,
-  registerIcon,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
 
@@ -62,11 +61,6 @@ interface IgcAvatarArgs {
   shape: 'circle' | 'rounded' | 'square';
 }
 type Story = StoryObj<IgcAvatarArgs>;
-
-registerIcon(
-  'home',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
-);
 
 // endregion
 

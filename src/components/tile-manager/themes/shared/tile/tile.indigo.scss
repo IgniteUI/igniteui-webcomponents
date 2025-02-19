@@ -1,0 +1,30 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+[part~='base'] {
+    border: rem(1px) solid var-get($theme, 'border-color');
+
+    &:hover {
+        border: rem(1px) solid var-get($theme, 'hover-border-color');
+
+        &::after {
+            display: none;
+        }
+    }
+}
+
+[part='content-container'] {
+    ::slotted(*) {
+        @include type-style('body-2');
+
+        margin: 0;
+    }
+}
+
+:host(:not([disable-fullscreen][disable-maximize])) {
+    [part='header'] {
+        padding-block: sizable(rem(8px), rem(14px), rem(14px));
+    }
+}
