@@ -33,13 +33,13 @@ $theme: $material;
     }
 }
 
-@include gradient-variant('danger', color(error, 500));
-@include gradient-variant('warning', color(warn, 500));
-@include gradient-variant('info', color(info, 500));
-@include gradient-variant('success', color(success, 500));
+@include gradient-variant('danger', var-get($theme, 'fill-color-danger'));
+@include gradient-variant('warning', var-get($theme, 'fill-color-warning'));
+@include gradient-variant('info', var-get($theme, 'fill-color-info'));
+@include gradient-variant('success', var-get($theme, 'fill-color-success'));
 
 [part~='gradient_start'],
 [part~='gradient_end'] {
-    stop-color: var(--gradient-stop-color, var-get($theme, 'progress-circle-color'));
+    stop-color: var(--gradient-stop-color, var-get($theme, 'fill-color-default'));
 }
 
