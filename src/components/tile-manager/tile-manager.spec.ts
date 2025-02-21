@@ -149,7 +149,7 @@ describe('Tile Manager component', () => {
       expect(tiles[0]).shadowDom.to.equal(
         `
           <div
-            part="base draggable resizable"
+            part="base"
             style="--ig-col-span:1;--ig-row-span:1;"
           >
             <section part="header">

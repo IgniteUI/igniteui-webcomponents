@@ -19,7 +19,7 @@ import {
 } from '../common/utils.spec.js';
 import type { TileManagerDragMode } from '../types.js';
 import IgcTileManagerComponent from './tile-manager.js';
-import type IgcTileComponent from './tile.js';
+import IgcTileComponent from './tile.js';
 
 describe('Tile drag and drop', () => {
   before(() => {
@@ -92,6 +92,29 @@ describe('Tile drag and drop', () => {
       expect(eventSpy).not.called;
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(1);
+    });
+
+    it('should add draggable part to the tile', async () => {
+      const tile = Array.from(
+        tileManager.querySelectorAll(IgcTileComponent.tagName)
+      )[0];
+      const getTileSlot = () =>
+        tile.shadowRoot!.querySelector('div[part~="draggable"]');
+
+      tileManager.dragMode = 'tile';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).not.to.be.null;
+
+      tileManager.dragMode = 'none';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).to.be.null;
+
+      tileManager.dragMode = 'tile-header';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).not.to.be.null;
     });
   });
 

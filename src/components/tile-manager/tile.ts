@@ -535,11 +535,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected _renderContent() {
     const parts = partNameMap({
       base: true,
-      draggable: true,
+      draggable: this._tileManager?.dragMode !== 'none',
       'drag-over': this._hasDragOver && !this._isSlideMode,
       fullscreen: this.fullscreen,
       dragging: this._isDragging,
-      resizable: !this.disableResize,
+      resizable:
+        !this.disableResize && this._tileManager?.resizeMode !== 'none',
       resizing: this._isResizing,
       maximized: this.maximized,
     });

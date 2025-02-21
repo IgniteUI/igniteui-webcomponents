@@ -87,6 +87,34 @@ describe('Tile resize', () => {
       rowSize = Number.parseFloat(tileManager.minRowHeight!) + gap;
     });
 
+    it('should add resizable part to the tile', async () => {
+      const tile = Array.from(
+        tileManager.querySelectorAll(IgcTileComponent.tagName)
+      )[0];
+      const getTileSlot = () =>
+        tile.shadowRoot!.querySelector('div[part~="resizable"]');
+
+      tileManager.resizeMode = 'always';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).not.to.be.null;
+
+      tileManager.resizeMode = 'none';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).to.be.null;
+
+      tileManager.resizeMode = 'hover';
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).not.to.be.null;
+
+      tile.disableResize = true;
+      await elementUpdated(tileManager);
+
+      expect(getTileSlot()).to.be.null;
+    });
+
     it('should create new rows when resizing last row', async () => {
       const lastTile = last(getTiles());
       const DOM = getResizeContainerDOM(lastTile);
