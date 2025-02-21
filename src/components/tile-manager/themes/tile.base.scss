@@ -2,16 +2,13 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --pad-block: #{sizable(rem(8px), rem(13px), rem(13px))};
+    --pad-inline: #{sizable(rem(12px), rem(16px), rem(20px))};
+
     display: block;
     position: relative;
     grid-column: var(--ig-col-start, auto) / span var(--ig-col-span, 1);
     grid-row: var(--ig-row-start, auto) / span var(--ig-row-span, 1);
-}
-
-:host(:hover) {
-    igc-resize {
-        --resize-visibility: visible;
-    }
 }
 
 :host([part='resizing']),
@@ -82,9 +79,9 @@
 }
 
 :host(:not([disable-fullscreen][disable-maximize])) {
-    [part='header'] {
-        padding-block: sizable(rem(8px), rem(13px), rem(13px));
-        padding-inline: sizable(rem(12px), rem(16px), rem(20px));
+    [part='actions'] {
+        padding-block: var(--pad-block);
+        padding-inline: var(--pad-inline);
     }
 }
 
@@ -104,9 +101,17 @@
 
     margin-bottom: 0;
     min-width: 2ch;
+    padding-block: var(--pad-block);
+    padding-inline: var(--pad-inline);
 }
 
 [part='actions'] {
     display: flex;
     gap: rem(8px);
+}
+
+// should be fixed
+::slotted([slot='actions']) {
+    padding-block: var(--pad-block);
+    padding-inline: var(--pad-inline);
 }

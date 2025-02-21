@@ -9,6 +9,7 @@ import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { addResizeController } from './resize-controller.js';
 import { styles } from './themes/resize-container.base.css.js';
+import { styles as shared } from './themes/shared/resize-container.common.css.js';
 import type {
   ResizeCallbackParams,
   ResizeGhostFactory,
@@ -35,7 +36,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-resize';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -188,9 +189,9 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     }
 
     return html`
-      <div ${ref(this._adorners.side)} part="trigger-side">🔵</div>
-      <div ${ref(this._adorners.corner)} part="trigger">🔵</div>
-      <div ${ref(this._adorners.bottom)} part="trigger-bottom">🔵</div>
+      <div ${ref(this._adorners.side)} part="trigger-side"></div>
+      <div ${ref(this._adorners.corner)} part="trigger"></div>
+      <div ${ref(this._adorners.bottom)} part="trigger-bottom"></div>
     `;
   }
 

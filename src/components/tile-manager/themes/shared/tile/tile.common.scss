@@ -11,7 +11,9 @@ $theme: $material;
     background: var-get($theme, 'tile-background');
     border-radius: var-get($theme, 'border-radius');
     box-shadow: var-get($theme, 'resting-elevation');
+}
 
+[part~='base']:not([part~='resizable']) {
     &:hover {
         &::after {
             content: '';
