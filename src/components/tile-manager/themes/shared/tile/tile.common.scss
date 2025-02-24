@@ -3,6 +3,16 @@
 
 $theme: $material;
 
+%after-element {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
@@ -14,15 +24,14 @@ $theme: $material;
 }
 
 [part~='base']:not([part~='resizable']) {
+    &::after {
+        @extend %after-element;
+
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
     &:hover {
         &::after {
-            content: '';
-            position: absolute;
-            pointer-events: none;
-            border-radius: inherit;
-            inset: 0;
-            width: 100%;
-            height: 100%;
             border: rem(1px) solid var-get($theme, 'hover-border-color');
         }
     }
@@ -51,13 +60,8 @@ $theme: $material;
 
 [part~='drag-over'] {
     &::after {
-        content: '';
-        position: absolute;
-        pointer-events: none;
-        border-radius: inherit;
-        inset: 0;
-        width: 100%;
-        height: 100%;
+        @extend %after-element;
+
         z-index: 1000;
         border: rem(1px) solid var-get($theme, 'ghost-border');
         background: var-get($theme, 'overlay-background');
@@ -65,7 +69,7 @@ $theme: $material;
 }
 
 [part='header'] {
-    background: var-get($theme, 'tile-background');
+    background: var-get($theme, 'header-background');
     border-top-left-radius: var-get($theme, 'border-radius');
     border-top-right-radius: var-get($theme, 'border-radius');
 }
@@ -75,5 +79,5 @@ $theme: $material;
 }
 
 igc-divider {
-    --color: var-get($theme, 'divider-color');
+    --color: #{var-get($theme, 'divider-color')};
 }

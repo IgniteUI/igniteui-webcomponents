@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -10,6 +11,7 @@ import IgcIconComponent from '../icon/icon.js';
 import { addResizeController } from './resize-controller.js';
 import { styles } from './themes/resize-container.base.css.js';
 import { styles as shared } from './themes/shared/resize-container.common.css.js';
+import { all } from './themes/themes.js';
 import type {
   ResizeCallbackParams,
   ResizeGhostFactory,
@@ -31,6 +33,7 @@ export interface IgcResizeContainerComponentEventMap {
  *
  * @slot - renders the element(s) that should be resized
  */
+@themes(all)
 export default class IgcResizeContainerComponent extends EventEmitterMixin<
   IgcResizeContainerComponentEventMap,
   Constructor<LitElement>
