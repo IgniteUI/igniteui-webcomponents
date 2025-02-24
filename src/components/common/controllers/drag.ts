@@ -12,7 +12,7 @@ type DragEnterCallback = (target: Element) => unknown;
 type DragCallback = (parameters: DragCallbackParameters) => unknown;
 type DragCancelCallback = (state: DragState) => unknown;
 
-type DragCallbackParameters = {
+export type DragCallbackParameters = {
   event: PointerEvent;
   state: DragState;
 };

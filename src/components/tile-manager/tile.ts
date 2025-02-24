@@ -10,7 +10,10 @@ import {
   tileManagerContext,
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
-import { addDragController } from '../common/controllers/drag.js';
+import {
+  type DragCallbackParameters,
+  addDragController,
+} from '../common/controllers/drag.js';
 import { addFullscreenController } from '../common/controllers/fullscreen.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -96,10 +99,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _dragController = addDragController(this, {
     skip: this._skipDrag,
-    matchTarget: this._match,
     ghost: this._createDragGhost,
     start: this._handleDragStart,
-    enter: this._handleDragEnter,
+    move: this._handleDragMove,
     end: this._handleDragEnd,
     cancel: this._handleDragCancel,
   });
@@ -244,7 +246,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr col-start
    */
   @property({ type: Number, attribute: 'col-start' })
-  public set colStart(value: number) {
+  public set colStart(value: number | null) {
     this._colStart = Math.max(0, asNumber(value)) || null;
     this.style.setProperty(
       '--ig-col-start',
@@ -262,7 +264,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr row-start
    */
   @property({ type: Number, attribute: 'row-start' })
-  public set rowStart(value: number) {
+  public set rowStart(value: number | null) {
     this._rowStart = Math.max(0, asNumber(value)) || null;
     this.style.setProperty(
       '--ig-row-start',
@@ -361,12 +363,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._dragStack.add(this);
   }
 
-  private _handleDragEnter(tile: Element): void {
-    const other = tile as IgcTileComponent;
-    this._dragStack.add(other);
+  private _handleDragMove({ event }: DragCallbackParameters) {
+    const match = document
+      .elementsFromPoint(event.clientX, event.clientY)
+      .find(this._match);
+
+    if (!match) {
+      return;
+    }
+
+    if (this._dragStack.peek() === match) {
+      return;
+    }
+
+    this._dragStack.add(match);
 
     startViewTransition(() => {
-      swapTiles(this, other);
+      swapTiles(this, match);
     });
   }
 
@@ -397,7 +410,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  private _match(element: Element): boolean {
+  private _match(element: Element): element is IgcTileComponent {
     return element !== this && IgcTileComponent.tagName === element.localName;
   }
 

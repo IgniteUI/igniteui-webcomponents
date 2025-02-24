@@ -1,4 +1,4 @@
-import { partition } from '../common/util.js';
+import { last, partition } from '../common/util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
 
@@ -84,18 +84,38 @@ class TilesState {
 type TileDragStackEntry = {
   tile: IgcTileComponent;
   position: number;
+  column?: number | null;
+  row?: number | null;
 };
 
 class TileDragStack {
   private _stack: TileDragStackEntry[] = [];
 
+  public peek(): IgcTileComponent {
+    return last(this._stack).tile;
+  }
+
   public add(tile: IgcTileComponent): void {
-    this._stack.push({ tile, position: tile.position });
+    this._stack.push({
+      tile,
+      position: tile.position,
+      column: tile.colStart,
+      row: tile.rowStart,
+    });
   }
 
   public restore(): void {
-    for (const { tile, position } of this._stack.toReversed()) {
-      tile.position = position;
+    for (const {
+      tile,
+      position,
+      column: colStart,
+      row: rowStart,
+    } of this._stack.toReversed()) {
+      Object.assign(tile, {
+        position,
+        colStart,
+        rowStart,
+      });
     }
   }
 
@@ -113,5 +133,7 @@ export function createTileDragStack(): TileDragStack {
 }
 
 export function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
+  [a.colStart, b.colStart] = [b.colStart, a.colStart];
+  [a.rowStart, b.rowStart] = [b.rowStart, a.colStart];
   [a.position, b.position] = [b.position, a.position];
 }
