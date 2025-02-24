@@ -80,7 +80,7 @@
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^6.0.0",
     "igniteui-theming": "^15.0.0",
-    "keep-a-changelog": "^2.6.0",
+    "keep-a-changelog": "~2.5.3",
     "lint-staged": "^15.4.3",
     "lit-analyzer": "^2.0.3",
     "madge": "^8.0.0",
