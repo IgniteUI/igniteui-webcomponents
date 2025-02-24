@@ -835,8 +835,8 @@ function handleMaximizeClick(event: Event) {
         currentBtn.setAttribute('aria-label', 'expand');
 
         const additionalButtons =
-          actionsSlot.querySelectorAll('.additional-action');
-        additionalButtons.forEach((btn) => btn.remove());
+          actionsSlot.parentElement?.querySelectorAll('.additional-action');
+        additionalButtons?.forEach((btn) => btn.remove());
       }
     }
   }
