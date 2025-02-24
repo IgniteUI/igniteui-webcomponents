@@ -437,16 +437,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  private _handleResizeEnd({
+  private async _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
     const { column, row } = this._resizeState.getResizedPosition(state.current);
 
-    state.commit = () =>
-      startViewTransition(() => {
-        this.style.setProperty('grid-row', row);
-        this.style.setProperty('grid-column', column);
-      });
+    const { transition } = startViewTransition(() => {
+      this.style.setProperty('grid-row', row);
+      this.style.setProperty('grid-column', column);
+    });
+
+    await transition?.finished;
+    const updatedSize = this._resizeState.calculateResizedSize(
+      this._cssContainer
+    );
+
+    state.current.width = updatedSize.width;
+    state.current.height = updatedSize.height;
 
     this._setResizeState(false);
   }

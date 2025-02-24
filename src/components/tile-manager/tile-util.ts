@@ -170,6 +170,15 @@ class TileResizeState {
     return { column: cssColumn, row: cssRow };
   }
 
+  public calculateResizedSize(grid: HTMLElement) {
+    const { columns, rows } = parseTileParentGrid(grid);
+
+    const width = this.calculateSizeFromEntries(columns.entries);
+    const height = this.calculateSizeFromEntries(rows.entries, true);
+
+    return { width, height };
+  }
+
   /**
    * Checks and adjusts tile spans based on the column count of the tile manager.
    */
@@ -362,6 +371,20 @@ class TileResizeState {
     }
 
     return currentSpan;
+  }
+
+  private calculateSizeFromEntries(entries: number[], isRow = false) {
+    const start = isRow ? this.position.row.start : this.position.column.start;
+    const span = isRow ? this.position.row.span : this.position.column.span;
+
+    let accumulatedSize = 0;
+
+    for (let i = 0; i < span; i++) {
+      const gap = i > 0 ? this.gap : 0;
+      accumulatedSize += entries[start - 1 + i] + gap;
+    }
+
+    return accumulatedSize;
   }
 
   private getGridOffset(
