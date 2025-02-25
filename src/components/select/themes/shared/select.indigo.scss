@@ -33,6 +33,12 @@ $input-theme: input-theme.$indigo;
     padding: rem(3px);
 }
 
+:host(:hover) {
+    [part~='toggle-icon'] {
+        color: var-get($theme, 'toggle-button-foreground-focus');
+    }
+}
+
 :host(:focus-within) {
     igc-input::part(label) {
         color: var-get($input-theme, 'focused-secondary-color');

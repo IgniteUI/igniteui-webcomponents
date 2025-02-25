@@ -73,10 +73,21 @@ igc-icon,
     --component-size: var(--input-size);
 }
 
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     [part='label'],
     igc-validator {
+        color: var-get($input-theme, 'disabled-text-color');
+    }
+
+    ::part(helper-text) {
         color: var-get($input-theme, 'disabled-text-color');
     }
 }

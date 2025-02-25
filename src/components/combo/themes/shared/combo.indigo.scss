@@ -92,6 +92,13 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),

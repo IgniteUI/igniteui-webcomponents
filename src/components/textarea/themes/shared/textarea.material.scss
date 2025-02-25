@@ -330,6 +330,22 @@ textarea {
     }
 }
 
+:host([outlined]:hover) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+
+    [part~='container'][part~='filled'],
+    [part~='container'][part~='placeholder'] {
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
+    }
+}
+
 :host([outlined]:focus-within) {
     [part='filler'],
     [part='notch'] {
