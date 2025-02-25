@@ -23,6 +23,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 | Components              | Status |         Documentation          | Released Version |
 | :---------------------- | :----: | :----------------------------: | :--------------: |
+| Carousel                |   ✅   |     [Docs][Carousel Docs]      |     [5.1.0]      |
 | Date picker             |   ✅   |    [Docs][Date Picker Docs]    |     [4.10.0]     |
 | Divider                 |   ✅   |      [Docs][Divider Docs]      |     [4.10.0]     |
 | Banner                  |   ✅   |      [Docs][Banner Docs]       |     [4.10.0]     |
@@ -235,6 +236,7 @@ npm run storybook:build
 [Banner Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/banner
 [Divider Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/divider
 [Date Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-picker
+[Carousel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/carousel
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -245,3 +247,4 @@ npm run storybook:build
 [4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.1.0
 [4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.5.0
 [4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.10.0
+[5.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.1.0
