@@ -298,3 +298,29 @@ export function asArray<T>(value?: T | T[]): T[] {
   if (!isDefined(value)) return [];
   return Array.isArray(value) ? value : [value];
 }
+
+export function partition<T>(
+  array: T[],
+  isTruthy: (value: T) => boolean
+): [truthy: T[], falsy: T[]] {
+  const truthy: T[] = [];
+  const falsy: T[] = [];
+
+  for (const item of array) {
+    (isTruthy(item) ? truthy : falsy).push(item);
+  }
+
+  return [truthy, falsy];
+}
+
+export function pick<T extends object>(entry: T, ...props: Array<keyof T>) {
+  return Object.fromEntries(
+    Object.entries(entry).filter(([key, _]) => props.includes(key as keyof T))
+  );
+}
+
+export function omit<T extends object>(entry: T, ...props: Array<keyof T>) {
+  return Object.fromEntries(
+    Object.entries(entry).filter(([key, _]) => !props.includes(key as keyof T))
+  );
+}

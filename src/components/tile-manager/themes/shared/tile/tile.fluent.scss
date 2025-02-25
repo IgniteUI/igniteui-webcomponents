@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+
+:host(:not([disable-fullscreen][disable-maximize])) {
+    [part='header'] {
+        padding-block: sizable(rem(8px), rem(12px), rem(12px));
+    }
+}

@@ -85,3 +85,18 @@ export function addAnimationController(
 ) {
   return new AnimationController(host, target);
 }
+
+type ViewTransitionResult = {
+  transition?: ViewTransition;
+};
+
+export function startViewTransition(
+  callback?: ViewTransitionUpdateCallback
+): ViewTransitionResult {
+  if (getPrefersReducedMotion() || !document.startViewTransition) {
+    callback?.();
+    return {};
+  }
+
+  return { transition: document.startViewTransition(callback) };
+}
