@@ -32,6 +32,10 @@ export interface IgcResizeContainerComponentEventMap {
  * @element igc-resize
  *
  * @slot - renders the element(s) that should be resized
+ * @slot side-adorner - renders the side resize handle.
+ * @slot corner-adorner - renders the corner resize handle.
+ * @slot bottom-adorner - renders the bottom resize handle.
+ *
  */
 @themes(all)
 export default class IgcResizeContainerComponent extends EventEmitterMixin<
@@ -196,9 +200,21 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     }
 
     return html`
-      <div ${ref(this._adorners.side)} part="trigger-side"></div>
-      <div ${ref(this._adorners.corner)} part="trigger"></div>
-      <div ${ref(this._adorners.bottom)} part="trigger-bottom"></div>
+      <slot
+        ${ref(this._adorners.side)}
+        part="trigger-side"
+        name="side-adorner"
+      ></slot>
+      <slot
+        ${ref(this._adorners.corner)}
+        part="trigger"
+        name="corner-adorner"
+      ></slot>
+      <slot
+        ${ref(this._adorners.bottom)}
+        part="trigger-bottom"
+        name="bottom-adorner"
+      ></slot>
     `;
   }
 

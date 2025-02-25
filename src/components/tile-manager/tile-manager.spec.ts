@@ -418,6 +418,55 @@ describe('Tile Manager component', () => {
     });
   });
 
+  describe('Resize adorners slot assignment', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(html`
+        <igc-tile-manager resize-mode="always">
+          <igc-tile>
+            <div slot="side-adorner">Side Adorner</div>
+            <div slot="corner-adorner">Corner Adorner</div>
+            <div slot="bottom-adorner">Bottom Adorner</div>
+          </igc-tile>
+          <igc-tile id="tile2"></igc-tile>
+        </igc-tile-manager>
+      `);
+    });
+
+    it('should correctly project adorners into the igc-resize component and not render in igc-tile', async () => {
+      const tile1 = tileManager.tiles[0];
+      const resize = tile1.shadowRoot?.querySelector(
+        'igc-resize'
+      ) as HTMLElement;
+
+      const sideAdorner = resize.querySelector('[slot="side-adorner"]');
+      const cornerAdorner = resize.querySelector('[slot="corner-adorner"]');
+      const bottomAdorner = resize.querySelector('[slot="bottom-adorner"]');
+
+      // Assert the adorners are projected inside igc-resize
+      expect(sideAdorner?.textContent).to.equal('Side Adorner');
+      expect(cornerAdorner?.textContent).to.equal('Corner Adorner');
+      expect(bottomAdorner?.textContent).to.equal('Bottom Adorner');
+
+      // Assert that the adorners are not rendered in the igc-tile itself
+      expect(tile1.querySelector('[slot="side-adorner"]')).to.be.null;
+      expect(tile1.querySelector('[slot="corner-adorner"]')).to.be.null;
+      expect(tile1.querySelector('[slot="bottom-adorner"]')).to.be.null;
+    });
+
+    it('should hide igc-resize component and not render adorners in igc-tile when resize mode is "none"', async () => {
+      const tile = tileManager.tiles[0];
+
+      tileManager.resizeMode = 'none';
+      await elementUpdated(tileManager);
+
+      const resize = tile.shadowRoot?.querySelector('igc-resize');
+      const adorners = tile.shadowRoot?.querySelectorAll('[slot$="-adorner"]');
+
+      expect(resize).to.be.null;
+      expect(adorners).lengthOf(0);
+    });
+  });
+
   describe('Tile state change behavior', () => {
     let tile: any;
 

@@ -858,6 +858,10 @@ export const CustomActions: Story = {
     >
       <igc-tile disable-fullscreen disable-maximize>
         <h3 slot="title">Custom Actions</h3>
+        <!-- <div slot="side-adorner">🟨</div> -->
+        <div slot="corner-adorner">🟩</div>
+        <div slot="bottom-adorner">🟦</div>
+
         <igc-icon-button
           slot="actions"
           variant="flat"
