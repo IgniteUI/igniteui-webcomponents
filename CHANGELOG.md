@@ -4,12 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-
+## [5.2.4] - 2025-02-24
 ### Changed
-
 - #### Carousel - **Potential visual breaking change.**
-  - Removed `[part='base']` wrapping container from slide's internal DOM. 
+  - Removed `[part='base']` wrapping container from slide's internal DOM.
+
 ## [5.2.3] - 2025-02-13
 ### Fixed
 - #### Chip
@@ -700,6 +699,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.3...5.2.4
 [5.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.2...5.2.3
 [5.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.1...5.2.2
 [5.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.0...5.2.1
