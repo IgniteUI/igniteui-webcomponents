@@ -380,7 +380,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
@@ -394,6 +393,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
                 color: var-get($theme, 'focused-border-color');
             }
         }
+    }
+}
+
+:host(:not([type='search'])[outlined]:hover) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
     }
 }
 
