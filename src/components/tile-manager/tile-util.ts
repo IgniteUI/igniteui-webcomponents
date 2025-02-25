@@ -425,9 +425,11 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
     left: 0,
     width: `${width}px`,
     height: `${height}px`,
+    opacity: 0.6,
     background: `${computed.getPropertyValue('--tile-background')}`,
-    border: `1px solid ${computed.getPropertyValue('--ghost-border')}`,
+    border: `1px solid ${computed.getPropertyValue('--hover-border-color')}`,
     borderRadius: computed.getPropertyValue('--border-radius'),
+    boxShadow: `${computed.getPropertyValue('--drag-elevation')}`,
     zIndex: 1000,
     viewTransitionName: 'dragged-tile-ghost',
   });

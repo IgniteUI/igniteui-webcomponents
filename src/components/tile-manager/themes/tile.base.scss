@@ -14,11 +14,16 @@
 :host([part='resizing']),
 :host([part='dragging']) {
     background: var(--placeholder-background);
-    border: 1px solid var(--ghost-border);
     border-radius: var(--border-radius);
 
     igc-resize {
         --resize-visibility: hidden;
+    }
+
+    igc-resize::part(active) {
+        &::after {
+            border: none;
+        }
     }
 }
 
@@ -74,8 +79,8 @@
 [part='header'] {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: sizable(rem(12px), rem(16px), rem(16px));
+    width: 100%;
 }
 
 :host(:not([disable-fullscreen][disable-maximize])) {
@@ -92,26 +97,30 @@
 }
 
 [part='title'] {
+    @include ellipsis();
+
     width: 100%;
+    min-width: 4ch;
 }
 
 ::slotted([slot='title']) {
     @include type-style('h6');
-    @include ellipsis();
 
     margin-bottom: 0;
-    min-width: 2ch;
     padding-block: var(--pad-block);
     padding-inline: var(--pad-inline);
+    display: inline;
 }
 
 [part='actions'] {
     display: flex;
     gap: rem(8px);
+    margin-inline-start: auto;
+    flex-shrink: 0;
 }
 
 // should be fixed
-::slotted([slot='actions']) {
-    padding-block: var(--pad-block);
-    padding-inline: var(--pad-inline);
-}
+// ::slotted([slot='actions']) {
+//     padding-block: var(--pad-block);
+//     padding-inline: var(--pad-inline);
+// }

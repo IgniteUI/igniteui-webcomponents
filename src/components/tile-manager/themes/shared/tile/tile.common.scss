@@ -21,15 +21,15 @@ $theme: $material;
     background: var-get($theme, 'tile-background');
     border-radius: var-get($theme, 'border-radius');
     box-shadow: var-get($theme, 'resting-elevation');
-}
 
-[part~='base']:not([part~='resizable']) {
     &::after {
         @extend %after-element;
 
         border: rem(1px) solid var-get($theme, 'border-color');
     }
+}
 
+[part~='base']:not([part~='resizable']) {
     &:hover {
         &::after {
             border: rem(1px) solid var-get($theme, 'hover-border-color');
@@ -39,12 +39,6 @@ $theme: $material;
 
 [part~='base'][part~='resizing']{
     opacity: .3;
-
-    &:hover {
-        &::after {
-            display: none;
-        }
-    }
 }
 
 [part='content-container'] {
