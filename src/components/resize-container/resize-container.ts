@@ -94,6 +94,10 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     return this._mode;
   }
 
+  public setSize(width: number, height: number): void {
+    this._controller.setSize(width, height);
+  }
+
   constructor() {
     super();
 

@@ -12,7 +12,6 @@ export type ResizeState = {
   deltaY: number;
   ghost: HTMLElement | null;
   trigger: HTMLElement | null;
-  commit?: () => unknown;
 };
 
 export type ResizeCallbackParams = {

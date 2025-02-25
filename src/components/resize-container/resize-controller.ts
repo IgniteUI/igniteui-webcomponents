@@ -72,6 +72,16 @@ class ResizeController implements ReactiveController {
     this._activeRef = null;
   }
 
+  /** Assign the given width and height in pixels to the resize target of the controller. */
+  public setSize(width: number, height: number): void {
+    if (this._resizeTarget) {
+      Object.assign(this._resizeTarget.style, {
+        width: `${width}px`,
+        height: `${height}px`,
+      });
+    }
+  }
+
   /** @internal */
   public hostConnected(): void {
     this._host.addEventListener('pointerdown', this);
@@ -144,9 +154,7 @@ class ResizeController implements ReactiveController {
     this._options.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
 
-    parameters.state.commit?.call(this._host) ??
-      this._updatePosition(this._resizeTarget);
-
+    this._updatePosition(this._resizeTarget);
     this.dispose();
   }
 

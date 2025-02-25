@@ -461,13 +461,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
 
     await transition?.finished;
-    const updatedSize = this._resizeState.calculateResizedSize(
+
+    const { width, height } = this._resizeState.calculateResizedSize(
       this._cssContainer
     );
 
-    state.current.width = updatedSize.width;
-    state.current.height = updatedSize.height;
-
+    this._resizeContainer?.setSize(width, height);
     this._setResizeState(false);
   }
 
