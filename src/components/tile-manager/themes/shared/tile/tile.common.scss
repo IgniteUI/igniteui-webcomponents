@@ -37,8 +37,8 @@ $theme: $material;
     }
 }
 
-[part~='base'][part~='resizing']{
-    opacity: .3;
+[part~='base'][part~='resizing'] {
+    opacity: 0.3;
 }
 
 [part='content-container'] {
@@ -74,4 +74,20 @@ $theme: $material;
 
 igc-divider {
     --color: #{var-get($theme, 'divider-color')};
+}
+
+igc-resize {
+    --resize-indicator: #{var-get($theme, 'hover-border-color')};
+}
+
+igc-resize[part~='side-adorner']::part(trigger-side) {
+    background-color: transparent;
+}
+
+igc-resize[part~='corner-adorner']::part(trigger) {
+    background-color: transparent;
+}
+
+igc-resize[part~='bottom-adorner']::part(trigger-bottom) {
+    background-color: transparent;
 }

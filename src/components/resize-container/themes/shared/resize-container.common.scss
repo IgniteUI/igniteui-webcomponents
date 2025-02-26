@@ -20,7 +20,9 @@ $theme: $material;
 [part='trigger-side'],
 [part='trigger'],
 [part='trigger-bottom'] {
-    &::after {
-        background: var-get($theme, 'resize-indicator');
-    }
+    width: var(--_size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    z-index: 11111;
+    background-color: var-get($theme, 'resize-indicator');
 }

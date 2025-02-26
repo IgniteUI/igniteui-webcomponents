@@ -43,6 +43,8 @@ type IgcTileChangeState = {
   state: boolean;
 };
 
+type AdornerType = 'side' | 'corner' | 'bottom';
+
 // REVIEW: Decide whether to re-emit the events from the manager of leave them up to bubble naturally
 export interface IgcTileComponentEventMap {
   igcTileFullscreen: CustomEvent<IgcTileChangeState>;
@@ -605,9 +607,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  private _renderAdornerSlot(name: 'side' | 'corner' | 'bottom') {
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
+  }
+
+  private _customAdorners = new Map<string, boolean>(
+    Object.entries({
+      side: false,
+      corner: false,
+      bottom: false,
+    })
+  );
+
+  private _renderAdornerSlot(name: AdornerType) {
     return html`
-      <slot name="${name}-adorner" slot="${name}-adorner">
+      <slot
+        @slotchange=${() => this._customAdorners.set(name, true)}
+        name="${name}-adorner"
+        slot="${name}-adorner"
+      >
         <div part="adorner-indicator"></div>
       </slot>
     `;
@@ -616,7 +636,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected _renderResizeContainer() {
     return html`
       <igc-resize
-        part="resize"
+        part=${partNameMap({
+          resize: true,
+          'side-adorner': this._customAdorners.get('side')!,
+          'corner-adorner': this._customAdorners.get('corner')!,
+          'bottom-adorner': this._customAdorners.get('bottom')!,
+        })}
         mode="deferred"
         ?active=${this._resizeMode === 'always'}
         .ghostFactory=${createTileGhost}
