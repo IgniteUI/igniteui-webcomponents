@@ -166,13 +166,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.resizeMode ?? 'none';
   }
 
-  /** Whether the parent tile manager drag action is in **slide** mode. */
-  private get _isSlideMode(): boolean {
-    return this._tileManagerCtx
-      ? this._tileManagerCtx.instance.dragAction === 'slide'
-      : true;
-  }
-
   protected _headerRef = createRef<HTMLSlotElement>();
 
   @query(IgcResizeContainerComponent.tagName)
@@ -186,9 +179,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   @state()
   private _isDragging = false;
-
-  @state()
-  private _hasDragOver = false;
 
   @state()
   private _isResizing = false;
@@ -594,7 +584,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const parts = partNameMap({
       base: true,
       draggable: this._tileManager?.dragMode !== 'none',
-      'drag-over': this._hasDragOver && !this._isSlideMode,
       fullscreen: this.fullscreen,
       dragging: this._isDragging,
       resizable:
@@ -646,7 +635,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  protected _renderResizeContainer() {
+  protected override render() {
     return html`
       <igc-resize
         part=${partNameMap({
@@ -656,6 +645,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           'bottom-adorner': this._customAdorners.get('bottom')!,
         })}
         mode="deferred"
+        .enabled=${!this._resizeDisabled}
         ?active=${this._resizeMode === 'always'}
         .ghostFactory=${createTileGhost}
         @igcResizeStart=${this._handleResizeStart}
@@ -668,12 +658,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
         ${this._renderAdornerSlot('bottom')}
       </igc-resize>
     `;
-  }
-
-  protected override render() {
-    return this._resizeDisabled
-      ? this._renderContent()
-      : this._renderResizeContainer();
   }
 }
 

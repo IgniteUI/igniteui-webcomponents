@@ -1,5 +1,6 @@
-import { omit, pick } from '../common/util.js';
+import { asNumber, omit, pick } from '../common/util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
+import type IgcTileComponent from './tile.js';
 
 export interface SerializedTile {
   colSpan: number;
@@ -12,6 +13,8 @@ export interface SerializedTile {
   rowSpan: number;
   rowStart: number | null;
   tileId: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 class TileManagerSerializer {
@@ -21,9 +24,15 @@ class TileManagerSerializer {
     this.tileManager = tileManager;
   }
 
+  private _getResizeContainer(tile: IgcTileComponent) {
+    // biome-ignore lint/complexity/useLiteralKeys: Until we migrate to a symbol
+    return tile['_resizeContainer']!;
+  }
+
   public save(): SerializedTile[] {
     return this.tileManager.tiles.map((tile) => {
       const { gridColumn, gridRow } = getComputedStyle(tile);
+      const { width, height } = this._getResizeContainer(tile).getSize();
 
       return {
         colSpan: tile.colSpan,
@@ -36,6 +45,8 @@ class TileManagerSerializer {
         rowSpan: tile.rowSpan,
         rowStart: tile.rowStart,
         tileId: tile.tileId,
+        width: asNumber(width) || null,
+        height: asNumber(height) || null,
       };
     });
   }
@@ -46,6 +57,12 @@ class TileManagerSerializer {
 
   public load(tiles: SerializedTile[]): void {
     const mapped = new Map(tiles.map((tile) => [tile.tileId, tile]));
+    const keys: (keyof SerializedTile)[] = [
+      'gridColumn',
+      'gridRow',
+      'width',
+      'height',
+    ];
 
     for (const tile of this.tileManager.tiles) {
       if (!mapped.has(tile.tileId)) {
@@ -53,11 +70,13 @@ class TileManagerSerializer {
       }
 
       const serialized = mapped.get(tile.tileId)!;
-      const properties = omit(serialized, 'gridColumn', 'gridRow');
+      const properties = omit(serialized, ...keys);
       const styles = pick(serialized, 'gridColumn', 'gridRow');
+      const { width, height } = pick(serialized, 'width', 'height');
 
       Object.assign(tile, properties);
       Object.assign(tile.style, styles);
+      this._getResizeContainer(tile).setSize(width, height);
     }
   }
 

@@ -16,11 +16,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, partNameMap } from '../common/util.js';
-import type {
-  TileManagerDragAction,
-  TileManagerDragMode,
-  TileManagerResizeMode,
-} from '../types.js';
+import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
@@ -131,13 +127,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
   public get dragMode(): TileManagerDragMode {
     return this._dragMode;
   }
-
-  /**
-   * Whether the tiles will slide or swap on drop during a drag and drop operation.
-   * @attr drag-action
-   */
-  @property({ attribute: 'drag-action' })
-  public dragAction: TileManagerDragAction = 'slide';
 
   /**
    * Sets the number of columns for the tile manager.

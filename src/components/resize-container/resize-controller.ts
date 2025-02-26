@@ -13,7 +13,7 @@ type State = {
 
 class ResizeController implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _options: ResizeControllerConfiguration = {};
+  private _options: ResizeControllerConfiguration = { enabled: true };
 
   private _id = -1;
   private _hasPointerCapture = false;
@@ -60,6 +60,11 @@ class ResizeController implements ReactiveController {
 
   // #region Public API
 
+  /** Whether the controller is enabled and will listen for events. */
+  public get enabled(): boolean {
+    return Boolean(this._options.enabled);
+  }
+
   /** Updates the configuration of the resize controller. */
   public set(options?: ResizeControllerConfiguration): void {
     Object.assign(this._options, options);
@@ -73,11 +78,11 @@ class ResizeController implements ReactiveController {
   }
 
   /** Assign the given width and height in pixels to the resize target of the controller. */
-  public setSize(width: number, height: number): void {
+  public setSize(width: number | null, height: number | null): void {
     if (this._resizeTarget) {
       Object.assign(this._resizeTarget.style, {
-        width: `${width}px`,
-        height: `${height}px`,
+        width: width ? `${width}px` : '',
+        height: height ? `${height}px` : '',
       });
     }
   }
@@ -97,6 +102,10 @@ class ResizeController implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: PointerEvent & KeyboardEvent): void {
+    if (!this.enabled) {
+      return;
+    }
+
     switch (event.type) {
       case 'touchstart':
         event.preventDefault();

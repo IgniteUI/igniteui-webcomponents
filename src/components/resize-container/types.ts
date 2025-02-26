@@ -20,6 +20,7 @@ export type ResizeCallbackParams = {
 };
 
 export type ResizeControllerConfiguration = {
+  enabled?: boolean;
   ref?: Ref<HTMLElement>[];
   mode?: ResizeMode;
   deferredFactory?: ResizeGhostFactory;

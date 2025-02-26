@@ -94,7 +94,6 @@ describe('Tile Manager component', () => {
 
     it('is correctly initialized with its default component state', () => {
       expect(tileManager.columnCount).to.equal(0);
-      expect(tileManager.dragAction).to.equal('slide');
       expect(tileManager.dragMode).to.equal('none');
       expect(tileManager.gap).to.equal(undefined);
       expect(tileManager.minColumnWidth).to.equal(undefined);
@@ -148,6 +147,7 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0]).shadowDom.to.equal(
         `
+        <igc-resize mode="deferred" part="resize">
           <div
             part="base"
             style="--ig-col-span:1;--ig-row-span:1;"
@@ -185,6 +185,18 @@ describe('Tile Manager component', () => {
               <slot></slot>
             </div>
           </div>
+          <slot name="side-adorner" slot="side-adorner">
+              <div part="adorner-indicator"></div>
+            </slot>
+
+            <slot name="corner-adorner" slot="corner-adorner">
+              <div part="adorner-indicator"></div>
+            </slot>
+
+            <slot name="bottom-adorner" slot="bottom-adorner">
+              <div part="adorner-indicator"></div>
+            </slot>
+        </igc-resize>
         `
       );
     });
@@ -472,17 +484,16 @@ describe('Tile Manager component', () => {
       });
     });
 
-    it('should hide igc-resize component and not render adorners in igc-tile when resize mode is "none"', async () => {
+    it('should disable igc-resize component when resize mode is "none"', async () => {
       const tile = tileManager.tiles[0];
 
       tileManager.resizeMode = 'none';
       await elementUpdated(tileManager);
 
-      const resize = tile.shadowRoot?.querySelector('igc-resize');
-      const adorners = tile.shadowRoot?.querySelectorAll('[slot$="-adorner"]');
+      const resize = tile.renderRoot.querySelector('igc-resize')!;
 
-      expect(resize).to.be.null;
-      expect(adorners).lengthOf(0);
+      expect(resize).is.not.null;
+      expect(resize.enabled).to.be.false;
     });
   });
 
@@ -709,6 +720,8 @@ describe('Tile Manager component', () => {
           rowSpan: 1,
           rowStart: null,
           tileId: 'custom-id1',
+          width: null,
+          height: null,
         },
         {
           colSpan: 10,
@@ -721,6 +734,8 @@ describe('Tile Manager component', () => {
           rowSpan: 7,
           rowStart: 7,
           tileId: 'custom-id2',
+          width: null,
+          height: null,
         },
       ];
 

@@ -389,15 +389,17 @@ describe('Tile resize', () => {
       assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
     });
 
-    it('should not have resizeElement when `disableResize` is true', async () => {
+    it('should disable igc-resize behavior when `disableResize` is true', async () => {
       const DOM = getTileDOM(firstTile);
 
-      expect(DOM.resizeElement).not.to.be.null;
+      expect(DOM.resizeElement).is.not.null;
+      expect(DOM.resizeElement.enabled).is.true;
 
       firstTile.disableResize = true;
       await elementUpdated(firstTile);
 
-      expect(DOM.resizeElement).to.be.null;
+      expect(DOM.resizeElement).is.not.null;
+      expect(DOM.resizeElement.enabled).is.false;
     });
 
     it('should update tile parts on resizing', async () => {

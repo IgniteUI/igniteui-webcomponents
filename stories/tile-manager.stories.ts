@@ -88,14 +88,6 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'none' } },
     },
-    dragAction: {
-      type: '"slide" | "swap"',
-      description:
-        'Whether the tiles will slide or swap on drop during a drag and drop operation.',
-      options: ['slide', 'swap'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'slide' } },
-    },
     columnCount: {
       type: 'number',
       description:
@@ -121,12 +113,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'text',
     },
   },
-  args: {
-    resizeMode: 'none',
-    dragMode: 'none',
-    dragAction: 'slide',
-    columnCount: 0,
-  },
+  args: { resizeMode: 'none', dragMode: 'none', columnCount: 0 },
 };
 
 export default metadata;
@@ -136,8 +123,6 @@ interface IgcTileManagerArgs {
   resizeMode: 'none' | 'hover' | 'always';
   /** Whether drag and drop operations are enabled. */
   dragMode: 'none' | 'tile-header' | 'tile';
-  /** Whether the tiles will slide or swap on drop during a drag and drop operation. */
-  dragAction: 'slide' | 'swap';
   /**
    * Sets the number of columns for the tile manager.
    * Setting value <= than zero will trigger a responsive layout.
@@ -771,7 +756,7 @@ export const Serialization: Story = {
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
     >
-      <igc-tile disable-drag disable-resize>
+      <igc-tile disable-resize>
         <span slot="title">Header 1</span>
         <h1>Tile1</h1>
       </igc-tile>
