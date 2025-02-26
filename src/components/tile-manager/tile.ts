@@ -121,7 +121,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _resizeState = createTileResizeState();
   private _dragStack = createTileDragStack();
-  private _mutationObserver: MutationObserver | null = null;
 
   // Tile manager context properties and helpers
 
@@ -352,42 +351,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this.style.viewTransitionName =
       this.style.viewTransitionName || `tile-transition-${this.tileId}`;
-
-    this._observeResizeElement();
-  }
-
-  /** @internal */
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    this._mutationObserver?.disconnect();
-  }
-
-  private _observeResizeElement() {
-    if (!this.shadowRoot) return;
-
-    this._mutationObserver = new MutationObserver(() => {
-      const resize = this.shadowRoot?.querySelector('igc-resize');
-      if (resize) {
-        this._assignAdornersToResize();
-      }
-    });
-
-    this._mutationObserver.observe(this.shadowRoot, {
-      childList: true, // Detects when `igc-resize` is added or removed
-      subtree: true,
-    });
-  }
-
-  private _assignAdornersToResize() {
-    const resize = this.shadowRoot?.querySelector('igc-resize');
-    if (!resize) return;
-
-    ['side-adorner', 'corner-adorner', 'bottom-adorner'].forEach((slotName) => {
-      const assigned = this.querySelector(`[slot="${slotName}"]`);
-      if (assigned) {
-        resize.appendChild(assigned); // Move the adorner inside `igc-resize`
-      }
-    });
   }
 
   private _setDragState(state = true) {
@@ -621,6 +584,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
+  private _renderAdornerSlot(name: 'side' | 'corner' | 'bottom') {
+    return html`
+      <slot name="${name}-adorner" slot="${name}-adorner">
+        <div part="adorner-indicator"></div>
+      </slot>
+    `;
+  }
+
   protected _renderResizeContainer() {
     return html`
       <igc-resize
@@ -633,19 +604,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
         @igcResizeEnd=${this._handleResizeEnd}
         @igcResizeCancel=${this._handleResizeCancel}
       >
-        ${this._renderContent()}
-        <slot
-          name="side-adorner"
-          @slotchange=${this._assignAdornersToResize}
-        ></slot>
-        <slot
-          name="corner-adorner"
-          @slotchange=${this._assignAdornersToResize}
-        ></slot>
-        <slot
-          name="bottom-adorner"
-          @slotchange=${this._assignAdornersToResize}
-        ></slot>
+        ${this._renderContent()} ${this._renderAdornerSlot('side')}
+        ${this._renderAdornerSlot('corner')}
+        ${this._renderAdornerSlot('bottom')}
       </igc-resize>
     `;
   }

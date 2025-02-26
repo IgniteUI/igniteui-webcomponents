@@ -432,25 +432,44 @@ describe('Tile Manager component', () => {
       `);
     });
 
-    it('should correctly project adorners into the igc-resize component and not render in igc-tile', async () => {
-      const tile1 = tileManager.tiles[0];
-      const resize = tile1.shadowRoot?.querySelector(
-        'igc-resize'
-      ) as HTMLElement;
+    const adornerTests: { slotName: string; expectedText: string }[] = [
+      { slotName: 'side-adorner', expectedText: 'Side Adorner' },
+      { slotName: 'corner-adorner', expectedText: 'Corner Adorner' },
+      { slotName: 'bottom-adorner', expectedText: 'Bottom Adorner' },
+    ];
 
-      const sideAdorner = resize.querySelector('[slot="side-adorner"]');
-      const cornerAdorner = resize.querySelector('[slot="corner-adorner"]');
-      const bottomAdorner = resize.querySelector('[slot="bottom-adorner"]');
+    adornerTests.forEach(({ slotName, expectedText }) => {
+      it(`should assign content to the ${slotName} slot`, () => {
+        const slot =
+          tileManager.tiles[0].shadowRoot!.querySelector<HTMLSlotElement>(
+            `slot[name="${slotName}"]`
+          );
+        expect(slot).to.exist;
+        expect(
+          slot!
+            .assignedNodes()
+            .some((node) => node.textContent?.trim() === expectedText)
+        ).to.be.true;
+      });
+    });
 
-      // Assert the adorners are projected inside igc-resize
-      expect(sideAdorner?.textContent).to.equal('Side Adorner');
-      expect(cornerAdorner?.textContent).to.equal('Corner Adorner');
-      expect(bottomAdorner?.textContent).to.equal('Bottom Adorner');
-
-      // Assert that the adorners are not rendered in the igc-tile itself
-      expect(tile1.querySelector('[slot="side-adorner"]')).to.be.null;
-      expect(tile1.querySelector('[slot="corner-adorner"]')).to.be.null;
-      expect(tile1.querySelector('[slot="bottom-adorner"]')).to.be.null;
+    adornerTests.forEach(({ slotName, expectedText }) => {
+      it(`should correctly project adorners into the igc-resize ${slotName} slot`, async () => {
+        const tile1 = tileManager.tiles[0];
+        const resize = tile1.shadowRoot?.querySelector(
+          'igc-resize'
+        ) as HTMLElement;
+        const resizeSlot = resize.shadowRoot!.querySelector<HTMLSlotElement>(
+          `slot[name="${slotName}"]`
+        );
+        expect(resizeSlot).to.exist;
+        expect(
+          resizeSlot!
+            .assignedNodes({ flatten: true })
+            .some((node) => node.textContent?.trim() === expectedText)
+        ).to.be.true;
+        expect(resizeSlot!.assignedNodes()).lengthOf(1);
+      });
     });
 
     it('should hide igc-resize component and not render adorners in igc-tile when resize mode is "none"', async () => {

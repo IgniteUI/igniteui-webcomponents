@@ -17,15 +17,23 @@
         --igx-icon-size: #{$icon-size};
     }
 
-    &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        width: var(--_size);
-        height: var(--_size);
-        border-radius: 50%;
-        z-index: 1;
-    }
+    // &::after {
+    //     content: '';
+    //     position: absolute;
+    //     inset: 0;
+    //     width: var(--_size);
+    //     height: var(--_size);
+    //     border-radius: 50%;
+    //     z-index: 1;
+    // }
+}
+
+[part='adorner-indicator'] {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background-color: grey;
+    z-index: 11111;
 }
 
 :host {

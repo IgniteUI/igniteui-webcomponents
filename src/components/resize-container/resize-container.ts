@@ -194,27 +194,23 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     this.emitEvent('igcResizeCancel', { bubbles: false, cancelable: false });
   }
 
+  protected _renderAdorner(name: 'side' | 'corner' | 'bottom', part: string) {
+    return html`
+      <slot ${ref(this._adorners[name])} part=${part} name="${name}-adorner">
+        <div part="adorner-indicator"></div>
+      </slot>
+    `;
+  }
+
   protected _renderAdorners() {
     if (!this._isActive && !this.active) {
       return nothing;
     }
 
     return html`
-      <slot
-        ${ref(this._adorners.side)}
-        part="trigger-side"
-        name="side-adorner"
-      ></slot>
-      <slot
-        ${ref(this._adorners.corner)}
-        part="trigger"
-        name="corner-adorner"
-      ></slot>
-      <slot
-        ${ref(this._adorners.bottom)}
-        part="trigger-bottom"
-        name="bottom-adorner"
-      ></slot>
+      ${this._renderAdorner('side', 'trigger-side')}
+      ${this._renderAdorner('corner', 'trigger')}
+      ${this._renderAdorner('bottom', 'trigger-bottom')}
     `;
   }
 
