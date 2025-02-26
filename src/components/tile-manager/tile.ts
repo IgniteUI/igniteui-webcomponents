@@ -203,6 +203,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
+  protected get _shouldHideHeader() {
+    const hasTitle = this._headerRef.value
+      ?.querySelector<HTMLSlotElement>('slot[name="title"]')
+      ?.assignedNodes().length;
+    const hasActions = this.shadowRoot
+      ?.querySelector<HTMLSlotElement>('slot[name="actions"]')
+      ?.assignedNodes().length;
+
+    return (
+      !hasTitle && !hasActions && this.disableMaximize && this.disableFullscreen
+    );
+  }
+
   /**
    * The unique identifier of the tile.
    * @attr tile-id
@@ -554,9 +567,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected _renderHeader() {
     return html`
-      <section part="header">
+      <section part="header" ?hidden=${this._shouldHideHeader}>
         <header part="title" ${ref(this._headerRef)}>
-          <slot name="title"></slot>
+          <slot name="title" @slotchange=${this.requestUpdate}></slot>
         </header>
         <section id="tile-actions" part="actions">
           ${!this.disableMaximize
@@ -570,7 +583,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
               >`
             : nothing}
 
-          <slot name="actions"></slot>
+          <slot name="actions" @slotchange=${this.requestUpdate}></slot>
         </section>
       </section>
       <igc-divider></igc-divider>
