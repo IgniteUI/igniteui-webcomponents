@@ -22,6 +22,7 @@ import {
   asNumber,
   createCounter,
   findElementFromEventPath,
+  getCenterPoint,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -363,12 +364,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleDragStart() {
     this.emitEvent('tileDragStart', { detail: this });
     this._setDragState();
-    this._dragStack.add(this);
+    this._dragStack.push(this);
   }
 
-  private _handleDragMove({ event }: DragCallbackParameters) {
+  private _handleDragMove({
+    event: { clientX, clientY },
+  }: DragCallbackParameters) {
     const match = document
-      .elementsFromPoint(event.clientX, event.clientY)
+      .elementsFromPoint(clientX, clientY)
       .find(this._match);
 
     if (!match) {
@@ -376,10 +379,26 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     if (this._dragStack.peek() === match) {
+      const { x, y } = getCenterPoint(match);
+
+      const shouldSwap =
+        this.position <= match.position
+          ? clientX > x || clientY > y
+          : clientX < x || clientY < y;
+
+      if (shouldSwap) {
+        this._dragStack.pop();
+        this._dragStack.push(match);
+
+        startViewTransition(() => {
+          swapTiles(this, match);
+        });
+      }
+
       return;
     }
 
-    this._dragStack.add(match);
+    this._dragStack.push(match);
 
     startViewTransition(() => {
       swapTiles(this, match);
@@ -408,8 +427,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     return Boolean(
-      this._resizeContainer &&
-        findElementFromEventPath('[part*=trigger]', event)
+      findElementFromEventPath(
+        (e) => e.matches('[part*=trigger]') || e.matches('#tile-actions'),
+        event
+      )
     );
   }
 
@@ -535,7 +556,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         <header part="title" ${ref(this._headerRef)}>
           <slot name="title"></slot>
         </header>
-        <section part="actions">
+        <section id="tile-actions" part="actions">
           ${!this.disableMaximize
             ? html`<slot name="maximize-action"
                 >${this._renderDefaultAction('maximize')}</slot

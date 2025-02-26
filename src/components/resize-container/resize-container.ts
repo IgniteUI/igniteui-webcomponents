@@ -18,7 +18,6 @@ import type {
   ResizeMode,
   ResizeState,
 } from './types.js';
-// import { addScrollBehavior } from './auto-scroll.js';
 
 export interface IgcResizeContainerComponentEventMap {
   igcResizeStart: CustomEvent<ResizeCallbackParams>;
@@ -64,9 +63,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     corner: createRef(),
     bottom: createRef(),
   };
-
-  // REVIEW: Scroll behavior
-  // private _scroll = addScrollBehavior(this);
 
   @state()
   private _isActive = false;
@@ -134,26 +130,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     }
   }
 
-  // REVIEW: Scroll behavior
-  // private _scrollIfNeeded(params: ResizeCallbackParams): void {
-  //   const {
-  //     state: {
-  //       initial: { bottom, right },
-  //       deltaX,
-  //       deltaY,
-  //     },
-  //   } = params;
-  //   const { x, y } = this._scroll.state;
-
-  //   if (bottom + deltaX > x || right + deltaY > y) {
-  //     this._scroll.scrollBy({
-  //       left: deltaX * 2,
-  //       top: deltaY * 2,
-  //       behavior: 'smooth',
-  //     });
-  //   }
-  // }
-
   private _handlePointerEnter(): void {
     this._isActive = true;
   }
@@ -163,18 +139,12 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   }
 
   private _handleResizeStart(params: ResizeCallbackParams): void {
-    // REVIEW: Expose a property to control this behavior?
-    params.event.preventDefault();
-
     this.emitEvent('igcResizeStart', { bubbles: false, detail: params });
-    // REVIEW: Scroll behavior
-    // this._scroll.saveCurrentState();
   }
 
   private _handleResize(params: ResizeCallbackParams): void {
     this._updateResizingState(params);
     this.emitEvent('igcResize', { bubbles: false, detail: params });
-    // this._scrollIfNeeded(params);
   }
 
   private _handleResizeEnd(params: ResizeCallbackParams): void {

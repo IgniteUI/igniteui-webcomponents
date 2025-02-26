@@ -324,3 +324,13 @@ export function omit<T extends object>(entry: T, ...props: Array<keyof T>) {
     Object.entries(entry).filter(([key, _]) => !props.includes(key as keyof T))
   );
 }
+
+/** Returns the center x/y coordinate of a given element. */
+export function getCenterPoint(element: Element) {
+  const { left, top, width, height } = element.getBoundingClientRect();
+
+  return {
+    x: left + width * 0.5,
+    y: top + height * 0.5,
+  };
+}

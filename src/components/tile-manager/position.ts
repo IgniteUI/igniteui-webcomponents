@@ -95,7 +95,11 @@ class TileDragStack {
     return last(this._stack).tile;
   }
 
-  public add(tile: IgcTileComponent): void {
+  public pop(): TileDragStackEntry | undefined {
+    return this._stack.pop();
+  }
+
+  public push(tile: IgcTileComponent): void {
     this._stack.push({
       tile,
       position: tile.position,

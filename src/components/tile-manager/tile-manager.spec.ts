@@ -156,7 +156,7 @@ describe('Tile Manager component', () => {
               <header part="title">
                 <slot name="title"></slot>
               </header>
-              <section part="actions">
+              <section id="tile-actions" part="actions">
                 <slot name="maximize-action">
                   <igc-icon-button
                     aria-label="expand_content"

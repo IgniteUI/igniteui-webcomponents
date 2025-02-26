@@ -8,8 +8,10 @@ import {
 import { restore, spy, stub } from 'sinon';
 
 import { range } from 'lit/directives/range.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { getCenterPoint } from '../common/util.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -38,25 +40,30 @@ describe('Tile drag and drop', () => {
     return tileManager.tiles[index];
   }
 
+  function getTileContentContainer(element: IgcTileComponent) {
+    return element.renderRoot.querySelector<HTMLDivElement>(
+      '[part="content-container"]'
+    )!;
+  }
+
+  function getActionButtons(tile: IgcTileComponent) {
+    return Array.from(
+      tile.renderRoot
+        .querySelector('[part="header"]')
+        ?.querySelectorAll(IgcIconButtonComponent.tagName) ?? []
+    );
+  }
+
   async function dragAndDrop(tile: IgcTileComponent, target: IgcTileComponent) {
-    const { top, left, width, height } = target.getBoundingClientRect();
+    const { x, y } = getCenterPoint(target);
 
     simulatePointerDown(tile);
-    simulatePointerMove(tile, {
-      clientX: left + width * 0.5,
-      clientY: top + height * 0.5,
-    });
+    simulatePointerMove(tile, { clientX: x, clientY: y });
 
     await viewTransitionComplete();
 
     simulateLostPointerCapture(tile);
     await elementUpdated(tileManager);
-  }
-
-  function getTileContentContainer(element: IgcTileComponent) {
-    return element.renderRoot.querySelector<HTMLDivElement>(
-      '[part="content-container"]'
-    )!;
   }
 
   function createTileManager(mode: TileManagerDragMode = 'none') {
@@ -154,16 +161,13 @@ describe('Tile drag and drop', () => {
     it('should cancel dragging with Escape', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(4);
-      const dropTargetRect = dropTarget.getBoundingClientRect();
+      const { x, y } = getCenterPoint(dropTarget);
 
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(4);
 
       simulatePointerDown(draggedTile);
-      simulatePointerMove(draggedTile, {
-        clientX: dropTargetRect.left + dropTargetRect.width * 0.5,
-        clientY: dropTargetRect.top + dropTargetRect.height * 0.5,
-      });
+      simulatePointerMove(draggedTile, { clientX: x, clientY: y });
 
       await viewTransitionComplete();
       expect(draggedTile.position).to.equal(4);
@@ -253,12 +257,10 @@ describe('Tile drag and drop', () => {
       expect(tileManager.tiles[1].id).to.equal('tile1');
     });
 
-    // REVIEW
     it('should swap positions only once while dragging smaller tile over bigger tile when using slide action', async () => {
       tileManager.columnCount = 5;
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
-      const dropTargetRect = dropTarget.getBoundingClientRect();
 
       draggedTile.rowSpan = 1;
       draggedTile.colSpan = 1;
@@ -267,22 +269,24 @@ describe('Tile drag and drop', () => {
       dropTarget.colSpan = 3;
       await elementUpdated(tileManager);
 
+      const { x, y } = getCenterPoint(dropTarget);
+
       simulatePointerDown(draggedTile);
-      simulatePointerMove(draggedTile, {
-        clientX: dropTargetRect.left + dropTargetRect.width * 0.5,
-        clientY: dropTargetRect.top + dropTargetRect.height * 0.5,
-      });
+      simulatePointerMove(draggedTile, { clientX: x, clientY: y });
       await viewTransitionComplete();
 
       // Simulate second dragover event (inside dropTarget bounds)
       simulatePointerMove(draggedTile, {
-        clientX: dropTargetRect.left + dropTargetRect.width * 0.5 + 5,
-        clientY: dropTargetRect.top + dropTargetRect.height * 0.5 + 5,
+        clientX: x + 5,
+        clientY: y + 5,
       });
       await viewTransitionComplete();
 
       expect(draggedTile.position).to.equal(1);
       expect(dropTarget.position).to.equal(0);
+
+      simulateLostPointerCapture(draggedTile);
+      await elementUpdated(draggedTile);
     });
   });
 
@@ -299,13 +303,10 @@ describe('Tile drag and drop', () => {
       target: IgcTileComponent
     ) {
       const header = tile.renderRoot.querySelector('[part="title"]')!;
-      const { top, left, width, height } = target.getBoundingClientRect();
+      const { x, y } = getCenterPoint(target);
 
       simulatePointerDown(header);
-      simulatePointerMove(tile, {
-        clientX: left + width * 0.5,
-        clientY: top + height * 0.5,
-      });
+      simulatePointerMove(tile, { clientX: x, clientY: y });
 
       await viewTransitionComplete();
 
@@ -342,14 +343,11 @@ describe('Tile drag and drop', () => {
       const eventSpy = spy(tileManager, 'emitEvent');
 
       const contentContainer = getTileContentContainer(draggedTile);
-      const dropTargetRect = dropTarget.getBoundingClientRect();
+      const { x, y } = getCenterPoint(dropTarget);
 
       simulatePointerDown(contentContainer);
 
-      simulatePointerMove(draggedTile, {
-        clientX: dropTargetRect.left + dropTargetRect.width * 0.5,
-        clientY: dropTargetRect.top + dropTargetRect.height * 0.5,
-      });
+      simulatePointerMove(draggedTile, { clientX: x, clientY: y });
       await viewTransitionComplete();
 
       simulateLostPointerCapture(draggedTile);
@@ -367,6 +365,17 @@ describe('Tile drag and drop', () => {
         createTileManager('tile')
       );
     });
+
+    function createSlottedActionTile() {
+      const tile = document.createElement(IgcTileComponent.tagName);
+      const button = document.createElement('button');
+
+      button.slot = 'actions';
+      button.textContent = 'Custom action';
+      tile.append(button);
+
+      return { tile, button };
+    }
 
     it('should disable drag and drop when tile is maximized', async () => {
       const eventSpy = spy(tileManager, 'emitEvent');
@@ -428,6 +437,70 @@ describe('Tile drag and drop', () => {
       });
 
       restore();
+    });
+
+    it('should not start a drag operation when interacting with the default tile actions in `tile-header` drag mode', async () => {
+      tileManager.dragMode = 'tile-header';
+      const tile = getTile(0);
+      const [maximize, _] = getActionButtons(tile);
+      const eventSpy = spy(tileManager, 'emitEvent');
+
+      maximize.click();
+      await elementUpdated(tile);
+
+      expect(tile.maximized).to.be.true;
+      expect(eventSpy).not.calledWith('igcTileDragStarted');
+
+      maximize.click();
+      await elementUpdated(tile);
+
+      expect(tile.maximized).to.be.false;
+    });
+
+    it('should not start a drag operation when interacting with the default tile actions in `tile` drag mode', async () => {
+      tileManager.dragMode = 'tile';
+      const tile = getTile(0);
+      const [maximize, _] = getActionButtons(tile);
+      const eventSpy = spy(tileManager, 'emitEvent');
+
+      maximize.click();
+      await elementUpdated(tile);
+
+      expect(tile.maximized).to.be.true;
+      expect(eventSpy).not.calledWith('igcTileDragStarted');
+
+      maximize.click();
+      await elementUpdated(tile);
+
+      expect(tile.maximized).to.be.false;
+    });
+
+    it('should not start a drag operation when interacting with the slotted tile actions in `tile-header` drag mode', async () => {
+      const eventSpy = spy(tileManager, 'emitEvent');
+      const { tile, button } = createSlottedActionTile();
+
+      tileManager.dragMode = 'tile-header';
+      tileManager.append(tile);
+      await elementUpdated(tileManager);
+
+      button.click();
+      await elementUpdated(tile);
+
+      expect(eventSpy).not.calledWith('igcTileDragStarted');
+    });
+
+    it('should not start a drag operation when interacting with the slotted tile actions in `tile` drag mode', async () => {
+      const eventSpy = spy(tileManager, 'emitEvent');
+      const { tile, button } = createSlottedActionTile();
+
+      tileManager.dragMode = 'tile';
+      tileManager.append(tile);
+      await elementUpdated(tileManager);
+
+      button.click();
+      await elementUpdated(tile);
+
+      expect(eventSpy).not.calledWith('igcTileDragStarted');
     });
   });
 });
