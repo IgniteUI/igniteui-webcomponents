@@ -8,24 +8,6 @@
     visibility: var(--resize-visibility);
     position: absolute;
     z-index: 1;
-
-    igc-icon {
-        $icon-size: rem(9px);
-
-        --size: #{$icon-size} !important;
-        --ig-icon-size: #{$icon-size};
-        --igx-icon-size: #{$icon-size};
-    }
-
-    // &::after {
-    //     content: '';
-    //     position: absolute;
-    //     inset: 0;
-    //     width: var(--_size);
-    //     height: var(--_size);
-    //     border-radius: 50%;
-    //     z-index: 1;
-    // }
 }
 
 :host {
@@ -45,19 +27,19 @@
 
 [part='trigger-side'] {
     top: calc(50% - var(--_size));
-    right: calc(var(--_size) / 2);
+    right: calc(var(--_size) / 2 * -1);
     cursor: e-resize;
 }
 
 [part='trigger'] {
-    bottom: calc(var(--_size) / 2);
-    right: calc(var(--_size) / 2);
+    bottom: calc(var(--_size) / 2 * -1);
+    right: calc(var(--_size) / 2 * -1);
     cursor: se-resize;
 }
 
 [part='trigger-bottom'] {
     left: calc(50% - var(--_size));
-    bottom: calc(var(--_size) / 2);
+    bottom: calc(var(--_size) / 2 * -1);
     cursor: s-resize;
 }
 

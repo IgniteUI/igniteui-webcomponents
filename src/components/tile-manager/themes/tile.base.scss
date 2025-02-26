@@ -81,13 +81,8 @@
     align-items: center;
     gap: sizable(rem(12px), rem(16px), rem(16px));
     width: 100%;
-}
-
-:host(:not([disable-fullscreen][disable-maximize])) {
-    [part='actions'] {
-        padding-block: var(--pad-block);
-        padding-inline: var(--pad-inline);
-    }
+    padding-block: var(--pad-block);
+    padding-inline: var(--pad-inline);
 }
 
 :host([disable-fullscreen][disable-maximize]) {
@@ -97,19 +92,22 @@
 }
 
 [part='title'] {
-    @include ellipsis();
-
-    width: 100%;
-    min-width: 4ch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 0 0%;
+    overflow: hidden;
+    min-width: 2ch;
 }
 
 ::slotted([slot='title']) {
     @include type-style('h6');
+    @include ellipsis();
 
+    width: 100%;
+    min-width: 2ch;
     margin-bottom: 0;
-    padding-block: var(--pad-block);
-    padding-inline: var(--pad-inline);
-    display: inline;
+    display: block;
 }
 
 [part='actions'] {
@@ -118,9 +116,3 @@
     margin-inline-start: auto;
     flex-shrink: 0;
 }
-
-// should be fixed
-// ::slotted([slot='actions']) {
-//     padding-block: var(--pad-block);
-//     padding-inline: var(--pad-inline);
-// }

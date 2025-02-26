@@ -15,11 +15,12 @@ $theme: $material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --_border-radius: #{var-get($theme, 'border-radius')};
 }
 
 [part~='base'] {
     background: var-get($theme, 'tile-background');
-    border-radius: var-get($theme, 'border-radius');
+    border-radius: var(--_border-radius);
     box-shadow: var-get($theme, 'resting-elevation');
 
     &::after {
@@ -64,8 +65,8 @@ $theme: $material;
 
 [part='header'] {
     background: var-get($theme, 'header-background');
-    border-top-left-radius: var-get($theme, 'border-radius');
-    border-top-right-radius: var-get($theme, 'border-radius');
+    border-top-left-radius: var(--_border-radius);
+    border-top-right-radius: var(--_border-radius);
 }
 
 [part='title'] {
@@ -82,12 +83,16 @@ igc-resize {
 
 igc-resize[part~='side-adorner']::part(trigger-side) {
     background-color: transparent;
+    right: 0;
 }
 
 igc-resize[part~='corner-adorner']::part(trigger) {
     background-color: transparent;
+    right: 0;
+    bottom: 0;
 }
 
 igc-resize[part~='bottom-adorner']::part(trigger-bottom) {
     background-color: transparent;
+    bottom: 0;
 }

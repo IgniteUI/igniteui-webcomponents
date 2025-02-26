@@ -1,5 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../../tile-manager/themes/light/themes' as tile;
 @use '../light/themes' as *;
 
 $theme: $material;
@@ -12,7 +11,7 @@ $theme: $material;
         inset: 0;
         width: 100%;
         height: 100%;
-        border-radius: var-get(tile.$base, 'border-radius');
+        border-radius: var(--_border-radius);
         border: rem(1px) solid var-get($theme, 'resize-indicator');
     }
 }
