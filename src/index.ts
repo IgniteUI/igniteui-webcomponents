@@ -116,7 +116,6 @@ export type {
   RangeTextSelectMode,
   SelectionRangeDirection,
   StyleVariant,
-  TileManagerDragAction,
   TileManagerDragMode,
   TileManagerResizeMode,
 } from './components/types.js';
