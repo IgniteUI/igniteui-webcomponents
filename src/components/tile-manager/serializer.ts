@@ -85,6 +85,8 @@ class TileManagerSerializer {
   }
 
   public loadFromJSON(data: string): void {
+    if (!data) return;
+
     this.load(JSON.parse(data));
   }
 }
