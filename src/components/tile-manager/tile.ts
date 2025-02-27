@@ -183,7 +183,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.resizeMode ?? 'none';
   }
 
-  protected _headerRef = createRef<HTMLSlotElement>();
+  protected _headerRef = createRef<HTMLElement>();
 
   @queryAssignedElements({ slot: 'title' })
   private _titleElements!: HTMLElement[];
@@ -585,8 +585,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.disableFullscreen;
 
     return html`
-      <section part="header" ?hidden=${hideHeader}>
-        <header part="title" ${ref(this._headerRef)}>
+      <section part="header" ?hidden=${hideHeader} ${ref(this._headerRef)}>
+        <header part="title">
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
