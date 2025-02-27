@@ -12,6 +12,8 @@ type TileGridPosition = {
   row: TilePosition;
 };
 
+type TileResizeDimensions = { width: number | null; height: number | null };
+
 export const DraggedTileAttribute = 'data-drag-ghost-tile';
 
 type TileGridDimension = { count: number; entries: number[]; minSize: number };
@@ -84,6 +86,15 @@ class TileResizeState {
     entries: [],
     minSize: 0,
   };
+
+  public resizedDimensions: TileResizeDimensions = {
+    width: null,
+    height: null,
+  };
+
+  public get emptyResizeDimensions(): TileResizeDimensions {
+    return { width: null, height: null };
+  }
 
   public get gap(): number {
     return this._gap;

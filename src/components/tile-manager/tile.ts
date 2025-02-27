@@ -1,5 +1,10 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { startViewTransition } from '../../animations/player.js';
@@ -23,6 +28,7 @@ import {
   createCounter,
   findElementFromEventPath,
   getCenterPoint,
+  isEmpty,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -125,6 +131,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _resizeState = createTileResizeState();
   private _dragStack = createTileDragStack();
 
+  private _customAdorners = new Map<string, boolean>(
+    Object.entries({
+      side: false,
+      corner: false,
+      bottom: false,
+    })
+  );
+
   // Tile manager context properties and helpers
 
   /**
@@ -168,6 +182,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   protected _headerRef = createRef<HTMLSlotElement>();
 
+  @queryAssignedElements({ slot: 'title' })
+  private _titleElements!: HTMLElement[];
+
+  @queryAssignedElements({ slot: 'actions' })
+  private _actionsElements!: HTMLElement[];
+
   @query(IgcResizeContainerComponent.tagName)
   protected _resizeContainer?: IgcResizeContainerComponent;
 
@@ -190,19 +210,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.maximized ||
       this.fullscreen ||
       this._resizeMode === 'none'
-    );
-  }
-
-  protected get _shouldHideHeader() {
-    const hasTitle = this._headerRef.value
-      ?.querySelector<HTMLSlotElement>('slot[name="title"]')
-      ?.assignedNodes().length;
-    const hasActions = this.shadowRoot
-      ?.querySelector<HTMLSlotElement>('slot[name="actions"]')
-      ?.assignedNodes().length;
-
-    return (
-      !hasTitle && !hasActions && this.disableMaximize && this.disableFullscreen
     );
   }
 
@@ -303,6 +310,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public set maximized(value: boolean) {
     this._maximized = value;
 
+    const { width, height } = value
+      ? this._resizeState.emptyResizeDimensions
+      : this._resizeState.resizedDimensions;
+
+    this._resizeContainer?.setSize(width, height);
+
     if (this._tileManagerCtx) {
       this._tileManagerCtx.instance.requestUpdate();
     }
@@ -357,6 +370,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this.style.viewTransitionName =
       this.style.viewTransitionName || `tile-transition-${this.tileId}`;
+  }
+
+  protected override createRenderRoot() {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   private _setDragState(state = true) {
@@ -489,12 +508,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.style.setProperty('grid-column', column);
     });
 
-    await transition?.finished;
+    await transition?.updateCallbackDone;
 
     const { width, height } = this._resizeState.calculateResizedSize(
       this._cssContainer
     );
 
+    this._resizeState.resizedDimensions = { width, height };
     this._resizeContainer?.setSize(width, height);
     this._setResizeState(false);
   }
@@ -504,6 +524,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleFullscreen() {
+    const { width, height } = !this.fullscreen
+      ? this._resizeState.emptyResizeDimensions
+      : this._resizeState.resizedDimensions;
+
+    this._resizeContainer?.setSize(width, height);
     this._fullscreenController.setState(!this.fullscreen);
   }
 
@@ -556,10 +581,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderHeader() {
+    const hideHeader =
+      isEmpty(this._titleElements) &&
+      isEmpty(this._actionsElements) &&
+      this.disableMaximize &&
+      this.disableFullscreen;
+
     return html`
-      <section part="header" ?hidden=${this._shouldHideHeader}>
+      <section part="header" ?hidden=${hideHeader}>
         <header part="title" ${ref(this._headerRef)}>
-          <slot name="title" @slotchange=${this.requestUpdate}></slot>
+          <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
           ${!this.disableMaximize
@@ -573,7 +604,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
               >`
             : nothing}
 
-          <slot name="actions" @slotchange=${this.requestUpdate}></slot>
+          <slot name="actions"></slot>
         </section>
       </section>
       <igc-divider></igc-divider>
@@ -608,20 +639,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       </div>
     `;
   }
-
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  private _customAdorners = new Map<string, boolean>(
-    Object.entries({
-      side: false,
-      corner: false,
-      bottom: false,
-    })
-  );
 
   private _renderAdornerSlot(name: AdornerType) {
     return html`
