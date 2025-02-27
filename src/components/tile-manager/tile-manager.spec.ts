@@ -712,6 +712,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 1,
           colStart: null,
+          disableFullscreen: false,
+          disableMaximize: false,
           disableResize: false,
           gridColumn: 'auto / span 1',
           gridRow: 'auto / span 1',
@@ -726,6 +728,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 10,
           colStart: 8,
+          disableFullscreen: false,
+          disableMaximize: false,
           disableResize: true,
           gridColumn: '8 / span 10',
           gridRow: '7 / span 7',
@@ -747,6 +751,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 5,
           colStart: 1,
+          disableFullscreen: false,
+          disableMaximize: false,
           disableResize: true,
           gridColumn: '1 / span 5',
           gridRow: '1 / span 5',
@@ -759,6 +765,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 3,
           colStart: null,
+          disableFullscreen: false,
+          disableMaximize: false,
           disableResize: false,
           gridColumn: 'span 3',
           gridRow: 'span 3',
@@ -771,6 +779,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 3,
           colStart: null,
+          disableFullscreen: false,
+          disableMaximize: false,
           disableResize: false,
           gridColumn: 'span 3',
           gridRow: 'span 3',
@@ -790,20 +800,24 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0].colSpan).to.equal(5);
       expect(tiles[0].colStart).to.equal(1);
-      expect(tiles[0].disableResize).to.equal(true);
-      expect(tiles[0].maximized).to.be.false;
+      expect(tiles[0].disableFullscreen).is.false;
+      expect(tiles[0].disableMaximize).is.false;
+      expect(tiles[0].disableResize).is.true;
+      expect(tiles[0].maximized).is.false;
       expect(tiles[0].position).to.equal(0);
       expect(tiles[0].rowSpan).to.equal(5);
       expect(tiles[0].rowStart).to.equal(1);
       expect(tiles[0].tileId).to.equal('custom-id1');
 
       expect(tiles[1].colSpan).to.equal(3);
-      expect(tiles[1].colStart).to.be.null;
-      expect(tiles[1].disableResize).to.be.false;
-      expect(tiles[1].maximized).to.be.false;
+      expect(tiles[1].colStart).is.null;
+      expect(tiles[0].disableFullscreen).is.false;
+      expect(tiles[0].disableMaximize).is.false;
+      expect(tiles[1].disableResize).is.false;
+      expect(tiles[1].maximized).is.false;
       expect(tiles[1].position).to.equal(1);
       expect(tiles[1].rowSpan).to.equal(3);
-      expect(tiles[1].rowStart).to.be.null;
+      expect(tiles[1].rowStart).is.null;
       expect(tiles[1].tileId).to.equal('custom-id2');
 
       const firstTileStyles = window.getComputedStyle(tiles[0]);

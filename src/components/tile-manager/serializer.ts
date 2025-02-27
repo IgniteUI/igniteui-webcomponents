@@ -5,6 +5,8 @@ import type IgcTileComponent from './tile.js';
 export interface SerializedTile {
   colSpan: number;
   colStart: number | null;
+  disableFullscreen: boolean;
+  disableMaximize: boolean;
   disableResize: boolean;
   gridColumn: string;
   gridRow: string;
@@ -37,6 +39,8 @@ class TileManagerSerializer {
       return {
         colSpan: tile.colSpan,
         colStart: tile.colStart,
+        disableFullscreen: tile.disableFullscreen,
+        disableMaximize: tile.disableMaximize,
         disableResize: tile.disableResize,
         gridColumn,
         gridRow,
