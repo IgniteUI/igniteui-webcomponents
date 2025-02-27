@@ -147,7 +147,10 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0]).shadowDom.to.equal(
         `
-        <igc-resize mode="deferred" part="resize">
+        <igc-resize
+          exportparts="trigger-side, trigger, trigger-bottom"
+          mode="deferred"
+          part="resize">
           <div
             part="base"
             style="--ig-col-span:1;--ig-row-span:1;"
@@ -186,15 +189,12 @@ describe('Tile Manager component', () => {
             </div>
           </div>
           <slot name="side-adorner" slot="side-adorner">
-              <div part="adorner-indicator"></div>
             </slot>
 
             <slot name="corner-adorner" slot="corner-adorner">
-              <div part="adorner-indicator"></div>
             </slot>
 
             <slot name="bottom-adorner" slot="bottom-adorner">
-              <div part="adorner-indicator"></div>
             </slot>
         </igc-resize>
         `

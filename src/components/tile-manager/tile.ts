@@ -88,6 +88,9 @@ export interface IgcTileComponentEventMap {
  * @csspart title - The title container.
  * @csspart actions - The actions container.
  * @csspart content-container - The container wrapping the tile’s main content.
+ * @csspart trigger-side - The part for the side adorner of the encapsulated resize element.
+ * @csspart trigger - The part for the corner adorner of the encapsulated resize element.
+ * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element.
  */
 @themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
@@ -641,7 +644,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
         name="${name}-adorner"
         slot="${name}-adorner"
       >
-        <div part="adorner-indicator"></div>
       </slot>
     `;
   }
@@ -662,6 +664,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           'corner-adorner': this._customAdorners.get('corner')!,
           'bottom-adorner': this._customAdorners.get('bottom')!,
         })}
+        exportparts="trigger-side, trigger, trigger-bottom"
         mode="deferred"
         .enabled=${!this._resizeDisabled}
         ?active=${this._resizeMode === 'always'}
