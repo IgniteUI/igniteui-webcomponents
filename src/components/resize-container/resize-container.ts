@@ -185,7 +185,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   protected _renderAdorner(name: 'side' | 'corner' | 'bottom', part: string) {
     return html`
       <slot ${ref(this._adorners[name])} part=${part} name="${name}-adorner">
-        <div part="adorner-indicator"></div>
       </slot>
     `;
   }
