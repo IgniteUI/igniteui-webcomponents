@@ -2,21 +2,24 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: inline-flex;
+    display: inline-block;
     vertical-align: top;
 }
 
 :host button {
     @include type-style('body-2');
+    @include ellipsis();
 
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
     justify-content: center;
     align-items: center;
     font-family: var(--ig-font-family);
     border-style: none;
     box-shadow: none;
     cursor: pointer;
-    padding: pad(2px, 6px, 12px);
+    padding: 0 pad-inline(rem(2px), rem(6px), rem(12px));
+    gap: sizable(rem(3px), rem(6px), rem(8px));
 
     &[disabled] {
         pointer-events: none;
@@ -110,14 +113,8 @@
     justify-content: center;
 }
 
-[part='prefix'] {
-    margin-inline-end: pad-inline(rem(3px), rem(6px), rem(8px));
-}
-
-[part='suffix'] {
-    margin-inline-start: pad-inline(rem(3px), rem(6px), rem(8px));
-}
-
 ::slotted(*) {
-    display: flex;
+    @include ellipsis();
+
+    max-width: 32ch;
 }
