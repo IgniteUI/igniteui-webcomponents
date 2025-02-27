@@ -79,9 +79,7 @@ $dropdown-theme: dropdown-theme.$material;
     igc-input::part(container) {
         --_toggle-focus-background: #{var-get($theme, 'toggle-button-background')};
         --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground')};
-    }
 
-    igc-input::part(container) {
         &:focus-within {
             --_toggle-focus-background: #{var-get($theme, 'toggle-button-background-focus')};
             --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground-filled')};
