@@ -310,12 +310,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public set maximized(value: boolean) {
     this._maximized = value;
 
-    const { width, height } = value
-      ? this._resizeState.emptyResizeDimensions
-      : this._resizeState.resizedDimensions;
-
-    this._resizeContainer?.setSize(width, height);
-
     if (this._tileManagerCtx) {
       this._tileManagerCtx.instance.requestUpdate();
     }
@@ -653,6 +647,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const { width, height } =
+      this.fullscreen || this.maximized
+        ? this._resizeState.emptyResizeDimensions
+        : this._resizeState.resizedDimensions;
+
+    this._resizeContainer?.setSize(width, height);
+
     return html`
       <igc-resize
         part=${partNameMap({
