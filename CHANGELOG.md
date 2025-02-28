@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### List
+  - The `igc-list-item` component exposes a new `selected` property. When set on a list item, the item will become visually highlighted.
+
 ## [5.2.4] - 2025-02-24
 ### Changed
 - #### Carousel - **Potential visual breaking change.**
