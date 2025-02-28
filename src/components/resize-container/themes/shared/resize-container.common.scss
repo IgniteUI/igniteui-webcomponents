@@ -1,0 +1,27 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+[part~='active'] {
+    &::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--_border-radius);
+        border: rem(1px) solid var-get($theme, 'resize-indicator');
+    }
+}
+
+[part='trigger-side'],
+[part='trigger'],
+[part='trigger-bottom'] {
+    width: var(--_size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    z-index: 11111;
+    background-color: var-get($theme, 'resize-indicator');
+}
