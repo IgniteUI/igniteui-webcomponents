@@ -40,3 +40,10 @@ $input-theme: input-theme.$indigo;
         color: var-get($input-theme, 'focused-secondary-color');
     }
 }
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($input-theme, 'helper-text-color');
+    }
+}
