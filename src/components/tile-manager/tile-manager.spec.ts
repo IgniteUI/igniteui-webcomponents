@@ -699,6 +699,8 @@ describe('Tile Manager component', () => {
             row-start="7"
             row-span="7"
             disable-resize
+            disable-fullscreen
+            disable-maximize
           >
             Tile content 2
           </igc-tile>
@@ -728,8 +730,8 @@ describe('Tile Manager component', () => {
         {
           colSpan: 10,
           colStart: 8,
-          disableFullscreen: false,
-          disableMaximize: false,
+          disableFullscreen: true,
+          disableMaximize: true,
           disableResize: true,
           gridColumn: '8 / span 10',
           gridRow: '7 / span 7',
@@ -756,7 +758,7 @@ describe('Tile Manager component', () => {
           disableResize: true,
           gridColumn: '1 / span 5',
           gridRow: '1 / span 5',
-          maximized: false,
+          maximized: true,
           position: 0,
           rowSpan: 5,
           rowStart: 1,
@@ -764,7 +766,7 @@ describe('Tile Manager component', () => {
         },
         {
           colSpan: 3,
-          colStart: null,
+          colStart: 7,
           disableFullscreen: false,
           disableMaximize: false,
           disableResize: false,
@@ -773,7 +775,7 @@ describe('Tile Manager component', () => {
           maximized: false,
           position: 1,
           rowSpan: 3,
-          rowStart: null,
+          rowStart: 7,
           tileId: 'custom-id2',
         },
         {
@@ -803,21 +805,21 @@ describe('Tile Manager component', () => {
       expect(tiles[0].disableFullscreen).is.false;
       expect(tiles[0].disableMaximize).is.false;
       expect(tiles[0].disableResize).is.true;
-      expect(tiles[0].maximized).is.false;
+      expect(tiles[0].maximized).is.true;
       expect(tiles[0].position).to.equal(0);
       expect(tiles[0].rowSpan).to.equal(5);
       expect(tiles[0].rowStart).to.equal(1);
       expect(tiles[0].tileId).to.equal('custom-id1');
 
       expect(tiles[1].colSpan).to.equal(3);
-      expect(tiles[1].colStart).is.null;
-      expect(tiles[0].disableFullscreen).is.false;
-      expect(tiles[0].disableMaximize).is.false;
+      expect(tiles[1].colStart).to.equal(7);
+      expect(tiles[1].disableFullscreen).is.false;
+      expect(tiles[1].disableMaximize).is.false;
       expect(tiles[1].disableResize).is.false;
       expect(tiles[1].maximized).is.false;
       expect(tiles[1].position).to.equal(1);
       expect(tiles[1].rowSpan).to.equal(3);
-      expect(tiles[1].rowStart).is.null;
+      expect(tiles[1].rowStart).to.equal(7);
       expect(tiles[1].tileId).to.equal('custom-id2');
 
       const firstTileStyles = window.getComputedStyle(tiles[0]);
@@ -827,6 +829,40 @@ describe('Tile Manager component', () => {
       expect(firstTileStyles.gridRow).to.equal('1 / span 5');
       expect(secondTileStyles.gridColumn).to.equal('span 3');
       expect(secondTileStyles.gridRow).to.equal('span 3');
+    });
+
+    it('should handle tiles with missing tileId correctly when deserializing', async () => {
+      const tilesData = [
+        {
+          colSpan: 4,
+          rowSpan: 4,
+          position: 0,
+        },
+        {
+          colSpan: 2,
+          rowSpan: 2,
+          position: 1,
+          tileId: 'custom-id1',
+        },
+      ];
+
+      tileManager.loadLayout(JSON.stringify(tilesData));
+      await elementUpdated(tileManager);
+
+      const tiles = tileManager.tiles;
+
+      for (const tile of tiles) {
+        expect(tile.tileId).to.not.be.empty;
+        expect(tile.colSpan).not.equal(4);
+      }
+    });
+
+    it('should not throw an error when passing undefined data to `loadLayout`', async () => {
+      const tilesData = undefined;
+
+      expect(() =>
+        tileManager.loadLayout(JSON.stringify(tilesData))
+      ).not.to.throw();
     });
   });
 
