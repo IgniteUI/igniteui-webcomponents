@@ -34,12 +34,12 @@ describe('Resize container', () => {
     });
 
     it('should be defined', () => {
-      expect(resizeContainer).to.not.be.null;
+      expect(resizeContainer).is.not.null;
     });
 
     it('should initialize with correct default state', () => {
       expect(resizeContainer.mode).to.equal('immediate');
-      expect(resizeContainer.ghostFactory).to.be.undefined;
+      expect(resizeContainer.ghostFactory).is.undefined;
     });
 
     it('should be accessible', async () => {
@@ -143,7 +143,7 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         const { ghost } = getResizeEventState(eventSpy);
-        expect(ghost).to.be.null;
+        expect(ghost).is.null;
       });
 
       it('should fire `resizeStart` on pointer interaction', async () => {
@@ -504,17 +504,17 @@ describe('Resize container', () => {
       it('adorners visibility is toggled on pointer enter/leave events', async () => {
         const DOM = getDOM(element);
 
-        expect(Object.values(DOM.adorners).every((e) => e === null)).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e === null)).is.true;
 
         // Pointerenter - adorners rendered
         await setResizeActiveState(element);
 
-        expect(Object.values(DOM.adorners).every((e) => e !== null)).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e !== null)).is.true;
 
         // Pointerleave - adorners removed
         await setResizeActiveState(element, false);
 
-        expect(Object.values(DOM.adorners).every((e) => e === null)).to.be.true;
+        expect(Object.values(DOM.adorners).every((e) => e === null)).is.true;
       });
 
       it('resize behavior should only start when interacting with the trigger element', async () => {
@@ -548,7 +548,7 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(DOM.ghostElement).to.not.be.null;
+        expect(DOM.ghostElement).is.not.null;
         expect(DOM.ghostElement?.style.background).to.equal('pink');
       });
 
@@ -567,8 +567,8 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(DOM.ghostElement).to.not.be.null;
-        expect(DOM.ghostElement?.classList.contains('custom-ghost')).to.be.true;
+        expect(DOM.ghostElement).is.not.null;
+        expect(DOM.ghostElement?.classList.contains('custom-ghost')).is.true;
       });
 
       it('should fire `resizeStart` on pointer interaction', async () => {
@@ -641,7 +641,7 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         expect(eventSpy).calledWith('igcResizeEnd');
-        expect(DOM.ghostElement).to.be.null;
+        expect(DOM.ghostElement).is.null;
       });
 
       it('should not fire `resizeCancel` when escape key is pressed without active resizing', async () => {
@@ -693,7 +693,7 @@ describe('Resize container', () => {
         await elementUpdated(element);
 
         expect(eventSpy).calledWith('igcResizeCancel');
-        expect(DOM.ghostElement).to.be.null;
+        expect(DOM.ghostElement).is.null;
       });
     });
 
@@ -939,7 +939,7 @@ function getDOM(resizeElement: IgcResizeContainerComponent) {
     },
     /** The ghost element when in deferred mode */
     get ghostElement() {
-      return resizeElement.querySelector<HTMLElement>('[data-resize-ghost]')!;
+      return document.querySelector<HTMLElement>('[data-resize-ghost]')!;
     },
   };
 }

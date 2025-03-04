@@ -24,6 +24,7 @@ export type ResizeControllerConfiguration = {
   ref?: Ref<HTMLElement>[];
   mode?: ResizeMode;
   deferredFactory?: ResizeGhostFactory;
+  layer?: () => HTMLElement;
   /** Callback invoked at the start of a resize operation. */
   start?: ResizeCallback;
   /** Callback invoked on each pointer move during a resize operation. */

@@ -308,8 +308,6 @@ describe('Drag controller', () => {
       expect(defaultGhost.getBoundingClientRect()).to.eql(
         instance.getBoundingClientRect()
       );
-
-      instance.controller.dispose();
     });
 
     it('should create a custom ghost element in "deferred" mode when a configuration is passed', async () => {
@@ -322,8 +320,6 @@ describe('Drag controller', () => {
 
       expect(customGhost).to.exist;
       expect(customGhost.localName).to.equal(instance.localName);
-
-      instance.controller.dispose();
     });
 
     it('should correctly place the ghost element in the configured layer container', async () => {
@@ -334,8 +330,6 @@ describe('Drag controller', () => {
       await elementUpdated(instance);
 
       expect(getDefaultGhost().parentElement).to.eql(instance.parentElement);
-
-      instance.controller.dispose();
     });
 
     it('should invoke start callback on drag operation', async () => {
@@ -346,8 +340,6 @@ describe('Drag controller', () => {
 
       expect(dragStart.called).is.true;
       expect(dragStart.callCount).to.equal(1);
-
-      instance.controller.dispose();
     });
 
     it('should not invoke move unless a start is invoked', async () => {
@@ -377,8 +369,6 @@ describe('Drag controller', () => {
       expect(dragStart.called).is.true;
       expect(dragMove.called).is.true;
       expect(dragMove.callCount).to.equal(10);
-
-      instance.controller.dispose();
     });
 
     it('should invoke end when releasing the dragged element', async () => {

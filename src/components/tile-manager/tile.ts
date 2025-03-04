@@ -28,6 +28,7 @@ import {
   createCounter,
   findElementFromEventPath,
   getCenterPoint,
+  getRoot,
   isEmpty,
   partNameMap,
 } from '../common/util.js';
@@ -391,7 +392,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _handleDragMove({
     event: { clientX, clientY },
   }: DragCallbackParameters) {
-    const match = document
+    const match = getRoot(this)
       .elementsFromPoint(clientX, clientY)
       .find(this._match);
 
@@ -462,6 +463,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _createDragGhost(): IgcTileComponent {
     return createTileDragGhost(this);
   }
+
+  private _createResizeGhost = (): HTMLElement => {
+    return createTileGhost(this);
+  };
 
   private _setResizeState(state = true) {
     this._isResizing = state;
@@ -668,7 +673,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         mode="deferred"
         .enabled=${!this._resizeDisabled}
         ?active=${this._resizeMode === 'always'}
-        .ghostFactory=${createTileGhost}
+        .ghostFactory=${this._createResizeGhost}
         @igcResizeStart=${this._handleResizeStart}
         @igcResize=${this._handleResize}
         @igcResizeEnd=${this._handleResizeEnd}

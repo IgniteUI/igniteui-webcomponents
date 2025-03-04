@@ -454,7 +454,7 @@ function getResizeContainerDOM(tile: IgcTileComponent) {
     },
     /** The ghost element when in deferred mode */
     get ghostElement() {
-      return resizeContainer.querySelector<HTMLElement>('[data-resize-ghost]')!;
+      return document.querySelector<HTMLElement>('[data-resize-ghost]')!;
     },
   };
 }

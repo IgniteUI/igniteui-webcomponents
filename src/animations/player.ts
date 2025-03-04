@@ -93,6 +93,7 @@ type ViewTransitionResult = {
 export function startViewTransition(
   callback?: ViewTransitionUpdateCallback
 ): ViewTransitionResult {
+  /* c8 ignore next 4 */
   if (getPrefersReducedMotion() || !document.startViewTransition) {
     callback?.();
     return {};

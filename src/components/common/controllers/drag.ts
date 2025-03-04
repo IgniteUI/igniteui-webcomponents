@@ -5,6 +5,7 @@ import type {
 } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 
+import { getDefaultLayer } from '../../resize-container/default-ghost.js';
 import { findElementFromEventPath } from '../util.js';
 
 type DragEnterCallback = (target: Element) => unknown;
@@ -202,6 +203,7 @@ class DragController implements ReactiveController {
     this._host.removeEventListener('touchstart', this);
     this._host.removeEventListener('pointerdown', this);
     this._setDragCancelListener(false);
+    this._removeGhost();
   }
 
   /** @internal */
@@ -402,10 +404,6 @@ class DragController implements ReactiveController {
       !findElementFromEventPath((e) => e === this._element, event)
     );
   }
-}
-
-function getDefaultLayer() {
-  return document.body;
 }
 
 function createDefaultDragGhost({ x, y, width, height }: DOMRect): HTMLElement {

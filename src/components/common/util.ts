@@ -171,8 +171,15 @@ export function* iterNodes<T = Node>(
   }
 }
 
+export function getRoot(
+  element: Element,
+  options?: GetRootNodeOptions
+): Document | ShadowRoot {
+  return element.getRootNode(options) as Document | ShadowRoot;
+}
+
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
-  return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  return getRoot(root).getElementById(id);
 }
 
 export function isElement(node: unknown): node is Element {

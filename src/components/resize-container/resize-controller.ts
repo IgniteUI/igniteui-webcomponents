@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
 import { findElementFromEventPath } from '../common/util.js';
-import { createDefaultGhostElement } from './default-ghost.js';
+import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
 
 const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
@@ -13,7 +13,10 @@ type State = {
 
 class ResizeController implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _options: ResizeControllerConfiguration = { enabled: true };
+  private _options: ResizeControllerConfiguration = {
+    enabled: true,
+    layer: getDefaultLayer,
+  };
 
   private _id = -1;
   private _hasPointerCapture = false;
@@ -28,6 +31,14 @@ class ResizeController implements ReactiveController {
 
   private get _resizeTarget(): HTMLElement {
     return this._options.resizeTarget?.call(this._host) ?? this._host;
+  }
+
+  private get _layer(): HTMLElement {
+    if (!this._isDeferred) {
+      return this._host;
+    }
+
+    return this._options.layer?.() ?? this._host;
   }
 
   /** Whether the controller is in deferred mode. */
@@ -98,6 +109,7 @@ class ResizeController implements ReactiveController {
     this._host.removeEventListener('pointerdown', this);
     this._host.removeEventListener('touchstart', this);
     this._setResizeCancelListener(false);
+    this._removeGhostElement();
   }
 
   /** @internal */
@@ -248,13 +260,10 @@ class ResizeController implements ReactiveController {
 
     this._ghost =
       this._options.deferredFactory?.call(this._host) ??
-      createDefaultGhostElement(
-        this._state.initial.width,
-        this._state.initial.height
-      );
+      createDefaultGhostElement(this._resizeTarget.getBoundingClientRect());
 
     this._ghost.setAttribute('data-resize-ghost', '');
-    this._host.append(this._ghost);
+    this._layer.append(this._ghost);
   }
 
   private _removeGhostElement(): void {
