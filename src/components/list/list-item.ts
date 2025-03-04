@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 
+import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/item.base.css.js';
@@ -34,6 +35,13 @@ export default class IgcListItemComponent extends LitElement {
   public static register() {
     registerComponent(IgcListItemComponent);
   }
+
+  /**
+   * Defines if the list item is selected or not.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public selected = false;
 
   private _internals: ElementInternals;
 

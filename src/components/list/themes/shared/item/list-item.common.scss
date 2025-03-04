@@ -7,7 +7,8 @@ $theme: $material;
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
-    border-bottom: var-get($theme, 'border-width') solid var-get($theme, 'border-color');
+    border-bottom: var-get($theme, 'border-width') solid
+        var-get($theme, 'border-color');
 }
 
 :host(:last-of-type) {
@@ -28,6 +29,27 @@ $theme: $material;
 
 [part='end'] {
     color: var-get($theme, 'item-action-color');
+}
+
+:host([selected]) {
+    color: var-get($theme, 'item-text-color-selected');
+    background: var-get($theme, 'item-background-selected');
+
+    [part='title'] {
+        color: var-get($theme, 'item-title-color-selected');
+    }
+
+    [part='subtitle'] {
+        color: var-get($theme, 'item-subtitle-color-selected');
+    }
+
+    [part='start'] {
+        color: var-get($theme, 'item-thumbnail-color-selected');
+    }
+
+    [part='end'] {
+        color: var-get($theme, 'item-action-color-selected');
+    }
 }
 
 :host(:hover),
