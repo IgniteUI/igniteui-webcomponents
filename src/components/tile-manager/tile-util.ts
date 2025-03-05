@@ -119,8 +119,7 @@ class TileResizeState {
       this._prevDeltaX,
       this._columns.entries,
       this._position.column.start,
-      this._prevSnappedWidth,
-      this._columns.minSize
+      this._prevSnappedWidth
     );
 
     this._prevDeltaX = result.newDelta;
@@ -135,8 +134,7 @@ class TileResizeState {
       this._prevDeltaY,
       this._rows.entries,
       this._position.row.start,
-      this._prevSnappedHeight,
-      this._rows.minSize
+      this._prevSnappedHeight
     );
 
     this._prevDeltaY = result.newDelta;
@@ -220,15 +218,14 @@ class TileResizeState {
     prevDelta: number,
     gridEntries: number[],
     startIndex: number,
-    prevSnapped: number,
-    minSize: number
+    prevSnapped: number
   ): { snapped: number; newDelta: number } {
     const effectiveDelta = currentDelta - prevDelta;
     let snapped = currentSize;
 
     // If current size is below minimum, force to the size of the starting cell.
-    if (Math.trunc(currentSize) < minSize) {
-      return { snapped: gridEntries[startIndex], newDelta: currentDelta };
+    if (Math.trunc(currentSize) < gridEntries[startIndex - 1]) {
+      return { snapped: gridEntries[startIndex - 1], newDelta: currentDelta };
     }
 
     // If no change in delta and we have a snapped value, reuse it.
@@ -258,7 +255,10 @@ class TileResizeState {
         }
       } else if (effectiveDelta < 0) {
         // Shrinking: snap when falling below the halfway threshold.
-        if (currentSize <= halfwayShrink && currentSize > accumulated) {
+        if (
+          currentSize <= halfwayShrink &&
+          currentSize > accumulated - this.gap
+        ) {
           snapped = accumulated - this.gap;
         }
       }
