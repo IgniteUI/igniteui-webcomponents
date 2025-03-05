@@ -150,7 +150,6 @@ const tiles = Array.from(
     (i) => html`
       <igc-tile .disableResize=${i === 0}>
         <h3 slot="title">Tile ${i + 1} Title</h3>
-        <igc-icon name="home" slot="actions"></igc-icon>
 
         <p>Text in Tile ${i + 1}</p>
         <div class="picture">

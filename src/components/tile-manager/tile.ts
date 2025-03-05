@@ -371,7 +371,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _setDragState(state = true) {
     this._isDragging = state;
-    this._tileContent.style.opacity = state ? '0' : '1';
+    this._tileContent.style.opacity = state ? '0' : '';
     this.style.pointerEvents = state ? 'none' : '';
     this.part.toggle('dragging', state);
   }
@@ -588,7 +588,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
-          ${!this.disableMaximize
+          ${!this.disableMaximize && !this.fullscreen
             ? html`<slot name="maximize-action"
                 >${this._renderDefaultAction('maximize')}</slot
               >`

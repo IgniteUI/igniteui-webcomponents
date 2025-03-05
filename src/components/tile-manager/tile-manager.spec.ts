@@ -628,6 +628,22 @@ describe('Tile Manager component', () => {
       expect(btnFullscreen.name).equals('fullscreen');
     });
 
+    it('should hide maximize action when a tile is in fullscreen mode', async () => {
+      const btnMaximize = getActionButtons(tile)[0];
+      const btnFullscreen = getActionButtons(tile)[1];
+
+      expect(getActionButtons(tile)).lengthOf(2);
+      expect(btnMaximize.name).equals('expand_content');
+      expect(btnFullscreen.name).equals('fullscreen');
+
+      simulateClick(btnFullscreen);
+      await elementUpdated(tileManager);
+
+      expect(tile.fullscreen).is.true;
+      expect(getActionButtons(tile)).lengthOf(1);
+      expect(getActionButtons(tile)[0].name).equals('fullscreen_exit');
+    });
+
     it('should correctly fire `igcTileMaximize` event on clicking Maximize button', async () => {
       const eventSpy = spy(tile, 'emitEvent');
       const btnMaximize = getActionButtons(tile)[0];
