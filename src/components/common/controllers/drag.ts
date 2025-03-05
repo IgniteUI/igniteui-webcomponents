@@ -6,9 +6,7 @@ import type {
 import type { Ref } from 'lit/directives/ref.js';
 
 import { getDefaultLayer } from '../../resize-container/default-ghost.js';
-import { findElementFromEventPath } from '../util.js';
-
-type DragEnterCallback = (target: Element) => unknown;
+import { findElementFromEventPath, getRoot } from '../util.js';
 
 type DragCallback = (parameters: DragCallbackParameters) => unknown;
 type DragCancelCallback = (state: DragState) => unknown;
@@ -50,7 +48,7 @@ type DragControllerConfiguration = {
    * Returning a truthy value will stop the current drag operation.
    */
   skip?: (event: PointerEvent) => boolean;
-  // REVIEW: API signature
+
   matchTarget?: (target: Element) => boolean;
   /**
    *
@@ -76,11 +74,11 @@ type DragControllerConfiguration = {
   /** Callback invoked while dragging the target element.  */
   move?: DragCallback;
 
-  enter?: DragEnterCallback;
+  enter?: DragCallback;
 
-  leave?: DragEnterCallback;
+  leave?: DragCallback;
 
-  over?: DragEnterCallback;
+  over?: DragCallback;
 
   /** Callback invoked during a drop operation. */
   end?: DragCallback;
@@ -242,12 +240,13 @@ class DragController implements ReactiveController {
     }
 
     this._setInitialState(event);
-    this._createDragGhost(event);
+    this._createDragGhost();
+    this._updatePosition(event);
 
-    this._options.start?.call(this._host, {
-      event,
-      state: this._stateParameters,
-    });
+    const parameters = { event, state: this._stateParameters };
+    this._options.start?.call(this._host, parameters);
+
+    this._assignPosition(this._dragItem);
     this._setDragState();
   }
 
@@ -331,45 +330,49 @@ class DragController implements ReactiveController {
     }
   }
 
-  // REVIEW
   private _updateMatcher(event: PointerEvent) {
     if (!this._options.matchTarget) {
       return;
     }
 
-    const matches = document.elementsFromPoint(event.clientX, event.clientY);
-
-    if (matches.length === 1) {
-      return;
-    }
-
-    const match = matches.find((value) =>
-      this._options.matchTarget!.call(this._host, value)
-    );
+    const match = getRoot(this._host)
+      .elementsFromPoint(event.clientX, event.clientY)
+      .find((element) => this._options.matchTarget!.call(this._host, element));
 
     if (match && !this._matchedElement) {
       this._matchedElement = match;
-      this._options.enter?.call(this._host, this._matchedElement);
+      this._options.enter?.call(this._host, {
+        event,
+        state: this._stateParameters,
+      });
       return;
     }
 
     if (!match && this._matchedElement) {
-      this._options.leave?.call(this._host, this._matchedElement);
+      this._options.leave?.call(this._host, {
+        event,
+        state: this._stateParameters,
+      });
       this._matchedElement = null;
       return;
     }
 
     if (match && match === this._matchedElement) {
-      this._options.over?.call(this._host, this._matchedElement);
+      this._options.over?.call(this._host, {
+        event,
+        state: this._stateParameters,
+      });
     }
   }
 
   private _updatePosition({ clientX, clientY }: PointerEvent): void {
-    const { top, left } = this._layer.getBoundingClientRect();
     const { x, y } = this._state.offset;
+    const { x: layerX, y: layerY } = this._isDeferred
+      ? this._layer.getBoundingClientRect()
+      : this._state.initial;
 
-    const posX = this._hasSnapping ? clientX - left : clientX - left + x;
-    const posY = this._hasSnapping ? clientY - top : clientY - top + y;
+    const posX = this._hasSnapping ? clientX - layerX : clientX - layerX + x;
+    const posY = this._hasSnapping ? clientY - layerY : clientY - layerY + y;
 
     Object.assign(this._state.position, { x: posX, y: posY });
   }
@@ -378,7 +381,7 @@ class DragController implements ReactiveController {
     element.style.transform = `translate(${this._state.position.x}px,${this._state.position.y}px)`;
   }
 
-  private _createDragGhost(event: PointerEvent): void {
+  private _createDragGhost(): void {
     if (!this._isDeferred) {
       return;
     }
@@ -387,8 +390,6 @@ class DragController implements ReactiveController {
       this._options.ghost?.call(this._host) ??
       createDefaultDragGhost(this._host.getBoundingClientRect());
 
-    this._updatePosition(event);
-    this._assignPosition(this._ghost);
     this._layer.append(this._ghost);
   }
 
