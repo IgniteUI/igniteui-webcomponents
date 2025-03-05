@@ -75,11 +75,11 @@ describe('Tile Manager component', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager>
-          <igc-tile tile-id="customId-1">
+          <igc-tile id="customId-1">
             <span slot="title">Tile Header 1</span>
             <p>Content 1</p>
           </igc-tile>
-          <igc-tile tile-id="customId-2">
+          <igc-tile id="customId-2">
             <h1 slot="title">Tile Header 2</h1>
             <p>Content 2</p>
           </igc-tile>
@@ -107,14 +107,14 @@ describe('Tile Manager component', () => {
         `<igc-tile-manager>
           <igc-tile
             style="view-transition-name: tile-transition-customId-1; order: 0;"
-            tile-id="customId-1"
+            id="customId-1"
           >
             <span slot="title">Tile Header 1</span>
             <p>Content 1</p>
           </igc-tile>
           <igc-tile
             style="view-transition-name: tile-transition-customId-2; order: 1;"
-            tile-id="customId-2"
+            id="customId-2"
           >
             <h1 slot="title">Tile Header 2</h1>
             <p>Content 2</p>
@@ -139,7 +139,7 @@ describe('Tile Manager component', () => {
       );
 
       expect(tiles[0]).dom.to.equal(
-        `<igc-tile style="view-transition-name: tile-transition-customId-1; order: 0;" tile-id="customId-1">
+        `<igc-tile style="view-transition-name: tile-transition-customId-1; order: 0;" id="customId-1">
             <span slot="title">Tile Header 1</span>
             <p>Content 1</p>
           </igc-tile>`
@@ -294,34 +294,34 @@ describe('Tile Manager component', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager>
-          <igc-tile tile-id="customId-1">
+          <igc-tile id="customId-1">
             <span>Show only default actions</span>
           </igc-tile>
-          <igc-tile tile-id="customId-2">
+          <igc-tile id="customId-2">
             <h1 slot="title">Header 2</h1>
             <span>Show title and default actions</span>
           </igc-tile>
-          <igc-tile tile-id="customId-3" disable-fullscreen disable-maximize>
+          <igc-tile id="customId-3" disable-fullscreen disable-maximize>
             <h1 slot="title">Header 3</h1>
             <span>Show only title</span>
           </igc-tile>
-          <igc-tile tile-id="customId-4" disable-fullscreen disable-maximize>
+          <igc-tile id="customId-4" disable-fullscreen disable-maximize>
             <span>No header</span>
           </igc-tile>
-          <igc-tile tile-id="customId-5">
+          <igc-tile id="customId-5">
             <span slot="title">Customize maximize and fullscreen</span>
             <button slot="maximize-action">Maximize</button>
             <button slot="fullscreen-action">Fullscreen</button>
           </igc-tile>
-          <igc-tile tile-id="customId-6">
+          <igc-tile id="customId-6">
             <igc-icon-button slot="actions">A</igc-icon-button>
             <igc-icon-button slot="actions">B</igc-icon-button>
             <span>Add custom actions</span>
           </igc-tile>
-          <igc-tile tile-id="customId-7" disable-fullscreen>
+          <igc-tile id="customId-7" disable-fullscreen>
             <span>Hide fullscreen action</span>
           </igc-tile>
-          <igc-tile tile-id="customId-8" disable-maximize>
+          <igc-tile id="customId-8" disable-maximize>
             <span>Hide maximize action</span>
           </igc-tile>
         </igc-tile-manager>
@@ -691,9 +691,9 @@ describe('Tile Manager component', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
         <igc-tile-manager>
-          <igc-tile tile-id="custom-id1"> Tile content 1 </igc-tile>
+          <igc-tile id="custom-id1"> Tile content 1 </igc-tile>
           <igc-tile
-            tile-id="custom-id2"
+            id="custom-id2"
             col-start="8"
             col-span="10"
             row-start="7"
@@ -723,7 +723,7 @@ describe('Tile Manager component', () => {
           position: 0,
           rowSpan: 1,
           rowStart: null,
-          tileId: 'custom-id1',
+          id: 'custom-id1',
           width: null,
           height: null,
         },
@@ -739,7 +739,7 @@ describe('Tile Manager component', () => {
           position: 1,
           rowSpan: 7,
           rowStart: 7,
-          tileId: 'custom-id2',
+          id: 'custom-id2',
           width: null,
           height: null,
         },
@@ -762,7 +762,7 @@ describe('Tile Manager component', () => {
           position: 0,
           rowSpan: 5,
           rowStart: 1,
-          tileId: 'custom-id1',
+          id: 'custom-id1',
         },
         {
           colSpan: 3,
@@ -776,7 +776,7 @@ describe('Tile Manager component', () => {
           position: 1,
           rowSpan: 3,
           rowStart: 7,
-          tileId: 'custom-id2',
+          id: 'custom-id2',
         },
         {
           colSpan: 3,
@@ -790,7 +790,7 @@ describe('Tile Manager component', () => {
           position: 2,
           rowSpan: 3,
           rowStart: null,
-          tileId: 'no-match-id',
+          id: 'no-match-id',
         },
       ];
 
@@ -809,7 +809,7 @@ describe('Tile Manager component', () => {
       expect(tiles[0].position).to.equal(0);
       expect(tiles[0].rowSpan).to.equal(5);
       expect(tiles[0].rowStart).to.equal(1);
-      expect(tiles[0].tileId).to.equal('custom-id1');
+      expect(tiles[0].id).to.equal('custom-id1');
 
       expect(tiles[1].colSpan).to.equal(3);
       expect(tiles[1].colStart).to.equal(7);
@@ -820,7 +820,7 @@ describe('Tile Manager component', () => {
       expect(tiles[1].position).to.equal(1);
       expect(tiles[1].rowSpan).to.equal(3);
       expect(tiles[1].rowStart).to.equal(7);
-      expect(tiles[1].tileId).to.equal('custom-id2');
+      expect(tiles[1].id).to.equal('custom-id2');
 
       const firstTileStyles = window.getComputedStyle(tiles[0]);
       const secondTileStyles = window.getComputedStyle(tiles[1]);
@@ -831,7 +831,7 @@ describe('Tile Manager component', () => {
       expect(secondTileStyles.gridRow).to.equal('span 3');
     });
 
-    it('should handle tiles with missing tileId correctly when deserializing', async () => {
+    it('should handle tiles with missing `id` correctly when deserializing', async () => {
       const tilesData = [
         {
           colSpan: 4,
@@ -842,7 +842,7 @@ describe('Tile Manager component', () => {
           colSpan: 2,
           rowSpan: 2,
           position: 1,
-          tileId: 'custom-id1',
+          id: 'custom-id1',
         },
       ];
 
@@ -852,7 +852,7 @@ describe('Tile Manager component', () => {
       const tiles = tileManager.tiles;
 
       for (const tile of tiles) {
-        expect(tile.tileId).to.not.be.empty;
+        expect(tile.id).to.not.be.empty;
         expect(tile.colSpan).not.equal(4);
       }
     });
@@ -871,29 +871,27 @@ describe('Tile Manager component', () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
     });
 
-    it('should automatically assign unique `tileId` for tiles', async () => {
+    it('should automatically assign unique `id` for tiles', async () => {
       const newTile = document.createElement('igc-tile');
-      const existingIds = Array.from(tileManager.tiles).map(
-        (tile) => tile.tileId
-      );
+      const existingIds = Array.from(tileManager.tiles).map((tile) => tile.id);
 
       tileManager.appendChild(newTile);
       await elementUpdated(tileManager);
 
-      expect(newTile.tileId).to.match(/^tile-\d+$/);
-      expect(existingIds).not.to.include(newTile.tileId);
+      expect(newTile.id).to.match(/^tile-\d+$/);
+      expect(existingIds).not.to.include(newTile.id);
       expect(tileManager.tiles).lengthOf(6);
     });
 
-    it('should preserve the `tileId` if one is already set', async () => {
+    it('should preserve the `id` if one is already set', async () => {
       const tile = document.createElement('igc-tile');
-      tile.tileId = 'custom-id';
+      tile.id = 'custom-id';
 
       tileManager.appendChild(tile);
       await elementUpdated(tileManager);
 
       const matchingTiles = tileManager.tiles.filter(
-        (tile) => tile.tileId === 'custom-id'
+        (tile) => tile.id === 'custom-id'
       );
 
       expect(matchingTiles).lengthOf(1);

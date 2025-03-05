@@ -218,13 +218,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /**
-   * The unique identifier of the tile.
-   * @attr tile-id
-   */
-  @property({ attribute: 'tile-id', type: String, reflect: true })
-  public tileId: string | null = null;
-
-  /**
    * The number of columns the tile will span.
    *
    * @remarks
@@ -364,10 +357,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.tileId = this.tileId || `tile-${IgcTileComponent.increment()}`;
+    this.id = this.id || `tile-${IgcTileComponent.increment()}`;
 
     this.style.viewTransitionName =
-      this.style.viewTransitionName || `tile-transition-${this.tileId}`;
+      this.style.viewTransitionName || `tile-transition-${this.id}`;
   }
 
   protected override createRenderRoot() {

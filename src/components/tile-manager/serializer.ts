@@ -14,7 +14,7 @@ export interface SerializedTile {
   position: number;
   rowSpan: number;
   rowStart: number | null;
-  tileId: string | null;
+  id: string | null;
   width: number | null;
   height: number | null;
 }
@@ -48,7 +48,7 @@ class TileManagerSerializer {
         position: tile.position,
         rowSpan: tile.rowSpan,
         rowStart: tile.rowStart,
-        tileId: tile.tileId,
+        id: tile.id,
         width: asNumber(width) || null,
         height: asNumber(height) || null,
       };
@@ -60,7 +60,7 @@ class TileManagerSerializer {
   }
 
   public load(tiles: SerializedTile[]): void {
-    const mapped = new Map(tiles.map((tile) => [tile.tileId, tile]));
+    const mapped = new Map(tiles.map((tile) => [tile.id, tile]));
     const keys: (keyof SerializedTile)[] = [
       'gridColumn',
       'gridRow',
@@ -69,11 +69,11 @@ class TileManagerSerializer {
     ];
 
     for (const tile of this.tileManager.tiles) {
-      if (!mapped.has(tile.tileId)) {
+      if (!mapped.has(tile.id)) {
         continue;
       }
 
-      const serialized = mapped.get(tile.tileId)!;
+      const serialized = mapped.get(tile.id)!;
       const properties = omit(serialized, ...keys);
       const styles = pick(serialized, 'gridColumn', 'gridRow');
       const { width, height } = pick(serialized, 'width', 'height');
