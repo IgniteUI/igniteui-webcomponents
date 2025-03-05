@@ -38,6 +38,16 @@ $theme: $material;
     }
 }
 
+:host([part='resizing']),
+:host([part='dragging']) {
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([part='dragging']) {
+    background: var-get($theme, 'placeholder-background');
+    border: rem(1px) solid var-get($theme, 'ghost-border');
+}
+
 [part~='base'][part~='resizing'] {
     opacity: 0.3;
 }
