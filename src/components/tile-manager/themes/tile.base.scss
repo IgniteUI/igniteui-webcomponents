@@ -13,9 +13,6 @@
 
 :host([part='resizing']),
 :host([part='dragging']) {
-    background: var(--placeholder-background);
-    border-radius: var(--border-radius);
-
     igc-resize {
         --resize-visibility: hidden;
     }
