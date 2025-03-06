@@ -244,7 +244,10 @@ class DragController implements ReactiveController {
     this._updatePosition(event);
 
     const parameters = { event, state: this._stateParameters };
-    this._options.start?.call(this._host, parameters);
+    if (this._options.start?.call(this._host, parameters) === false) {
+      this._removeGhost();
+      return;
+    }
 
     this._assignPosition(this._dragItem);
     this._setDragState();

@@ -6,7 +6,6 @@ import {
   state,
 } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { startViewTransition } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -28,17 +27,18 @@ import {
   createCounter,
   findElementFromEventPath,
   getCenterPoint,
-  getRoot,
   isEmpty,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
+import type { TileManagerResizeMode } from '../types.js';
 import { createTileDragStack, swapTiles } from './position.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
+import type IgcTileManagerComponent from './tile-manager.js';
 import {
   createTileDragGhost,
   createTileGhost,
@@ -52,12 +52,12 @@ type IgcTileChangeState = {
 
 type AdornerType = 'side' | 'corner' | 'bottom';
 
-// REVIEW: Decide whether to re-emit the events from the manager of leave them up to bubble naturally
 export interface IgcTileComponentEventMap {
   igcTileFullscreen: CustomEvent<IgcTileChangeState>;
   igcTileMaximize: CustomEvent<IgcTileChangeState>;
-  tileDragStart: CustomEvent<IgcTileComponent>;
-  tileDragEnd: CustomEvent<IgcTileComponent>;
+  igcTileDragStart: CustomEvent<IgcTileComponent>;
+  igcTileDragEnd: CustomEvent<IgcTileComponent>;
+  igcTileDragCancel: CustomEvent<IgcTileComponent>;
   igcResizeStart: CustomEvent<IgcTileComponent>;
   igcResizeMove: CustomEvent<IgcTileComponent>;
   igcResizeEnd: CustomEvent<IgcTileComponent>;
@@ -71,6 +71,9 @@ export interface IgcTileComponentEventMap {
  *
  * @fires igcTileFullscreen - Fired when tile fullscreen state changes.
  * @fires igcTileMaximize - Fired when tile maximize state changes.
+ * @fires igcTileDragStart - Fired when a drag operation on a tile is about to begin. Cancelable.
+ * @fires igcTileDragEnd - Fired when a drag operation with a tile is successfully completed.
+ * @fires igcTileDragCancel - Fired when a tile drag operation is canceled by the user.
  * @fires igcResizeStart - Fired when tile begins resizing.
  * @fires igcResizeMove - Fired when tile is being resized.
  * @fires igcResizeEnd - Fired when tile finishes resizing.
@@ -115,16 +118,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _dragController = addDragController(this, {
     skip: this._skipDrag,
+    matchTarget: this._match,
     ghost: this._createDragGhost,
     start: this._handleDragStart,
-    move: this._handleDragMove,
+    over: this._handleDragOver,
     end: this._handleDragEnd,
     cancel: this._handleDragCancel,
   });
 
   private _fullscreenController = addFullscreenController(this, {
-    enter: this.emitFullScreenEvent,
-    exit: this.emitFullScreenEvent,
+    enter: this._emitFullScreenEvent,
+    exit: this._emitFullScreenEvent,
   });
 
   private _colSpan = 1;
@@ -170,7 +174,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._context.value;
   }
 
-  private get _tileManager() {
+  private get _tileManager(): IgcTileManagerComponent | undefined {
     return this._tileManagerCtx?.instance;
   }
 
@@ -180,7 +184,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /** Returns the tile manager current resize mode. */
-  private get _resizeMode() {
+  private get _resizeMode(): TileManagerResizeMode {
     return this._tileManager?.resizeMode ?? 'none';
   }
 
@@ -377,21 +381,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleDragStart() {
-    this.emitEvent('tileDragStart', { detail: this });
+    if (!this._emitTileDragStart()) {
+      return false;
+    }
+
     this._setDragState();
     this._dragStack.push(this);
+    return true;
   }
 
-  private _handleDragMove({
-    event: { clientX, clientY },
-  }: DragCallbackParameters) {
-    const match = getRoot(this)
-      .elementsFromPoint(clientX, clientY)
-      .find(this._match);
-
-    if (!match) {
-      return;
-    }
+  private _handleDragOver(parameters: DragCallbackParameters) {
+    const match = parameters.state.element as IgcTileComponent;
+    const { clientX, clientY } = parameters.event;
 
     if (this._dragStack.peek() === match) {
       const { x, y } = getCenterPoint(match);
@@ -428,12 +429,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this._dragController.dispose();
     this._setDragState(false);
+    this.emitEvent('igcTileDragCancel', { detail: this });
   }
 
   private _handleDragEnd() {
-    this.emitEvent('tileDragEnd', { detail: this });
     this._setDragState(false);
     this._dragStack.reset();
+    this.emitEvent('igcTileDragEnd', { detail: this });
   }
 
   private _skipDrag(event: PointerEvent): boolean {
@@ -519,23 +521,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleFullscreen() {
-    const { width, height } = !this.fullscreen
-      ? this._resizeState.emptyResizeDimensions
-      : this._resizeState.resizedDimensions;
-
-    this._resizeContainer?.setSize(width, height);
     this._fullscreenController.setState(!this.fullscreen);
   }
 
   private _handleMaximize() {
-    if (!this.emitMaximizedEvent()) {
+    if (!this._emitMaximizedEvent()) {
       return;
     }
 
     this.maximized = !this.maximized;
   }
 
-  private emitFullScreenEvent(state: boolean) {
+  private _emitFullScreenEvent(state: boolean) {
     this.requestUpdate();
 
     return this.emitEvent('igcTileFullscreen', {
@@ -544,9 +541,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private emitMaximizedEvent() {
+  private _emitMaximizedEvent() {
     return this.emitEvent('igcTileMaximize', {
       detail: { tile: this, state: !this.maximized },
+      cancelable: true,
+    });
+  }
+
+  private _emitTileDragStart() {
+    return this.emitEvent('igcTileDragStart', {
+      detail: this,
       cancelable: true,
     });
   }
@@ -618,15 +622,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
       maximized: this.maximized,
     });
 
-    const styles = {
-      '--ig-col-span': this._colSpan,
-      '--ig-row-span': this._rowSpan,
-      '--ig-col-start': this._colStart,
-      '--ig-row-start': this._rowStart,
-    };
-
     return html`
-      <div part=${parts} style=${styleMap(styles)}>
+      <div part=${parts}>
         ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>

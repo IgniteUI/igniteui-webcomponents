@@ -71,7 +71,6 @@ const metadata: Meta<IgcTileManagerComponent> = {
           'The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.',
       },
     },
-    actions: { handles: ['igcTileDragStarted', 'igcTileDragEnded'] },
   },
   argTypes: {
     resizeMode: {

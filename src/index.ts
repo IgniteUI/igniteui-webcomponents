@@ -109,6 +109,7 @@ export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackba
 export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
+export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
 export type { IgcTreeComponentEventMap } from './components/tree/tree.common.js';
 
 // Public types

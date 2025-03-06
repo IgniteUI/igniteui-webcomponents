@@ -151,10 +151,7 @@ describe('Tile Manager component', () => {
           exportparts="trigger-side, trigger, trigger-bottom"
           mode="deferred"
           part="resize">
-          <div
-            part="base"
-            style="--ig-col-span:1;--ig-row-span:1;"
-          >
+          <div part="base">
             <section part="header">
               <header part="title">
                 <slot name="title"></slot>

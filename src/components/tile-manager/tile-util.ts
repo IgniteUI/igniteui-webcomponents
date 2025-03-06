@@ -14,8 +14,6 @@ type TileGridPosition = {
 
 type TileResizeDimensions = { width: number | null; height: number | null };
 
-export const DraggedTileAttribute = 'data-drag-ghost-tile';
-
 type TileGridDimension = { count: number; entries: number[]; minSize: number };
 
 const CssValues = new RegExp(/(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi);
@@ -424,10 +422,11 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
 
   const { width, height } = tile.getBoundingClientRect();
 
-  clone.removeAttribute('id');
-  clone.setAttribute(DraggedTileAttribute, '');
-  clone.inert = true;
-  clone.position = -1;
+  Object.assign(clone, {
+    id: null,
+    inert: true,
+    position: -1,
+  });
 
   Object.assign(clone.style, {
     position: 'absolute',

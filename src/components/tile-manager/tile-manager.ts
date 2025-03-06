@@ -13,8 +13,6 @@ import {
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, partNameMap } from '../common/util.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
@@ -22,32 +20,20 @@ import { createSerializer } from './serializer.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
-import { DraggedTileAttribute } from './tile-util.js';
 import IgcTileComponent from './tile.js';
-
-// REVIEW: WIP
-export interface IgcTileManagerComponentEventMap {
-  igcTileDragStarted: CustomEvent<IgcTileComponent>;
-  igcTileDragEnded: CustomEvent<IgcTileComponent>;
-}
 
 /**
  * The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.
  *
  * @element igc-tile-manager
  *
- * @fires igcTileDragStarted - Fired when an owning tile begins a drag operation.
- * @fires igcTileDragEnded - Fired when an owning tile completes a drag operation, either by dropping onto a new position or canceling the drag.
  */
 @themes(all)
-export default class IgcTileManagerComponent extends EventEmitterMixin<
-  IgcTileManagerComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
-  public static styles = [styles, shared];
+  public static override styles = [styles, shared];
 
-  protected static shadowRootOptions: ShadowRootInit = {
+  public static override shadowRootOptions: ShadowRootInit = {
     mode: 'open',
     slotAssignment: 'manual',
   };
@@ -213,7 +199,7 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
 
     createMutationController(this, {
       callback: this._observerCallback,
-      filter: [`${IgcTileComponent.tagName}:not([${DraggedTileAttribute}])`],
+      filter: [IgcTileComponent.tagName],
       config: {
         childList: true,
       },
@@ -247,15 +233,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
     this._tilesState.assignTiles();
   }
 
-  private _handleTileDragStart({ detail }: CustomEvent<IgcTileComponent>) {
-    this.emitEvent('igcTileDragStarted', { detail });
-    this._setManagerContext();
-  }
-
-  private _handleTileDragEnd({ detail }: CustomEvent<IgcTileComponent>) {
-    this.emitEvent('igcTileDragEnded', { detail });
-  }
-
   // #endregion
 
   // #region Public API
@@ -283,8 +260,6 @@ export default class IgcTileManagerComponent extends EventEmitterMixin<
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
         part=${parts}
-        @tileDragStart=${this._handleTileDragStart}
-        @tileDragEnd=${this._handleTileDragEnd}
       >
         <slot></slot>
       </div>
