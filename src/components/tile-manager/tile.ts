@@ -35,15 +35,12 @@ import IgcResizeContainerComponent from '../resize-container/resize-container.js
 import type { ResizeCallbackParams } from '../resize-container/types.js';
 import type { TileManagerResizeMode } from '../types.js';
 import { createTileDragStack, swapTiles } from './position.js';
+import { createTileResizeState } from './resize-state.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
 import { styles } from './themes/tile.base.css.js';
 import { all } from './themes/tile.js';
+import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
-import {
-  createTileDragGhost,
-  createTileGhost,
-  createTileResizeState,
-} from './tile-util.js';
 
 type IgcTileChangeState = {
   tile: IgcTileComponent;
@@ -498,7 +495,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private async _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    const { column, row } = this._resizeState.getResizedPosition(state.current);
+    const { column, row } = this._resizeState.calculateResizedGridPosition(
+      state.current
+    );
 
     const { transition } = startViewTransition(() => {
       this.style.setProperty('grid-row', row);
@@ -507,7 +506,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     await transition?.updateCallbackDone;
 
-    const { width, height } = this._resizeState.calculateResizedSize(
+    const { width, height } = this._resizeState.calculateActualSize(
       this._cssContainer
     );
 
