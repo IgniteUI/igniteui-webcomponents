@@ -220,7 +220,7 @@ describe('Tile drag and drop', () => {
       expect(dropTarget.position).to.equal(4);
     });
 
-    it('should adjust reflected tiles positions when using slide action', async () => {
+    it('should adjust reflected tiles positions', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
 
@@ -246,7 +246,7 @@ describe('Tile drag and drop', () => {
       expect(dropTarget.position).to.equal(0);
     });
 
-    it('should not change order when dragging a tile onto itself when using slide action', async () => {
+    it('should not change order when dragging a tile onto itself', async () => {
       const initialTiles = tileManager.tiles;
       const tile = getTile(0);
 
@@ -260,38 +260,7 @@ describe('Tile drag and drop', () => {
       expect(tileManager.tiles[1].id).to.equal('tile1');
     });
 
-    it('should swap the dragged tile with the drop target when using swap action', async () => {
-      const draggedTile = getTile(0);
-      const dropTarget = getTile(4);
-
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[4].id).to.equal('tile4');
-      expect(draggedTile.position).to.equal(0);
-      expect(dropTarget.position).to.equal(4);
-
-      await dragAndDrop(draggedTile, dropTarget);
-
-      expect(tileManager.tiles[0].id).to.equal('tile4');
-      expect(tileManager.tiles[4].id).to.equal('tile0');
-      expect(draggedTile.position).to.equal(4);
-      expect(dropTarget.position).to.equal(0);
-    });
-
-    it('should not change order when dragging a tile onto itself when using swap action', async () => {
-      const initialTiles = tileManager.tiles;
-      const tile = getTile(0);
-
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-
-      await dragAndDrop(tile, tile);
-
-      expect(tileManager.tiles).eql(initialTiles);
-      expect(tileManager.tiles[0].id).to.equal('tile0');
-      expect(tileManager.tiles[1].id).to.equal('tile1');
-    });
-
-    it('should swap positions only once while dragging smaller tile over bigger tile when using slide action', async () => {
+    it('should swap positions only once while dragging smaller tile over bigger tile', async () => {
       tileManager.columnCount = 5;
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
@@ -320,6 +289,71 @@ describe('Tile drag and drop', () => {
       simulateLostPointerCapture(draggedTile);
       await elementUpdated(draggedTile);
     });
+
+    it('should swap positions properly when row, column and span are specified', async () => {
+      const draggedTile = getTile(0);
+      const dropTarget = getTile(1);
+
+      draggedTile.colSpan = 2;
+      draggedTile.rowSpan = 2;
+      draggedTile.colStart = 3;
+      draggedTile.rowStart = 3;
+
+      await elementUpdated(tileManager);
+
+      tileManager.tiles.forEach((tile, index) => {
+        expect(tile.id).to.equal(`tile${index}`);
+      });
+      expect(draggedTile.position).to.equal(0);
+      expect(dropTarget.position).to.equal(1);
+
+      await dragAndDrop(draggedTile, dropTarget);
+
+      const expectedIdsAfterDrag = [
+        'tile1',
+        'tile0',
+        'tile2',
+        'tile3',
+        'tile4',
+      ];
+      tileManager.tiles.forEach((tile, index) => {
+        expect(tile.id).to.equal(expectedIdsAfterDrag[index]);
+      });
+      expect(draggedTile.position).to.equal(1);
+      expect(draggedTile.colSpan).to.equal(2);
+      expect(draggedTile.rowSpan).to.equal(2);
+      expect(draggedTile.colStart).to.be.null;
+      expect(draggedTile.rowStart).to.be.null;
+      expect(dropTarget.position).to.equal(0);
+      expect(dropTarget.colSpan).to.equal(1);
+      expect(dropTarget.rowSpan).to.equal(1);
+    });
+
+    it('should adjust positions properly when both tiles have columns and rows specified', async () => {
+      const draggedTile = getTile(0);
+      const dropTarget = getTile(1);
+
+      draggedTile.colStart = 2;
+      draggedTile.rowStart = 2;
+
+      dropTarget.colStart = 3;
+      dropTarget.rowStart = 3;
+
+      await elementUpdated(tileManager);
+
+      expect(draggedTile.position).to.equal(0);
+      expect(dropTarget.position).to.equal(1);
+
+      await dragAndDrop(draggedTile, dropTarget);
+
+      expect(draggedTile.position).to.equal(1);
+      expect(draggedTile.colStart).to.equal(3);
+      expect(draggedTile.rowStart).to.equal(3);
+
+      expect(dropTarget.position).to.equal(0);
+      expect(dropTarget.colStart).to.equal(2);
+      expect(dropTarget.rowStart).to.equal(3);
+    });
   });
 
   describe('Tile header drag', () => {
@@ -333,7 +367,7 @@ describe('Tile drag and drop', () => {
       tile: IgcTileComponent,
       target: IgcTileComponent
     ) {
-      const header = tile.renderRoot.querySelector('[part="title"]')!;
+      const header = tile.renderRoot.querySelector('[part="header"]')!;
       const { x, y } = getCenterPoint(target);
 
       simulatePointerDown(header);
