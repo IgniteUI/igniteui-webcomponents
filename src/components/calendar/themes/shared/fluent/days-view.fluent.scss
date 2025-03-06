@@ -11,17 +11,13 @@ $row-gap: rem(6px);
 
 [part~='date'] {
     height: var-get($theme, 'size');
+    border-top: $border-size solid transparent;
+    border-bottom: $border-size solid transparent;
 }
 
 [part~='date'],
 [part~='date-inner'] {
     border-radius: var-get($theme, 'date-border-radius');
-}
-
-[part~='date'],
-[part~='week-number'] {
-    border-top: $border-size solid transparent;
-    border-bottom: $border-size solid transparent;
 }
 
 [part~='date-inner'],
@@ -31,6 +27,7 @@ $row-gap: rem(6px);
 
 [part~='week-number'] {
     width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
 }
 
 [part~='week-number-inner'] {
@@ -43,7 +40,6 @@ $row-gap: rem(6px);
 
     &::after {
         width: var-get($theme, 'size');
-        height: calc(var-get($theme, 'size') / 2);
         background: var-get($theme, 'week-number-background');
         border-inline-start: rem(1px) solid var-get($theme, 'week-number-background');
         border-inline-end: rem(1px) solid var-get($theme, 'week-number-background');
