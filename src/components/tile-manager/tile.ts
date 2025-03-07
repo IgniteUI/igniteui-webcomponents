@@ -506,12 +506,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     await transition?.updateCallbackDone;
 
-    const { width, height } = this._resizeState.calculateActualSize(
-      this._cssContainer
-    );
+    // TODO:
+    // const { width, height } = this._resizeState.calculateActualSize(
+    //   this._cssContainer
+    // );
 
-    this._resizeState.resizedDimensions = { width, height };
-    this._resizeContainer?.setSize(width, height);
+    // this._resizeState.resizedDimensions = { width, height };
+    // this._resizeContainer?.setSize(width, height);
     this._setResizeState(false);
   }
 

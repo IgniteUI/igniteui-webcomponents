@@ -174,8 +174,8 @@ class ResizeController implements ReactiveController {
 
     this._options.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
-
-    this._updatePosition(this._resizeTarget);
+    // TODO:
+    // this._updatePosition(this._resizeTarget);
     this.dispose();
   }
 
