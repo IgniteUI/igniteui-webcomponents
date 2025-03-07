@@ -456,7 +456,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
-    &[part~='disabled'][part~='range'] {
+    &[part~='disabled'][part~='range']:not([part~='preview']) {
         color: var-get($theme, 'date-disabled-range-foreground');
     }
 
