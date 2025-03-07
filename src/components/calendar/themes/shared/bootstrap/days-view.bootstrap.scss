@@ -20,7 +20,16 @@ $border-size: rem(1px);
 
 [part~='days-row'][part~='first'] {
     background: var-get($theme, 'header-background');
-    border-bottom: rem(1px) solid var-get($theme, 'border-color');
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        inset-block-start: 100%;
+        height: rem(1px);
+        background: var-get($theme, 'border-color');
+    }
 }
 
 [part~='week-number'] {
@@ -37,7 +46,6 @@ $border-size: rem(1px);
 
     &::after {
         width: var-get($theme, 'size');
-        height: calc(var-get($theme, 'size') / 2);
         inset-block-end: 100%;
         background: var-get($theme, 'week-number-background');
     }
@@ -73,6 +81,8 @@ $border-size: rem(1px);
 
 [part~='date'] {
     height: var-get($theme, 'size');
+    border-top: $border-size solid transparent;
+    border-bottom: $border-size solid transparent;
 
     &[part~='range'],
     &[part~='range'][part~='preview'] {
@@ -119,12 +129,6 @@ $border-size: rem(1px);
         border-top-color: transparent;
         border-bottom-color: transparent;
     }
-}
-
-[part~='date'],
-[part~='week-number'] {
-    border-top: $border-size solid transparent;
-    border-bottom: $border-size solid transparent;
 }
 
 [part~='date-inner'] {
