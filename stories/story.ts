@@ -40,3 +40,19 @@ export function formControls() {
     </fieldset>
   `;
 }
+
+function randomBetween(min: number, max: number): number {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new RangeError('pass in finite numbers');
+  }
+  if (max < min) {
+    throw new RangeError('max is less than min');
+  }
+  const x = Math.random();
+  const y = min * (1 - x) + max * x;
+  return y >= min && y < max ? y : min;
+}
+
+export function randomIntBetween(min: number, max: number): number {
+  return Math.floor(randomBetween(Math.ceil(min), Math.floor(max) + 1));
+}
