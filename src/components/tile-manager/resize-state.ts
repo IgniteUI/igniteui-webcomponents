@@ -139,8 +139,6 @@ class TileResizeState {
    * based on its new dimensions and starting position.
    */
   public calculateResizedGridPosition(rect: DOMRect) {
-    const { column, row } = this._initialPosition;
-
     const colProps = this.getResizeSpanProps(rect);
     const rowProps = this.getResizeSpanProps(rect, true);
 
@@ -149,10 +147,10 @@ class TileResizeState {
       this._resizeUtil.calculateResizedSpan(colProps);
     this._position.row.span = this._resizeUtil.calculateResizedSpan(rowProps);
 
-    const cssColumn = `${column.start < 0 ? 'auto' : column.start} / span ${this._position.column.span}`;
-    const cssRow = `${row.start < 0 ? 'auto' : row.start} / span ${this._position.row.span}`;
-
-    return { column: cssColumn, row: cssRow };
+    return {
+      colSpan: this._position.column.span,
+      rowSpan: this._position.row.span,
+    };
   }
 
   public calculateActualSize(grid: HTMLElement) {

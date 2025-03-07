@@ -495,13 +495,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private async _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
-    const { column, row } = this._resizeState.calculateResizedGridPosition(
+    const { colSpan, rowSpan } = this._resizeState.calculateResizedGridPosition(
       state.current
     );
 
     const { transition } = startViewTransition(() => {
-      this.style.setProperty('grid-row', row);
-      this.style.setProperty('grid-column', column);
+      this.colSpan = colSpan;
+      this.rowSpan = rowSpan;
     });
 
     await transition?.updateCallbackDone;
