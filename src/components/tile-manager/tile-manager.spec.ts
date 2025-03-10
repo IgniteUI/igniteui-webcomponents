@@ -44,7 +44,7 @@ describe('Tile Manager component', () => {
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
-        <igc-tile id="tile${i}" col-span="5" row-span="5" position=${i}>
+        <igc-tile id="tile${i}" col-span="5" row-span="5">
           <h3 slot="title">Tile ${i + 1}</h3>
 
           <div>
