@@ -121,10 +121,8 @@ export type {
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
 export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
-export type {
-  DatePart,
-  DatePartDeltas,
-} from './components/date-time-input/date-util.js';
+export { DatePart } from './components/date-time-input/date-util.js';
+export type { DatePartDeltas } from './components/date-time-input/date-util.js';
 export type { RadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
