@@ -4,5 +4,5 @@
 $theme: $material;
 
 [part='base'] {
-    background: var-get($theme, 'tile-manager-background');
+    background: var-get($theme, 'background');
 }
