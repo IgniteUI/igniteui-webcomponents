@@ -635,32 +635,32 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const isEnabled = !this._resizeDisabled;
-    const isActive = !this._resizeDisabled && this._resizeMode === 'always';
+    const isActive = this._resizeMode === 'always';
 
-    return html`
-      <igc-resize
-        part=${partNameMap({
-          resize: true,
-          'side-adorner': this._customAdorners.get('side')!,
-          'corner-adorner': this._customAdorners.get('corner')!,
-          'bottom-adorner': this._customAdorners.get('bottom')!,
-        })}
-        exportparts="trigger-side, trigger, trigger-bottom"
-        mode="deferred"
-        .enabled=${isEnabled}
-        ?active=${isActive}
-        .ghostFactory=${this._createResizeGhost}
-        @igcResizeStart=${this._handleResizeStart}
-        @igcResize=${this._handleResize}
-        @igcResizeEnd=${this._handleResizeEnd}
-        @igcResizeCancel=${this._handleResizeCancel}
-      >
-        ${this._renderContent()} ${this._renderAdornerSlot('side')}
-        ${this._renderAdornerSlot('corner')}
-        ${this._renderAdornerSlot('bottom')}
-      </igc-resize>
-    `;
+    return this._resizeDisabled
+      ? this._renderContent()
+      : html`
+          <igc-resize
+            part=${partNameMap({
+              resize: true,
+              'side-adorner': this._customAdorners.get('side')!,
+              'corner-adorner': this._customAdorners.get('corner')!,
+              'bottom-adorner': this._customAdorners.get('bottom')!,
+            })}
+            exportparts="trigger-side, trigger, trigger-bottom"
+            mode="deferred"
+            ?active=${isActive}
+            .ghostFactory=${this._createResizeGhost}
+            @igcResizeStart=${this._handleResizeStart}
+            @igcResize=${this._handleResize}
+            @igcResizeEnd=${this._handleResizeEnd}
+            @igcResizeCancel=${this._handleResizeCancel}
+          >
+            ${this._renderContent()} ${this._renderAdornerSlot('side')}
+            ${this._renderAdornerSlot('corner')}
+            ${this._renderAdornerSlot('bottom')}
+          </igc-resize>
+        `;
   }
 }
 

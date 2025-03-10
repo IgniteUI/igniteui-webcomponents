@@ -393,13 +393,11 @@ describe('Tile resize', () => {
       const DOM = getTileDOM(firstTile);
 
       expect(DOM.resizeElement).is.not.null;
-      expect(DOM.resizeElement.enabled).is.true;
 
       firstTile.disableResize = true;
       await elementUpdated(firstTile);
 
-      expect(DOM.resizeElement).is.not.null;
-      expect(DOM.resizeElement.enabled).is.false;
+      expect(DOM.resizeElement).is.null;
     });
 
     it('should update tile parts on resizing', async () => {

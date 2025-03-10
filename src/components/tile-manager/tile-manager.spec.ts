@@ -155,53 +155,27 @@ describe('Tile Manager component', () => {
 
       expect(tiles[0]).shadowDom.to.equal(
         `
-        <igc-resize
-          exportparts="trigger-side, trigger, trigger-bottom"
-          mode="deferred"
-          part="resize">
-          <div part="base">
-            <section part="header">
-              <header part="title">
-                <slot name="title"></slot>
-              </header>
-              <section id="tile-actions" part="actions">
-                <slot name="maximize-action">
-                  <igc-icon-button
-                    aria-label="expand_content"
-                    collection="default"
-                    exportparts="icon"
-                    name="expand_content"
-                    type="button"
-                    variant="flat"
-                  >
-                </slot>
-                <slot name="fullscreen-action">
-                  <igc-icon-button
-                    aria-label="fullscreen"
-                    collection="default"
-                    exportparts="icon"
-                    name="fullscreen"
-                    type="button"
-                    variant="flat"
-                  >
-                </slot>
-                <slot name="actions"></slot>
-              </section>
+        <div part="base">
+          <section part="header">
+            <header part="title">
+              <slot name="title"></slot>
+            </header>
+            <section id="tile-actions" part="actions">
+              <slot name="maximize-action">
+                <igc-icon-button variant="flat" collection="default" exportparts="icon" name="expand_content" aria-label="expand_content" type="button"></igc-icon-button>
+              </slot>
+              <slot name="fullscreen-action">
+                <igc-icon-button variant="flat" collection="default" exportparts="icon" name="fullscreen" aria-label="fullscreen" type="button"></igc-icon-button>
+              </slot>
+              <slot name="actions"></slot>
             </section>
-            <igc-divider type="solid"></igc-divider>
-            <div part="content-container">
+          </section>
+          <igc-divider type="solid"></igc-divider>
+
+          <div part="content-container">
               <slot></slot>
-            </div>
           </div>
-          <slot name="side-adorner" slot="side-adorner">
-            </slot>
-
-            <slot name="corner-adorner" slot="corner-adorner">
-            </slot>
-
-            <slot name="bottom-adorner" slot="bottom-adorner">
-            </slot>
-        </igc-resize>
+        </div>
         `
       );
     });
@@ -495,10 +469,7 @@ describe('Tile Manager component', () => {
       tileManager.resizeMode = 'none';
       await elementUpdated(tileManager);
 
-      const resize = tile.renderRoot.querySelector('igc-resize')!;
-
-      expect(resize).is.not.null;
-      expect(resize.enabled).to.be.false;
+      expect(tile.renderRoot.querySelector('igc-resize')).is.null;
     });
   });
 

@@ -51,7 +51,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
   private _controller: ReturnType<typeof addResizeController>;
 
-  private _enabled = true;
   private _mode: ResizeMode = 'immediate';
   private _ghostFactory?: ResizeGhostFactory;
 
@@ -67,17 +66,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
   @state()
   private _isActive = false;
-
-  /** Whether the resize behavior is enabled. */
-  @property({ type: Boolean })
-  public set enabled(value: boolean) {
-    this._enabled = value;
-    this._controller.set({ enabled: value });
-  }
-
-  public get enabled(): boolean {
-    return this._enabled;
-  }
 
   /**
    * Whether to always show the resize element adorners.
@@ -104,15 +92,6 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
   public get mode(): ResizeMode {
     return this._mode;
-  }
-
-  public setSize(width: number | null, height: number | null): void {
-    this._controller.setSize(width, height);
-  }
-
-  public getSize() {
-    const { width, height } = this._container.value!.style;
-    return { width, height };
   }
 
   constructor() {
@@ -190,7 +169,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   }
 
   protected _renderAdorners() {
-    if (!this._enabled || (!this._isActive && !this.active)) {
+    if (!this._isActive && !this.active) {
       return nothing;
     }
 
@@ -207,14 +186,12 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
       active: this._isActive || this.active,
     });
 
-    const skipHandlers = this.active || !this._enabled;
-
     return html`
       <div
         ${ref(this._container)}
         part=${parts}
-        @pointerenter=${skipHandlers ? nothing : this._handlePointerEnter}
-        @pointerleave=${skipHandlers ? nothing : this._handlePointerLeave}
+        @pointerenter=${this.active ? nothing : this._handlePointerEnter}
+        @pointerleave=${this.active ? nothing : this._handlePointerLeave}
       >
         <slot></slot>
         ${this._renderAdorners()}

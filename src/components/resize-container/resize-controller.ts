@@ -88,16 +88,6 @@ class ResizeController implements ReactiveController {
     this._activeRef = null;
   }
 
-  /** Assign the given width and height in pixels to the resize target of the controller. */
-  public setSize(width: number | null, height: number | null): void {
-    if (this._resizeTarget) {
-      Object.assign(this._resizeTarget.style, {
-        width: width ? `${width}px` : '',
-        height: height ? `${height}px` : '',
-      });
-    }
-  }
-
   /** @internal */
   public hostConnected(): void {
     this._host.addEventListener('pointerdown', this);
