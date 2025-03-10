@@ -48,6 +48,7 @@ export default class IgcTileManagerComponent extends LitElement {
   private _internalStyles: StyleInfo = {};
   private _dragMode: TileManagerDragMode = 'none';
   private _resizeMode: TileManagerResizeMode = 'none';
+  private _rowCount = 0;
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
@@ -131,6 +132,25 @@ export default class IgcTileManagerComponent extends LitElement {
 
   public get columnCount(): number {
     return this._columnCount;
+  }
+
+  /**
+   * Sets the number of rows for the tile manager.
+   * Setting a value <= than zero will trigger a responsive layout.
+   *
+   * @attr row-count
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'row-count' })
+  public set rowCount(value: number) {
+    this._rowCount = Math.max(0, asNumber(value));
+    Object.assign(this._internalStyles, {
+      '--row-count': this._rowCount || undefined,
+    });
+  }
+
+  public get rowCount(): number {
+    return this._rowCount;
   }
 
   /**

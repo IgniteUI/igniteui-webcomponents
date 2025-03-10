@@ -320,18 +320,6 @@ export function partition<T>(
   return [truthy, falsy];
 }
 
-export function pick<T extends object>(entry: T, ...props: Array<keyof T>) {
-  return Object.fromEntries(
-    Object.entries(entry).filter(([key, _]) => props.includes(key as keyof T))
-  );
-}
-
-export function omit<T extends object>(entry: T, ...props: Array<keyof T>) {
-  return Object.fromEntries(
-    Object.entries(entry).filter(([key, _]) => !props.includes(key as keyof T))
-  );
-}
-
 /** Returns the center x/y coordinate of a given element. */
 export function getCenterPoint(element: Element) {
   const { left, top, width, height } = element.getBoundingClientRect();

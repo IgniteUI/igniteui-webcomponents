@@ -504,20 +504,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.rowSpan = rowSpan;
     }).transition?.updateCallbackDone;
 
-    // const { transition } = startViewTransition(() => {
-    //   this.colSpan = colSpan;
-    //   this.rowSpan = rowSpan;
-    // });
-
-    // await transition?.updateCallbackDone;
-
-    // TODO:
-    // const { width, height } = this._resizeState.calculateActualSize(
-    //   this._cssContainer
-    // );
-
-    // this._resizeState.resizedDimensions = { width, height };
-    // this._resizeContainer?.setSize(width, height);
     this._setResizeState(false);
   }
 
