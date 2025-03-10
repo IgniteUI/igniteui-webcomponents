@@ -6,7 +6,7 @@ import type {
 import type { Ref } from 'lit/directives/ref.js';
 
 import { getDefaultLayer } from '../../resize-container/default-ghost.js';
-import { findElementFromEventPath, getRoot } from '../util.js';
+import { findElementFromEventPath, getRoot, roundByDPR } from '../util.js';
 
 type DragCallback = (parameters: DragCallbackParameters) => unknown;
 type DragCancelCallback = (state: DragState) => unknown;
@@ -381,7 +381,7 @@ class DragController implements ReactiveController {
   }
 
   private _assignPosition(element: HTMLElement): void {
-    element.style.transform = `translate(${this._state.position.x}px,${this._state.position.y}px)`;
+    element.style.transform = `translate3d(${roundByDPR(this._state.position.x)}px,${roundByDPR(this._state.position.y)}px,0)`;
   }
 
   private _createDragGhost(): void {

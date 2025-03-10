@@ -13,13 +13,13 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { getElementByIdFromRoot, isEmpty, isString } from '../common/util.js';
+import {
+  getElementByIdFromRoot,
+  isEmpty,
+  isString,
+  roundByDPR,
+} from '../common/util.js';
 import { styles } from './themes/light/popover.base.css.js';
-
-function roundByDPR(value: number) {
-  const dpr = globalThis.devicePixelRatio || 1;
-  return Math.round(value * dpr) / dpr;
-}
 
 /**
  * Describes the preferred placement of a toggle component.

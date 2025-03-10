@@ -341,3 +341,8 @@ export function getCenterPoint(element: Element) {
     y: top + height * 0.5,
   };
 }
+
+export function roundByDPR(value: number): number {
+  const dpr = globalThis.devicePixelRatio || 1;
+  return Math.round(value * dpr) / dpr;
+}

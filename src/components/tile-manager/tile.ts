@@ -499,12 +499,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
       state.current
     );
 
-    const { transition } = startViewTransition(() => {
+    await startViewTransition(() => {
       this.colSpan = colSpan;
       this.rowSpan = rowSpan;
-    });
+    }).transition?.updateCallbackDone;
 
-    await transition?.updateCallbackDone;
+    // const { transition } = startViewTransition(() => {
+    //   this.colSpan = colSpan;
+    //   this.rowSpan = rowSpan;
+    // });
+
+    // await transition?.updateCallbackDone;
 
     // TODO:
     // const { width, height } = this._resizeState.calculateActualSize(
@@ -651,6 +656,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this._resizeContainer?.setSize(width, height);
 
+    const isEnabled = !this._resizeDisabled;
+    const isActive = !this._resizeDisabled && this._resizeMode === 'always';
+
     return html`
       <igc-resize
         part=${partNameMap({
@@ -661,8 +669,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
         })}
         exportparts="trigger-side, trigger, trigger-bottom"
         mode="deferred"
-        .enabled=${!this._resizeDisabled}
-        ?active=${this._resizeMode === 'always'}
+        .enabled=${isEnabled}
+        ?active=${isActive}
         .ghostFactory=${this._createResizeGhost}
         @igcResizeStart=${this._handleResizeStart}
         @igcResize=${this._handleResize}
