@@ -738,15 +738,11 @@ describe('Tile Manager component', () => {
           disableFullscreen: false,
           disableMaximize: false,
           disableResize: false,
-          gridColumn: 'auto / span 1',
-          gridRow: 'auto / span 1',
           maximized: false,
           position: 0,
           rowSpan: 1,
           rowStart: null,
           id: 'custom-id1',
-          width: null,
-          height: null,
         },
         {
           colSpan: 10,
@@ -754,15 +750,11 @@ describe('Tile Manager component', () => {
           disableFullscreen: true,
           disableMaximize: true,
           disableResize: true,
-          gridColumn: '8 / span 10',
-          gridRow: '7 / span 7',
           maximized: false,
           position: 1,
           rowSpan: 7,
           rowStart: 7,
           id: 'custom-id2',
-          width: null,
-          height: null,
         },
       ];
 
@@ -777,8 +769,6 @@ describe('Tile Manager component', () => {
           disableFullscreen: false,
           disableMaximize: false,
           disableResize: true,
-          gridColumn: '1 / span 5',
-          gridRow: '1 / span 5',
           maximized: true,
           position: 0,
           rowSpan: 5,
@@ -791,8 +781,6 @@ describe('Tile Manager component', () => {
           disableFullscreen: false,
           disableMaximize: false,
           disableResize: false,
-          gridColumn: 'span 3',
-          gridRow: 'span 3',
           maximized: false,
           position: 1,
           rowSpan: 3,
@@ -805,8 +793,6 @@ describe('Tile Manager component', () => {
           disableFullscreen: false,
           disableMaximize: false,
           disableResize: false,
-          gridColumn: 'span 3',
-          gridRow: 'span 3',
           maximized: false,
           position: 2,
           rowSpan: 3,
@@ -846,10 +832,10 @@ describe('Tile Manager component', () => {
       const firstTileStyles = window.getComputedStyle(tiles[0]);
       const secondTileStyles = window.getComputedStyle(tiles[1]);
 
-      expect(firstTileStyles.gridColumn).to.equal('1 / span 5');
-      expect(firstTileStyles.gridRow).to.equal('1 / span 5');
-      expect(secondTileStyles.gridColumn).to.equal('span 3');
-      expect(secondTileStyles.gridRow).to.equal('span 3');
+      expect(firstTileStyles.gridColumn).to.equal('auto');
+      expect(firstTileStyles.gridRow).to.equal('auto');
+      expect(secondTileStyles.gridColumn).to.equal('7 / span 3');
+      expect(secondTileStyles.gridRow).to.equal('7 / span 3');
     });
 
     it('should handle tiles with missing `id` correctly when deserializing', async () => {

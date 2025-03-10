@@ -649,13 +649,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const { width, height } =
-      this.fullscreen || this.maximized
-        ? this._resizeState.emptyResizeDimensions
-        : this._resizeState.resizedDimensions;
-
-    this._resizeContainer?.setSize(width, height);
-
     const isEnabled = !this._resizeDisabled;
     const isActive = !this._resizeDisabled && this._resizeMode === 'always';
 
