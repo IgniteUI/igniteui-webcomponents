@@ -273,14 +273,14 @@ class TileResizeState {
           tilePosition: this.position.row,
           tileGridDimension: this.rows,
           gap: this._gap,
-          allowOverflow: true,
+          isRow,
         }
       : {
           targetSize: rect.width,
           tilePosition: this.position.column,
           tileGridDimension: this.columns,
           gap: this._gap,
-          allowOverflow: false,
+          isRow,
         };
   }
 }

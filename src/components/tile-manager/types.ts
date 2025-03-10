@@ -29,5 +29,5 @@ export type ResizeSpanProps = {
   tilePosition: TilePosition;
   tileGridDimension: TileGridDimension;
   gap: number;
-  allowOverflow: boolean;
+  isRow: boolean;
 };

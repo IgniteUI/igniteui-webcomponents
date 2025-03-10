@@ -86,8 +86,7 @@ export class ResizeUtil {
   }
 
   public calculateResizedSpan(props: ResizeSpanProps): number {
-    const { targetSize, tilePosition, tileGridDimension, gap, allowOverflow } =
-      props;
+    const { targetSize, tilePosition, tileGridDimension, gap, isRow } = props;
     const { entries, minSize } = tileGridDimension;
 
     let accumulatedSize = 0;
@@ -105,12 +104,9 @@ export class ResizeUtil {
     if (targetSize > availableSize) {
       const remainingSize = targetSize - availableSize;
 
-      if (allowOverflow) {
-        const additionalSpan = Math.ceil(remainingSize / (minSize + gap));
-        return sizesAfterStart.length + additionalSpan;
-      }
-
-      return sizesAfterStart.length;
+      const additionalSpan = Math.ceil(remainingSize / (minSize + gap));
+      newSpan = sizesAfterStart.length + additionalSpan;
+      return isRow ? newSpan : Math.min(entries.length, newSpan);
     }
 
     for (let i = tilePosition.start - 1; i < entries.length; i++) {
