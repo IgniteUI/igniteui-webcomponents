@@ -155,6 +155,11 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
 );
 
+const indicatorIcon =
+  '<svg xmlns="http://www.w3.org/2000/svg" fill="none"><path d="M3.993 12.508V.765h-.979v11.743h.979ZM1.54 10.06V3.21H.56v6.85h.98Z" fill="#09F"/></svg>';
+
+registerIconFromText('indicator', indicatorIcon);
+
 const tiles = Array.from(
   map(
     range(10),
@@ -840,6 +845,24 @@ function handleMaximizeClick(event: Event) {
 export const CustomActions: Story = {
   render: (args) => html`
     <style>
+      .side,
+      .corner,
+      .bottom {
+        display: inline;
+        width: 100%;
+        height: 100%;
+      }
+
+      .corner {
+        transform: rotate(220deg);
+        bottom: 8px;
+        right: 8px;
+      }
+
+      .bottom {
+        transform: rotate(90deg);
+      }
+
       p {
         padding: 1rem;
       }
@@ -853,9 +876,17 @@ export const CustomActions: Story = {
     >
       <igc-tile disable-fullscreen disable-maximize>
         <h3 slot="title">Custom Actions</h3>
-        <div slot="side-adorner">🟨</div>
-        <div slot="corner-adorner">🟩</div>
-        <div slot="bottom-adorner">🟦</div>
+        <igc-icon slot="side-adorner" class="side" name="indicator"></igc-icon>
+        <igc-icon
+          slot="corner-adorner"
+          class="corner"
+          name="indicator"
+        ></igc-icon>
+        <igc-icon
+          slot="bottom-adorner"
+          class="bottom"
+          name="indicator"
+        ></igc-icon>
 
         <igc-icon-button
           slot="actions"
