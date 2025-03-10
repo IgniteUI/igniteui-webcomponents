@@ -6,10 +6,6 @@
 $theme: $fluent;
 $track-color: color(gray, 200);
 
-:host {
-    --track-size: #{rem(2px)};
-}
-
 :host(:dir(rtl)[indeterminate]),
 :host([dir='rtl']) {
     [part~='track'] {

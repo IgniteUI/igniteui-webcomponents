@@ -2,6 +2,7 @@ import path from 'node:path';
 import { create } from 'browser-sync';
 import watch from 'node-watch';
 import { Application } from 'typedoc';
+import report from './report.mjs';
 
 const browserSync = create();
 const ROOT = path.join.bind(null, path.resolve('./'));
@@ -137,4 +138,9 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+try {
+  await main();
+} catch (e) {
+  report.error(e);
+  process.exit(1);
+}

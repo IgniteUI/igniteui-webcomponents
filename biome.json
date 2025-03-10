@@ -29,6 +29,10 @@
         "noStaticOnlyClass": "off"
       },
       "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "error",
+        "noUnusedImports": "error",
+        "noUnusedPrivateClassMembers": "error",
         "useImportExtensions": {
           "options": {
             "suggestedExtensions": {
