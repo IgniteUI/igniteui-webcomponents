@@ -42,12 +42,12 @@ function parseTileParentGrid(gridContainer: HTMLElement) {
     columns: {
       count: columns.length,
       entries: columns,
-      minSize: asNumber(computed.getPropertyValue('--ig-min-col-width')),
+      minSize: asNumber(computed.getPropertyValue('--min-col-width')),
     },
     rows: {
       count: rows.length,
       entries: rows,
-      minSize: asNumber(computed.getPropertyValue('--ig-min-row-height')),
+      minSize: asNumber(computed.getPropertyValue('--min-row-height')),
     },
   };
 }

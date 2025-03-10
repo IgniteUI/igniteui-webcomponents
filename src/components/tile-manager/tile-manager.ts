@@ -125,7 +125,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public set columnCount(value: number) {
     this._columnCount = Math.max(0, asNumber(value));
     Object.assign(this._internalStyles, {
-      '--ig-column-count': this._columnCount || undefined,
+      '--column-count': this._columnCount || undefined,
     });
   }
 
@@ -141,7 +141,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public set minColumnWidth(value: string | undefined) {
     this._minColWidth = value ?? undefined;
     Object.assign(this._internalStyles, {
-      '--ig-min-col-width': this._minColWidth,
+      '--min-col-width': this._minColWidth,
     });
   }
 
@@ -157,7 +157,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public set minRowHeight(value: string | undefined) {
     this._minRowHeight = value ?? undefined;
     Object.assign(this._internalStyles, {
-      '--ig-min-row-height': this._minRowHeight,
+      '--min-row-height': this._minRowHeight,
     });
   }
 
@@ -174,7 +174,7 @@ export default class IgcTileManagerComponent extends LitElement {
   public set gap(value: string | undefined) {
     this._gap = value ?? undefined;
     Object.assign(this._internalStyles, {
-      '--ig-gap': this._gap,
+      '--grid-gap': this._gap,
     });
   }
 
