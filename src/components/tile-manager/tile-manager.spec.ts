@@ -44,7 +44,7 @@ describe('Tile Manager component', () => {
   function createTileManager() {
     const result = Array.from(range(5)).map(
       (i) => html`
-        <igc-tile id="tile${i}" col-span="5" row-span="5">
+        <igc-tile id="tile${i}" col-span="5" row-span="5" position=${i}>
           <h3 slot="title">Tile ${i + 1}</h3>
 
           <div>
@@ -54,6 +54,14 @@ describe('Tile Manager component', () => {
       `
     );
     return html`<igc-tile-manager>${result}</igc-tile-manager>`;
+  }
+
+  function createTileManagerWithPositions() {
+    return html`<igc-tile-manager>
+      <igc-tile id="tile1" position="2" col-span="2" row-span="2"> </igc-tile>
+      <igc-tile id="tile2" position="1" col-start="4" row-start="4"> </igc-tile>
+      <igc-tile id="tile3"> </igc-tile>
+    </igc-tile-manager>`;
   }
 
   function expectSlotContent(
@@ -937,6 +945,29 @@ describe('Tile Manager component', () => {
         expect(tile.style.order).to.equal(index.toString());
       });
     });
+  });
+
+  describe('Positioning', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(
+        createTileManagerWithPositions()
+      );
+    });
+
+    it('should preserve pre-set positions', async () => {
+      const tile1 = tileManager.querySelector<IgcTileComponent>('#tile1');
+      const tile2 = tileManager.querySelector<IgcTileComponent>('#tile2');
+      const tile3 = tileManager.querySelector<IgcTileComponent>('#tile3');
+
+      expect(tile1).to.exist;
+      expect(tile1!.position).to.equal(2);
+
+      expect(tile2).to.exist;
+      expect(tile2!.position).to.equal(1);
+
+      expect(tile3).to.exist;
+      expect(tile3!.position).to.equal(0);
+    });
 
     it('should correctly position tiles added dynamically after initialization', async () => {
       tileManager.replaceChildren();
@@ -960,19 +991,20 @@ describe('Tile Manager component', () => {
       await elementUpdated(tileManager);
 
       expect(firstTile.style.order).to.equal('6');
-      expect(tileManager.tiles[4].position).to.equal(6);
+      expect(tileManager.tiles[2].position).to.equal(6);
     });
 
     it('should properly handle tile addition with specified position', async () => {
       const newTile = document.createElement('igc-tile');
-      newTile.position = 3;
+      newTile.position = 1;
+
       tileManager.append(newTile);
       await elementUpdated(tileManager);
 
       const tiles = getTiles();
-      expect(tiles[5]).to.equal(newTile);
-      expect(tiles[5].position).to.equal(3);
-      expect(tiles[4].position).to.equal(5);
+      expect(tiles[3]).to.equal(newTile);
+      expect(tiles[3].position).to.equal(1);
+      expect(tiles[1].position).to.equal(2);
     });
 
     it('should adjust positions correctly when a tile is removed', async () => {
