@@ -15,7 +15,7 @@
     width: 100%;
     height: 100%;
     grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width, 100%)), 1fr));
-    grid-template-rows: repeat(var(--row-count, auto-fit), minmax(min(var(--min-row-height, 100%)), 1fr));
+    grid-template-rows: repeat(var(--row-count, auto), minmax(min(var(--min-row-height, 100%)), 1fr));
     grid-auto-rows: var(--auto-rows, minmax(var(--min-row-height), var(--min-row-height)));
     grid-auto-columns: var(--auto-columns, 0);
     grid-gap: var(--grid-gap, rem(10px));
