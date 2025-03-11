@@ -2,7 +2,6 @@ import type {
   ResizeProps,
   ResizeSpanProps,
   SnappedDimension,
-  TilePosition,
 } from './types.js';
 
 export class ResizeUtil {
@@ -72,17 +71,6 @@ export class ResizeUtil {
     }
 
     return { snappedSize, newDelta: currentDelta };
-  }
-
-  public calculateSizeFromEntries(entries: number[], position: TilePosition) {
-    let accumulatedSize = 0;
-
-    for (let i = 0; i < position.span; i++) {
-      const gapSize = i > 0 ? this.gap : 0;
-      accumulatedSize += entries[position.start - 1 + i] + gapSize;
-    }
-
-    return accumulatedSize;
   }
 
   public calculateResizedSpan(props: ResizeSpanProps): number {

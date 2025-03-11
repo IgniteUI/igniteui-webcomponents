@@ -153,21 +153,6 @@ class TileResizeState {
     };
   }
 
-  public calculateActualSize(grid: HTMLElement) {
-    const { columns, rows } = parseTileParentGrid(grid);
-
-    const width = this._resizeUtil.calculateSizeFromEntries(
-      columns.entries,
-      this.position.column
-    );
-    const height = this._resizeUtil.calculateSizeFromEntries(
-      rows.entries,
-      this.position.row
-    );
-
-    return { width, height };
-  }
-
   /**
    * Checks and adjusts tile spans based on the column count of the tile manager.
    */
