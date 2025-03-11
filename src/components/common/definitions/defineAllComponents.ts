@@ -1,3 +1,4 @@
+import { IgcDateRangePickerComponent } from '../../../index.js';
 import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcAvatarComponent from '../../avatar/avatar.js';
 import IgcBadgeComponent from '../../badge/badge.js';
@@ -88,6 +89,7 @@ const allComponents: IgniteComponent[] = [
   IgcChipComponent,
   IgcComboComponent,
   IgcDatePickerComponent,
+  IgcDateRangePickerComponent,
   IgcDropdownComponent,
   IgcDropdownGroupComponent,
   IgcDropdownHeaderComponent,

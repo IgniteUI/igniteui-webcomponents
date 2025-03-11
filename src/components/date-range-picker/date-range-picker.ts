@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
@@ -13,6 +13,15 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
+import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import {
+  type FormValue,
+  createFormValueState,
+  defaultDateTimeTransformers,
+} from '../common/mixins/forms/form-value.js';
 import { createCounter } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
@@ -20,6 +29,14 @@ import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+export interface IgcDateRangePickerComponentEventMap {
+  igcOpening: CustomEvent<void>;
+  igcOpened: CustomEvent<void>;
+  igcClosing: CustomEvent<void>;
+  igcClosed: CustomEvent<void>;
+  igcChange: CustomEvent<Date>;
+  igcInput: CustomEvent<Date>;
+}
 
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
@@ -30,7 +47,12 @@ import IgcValidationContainerComponent from '../validation-container/validation-
 
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
-export default class IgcDateRangePickerComponent extends LitElement {
+export default class IgcDateRangePickerComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<
+    IgcDateRangePickerComponentEventMap,
+    AbstractConstructor<IgcBaseComboBoxLikeComponent>
+  >(IgcBaseComboBoxLikeComponent)
+) {
   public static readonly tagName = 'igc-date-range-picker';
 
   /* blazorSuppress */
@@ -94,9 +116,12 @@ export default class IgcDateRangePickerComponent extends LitElement {
     return this._startDateValue;
   }
 
+  protected override _formValue: FormValue<Date | null>;
+
   @property({ converter: convertToDate })
   public set startDate(startDate: Date | string | null | undefined) {
     this._startDateValue = convertToDate(startDate);
+    //this._formValue.setValueAndFormState(startDate as Date | null);
   }
 
   public get endDate(): Date | null {
@@ -108,30 +133,18 @@ export default class IgcDateRangePickerComponent extends LitElement {
     this._endDateValue = convertToDate(endDate);
   }
 
-  @property({ type: Boolean, reflect: true, attribute: 'open' })
-  public open = false;
-
-  @property({ type: String, reflect: false, attribute: 'label' })
+  @property()
   public label!: string;
 
   /**
    * Determines whether the calendar is opened in a dropdown or a modal dialog
    * @attr mode
    */
-  @property({ type: String, reflect: false, attribute: 'mode' })
+  @property()
   public mode: 'dropdown' | 'dialog' = 'dropdown';
-
-  @property({ type: Boolean, reflect: true, attribute: 'keep-open-on-select' })
-  public keepOpenOnSelect = false;
-
-  @property({ type: Boolean, reflect: true, attribute: 'disabled' })
-  public disabled = false;
 
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
-
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
-  public required = false;
 
   @property({ type: Boolean, reflect: true, attribute: 'non-editable' })
   public nonEditable = false;
@@ -143,15 +156,11 @@ export default class IgcDateRangePickerComponent extends LitElement {
   @property({ reflect: true, type: Boolean, attribute: 'outlined' })
   public outlined = false;
 
-  // should remove later
-  @property({ reflect: true, type: Boolean })
-  public keepOpenOnOutsideClick = false;
-
   /**
    * The placeholder attribute of the control.
    * @attr
    */
-  @property({ type: String, attribute: 'placeholder', reflect: false })
+  @property({ attribute: 'placeholder', reflect: false })
   public placeholder!: string;
 
   /**
@@ -159,7 +168,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * Defaults to the input format if not set.
    * @attr display-format
    */
-  @property({ attribute: 'display-format', reflect: false, type: String })
+  @property({ attribute: 'display-format', reflect: false })
   public set displayFormat(value: string) {
     this._displayFormat = value;
   }
@@ -327,9 +336,11 @@ export default class IgcDateRangePickerComponent extends LitElement {
     this._inputEndDate?.clear();
   }
 
-  public async handleAnchorClick() {
+  protected override async handleAnchorClick() {
     this._calendarStartDate.activeDate =
-      this.startDate ?? this._calendarStartDate.activeDate;
+      this._startDateValue ?? this._calendarStartDate.activeDate;
+
+    super.handleAnchorClick();
     await this.updateComplete;
     this._calendarStartDate[focusActiveDate]();
   }
@@ -370,6 +381,11 @@ export default class IgcDateRangePickerComponent extends LitElement {
 
   constructor() {
     super();
+    this._formValue = createFormValueState<Date | null>(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
+
     this._startDateValue = null;
     this._endDateValue = null;
   }
