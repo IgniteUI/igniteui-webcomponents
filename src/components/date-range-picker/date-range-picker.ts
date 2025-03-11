@@ -72,8 +72,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private static readonly increment = createCounter();
   protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
 
-  private _activeStartDate: Date | null = null;
-  private _activeEndDate: Date | null = null;
+  private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
@@ -89,13 +88,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _inputStartDate!: IgcDateTimeInputComponent;
 
   @query(IgcCalendarComponent.tagName)
-  private _calendarStartDate!: IgcCalendarComponent;
+  private _calendar!: IgcCalendarComponent;
 
   @query(IgcDateTimeInputComponent.tagName)
   private _inputEndDate!: IgcDateTimeInputComponent;
-
-  @query(IgcCalendarComponent.tagName)
-  private _calendarEndDate!: IgcCalendarComponent;
 
   @queryAssignedElements({ slot: 'prefix' })
   private prefixes!: Array<HTMLElement>;
@@ -133,8 +129,19 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._endDateValue = convertToDate(endDate);
   }
 
+  /**
+   * The label of the start date input.
+   * @attr label
+   */
   @property()
-  public label!: string;
+  public labelStart!: string;
+
+  /**
+   * The label of the start date input.
+   * @attr label
+   */
+  @property()
+  public labelEnd!: string;
 
   /**
    * Determines whether the calendar is opened in a dropdown or a modal dialog
@@ -143,9 +150,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property()
   public mode: 'dropdown' | 'dialog' = 'dropdown';
 
+  /**
+   * Makes the control a readonly field.
+   * @attr readonly
+   */
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
+  /**
+   * Whether to allow typing in the input.
+   * @attr non-editable
+   */
   @property({ type: Boolean, reflect: true, attribute: 'non-editable' })
   public nonEditable = false;
 
@@ -153,15 +168,22 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * Whether the control will have outlined appearance.
    * @attr
    */
-  @property({ reflect: true, type: Boolean, attribute: 'outlined' })
+  @property({ reflect: true, type: Boolean })
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder attribute of the start date input.
    * @attr
    */
-  @property({ attribute: 'placeholder', reflect: false })
-  public placeholder!: string;
+  @property({ attribute: 'placeholder-start', reflect: false })
+  public placeholderStart!: string;
+
+  /**
+   * The placeholder attribute of the end date input.
+   * @attr
+   */
+  @property({ attribute: 'placeholder-end', reflect: false })
+  public placeholderEnd!: string;
 
   /**
    * Format to display the value in when not editing.
@@ -182,7 +204,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * Defaults to the current locale Intl.DateTimeFormat
    * @attr input-format
    */
-  @property({ attribute: 'input-format', type: String, reflect: false })
+  @property({ attribute: 'input-format', reflect: false })
   public set inputFormat(value: string) {
     this._inputFormat = value;
   }
@@ -222,21 +244,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   /** The prompt symbol to use for unfilled parts of the mask.
    *  @attr
    */
-  @property({ attribute: 'prompt', reflect: false, type: String })
+  @property()
   public prompt = '_';
 
   /**
    * The orientation of the calendar header.
    * @attr header-orientation
    */
-  @property({ attribute: 'header-orientation', reflect: true, type: String })
+  @property({ attribute: 'header-orientation', reflect: true })
   public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
   /**
    * The orientation of the multiple months displayed in the calendar's days view.
    *  @attr
    */
-  @property({ attribute: 'orientation', reflect: false, type: String })
+  @property()
   public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
   /**
@@ -247,29 +269,16 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public hideHeader = false;
 
   /**
-   * Gets/Sets the date which is shown in the start date calendar picker and is highlighted.
+   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
    * By default it is the current date.
    */
-  @property({ attribute: 'active-date-start', converter: convertToDate })
-  public set activeStartDate(value: Date | string | null | undefined) {
-    this._activeStartDate = convertToDate(value);
+  @property({ attribute: 'active-date', converter: convertToDate })
+  public set activeDate(value: Date | string | null | undefined) {
+    this._activeDate = convertToDate(value);
   }
 
-  public get activeStartDate(): Date {
-    return this._activeStartDate ?? this._calendarStartDate?.activeDate;
-  }
-
-  /**
-   * Gets/Sets the date which is shown in the start date calendar picker and is highlighted.
-   * By default it is the current date.
-   */
-  @property({ attribute: 'active-date-end', converter: convertToDate })
-  public set activeEndDate(value: Date | string | null | undefined) {
-    this._activeEndDate = convertToDate(value);
-  }
-
-  public get activeEndDate(): Date {
-    return this._activeEndDate ?? this._calendarEndDate?.activeDate;
+  public get activeDate(): Date {
+    return this._activeDate ?? this._calendar?.activeDate;
   }
 
   /** Gets/sets disabled dates. */
@@ -301,14 +310,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * The number of months displayed in the calendar.
    * @attr visible-months
    */
-  @property({ type: Number, attribute: 'visible-months', reflect: false })
-  public visibleMonths = 1;
+  @property({ type: Number, attribute: 'visible-months' })
+  public visibleMonths = 2;
 
   /**
    * The locale settings used to display the value.
    * @attr
    */
-  @property({ type: String, reflect: false, attribute: 'locale' })
+  @property()
   public locale = 'en';
 
   /** Clears the input part of the start date input */
@@ -327,7 +336,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public specialDates!: DateRangeDescriptor[];
 
   /** Sets the start day of the week for the calendar. */
-  @property({ attribute: 'week-start', reflect: false, type: String })
+  @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
 
   /** Clears the input part of the end date input */
@@ -337,12 +346,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected override async handleAnchorClick() {
-    this._calendarStartDate.activeDate =
-      this._startDateValue ?? this._calendarStartDate.activeDate;
+    this._calendar.activeDate =
+      this._startDateValue ?? this._calendar.activeDate;
 
     super.handleAnchorClick();
     await this.updateComplete;
-    this._calendarStartDate[focusActiveDate]();
+    this._calendar[focusActiveDate]();
   }
 
   protected async handleCalendarStartDateChangeEvent(event: CustomEvent<Date>) {
@@ -350,31 +359,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     if (this.readOnly) {
       // Wait till the calendar finishes updating and then restore the current value from the date-picker.
-      await this._calendarStartDate.updateComplete;
-      this._calendarStartDate.value = this.startDate;
+      await this._calendar.updateComplete;
+      this._calendar.value = this.startDate;
       return;
     }
 
     this.startDate = (event.target as IgcCalendarComponent).value!;
-    // waiting to determine which events would be used
-    // and whether they would be separate for both inputs
-
-    //this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  protected async handleCalendarEndDateChangeEvent(event: CustomEvent<Date>) {
-    event.stopPropagation();
-
-    if (this.readOnly) {
-      // Wait till the calendar finishes updating and then restore the current value from the date-picker.
-      await this._calendarEndDate.updateComplete;
-      this._calendarEndDate.value = this.endDate;
-      return;
-    }
-
-    this.endDate = (event.target as IgcCalendarComponent).value!;
-    // waiting to determine which events would be used
-    // and whether they would be separate for both inputs
+    // waiting to determine the format of the value to be emitted
 
     //this.emitEvent('igcChange', { detail: this.value });
   }
@@ -462,7 +453,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  private renderCalendar(id: string, picker = 'start') {
+  private renderCalendar(id: string) {
     const hideHeader = this.isDropDown ? true : this.hideHeader;
 
     return html`
@@ -473,10 +464,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
-        .activeDate=${picker === 'start'
-          ? (this.activeStartDate ?? this.startDate)
-          : (this.activeEndDate ?? this.endDate)}
-        .value=${this.startDate}
+        .activeDate=${this.activeDate ?? this.startDate}
+        .value=${this.startDate /*should be changed to range later*/}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this.visibleMonths}
@@ -484,9 +473,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .disabledDates=${this._dateConstraints!}
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}
-        @igcChange=${picker === 'start'
-          ? this.handleCalendarStartDateChangeEvent
-          : this.handleCalendarEndDateChangeEvent}
+        @igcChange=${this.handleCalendarStartDateChangeEvent}
         exportparts="header, header-title, header-date, content: calendar-content, navigation, months-navigation,
           years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
           days-view, months-view, years-view, days-row, label: calendar-label, week-number, week-number-inner, date,
@@ -513,12 +500,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  protected renderPicker(id: string, picker = 'start') {
+  protected renderPicker(id: string) {
     return this.isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor=${id} flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id, picker)}
+              ${this.renderCalendar(id)}
             </igc-focus-trap>
           </igc-popover>
         `
@@ -531,18 +518,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             hide-default-action
             exportparts="base: dialog-base, title, footer, overlay"
           >
-            ${this.renderCalendar(id, picker)}${this.renderActions()}
+            ${this.renderCalendar(id)}${this.renderActions()}
           </igc-dialog>
         `;
   }
 
+  /*
+  // should change it later depending on if there are two label properties
+  */
   private renderLabel(id: string) {
-    return this.label
+    return this.startDate
       ? html`<label
           part="label"
           for=${id}
           @click=${this.isDropDown ? nothing : this.handleAnchorClick}
-          >${this.label}</label
+          >${this.startDate}</label
         >`
       : nothing;
   }
@@ -556,7 +546,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${this.label}
+        label=${picker === 'start' ? this.labelStart : this.labelEnd}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -566,7 +556,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
-        .placeholder=${this.placeholder}
+        .placeholder=${picker === 'start'
+          ? this.placeholderStart
+          : this.placeholderEnd}
         .min=${this.min}
         .max=${this.max}
         exportparts="input, label, prefix, suffix"
@@ -589,9 +581,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const id = this.id || this.inputId;
 
     return html`
-      ${this.renderInput(id, 'start')}${this.renderPicker(id, 'start')}
+      ${this.renderInput(id, 'start')}${this.renderPicker(id)}
       <span style="margin-left: 20px; margin-right: 20px">to</span>
-      ${this.renderInput(id, 'end')}${this.renderPicker(id, 'end')}
+      ${this.renderInput(id, 'end')}
     `;
   }
 }
