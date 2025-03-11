@@ -108,20 +108,23 @@ export default class IgcDateRangePickerComponent extends LitElement {
     this._endDateValue = convertToDate(endDate);
   }
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'open' })
   public open = false;
 
-  @property()
+  @property({ type: String, reflect: false, attribute: 'label' })
   public label!: string;
 
   /**
    * Determines whether the calendar is opened in a dropdown or a modal dialog
    * @attr mode
    */
-  @property()
+  @property({ type: String, reflect: false, attribute: 'mode' })
   public mode: 'dropdown' | 'dialog' = 'dropdown';
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'keep-open-on-select' })
+  public keepOpenOnSelect = false;
+
+  @property({ type: Boolean, reflect: true, attribute: 'disabled' })
   public disabled = false;
 
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
@@ -130,11 +133,14 @@ export default class IgcDateRangePickerComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public required = false;
 
+  @property({ type: Boolean, reflect: true, attribute: 'non-editable' })
+  public nonEditable = false;
+
   /**
    * Whether the control will have outlined appearance.
    * @attr
    */
-  @property({ reflect: true, type: Boolean })
+  @property({ reflect: true, type: Boolean, attribute: 'outlined' })
   public outlined = false;
 
   // should remove later
@@ -145,7 +151,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * The placeholder attribute of the control.
    * @attr
    */
-  @property()
+  @property({ type: String, attribute: 'placeholder', reflect: false })
   public placeholder!: string;
 
   /**
@@ -153,7 +159,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * Defaults to the input format if not set.
    * @attr display-format
    */
-  @property({ attribute: 'display-format' })
+  @property({ attribute: 'display-format', reflect: false, type: String })
   public set displayFormat(value: string) {
     this._displayFormat = value;
   }
@@ -167,7 +173,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * Defaults to the current locale Intl.DateTimeFormat
    * @attr input-format
    */
-  @property({ attribute: 'input-format' })
+  @property({ attribute: 'input-format', type: String, reflect: false })
   public set inputFormat(value: string) {
     this._inputFormat = value;
   }
@@ -207,21 +213,21 @@ export default class IgcDateRangePickerComponent extends LitElement {
   /** The prompt symbol to use for unfilled parts of the mask.
    *  @attr
    */
-  @property()
+  @property({ attribute: 'prompt', reflect: false, type: String })
   public prompt = '_';
 
   /**
    * The orientation of the calendar header.
    * @attr header-orientation
    */
-  @property({ attribute: 'header-orientation', reflect: true })
+  @property({ attribute: 'header-orientation', reflect: true, type: String })
   public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
   /**
    * The orientation of the multiple months displayed in the calendar's days view.
    *  @attr
    */
-  @property()
+  @property({ attribute: 'orientation', reflect: false, type: String })
   public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
   /**
@@ -235,7 +241,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * Gets/Sets the date which is shown in the start date calendar picker and is highlighted.
    * By default it is the current date.
    */
-  @property({ attribute: 'active-date', converter: convertToDate })
+  @property({ attribute: 'active-date-start', converter: convertToDate })
   public set activeStartDate(value: Date | string | null | undefined) {
     this._activeStartDate = convertToDate(value);
   }
@@ -248,9 +254,9 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * Gets/Sets the date which is shown in the start date calendar picker and is highlighted.
    * By default it is the current date.
    */
-  @property({ attribute: 'active-date', converter: convertToDate })
+  @property({ attribute: 'active-date-end', converter: convertToDate })
   public set activeEndDate(value: Date | string | null | undefined) {
-    this._activeStartDate = convertToDate(value);
+    this._activeEndDate = convertToDate(value);
   }
 
   public get activeEndDate(): Date {
@@ -286,14 +292,14 @@ export default class IgcDateRangePickerComponent extends LitElement {
    * The number of months displayed in the calendar.
    * @attr visible-months
    */
-  @property({ type: Number, attribute: 'visible-months' })
+  @property({ type: Number, attribute: 'visible-months', reflect: false })
   public visibleMonths = 1;
 
   /**
    * The locale settings used to display the value.
    * @attr
    */
-  @property()
+  @property({ type: String, reflect: false, attribute: 'locale' })
   public locale = 'en';
 
   /** Clears the input part of the start date input */
@@ -312,7 +318,7 @@ export default class IgcDateRangePickerComponent extends LitElement {
   public specialDates!: DateRangeDescriptor[];
 
   /** Sets the start day of the week for the calendar. */
-  @property({ attribute: 'week-start' })
+  @property({ attribute: 'week-start', reflect: false, type: String })
   public weekStart: WeekDays = 'sunday';
 
   /** Clears the input part of the end date input */
