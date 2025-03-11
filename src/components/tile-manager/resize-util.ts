@@ -95,13 +95,13 @@ export class ResizeUtil {
     const sizesAfterStart = entries.slice(tilePosition.start - 1);
     const availableSize =
       sizesAfterStart.reduce((sum, s) => sum + s, 0) +
-      (entries.length - 1) * gap;
+      (sizesAfterStart.length - 1) * gap;
 
     if (targetSize <= entries[0] + gap) {
       return 1;
     }
 
-    if (targetSize > availableSize) {
+    if (Math.trunc(targetSize) > Math.trunc(availableSize)) {
       const remainingSize = targetSize - availableSize;
 
       const additionalSpan = Math.ceil(remainingSize / (minSize + gap));
