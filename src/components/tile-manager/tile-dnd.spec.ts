@@ -181,6 +181,8 @@ describe('Tile drag and drop', () => {
       await dragAndDrop(tile, target);
 
       expect(eventSpy).calledOnceWith('igcTileDragStart');
+      expect(eventSpy).not.calledWith('igcTileDragEnd');
+      expect(eventSpy.callCount).to.equal(1);
     });
 
     it('should correctly fire `igcTileDragEnd` event', async () => {

@@ -138,11 +138,13 @@ class ResizeController implements ReactiveController {
 
     this._setInitialState(event);
     this._createGhostElement();
+    const parameters = { event, state: this._stateParameters };
 
-    this._options.start?.call(this._host, {
-      event,
-      state: this._stateParameters,
-    });
+    if (this._options.start?.call(this._host, parameters) === false) {
+      this.dispose();
+      return;
+    }
+
     this._setResizeState();
   }
 
@@ -164,8 +166,8 @@ class ResizeController implements ReactiveController {
 
     this._options.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
-    // TODO:
-    // this._updatePosition(this._resizeTarget);
+
+    parameters.state.commit?.() ?? this._updatePosition(this._resizeTarget);
     this.dispose();
   }
 

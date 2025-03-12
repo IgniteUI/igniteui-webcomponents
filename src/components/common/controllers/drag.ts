@@ -245,7 +245,7 @@ class DragController implements ReactiveController {
 
     const parameters = { event, state: this._stateParameters };
     if (this._options.start?.call(this._host, parameters) === false) {
-      this._removeGhost();
+      this.dispose();
       return;
     }
 

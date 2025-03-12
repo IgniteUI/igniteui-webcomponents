@@ -36,6 +36,12 @@ describe('Tile resize', () => {
   let columnSize: number;
   let rowSize: number;
 
+  /** Wait tile dragging view transition(s) to complete. */
+  async function viewTransitionComplete() {
+    await nextFrame();
+    await nextFrame();
+  }
+
   function getTiles() {
     return Array.from(tileManager.querySelectorAll(IgcTileComponent.tagName));
   }
@@ -385,6 +391,92 @@ describe('Tile resize', () => {
       await elementUpdated(DOM.resizeElement);
 
       expect(eventSpy).calledWith('igcResizeCancel');
+      expect(DOM.ghostElement).to.be.null;
+      assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
+    });
+
+    it('should fire `igcTileResizeStart` when a resize operation begins', async () => {
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeStart');
+    });
+
+    it('should stop resize operations by canceling the `igcTileResizeStart` event', async () => {
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      firstTile.addEventListener('igcTileResizeStart', (event) =>
+        event.preventDefault()
+      );
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeStart');
+
+      simulatePointerMove(DOM.adorners.corner);
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy.callCount).to.equal(1);
+      expect(eventSpy).not.calledWith('igcTileResizeEnd');
+    });
+
+    it('should fire `igcTileResizeEnd` when a resize operation is performed successfully', async () => {
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      const { colSpan: initialColumnSpan, rowSpan: initialRowSpan } = firstTile;
+
+      const tileRect = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeStart');
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: tileRect.right * 2,
+        clientY: tileRect.bottom * 2,
+      });
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await viewTransitionComplete();
+
+      expect(eventSpy).calledWith('igcTileResizeEnd');
+      expect(DOM.ghostElement).to.be.null;
+
+      const { colSpan, rowSpan } = firstTile;
+      expect(initialColumnSpan).is.lessThan(colSpan);
+      expect(initialRowSpan).is.lessThan(rowSpan);
+    });
+
+    it('should fire `igcTileResizeCancel` when canceling a resize operation', async () => {
+      const DOM = getResizeContainerDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
+
+      const tileRect = firstTile.getBoundingClientRect();
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeStart');
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: tileRect.right * 2,
+        clientY: tileRect.bottom * 2,
+      });
+      await elementUpdated(firstTile);
+
+      expect(DOM.ghostElement).not.to.be.null;
+
+      simulateKeyboard(DOM.resizeElement, escapeKey);
+      await elementUpdated(firstTile);
+
+      expect(eventSpy).calledWith('igcTileResizeCancel');
       expect(DOM.ghostElement).to.be.null;
       assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
     });

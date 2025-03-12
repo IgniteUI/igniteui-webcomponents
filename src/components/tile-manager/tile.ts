@@ -55,9 +55,9 @@ export interface IgcTileComponentEventMap {
   igcTileDragStart: CustomEvent<IgcTileComponent>;
   igcTileDragEnd: CustomEvent<IgcTileComponent>;
   igcTileDragCancel: CustomEvent<IgcTileComponent>;
-  igcResizeStart: CustomEvent<IgcTileComponent>;
-  igcResizeMove: CustomEvent<IgcTileComponent>;
-  igcResizeEnd: CustomEvent<IgcTileComponent>;
+  igcTileResizeStart: CustomEvent<IgcTileComponent>;
+  igcTileResizeEnd: CustomEvent<IgcTileComponent>;
+  igcTileResizeCancel: CustomEvent<IgcTileComponent>;
 }
 
 /**
@@ -71,9 +71,9 @@ export interface IgcTileComponentEventMap {
  * @fires igcTileDragStart - Fired when a drag operation on a tile is about to begin. Cancelable.
  * @fires igcTileDragEnd - Fired when a drag operation with a tile is successfully completed.
  * @fires igcTileDragCancel - Fired when a tile drag operation is canceled by the user.
- * @fires igcResizeStart - Fired when tile begins resizing.
- * @fires igcResizeMove - Fired when tile is being resized.
- * @fires igcResizeEnd - Fired when tile finishes resizing.
+ * @fires igcTileResizeStart - Fired when a resize operation on a tile is about to begin. Cancelable.
+ * @fires igcTileResizeEnd - Fired when a resize operation on a tile is successfully completed.
+ * @fires igcTileResizeCancel - Fired when a resize operation on a tile is canceled by the user.
  *
  * @slot title - Renders the title of the tile header.
  * @slot maximize-action - Renders the maximize action element.
@@ -466,10 +466,17 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.part.toggle('resizing', state);
   }
 
-  private _handleResizeStart({
-    detail: { state },
-  }: CustomEvent<ResizeCallbackParams>) {
-    this._resizeState.updateState(state.initial, this, this._cssContainer);
+  private _handleResizeStart(event: CustomEvent<ResizeCallbackParams>) {
+    if (!this._emitTileResizeStart()) {
+      event.preventDefault();
+      return;
+    }
+
+    this._resizeState.updateState(
+      event.detail.state.initial,
+      this,
+      this._cssContainer
+    );
     this._setResizeState();
   }
 
@@ -492,23 +499,27 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  private async _handleResizeEnd({
+  private _handleResizeEnd({
     detail: { state },
   }: CustomEvent<ResizeCallbackParams>) {
     const { colSpan, rowSpan } = this._resizeState.calculateResizedGridPosition(
       state.current
     );
 
-    await startViewTransition(() => {
-      this.colSpan = colSpan;
-      this.rowSpan = rowSpan;
-    }).transition?.updateCallbackDone;
+    state.commit = async () => {
+      await startViewTransition(() => {
+        this.colSpan = colSpan;
+        this.rowSpan = rowSpan;
+      }).transition?.updateCallbackDone;
 
-    this._setResizeState(false);
+      this._setResizeState(false);
+      this.emitEvent('igcTileResizeEnd', { detail: this });
+    };
   }
 
   private _handleResizeCancel() {
     this._setResizeState(false);
+    this.emitEvent('igcTileResizeCancel', { detail: this });
   }
 
   private _handleFullscreen() {
@@ -541,6 +552,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _emitTileDragStart() {
     return this.emitEvent('igcTileDragStart', {
+      detail: this,
+      cancelable: true,
+    });
+  }
+
+  private _emitTileResizeStart() {
+    return this.emitEvent('igcTileResizeStart', {
       detail: this,
       cancelable: true,
     });
