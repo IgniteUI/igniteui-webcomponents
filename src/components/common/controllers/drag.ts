@@ -86,7 +86,11 @@ type DragControllerConfiguration = {
   cancel?: DragCancelCallback;
 };
 
-const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
+const additionalEvents = [
+  'pointermove',
+  'lostpointercapture',
+  'contextmenu',
+] as const;
 
 class DragController implements ReactiveController {
   private _host: ReactiveControllerHost & LitElement;
@@ -193,7 +197,6 @@ class DragController implements ReactiveController {
     this._host.addEventListener('dragstart', this);
     this._host.addEventListener('touchstart', this, { passive: false });
     this._host.addEventListener('pointerdown', this);
-    globalThis.addEventListener('contextmenu', this._handleContextMenu);
   }
 
   /** @internal */
@@ -201,7 +204,6 @@ class DragController implements ReactiveController {
     this._host.removeEventListener('dragstart', this);
     this._host.removeEventListener('touchstart', this);
     this._host.removeEventListener('pointerdown', this);
-    globalThis.removeEventListener('contextmenu', this._handleContextMenu);
     this._setDragCancelListener(false);
     this._removeGhost();
   }
@@ -215,6 +217,8 @@ class DragController implements ReactiveController {
     switch (event.type) {
       case 'touchstart':
       case 'dragstart':
+      // Prevent contextmenu default behavior during drag
+      case 'contextmenu':
         event.preventDefault();
         break;
       case 'keydown':
@@ -284,11 +288,6 @@ class DragController implements ReactiveController {
       // Reset state
       this._options.cancel?.call(this._host, this._stateParameters);
     }
-  }
-
-  private _handleContextMenu(event: MouseEvent): void {
-    // Prevents the default context menu while dragging
-    event.preventDefault();
   }
 
   // #endregion

@@ -4,7 +4,11 @@ import { findElementFromEventPath } from '../common/util.js';
 import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
 
-const additionalEvents = ['pointermove', 'lostpointercapture'] as const;
+const additionalEvents = [
+  'pointermove',
+  'lostpointercapture',
+  'contextmenu',
+] as const;
 
 type State = {
   initial: DOMRect;
@@ -110,6 +114,8 @@ class ResizeController implements ReactiveController {
 
     switch (event.type) {
       case 'touchstart':
+      // Prevent contextmenu default behavior during resize
+      case 'contextmenu':
         event.preventDefault();
         break;
       case 'keydown':
