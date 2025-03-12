@@ -214,6 +214,17 @@ describe('Tile Manager component', () => {
       );
     });
 
+    it('Should correctly set gap', async () => {
+      const style = getComputedStyle(getTileManagerBase());
+
+      expect(style.gap).to.equal('10px');
+
+      tileManager.gap = '25px';
+      await elementUpdated(tileManager);
+
+      expect(style.gap).to.equal('25px');
+    });
+
     it('should respect tile row and col start properties', async () => {
       const tile = tileManager.tiles[2];
       tile.colStart = 7;

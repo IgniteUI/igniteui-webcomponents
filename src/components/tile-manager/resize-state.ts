@@ -85,10 +85,6 @@ class TileResizeState {
     height: null,
   };
 
-  public get emptyResizeDimensions(): TileResizeDimensions {
-    return { width: null, height: null };
-  }
-
   public get gap(): number {
     return this._gap;
   }
@@ -151,30 +147,6 @@ class TileResizeState {
       colSpan: this._position.column.span,
       rowSpan: this._position.row.span,
     };
-  }
-
-  /**
-   * Checks and adjusts tile spans based on the column count of the tile manager.
-   */
-  // REVIEW once we decide how to handle empty columns.
-  public adjustTileGridPosition(tiles: IgcTileComponent[]): void {
-    const columnCount = this.columns.count;
-
-    for (const tile of tiles) {
-      const colStart = tile.colStart || 0;
-      const colSpan = tile.colSpan || 0;
-
-      if (colStart > columnCount) {
-        //Prioritize span over start?
-        tile.colSpan = 1;
-        tile.colStart = columnCount;
-        continue;
-      }
-
-      if (colStart + colSpan - 1 > columnCount) {
-        tile.colSpan = columnCount - colStart + 1;
-      }
-    }
   }
 
   private initState(grid: HTMLElement, tile: IgcTileComponent): void {
@@ -257,14 +229,14 @@ class TileResizeState {
           targetSize: rect.height,
           tilePosition: this.position.row,
           tileGridDimension: this.rows,
-          gap: this._gap,
+          gap: this.gap,
           isRow,
         }
       : {
           targetSize: rect.width,
           tilePosition: this.position.column,
           tileGridDimension: this.columns,
-          gap: this._gap,
+          gap: this.gap,
           isRow,
         };
   }

@@ -214,6 +214,33 @@ describe('Tile resize', () => {
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 2');
     });
 
+    it('Should correctly shrink tile', async () => {
+      firstTile.colSpan = 3;
+      firstTile.rowSpan = 3;
+
+      const DOM = getResizeContainerDOM(firstTile);
+
+      simulatePointerDown(DOM.adorners.corner);
+      await elementUpdated(DOM.container);
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 3');
+      expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 3');
+
+      simulatePointerMove(DOM.adorners.corner, {
+        clientX: columnSize,
+        clientY: rowSize,
+      });
+
+      await elementUpdated(DOM.resizeElement);
+
+      simulateLostPointerCapture(DOM.adorners.corner);
+      await elementUpdated(DOM.resizeElement);
+      await nextFrame();
+
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
+      expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 1');
+    });
+
     it('Should correctly create/remove implicit rows and resize row with auto grid', async () => {
       const DOM = getResizeContainerDOM(firstTile);
 
@@ -281,6 +308,15 @@ describe('Tile resize', () => {
       expect(getColumns().length).to.eql(10);
     });
 
+    it('Should correctly set rowCount', async () => {
+      expect(getRows().length).to.eql(1);
+
+      tileManager.rowCount = 10;
+      await elementUpdated(tileManager);
+
+      expect(getRows().length).to.eql(10);
+    });
+
     it('Should cap resizing to max col if greater than', async () => {
       const DOM = getResizeContainerDOM(firstTile);
 
@@ -303,18 +339,33 @@ describe('Tile resize', () => {
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
     });
 
-    // REVIEW
-    it('Should initialize tile span as columnCount if it is greater than columnCount', async () => {
+    it('Should initialize tile colSpan as columnCount if it is greater than columnCount', async () => {
       tileManager.columnCount = 10;
+      firstTile.colSpan = 15;
       await elementUpdated(tileManager);
 
-      firstTile.colSpan = 15;
-      await elementUpdated(firstTile);
+      expect(getColumns().length).to.eql(10);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
+    });
 
-      // REVIEW once we decide how to handle the scenario where colSpan is greater than column count
-      // currently 0px columns are added to cover the difference
-      expect(getColumns().length).to.eql(15);
-      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 15');
+    it('Should preserve tile colStart when colStart is valid and colStart + colSpan is greater than columnCount', async () => {
+      tileManager.columnCount = 10;
+      firstTile.colStart = 5;
+      firstTile.colSpan = 10;
+      await elementUpdated(tileManager);
+
+      expect(getColumns().length).to.eql(10);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('5 / span 6');
+    });
+
+    it('Should set colStart to 0(auto) and colSpan to columnCount when both are greater than columnCount', async () => {
+      tileManager.columnCount = 10;
+      firstTile.colStart = 11;
+      firstTile.colSpan = 12;
+      await elementUpdated(tileManager);
+
+      expect(getColumns().length).to.eql(10);
+      expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
     });
 
     it('Should maintain column position on resize when colStart is set', async () => {
