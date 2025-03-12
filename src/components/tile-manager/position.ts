@@ -72,6 +72,31 @@ class TilesState {
     }
   }
 
+  /**
+   * Checks and adjusts tile spans based on the column count of the tile manager.
+   */
+  public adjustTileGridPosition(): void {
+    const columnCount = this.manager.columnCount;
+
+    if (columnCount > 0) {
+      for (const tile of this.tiles) {
+        let colStart = tile.colStart || 0;
+        let colStartDelta = colStart > 0 ? 1 : 0;
+        const colSpan = tile.colSpan || 0;
+
+        if (colStart > columnCount) {
+          colStart = 0;
+          colStartDelta = 0;
+          tile.colStart = 0;
+        }
+
+        if (colStart + colSpan > columnCount) {
+          tile.colSpan = columnCount - colStart + colStartDelta;
+        }
+      }
+    }
+  }
+
   public remove(tile: IgcTileComponent): void {
     for (const each of this.tiles) {
       if (each.position >= tile.position) {

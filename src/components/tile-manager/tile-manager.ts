@@ -226,6 +226,10 @@ export default class IgcTileManagerComponent extends LitElement {
     });
   }
 
+  protected override updated() {
+    this._tilesState.adjustTileGridPosition();
+  }
+
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
