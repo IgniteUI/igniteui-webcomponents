@@ -219,6 +219,16 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    value: {
+      control: 'object',
+      defaultValue: [new Date(), new Date()],
+    },
+    _startDate: {
+      control: 'date',
+    },
+    _endDate: {
+      control: 'date',
+    },
   },
   args: {
     mode: 'dropdown',
@@ -320,6 +330,8 @@ interface IgcDateRangePickerArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  _startDate: string;
+  _endDate: string;
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 
@@ -328,10 +340,15 @@ type Story = StoryObj<IgcDateRangePickerArgs>;
 export const Default: Story = {
   args: {
     open: false,
+    _startDate: new Date().toISOString(),
+    _endDate: new Date(
+      new Date().setDate(new Date().getDate() + 7)
+    ).toISOString(), // +7 days
   },
   render: (args) => html`
     <igc-date-range-picker
       .visibleMonths=${args.visibleMonths}
+      .value=${[new Date(args._startDate), new Date(args._endDate)]}
       .labelStart=${args.labelStart}
       .labelEnd=${args.labelEnd}
       .displayFormat=${args.displayFormat}
