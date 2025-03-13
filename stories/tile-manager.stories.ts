@@ -115,7 +115,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
     },
     gap: {
       type: 'string',
-      description: 'Sets the gap size of the the tile manager.',
+      description: 'Sets the gap size between tiles in the tile manager.',
       control: 'text',
     },
   },
@@ -143,7 +143,7 @@ interface IgcTileManagerArgs {
   minColumnWidth: string;
   /** Sets the minimum height for a row unit in the tile manager. */
   minRowHeight: string;
-  /** Sets the gap size of the the tile manager. */
+  /** Sets the gap size between tiles in the tile manager. */
   gap: string;
 }
 type Story = StoryObj<IgcTileManagerArgs>;

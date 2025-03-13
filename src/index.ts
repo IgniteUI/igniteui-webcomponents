@@ -120,6 +120,7 @@ export type {
   TileManagerDragMode,
   TileManagerResizeMode,
 } from './components/types.js';
+export type { IgcTileChangeState } from './components/tile-manager/tile.js';
 export type {
   DateRangeDescriptor,
   WeekDays,

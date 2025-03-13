@@ -27,6 +27,16 @@ import IgcTileComponent from './tile.js';
  *
  * @element igc-tile-manager
  *
+ * @slot - Default slot for the tile manager. Only `igc-tile` elements will be projected inside the CSS grid container.
+ *
+ * @csspart base - The tile manager CSS Grid container.
+ *
+ * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
+ * @cssproperty --row-count - The number of rows for the tile manager. The `row-count` attribute sets this variable.
+ * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
+ * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
+ * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
+ *
  */
 @themes(all)
 export default class IgcTileManagerComponent extends LitElement {
@@ -186,7 +196,7 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   /**
-   * Sets the gap size of the the tile manager.
+   * Sets the gap size between tiles in the tile manager.
    *
    * @attr gap
    */
@@ -261,10 +271,20 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Public API
 
+  /**
+   * Returns the properties of the current tile collections as a JSON payload.
+   *
+   * @remarks
+   * The content of the tiles is not serialized or saved. Only tile properties
+   * are serialized.
+   */
   public saveLayout(): string {
     return this._serializer.saveAsJSON();
   }
 
+  /**
+   * Restores a previously serialized state produced by `saveLayout`.
+   */
   public loadLayout(data: string): void {
     this._serializer.loadFromJSON(data);
   }

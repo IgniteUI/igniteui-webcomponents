@@ -42,7 +42,7 @@ import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
-type IgcTileChangeState = {
+export type IgcTileChangeState = {
   tile: IgcTileComponent;
   state: boolean;
 };
@@ -75,11 +75,11 @@ export interface IgcTileComponentEventMap {
  * @fires igcTileResizeEnd - Fired when a resize operation on a tile is successfully completed.
  * @fires igcTileResizeCancel - Fired when a resize operation on a tile is canceled by the user.
  *
+ * @slot - Default slot for the tile's content.
  * @slot title - Renders the title of the tile header.
  * @slot maximize-action - Renders the maximize action element.
  * @slot fullscreen-action - Renders the fullscreen action element.
  * @slot actions - Renders items after the default actions.
- * @slot Default slot for the tile's content.
  * @slot side-adorner - Renders the side resize handle.
  * @slot corner-adorner - Renders the corner resize handle.
  * @slot bottom-adorner - Renders the bottom resize handle.
@@ -222,9 +222,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * The number of columns the tile will span.
    *
    * @remarks
-   * Values <= 1 will be coerced to 1.
+   * When setting a value that is less than 1, it will be
+   * coerced to 1.
    *
    * @attr col-span
+   * @default 1
    */
   @property({ type: Number, attribute: 'col-span' })
   public set colSpan(value: number) {
@@ -240,9 +242,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * The number of rows the tile will span.
    *
    * @remarks
-   * Values <= 1 will be coerced to 1.
+   * When setting a value that is less than 1, it will be
+   * coerced to 1.
    *
    * @attr row-span
+   * @default 1
    */
   @property({ type: Number, attribute: 'row-span' })
   public set rowSpan(value: number) {
@@ -318,30 +322,38 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /**
-   * Indicates whether the tile can be resized.
+   * Indicates whether to disable tile resize behavior regardless
+   * ot its tile manager parent settings.
+   *
    * @attr disable-resize
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'disable-resize' })
   public disableResize = false;
 
   /**
-   * Indicates whether the fullscreen action is displayed.
+   * Whether to disable the rendering of the tile `fullscreen-action` slot and its
+   * default fullscreen action button.
+   *
    * @attr disable-fullscreen
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'disable-fullscreen' })
   public disableFullscreen = false;
 
   /**
-   * Indicates whether the maximize action is displayed.
+   * Whether to disable the rendering of the tile `maximize-action` slot and its
+   * default maximize action button.
+   *
    * @attr disable-maximize
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'disable-maximize' })
   public disableMaximize = false;
 
   /**
    * Gets/sets the tile's visual position in the layout.
-   *
-   * Corresponds to the CSS order property.
+   * Corresponds to the CSS `order` property.
    *
    * @attr position
    */
@@ -595,21 +607,28 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.disableMaximize &&
       this.disableFullscreen;
 
+    const hasMaximizeSlot = !(this.disableMaximize || this.fullscreen);
+    const hasFullscreenSlot = !this.disableFullscreen;
+
     return html`
       <section part="header" ?hidden=${hideHeader} ${ref(this._headerRef)}>
         <header part="title">
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
-          ${!this.disableMaximize && !this.fullscreen
-            ? html`<slot name="maximize-action"
-                >${this._renderDefaultAction('maximize')}</slot
-              >`
+          ${hasMaximizeSlot
+            ? html`
+                <slot name="maximize-action">
+                  ${this._renderDefaultAction('maximize')}
+                </slot>
+              `
             : nothing}
-          ${!this.disableFullscreen
-            ? html`<slot name="fullscreen-action"
-                >${this._renderDefaultAction('fullscreen')}</slot
-              >`
+          ${hasFullscreenSlot
+            ? html`
+                <slot name="fullscreen-action">
+                  ${this._renderDefaultAction('fullscreen')}
+                </slot>
+              `
             : nothing}
 
           <slot name="actions"></slot>
