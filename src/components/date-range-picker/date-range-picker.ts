@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -24,7 +24,7 @@ import {
   type FormValue,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
@@ -48,7 +48,15 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  *
  * @element igc-date-range-picker
  *
+ * @fires igcOpening - Emitted just before the calendar dropdown is shown.
+ * @fires igcOpened - Emitted after the calendar dropdown is shown.
+ * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
+ * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcChange - Emitted when the user modifies and commits the elements's value.
+ * @fires igcInput - Emitted when when the user types in the element.
+ *
  */
+
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
@@ -59,10 +67,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-range-picker';
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
+  // protected static shadowRootOptions = {
+  //   ...LitElement.shadowRootOptions,
+  //   delegatesFocus: true,
+  // };
 
   private static readonly increment = createCounter();
   protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
@@ -380,6 +388,51 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
+  protected handleDialogClosing(event: Event) {
+    event.stopPropagation();
+    this._hide(true);
+  }
+
+  protected handleDialogClosed(event: Event) {
+    event.stopPropagation();
+  }
+
+  protected handleInputEvent(event: CustomEvent<Date[]>) {
+    event.stopPropagation();
+
+    if (this.nonEditable) {
+      event.preventDefault();
+      return;
+    }
+
+    //this.value = (event.target as IgcDateTimeInputComponent).value!;
+
+    this.emitEvent('igcInput', { detail: this.value ?? undefined });
+  }
+
+  protected handleInputChangeEvent(event: CustomEvent<Date[]>, picker: string) {
+    event.stopPropagation();
+    let startDate: Date | null = this.value?.[0] ?? null;
+    let endDate: Date | null = this.value?.[this.value.length - 1] ?? null;
+
+    if (picker === 'start') {
+      startDate = (event.target as IgcDateTimeInputComponent).value;
+    } else {
+      endDate = (event.target as IgcDateTimeInputComponent).value!;
+    }
+
+    this.value = this.getDatesInRange(startDate, endDate);
+    this._calendar.values = this.value;
+    this.emitEvent('igcChange', { detail: this.value ?? undefined });
+  }
+
+  protected handleInputClick(event: Event) {
+    if (findElementFromEventPath('input', event)) {
+      // Open only if the click originates from the underlying input
+      this.handleAnchorClick();
+    }
+  }
+
   protected override async handleAnchorClick() {
     this._calendar.activeDate =
       (this.value ? this.value[0] : null) ?? this._calendar.activeDate; //TODO
@@ -400,7 +453,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
 
     this.value = (event.target as IgcCalendarComponent).values;
-    //this.emitEvent('igcChange', { detail: this.value });
+    this.emitEvent('igcChange', { detail: this.value });
 
     this._shouldCloseCalendarDropdown();
   }
@@ -421,6 +474,24 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.value = null;
     this._inputStartDate?.clear();
     this._inputEndDate?.clear();
+  }
+
+  /** Gets dates in specific range */
+  public getDatesInRange(
+    startDate: Date | null,
+    endDate: Date | null
+  ): Date[] | null {
+    if (!startDate || !endDate) return null; // return [];
+
+    const dates: Date[] = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
   }
 
   private renderClearIcon() {
@@ -531,6 +602,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
+            @igcClosing=${this.handleDialogClosing}
+            @igcClosed=${this.handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)}${this.renderActions()}
@@ -581,6 +654,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .min=${this.min}
         .max=${this.max}
         .invalid=${live(this.invalid)}
+        @igcChange=${(event: CustomEvent<Date[]>) =>
+          this.handleInputChangeEvent(event, picker)}
+        @igcInput=${(event: CustomEvent<Date[]>) =>
+          this.handleInputEvent(event)}
+        @click=${this.isDropDown ? nothing : this.handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon()}
@@ -599,11 +677,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected override render() {
     const id = this.id || this.inputId;
+    const idStart = `${id}-start`;
+    const idEnd = `${id}-end`;
 
     return html`
-      ${this.renderInput(id, 'start')}${this.renderPicker(id)}
+      ${this.renderInput(idStart, 'start')}${this.renderPicker(idStart)}
       <span style="margin-left: 20px; margin-right: 20px">-</span>
-      ${this.renderInput(id, 'end')}
+      ${this.renderInput(idEnd, 'end')}
     `;
   }
 }

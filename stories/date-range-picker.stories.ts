@@ -20,6 +20,16 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
           'The igc-date-range-picker allows the user to select a range of dates.',
       },
     },
+    actions: {
+      handles: [
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+        'igcChange',
+        'igcInput',
+      ],
+    },
   },
   argTypes: {
     labelStart: {
