@@ -66,8 +66,8 @@ export interface IgcTileComponentEventMap {
  *
  * @element igc-tile
  *
- * @fires igcTileFullscreen - Fired when tile fullscreen state changes.
- * @fires igcTileMaximize - Fired when tile maximize state changes.
+ * @fires igcTileFullscreen - Fired when tile the fullscreen state changes.
+ * @fires igcTileMaximize - Fired when tile the maximize state changes.
  * @fires igcTileDragStart - Fired when a drag operation on a tile is about to begin. Cancelable.
  * @fires igcTileDragEnd - Fired when a drag operation with a tile is successfully completed.
  * @fires igcTileDragCancel - Fired when a tile drag operation is canceled by the user.
@@ -77,21 +77,21 @@ export interface IgcTileComponentEventMap {
  *
  * @slot - Default slot for the tile's content.
  * @slot title - Renders the title of the tile header.
- * @slot maximize-action - Renders the maximize action element.
- * @slot fullscreen-action - Renders the fullscreen action element.
- * @slot actions - Renders items after the default actions.
- * @slot side-adorner - Renders the side resize handle.
- * @slot corner-adorner - Renders the corner resize handle.
- * @slot bottom-adorner - Renders the bottom resize handle.
+ * @slot maximize-action - Renders the maximize action element of the tile header.
+ * @slot fullscreen-action - Renders the fullscreen action element of the tile header.
+ * @slot actions - Renders items after the default actions in the tile header.
+ * @slot side-adorner - Renders the side resize handle of the tile.
+ * @slot corner-adorner - Renders the corner resize handle of the tile.
+ * @slot bottom-adorner - Renders the bottom resize handle of the tile.
  *
- * @csspart base - The wrapper for the entire tile.
- * @csspart header - The container for the header, including title and actions.
- * @csspart title - The title container.
- * @csspart actions - The actions container.
+ * @csspart base - The wrapper for the entire tile content, header and content.
+ * @csspart header - The container for the tile header, including title and actions.
+ * @csspart title - The title container of the tile.
+ * @csspart actions - The actions container of the tile header.
  * @csspart content-container - The container wrapping the tile’s main content.
- * @csspart trigger-side - The part for the side adorner of the encapsulated resize element.
- * @csspart trigger - The part for the corner adorner of the encapsulated resize element.
- * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element.
+ * @csspart trigger-side - The part for the side adorner of the encapsulated resize element in the tile.
+ * @csspart trigger - The part for the corner adorner of the encapsulated resize element in the tile.
+ * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element in the tile.
  */
 @themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
