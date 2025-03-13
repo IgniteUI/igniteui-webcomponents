@@ -42,7 +42,7 @@ import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
-export type IgcTileChangeState = {
+export type IgcTileChangeStateEventArgs = {
   tile: IgcTileComponent;
   state: boolean;
 };
@@ -50,8 +50,8 @@ export type IgcTileChangeState = {
 type AdornerType = 'side' | 'corner' | 'bottom';
 
 export interface IgcTileComponentEventMap {
-  igcTileFullscreen: CustomEvent<IgcTileChangeState>;
-  igcTileMaximize: CustomEvent<IgcTileChangeState>;
+  igcTileFullscreen: CustomEvent<IgcTileChangeStateEventArgs>;
+  igcTileMaximize: CustomEvent<IgcTileChangeStateEventArgs>;
   igcTileDragStart: CustomEvent<IgcTileComponent>;
   igcTileDragEnd: CustomEvent<IgcTileComponent>;
   igcTileDragCancel: CustomEvent<IgcTileComponent>;
