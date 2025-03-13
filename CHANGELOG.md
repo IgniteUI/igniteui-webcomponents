@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402)
 - #### List
   - The `igc-list-item` component exposes a new `selected` property. When set on a list item, the item will become visually highlighted.
 
