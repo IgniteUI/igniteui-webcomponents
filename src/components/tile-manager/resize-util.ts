@@ -85,7 +85,7 @@ export class ResizeUtil {
       sizesAfterStart.reduce((sum, s) => sum + s, 0) +
       (sizesAfterStart.length - 1) * gap;
 
-    if (targetSize <= entries[0] + gap) {
+    if (targetSize <= sizesAfterStart[0] + gap) {
       return 1;
     }
 
