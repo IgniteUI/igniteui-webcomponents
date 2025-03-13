@@ -308,15 +308,6 @@ describe('Tile resize', () => {
       expect(getColumns().length).to.eql(10);
     });
 
-    it('Should correctly set rowCount', async () => {
-      expect(getRows().length).to.eql(1);
-
-      tileManager.rowCount = 10;
-      await elementUpdated(tileManager);
-
-      expect(getRows().length).to.eql(10);
-    });
-
     it('Should cap resizing to max col if greater than', async () => {
       const DOM = getResizeContainerDOM(firstTile);
 

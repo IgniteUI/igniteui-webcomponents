@@ -94,13 +94,6 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
-    rowCount: {
-      type: 'number',
-      description:
-        'Sets the number of rows for the tile manager.\nSetting a value <= than zero will trigger a responsive layout.',
-      control: 'number',
-      table: { defaultValue: { summary: '0' } },
-    },
     minColumnWidth: {
       type: 'string',
       description:
@@ -119,7 +112,7 @@ const metadata: Meta<IgcTileManagerComponent> = {
       control: 'text',
     },
   },
-  args: { resizeMode: 'none', dragMode: 'none', columnCount: 0, rowCount: 0 },
+  args: { resizeMode: 'none', dragMode: 'none', columnCount: 0 },
 };
 
 export default metadata;
@@ -134,11 +127,6 @@ interface IgcTileManagerArgs {
    * Setting value <= than zero will trigger a responsive layout.
    */
   columnCount: number;
-  /**
-   * Sets the number of rows for the tile manager.
-   * Setting a value <= than zero will trigger a responsive layout.
-   */
-  rowCount: number;
   /** Sets the minimum width for a column unit in the tile manager. */
   minColumnWidth: string;
   /** Sets the minimum height for a row unit in the tile manager. */
@@ -849,8 +837,6 @@ export const CustomActions: Story = {
       .corner,
       .bottom {
         display: inline;
-        width: 100%;
-        height: 100%;
       }
 
       .corner {

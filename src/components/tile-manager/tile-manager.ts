@@ -32,7 +32,6 @@ import IgcTileComponent from './tile.js';
  * @csspart base - The tile manager CSS Grid container.
  *
  * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
- * @cssproperty --row-count - The number of rows for the tile manager. The `row-count` attribute sets this variable.
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
  * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
@@ -58,7 +57,6 @@ export default class IgcTileManagerComponent extends LitElement {
   private _internalStyles: StyleInfo = {};
   private _dragMode: TileManagerDragMode = 'none';
   private _resizeMode: TileManagerResizeMode = 'none';
-  private _rowCount = 0;
   private _columnCount = 0;
   private _gap?: string;
   private _minColWidth?: string;
@@ -142,25 +140,6 @@ export default class IgcTileManagerComponent extends LitElement {
 
   public get columnCount(): number {
     return this._columnCount;
-  }
-
-  /**
-   * Sets the number of rows for the tile manager.
-   * Setting a value <= than zero will trigger a responsive layout.
-   *
-   * @attr row-count
-   * @default 0
-   */
-  @property({ type: Number, attribute: 'row-count' })
-  public set rowCount(value: number) {
-    this._rowCount = Math.max(0, asNumber(value));
-    Object.assign(this._internalStyles, {
-      '--row-count': this._rowCount || undefined,
-    });
-  }
-
-  public get rowCount(): number {
-    return this._rowCount;
   }
 
   /**
