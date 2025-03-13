@@ -83,13 +83,13 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     min: {
       type: 'Date',
       description:
-        'The minimum value required for the date picker to remain valid.',
+        'The minimum value required for the date range picker to remain valid.',
       control: 'date',
     },
     max: {
       type: 'Date',
       description:
-        'The maximum value required for the date picker to remain valid.',
+        'The maximum value required for the date range picker to remain valid.',
       control: 'date',
     },
     prompt: {
@@ -262,9 +262,9 @@ interface IgcDateRangePickerArgs {
    * Defaults to the current locale Intl.DateTimeFormat
    */
   inputFormat: string;
-  /** The minimum value required for the date picker to remain valid. */
+  /** The minimum value required for the date range picker to remain valid. */
   min: Date;
-  /** The maximum value required for the date picker to remain valid. */
+  /** The maximum value required for the date range picker to remain valid. */
   max: Date;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
@@ -322,7 +322,8 @@ export const Default: Story = {
   render: (args) => html`
     <igc-date-range-picker
       .visibleMonths=${args.visibleMonths}
-      .value=${args.value}
+      .labelStart=${args.labelStart}
+      .labelEnd=${args.labelEnd}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}
@@ -334,8 +335,8 @@ export const Default: Story = {
       .orientation=${args.orientation}
       .outlined=${args.outlined}
       .mode=${args.mode}
-      .min=${args.min}
-      .max=${args.max}
+      .min=${new Date(args.min)}
+      .max=${new Date(args.max)}
       .activeDate=${args.activeDate}
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
