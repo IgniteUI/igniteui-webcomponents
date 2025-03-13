@@ -4,10 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.3.0] - 2025-03-13
 ### Added
+- Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402)
 - #### List
-  - The `igc-list-item` component exposes a new `selected` property. When set on a list item, the item will become visually highlighted.
+  - The `igc-list-item` component exposes a new `selected` property. When set on a list item, the item will become visually highlighted [#1590](https://github.com/IgniteUI/igniteui-webcomponents/pull/1590)
+
+### Changed
+- #### Progressbar
+  - Use theme schemas [#1582](https://github.com/IgniteUI/igniteui-webcomponents/pull/1582)
+
+### Fixed
+- #### Calendar
+  - Days row height for Fluent and Bootstrap themes [#1597](https://github.com/IgniteUI/igniteui-webcomponents/pull/1597)
+  - Disabled date text color in range preview for Material and Indigo themes [#1595](https://github.com/IgniteUI/igniteui-webcomponents/pull/1595)
+- #### Chip
+  - Improved responsive layout styles [#1588](https://github.com/IgniteUI/igniteui-webcomponents/pull/1588)
+- #### Combo
+  - Improved toggle button visual states [#1580](https://github.com/IgniteUI/igniteui-webcomponents/pull/1580)
 
 ## [5.2.4] - 2025-02-24
 ### Changed
@@ -704,6 +718,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.4...5.3.0
 [5.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.3...5.2.4
 [5.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.2...5.2.3
 [5.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.1...5.2.2

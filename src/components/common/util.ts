@@ -171,8 +171,15 @@ export function* iterNodes<T = Node>(
   }
 }
 
+export function getRoot(
+  element: Element,
+  options?: GetRootNodeOptions
+): Document | ShadowRoot {
+  return element.getRootNode(options) as Document | ShadowRoot;
+}
+
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
-  return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  return getRoot(root).getElementById(id);
 }
 
 export function isElement(node: unknown): node is Element {
@@ -297,4 +304,33 @@ export function isEmpty<T, U extends string>(
 export function asArray<T>(value?: T | T[]): T[] {
   if (!isDefined(value)) return [];
   return Array.isArray(value) ? value : [value];
+}
+
+export function partition<T>(
+  array: T[],
+  isTruthy: (value: T) => boolean
+): [truthy: T[], falsy: T[]] {
+  const truthy: T[] = [];
+  const falsy: T[] = [];
+
+  for (const item of array) {
+    (isTruthy(item) ? truthy : falsy).push(item);
+  }
+
+  return [truthy, falsy];
+}
+
+/** Returns the center x/y coordinate of a given element. */
+export function getCenterPoint(element: Element) {
+  const { left, top, width, height } = element.getBoundingClientRect();
+
+  return {
+    x: left + width * 0.5,
+    y: top + height * 0.5,
+  };
+}
+
+export function roundByDPR(value: number): number {
+  const dpr = globalThis.devicePixelRatio || 1;
+  return Math.round(value * dpr) / dpr;
 }

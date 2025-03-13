@@ -11,6 +11,7 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
+import { carouselContext } from '../common/context.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   type SwipeEvent,
@@ -46,7 +47,6 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
-import { carouselContext } from './context.js';
 import { styles } from './themes/carousel.base.css.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/carousel.common.css.js';
