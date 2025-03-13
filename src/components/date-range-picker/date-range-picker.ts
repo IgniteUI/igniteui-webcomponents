@@ -433,17 +433,29 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       event.preventDefault();
       return;
     }
-    if (picker === 'start') {
-      this._startDate = newValue;
-    } else {
-      this._endDate = newValue;
+
+    const newValues = this.value ? this.value.slice() : [];
+
+    if (picker === 'start' && newValues.length > 1) {
+      newValues[0] = newValue;
+    } else if (picker === 'end' && newValues.length > 1) {
+      newValues[newValues.length - 1] = newValue;
     }
-    this.value = [this._startDate, this._endDate];
-    this.emitEvent('igcInput', { detail: this.value ?? undefined });
+
+    this.emitEvent('igcInput', { detail: newValues ?? undefined });
   }
 
-  protected handleInputChangeEvent(event: CustomEvent<Date[]>) {
+  protected handleInputChangeEvent(
+    event: CustomEvent<Date[]>,
+    picker: 'start' | 'end'
+  ) {
     event.stopPropagation();
+
+    if (picker === 'start') {
+      this._startDate = (event.target as IgcDateTimeInputComponent).value;
+    } else {
+      this._endDate = (event.target as IgcDateTimeInputComponent).value;
+    }
 
     if (!this._startDate || !this._endDate) {
       return;
@@ -693,7 +705,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .max=${this.max}
         .invalid=${live(this.invalid)}
         @igcChange=${(event: CustomEvent<Date[]>) =>
-          this.handleInputChangeEvent(event)}
+          this.handleInputChangeEvent(event, picker)}
         @igcInput=${(event: CustomEvent<Date[]>) =>
           this.handleInputEvent(event, picker)}
         @click=${this.isDropDown ? nothing : this.handleInputClick}
