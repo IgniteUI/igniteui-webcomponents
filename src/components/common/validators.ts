@@ -152,6 +152,18 @@ export const minDateRangeValidator: Validator<{
       : true,
 };
 
+export const maxDateRangeValidator: Validator<{
+  value?: (Date | null)[] | null;
+  max?: Date | null;
+}> = {
+  key: 'rangeOverflow',
+  message: ({ max }) => formatString(validatorMessages.max, max),
+  isValid: ({ value, max }) =>
+    value?.[0] && max
+      ? !DateTimeUtil.greaterThanMaxValue(value[0], max, false, true)
+      : true,
+};
+
 export const maxDateValidator: Validator<{
   value?: Date | null;
   max?: Date | null;

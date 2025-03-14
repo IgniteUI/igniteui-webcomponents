@@ -3,6 +3,7 @@ import messages from '../common/localization/validation-en.js';
 import { formatString } from '../common/util.js';
 import {
   type Validator,
+  maxDateRangeValidator,
   maxDateValidator,
   minDateRangeValidator,
   minDateValidator,
@@ -24,4 +25,4 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
 ];
 
 export const dateRangePickerValidators: Validator<IgcDateRangePickerComponent>[] =
-  [requiredValidator, minDateRangeValidator];
+  [requiredValidator, minDateRangeValidator, maxDateRangeValidator];

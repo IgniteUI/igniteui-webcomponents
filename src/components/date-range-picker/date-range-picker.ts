@@ -19,6 +19,13 @@ import {
   DateRangeType,
   type WeekDays,
 } from '../calendar/types.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../common/controllers/key-bindings.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -385,6 +392,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.value = null;
 
     this._rootClickController.update({ hideCallback: this.handleClosing });
+
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set([altKey, arrowDown], this.handleAnchorClick)
+      .set([altKey, arrowUp], this.onEscapeKey)
+      .set(escapeKey, this.onEscapeKey);
   }
 
   protected override firstUpdated() {
@@ -495,6 +510,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (findElementFromEventPath('input', event)) {
       // Open only if the click originates from the underlying input
       this.handleAnchorClick();
+    }
+  }
+
+  protected async onEscapeKey() {
+    if (await this._hide(true)) {
+      this._inputs[0].focus();
     }
   }
 
