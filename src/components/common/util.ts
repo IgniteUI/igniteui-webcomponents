@@ -37,34 +37,6 @@ export function sameObject(a: object, b: object) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-/**
- *
- * Returns an element's offset relative to its parent. Similar to element.offsetTop and element.offsetLeft, except the
- * parent doesn't have to be positioned relative or absolute.
- *
- * Work around for the following issues in Chromium based browsers:
- *
- * https://bugs.chromium.org/p/chromium/issues/detail?id=1330819
- * https://bugs.chromium.org/p/chromium/issues/detail?id=1334556
- *
- */
-export function getOffset(element: HTMLElement, parent: HTMLElement) {
-  const { top, left, bottom, right } = element.getBoundingClientRect();
-  const {
-    top: pTop,
-    left: pLeft,
-    bottom: pBottom,
-    right: pRight,
-  } = parent.getBoundingClientRect();
-
-  return {
-    top: Math.round(top - pTop),
-    left: Math.round(left - pLeft),
-    right: Math.round(right - pRight),
-    bottom: Math.round(bottom - pBottom),
-  };
-}
-
 export function createCounter() {
   let i = 0;
   return () => {
@@ -333,4 +305,24 @@ export function getCenterPoint(element: Element) {
 export function roundByDPR(value: number): number {
   const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
+}
+
+export function scrollIntoView(
+  element?: HTMLElement,
+  config?: ScrollIntoViewOptions
+): void {
+  if (!element) {
+    return;
+  }
+
+  element.scrollIntoView(
+    Object.assign(
+      {
+        behavior: 'auto',
+        block: 'nearest',
+        inline: 'nearest',
+      },
+      config
+    )
+  );
 }
