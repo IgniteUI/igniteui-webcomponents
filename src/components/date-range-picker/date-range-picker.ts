@@ -422,10 +422,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     event.stopPropagation();
   }
 
-  protected handleInputEvent(
-    event: CustomEvent<Date[]>,
-    picker: 'start' | 'end'
-  ) {
+  protected handleInputEvent(event: CustomEvent<Date[]>) {
     event.stopPropagation();
     const newValue = (event.target as IgcDateTimeInputComponent).value!;
 
@@ -435,23 +432,27 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
 
     const newValues = this.value ? this.value.slice() : [];
+    const inputID = (event.target as IgcDateTimeInputComponent).id
+      .split('-')
+      .pop();
 
-    if (picker === 'start' && newValues.length > 1) {
+    if (inputID === 'start' && newValues.length > 1) {
       newValues[0] = newValue;
-    } else if (picker === 'end' && newValues.length > 1) {
+    } else if (inputID === 'end' && newValues.length > 1) {
       newValues[newValues.length - 1] = newValue;
     }
 
     this.emitEvent('igcInput', { detail: newValues ?? undefined });
   }
 
-  protected handleInputChangeEvent(
-    event: CustomEvent<Date[]>,
-    picker: 'start' | 'end'
-  ) {
+  protected handleInputChangeEvent(event: CustomEvent<Date[]>) {
     event.stopPropagation();
 
-    if (picker === 'start') {
+    const inputID = (event.target as IgcDateTimeInputComponent).id
+      .split('-')
+      .pop();
+
+    if (inputID === 'start') {
       this._startDate = (event.target as IgcDateTimeInputComponent).value;
     } else {
       this._endDate = (event.target as IgcDateTimeInputComponent).value;
@@ -705,9 +706,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .max=${this.max}
         .invalid=${live(this.invalid)}
         @igcChange=${(event: CustomEvent<Date[]>) =>
-          this.handleInputChangeEvent(event, picker)}
+          this.handleInputChangeEvent(event)}
         @igcInput=${(event: CustomEvent<Date[]>) =>
-          this.handleInputEvent(event, picker)}
+          this.handleInputEvent(event)}
         @click=${this.isDropDown ? nothing : this.handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
