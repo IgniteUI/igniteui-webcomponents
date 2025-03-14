@@ -5,7 +5,6 @@
 @use '../vars' as *;
 
 :host {
-    --track-size: #{rem(4px)};
     --linear-animation-duration: 2000ms;
     --linear-strips-orientation: -45deg;
 }
@@ -43,7 +42,6 @@
 [part~='track'] {
     position: relative;
     width: inherit;
-    height: var(--track-size);
     overflow: hidden;
     z-index: 0;
 }

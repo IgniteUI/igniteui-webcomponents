@@ -2,10 +2,10 @@ import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { carouselContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatString } from '../common/util.js';
 import type IgcCarouselComponent from './carousel.js';
-import { carouselContext } from './context.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
 /**

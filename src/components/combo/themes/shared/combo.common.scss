@@ -59,6 +59,13 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),

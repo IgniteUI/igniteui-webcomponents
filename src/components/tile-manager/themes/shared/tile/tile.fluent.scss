@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --pad-block: #{sizable(rem(8px), rem(12px), rem(12px))};
+}
