@@ -1,3 +1,4 @@
+import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
@@ -345,36 +346,48 @@ export const Default: Story = {
       new Date().setDate(new Date().getDate() + 7)
     ).toISOString(), // +7 days
   },
-  render: (args) => html`
-    <igc-date-range-picker
-      .visibleMonths=${args.visibleMonths}
-      .value=${[new Date(args._startDate), new Date(args._endDate)]}
-      .labelStart=${args.labelStart}
-      .labelEnd=${args.labelEnd}
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
-      .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .outlined=${args.outlined}
-      .mode=${args.mode}
-      .min=${new Date(args.min)}
-      .max=${new Date(args.max)}
-      .activeDate=${args.activeDate}
-      ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-    </igc-date-range-picker>
-  `,
+  render: (args) => {
+    const [{ _startDate }, updateArgsStart] = useArgs();
+    const [{ _endDate }, updateArgsEnd] = useArgs();
+
+    const handleChange = (event: CustomEvent) => {
+      const [start, end] = event.detail;
+      updateArgsStart({ _startDate: start.toISOString() });
+      updateArgsEnd({ _endDate: end.toISOString() });
+    };
+
+    return html`
+      <igc-date-range-picker
+        .visibleMonths=${args.visibleMonths}
+        .value=${[new Date(args._startDate), new Date(args._endDate)]}
+        .labelStart=${args.labelStart}
+        .labelEnd=${args.labelEnd}
+        .displayFormat=${args.displayFormat}
+        .inputFormat=${args.inputFormat}
+        .locale=${args.locale}
+        .prompt=${args.prompt}
+        .weekStart=${args.weekStart}
+        .hideHeader=${args.hideHeader}
+        .headerOrientation=${args.headerOrientation}
+        .nonEditable=${args.nonEditable}
+        .orientation=${args.orientation}
+        .outlined=${args.outlined}
+        .mode=${args.mode}
+        .min=${new Date(args.min)}
+        .max=${new Date(args.max)}
+        .activeDate=${args.activeDate}
+        ?disabled=${args.disabled}
+        ?invalid=${args.invalid}
+        ?readonly=${args.readOnly}
+        ?required=${args.required}
+        ?open=${args.open}
+        ?show-week-numbers=${args.showWeekNumbers}
+        ?hide-outside-days=${args.hideOutsideDays}
+        ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+        ?keep-open-on-select=${args.keepOpenOnSelect}
+        @igcChange=${handleChange}
+      >
+      </igc-date-range-picker>
+    `;
+  },
 };

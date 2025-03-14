@@ -384,7 +384,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._rootClickController.update({ hideCallback: this.handleClosing });
   }
 
-  protected override firstUpdated() {
+  protected override updated() {
     this.setCalendarRangeValues();
   }
 
