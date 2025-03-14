@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -39,6 +39,7 @@ import {
   findElementFromEventPath,
   last,
 } from '../common/util.js';
+import { dateRangePickerValidators } from '../date-picker/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
@@ -143,6 +144,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected override _formValue: FormValue<(Date | null)[] | null>;
 
+  protected override get __validators() {
+    return dateRangePickerValidators;
+  }
+
   /**
    * The label of the start date input.
    * @attr label
@@ -159,14 +164,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @property({ converter: convertToDates })
   public set value(value: (Date | string | null)[] | null | undefined) {
-    if (value && value?.length > 2) {
-      return;
-    }
     const converted = convertToDates(value?.map((d) => d ?? ''));
     this._startDate = converted?.[0] ?? null;
     this._endDate = converted?.[1] ?? null;
     this.setCalendarRangeValues();
     this._formValue.setValueAndFormState([this._startDate, this._endDate]);
+    this._validate();
   }
 
   public get value(): (Date | null)[] | null {
@@ -719,6 +722,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
+  private renderHelperText(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
+  }
+
   protected override render() {
     const id = this.id || this.inputId;
     const idStart = `${id}-start`;
@@ -727,7 +734,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return html`
       ${this.renderInput(idStart, 'start')}${this.renderPicker(idStart)}
       <span style="margin-left: 20px; margin-right: 20px">-</span>
-      ${this.renderInput(idEnd, 'end')}
+      ${this.renderInput(idEnd, 'end')} ${this.renderHelperText()}
     `;
   }
 }

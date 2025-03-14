@@ -4,9 +4,11 @@ import { formatString } from '../common/util.js';
 import {
   type Validator,
   maxDateValidator,
+  minDateRangeValidator,
   minDateValidator,
   requiredValidator,
 } from '../common/validators.js';
+import type IgcDateRangePickerComponent from '../date-range-picker/date-range-picker.js';
 import type IgcDatePickerComponent from './date-picker.js';
 
 export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
@@ -20,3 +22,6 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
       value && disabledDates ? !isDateInRanges(value, disabledDates) : true,
   },
 ];
+
+export const dateRangePickerValidators: Validator<IgcDateRangePickerComponent>[] =
+  [requiredValidator, minDateRangeValidator];
