@@ -2,10 +2,17 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
 import {
+  type DateRangeDescriptor,
+  DateRangeType,
   IgcButtonComponent,
   IgcDateRangePickerComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcDateRangePickerComponent, IgcButtonComponent);
 
@@ -337,6 +344,34 @@ type Story = StoryObj<IgcDateRangePickerArgs>;
 
 // endregion
 
+const minDate = new Date(2025, 2, 1);
+const maxDate = new Date(2025, 2, 31);
+const disabledDates: DateRangeDescriptor[] = [
+  {
+    type: DateRangeType.Between,
+    dateRange: [minDate, maxDate],
+  },
+];
+
+function showTrimester() {
+  const picker =
+    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
+  picker.visibleMonths = 3;
+}
+
+function showDoubleMonth() {
+  const picker =
+    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
+  picker.visibleMonths = 2;
+}
+
+function selectToday() {
+  const picker =
+    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
+  picker.value = [new Date(), new Date()];
+  picker.hide();
+}
+
 export const Default: Story = {
   args: {
     open: false,
@@ -371,4 +406,145 @@ export const Default: Story = {
       ?keep-open-on-select=${args.keepOpenOnSelect}
     >
     </igc-date-range-picker>`,
+};
+
+export const Slots: Story = {
+  args: {
+    labelStart: 'Start Date',
+    labelEnd: 'End Date',
+  },
+  render: (args) =>
+    html` <igc-date-range-picker
+      id="picker"
+      .visibleMonths=${args.visibleMonths}
+      .labelStart=${args.labelStart}
+      .labelEnd=${args.labelEnd}
+      .displayFormat=${args.displayFormat}
+      .inputFormat=${args.inputFormat}
+      .locale=${args.locale}
+      .prompt=${args.prompt}
+      .weekStart=${args.weekStart}
+      .hideHeader=${args.hideHeader}
+      .headerOrientation=${args.headerOrientation}
+      .nonEditable=${args.nonEditable}
+      .orientation=${args.orientation}
+      .outlined=${args.outlined}
+      .mode=${args.mode}
+      .min=${new Date(args.min)}
+      .max=${new Date(args.max)}
+      .activeDate=${args.activeDate}
+      ?disabled=${args.disabled}
+      ?invalid=${args.invalid}
+      ?readonly=${args.readOnly}
+      ?required=${args.required}
+      ?open=${args.open}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
+      ?keep-open-on-select=${args.keepOpenOnSelect}
+    >
+      <span slot="prefix">$</span>
+      <span slot="suffix">🦀</span>
+      <p slot="helper-text">
+        For example, select the dates of your future vacation
+      </p>
+      <p slot="title">🎉 Custom title 🎉</p>
+      <span slot="calendar-icon-open">👩‍💻</span>
+      <span slot="calendar-icon">👨‍💻</span>
+      <span slot="clear-icon">🗑️</span>
+
+      <div slot="actions">
+        <igc-button variant="flat" @click=${selectToday}
+          >Select today</igc-button
+        >
+        <igc-button variant="flat" @click=${showTrimester}
+          >Trimester view</igc-button
+        >
+        <igc-button variant="flat" @click=${showDoubleMonth}
+          >Double month view</igc-button
+        >
+      </div>
+    </igc-date-range-picker>`,
+};
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <form action="" @submit=${formSubmitHandler}>
+      <fieldset>
+        <igc-date-range-picker
+          labelStart="Default"
+          name="picker-default"
+        ></igc-date-range-picker>
+
+        <igc-date-range-picker
+          labelStart="Initial value"
+          name="picker-initial"
+          .value=${[new Date(2025, 2, 19), new Date(2025, 2, 20)]}
+        ></igc-date-range-picker>
+
+        <igc-date-range-picker
+          labelStart="Readonly"
+          name="picker-readonly"
+          readonly
+        ></igc-date-range-picker>
+      </fieldset>
+
+      <fieldset disabled>
+        <igc-date-range-picker
+          labelStart="Disabled"
+          name="picker-disabled"
+        ></igc-date-range-picker>
+      </fieldset>
+
+      <fieldset>
+        <igc-date-range-picker
+          labelStart="Required"
+          name="picker-required"
+          required
+        >
+          <p slot="value-missing">This field is required!</p>
+        </igc-date-range-picker>
+      </fieldset>
+
+      <fieldset>
+        <igc-date-range-picker
+          labelStart="Minimum date"
+          name="picker-min"
+          .min=${minDate}
+        >
+          <p slot="helper-text">
+            Choose a date after ${minDate.toLocaleDateString()}
+          </p>
+          <p slot="range-underflow">
+            Selected date is less that ${minDate.toLocaleDateString()}
+          </p>
+        </igc-date-range-picker>
+
+        <igc-date-range-picker
+          labelStart="Maximum date"
+          name="picker-max"
+          .max=${maxDate}
+        >
+          <p slot="helper-text">
+            Choose a date before ${maxDate.toLocaleDateString()}
+          </p>
+          <p slot="range-overflow">
+            Selected date is greater than ${maxDate.toLocaleDateString()}
+          </p>
+        </igc-date-range-picker>
+      </fieldset>
+
+      <fieldset>
+        <igc-date-range-picker
+          labelStart="Disabled dates range - between (${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()})"
+          name="picker-disabled-ranges"
+          .disabledDates=${disabledDates}
+        >
+          <p slot="bad-input">Selected date is in the disabled dates!</p>
+        </igc-date-range-picker>
+      </fieldset>
+      ${formControls()}
+    </form>
+  `,
 };
