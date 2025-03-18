@@ -443,15 +443,23 @@ export const Slots: Story = {
       ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
       ?keep-open-on-select=${args.keepOpenOnSelect}
     >
-      <span slot="prefix">$</span>
-      <span slot="suffix">🦀</span>
+      <span slot="prefix-start">$</span>
+      <span slot="prefix-end">$</span>
+      <span slot="suffix-start">🦀</span>
+      <span slot="suffix-end">🦀</span>
+
+      <span slot="start-calendar-icon-open">👩‍💻</span>
+      <span slot="start-calendar-icon">👩‍💻</span>
+      <span slot="end-calendar-icon-open">👩‍💻</span>
+      <span slot="end-calendar-icon">👩‍💻</span>
+
+      <span slot="start-clear-icon">🗑️</span>
+      <span slot="end-clear-icon">🗑️</span>
+
       <p slot="helper-text">
         For example, select the dates of your future vacation
       </p>
       <p slot="title">🎉 Custom title 🎉</p>
-      <span slot="calendar-icon-open">👩‍💻</span>
-      <span slot="calendar-icon">👨‍💻</span>
-      <span slot="clear-icon">🗑️</span>
 
       <div slot="actions">
         <igc-button variant="flat" @click=${selectToday}

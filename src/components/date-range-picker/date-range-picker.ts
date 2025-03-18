@@ -566,12 +566,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._inputs.forEach((input) => input.clear());
   }
 
-  private renderClearIcon() {
+  private renderClearIcon(picker: 'start' | 'end') {
     return !this.value
       ? nothing
       : html`
-          <span slot="suffix" part="clear-icon" @click=${this.clear}>
-            <slot name="clear-icon">
+          <span slot="suffix" part="${picker}-clear-icon" @click=${this.clear}>
+            <slot name="${picker}-clear-icon">
               <igc-icon
                 name="input_clear"
                 collection="default"
@@ -582,12 +582,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         `;
   }
 
-  private renderCalendarIcon() {
+  private renderCalendarIcon(picker: 'start' | 'end') {
     const defaultIcon = html`
       <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
 
-    const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
+    const state = this.open
+      ? `${picker}-calendar-icon-open`
+      : `${picker}-calendar-icon`;
 
     return html`
       <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
@@ -729,15 +731,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         @click=${this.isDropDown ? nothing : this.handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
-        ${this.renderCalendarIcon()}
+        ${this.renderCalendarIcon(picker)}
+
         <slot
-          name="prefix"
-          slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
+          name=${picker === 'start' ? 'prefix-start' : 'prefix-end'}
+          slot="prefix"
         ></slot>
-        ${this.renderClearIcon()}
+
+        ${this.renderClearIcon(picker)}
+
         <slot
-          name="suffix"
-          slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
+          name=${picker === 'start' ? 'suffix-start' : 'suffix-end'}
+          slot="suffix"
         ></slot>
       </igc-date-time-input>
     `;
