@@ -406,6 +406,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.setCalendarRangeValues();
   }
 
+  protected override formResetCallback() {
+    super.formResetCallback();
+    this.value = null;
+  }
+
   private setDateConstraints() {
     const dates: DateRangeDescriptor[] = [];
     if (this._min) {
