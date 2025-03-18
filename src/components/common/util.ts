@@ -293,9 +293,9 @@ export function isString(value: unknown): value is string {
 }
 
 /**
- * Returns whether a given collection has at least one member.
+ * Returns whether a given collection is empty.
  */
-export function isEmpty<T, U extends string>(
+export function isEmpty<T, U extends object>(
   x: ArrayLike<T> | Set<T> | Map<U, T>
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;

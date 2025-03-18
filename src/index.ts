@@ -66,6 +66,7 @@ export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
+export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -144,3 +145,4 @@ export type {
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';
+export type { IgcPlacement } from './components/popover/popover.js';

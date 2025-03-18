@@ -1,0 +1,30 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+[part="base"] {
+    @include type-style('body-2');
+
+    background: linear-gradient(to bottom, #323232 0%, #3F3F3F 40%, #1C1C1C 150%), linear-gradient(to top, rgb(255 255 255 / 40%) 0%, rgb(0 0 0 / 25%) 200%);
+    background-blend-mode: multiply;
+    padding: 0.25rem;
+    color: #fff;
+}
+
+#arrow {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: inherit;
+}
+
+igc-popover::part(container) {
+    background-color: transparent;
+}
