@@ -230,11 +230,12 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'object',
       defaultValue: [new Date(), new Date()],
     },
-    _startDate: {
-      control: 'date',
-    },
-    _endDate: {
-      control: 'date',
+    singleInput: {
+      type: 'boolean',
+      description:
+        'Whether the component uses a single input for the date range.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {
@@ -257,6 +258,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    singleInput: false,
   },
 };
 
@@ -337,8 +339,7 @@ interface IgcDateRangePickerArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
-  _startDate: string;
-  _endDate: string;
+  singleInput: boolean;
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 
@@ -395,6 +396,7 @@ export const Default: Story = {
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
       .activeDate=${args.activeDate}
+      .singleInput=${args.singleInput}
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
       ?readonly=${args.readOnly}
