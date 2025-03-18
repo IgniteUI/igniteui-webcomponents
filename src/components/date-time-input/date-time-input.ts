@@ -574,8 +574,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         ? DateTimeUtil.formatDate(end, this.locale, format)
         : emptyMask;
     } else {
-      startMask = start ? start.toLocaleString() : emptyMask;
-      endMask = end ? end.toLocaleString() : emptyMask;
+      startMask = start ? start.toLocaleDateString() : emptyMask;
+      endMask = end ? end.toLocaleDateString() : emptyMask;
     }
     this.maskedValue = `${startMask} - ${endMask}`;
   }
