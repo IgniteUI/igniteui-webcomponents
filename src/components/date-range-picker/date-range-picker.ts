@@ -53,6 +53,7 @@ import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import { styles } from './date-range-picker.base.css.js';
 
 export interface IgcDateRangePickerComponentEventMap {
   igcOpening: CustomEvent<void>;
@@ -89,6 +90,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-range-picker';
+  public static styles = [styles]; // poc styles, TODO
 
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
@@ -767,9 +769,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private renderInputs(idStart: string, idEnd: string) {
     return html`
-      ${this.renderInput(idStart, 'start')}${this.renderPicker(idStart)}
-      <span style="margin-left: 20px; margin-right: 20px">-</span>
-      ${this.renderInput(idEnd, 'end')} ${this.renderHelperText()}
+      <div part="inputs">
+        ${this.renderInput(idStart, 'start')}${this.renderPicker(idStart)}
+        <span part="separator">to</span>
+        ${this.renderInput(idEnd, 'end')}
+      </div>
+      ${this.renderHelperText()}
     `;
   }
 
@@ -810,14 +815,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
         ></slot>
       </igc-date-time-input>
-      ${this.renderPicker(id)}`;
+      ${this.renderHelperText()} ${this.renderPicker(id)}`;
   }
 
   protected override render() {
     const id = this.id || this.inputId;
     const idStart = `${id}-start`;
     const idEnd = `${id}-end`;
-
     if (this.singleInput) {
       return this.renderSingleInput(id);
     }
