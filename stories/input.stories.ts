@@ -39,11 +39,34 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
+      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "file" | "url"',
       description: 'The type attribute of the control.',
-      options: ['email', 'number', 'password', 'search', 'tel', 'text', 'url'],
+      options: [
+        'email',
+        'number',
+        'password',
+        'search',
+        'tel',
+        'text',
+        'file',
+        'url',
+      ],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
+    },
+    multiple: {
+      type: 'boolean',
+      description:
+        'The multiple attribute of the control.\nUsed to indicate that a file input allows the user to select more than one file.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    accept: {
+      type: 'string',
+      description:
+        'The accept attribute of the control.\nDefines the file types as a list of comma-separated values that the file input should accept.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     inputMode: {
       type: 'string',
@@ -148,6 +171,8 @@ const metadata: Meta<IgcInputComponent> = {
   },
   args: {
     type: 'text',
+    multiple: false,
+    accept: '',
     autofocus: false,
     validateOnly: false,
     required: false,
@@ -164,7 +189,25 @@ interface IgcInputArgs {
   /** The value of the control. */
   value: string | Date;
   /** The type attribute of the control. */
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  type:
+    | 'email'
+    | 'number'
+    | 'password'
+    | 'search'
+    | 'tel'
+    | 'text'
+    | 'file'
+    | 'url';
+  /**
+   * The multiple attribute of the control.
+   * Used to indicate that a file input allows the user to select more than one file.
+   */
+  multiple: boolean;
+  /**
+   * The accept attribute of the control.
+   * Defines the file types as a list of comma-separated values that the file input should accept.
+   */
+  accept: string;
   /**
    * The input mode attribute of the control.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
@@ -229,9 +272,11 @@ export const Basic: Story = {
       minlength=${ifDefined(args.minLength)}
       maxlength=${ifDefined(args.maxLength)}
       step=${ifDefined(args.step)}
+      accept=${ifDefined(args.type !== 'file' ? undefined : args.accept)}
       ?autofocus=${args.autofocus}
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
+      ?multiple=${args.multiple}
       ?outlined=${args.outlined}
       ?readonly=${args.readOnly}
       ?required=${args.required}
@@ -257,9 +302,11 @@ export const Slots: Story = {
       minlength=${ifDefined(args.minLength)}
       maxlength=${ifDefined(args.maxLength)}
       step=${ifDefined(args.step)}
+      accept=${ifDefined(args.type !== 'file' ? undefined : args.accept)}
       ?autofocus=${args.autofocus}
       ?disabled=${args.disabled}
       ?invalid=${args.invalid}
+      ?multiple=${args.multiple}
       ?outlined=${args.outlined}
       ?readonly=${args.readOnly}
       ?required=${args.required}
@@ -282,6 +329,13 @@ export const Validation: Story = {
           minlength="3"
         >
           <p slot="helper-text">Blah, blah, blah...</p>
+        </igc-input>
+      </fieldset>
+
+      <fieldset>
+        <igc-input label="Vitae opus" type="file" required>
+          <p slot="helper-text">Your life's work</p>
+          <p slot="value-missing">You must upload a file</p>
         </igc-input>
       </fieldset>
 

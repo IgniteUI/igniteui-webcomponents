@@ -218,6 +218,66 @@ describe('Input component', () => {
         expect(input.value).to.be.empty;
       });
 
+      it('sets the multiple property when input is of type file', async () => {
+        await createFixture(html`<igc-input type="file" multiple></igc-input>`);
+
+        expect(element.multiple).to.equal(true);
+        expect(input.multiple).to.equal(true);
+
+        element.multiple = false;
+        await elementUpdated(element);
+
+        expect(element.multiple).to.equal(false);
+        expect(input.multiple).to.equal(false);
+      });
+
+      it('sets the accept property when input is of type file', async () => {
+        await createFixture(
+          html`<igc-input type="file" accept="image/*"></igc-input>`
+        );
+
+        expect(element.accept).to.equal('image/*');
+        expect(input.accept).to.equal('image/*');
+
+        element.accept = '';
+        await elementUpdated(element);
+
+        expect(element.accept).to.be.empty;
+        expect(input.accept).to.be.empty;
+      });
+
+      it('returns the uploaded files when input is of type file', async () => {
+        await createFixture(html`<igc-input type="file"></igc-input>`);
+
+        const eventSpy = spy(element, 'emitEvent');
+        const file = new File(['test content'], 'test.txt', {
+          type: 'text/plain',
+        });
+        const fileList = {
+          0: file,
+          length: 1,
+          item: (index: number) => (index === 0 ? file : null),
+        };
+        const nativeInput = element.shadowRoot!.querySelector(
+          'input[type="file"]'
+        ) as HTMLInputElement;
+
+        Object.defineProperty(nativeInput, 'files', {
+          value: fileList,
+          writable: true,
+        });
+
+        nativeInput!.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await elementUpdated(element);
+
+        expect(eventSpy).calledOnceWith('igcChange');
+        expect(element.files).to.exist;
+        expect(element.files!.length).to.equal(1);
+        expect(element.files![0].name).to.equal('test.txt');
+        expect(element.files).to.deep.equal(nativeInput.files);
+      });
+
       it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {
         await createFixture(html`<igc-input value="a"></igc-input>`);
 
@@ -710,6 +770,48 @@ describe('Input component', () => {
         ];
 
       runValidationContainerTests(IgcInputComponent, testParameters);
+    });
+  });
+
+  describe('File type layout', () => {
+    it('renders publicly documented parts when the input is of type file', async () => {
+      await createFixture(html`<igc-input type="file"></igc-input>`);
+
+      expect(
+        element.shadowRoot!.querySelector('div[part="file-selector-button"]')
+      ).to.exist;
+      expect(element.shadowRoot!.querySelector('div[part="file-names"]')).to
+        .exist;
+
+      element.type = 'text';
+      await elementUpdated(element);
+
+      expect(
+        element.shadowRoot!.querySelector('div[part="file-selector-button"]')
+      ).not.to.exist;
+      expect(element.shadowRoot!.querySelector('div[part="file-names"]')).not.to
+        .exist;
+    });
+
+    it('renders slotted contents when the input is of type file', async () => {
+      await createFixture(html`
+        <igc-input type="file">
+          <span slot="file-selector-text">Upload</span>
+          <span slot="file-missing-text">Choose a file</span>
+        </igc-input>
+      `);
+
+      const selectorSlot = element.shadowRoot!.querySelector(
+        'slot[name="file-selector-text"]'
+      ) as HTMLSlotElement;
+      const missingSlot = element.shadowRoot!.querySelector(
+        'slot[name="file-missing-text"]'
+      ) as HTMLSlotElement;
+
+      expect(selectorSlot!.assignedNodes()[0].textContent).to.equal('Upload');
+      expect(missingSlot!.assignedNodes()[0].textContent).to.equal(
+        'Choose a file'
+      );
     });
   });
 });

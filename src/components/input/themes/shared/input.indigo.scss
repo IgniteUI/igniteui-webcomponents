@@ -117,6 +117,14 @@ $transition-duration: .25s;
     [part~='suffixed'] {
         padding-inline-end: 0;
     }
+
+    [part='file-names'] {
+        @include type-style('body-2');
+
+        color: var-get($theme, 'idle-text-color');
+        font-size: rem(12px);
+        line-height: rem(16px);
+    }
 }
 
 :host(:focus-within),

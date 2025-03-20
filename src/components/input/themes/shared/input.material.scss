@@ -69,9 +69,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     color: var-get($theme, 'idle-secondary-color');
     transition:
-        transform 150ms cubic-bezier(.4, 0, .2, 1),
-        color 150ms cubic-bezier(.4, 0, .2, 1),
-        font-size 150ms cubic-bezier(.4, 0, .2, 1);
+        transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
     line-height: normal;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -138,6 +138,63 @@ input:placeholder-shown + [part='notch'] [part='label'],
     overflow: hidden;
 }
 
+:host([type='file']) {
+    [part~='container'] {
+        grid-template-columns: auto auto auto 1fr auto;
+    }
+
+    [part='notch'] [part='label'] {
+        transition: none;
+    }
+
+    [part='label'] {
+        @extend %label;
+        @include type-style('caption');
+    }
+
+    [part~='file-names'] {
+        grid-area: 1 / 3 / span 1 / span 2;
+        padding-inline: rem(4px);
+    }
+
+    [part~='input'] {
+        grid-column: 2 / 5;
+    }
+
+    [part='filler'] {
+        grid-column: 4 / 5;
+    }
+
+    [part='end'] {
+        grid-area: 1 / 5;
+    }
+}
+
+:host([type='file']:not([outlined])) {
+    :not([outlined]) {
+        [part='notch'] {
+            grid-area: 1 / 3;
+        }
+
+        [part='notch'] [part='label'] {
+            transform: translateY(-73%);
+        }
+    }
+
+    [part~='file-names'] {
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
+    }
+}
+
+:host([outlined][type='file']) {
+    [part='notch'] {
+        @extend %floated-styles;
+
+        grid-column: 3 / 3;
+    }
+}
+
 :host(:focus-within) {
     [part='label'] {
         @extend %label;
@@ -174,10 +231,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
             start: {
                 end-radius: var-get($theme, 'box-border-radius');
                 start-radius: var-get($theme, 'box-border-radius');
-            };
+            }
         }
 
-        transition: border-bottom-width 150ms cubic-bezier(.4, 0, .2, 1);
+        transition: border-bottom-width 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
         &::after {
             position: absolute;
@@ -189,7 +246,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
             bottom: -1px;
             background: var-get($theme, 'idle-bottom-line-color');
             transform: scaleX(0);
-            transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+            transition:
+                transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
@@ -318,20 +377,21 @@ input:placeholder-shown + [part='notch'] [part='label'],
             inline: {
                 start-width: $idle-border-width;
                 end-width: 0;
-            };
+            }
             block: {
                 start-width: $idle-border-width;
                 end-width: $idle-border-width;
-            };
+            }
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 
+    [part='file-selector-button'],
     [part='filler'] {
         border: {
             width: $idle-border-width;
@@ -349,17 +409,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
             inline: {
                 start-width: 0;
                 end-width: $idle-border-width;
-            };
+            }
             block: {
                 start-width: $idle-border-width;
                 end-width: $idle-border-width;
-            };
+            }
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 }
@@ -400,6 +460,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='notch'],
     [part='start'],
     [part='end'],
+    [part='file-selector-button'],
     [part='filler'] {
         border-color: var-get($theme, 'hover-border-color');
     }
@@ -420,7 +481,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
             color: var-get($theme, 'focused-border-color');
             inline: {
                 start-width: $active-border-width;
-            };
+            }
             block: {
                 start-width: $active-border-width;
                 end-width: $active-border-width;
@@ -436,7 +497,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='filler'] {
+    [part='filler'],
+    [part='file-selector-button'] {
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
@@ -448,11 +510,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
             color: var-get($theme, 'focused-border-color');
             inline: {
                 end-width: $active-border-width;
-            };
+            }
             block: {
                 start-width: $active-border-width;
                 end-width: $active-border-width;
-            };
+            }
         }
     }
 }
@@ -480,6 +542,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([type='search'])[outlined][invalid]:focus-within) {
     [part='start'],
     [part='notch'],
+    [part='file-selector-button'],
     [part='filler'],
     [part='end'] {
         border-color: var-get($theme, 'error-secondary-color');
@@ -502,7 +565,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border: {
             width: $active-border-width;
             color: var-get($theme, 'error-secondary-color');
-            top: $active-border-width solid var-get($theme, 'error-secondary-color');
+            top: $active-border-width solid
+                var-get($theme, 'error-secondary-color');
         }
     }
 }
@@ -530,7 +594,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([type='search'][outlined]) {
     [part='notch'] {
-        border: none
+        border: none;
     }
 }
 
@@ -553,5 +617,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+}
+
+:host([type='file'][outlined]:hover),
+:host([type='file'][outlined][disabled]),
+:host([type='file'][outlined][invalid]) {
+    [part='notch'] {
+        border-top-color: transparent;
     }
 }

@@ -115,6 +115,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected abstract renderInput(): TemplateResult;
+  protected abstract renderFileParts(): TemplateResult | typeof nothing;
 
   protected renderValidatorContainer(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
@@ -175,7 +176,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()}
+        ${this.renderInput()} ${this.renderFileParts()}
         <div part="notch">${this.renderLabel()}</div>
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
@@ -187,7 +188,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   private renderStandard() {
     return html`${this.renderLabel()}
       <div part=${partNameMap(this.resolvePartNames('container'))}>
-        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
+        ${this.renderPrefix()} ${this.renderFileParts()} ${this.renderInput()}
+        ${this.renderSuffix()}
       </div>
       ${this.renderValidatorContainer()}`;
   }

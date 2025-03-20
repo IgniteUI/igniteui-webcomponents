@@ -8,6 +8,8 @@ $theme: $bootstrap;
     --input-size: var(--component-size);
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
+    --input-border-color: #{var-get($theme, 'border-color')};
+    --input-height: #{var-get($theme, 'size')};
 
     ::part(helper-text) {
         @include type-style('body-2');
@@ -18,13 +20,93 @@ $theme: $bootstrap;
     }
 }
 
+:host([type='file']) {
+    [part~='container'] {
+        transition:
+            box-shadow 0.15s ease-out,
+            border 0.15s ease-out;
+    }
+}
+
+:host([type='file']:focus-within) {
+    --border-color: #{var-get($theme, 'focused-border-color')};
+
+    [part~='container'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
+    }
+}
+
 [part~='container'] {
     border-radius: var-get($theme, 'border-border-radius');
     border-style: none;
     grid-template-columns: auto 1fr auto;
 
+    [part~='file-selector-button'] igc-button::part(base) {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+        height: var(--input-height);
+    }
+
     &::after {
         display: none;
+    }
+}
+
+[part~='file-selector-button'] igc-button {
+    --foreground: #{var-get($theme, 'input-prefix-color')};
+    --background: #{var-get($theme, 'input-prefix-background')};
+    --hover-foreground: var(--foreground);
+    --hover-background: var(--background);
+    --active-foreground: var(--foreground);
+    --active-background: var(--background);
+    --focus-visible-foreground: var(--foreground);
+    --focus-visible-background: var(--background);
+    --disabled-foreground: #{var-get($theme, 'disabled-text-color')};
+    --disabled-background: #{var-get($theme, 'border-disabled-background')};
+
+    &::part(base) {
+        font-size: var(--input-font);
+        transition: border 0.15s ease-out;
+        box-shadow: none;
+        border: {
+            style: solid;
+            color: var(--input-border-color);
+            inline: {
+                start-width: 1px;
+                end-width: 0;
+            }
+            block: {
+                start-width: 1px;
+                end-width: 1px;
+            }
+        }
+    }
+}
+
+[part~='file-names'] {
+    font-size: var(--input-font);
+    padding-inline: pad-inline(8px, 12px, 16px);
+    padding-block: pad-block(4px, 6px, 8px);
+    color: var-get($theme, 'idle-text-color');
+    border: 1px solid var-get($theme, 'border-color');
+    border-start-end-radius: var-get($theme, 'border-border-radius');
+    border-end-end-radius: var-get($theme, 'border-border-radius');
+    transition:
+        box-shadow 0.15s ease-out,
+        border 0.15s ease-out;
+}
+
+[part*='prefixed'] {
+    [part~='file-selector-button'] igc-button::part(base) {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+    }
+}
+
+[part*='suffixed'] {
+    [part~='file-names'] {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
     }
 }
 
@@ -38,7 +120,9 @@ $theme: $bootstrap;
     box-shadow: none;
     z-index: 1;
     border: 1px solid var-get($theme, 'border-color');
-    transition: box-shadow .15s ease-out, border .15s ease-out;
+    transition:
+        box-shadow 0.15s ease-out,
+        border 0.15s ease-out;
     grid-area: 1 / 2;
     background-clip: padding-box;
 }
@@ -90,7 +174,9 @@ $theme: $bootstrap;
     position: relative;
     border-radius: none;
     min-width: auto;
-    transition: box-shadow .15s ease-out, border .15s ease-out;
+    transition:
+        box-shadow 0.15s ease-out,
+        border 0.15s ease-out;
     font-size: var(--font);
 
     ::slotted(*) {
@@ -104,15 +190,15 @@ $theme: $bootstrap;
     grid-area: 1 / 1;
     border: {
         style: solid;
-        color: var-get($theme, 'border-color');;
+        color: var-get($theme, 'border-color');
         inline: {
             start-width: 1px;
             end-width: 0;
-        };
+        }
         block: {
             start-width: 1px;
             end-width: 1px;
-        };
+        }
     }
 }
 
@@ -126,11 +212,11 @@ $theme: $bootstrap;
         inline: {
             start-width: 0;
             end-width: 1px;
-        };
+        }
         block: {
             start-width: 1px;
             end-width: 1px;
-        };
+        }
     }
 }
 
@@ -163,11 +249,28 @@ $theme: $bootstrap;
     }
 }
 
-:host(:disabled),
-:host([disabled]) {
+:host(:not([disabled])[invalid][type='file']) {
+    --input-border-color: #{var-get($theme, 'error-secondary-color')};
+
+    [part~='container'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+
     [part='prefix'],
     [part='suffix'],
-    [part~='input'] {
+    [part~='file-names'] {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    --input-border-color: #{var-get($theme, 'disabled-border-color')};
+
+    [part='prefix'],
+    [part='suffix'],
+    [part~='input'],
+    [part~='file-names'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'border-disabled-background');
         border-block-color: var-get($theme, 'disabled-border-color');
@@ -181,12 +284,17 @@ $theme: $bootstrap;
         border-inline-end-color: var-get($theme, 'disabled-border-color');
     }
 
-    [part~='input'] {
+    [part~='input'],
+    [part~='file-names'] {
         border-color: var-get($theme, 'disabled-border-color');
     }
 
     [part='label'],
     ::part(helper-text) {
-        color: var-get($theme, 'disabled-text-color')
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='file-selector-button'] igc-button {
+        --disabled-border-color: var(--input-border-color);
     }
 }
