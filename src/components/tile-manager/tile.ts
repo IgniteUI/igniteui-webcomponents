@@ -27,6 +27,7 @@ import {
   createCounter,
   findElementFromEventPath,
   isEmpty,
+  isLTR,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -399,43 +400,41 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return true;
   }
 
-  private _handleDragOver(parameters: DragCallbackParameters) {
+  private _handleDragOver(parameters: DragCallbackParameters): void {
     const match = parameters.state.element as IgcTileComponent;
-    const { clientX, clientY } = parameters.event;
-    const { left, top, width, height } = match.getBoundingClientRect();
 
-    const relativeX = (clientX - left) / width;
-    const relativeY = (clientY - top) / height;
+    if (this._dragStack.peek() === match) {
+      if (!parameters.direction) return;
 
-    if (this._previousPointerPosition) {
-      const deltaX = clientX - this._previousPointerPosition.x;
-      const deltaY = clientY - this._previousPointerPosition.y;
-
-      const movingRight = deltaX > 0;
-      const movingLeft = deltaX < 0;
-      const movingDown = deltaY > 0;
-      const movingUp = deltaY < 0;
-
-      const isHorizontalMove = Math.abs(deltaX) > Math.abs(deltaY);
-      const isVerticalMove = Math.abs(deltaY) > Math.abs(deltaX);
+      const {
+        isHorizontalMove,
+        movingDown,
+        movingToEndHorizontally,
+        movingToStartHorizontally,
+      } = parameters.direction;
+      const { clientX, clientY } = parameters.event;
+      const { left, top, width, height } = match.getBoundingClientRect();
+      const relativeX = (clientX - left) / width;
+      const relativeY = (clientY - top) / height;
+      const LTR = isLTR(this);
 
       const shouldSwap =
         (this.position < match.position &&
           isHorizontalMove &&
-          movingRight &&
-          relativeX > 0.75) ||
+          movingToEndHorizontally &&
+          (LTR ? relativeX >= 0.75 : relativeX <= 0.25)) ||
         (this.position > match.position &&
           isHorizontalMove &&
-          movingLeft &&
-          relativeX < 0.25) ||
+          movingToStartHorizontally &&
+          (LTR ? relativeX <= 0.25 : relativeX >= 0.75)) ||
         (this.position < match.position &&
-          isVerticalMove &&
+          !isHorizontalMove &&
           movingDown &&
-          relativeY > 0.75) ||
+          relativeY >= 0.75) ||
         (this.position > match.position &&
-          isVerticalMove &&
-          movingUp &&
-          relativeY < 0.25);
+          !isHorizontalMove &&
+          !movingDown &&
+          relativeY <= 0.25);
 
       if (shouldSwap) {
         this._dragStack.pop();
@@ -445,17 +444,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
           swapTiles(this, match);
         });
       }
+
+      return;
     }
 
-    this._previousPointerPosition = { x: clientX, y: clientY };
+    this._dragStack.push(match);
 
-    if (this._dragStack.peek() !== match) {
-      this._dragStack.push(match);
-
-      startViewTransition(() => {
-        swapTiles(this, match);
-      });
-    }
+    startViewTransition(() => {
+      swapTiles(this, match);
+    });
   }
 
   private _handleDragCancel() {
