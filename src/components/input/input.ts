@@ -304,7 +304,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this._validate();
   }
 
-  protected renderFileParts() {
+  protected override renderFileParts() {
     if (this.type !== 'file') return nothing;
 
     return html`

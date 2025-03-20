@@ -210,10 +210,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.value = this.parser.parse(this.maskedValue);
   }
 
-  protected override renderFileParts(): typeof nothing {
-    return nothing;
-  }
-
   protected override renderInput() {
     return html`
       <input

@@ -115,7 +115,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected abstract renderInput(): TemplateResult;
-  protected abstract renderFileParts(): TemplateResult | typeof nothing;
 
   protected renderValidatorContainer(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
@@ -128,6 +127,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       suffixed: this.suffixes.length > 0,
       filled: !!this.value,
     };
+  }
+
+  protected renderFileParts(): TemplateResult | typeof nothing {
+    return nothing;
   }
 
   /** Sets the text selection range of the control */
