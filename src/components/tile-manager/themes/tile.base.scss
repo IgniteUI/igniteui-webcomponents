@@ -1,0 +1,115 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --pad-block: #{sizable(rem(8px), rem(13px), rem(13px))};
+    --pad-inline: #{sizable(rem(12px), rem(16px), rem(20px))};
+
+    display: block;
+    position: relative;
+    grid-column: var(--ig-col-start, auto) / span var(--ig-col-span, 1);
+    grid-row: var(--ig-row-start, auto) / span var(--ig-row-span, 1);
+}
+
+:host([part='resizing']),
+:host([part='dragging']) {
+    igc-resize {
+        --resize-visibility: hidden;
+    }
+
+    igc-resize::part(active) {
+        &::after {
+            border: none;
+        }
+    }
+}
+
+[part~='tile-container'] {
+    width: 100%;
+    height: 100%;
+}
+
+[part~='base'] {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+[part='content-container'] {
+    display: block;
+    border-radius: inherit;
+
+    ::slotted(*) {
+        @include type-style('body-1');
+
+        margin: 0;
+    }
+}
+
+:host([maximized]) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+
+    // Fix for Firefox
+    grid-column: unset;
+    grid-row: unset;
+
+    [part~='base'] {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+[part='ghost'] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scale(0);
+    z-index: 10;
+}
+
+[part='header'] {
+    display: flex;
+    align-items: center;
+    gap: sizable(rem(12px), rem(16px), rem(16px));
+    width: 100%;
+    padding-block: var(--pad-block);
+    padding-inline: var(--pad-inline);
+}
+
+:host([disable-fullscreen][disable-maximize]) {
+    igc-divider {
+        display: none;
+    }
+}
+
+[part='title'] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 0 0%;
+    overflow: hidden;
+    min-width: 2ch;
+}
+
+::slotted([slot='title']) {
+    @include type-style('h6');
+    @include ellipsis();
+
+    width: 100%;
+    min-width: 2ch;
+    margin-bottom: 0;
+    display: block;
+}
+
+[part='actions'] {
+    display: flex;
+    gap: rem(8px);
+    margin-inline-start: auto;
+    flex-shrink: 0;
+}

@@ -1,0 +1,27 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+
+    --min-col-width: 200px;
+    --min-row-height: 200px;
+}
+
+[part~='base'] {
+    display: grid;
+    position: relative;
+    padding: rem(20px);
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width, 100%)), 1fr));
+    grid-auto-rows: var(--auto-rows, minmax(var(--min-row-height), var(--min-row-height)));
+    grid-auto-columns: var(--auto-columns, 0);
+    grid-gap: var(--grid-gap, rem(10px));
+    grid-auto-flow: dense;
+    overflow: auto hidden;
+}
+
+[part~='maximized-tile'] {
+    overflow: clip;
+}

@@ -8,7 +8,7 @@ import {
   getVsCodeCssCustomData,
   getVsCodeHtmlCustomData,
 } from 'custom-element-vs-code-integration';
-import customElements from '../custom-elements.json' assert { type: 'json' };
+import customElements from '../custom-elements.json' with { type: 'json' };
 import report from './report.mjs';
 import { buildComponents, buildThemes } from './sass.mjs';
 
