@@ -48,6 +48,7 @@ import {
 } from '../common/util.js';
 import { dateRangePickerValidators } from '../date-picker/validators.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -67,8 +68,6 @@ export interface IgcDateRangePickerComponentEventMap {
   igcChange: CustomEvent<(Date | null)[]>;
   igcInput: CustomEvent<(Date | null)[]>;
 }
-
-const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
@@ -128,7 +127,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _dateConstraints?: DateRangeDescriptor[];
   private _displayFormat?: string;
   private _inputFormat?: string;
+  private _placeholder?: string;
   private _currentValue: (Date | null)[] | null = null;
+  private _defaultMask!: string;
+
+  @state()
+  private _maskedRangeValue = '';
 
   private get isDropDown() {
     return this.mode === 'dropdown';
@@ -162,6 +166,39 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @queryAssignedElements({ slot: 'header-date' })
   private headerDateSlotItems!: Array<HTMLElement>;
 
+  @watch('locale')
+  private updateDefaultMask(): void {
+    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+  }
+
+  @watch('value')
+  @watch('inputFormat')
+  @watch('displayFormat')
+  @watch('locale')
+  private updateMaskedRangeValue() {
+    if (!this.singleInput) {
+      return;
+    }
+    if (!this.value || !this.value[0] || !this.value[1]) {
+      this._maskedRangeValue = '';
+      return;
+    }
+    const format = this.displayFormat || this.inputFormat;
+    const [start, end] = this.value;
+    let startMask = '';
+    let endMask = '';
+    if (format) {
+      startMask = start
+        ? DateTimeUtil.formatDate(start, this.locale, format)
+        : '';
+      endMask = end ? DateTimeUtil.formatDate(end, this.locale, format) : '';
+    } else {
+      startMask = start ? start.toLocaleDateString() : '';
+      endMask = end ? end.toLocaleDateString() : '';
+    }
+    this._maskedRangeValue = `${startMask} - ${endMask}`;
+  }
+
   protected override _formValue: FormValue<(Date | null)[] | null>;
 
   protected override get __validators() {
@@ -190,7 +227,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public mode: 'dropdown' | 'dialog' = 'dropdown';
 
   @state()
-  public singleInput = false;
+  private singleInput = false;
 
   /**
    * Makes the control a readonly field.
@@ -225,7 +262,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * @attr
    */
   @property()
-  public placeholder!: string;
+  public set placeholder(value: string) {
+    this._placeholder = value;
+  }
+
+  public get placeholder(): string {
+    const rangePlaceholder = `${this.inputFormat} - ${this.inputFormat}`;
+    return this._placeholder ?? rangePlaceholder;
+  }
 
   /**
    * Format to display the value in when not editing.
@@ -254,7 +298,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   public get inputFormat(): string {
-    return this._inputFormat ?? this._input?.inputFormat;
+    return this._inputFormat ?? this._defaultMask;
   }
 
   /**
@@ -353,6 +397,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ type: Boolean, reflect: true, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
 
+  //TODO: locale, prompt, etc. for two inputs
   /**
    * The locale settings used to display the value.
    * @attr
@@ -418,6 +463,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected override firstUpdated() {
     this.singleInput = this._start.length === 0 && this._end.length === 0;
     const inputs = [this._start[0], this._end[0]];
+    if (this.singleInput) {
+      this.updateDefaultMask();
+      this.updateMaskedRangeValue();
+    }
 
     inputs.forEach((input) => {
       //input?.addEventListener('igcChange', this.handleInputChangeEvent);
@@ -790,6 +839,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return html`
       <div part="inputs">
         <slot name="start"></slot>
+        <!-- TODO: localize separator string -->
         <span part="separator">to</span>
         <slot name="end"></slot>
       </div>
@@ -799,28 +849,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderSingleInput(id: string) {
-    const format = formats.has(this._displayFormat!)
-      ? `${this._displayFormat}Date`
-      : this._displayFormat;
-
-    return html` <igc-date-time-input
-        .dateRange=${true}
+    return html` <igc-input
         id=${id}
         aria-haspopup="dialog"
+        .value=${this._maskedRangeValue}
         label=${this.label}
         placeholder=${this.placeholder}
-        input-format=${ifDefined(this._inputFormat)}
-        display-format=${ifDefined(format)}
-        ?disabled=${this.disabled}
         ?readonly=${true}
-        .displayDateRange=${this.value?.length === 2 ? this.value : []}
-        .value=${null}
         ?required=${this.required}
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
-        .min=${this.min}
-        .max=${this.max}
         .invalid=${live(this.invalid)}
         @click=${this.isDropDown ? nothing : this.handleInputClick}
         exportparts="input, label, prefix, suffix"
@@ -835,7 +874,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           name="suffix"
           slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
         ></slot>
-      </igc-date-time-input>
+      </igc-input>
       ${this.renderHelperText()} ${this.renderPicker(id)}`;
   }
 

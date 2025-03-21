@@ -1,4 +1,3 @@
-import { IgcDateRangePickerComponent } from '../../../index.js';
 import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcAvatarComponent from '../../avatar/avatar.js';
 import IgcBadgeComponent from '../../badge/badge.js';
@@ -22,6 +21,7 @@ import IgcChipComponent from '../../chip/chip.js';
 import IgcComboComponent from '../../combo/combo.js';
 import IgcDatePickerComponent from '../../date-picker/date-picker.js';
 import IgcDateRangeInputComponent from '../../date-range-picker/date-range-input.js';
+import IgcDateRangePickerComponent from '../../date-range-picker/date-range-picker.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../../dialog/dialog.js';
 import IgcDividerComponent from '../../divider/divider.js';

@@ -75,14 +75,9 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    placeholderStart: {
+    placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the start date input.',
-      control: 'text',
-    },
-    placeholderEnd: {
-      type: 'string',
-      description: 'The placeholder attribute of the end date input.',
+      description: 'The placeholder attribute of the date input.',
       control: 'text',
     },
     displayFormat: {
@@ -266,10 +261,8 @@ interface IgcDateRangePickerArgs {
   nonEditable: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the start date input. */
-  placeholderStart: string;
-  /** The placeholder attribute of the end date input. */
-  placeholderEnd: string;
+  /** The placeholder attribute of the date input. */
+  placeholder: string;
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
@@ -403,6 +396,7 @@ export const SingleInput: Story = {
     <igc-date-range-picker
       id="picker"
       .label=${args.label}
+      .placeholder=${args.placeholder}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}
@@ -484,6 +478,7 @@ export const Slots: Story = {
       <igc-date-range-picker
         id="picker"
         .label=${args.label}
+        .placeholder=${args.placeholder}
         .displayFormat=${args.displayFormat}
         .inputFormat=${args.inputFormat}
         .locale=${args.locale}
