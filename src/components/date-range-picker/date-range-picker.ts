@@ -360,13 +360,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public hideOutsideDays = false;
 
   /**
-   * The number of months displayed in the calendar.
-   * @attr visible-months
-   */
-  @property({ type: Number, attribute: 'visible-months' })
-  public visibleMonths = 2;
-
-  /**
    * The locale settings used to display the value.
    * @attr
    */
@@ -674,8 +667,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .activeDate=${this.activeDate ?? this._startDate}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
-        .visibleMonths=${this.visibleMonths}
-        .locale=${this.locale}
+        .visibleMonths=${2}
         .disabledDates=${this._dateConstraints!}
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}

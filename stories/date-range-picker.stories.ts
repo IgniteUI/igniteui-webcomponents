@@ -155,12 +155,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    visibleMonths: {
-      type: 'number',
-      description: 'The number of months displayed in the calendar.',
-      control: 'number',
-      table: { defaultValue: { summary: '2' } },
-    },
     locale: {
       type: 'string',
       description: 'The locale settings used to display the value.',
@@ -249,7 +243,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     hideHeader: false,
     showWeekNumbers: false,
     hideOutsideDays: false,
-    visibleMonths: 2,
     locale: 'en',
     weekStart: 'sunday',
     required: false,
@@ -312,8 +305,6 @@ interface IgcDateRangePickerArgs {
   showWeekNumbers: boolean;
   /** Controls the visibility of the dates that do not belong to the current month. */
   hideOutsideDays: boolean;
-  /** The number of months displayed in the calendar. */
-  visibleMonths: number;
   /** The locale settings used to display the value. */
   locale: string;
   /** Sets the start day of the week for the calendar. */
@@ -354,18 +345,6 @@ const disabledDates: DateRangeDescriptor[] = [
   },
 ];
 
-function showTrimester() {
-  const picker =
-    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
-  picker.visibleMonths = 3;
-}
-
-function showDoubleMonth() {
-  const picker =
-    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
-  picker.visibleMonths = 2;
-}
-
 function selectToday() {
   const picker =
     document.querySelector<IgcDateRangePickerComponent>('#picker')!;
@@ -379,7 +358,6 @@ export const Default: Story = {
   },
   render: (args) =>
     html` <igc-date-range-picker
-      .visibleMonths=${args.visibleMonths}
       .labelStart=${args.labelStart}
       .labelEnd=${args.labelEnd}
       .displayFormat=${args.displayFormat}
@@ -418,7 +396,6 @@ export const Slots: Story = {
   render: (args) =>
     html` <igc-date-range-picker
       id="picker"
-      .visibleMonths=${args.visibleMonths}
       .labelStart=${args.labelStart}
       .labelEnd=${args.labelEnd}
       .displayFormat=${args.displayFormat}
@@ -466,12 +443,6 @@ export const Slots: Story = {
       <div slot="actions">
         <igc-button variant="flat" @click=${selectToday}
           >Select today</igc-button
-        >
-        <igc-button variant="flat" @click=${showTrimester}
-          >Trimester view</igc-button
-        >
-        <igc-button variant="flat" @click=${showDoubleMonth}
-          >Double month view</igc-button
         >
       </div>
     </igc-date-range-picker>`,
