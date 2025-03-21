@@ -539,6 +539,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (!this.singleInput) {
       this._start[0].value = this._currentValue?.[0] ?? null;
       this._end[0].value = this._currentValue?.[1] ?? null;
+      if (!this.value || this.value.every((v) => v === null)) {
+        this._calendar.values = null;
+        this._activeDate = new Date();
+      }
     }
   }
 
