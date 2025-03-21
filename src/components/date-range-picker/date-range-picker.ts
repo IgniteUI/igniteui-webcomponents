@@ -487,8 +487,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected revertValue() {
     this.value = this._currentValue;
-    if (!this.value || this.value.every((v) => v === null)) {
-      this.clear();
+    if (!this.singleInput) {
+      this._start[0].value = this._currentValue?.[0] ?? null;
+      this._end[0].value = this._currentValue?.[1] ?? null;
     }
   }
 
@@ -651,7 +652,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._startDate = null;
     this._endDate = null;
     this._calendar.values = null;
-    this._activeDate = new Date();
+    this._activeDate = this._startDate ?? new Date();
     this._start[0]?.clear();
     this._end[0]?.clear();
   }
