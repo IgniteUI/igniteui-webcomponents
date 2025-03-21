@@ -123,25 +123,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * If set to an array of two dates, the component displays the formatted date range (read-only).
-   */
-  private _displayDateRange: (Date | null)[] | null = null;
-
-  public get displayDateRange(): (Date | null)[] | null {
-    return this._displayDateRange;
-  }
-
-  @property()
-  public set displayDateRange(value: (Date | null)[]) {
-    this._displayDateRange = value;
-    this.setDateRangePlaceHolder();
-    if (value && value.length === 2) {
-      this.readOnly = true;
-      this.updateMask();
-    }
-  }
-
   public get value(): Date | null {
     return this._formValue.value;
   }
@@ -370,10 +351,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected updateMask() {
-    if (this.displayDateRange && this.displayDateRange.length === 2) {
-      this.setDateRangeMask();
-      return;
-    }
     if (this.focused) {
       this.maskedValue = this.getMaskedValue();
     } else {
@@ -537,47 +514,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.parser.mask = this._mask;
     this.parser.prompt = this.prompt;
 
-    if (!this.placeholder && this.displayDateRange) {
-      this.setDateRangePlaceHolder();
-      return;
-    }
     if (!this.placeholder || oldFormat === this.placeholder) {
       this.placeholder = value;
     }
-  }
-
-  private setDateRangePlaceHolder() {
-    if (!this._inputDateParts) {
-      return;
-    }
-    const value = this._inputDateParts?.map((p) => p.format).join('');
-    const placeholderRange = `${value} - ${value}`;
-    if (this.placeholder !== placeholderRange) {
-      this.placeholder = placeholderRange;
-    }
-  }
-
-  private setDateRangeMask() {
-    if (!this.displayDateRange || this.displayDateRange.length !== 2) {
-      return;
-    }
-    const format = this.displayFormat || this.inputFormat;
-    const emptyMask = this.emptyMask;
-    const [start, end] = this.displayDateRange;
-    let startMask = '';
-    let endMask = '';
-    if (format) {
-      startMask = start
-        ? DateTimeUtil.formatDate(start, this.locale, format)
-        : emptyMask;
-      endMask = end
-        ? DateTimeUtil.formatDate(end, this.locale, format)
-        : emptyMask;
-    } else {
-      startMask = start ? start.toLocaleDateString() : emptyMask;
-      endMask = end ? end.toLocaleDateString() : emptyMask;
-    }
-    this.maskedValue = `${startMask} - ${endMask}`;
   }
 
   private parseDate(val: string) {
@@ -707,16 +646,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override renderInput() {
-    const showPlaceholder =
-      this.displayDateRange &&
-      !(this.displayDateRange?.[0] || this.displayDateRange?.[1]);
-    const displayValue = showPlaceholder ? '' : this.maskedValue;
     return html`
       <input
         type="text"
         part=${partNameMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
-        .value=${!this.displayDateRange ? live(this.maskedValue) : displayValue}
+        .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
