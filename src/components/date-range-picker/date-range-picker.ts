@@ -52,6 +52,7 @@ import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
+import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcDateRangeInputComponent, {
@@ -68,6 +69,8 @@ export interface IgcDateRangePickerComponentEventMap {
   igcChange: CustomEvent<(Date | null)[]>;
   igcInput: CustomEvent<(Date | null)[]>;
 }
+
+//const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
@@ -111,6 +114,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       IgcDateRangePickerComponent,
       IgcCalendarComponent,
       IgcDateTimeInputComponent,
+      IgcInputComponent,
       IgcFocusTrapComponent,
       IgcIconComponent,
       IgcPopoverComponent,
@@ -849,6 +853,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderSingleInput(id: string) {
+    // const format = formats.has(this._displayFormat!)
+    //   ? `${this._displayFormat}Date`
+    //   : this._displayFormat;
+
     return html` <igc-input
         id=${id}
         aria-haspopup="dialog"
