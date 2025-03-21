@@ -123,6 +123,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _dateConstraints?: DateRangeDescriptor[];
   private _displayFormat?: string;
   private _inputFormat?: string;
+  private _currentValue: (Date | null)[] | null = null;
 
   private get isDropDown() {
     return this.mode === 'dropdown';
@@ -384,6 +385,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @watch('open')
   protected openChange() {
     this._rootClickController.update();
+
+    if (this.open && this.mode === 'dialog') {
+      this._currentValue = this.value ? [...this.value] : null;
+    }
   }
 
   /** Sets the start day of the week for the calendar. */
@@ -451,6 +456,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
+  protected dialogCancel() {
+    this.value = this._currentValue;
+    if (!this.value || this.value.every((v) => v === null)) {
+      this.clear();
+    }
+    this.open = false;
+  }
+
+  protected dialogDone() {
+    this.open = false;
+  }
+
   protected handleDialogClosed(event: Event) {
     event.stopPropagation();
   }
@@ -494,6 +511,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const temp = this._startDate;
     this._startDate = this._endDate;
     this._endDate = temp;
+  }
+
+  @watch('mode')
+  protected async setKeepOpenOnSelectForDialog() {
+    if (this.mode === 'dialog') {
+      this.keepOpenOnSelect = true;
+    }
   }
 
   @watch('mode')
@@ -578,6 +602,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._startDate = null;
     this._endDate = null;
     this._calendar.values = null;
+    this._activeDate = new Date();
     this._inputs.forEach((input) => input.clear());
   }
 
@@ -696,6 +721,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)}${this.renderActions()}
+            <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
+              >Cancel</igc-button
+            >
+            <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
+              >Done</igc-button
+            >
           </igc-dialog>
         `;
   }
