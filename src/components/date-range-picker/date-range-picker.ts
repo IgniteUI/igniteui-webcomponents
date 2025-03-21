@@ -456,16 +456,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
-  protected dialogCancel() {
+  protected revertValue() {
     this.value = this._currentValue;
     if (!this.value || this.value.every((v) => v === null)) {
       this.clear();
     }
-    this.open = false;
+  }
+
+  protected dialogCancel() {
+    this.revertValue();
+    this._hide(true);
   }
 
   protected dialogDone() {
-    this.open = false;
+    this._hide(true);
   }
 
   protected handleDialogClosed(event: Event) {
@@ -554,6 +558,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected async onEscapeKey() {
     if (await this._hide(true)) {
+      if (this.mode === 'dialog') {
+        this.revertValue();
+      }
       this._inputs[0].focus();
     }
   }
@@ -724,7 +731,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
               >Cancel</igc-button
             >
-            <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
+            <igc-button slot="footer" @click=${this.dialogDone} variant="flat"
               >Done</igc-button
             >
           </igc-dialog>
