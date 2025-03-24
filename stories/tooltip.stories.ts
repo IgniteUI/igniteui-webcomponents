@@ -22,7 +22,12 @@ defineComponents(
 const metadata: Meta<IgcTooltipComponent> = {
   title: 'Tooltip',
   component: 'igc-tooltip',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: { description: { component: '' } },
+    actions: {
+      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -90,6 +95,18 @@ const metadata: Meta<IgcTooltipComponent> = {
         'Which event triggers will hide the tooltip.\nExpects a comma separate string of different event triggers.',
       control: 'text',
     },
+    showDelay: {
+      type: 'number',
+      description:
+        'Specifies the number of milliseconds that should pass before showing the tooltip.',
+      control: 'number',
+    },
+    hideDelay: {
+      type: 'number',
+      description:
+        'Specifies the number of milliseconds that should pass before hiding the tooltip.',
+      control: 'number',
+    },
   },
   args: {
     open: false,
@@ -137,6 +154,10 @@ interface IgcTooltipArgs {
    * Expects a comma separate string of different event triggers.
    */
   hideTriggers: string;
+  /** Specifies the number of milliseconds that should pass before showing the tooltip. */
+  showDelay: number;
+  /** Specifies the number of milliseconds that should pass before hiding the tooltip. */
+  hideDelay: number;
 }
 type Story = StoryObj<IgcTooltipArgs>;
 
@@ -159,6 +180,8 @@ export const Basic: Story = {
 
     <igc-input label="Password" required minlength="12"></igc-input>
     <igc-tooltip
+      .showDelay=${args.showDelay}
+      .hideDelay=${args.hideDelay}
       placement="bottom-end"
       offset="-4"
       disable-arrow
