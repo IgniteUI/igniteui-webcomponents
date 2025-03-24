@@ -107,6 +107,12 @@ const metadata: Meta<IgcTooltipComponent> = {
         'Specifies the number of milliseconds that should pass before hiding the tooltip.',
       control: 'number',
     },
+    message: {
+      type: 'string',
+      description: 'Specifies a plain text as tooltip content.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
   },
   args: {
     open: false,
@@ -114,6 +120,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     inline: false,
     offset: 4,
     placement: 'top',
+    message: '',
   },
 };
 
@@ -158,6 +165,8 @@ interface IgcTooltipArgs {
   showDelay: number;
   /** Specifies the number of milliseconds that should pass before hiding the tooltip. */
   hideDelay: number;
+  /** Specifies a plain text as tooltip content. */
+  message: string;
 }
 type Story = StoryObj<IgcTooltipArgs>;
 
@@ -303,6 +312,7 @@ export const Toggle: Story = {
         placement="bottom"
         show-delay="500"
         hide-delay="500"
+        message="Simple tooltip content"
       >
         This tooltip toggles on button click!
       </igc-tooltip>

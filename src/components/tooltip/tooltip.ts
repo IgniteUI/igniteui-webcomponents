@@ -190,6 +190,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return this._hideDelay;
   }
 
+  /**
+   * Specifies a plain text as tooltip content.
+   *
+   * @attr
+   */
+  @property({ type: String })
+  public message = '';
+
   constructor() {
     super();
 
@@ -348,7 +356,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         shift
       >
         <div ${ref(this._containerRef)} part="base">
-          <slot></slot>
+          ${this.message ? html`${this.message}` : html`<slot></slot>`}
           ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
         </div>
       </igc-popover>
