@@ -404,37 +404,36 @@ export default class IgcTileComponent extends EventEmitterMixin<
     const match = parameters.state.element as IgcTileComponent;
 
     if (this._dragStack.peek() === match) {
-      if (!parameters.direction) return;
-
-      const {
-        isHorizontalMove,
-        movingDown,
-        movingToEndHorizontally,
-        movingToStartHorizontally,
-      } = parameters.direction;
+      const direction = parameters.state.pointerState.direction;
       const { clientX, clientY } = parameters.event;
       const { left, top, width, height } = match.getBoundingClientRect();
       const relativeX = (clientX - left) / width;
       const relativeY = (clientY - top) / height;
       const LTR = isLTR(this);
 
-      const shouldSwap =
-        (this.position < match.position &&
-          isHorizontalMove &&
-          movingToEndHorizontally &&
-          (LTR ? relativeX >= 0.75 : relativeX <= 0.25)) ||
-        (this.position > match.position &&
-          isHorizontalMove &&
-          movingToStartHorizontally &&
-          (LTR ? relativeX <= 0.25 : relativeX >= 0.75)) ||
-        (this.position < match.position &&
-          !isHorizontalMove &&
-          movingDown &&
-          relativeY >= 0.75) ||
-        (this.position > match.position &&
-          !isHorizontalMove &&
-          !movingDown &&
-          relativeY <= 0.25);
+      let shouldSwap = false;
+
+      switch (direction) {
+        case 'start':
+          shouldSwap =
+            this.position > match.position &&
+            (LTR ? relativeX <= 0.25 : relativeX >= 0.75);
+          break;
+
+        case 'end':
+          shouldSwap =
+            this.position < match.position &&
+            (LTR ? relativeX >= 0.75 : relativeX <= 0.25);
+          break;
+
+        case 'top':
+          shouldSwap = this.position > match.position && relativeY <= 0.25;
+          break;
+
+        case 'bottom':
+          shouldSwap = this.position < match.position && relativeY >= 0.75;
+          break;
+      }
 
       if (shouldSwap) {
         this._dragStack.pop();

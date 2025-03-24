@@ -19,7 +19,6 @@ type DragCancelCallback = (state: DragState) => unknown;
 export type DragCallbackParameters = {
   event: PointerEvent;
   state: DragState;
-  direction: Direction | null;
 };
 
 type State = {
@@ -27,6 +26,11 @@ type State = {
   current: DOMRect;
   position: { x: number; y: number };
   offset: { x: number; y: number };
+  pointerState: {
+    initial: { initialX: number; initialY: number };
+    current: { currentX: number; currentY: number };
+    direction: Direction;
+  };
 };
 
 type DragState = State & {
@@ -34,12 +38,7 @@ type DragState = State & {
   element: Element | null;
 };
 
-type Direction = {
-  isHorizontalMove: boolean;
-  movingDown: boolean;
-  movingToEndHorizontally: boolean;
-  movingToStartHorizontally: boolean;
-};
+type Direction = 'start' | 'end' | 'bottom' | 'top';
 
 type DragControllerConfiguration = {
   /** Whether the drag feature is enabled for the current host. */
@@ -122,8 +121,6 @@ class DragController implements ReactiveController {
   private _hasPointerCapture = false;
 
   private _ghost: HTMLElement | null = null;
-  private _previousPointerPosition: { x: number; y: number } | null = null;
-  private _direction: Direction | null = null;
 
   /** Whether `snapToCursor` is enabled for the controller. */
   private get _hasSnapping(): boolean {
@@ -172,6 +169,8 @@ class DragController implements ReactiveController {
   }
 
   private get _stateParameters(): DragState {
+    this._state.pointerState.direction = this._trackPointerMovement();
+
     return {
       ...this._state,
       ghost: this._ghost,
@@ -179,27 +178,19 @@ class DragController implements ReactiveController {
     };
   }
 
-  private _trackPointerMovement(
-    clientX: number,
-    clientY: number
-  ): {
-    isHorizontalMove: boolean;
-    movingDown: boolean;
-    movingToEndHorizontally: boolean;
-    movingToStartHorizontally: boolean;
-  } {
-    const deltaX = clientX - (this._previousPointerPosition?.x ?? clientX);
-    const deltaY = clientY - (this._previousPointerPosition?.y ?? clientY);
+  private _trackPointerMovement(): Direction {
+    const { initialX, initialY } = this._state.pointerState.initial;
+    const { currentX, currentY } = this._state.pointerState.current;
+    const deltaX = currentX - initialX;
+    const deltaY = currentY - initialY;
     const LTR = isLTR(this._host);
 
-    this._previousPointerPosition = { x: clientX, y: clientY };
+    const isHorizontalMove = Math.abs(deltaX) >= Math.abs(deltaY);
 
-    return {
-      isHorizontalMove: Math.abs(deltaX) >= Math.abs(deltaY),
-      movingDown: deltaY >= 0,
-      movingToEndHorizontally: LTR ? deltaX >= 0 : deltaX <= 0,
-      movingToStartHorizontally: LTR ? deltaX < 0 : deltaX > 0,
-    };
+    if (isHorizontalMove) {
+      return (LTR ? deltaX >= 0 : deltaX <= 0) ? 'end' : 'start';
+    }
+    return deltaY >= 0 ? 'bottom' : 'top';
   }
 
   constructor(
@@ -287,13 +278,9 @@ class DragController implements ReactiveController {
     this._createDragGhost();
     this._updatePosition(event);
 
-    this._previousPointerPosition = { x: event.clientX, y: event.clientY };
-    this._direction = this._trackPointerMovement(event.clientX, event.clientY);
-
     const parameters = {
       event,
       state: this._stateParameters,
-      direction: this._direction,
     };
 
     if (this._options.start?.call(this._host, parameters) === false) {
@@ -313,12 +300,18 @@ class DragController implements ReactiveController {
     this._updatePosition(event);
     this._updateMatcher(event);
 
-    this._direction = this._trackPointerMovement(event.clientX, event.clientY);
+    this._state.pointerState.initial = {
+      initialX: this._state.pointerState.current.currentX,
+      initialY: this._state.pointerState.current.currentY,
+    };
+    this._state.pointerState.current = {
+      currentX: event.clientX,
+      currentY: event.clientY,
+    };
 
     const parameters = {
       event,
       state: this._stateParameters,
-      direction: this._direction,
     };
 
     this._options.move?.call(this._host, parameters);
@@ -327,16 +320,9 @@ class DragController implements ReactiveController {
   }
 
   private _handlePointerEnd(event: PointerEvent): void {
-    this._previousPointerPosition = null;
     this._options.end?.call(this._host, {
       event,
       state: this._stateParameters,
-      direction: {
-        isHorizontalMove: false,
-        movingDown: false,
-        movingToEndHorizontally: false,
-        movingToStartHorizontally: false,
-      },
     });
     this.dispose();
   }
@@ -373,6 +359,11 @@ class DragController implements ReactiveController {
       current: structuredClone(rect),
       position,
       offset,
+      pointerState: {
+        initial: { initialX: clientX, initialY: clientY },
+        current: { currentX: clientX, currentY: clientY },
+        direction: 'end',
+      },
     };
   }
 
@@ -413,7 +404,6 @@ class DragController implements ReactiveController {
       this._options.enter?.call(this._host, {
         event,
         state: this._stateParameters,
-        direction: this._direction,
       });
       return;
     }
@@ -422,7 +412,6 @@ class DragController implements ReactiveController {
       this._options.leave?.call(this._host, {
         event,
         state: this._stateParameters,
-        direction: this._direction,
       });
       this._matchedElement = null;
       return;
@@ -432,7 +421,6 @@ class DragController implements ReactiveController {
       this._options.over?.call(this._host, {
         event,
         state: this._stateParameters,
-        direction: this._direction,
       });
     }
   }
