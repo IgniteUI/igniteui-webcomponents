@@ -279,3 +279,33 @@ export const Triggers: Story = {
     </igc-tooltip>
   `,
 };
+
+export const Toggle: Story = {
+  render: () => {
+    // Use a template ref id to target the tooltip instance
+    const tooltipId = 'toggle-tooltip';
+    const buttonId = 'toggle-button';
+
+    // Hook into the rendered DOM to attach click listener
+    setTimeout(() => {
+      const tooltip = document.getElementById(tooltipId) as IgcTooltipComponent;
+      const button = document.getElementById(buttonId) as HTMLButtonElement;
+
+      if (tooltip && button) {
+        button.addEventListener('click', () => tooltip.toggle());
+      }
+    });
+
+    return html`
+      <igc-button id=${buttonId}>Toggle Tooltip</igc-button>
+      <igc-tooltip
+        id=${tooltipId}
+        placement="bottom"
+        show-delay="500"
+        hide-delay="500"
+      >
+        This tooltip toggles on button click!
+      </igc-tooltip>
+    `;
+  },
+};

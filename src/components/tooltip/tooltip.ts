@@ -283,6 +283,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   };
 
+  /** Toggles the tooltip between shown/hidden state after the appropriate delay. */
+  public toggle = async (): Promise<boolean> => {
+    return this.open ? this.hide() : this.show();
+  };
+
   public showWithEvent = async () => {
     clearTimeout(this._timeoutId);
     if (this.toBeHidden) {
