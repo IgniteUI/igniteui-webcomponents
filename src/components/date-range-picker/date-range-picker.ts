@@ -19,6 +19,7 @@ import {
   DateRangeType,
   type WeekDays,
 } from '../calendar/types.js';
+import IgcChipComponent from '../chip/chip.js';
 import {
   addKeybindings,
   altKey,
@@ -56,6 +57,10 @@ import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import { styles } from './date-range-picker.base.css.js';
+import {
+  type DateRangePredefinedType,
+  selectDateRange,
+} from './date-range-util.js';
 import { dateRangePickerValidators } from './validators.js';
 
 export interface IgcDateRangePickerComponentEventMap {
@@ -82,7 +87,7 @@ export interface IgcDateRangePickerComponentEventMap {
  */
 
 @blazorAdditionalDependencies(
-  'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcInputComponent'
+  'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
 export default class IgcDateRangePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
@@ -112,6 +117,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       IgcInputComponent,
       IgcFocusTrapComponent,
       IgcIconComponent,
+      IgcChipComponent,
       IgcPopoverComponent,
       IgcDialogComponent,
       IgcValidationContainerComponent,
@@ -215,6 +221,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
+
+  /**
+   * Whether the control will show chips with predefined ranges in dialog mode.
+   * @attr
+   */
+  @property({
+    reflect: true,
+    type: Boolean,
+    attribute: 'use-predefined-ranges',
+  })
+  public usePredefinedRanges = false;
 
   /**
    * The label of the control (single input).
@@ -506,6 +523,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
+  protected setDateRange(rangeType: DateRangePredefinedType) {
+    [this._startDate, this._endDate] = selectDateRange(rangeType);
+    this.setCalendarRangeValues();
+    this.value = [this._startDate, this._endDate];
+    this.updateInputValues();
+    this.emitEvent('igcChange', { detail: this.value ?? undefined });
+  }
+
   protected revertValue() {
     this.value = this._currentValue;
     if (!this.singleInput) {
@@ -547,7 +572,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
 
     const detail = [this._startDate, this._endDate];
-    this.value = detail;
     this.emitEvent('igcInput', { detail });
   }
 
@@ -906,6 +930,24 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)}${this.renderActions()}
+            ${this.usePredefinedRanges
+              ? html`
+                  <div part="predefined-ranges">
+                    <igc-chip @click=${() => this.setDateRange('last7Days')}
+                      >Last 7 Days</igc-chip
+                    >
+                    <igc-chip @click=${() => this.setDateRange('currentMonth')}
+                      >This Month</igc-chip
+                    >
+                    <igc-chip @click=${() => this.setDateRange('last30Days')}
+                      >Last 30 Days</igc-chip
+                    >
+                    <igc-chip @click=${() => this.setDateRange('yearToDate')}
+                      >Year To Date</igc-chip
+                    >
+                  </div>
+                `
+              : nothing}
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
               >Cancel</igc-button
             >

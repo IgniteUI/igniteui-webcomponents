@@ -75,6 +75,13 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    usePredefinedRanges: {
+      type: 'boolean',
+      description:
+        'Whether the control will have predefined ranges in dialog mode.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the date input.',
@@ -225,6 +232,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     readOnly: false,
     nonEditable: false,
     outlined: false,
+    usePredefinedRanges: true,
     prompt: '',
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
@@ -255,6 +263,8 @@ interface IgcDateRangePickerArgs {
   nonEditable: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Whether the control will have predefined ranges in dialog mode. */
+  usePredefinedRanges: boolean;
   /** The placeholder attribute of the date input. */
   placeholder: string;
   /**
@@ -351,6 +361,7 @@ export const Default: Story = {
       .nonEditable=${args.nonEditable}
       .orientation=${args.orientation}
       .outlined=${args.outlined}
+      .usePredefinedRanges=${args.usePredefinedRanges}
       .mode=${args.mode}
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
@@ -399,6 +410,7 @@ export const SingleInput: Story = {
       .nonEditable=${args.nonEditable}
       .orientation=${args.orientation}
       .outlined=${args.outlined}
+      .usePredefinedRanges=${args.usePredefinedRanges}
       .mode=${args.mode}
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
@@ -435,6 +447,7 @@ export const Slots: Story = {
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
         .outlined=${args.outlined}
+        .usePredefinedRanges=${args.usePredefinedRanges}
         .mode=${args.mode}
         .min=${new Date(args.min)}
         .max=${new Date(args.max)}
@@ -483,6 +496,7 @@ export const Slots: Story = {
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
         .outlined=${args.outlined}
+        .usePredefinedRanges=${args.usePredefinedRanges}
         .mode=${args.mode}
         .min=${new Date(args.min)}
         .max=${new Date(args.max)}
