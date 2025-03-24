@@ -1,15 +1,13 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { convertToDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-
-export const setInputFormat = Symbol();
-export const setDisplayFormat = Symbol();
 
 export interface IgcDatePickerComponentEventMap {
   igcToggleIconClicked: CustomEvent<void>;
@@ -50,10 +48,36 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   private _open = false;
   private _value: Date | null = null;
 
-  /**
-   * The value of the picker
-   * @attr
-   */
+  @property()
+  public inputFormat = '';
+
+  @property()
+  public displayFormat = '';
+
+  @property()
+  public locale = 'en';
+
+  @property()
+  public prompt = '_';
+
+  @property()
+  public readOnly = false;
+
+  @property()
+  public disabled = false;
+
+  @property()
+  public invalid = false;
+
+  @property()
+  public required = false;
+
+  @property()
+  public min: Date | null = null;
+
+  @property()
+  public max: Date | null = null;
+
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
     this._value = value as Date | null;
@@ -63,10 +87,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return this._value;
   }
 
-  /**
-   * The label of the datepicker.
-   * @attr label
-   */
   @property()
   public label!: string;
 
@@ -76,22 +96,17 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return root;
   }
 
+  private handleAnchorPointerDown(event: Event) {
+    event.preventDefault();
+  }
+
   private handleAnchorClick() {
+    this._open = !this._open;
     this.emitEvent('igcToggleIconClicked');
   }
 
   private clearIconClick() {
     this.emitEvent('igcClearIconClicked');
-  }
-
-  /** @private @hidden @internal */
-  public async [setInputFormat](value: string) {
-    this._input.inputFormat = value;
-  }
-
-  /** @private @hidden @internal */
-  public async [setDisplayFormat](value: string) {
-    this._input.displayFormat = value;
   }
 
   public clear() {
@@ -135,7 +150,12 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     const state = this._open ? 'calendar-icon-open' : 'calendar-icon';
 
     return html`
-      <span slot="prefix" part=${state} @click=${this.handleAnchorClick}>
+      <span
+        slot="prefix"
+        part=${state}
+        @pointerdown=${this.handleAnchorPointerDown}
+        @click=${this.handleAnchorClick}
+      >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
@@ -145,8 +165,18 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return html`
       <igc-date-time-input
         id=${this.inputId}
+        .inputFormat=${this.inputFormat}
+        .displayFormat=${this.displayFormat}
         .value=${this.value}
         .label=${this.label}
+        .locale=${this.locale}
+        .prompt=${this.prompt}
+        ?readonly=${this.readOnly}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        .min=${this.min}
+        .max=${this.max}
+        .invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
       >
