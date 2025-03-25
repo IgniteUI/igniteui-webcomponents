@@ -20,7 +20,6 @@ import IgcSwitchComponent from '../../checkbox/switch.js';
 import IgcChipComponent from '../../chip/chip.js';
 import IgcComboComponent from '../../combo/combo.js';
 import IgcDatePickerComponent from '../../date-picker/date-picker.js';
-import IgcDateRangeInputComponent from '../../date-range-picker/date-range-input.js';
 import IgcDateRangePickerComponent from '../../date-range-picker/date-range-picker.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../../dialog/dialog.js';
@@ -92,7 +91,6 @@ const allComponents: IgniteComponent[] = [
   IgcChipComponent,
   IgcComboComponent,
   IgcDatePickerComponent,
-  IgcDateRangeInputComponent,
   IgcDateRangePickerComponent,
   IgcDropdownComponent,
   IgcDropdownGroupComponent,
