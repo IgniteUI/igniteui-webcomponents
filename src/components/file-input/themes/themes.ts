@@ -4,10 +4,10 @@ import type { Themes } from '../../../theming/types.js';
 import { all as inputThemes } from '../../input/themes/themes.js';
 
 // Shared Styles
-import { styles as bootstrap } from './shared/bootstrap.css.js';
-import { styles as fluent } from './shared/fluent.css.js';
-import { styles as indigo } from './shared/indigo.css.js';
-import { styles as material } from './shared/material.css.js';
+import { styles as bootstrap } from './shared/file-input.bootstrap.css.js';
+import { styles as fluent } from './shared/file-input.fluent.css.js';
+import { styles as indigo } from './shared/file-input.indigo.css.js';
+import { styles as material } from './shared/file-input.material.css.js';
 
 const light = {
   shared: css`
