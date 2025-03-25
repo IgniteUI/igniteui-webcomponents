@@ -2,7 +2,8 @@ import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
-import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
+import { fadeOut } from '../../animations/presets/fade/index.js';
+import { scaleInCenter } from '../../animations/presets/scale/index.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -246,7 +247,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? fadeIn : fadeOut;
+    const animation = dir === 'open' ? scaleInCenter : fadeOut;
     return this._animationPlayer.playExclusive(animation());
   }
 
