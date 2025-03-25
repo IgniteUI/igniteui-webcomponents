@@ -74,10 +74,6 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
         border: none;
         grid-area: 1 / 2;
     }
-
-    [part='file-names'] {
-        font-size: rem(14px);
-    }
 }
 
 :host(:hover) {

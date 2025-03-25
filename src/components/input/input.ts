@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   type FormValue,
@@ -47,11 +46,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(
-      IgcInputComponent,
-      IgcValidationContainerComponent,
-      IgcButtonComponent
-    );
+    registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
   protected override _formValue: FormValue<string>;
@@ -275,7 +270,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       <input
         id=${this.inputId}
         part=${partNameMap(this.resolvePartNames('input'))}
-        class="native-input"
         name=${ifDefined(this.name)}
         type=${ifDefined(this.type)}
         pattern=${ifDefined(this.pattern)}
