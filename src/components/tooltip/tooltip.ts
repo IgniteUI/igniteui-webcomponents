@@ -355,7 +355,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         flip
         shift
       >
-        <div ${ref(this._containerRef)} part="base">
+        <div
+          ${ref(this._containerRef)}
+          part="base"
+          aria-hidden=${String(!this.open)}
+          aria-live="polite"
+          aria-atomic="true"
+        >
           ${this.message ? html`${this.message}` : html`<slot></slot>`}
           ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
         </div>
