@@ -21,8 +21,6 @@ import { numberValidators, stringValidators } from './validators.js';
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
- * @slot file-selector-text - Renders content for the browse button when input type is file.
- * @slot file-missing-text - Renders content when input type is file and no file is chosen.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot type-mismatch - Renders content when the a type url/email input pattern validation fails.
  * @slot pattern-mismatch - Renders content when the pattern validation fails.
@@ -40,8 +38,6 @@ import { numberValidators, stringValidators } from './validators.js';
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
  * @csspart label - The native label element.
- * @csspart file-names - The file names wrapper when input type is 'file'.
- * @csspart file-selector-button - The browse button when input type is 'file'.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
@@ -71,14 +67,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   private _pattern?: string;
   private _step?: number;
 
-  private get _fileNames(): string | null {
-    if (!this.files || this.files.length === 0) return null;
-
-    return Array.from(this.files)
-      .map((file) => file.name)
-      .join(', ');
-  }
-
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
@@ -107,24 +95,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'search'
     | 'tel'
     | 'text'
-    | 'file'
     | 'url' = 'text';
-
-  /**
-   * The multiple attribute of the control.
-   * Used to indicate that a file input allows the user to select more than one file.
-   * @attr
-   */
-  @property({ type: Boolean })
-  public multiple = false;
-
-  /**
-   * The accept attribute of the control.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
-   * @attr
-   */
-  @property({ type: String })
-  public accept = '';
 
   /**
    * The input mode attribute of the control.
@@ -281,11 +252,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.value = this.input.value;
   }
 
-  public get files(): FileList | null {
-    if (this.type !== 'file' || !this.input) return null;
-    return this.input.files;
-  }
-
   private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput', { detail: this.value });
@@ -304,24 +270,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this._validate();
   }
 
-  protected override renderFileParts() {
-    if (this.type !== 'file') return nothing;
-
-    return html`
-      <div part="file-parts">
-        <div part="file-selector-button">
-          <igc-button variant="flat" ?disabled=${this.disabled} tabindex="-1">
-            <slot name="file-selector-text">Browse</slot>
-          </igc-button>
-        </div>
-        <div part="file-names">
-          ${this._fileNames ??
-          html`<slot name="file-missing-text">No file chosen</slot>`}
-        </div>
-      </div>
-    `;
-  }
-
   protected renderInput() {
     return html`
       <input
@@ -337,7 +285,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
-        ?multiple=${this.type === 'file' && this.multiple}
         tabindex=${this.tabIndex}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputMode)}
@@ -346,7 +293,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         step=${ifDefined(this.step)}
-        accept=${ifDefined(this.type !== 'file' ? undefined : this.accept)}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'

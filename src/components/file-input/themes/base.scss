@@ -1,0 +1,58 @@
+@use 'styles/utilities' as *;
+@use '../../input/themes/light/themes' as *;
+
+$theme: $base;
+
+:host(:is(igc-file-input)) {
+    [part~='file-parts'] {
+        display: contents;
+    }
+
+    [part='file-selector-button'] {
+        align-content: center;
+        grid-area: 1 / 2;
+
+        igc-button::part(base) {
+            transition: none;
+        }
+    }
+
+    [part='file-names'] {
+        @include ellipsis();
+
+        align-content: center;
+        grid-area: 1 / 3;
+    }
+
+    [part~='container'] {
+        position: relative;
+        grid-template-columns: auto auto 1fr auto;
+    }
+
+    [part~='input'] {
+        position: absolute;
+        border: none;
+        inset: 0;
+        width: 100%;
+        grid-column: 2 / 4;
+        appearance: none;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    [part~='input']::file-selector-button {
+        cursor: pointer !important;
+        width: 100%;
+    }
+
+    [part~='suffix'] {
+        grid-area: 1 / 4;
+    }
+}
+
+:host(:is(igc-file-input):disabled),
+:host(:is(igc-file-input)[disabled]) {
+    [part~='file-names'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}

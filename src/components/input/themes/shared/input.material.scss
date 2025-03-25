@@ -138,63 +138,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     overflow: hidden;
 }
 
-:host([type='file']) {
-    [part~='container'] {
-        grid-template-columns: auto auto auto 1fr auto;
-    }
-
-    [part='notch'] [part='label'] {
-        transition: none;
-    }
-
-    [part='label'] {
-        @extend %label;
-        @include type-style('caption');
-    }
-
-    [part~='file-names'] {
-        grid-area: 1 / 3 / span 1 / span 2;
-        padding-inline: rem(4px);
-    }
-
-    [part~='input'] {
-        grid-column: 2 / 5;
-    }
-
-    [part='filler'] {
-        grid-column: 4 / 5;
-    }
-
-    [part='end'] {
-        grid-area: 1 / 5;
-    }
-}
-
-:host([type='file']:not([outlined])) {
-    :not([outlined]) {
-        [part='notch'] {
-            grid-area: 1 / 3;
-        }
-
-        [part='notch'] [part='label'] {
-            transform: translateY(-73%);
-        }
-    }
-
-    [part~='file-names'] {
-        padding-top: rem(20px);
-        padding-bottom: rem(6px);
-    }
-}
-
-:host([outlined][type='file']) {
-    [part='notch'] {
-        @extend %floated-styles;
-
-        grid-column: 3 / 3;
-    }
-}
-
 :host(:focus-within) {
     [part='label'] {
         @extend %label;
@@ -391,7 +334,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='file-selector-button'],
     [part='filler'] {
         border: {
             width: $idle-border-width;
@@ -460,7 +402,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='notch'],
     [part='start'],
     [part='end'],
-    [part='file-selector-button'],
     [part='filler'] {
         border-color: var-get($theme, 'hover-border-color');
     }
@@ -497,8 +438,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='filler'],
-    [part='file-selector-button'] {
+    [part='filler'] {
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
@@ -542,7 +482,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([type='search'])[outlined][invalid]:focus-within) {
     [part='start'],
     [part='notch'],
-    [part='file-selector-button'],
     [part='filler'],
     [part='end'] {
         border-color: var-get($theme, 'error-secondary-color');
@@ -617,13 +556,5 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
-    }
-}
-
-:host([type='file'][outlined]:hover),
-:host([type='file'][outlined][disabled]),
-:host([type='file'][outlined][invalid]) {
-    [part='notch'] {
-        border-top-color: transparent;
     }
 }
