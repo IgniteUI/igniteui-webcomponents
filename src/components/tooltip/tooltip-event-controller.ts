@@ -58,13 +58,13 @@ class TooltipController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    // this._host.addEventListener('pointerenter', this._host[showOnTrigger]);
+    this._host.addEventListener('pointerenter', this._host[showOnTrigger]);
     this._host.addEventListener('pointerleave', this._host[hideOnTrigger]);
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    // this._host.removeEventListener('pointerenter', this._host[showOnTrigger]);
+    this._host.removeEventListener('pointerenter', this._host[showOnTrigger]);
     this._host.removeEventListener('pointerleave', this._host[hideOnTrigger]);
   }
 }
