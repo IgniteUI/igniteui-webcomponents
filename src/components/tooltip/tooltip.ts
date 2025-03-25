@@ -285,9 +285,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     await this._setDelay(this.hideDelay);
 
-    this.open = false;
     this.toBeHidden = true;
     const result = await this._toggleAnimation('close');
+    this.open = false;
     this.toBeHidden = false;
 
     return result;
