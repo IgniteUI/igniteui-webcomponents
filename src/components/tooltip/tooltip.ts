@@ -1,6 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
@@ -247,8 +248,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? scaleInCenter : fadeOut;
-    return this._animationPlayer.playExclusive(animation());
+    const animation =
+      dir === 'open'
+        ? scaleInCenter({ duration: 150, easing: EaseOut.Quad })
+        : fadeOut({ duration: 75, easing: EaseOut.Sine });
+    return this._animationPlayer.playExclusive(animation);
   }
 
   private async _forceAnimationStop() {
