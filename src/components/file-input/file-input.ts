@@ -13,7 +13,7 @@ import {
 import { isEmpty, partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import { styles } from './themes/base.css.js';
+import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
