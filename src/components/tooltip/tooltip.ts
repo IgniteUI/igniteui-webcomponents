@@ -1,20 +1,30 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
-import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
+import { fadeOut } from '../../animations/presets/fade/index.js';
+import { scaleInCenter } from '../../animations/presets/scale/index.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { getElementByIdFromRoot, isString } from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 import { styles } from './themes/tooltip.base.css.js';
 import {
   addTooltipController,
   hideOnTrigger,
+  showOnTrigger,
 } from './tooltip-event-controller.js';
 import service from './tooltip-service.js';
 
-// TODO: Expose events
+export interface IgcTooltipComponentEventMap {
+  igcOpening: CustomEvent<Element | null>;
+  igcOpened: CustomEvent<Element | null>;
+  igcClosing: CustomEvent<Element | null>;
+  igcClosed: CustomEvent<Element | null>;
+}
 
 function parseTriggers(string: string): string[] {
   return (string ?? '').split(',').map((part) => part.trim());
@@ -24,11 +34,19 @@ function parseTriggers(string: string): string[] {
  * @element igc-tooltip
  *
  * @slot - default slot
+ *
+ * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
+ * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
+ * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
+ * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
-export default class IgcTooltipComponent extends LitElement {
+export default class IgcTooltipComponent extends EventEmitterMixin<
+  IgcTooltipComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-tooltip';
 
-  public static override styles = styles;
+  public static styles = styles;
 
   /* blazorSuppress */
   public static register() {
@@ -40,10 +58,14 @@ export default class IgcTooltipComponent extends LitElement {
   private _containerRef: Ref<HTMLElement> = createRef();
   private _animationPlayer = addAnimationController(this, this._containerRef);
 
-  private _autoHideTimeout?: number;
+  private _timeoutId?: number;
+  private _toBeShown = false;
+  private _toBeHidden = false;
   private _open = false;
   private _showTriggers = ['pointerenter'];
   private _hideTriggers = ['pointerleave'];
+  private _showDelay = 500;
+  private _hideDelay = 500;
 
   @query('#arrow')
   protected _arrowElement!: HTMLElement;
@@ -133,7 +155,7 @@ export default class IgcTooltipComponent extends LitElement {
     this._hideTriggers = parseTriggers(value);
     this._controller.set(this._target, {
       show: this._showTriggers,
-      hide: this._showTriggers,
+      hide: this._hideTriggers,
     });
   }
 
@@ -141,11 +163,49 @@ export default class IgcTooltipComponent extends LitElement {
     return this._hideTriggers.join();
   }
 
+  /**
+   * Specifies the number of milliseconds that should pass before showing the tooltip.
+   *
+   * @attr show-delay
+   */
+  @property({ attribute: 'show-delay', type: Number })
+  public set showDelay(value: number) {
+    this._showDelay = Math.max(0, value);
+  }
+
+  public get showDelay(): number {
+    return this._showDelay;
+  }
+
+  /**
+   * Specifies the number of milliseconds that should pass before hiding the tooltip.
+   *
+   * @attr hide-delay
+   */
+  @property({ attribute: 'hide-delay', type: Number })
+  public set hideDelay(value: number) {
+    this._hideDelay = Math.max(0, value);
+  }
+
+  public get hideDelay(): number {
+    return this._hideDelay;
+  }
+
+  /**
+   * Specifies a plain text as tooltip content.
+   *
+   * @attr
+   */
+  @property({ type: String })
+  public message = '';
+
   constructor() {
     super();
 
     this._internals = this.attachInternals();
     this._internals.role = 'tooltip';
+    this._internals.ariaAtomic = 'true';
+    this._internals.ariaLive = 'polite';
   }
 
   protected override async firstUpdated() {
@@ -189,40 +249,124 @@ export default class IgcTooltipComponent extends LitElement {
   }
 
   private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? fadeIn : fadeOut;
-    return this._animationPlayer.playExclusive(animation());
+    const animation =
+      dir === 'open'
+        ? scaleInCenter({ duration: 150, easing: EaseOut.Quad })
+        : fadeOut({ duration: 75, easing: EaseOut.Sine });
+    return this._animationPlayer.playExclusive(animation);
+  }
+
+  /**
+   * Immediately stops any ongoing animation and resets the tooltip state.
+   *
+   * This method is used in edge cases when a transition needs to be forcefully interrupted,
+   * such as when a tooltip is in the middle of showing or hiding and the user suddenly
+   * triggers the opposite action (e.g., hovers in and out rapidly).
+   *
+   * It:
+   * - Reverts `open` based on whether it was mid-hide or mid-show.
+   * - Clears internal transition flags (`_toBeShown`, `_toBeHidden`).
+   * - Stops any active animations, causing `_toggleAnimation()` to return false.
+   *
+   */
+  private async _forceAnimationStop() {
+    this.open = this._toBeHidden;
+    this._toBeShown = false;
+    this._toBeHidden = false;
+    this._animationPlayer.stopAll();
+  }
+
+  private _setDelay(ms: number): Promise<void> {
+    clearTimeout(this._timeoutId);
+    return new Promise((resolve) => {
+      this._timeoutId = setTimeout(resolve, ms);
+    });
   }
 
   /** Shows the tooltip if not already showing. */
-  public show = async () => {
-    clearTimeout(this._autoHideTimeout);
-    if (this.open) {
-      return false;
-    }
+  public show = async (): Promise<boolean> => {
+    if (this.open) return false;
+
+    await this._setDelay(this.showDelay);
 
     this.open = true;
-    return await this._toggleAnimation('open');
+    this._toBeShown = true;
+    const result = await this._toggleAnimation('open');
+    this._toBeShown = false;
+
+    return result;
   };
 
   /** Hides the tooltip if not already hidden. */
-  public hide = async () => {
-    if (!this.open) {
-      return false;
-    }
+  public hide = async (): Promise<boolean> => {
+    if (!this.open) return false;
 
-    await this._toggleAnimation('close');
-    this.open = false;
-    clearTimeout(this._autoHideTimeout);
-    return true;
+    await this._setDelay(this.hideDelay);
+
+    this._toBeHidden = true;
+    const result = await this._toggleAnimation('close');
+    this.open = !result;
+    this._toBeHidden = false;
+
+    return result;
   };
 
-  protected [hideOnTrigger] = () => {
-    this._autoHideTimeout = setTimeout(() => this.hide(), 180);
+  /** Toggles the tooltip between shown/hidden state after the appropriate delay. */
+  public toggle = async (): Promise<boolean> => {
+    return this.open ? this.hide() : this.show();
+  };
+
+  public showWithEvent = async () => {
+    if (this._toBeHidden) {
+      await this._forceAnimationStop();
+      return;
+    }
+    if (
+      this.open ||
+      !this.emitEvent('igcOpening', { cancelable: true, detail: this._target })
+    ) {
+      return;
+    }
+    if (await this.show()) {
+      this.emitEvent('igcOpened', { detail: this._target });
+    }
+  };
+
+  public hideWithEvent = async () => {
+    if (this._toBeShown) {
+      await this._forceAnimationStop();
+      return;
+    }
+    if (
+      !this.open ||
+      !this.emitEvent('igcClosing', { cancelable: true, detail: this._target })
+    ) {
+      return;
+    }
+    if (await this.hide()) {
+      this.emitEvent('igcClosed', { detail: this._target });
+    }
+  };
+
+  protected [showOnTrigger] = () => {
+    clearTimeout(this._timeoutId);
+    this.showWithEvent();
+  };
+
+  protected [hideOnTrigger] = (ev: Event) => {
+    const related = (ev as PointerEvent).relatedTarget as Node | null;
+    // If the pointer moved into the tooltip element, don't hide
+    if (related && (this.contains(related) || this._target?.contains(related)))
+      return;
+
+    clearTimeout(this._timeoutId);
+    this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
   };
 
   protected override render() {
     return html`
       <igc-popover
+        aria-hidden=${!this.open}
         .placement=${this.placement}
         .offset=${this.offset}
         .anchor=${this._target}
@@ -233,7 +377,7 @@ export default class IgcTooltipComponent extends LitElement {
         shift
       >
         <div ${ref(this._containerRef)} part="base">
-          <slot></slot>
+          ${this.message ? html`${this.message}` : html`<slot></slot>`}
           ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
         </div>
       </igc-popover>

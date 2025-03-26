@@ -33,11 +33,11 @@ class TooltipController implements ReactiveController {
     this.remove(anchor);
 
     for (const trigger of show) {
-      anchor.addEventListener(trigger, this._host.show);
+      anchor.addEventListener(trigger, this._host[showOnTrigger]);
     }
 
     for (const trigger of hide) {
-      anchor.addEventListener(trigger, this._host[hideOnTrigger]);
+      anchor.addEventListener(trigger, (ev) => this._host[hideOnTrigger](ev));
     }
   }
 
@@ -48,7 +48,7 @@ class TooltipController implements ReactiveController {
     }
 
     for (const trigger of this._showTriggers) {
-      anchor.removeEventListener(trigger, this._host.show);
+      anchor.removeEventListener(trigger, this._host[showOnTrigger]);
     }
 
     for (const trigger of this._hideTriggers) {
@@ -58,17 +58,18 @@ class TooltipController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._host.addEventListener('pointerenter', this._host.show);
+    this._host.addEventListener('pointerenter', this._host[showOnTrigger]);
     this._host.addEventListener('pointerleave', this._host[hideOnTrigger]);
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._host.removeEventListener('pointerenter', this._host.show);
+    this._host.removeEventListener('pointerenter', this._host[showOnTrigger]);
     this._host.removeEventListener('pointerleave', this._host[hideOnTrigger]);
   }
 }
 
+export const showOnTrigger = Symbol();
 export const hideOnTrigger = Symbol();
 
 export function addTooltipController(

@@ -189,6 +189,8 @@ export const Basic: Story = {
 
     <igc-input label="Password" required minlength="12"></igc-input>
     <igc-tooltip
+      .showDelay=${args.showDelay}
+      .hideDelay=${args.hideDelay}
       placement="bottom-end"
       offset="-4"
       disable-arrow
@@ -285,4 +287,39 @@ export const Triggers: Story = {
       You've changed the value to ${getValue()}
     </igc-tooltip>
   `,
+};
+
+export const Toggle: Story = {
+  render: () => {
+    // Use a template ref id to target the tooltip instance
+    const tooltipId = 'toggle-tooltip';
+    const buttonId = 'toggle-button';
+    const buttonIdToggler = 'toggler-button';
+
+    // Hook into the rendered DOM to attach click listener
+    setTimeout(() => {
+      const tooltip = document.getElementById(tooltipId) as IgcTooltipComponent;
+      const button = document.getElementById(
+        buttonIdToggler
+      ) as HTMLButtonElement;
+
+      if (tooltip && button) {
+        button.addEventListener('click', () => tooltip.toggle());
+      }
+    });
+
+    return html`
+      <igc-button id=${buttonIdToggler}>Toggle</igc-button>
+      <igc-button id=${buttonId}>Toggle Tooltip</igc-button>
+      <igc-tooltip
+        id=${tooltipId}
+        placement="bottom"
+        show-delay="500"
+        hide-delay="500"
+        message="Simple tooltip content"
+      >
+        This tooltip toggles on button click!
+      </igc-tooltip>
+    `;
+  },
 };
