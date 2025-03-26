@@ -22,7 +22,12 @@ defineComponents(
 const metadata: Meta<IgcTooltipComponent> = {
   title: 'Tooltip',
   component: 'igc-tooltip',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: { description: { component: '' } },
+    actions: {
+      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -90,6 +95,24 @@ const metadata: Meta<IgcTooltipComponent> = {
         'Which event triggers will hide the tooltip.\nExpects a comma separate string of different event triggers.',
       control: 'text',
     },
+    showDelay: {
+      type: 'number',
+      description:
+        'Specifies the number of milliseconds that should pass before showing the tooltip.',
+      control: 'number',
+    },
+    hideDelay: {
+      type: 'number',
+      description:
+        'Specifies the number of milliseconds that should pass before hiding the tooltip.',
+      control: 'number',
+    },
+    message: {
+      type: 'string',
+      description: 'Specifies a plain text as tooltip content.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
   },
   args: {
     open: false,
@@ -97,6 +120,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     inline: false,
     offset: 4,
     placement: 'top',
+    message: '',
   },
 };
 
@@ -137,6 +161,12 @@ interface IgcTooltipArgs {
    * Expects a comma separate string of different event triggers.
    */
   hideTriggers: string;
+  /** Specifies the number of milliseconds that should pass before showing the tooltip. */
+  showDelay: number;
+  /** Specifies the number of milliseconds that should pass before hiding the tooltip. */
+  hideDelay: number;
+  /** Specifies a plain text as tooltip content. */
+  message: string;
 }
 type Story = StoryObj<IgcTooltipArgs>;
 
