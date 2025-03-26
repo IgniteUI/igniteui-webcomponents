@@ -3,8 +3,7 @@
 :host {
     @include type-style('body-1');
 
-    padding-block: rem(16px) rem(24px);
-    padding-inline: rem(24px);
+    padding: rem(16px);
 }
 
 ::slotted(*) {

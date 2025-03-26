@@ -1,0 +1,14 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    ::slotted(igc-card-actions:last-child) {
+        padding-block-start: rem(24px);
+    }
+
+    ::slotted(igc-card-actions:only-child) {
+        padding-block-start: rem(16px);
+    }
+}
