@@ -3,6 +3,7 @@ import { spy } from 'sinon';
 
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { simulateFileUpload } from '../common/utils.spec.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File input component', () => {
@@ -50,33 +51,48 @@ describe('File input component', () => {
     it('returns the uploaded files when input is of type file', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
 
-      const eventSpy = spy(element, 'emitEvent');
+      const files = [
+        new File(['test content'], 'test.txt', { type: 'text/plain' }),
+        new File(['image data'], 'image.png', { type: 'image/png' }),
+      ];
+
+      await simulateFileUpload(element, files);
+
+      expect(element.files).to.exist;
+      expect(element.files!.length).to.equal(2);
+      expect(element.files![0].name).to.equal('test.txt');
+      expect(element.files![1].name).to.equal('image.png');
+    });
+
+    it('should show placeholder text when no file is selected', async () => {
+      await createFixture(html`<igc-file-input></igc-file-input>`);
+
+      expect(
+        element
+          .shadowRoot!.querySelector('[part="file-names"]')!
+          .textContent!.trim()
+      ).to.equal('No file chosen');
+
+      element.placeholder = 'Select a document';
+      await elementUpdated(element);
+
+      expect(
+        element
+          .shadowRoot!.querySelector('[part="file-names"]')!
+          .textContent!.trim()
+      ).to.equal('Select a document');
+
       const file = new File(['test content'], 'test.txt', {
         type: 'text/plain',
       });
-      const fileList = {
-        0: file,
-        length: 1,
-        item: (index: number) => (index === 0 ? file : null),
-      };
-      const nativeInput = element.shadowRoot!.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
 
-      Object.defineProperty(nativeInput, 'files', {
-        value: fileList,
-        writable: true,
-      });
+      await simulateFileUpload(element, [file]);
 
-      nativeInput!.dispatchEvent(new Event('change', { bubbles: true }));
-
-      await elementUpdated(element);
-
-      expect(eventSpy).calledOnceWith('igcChange');
-      expect(element.files).to.exist;
-      expect(element.files!.length).to.equal(1);
-      expect(element.files![0].name).to.equal('test.txt');
-      expect(element.files).to.deep.equal(nativeInput.files);
+      expect(
+        element
+          .shadowRoot!.querySelector('[part="file-names"]')!
+          .textContent!.trim()
+      ).to.equal('test.txt');
     });
   });
 
@@ -118,8 +134,78 @@ describe('File input component', () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
     });
 
-    it('emits igcInput', async () => {});
-    it('emits igcChange', async () => {});
-    it('emits igcCancel', async () => {});
+    it('emits igcInput', async () => {
+      await createFixture(html`<igc-file-input></igc-file-input>`);
+      const eventSpy = spy(element, 'emitEvent');
+
+      const files = [
+        new File(['test content'], 'test.txt', { type: 'text/plain' }),
+      ];
+
+      await simulateFileUpload(element, files);
+
+      expect(eventSpy).calledWith('igcInput', {
+        detail: element.value,
+      });
+    });
+
+    it('emits igcChange', async () => {
+      await createFixture(html`<igc-file-input></igc-file-input>`);
+      const eventSpy = spy(element, 'emitEvent');
+
+      const files = [
+        new File(['test content'], 'test.txt', { type: 'text/plain' }),
+      ];
+
+      await simulateFileUpload(element, files);
+
+      expect(eventSpy).calledWith('igcChange', {
+        detail: element.value,
+      });
+    });
+
+    it('emits igcCancel', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+      const input = element.shadowRoot!.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+
+      input.dispatchEvent(new Event('cancel', { bubbles: true }));
+      await elementUpdated(element);
+
+      expect(eventSpy).calledOnceWith('igcCancel', {
+        detail: {
+          message: 'User canceled the file selection dialog',
+          value: element.value,
+        },
+      });
+    });
+
+    it('should mark as dirty on focus', async () => {
+      const input = element.shadowRoot!.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+
+      input.dispatchEvent(new Event('focus', { bubbles: true }));
+      await elementUpdated(element);
+
+      const eventSpy = spy(element as any, '_validate');
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      expect(eventSpy).called;
+    });
+
+    it('should validate on blur', async () => {
+      await createFixture(html`<igc-file-input required></igc-file-input>`);
+
+      const input = element.shadowRoot!.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
+      await elementUpdated(element);
+
+      expect(element.invalid).to.be.true;
+    });
   });
 });
