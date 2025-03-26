@@ -528,6 +528,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected dialogDone() {
+    this.emitEvent('igcChange', { detail: this.value ?? undefined });
     this._hide(true);
   }
 
@@ -708,7 +709,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._startDate = rangeValues[0];
     this._endDate = rangeValues[rangeValues.length - 1];
     this.value = [this._startDate, this._endDate];
-    this.emitEvent('igcChange', { detail: this.value });
+
+    if (this.isDropDown) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
 
     this._shouldCloseCalendarDropdown();
   }
@@ -886,6 +890,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
               >Cancel</igc-button
             >
+            <!--TODO: Localize -->
             <igc-button slot="footer" @click=${this.dialogDone} variant="flat"
               >Done</igc-button
             >
@@ -908,14 +913,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         display-format=${ifDefined(this._displayFormat)}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
-        ?required=${this.required}
         .value=${picker === 'start' ? this._startDate : this._endDate}
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
         .placeholder=${this.placeholder}
-        .min=${this.min}
-        .max=${this.max}
         .invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
@@ -957,8 +959,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         placeholder=${this.placeholder}
         ?readonly=${true}
         ?required=${this.required}
-        .locale=${this.locale}
-        .prompt=${this.prompt}
         .outlined=${this.outlined}
         ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}

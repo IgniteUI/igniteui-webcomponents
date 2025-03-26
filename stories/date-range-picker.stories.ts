@@ -459,17 +459,17 @@ export const Slots: Story = {
         ?keep-open-on-select=${args.keepOpenOnSelect}
       >
         <span slot="prefix-start">$</span>
-        <span slot="prefix-end">$</span>
+        <span slot="prefix-end">*</span>
         <span slot="suffix-start">🦀</span>
-        <span slot="suffix-end">🦀</span>
+        <span slot="suffix-end">😂</span>
 
-        <span slot="start-calendar-icon-open">👩‍💻</span>
-        <span slot="start-calendar-icon">👩‍💻</span>
+        <span slot="start-calendar-icon-open">⬆️</span>
+        <span slot="start-calendar-icon">⬇️</span>
         <span slot="end-calendar-icon-open">👩‍💻</span>
         <span slot="end-calendar-icon">👩‍💻</span>
 
         <span slot="start-clear-icon">🗑️</span>
-        <span slot="end-clear-icon">🗑️</span>
+        <span slot="end-clear-icon">🚮</span>
 
         <p slot="helper-text">
           For example, select the dates of your future vacation

@@ -1,8 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
+import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import { CalendarDay } from '../calendar/model.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
 
@@ -12,10 +14,6 @@ describe('Date range picker', () => {
   let picker: IgcDateRangePickerComponent;
   let _dateTimeInput: IgcDateTimeInputComponent;
   let calendar: IgcCalendarComponent;
-  const date_1 = new CalendarDay({ year: 2025, month: 2, date: 19 });
-  const date_2 = date_1.set({ date: 22 });
-  const date_1_str = date_1.native.toISOString();
-  const date_2_str = date_2.native.toISOString();
 
   beforeEach(async () => {
     picker = await fixture<IgcDateRangePickerComponent>(
@@ -129,21 +127,24 @@ describe('Date range picker', () => {
     });
   });
   describe('Selection via the calendar', () => {
+    const today = CalendarDay.from(new Date());
+    const tomorrow = today.add('day', 1);
+
     it('should select a single date in dropdown mode and emit igcChange', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-
       picker.open = true;
       await elementUpdated(picker);
 
-      calendar.values = `${date_1_str}`;
+      await selectDates(today, null, calendar);
 
       expect(eventSpy).calledWith('igcChange');
       expect(picker.value?.length).to.equal(2);
-      expect(picker.value?.[0]).to.deep.equal(date_1);
-      expect(picker.value?.[1]).to.deep.equal(date_1);
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(false);
+      expect(picker.value?.[0]).to.deep.equal(today.native);
+      expect(picker.value?.[1]).to.deep.equal(today.native);
+
+      const popover = picker.renderRoot.querySelector('igc-popover');
+      // when selecting a single date, the calendar won't close
+      expect(popover?.hasAttribute('open')).to.equal(true);
     });
 
     it('should select a range of dates in dropdown mode and emit igcChange', async () => {
@@ -152,15 +153,16 @@ describe('Date range picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      calendar.values = `${date_1_str}, ${date_2_str}`;
+      await selectDates(today, tomorrow, calendar);
 
       expect(eventSpy).calledWith('igcChange');
       expect(picker.value?.length).to.equal(2);
-      expect(picker.value?.[0]).to.deep.equal(date_1);
-      expect(picker.value?.[1]).to.deep.equal(date_2);
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(false);
+      expect(picker.value?.[0]).to.deep.equal(today.native);
+      expect(picker.value?.[1]).to.deep.equal(tomorrow.native);
+
+      const popover = picker.renderRoot.querySelector('igc-popover');
+      // with the second click, the calendar closes
+      expect(popover?.hasAttribute('open')).to.equal(false);
     });
 
     it('should select a range of dates in dialog mode and emit igcChange when done is clicked', async () => {
@@ -171,55 +173,74 @@ describe('Date range picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      calendar.values = `${date_1_str}, ${date_2_str}`;
+      await selectDates(today, tomorrow, calendar);
 
       expect(eventSpy).not.to.be.calledWith('igcChange');
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(true);
+      let dialog = picker.renderRoot.querySelector('igc-dialog');
+      expect(dialog?.hasAttribute('open')).to.equal(true);
 
       const doneBtn = picker.shadowRoot!.querySelector(
         'igc-button[slot="footer"]:last-of-type'
-      )!;
-      doneBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      ) as HTMLButtonElement;
+      doneBtn?.click();
+      await elementUpdated(picker);
 
       expect(eventSpy).calledWith('igcChange');
       expect(picker.value?.length).to.equal(2);
-      expect(picker.value?.[0]).to.deep.equal(date_1);
-      expect(picker.value?.[1]).to.deep.equal(date_2);
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(false);
+      expect(picker.value?.[0]).to.deep.equal(today.native);
+      expect(picker.value?.[1]).to.deep.equal(tomorrow.native);
+
+      dialog = picker.renderRoot.querySelector('igc-dialog');
+      expect(dialog?.hasAttribute('open')).to.equal(false);
     });
 
     it('should not emit igcChange when cancel is clicked and the value should be the initial value', async () => {
       const eventSpy = spy(picker, 'emitEvent');
 
-      picker.value;
       picker.mode = 'dialog';
+      const date1 = today.add('day', -2);
+      const date2 = today.add('day', 2);
+      picker.value = [date1.native, date2.native];
       await elementUpdated(picker);
       picker.open = true;
       await elementUpdated(picker);
 
-      calendar.values = `${date_1_str}, ${date_2_str}`;
+      await selectDates(date1, date2, calendar);
 
       expect(eventSpy).not.to.be.calledWith('igcChange');
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(true);
+      let dialog = picker.renderRoot.querySelector('igc-dialog');
+      expect(dialog?.hasAttribute('open')).to.equal(true);
 
       const cancelBtn = picker.shadowRoot!.querySelector(
         'igc-button[slot="footer"]'
-      )!;
-      cancelBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      ) as HTMLButtonElement;
+      cancelBtn?.click();
+      await elementUpdated(picker);
 
       expect(eventSpy).not.to.be.calledWith('igcChange');
       expect(picker.value?.length).to.equal(2);
-      expect(picker.value?.[0]).to.deep.equal(date_1);
-      expect(picker.value?.[1]).to.deep.equal(date_2);
-      expect(
-        picker.shadowRoot!.querySelector('igc-popover')?.hasAttribute('open')
-      ).to.equal(false);
+      expect(picker.value?.[0]).to.deep.equal(date1.native);
+      expect(picker.value?.[1]).to.deep.equal(date2.native);
+      dialog = picker.renderRoot.querySelector('igc-dialog');
+      expect(dialog?.hasAttribute('open')).to.equal(false);
     });
   });
 });
+
+const selectDates = async (
+  startDate: CalendarDay | null,
+  endDate: CalendarDay | null,
+  calendar: IgcCalendarComponent
+) => {
+  const daysView = getCalendarDOM(calendar).views.days;
+  if (startDate) {
+    const startDayDOM = getDOMDate(startDate, daysView);
+    simulateClick(startDayDOM);
+    await elementUpdated(calendar);
+  }
+  if (endDate) {
+    const endDayDom = getDOMDate(endDate, daysView);
+    simulateClick(endDayDom);
+    await elementUpdated(calendar);
+  }
+};
