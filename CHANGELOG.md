@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
+- Exposed `IgcCalendarResourceStrings`, `PopoverPlacement` (Dropdown and Select) and `IgcTreeSelectionEventArgs` from the public API
 
 ## [5.3.0] - 2025-03-13
 ### Added
