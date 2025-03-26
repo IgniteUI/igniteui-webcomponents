@@ -114,6 +114,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   @property({ type: Number })
   public override tabIndex = 0;
 
+  /** @hidden */
+  @property({ type: Boolean, attribute: false, noAccessor: true })
+  public override readonly readOnly = false;
+
   constructor() {
     super();
     this._formValue = createFormValueState(this, { initialValue: '' });
@@ -178,7 +182,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
         name=${ifDefined(this.name)}
         type="file"
         .value=${live(this.value)}
-        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}

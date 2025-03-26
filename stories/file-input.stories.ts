@@ -84,12 +84,6 @@ const metadata: Meta<IgcFileInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -109,7 +103,6 @@ const metadata: Meta<IgcFileInputComponent> = {
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -140,8 +133,6 @@ interface IgcFileInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -167,7 +158,6 @@ export const Basic: Story = {
       ?invalid=${args.invalid}
       ?multiple=${args.multiple}
       ?outlined=${args.outlined}
-      ?readonly=${args.readOnly}
       ?required=${args.required}
     ></igc-file-input>
   `,
@@ -189,7 +179,6 @@ export const Slots: Story = {
       ?invalid=${args.invalid}
       ?multiple=${args.multiple}
       ?outlined=${args.outlined}
-      ?readonly=${args.readOnly}
       ?required=${args.required}
     >
       <igc-icon name="github" slot="prefix"></igc-icon>
@@ -219,7 +208,6 @@ export const Validation: Story = {
           ?invalid=${args.invalid}
           ?multiple=${args.multiple}
           ?outlined=${args.outlined}
-          ?readonly=${args.readOnly}
           ?required=${args.required}
         >
           <p slot="helper-text">Your life's work</p>
