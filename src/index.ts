@@ -82,7 +82,10 @@ export {
 export { configureTheme } from './theming/config.js';
 
 // localization objects
-export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
+export {
+  IgcCalendarResourceStringEN,
+  type IgcCalendarResourceStrings,
+} from './components/common/i18n/calendar.resources.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
@@ -129,6 +132,7 @@ export { DateRangeType } from './components/calendar/types.js';
 export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export { DatePart } from './components/date-time-input/date-util.js';
 export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export type { IgcPlacement } from './components/popover/popover.js';
 export type { RadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
