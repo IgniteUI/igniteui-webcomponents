@@ -425,22 +425,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       .set(escapeKey, this.onEscapeKey);
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => {
-      if (!this.singleInput) {
-        this.setFormats();
-        this.setKeepOpenOnSelectForDialog();
-        if (this.value) {
-          this.updateInputValues();
-        }
-        this.setDateConstraints();
-      }
-      this.requestUpdate();
-    });
-    return root;
-  }
-
   protected override firstUpdated() {
     this.setCalendarRangeValues();
   }
@@ -600,6 +584,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @watch('inputFormat')
   @watch('displayFormat')
   @watch('locale')
+  @watch('singleInput')
   private updateMaskedRangeValue() {
     if (!this.singleInput) {
       return;
@@ -625,13 +610,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   @watch('mode')
-  private async setKeepOpenOnSelectForDialog() {
+  private async modeChanged() {
     if (this.mode === 'dialog') {
       this.keepOpenOnSelect = true;
     }
+    await this.setCalendarRangeValues();
   }
 
-  @watch('mode')
+  @watch('singleInput')
   private async setCalendarRangeValues() {
     if (!this._calendar || !this._startDate || !this._endDate) {
       return;
@@ -941,12 +927,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private renderInputs(idStart: string, idEnd: string) {
     return html`
       <div part="inputs">
-        ${this.renderInput(idStart, 'start')}${this.renderPicker(idStart)}
+        ${this.renderInput(idStart, 'start')}
         <!-- TODO: localize separator string -->
         <span part="separator">to</span>
         ${this.renderInput(idEnd, 'end')}
       </div>
-      ${this.renderHelperText()}
+      ${this.renderPicker(idStart)} ${this.renderHelperText()}
     `;
   }
 
