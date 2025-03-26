@@ -4,11 +4,12 @@
 $theme: $bootstrap;
 
 :host {
-    ::slotted(igc-card-actions:last-child) {
-        padding-block-start: rem(24px);
+    ::slotted(igc-card-content:only-child) {
+        padding-block-end: rem(16px);
     }
 
-    ::slotted(igc-card-actions:only-child) {
-        padding-block-start: rem(16px);
+    ::slotted(igc-card-content:last-child) {
+        padding-block-end: rem(16px);
     }
 }
+
