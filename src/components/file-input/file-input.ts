@@ -123,6 +123,12 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     this._formValue = createFormValueState(this, { initialValue: '' });
   }
 
+  /** @hidden */
+  public override setSelectionRange(): void {}
+
+  /** @hidden */
+  public override setRangeText(): void {}
+
   /** Returns the selected files when input type is 'file', otherwise returns null. */
   public get files(): FileList | null {
     if (!this.input) return null;
