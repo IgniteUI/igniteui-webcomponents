@@ -19,7 +19,6 @@ import {
 } from './tooltip-event-controller.js';
 import service from './tooltip-service.js';
 
-// TODO: Expose events
 export interface IgcTooltipComponentEventMap {
   igcOpening: CustomEvent<Element | null>;
   igcOpened: CustomEvent<Element | null>;
@@ -60,8 +59,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _animationPlayer = addAnimationController(this, this._containerRef);
 
   private _timeoutId?: number;
-  private toBeShown = false;
-  private toBeHidden = false;
+  private _toBeShown = false;
+  private _toBeHidden = false;
   private _open = false;
   private _showTriggers = ['pointerenter'];
   private _hideTriggers = ['pointerleave'];
@@ -205,6 +204,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     this._internals = this.attachInternals();
     this._internals.role = 'tooltip';
+    this._internals.ariaAtomic = 'true';
+    this._internals.ariaLive = 'polite';
   }
 
   protected override async firstUpdated() {
@@ -255,10 +256,23 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return this._animationPlayer.playExclusive(animation);
   }
 
+  /**
+   * Immediately stops any ongoing animation and resets the tooltip state.
+   *
+   * This method is used in edge cases when a transition needs to be forcefully interrupted,
+   * such as when a tooltip is in the middle of showing or hiding and the user suddenly
+   * triggers the opposite action (e.g., hovers in and out rapidly).
+   *
+   * It:
+   * - Reverts `open` based on whether it was mid-hide or mid-show.
+   * - Clears internal transition flags (`_toBeShown`, `_toBeHidden`).
+   * - Stops any active animations, causing `_toggleAnimation()` to return false.
+   *
+   */
   private async _forceAnimationStop() {
-    this.toBeShown = false;
-    this.toBeHidden = false;
-    this.open = !this.open;
+    this.open = this._toBeHidden;
+    this._toBeShown = false;
+    this._toBeHidden = false;
     this._animationPlayer.stopAll();
   }
 
@@ -276,9 +290,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     await this._setDelay(this.showDelay);
 
     this.open = true;
-    this.toBeShown = true;
+    this._toBeShown = true;
     const result = await this._toggleAnimation('open');
-    this.toBeShown = false;
+    this._toBeShown = false;
 
     return result;
   };
@@ -289,10 +303,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     await this._setDelay(this.hideDelay);
 
-    this.toBeHidden = true;
+    this._toBeHidden = true;
     const result = await this._toggleAnimation('close');
-    this.open = false;
-    this.toBeHidden = false;
+    this.open = !result;
+    this._toBeHidden = false;
 
     return result;
   };
@@ -303,8 +317,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   public showWithEvent = async () => {
-    clearTimeout(this._timeoutId);
-    if (this.toBeHidden) {
+    if (this._toBeHidden) {
       await this._forceAnimationStop();
       return;
     }
@@ -320,8 +333,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   public hideWithEvent = async () => {
-    clearTimeout(this._timeoutId);
-    if (this.toBeShown) {
+    if (this._toBeShown) {
       await this._forceAnimationStop();
       return;
     }
@@ -337,6 +349,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   protected [showOnTrigger] = () => {
+    clearTimeout(this._timeoutId);
     this.showWithEvent();
   };
 
@@ -346,12 +359,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     if (related && (this.contains(related) || this._target?.contains(related)))
       return;
 
-    this.hideWithEvent();
+    clearTimeout(this._timeoutId);
+    this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
   };
 
   protected override render() {
     return html`
       <igc-popover
+        aria-hidden=${!this.open}
         .placement=${this.placement}
         .offset=${this.offset}
         .anchor=${this._target}
@@ -361,13 +376,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         flip
         shift
       >
-        <div
-          ${ref(this._containerRef)}
-          part="base"
-          aria-hidden=${String(!this.open)}
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        <div ${ref(this._containerRef)} part="base">
           ${this.message ? html`${this.message}` : html`<slot></slot>`}
           ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
         </div>
