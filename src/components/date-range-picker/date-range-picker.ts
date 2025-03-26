@@ -264,7 +264,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: 'display-format', reflect: false })
   public set displayFormat(value: string) {
     this._displayFormat = value;
-    //this.setFormats();
+    this.setFormats();
   }
 
   public get displayFormat(): string {
@@ -279,7 +279,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: 'input-format', reflect: false })
   public set inputFormat(value: string) {
     this._inputFormat = value;
-    //this.setFormats();
+    this.setFormats();
   }
 
   public get inputFormat(): string {
@@ -430,14 +430,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     root.addEventListener('slotchange', () => {
       if (!this.singleInput) {
         this.setFormats();
-        //this.setPrompt();
         this.setKeepOpenOnSelectForDialog();
-        //this.setNonEditable();
         if (this.value) {
           this.updateInputValues();
         }
-        //this.setDisabled();
-        //this.setRequired();
         this.setDateConstraints();
       }
       this.requestUpdate();
