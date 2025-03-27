@@ -78,7 +78,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   @property()
   public set value(value: string) {
     this._formValue.setValueAndFormState(value);
-    this._validate();
+
+    if (value === '') {
+      this.input.value = value;
+    }
   }
 
   public get value(): string {
@@ -123,6 +126,28 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     this._formValue = createFormValueState(this, { initialValue: '' });
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.form?.addEventListener('formdata', this.handleFormData.bind(this));
+  }
+
+  public override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.form?.removeEventListener('formdata', this.handleFormData.bind(this));
+  }
+
+  private handleFormData(event: FormDataEvent) {
+    const formData = event.formData;
+
+    if (this.files) {
+      formData.delete(this.name);
+
+      Array.from(this.files).forEach((file) =>
+        formData.append(this.name ?? 'file', file)
+      );
+    }
+  }
+
   /** @hidden */
   public override setSelectionRange(): void {}
 
@@ -135,22 +160,15 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return this.input.files;
   }
 
-  private handleInput() {
-    this.value = this.input.value;
-    this.emitEvent('igcInput', { detail: this.value });
-  }
-
   private handleChange() {
     this.value = this.input.value;
+    this._validate();
     this.emitEvent('igcChange', { detail: this.value });
   }
 
   private handleCancel() {
     this.emitEvent('igcCancel', {
-      detail: {
-        message: 'User canceled the file selection dialog',
-        value: this.value,
-      },
+      detail: this.value,
     });
   }
 
@@ -199,7 +217,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
         @change=${this.handleChange}
-        @input=${this.handleInput}
         @cancel=${this.handleCancel}
         @focus=${this.handleFocus}
         @blur=${this.handleBlur}
