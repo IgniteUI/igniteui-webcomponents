@@ -75,7 +75,7 @@ describe('Tile drag and drop', () => {
       tile,
       { clientX: opts.x, clientY: opts.y },
       { x: opts.dx, y: opts.dy },
-      2
+      3
     );
   }
 
@@ -290,6 +290,22 @@ describe('Tile drag and drop', () => {
 
       simulateLostPointerCapture(draggedTile);
       await elementUpdated(draggedTile);
+    });
+
+    it('should swap positions properly in RTL mode', async () => {
+      tileManager.dir = 'rtl';
+      const draggedTile = getTile(0);
+      const dropTarget = getTile(1);
+
+      await elementUpdated(tileManager);
+
+      expect(draggedTile.position).to.equal(0);
+      expect(dropTarget.position).to.equal(1);
+
+      await dragAndDrop(draggedTile, dropTarget);
+
+      expect(draggedTile.position).to.equal(1);
+      expect(dropTarget.position).to.equal(0);
     });
 
     it('should swap positions properly when row, column and span are specified', async () => {
