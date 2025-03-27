@@ -1,3 +1,4 @@
+import { isLTR } from '../common/util.js';
 import type IgcTileComponent from './tile.js';
 
 export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
@@ -13,6 +14,7 @@ export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {
   });
 
   Object.assign(clone.style, {
+    direction: isLTR(tile) ? 'ltr' : 'rtl',
     position: 'absolute',
     contain: 'strict',
     top: 0,
