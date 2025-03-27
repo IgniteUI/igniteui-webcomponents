@@ -69,9 +69,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     color: var-get($theme, 'idle-secondary-color');
     transition:
-        transform 150ms cubic-bezier(.4, 0, .2, 1),
-        color 150ms cubic-bezier(.4, 0, .2, 1),
-        font-size 150ms cubic-bezier(.4, 0, .2, 1);
+        transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
     line-height: normal;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -174,10 +174,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
             start: {
                 end-radius: var-get($theme, 'box-border-radius');
                 start-radius: var-get($theme, 'box-border-radius');
-            };
+            }
         }
 
-        transition: border-bottom-width 150ms cubic-bezier(.4, 0, .2, 1);
+        transition: border-bottom-width 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
         &::after {
             position: absolute;
@@ -189,7 +189,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
             bottom: -1px;
             background: var-get($theme, 'idle-bottom-line-color');
             transform: scaleX(0);
-            transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+            transition:
+                transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
@@ -318,17 +320,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
             inline: {
                 start-width: $idle-border-width;
                 end-width: 0;
-            };
+            }
             block: {
                 start-width: $idle-border-width;
                 end-width: $idle-border-width;
-            };
+            }
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 
@@ -349,17 +351,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
             inline: {
                 start-width: 0;
                 end-width: $idle-border-width;
-            };
+            }
             block: {
                 start-width: $idle-border-width;
                 end-width: $idle-border-width;
-            };
+            }
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 }
@@ -420,7 +422,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
             color: var-get($theme, 'focused-border-color');
             inline: {
                 start-width: $active-border-width;
-            };
+            }
             block: {
                 start-width: $active-border-width;
                 end-width: $active-border-width;
@@ -448,11 +450,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
             color: var-get($theme, 'focused-border-color');
             inline: {
                 end-width: $active-border-width;
-            };
+            }
             block: {
                 start-width: $active-border-width;
                 end-width: $active-border-width;
-            };
+            }
         }
     }
 }
@@ -502,7 +504,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border: {
             width: $active-border-width;
             color: var-get($theme, 'error-secondary-color');
-            top: $active-border-width solid var-get($theme, 'error-secondary-color');
+            top: $active-border-width solid
+                var-get($theme, 'error-secondary-color');
         }
     }
 }
@@ -530,7 +533,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([type='search'][outlined]) {
     [part='notch'] {
-        border: none
+        border: none;
     }
 }
 

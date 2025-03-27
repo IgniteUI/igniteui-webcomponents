@@ -5,10 +5,10 @@ export type ThemeVariant = 'light' | 'dark';
 
 export type Themes = {
   light: {
-    [K in Theme]?: CSSResult;
+    [K in Theme | 'shared']?: CSSResult;
   };
   dark: {
-    [K in Theme]?: CSSResult;
+    [K in Theme | 'shared']?: CSSResult;
   };
 };
 

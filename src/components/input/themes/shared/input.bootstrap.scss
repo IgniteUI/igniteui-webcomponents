@@ -8,6 +8,8 @@ $theme: $bootstrap;
     --input-size: var(--component-size);
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
+    --input-border-color: #{var-get($theme, 'border-color')};
+    --input-height: #{var-get($theme, 'size')};
 
     ::part(helper-text) {
         @include type-style('body-2');
@@ -38,7 +40,9 @@ $theme: $bootstrap;
     box-shadow: none;
     z-index: 1;
     border: 1px solid var-get($theme, 'border-color');
-    transition: box-shadow .15s ease-out, border .15s ease-out;
+    transition:
+        box-shadow 0.15s ease-out,
+        border 0.15s ease-out;
     grid-area: 1 / 2;
     background-clip: padding-box;
 }
@@ -90,7 +94,9 @@ $theme: $bootstrap;
     position: relative;
     border-radius: none;
     min-width: auto;
-    transition: box-shadow .15s ease-out, border .15s ease-out;
+    transition:
+        box-shadow 0.15s ease-out,
+        border 0.15s ease-out;
     font-size: var(--font);
 
     ::slotted(*) {
@@ -104,15 +110,15 @@ $theme: $bootstrap;
     grid-area: 1 / 1;
     border: {
         style: solid;
-        color: var-get($theme, 'border-color');;
+        color: var-get($theme, 'border-color');
         inline: {
             start-width: 1px;
             end-width: 0;
-        };
+        }
         block: {
             start-width: 1px;
             end-width: 1px;
-        };
+        }
     }
 }
 
@@ -126,11 +132,11 @@ $theme: $bootstrap;
         inline: {
             start-width: 0;
             end-width: 1px;
-        };
+        }
         block: {
             start-width: 1px;
             end-width: 1px;
-        };
+        }
     }
 }
 
@@ -187,6 +193,6 @@ $theme: $bootstrap;
 
     [part='label'],
     ::part(helper-text) {
-        color: var-get($theme, 'disabled-text-color')
+        color: var-get($theme, 'disabled-text-color');
     }
 }

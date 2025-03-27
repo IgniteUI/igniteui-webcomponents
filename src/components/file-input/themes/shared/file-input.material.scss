@@ -1,0 +1,106 @@
+@use 'styles/utilities' as *;
+@use '../../../input/themes/light/themes' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
+
+$theme: $material;
+$idle-border-width: rem(1px) !default;
+$active-border-width: rem(2px) !default;
+
+%label {
+    --label-position: #{sizable(18px, 22px, 26px)};
+
+    transform: translateY(calc(var(--label-position) * -1));
+}
+
+%floated-styles {
+    border-top: $idle-border-width solid transparent;
+}
+
+:host(:is(igc-file-input)) {
+    [part~='container'] {
+        grid-template-columns: auto auto auto 1fr auto;
+    }
+
+    [part='notch'] [part='label'] {
+        transition: none;
+    }
+
+    [part='label'] {
+        @extend %label;
+        @include type-style('caption');
+    }
+
+    [part~='file-names'] {
+        grid-area: 1 / 3 / span 1 / span 2;
+        padding-inline: rem(4px);
+    }
+
+    [part~='input'] {
+        grid-column: 2 / 5;
+    }
+
+    [part='filler'] {
+        grid-column: 4 / 5;
+    }
+
+    [part='end'] {
+        grid-area: 1 / 5;
+    }
+}
+
+:host([outlined]) {
+    [part='notch'] {
+        @extend %floated-styles;
+
+        grid-column: 3 / 3;
+        border-top-color: transparent !important;
+    }
+
+    [part='file-selector-button'] {
+        border: {
+            width: $idle-border-width;
+            style: solid;
+            color: var-get($theme, 'border-color');
+            left: none;
+            right: none;
+        }
+    }
+}
+
+:host([outlined]:hover) {
+    [part='file-selector-button'] {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+}
+
+:host([outlined]:focus-within) {
+    [part='file-selector-button'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'focused-border-color');
+        }
+    }
+}
+
+
+:host([outlined][invalid]),
+:host([outlined][invalid]:focus-within) {
+    [part='file-selector-button'] {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([outlined])) {
+    [part='notch'] {
+        grid-area: 1 / 3;
+    }
+
+    [part='notch'] [part='label'] {
+        transform: translateY(-73%);
+    }
+
+    [part~='labelled'] [part~='file-names'] {
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
+    }
+}

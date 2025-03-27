@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- New File Input Component(`igc-file-input`)
+
 ## [5.3.0] - 2025-03-13
 ### Added
 - Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402)
