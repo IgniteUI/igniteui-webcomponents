@@ -409,13 +409,13 @@ class DragController implements ReactiveController {
     const posX = this._hasSnapping ? clientX - layerX : clientX - layerX + x;
     const posY = this._hasSnapping ? clientY - layerY : clientY - layerY + y;
 
-    Object.assign(this._state.position, { x: posX, y: posY });
+    this._state.position = { x: posX, y: posY };
   }
 
   private _updatePointerState({ clientX, clientY }: PointerEvent): void {
     const state = this._state.pointerState;
 
-    state.previous = state.current;
+    state.previous = { ...state.current };
     state.current = { x: clientX, y: clientY };
 
     const dx = state.current.x - state.previous.x;
