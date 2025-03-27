@@ -59,8 +59,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _animationPlayer = addAnimationController(this, this._containerRef);
 
   private _timeoutId?: number;
-  private _toBeShown = false;
-  private _toBeHidden = false;
   private _open = false;
   private _showTriggers = ['pointerenter'];
   private _hideTriggers = ['pointerleave'];
@@ -256,59 +254,34 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return this._animationPlayer.playExclusive(animation);
   }
 
-  /**
-   * Immediately stops any ongoing animation and resets the tooltip state.
-   *
-   * This method is used in edge cases when a transition needs to be forcefully interrupted,
-   * such as when a tooltip is in the middle of showing or hiding and the user suddenly
-   * triggers the opposite action (e.g., hovers in and out rapidly).
-   *
-   * It:
-   * - Reverts `open` based on whether it was mid-hide or mid-show.
-   * - Clears internal transition flags (`_toBeShown`, `_toBeHidden`).
-   * - Stops any active animations, causing `_toggleAnimation()` to return false.
-   *
-   */
-  private async _forceAnimationStop() {
-    this.open = this._toBeHidden;
-    this._toBeShown = false;
-    this._toBeHidden = false;
-    this._animationPlayer.stopAll();
-  }
-
-  private _setDelay(ms: number): Promise<void> {
+  private _setDelay(ms: number, action: 'open' | 'close'): Promise<boolean> {
     clearTimeout(this._timeoutId);
     return new Promise((resolve) => {
-      this._timeoutId = setTimeout(resolve, ms);
+      this._timeoutId = setTimeout(async () => {
+        if (action === 'open') {
+          this.open = true;
+        }
+
+        const result = await this._toggleAnimation(action);
+        // Update `open` after the animation to reflect the correct state based on event.type:
+        // - Close → false if succeeded
+        // - Open → true if succeeded
+        this.open = action === 'close' ? !result : result;
+        resolve(result);
+      }, ms);
     });
   }
 
   /** Shows the tooltip if not already showing. */
   public show = async (): Promise<boolean> => {
     if (this.open) return false;
-
-    await this._setDelay(this.showDelay);
-
-    this.open = true;
-    this._toBeShown = true;
-    const result = await this._toggleAnimation('open');
-    this._toBeShown = false;
-
-    return result;
+    return this._setDelay(this.showDelay, 'open');
   };
 
   /** Hides the tooltip if not already hidden. */
   public hide = async (): Promise<boolean> => {
     if (!this.open) return false;
-
-    await this._setDelay(this.hideDelay);
-
-    this._toBeHidden = true;
-    const result = await this._toggleAnimation('close');
-    this.open = !result;
-    this._toBeHidden = false;
-
-    return result;
+    return this._setDelay(this.hideDelay, 'close');
   };
 
   /** Toggles the tooltip between shown/hidden state after the appropriate delay. */
@@ -317,10 +290,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   public showWithEvent = async () => {
-    if (this._toBeHidden) {
-      await this._forceAnimationStop();
-      return;
-    }
     if (
       this.open ||
       !this.emitEvent('igcOpening', { cancelable: true, detail: this._target })
@@ -333,10 +302,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   public hideWithEvent = async () => {
-    if (this._toBeShown) {
-      await this._forceAnimationStop();
-      return;
-    }
     if (
       !this.open ||
       !this.emitEvent('igcClosing', { cancelable: true, detail: this._target })
@@ -349,11 +314,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   protected [showOnTrigger] = () => {
+    this._animationPlayer.stopAll();
     clearTimeout(this._timeoutId);
     this.showWithEvent();
   };
 
   protected [hideOnTrigger] = () => {
+    this._animationPlayer.stopAll();
     clearTimeout(this._timeoutId);
     this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
   };
