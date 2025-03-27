@@ -26,8 +26,8 @@ import {
   asNumber,
   createCounter,
   findElementFromEventPath,
-  getCenterPoint,
   isEmpty,
+  isLTR,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -42,10 +42,10 @@ import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
-export type IgcTileChangeStateEventArgs = {
+export interface IgcTileChangeStateEventArgs {
   tile: IgcTileComponent;
   state: boolean;
-};
+}
 
 type AdornerType = 'side' | 'corner' | 'bottom';
 
@@ -135,6 +135,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _resizeState = createTileResizeState();
   private _dragStack = createTileDragStack();
+  private _previousPointerPosition: { x: number; y: number } | null = null;
 
   private _customAdorners = new Map<string, boolean>(
     Object.entries({
@@ -399,17 +400,40 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return true;
   }
 
-  private _handleDragOver(parameters: DragCallbackParameters) {
+  private _handleDragOver(parameters: DragCallbackParameters): void {
     const match = parameters.state.element as IgcTileComponent;
-    const { clientX, clientY } = parameters.event;
 
     if (this._dragStack.peek() === match) {
-      const { x, y } = getCenterPoint(match);
+      const direction = parameters.state.pointerState.direction;
+      const { clientX, clientY } = parameters.event;
+      const { left, top, width, height } = match.getBoundingClientRect();
+      const relativeX = (clientX - left) / width;
+      const relativeY = (clientY - top) / height;
+      const LTR = isLTR(this);
 
-      const shouldSwap =
-        this.position <= match.position
-          ? clientX > x || clientY > y
-          : clientX < x || clientY < y;
+      let shouldSwap = false;
+
+      switch (direction) {
+        case 'start':
+          shouldSwap =
+            this.position > match.position &&
+            (LTR ? relativeX <= 0.25 : relativeX >= 0.75);
+          break;
+
+        case 'end':
+          shouldSwap =
+            this.position < match.position &&
+            (LTR ? relativeX >= 0.75 : relativeX <= 0.25);
+          break;
+
+        case 'top':
+          shouldSwap = this.position > match.position && relativeY <= 0.25;
+          break;
+
+        case 'bottom':
+          shouldSwap = this.position < match.position && relativeY >= 0.75;
+          break;
+      }
 
       if (shouldSwap) {
         this._dragStack.pop();
