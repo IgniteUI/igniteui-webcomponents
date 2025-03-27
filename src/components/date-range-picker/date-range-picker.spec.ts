@@ -3,6 +3,12 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import { CalendarDay } from '../calendar/model.js';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   isFocused,
@@ -21,8 +27,14 @@ describe('Date range picker', () => {
   let dateTimeInputs: Array<IgcDateTimeInputComponent>;
   let calendar: IgcCalendarComponent;
 
+  const pickerShowIcon = 'today';
+  const pickerClearIcon = 'input_clear';
   const today = CalendarDay.from(new Date());
   const tomorrow = today.add('day', 1);
+
+  function getIcon(name: string) {
+    return picker.renderRoot.querySelector(`[name='${name}']`)!;
+  }
 
   beforeEach(async () => {
     picker = await fixture<IgcDateRangePickerComponent>(
@@ -434,6 +446,180 @@ describe('Date range picker', () => {
         expect(picker.value?.[1]).to.deep.equal(date2.native);
         dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(false);
+      });
+    });
+    describe('Keyboard navigation', () => {
+      it('should close the picker when in open state on pressing Escape', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.focus();
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+
+        expect(eventSpy).not.called;
+
+        await picker.show();
+
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledTwice;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+        eventSpy.resetHistory();
+
+        // dialog mode
+        picker.mode = 'dialog';
+        await picker.show();
+
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledTwice;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+      });
+
+      it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        expect(picker.open).to.be.false;
+        picker.focus();
+        simulateKeyboard(picker, [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+
+        expect(eventSpy).calledWith('igcOpening');
+        expect(eventSpy).calledWith('igcOpened');
+
+        eventSpy.resetHistory();
+
+        simulateKeyboard(picker, [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+        eventSpy.resetHistory();
+      });
+
+      it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dialog mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        expect(picker.open).to.be.false;
+        picker.focus();
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        simulateKeyboard(picker, [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        const dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(picker.open).to.be.true;
+        expect(dialog).not.to.be.undefined;
+        expect(dialog?.open).to.be.true;
+        expect(eventSpy).calledWith('igcOpening');
+        expect(eventSpy).calledWith('igcOpened');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(picker, [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+      });
+    });
+    describe('Interactions with the intputs and the open and clear buttons', () => {
+      it('should emit or not igcInput according to nonEditable property', async () => {
+        const expectedValue = new Date();
+        const eventSpy = spy(picker, 'emitEvent');
+
+        dateTimeInputs[0].focus();
+        simulateKeyboard(dateTimeInputs[0], arrowUp);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledOnceWith('igcInput');
+        eventSpy.resetHistory();
+        expect(dateTimeInputs[0].value).to.not.be.null;
+        expect(dateTimeInputs[0].value?.getTime()).to.be.closeTo(
+          expectedValue.getTime(),
+          5
+        );
+
+        picker.value = null;
+        picker.nonEditable = true;
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        simulateKeyboard(dateTimeInputs[0], arrowUp);
+        await elementUpdated(picker);
+
+        expect(eventSpy).not.called;
+        expect(dateTimeInputs[0].value).to.be.null;
+
+        dateTimeInputs[0].dispatchEvent(
+          new CustomEvent('igcInput', { detail: expectedValue })
+        );
+        await elementUpdated(picker);
+
+        expect(eventSpy).not.called;
+        expect(picker.value).to.deep.equal([null, null]);
+      });
+
+      it('should open the picker on calendar show icon click in dropdown mode', async () => {
+        simulateClick(getIcon(pickerShowIcon));
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+      });
+
+      it('should not open the picker when clicking the input in dropdown mode', async () => {
+        simulateClick(dateTimeInputs[0]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+      });
+
+      it('should open the picker on calendar show icon click in dialog mode', async () => {
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        simulateClick(getIcon(pickerShowIcon));
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+      });
+
+      it('should open the picker when clicking the input in dialog mode', async () => {
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        simulateClick(dateTimeInputs[0].renderRoot.querySelector('input')!);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+      });
+
+      it('should not open the picker in dropdown mode when clicking the clear icon', async () => {
+        picker.value = [today.native, tomorrow.native];
+        await elementUpdated(picker);
+
+        simulateClick(getIcon(pickerClearIcon));
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(picker.value).to.deep.equal([null, null]);
+      });
+
+      it('should not open the picker in dialog mode when clicking the clear icon', async () => {
+        picker.mode = 'dialog';
+        picker.value = [today.native, tomorrow.native];
+        await elementUpdated(picker);
+
+        simulateClick(getIcon(pickerClearIcon));
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(picker.value).to.deep.equal([null, null]);
       });
     });
   });
