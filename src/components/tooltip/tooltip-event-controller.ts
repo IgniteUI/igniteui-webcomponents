@@ -37,7 +37,7 @@ class TooltipController implements ReactiveController {
     }
 
     for (const trigger of hide) {
-      anchor.addEventListener(trigger, (ev) => this._host[hideOnTrigger](ev));
+      anchor.addEventListener(trigger, this._host[hideOnTrigger]);
     }
   }
 

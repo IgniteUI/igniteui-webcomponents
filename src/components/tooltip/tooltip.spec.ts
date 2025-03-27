@@ -72,7 +72,7 @@ describe('Tooltip', () => {
       expect(tooltip.hideTriggers).to.equal('pointerleave');
       expect(tooltip.showDelay).to.equal(500);
       expect(tooltip.hideDelay).to.equal(500);
-      expect(tooltip.message).to.be.undefined;
+      expect(tooltip.message).to.equal('');
     });
 
     it('should render a default arrow', () => {
@@ -86,6 +86,7 @@ describe('Tooltip', () => {
       expect(tooltip).dom.to.equal('<igc-tooltip>It works!</igc-tooltip>');
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
+          aria-hidden="true"
           flip
           shift
         >
@@ -102,6 +103,7 @@ describe('Tooltip', () => {
       expect(tooltip).dom.to.equal('<igc-tooltip open>It works!</igc-tooltip>');
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
+          aria-hidden="false"
           flip
           shift
           open
@@ -231,13 +233,14 @@ describe('Tooltip', () => {
     });
 
     it('should set the tooltip content as plain text if the `message` property is set', async () => {
-      expect(tooltip.message).to.be.undefined;
+      expect(tooltip.message).to.equal('');
       expect(tooltip).dom.to.equal(
         '<igc-tooltip>It works!</igc-tooltip>',
         DIFF_OPTIONS
       );
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
+          aria-hidden="true"
           flip
           shift
         >
@@ -259,6 +262,7 @@ describe('Tooltip', () => {
       );
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
+          aria-hidden="true"
           flip
           shift
         >

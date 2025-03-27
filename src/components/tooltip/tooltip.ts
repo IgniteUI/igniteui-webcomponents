@@ -353,12 +353,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this.showWithEvent();
   };
 
-  protected [hideOnTrigger] = (ev: Event) => {
-    const related = (ev as PointerEvent).relatedTarget as Node | null;
-    // If the pointer moved into the tooltip element, don't hide
-    if (related && (this.contains(related) || this._target?.contains(related)))
-      return;
-
+  protected [hideOnTrigger] = () => {
     clearTimeout(this._timeoutId);
     this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
   };
