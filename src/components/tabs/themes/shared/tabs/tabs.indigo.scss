@@ -1,25 +1,65 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
+@use '../../tabs.common' as *;
+@use 'sass:map';
 
 $theme: $indigo;
 
-[part='headers'] {
-    min-height: rem(40px);
+:host {
+    --header-min-height: #{rem(40px)};
+    --scroll-btn-size: #{rem(40px)};
+}
+
+[part='selected-indicator'] {
+    $indicator-height: rem(1px);
+
+    height: $indicator-height;
+    position: relative;
+
+    span {
+        background: var-get($theme, 'indicator-color');
+        height: rem(3px);
+        inset-block-end: 100%;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: $indicator-height;
+        background-color: var-get($theme, 'border-color');
+        inset-block-end: 100%;
+    }
 }
 
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
-    min-width: rem(40px);
-    width: rem(40px);
-    border-bottom: rem(1px) solid var(--navigation-border-color);
+    --hover-background: #{var-get($theme, 'button-background')};
+    --focus-background: #{var-get($theme, 'button-background')};
+    --active-background: #{var-get($theme, 'button-background')};
 
+    &:active,
     &:hover {
-        &::part(icon) {
-            color: var-get($theme, 'button-hover-color');
-        }
+        --border-color: #{var-get($theme, 'button-background')};
     }
 }
 
-[part='selected-indicator'] {
-    height: rem(3px);
+igc-icon-button:hover::part(base) {
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: var-get($theme, 'button-hover-background');
+        z-index: 1;
+    }
+}
+
+igc-icon-button::part(base) {
+    overflow: hidden;
+}
+
+igc-icon-button::part(icon) {
+    --size: #{rem(16px)};
+
+    z-index: 2;
 }
