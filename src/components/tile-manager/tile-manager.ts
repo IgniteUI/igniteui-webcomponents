@@ -22,6 +22,7 @@ import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
 
+/* blazorAdditionalDependency: IgcTileComponent */
 /**
  * The tile manager component enables the dynamic arrangement, resizing, and interaction of tiles.
  *
