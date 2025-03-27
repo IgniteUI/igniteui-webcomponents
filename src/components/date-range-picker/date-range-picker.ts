@@ -172,8 +172,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   @property({ converter: convertToDates })
-  public set value(value: (Date | string | null)[] | null | undefined) {
-    const converted = convertToDates(value?.map((d) => d ?? ''));
+  public set value(
+    value: (Date | null | string)[] | string | null | undefined
+  ) {
+    const converted = convertToDates(
+      typeof value === 'string' ? value : value?.map((d) => d ?? '')
+    );
     this._startDate = converted?.[0] ?? null;
     this._endDate = converted?.[1] ?? null;
     this.setCalendarRangeValues();

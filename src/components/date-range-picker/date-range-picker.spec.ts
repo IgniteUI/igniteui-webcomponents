@@ -4,7 +4,11 @@ import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import { CalendarDay } from '../calendar/model.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick } from '../common/utils.spec.js';
+import {
+  isFocused,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcInputComponent from '../input/input.js';
@@ -14,7 +18,7 @@ describe('Date range picker', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
   let picker: IgcDateRangePickerComponent;
-  let _dateTimeInput: IgcDateTimeInputComponent;
+  let dateTimeInputs: Array<IgcDateTimeInputComponent>;
   let calendar: IgcCalendarComponent;
 
   const today = CalendarDay.from(new Date());
@@ -24,9 +28,9 @@ describe('Date range picker', () => {
     picker = await fixture<IgcDateRangePickerComponent>(
       html`<igc-date-range-picker></igc-date-range-picker>`
     );
-    _dateTimeInput = picker.renderRoot.querySelector(
-      IgcDateTimeInputComponent.tagName
-    )!;
+    dateTimeInputs = Array.from(
+      picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
+    );
 
     calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
   });
@@ -146,6 +150,19 @@ describe('Date range picker', () => {
     });
   });
   describe('Properties', () => {
+    it('should set value through attribute correctly in case the date values are valid ISO 8601 strings', async () => {
+      const expectedValue = [today.native, tomorrow.native];
+      const attributeValue = `${today.native.toISOString()}, ${tomorrow.native.toISOString()}`;
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker
+          value="${attributeValue}"
+        ></igc-date-range-picker>`
+      );
+      await elementUpdated(picker);
+
+      checkSelectedRange(picker, expectedValue);
+    });
+
     it('should keep the calendar selection and input values on changing the mode', async () => {
       const expectedValue = [today.native, tomorrow.native];
       picker = await fixture<IgcDateRangePickerComponent>(
@@ -177,6 +194,149 @@ describe('Date range picker', () => {
       picker.singleInput = false;
       await elementUpdated(picker);
       checkSelectedRange(picker, expectedValue);
+    });
+
+    it('should not close calendar on clicking outside of it when keepOpenOnOutsideClick is true', async () => {
+      expect(picker.open).to.equal(false);
+      picker.keepOpenOnOutsideClick = true;
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      expect(picker.open).to.equal(true);
+
+      simulateClick(document.body);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(true);
+
+      await picker.hide();
+
+      picker.mode = 'dialog';
+      picker.keepOpenOnOutsideClick = true;
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      expect(picker.open).to.equal(true);
+      simulateClick(document.body);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(true);
+    });
+
+    it('should close calendar on clicking outside of it when keepOpenOnOutsideClick is false (default)', async () => {
+      expect(picker.open).to.equal(false);
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      expect(picker.open).to.equal(true);
+
+      simulateClick(document.body);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(false);
+
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      expect(picker.open).to.equal(true);
+      simulateClick(document.body);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(false);
+    });
+
+    it('should keep the picker open when keepOpenOnSelect is enabled and a selection is made in the calendar picker', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.keepOpenOnSelect = true;
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      await selectDates(today, tomorrow, calendar);
+
+      expect(eventSpy).calledWith('igcChange');
+      checkSelectedRange(picker, [today.native, tomorrow.native]);
+      expect(picker.open).to.equal(true);
+
+      await picker.hide();
+      picker.mode = 'dialog';
+      await elementUpdated(picker);
+
+      expect(picker.open).to.equal(false);
+
+      await picker.show();
+      await selectDates(today.add('day', 2), tomorrow.add('day', 2), calendar);
+
+      checkSelectedRange(picker, [
+        today.add('day', 2).native,
+        tomorrow.add('day', 2).native,
+      ]);
+      expect(picker.open).to.equal(true);
+    });
+
+    it('should not modify value through selection or typing when readOnly is true', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.readOnly = true;
+      await elementUpdated(picker);
+      expect(picker.value).to.deep.equal([null, null]); //TODO: refactor
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+
+      expect(picker.value).to.deep.equal([null, null]);
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+
+      await picker.hide();
+
+      dateTimeInputs[0].focus();
+      simulateKeyboard(dateTimeInputs[0], 'ArrowDown');
+      await elementUpdated(picker);
+
+      expect(isFocused(dateTimeInputs[0])).to.be.true;
+      expect(dateTimeInputs[0].value).to.equal(null);
+      expect(picker.value).to.deep.equal([null, null]);
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+
+      picker.singleInput = true;
+      await elementUpdated(picker);
+
+      await picker.show();
+
+      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
+      await selectDates(today, tomorrow, calendar);
+
+      expect(picker.value).to.deep.equal([null, null]);
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+    });
+
+    it('should modify value only through calendar selection and not input when nonEditable is true (two inputs)', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.nonEditable = true;
+      await elementUpdated(picker);
+
+      dateTimeInputs[0].focus();
+      simulateKeyboard(dateTimeInputs[0], 'ArrowDown');
+      await elementUpdated(picker);
+
+      expect(isFocused(dateTimeInputs[0])).to.be.true;
+      expect(dateTimeInputs[0].value).to.equal(null);
+      expect(picker.value).to.deep.equal([null, null]);
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+
+      checkSelectedRange(picker, [today.native, tomorrow.native]);
+      expect(eventSpy).calledWith('igcChange');
     });
   });
   describe('Interactions', () => {

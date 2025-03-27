@@ -8,6 +8,7 @@ import {
   IgcDateRangePickerComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { CalendarDay } from '../src/components/calendar/model.js';
 import {
   disableStoryControls,
   formControls,
@@ -349,6 +350,8 @@ function selectToday() {
   picker.hide();
 }
 
+const today = CalendarDay.from(new Date());
+const tomorrow = today.add('day', 1);
 export const Default: Story = {
   args: {
     open: false,
@@ -356,46 +359,7 @@ export const Default: Story = {
   render: (args) => html`
     <igc-date-range-picker
       id="picker"
-      .displayFormat=${args.displayFormat}
-      .inputFormat=${args.inputFormat}
-      .locale=${args.locale}
-      .prompt=${args.prompt}
-      .weekStart=${args.weekStart}
-      .hideHeader=${args.hideHeader}
-      .headerOrientation=${args.headerOrientation}
-      .nonEditable=${args.nonEditable}
-      .orientation=${args.orientation}
-      .outlined=${args.outlined}
-      .usePredefinedRanges=${args.usePredefinedRanges}
-      .mode=${args.mode}
-      .min=${new Date(args.min)}
-      .max=${new Date(args.max)}
-      .activeDate=${args.activeDate}
-      ?disabled=${args.disabled}
-      .singleInput=${args.singleInput}
-      ?invalid=${args.invalid}
-      ?readonly=${args.readOnly}
-      ?required=${args.required}
-      ?open=${args.open}
-      ?show-week-numbers=${args.showWeekNumbers}
-      ?hide-outside-days=${args.hideOutsideDays}
-      ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
-      ?keep-open-on-select=${args.keepOpenOnSelect}
-    >
-    </igc-date-range-picker>
-  `,
-};
-
-export const SingleInput: Story = {
-  args: {
-    open: false,
-    singleInput: true,
-  },
-  render: (args) => html`
-    <igc-date-range-picker
-      id="picker"
-      .label=${args.label}
-      .placeholder=${args.placeholder}
+      .value=${[today.native, tomorrow.native]}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}
@@ -533,6 +497,7 @@ export const Slots: Story = {
       </igc-date-range-picker>`,
 };
 
+const ISOdatesString = '2025-03-01T00:00:00.000Z, 2025-03-02T00:00:00.000Z';
 export const FormTwoInputs: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
@@ -544,7 +509,7 @@ export const FormTwoInputs: Story = {
         <h5>Initial value</h5>
         <igc-date-range-picker
           name="picker-initial"
-          .value=${[new Date(2025, 2, 19), new Date(2025, 2, 20)]}
+          value=${ISOdatesString}
         ></igc-date-range-picker>
 
         <h5>Readonly</h5>
