@@ -529,14 +529,16 @@ describe('Tile drag and drop', () => {
       const [maximize, _] = getActionButtons(tile);
       const eventSpy = spy(tile, 'emitEvent');
 
+      // Wait for maximized transition trigger from UI
       maximize.click();
-      await elementUpdated(tile);
+      await viewTransitionComplete();
 
       expect(tile.maximized).to.be.true;
       expect(eventSpy).not.calledWith('igcTileDragStart');
 
+      // Wait for maximized transition trigger from UI
       maximize.click();
-      await elementUpdated(tile);
+      await viewTransitionComplete();
 
       expect(tile.maximized).to.be.false;
     });
@@ -547,14 +549,16 @@ describe('Tile drag and drop', () => {
       const [maximize, _] = getActionButtons(tile);
       const eventSpy = spy(tile, 'emitEvent');
 
+      // Wait for maximized transition trigger from UI
       maximize.click();
-      await elementUpdated(tile);
+      await viewTransitionComplete();
 
       expect(tile.maximized).to.be.true;
       expect(eventSpy).not.calledWith('igcTileDragStart');
 
+      // Wait for maximized transition trigger from UI
       maximize.click();
-      await elementUpdated(tile);
+      await viewTransitionComplete();
 
       expect(tile.maximized).to.be.false;
     });

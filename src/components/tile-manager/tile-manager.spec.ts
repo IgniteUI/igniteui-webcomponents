@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -14,6 +20,11 @@ describe('Tile Manager component', () => {
   });
 
   let tileManager: IgcTileManagerComponent;
+
+  async function viewTransitionComplete() {
+    await nextFrame();
+    await nextFrame();
+  }
 
   function getTileManagerBase() {
     return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
@@ -635,9 +646,9 @@ describe('Tile Manager component', () => {
       const eventSpy = spy(tile, 'emitEvent');
       const btnMaximize = getActionButtons(tile)[0];
 
+      // Wait for maximized transition trigger from UI
       simulateClick(btnMaximize);
-      await elementUpdated(tile);
-      await elementUpdated(tileManager);
+      await viewTransitionComplete();
 
       expect(eventSpy).calledWith('igcTileMaximize', {
         detail: { tile: tile, state: true },
@@ -645,8 +656,9 @@ describe('Tile Manager component', () => {
       });
       expect(tile.maximized).to.be.true;
 
+      // Wait for maximized transition trigger from UI
       simulateClick(btnMaximize);
-      await elementUpdated(tileManager);
+      await viewTransitionComplete();
 
       expect(eventSpy).to.have.been.calledTwice;
       expect(eventSpy).calledWith('igcTileMaximize', {
@@ -678,8 +690,10 @@ describe('Tile Manager component', () => {
       const btnMaximize = getActionButtons(tile)[0];
 
       expect(btnMaximize.name).equals('expand_content');
+
+      // Wait for maximized transition trigger from UI
       simulateClick(btnMaximize);
-      await elementUpdated(tileManager);
+      await viewTransitionComplete();
 
       expect(btnMaximize.name).equals('collapse_content');
 
