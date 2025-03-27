@@ -42,10 +42,10 @@ import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
-export type IgcTileChangeStateEventArgs = {
+export interface IgcTileChangeStateEventArgs {
   tile: IgcTileComponent;
   state: boolean;
-};
+}
 
 type AdornerType = 'side' | 'corner' | 'bottom';
 
