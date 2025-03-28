@@ -7,7 +7,6 @@ $btn-indent: rem(3px);
 igc-button::part(focused),
 igc-button::part(focused):hover {
     border: none;
-    color: var-get($theme, 'indicator-focus-color');
 
     &::after {
         position: absolute;
