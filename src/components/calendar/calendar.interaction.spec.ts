@@ -44,12 +44,20 @@ describe('Calendar interactions', () => {
 
     calendar.setAttribute('value', date.native.toISOString());
     expect(date.equalTo(calendar.value!)).to.be.true;
+
+    // Non-ISO date string
+    calendar.setAttribute('value', date.native.toString());
+    expect(date.equalTo(calendar.value!)).to.be.true;
   });
 
   it('setting `value` - string property binding', async () => {
     const date = new CalendarDay({ year: 2022, month: 0, date: 19 });
     calendar.value = date.native.toISOString();
 
+    expect(date.equalTo(calendar.value!)).to.be.true;
+
+    // Non-ISO date string
+    calendar.value = date.native.toString();
     expect(date.equalTo(calendar.value!)).to.be.true;
 
     // Invalid date
@@ -72,6 +80,16 @@ describe('Calendar interactions', () => {
     expect(calendar.values).lengthOf(2);
     expect(date_1.equalTo(first(calendar.values))).to.be.true;
     expect(date_2.equalTo(last(calendar.values))).to.be.true;
+
+    // Non-ISO date format
+    calendar.setAttribute(
+      'values',
+      `${date_1.native.toString()}, ${date_2.native.toString()}`
+    );
+
+    expect(calendar.values).lengthOf(2);
+    expect(date_1.equalTo(first(calendar.values))).to.be.true;
+    expect(date_2.equalTo(last(calendar.values))).to.be.true;
   });
 
   it('setting `values` - string property binding', async () => {
@@ -83,6 +101,13 @@ describe('Calendar interactions', () => {
 
     calendar.selection = 'multiple';
     calendar.values = `${date_1_str}, ${date_2_str}`;
+
+    expect(calendar.values).lengthOf(2);
+    expect(date_1.equalTo(first(calendar.values))).to.be.true;
+    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+
+    // Non-ISO date formats
+    calendar.values = `${date_1.toString()}, ${date_2.toString()}`;
 
     expect(calendar.values).lengthOf(2);
     expect(date_1.equalTo(first(calendar.values))).to.be.true;
