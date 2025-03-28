@@ -1,3 +1,5 @@
+import { convertToDates } from '../calendar/helpers.js';
+
 export type DateRangePredefinedType =
   | 'last7Days'
   | 'last30Days'
@@ -38,4 +40,36 @@ export function selectDateRange(
   }
 
   return [startDate, endDate];
+}
+
+export function convertToDateRangeObject(
+  value:
+    | string
+    | { start?: Date | string | null; end?: Date | string | null }
+    | null
+    | undefined
+): { start: Date | null; end: Date | null } | null {
+  if (typeof value === 'string') {
+    const dates = convertToDates(value);
+    return {
+      start: dates?.[0] ?? null,
+      end: dates?.[1] ?? null,
+    };
+  }
+
+  if (value && typeof value === 'object') {
+    const start =
+      value.start instanceof Date
+        ? value.start
+        : (convertToDates([value.start ?? ''])?.[0] ?? null);
+
+    const end =
+      value.end instanceof Date
+        ? value.end
+        : (convertToDates([value.end ?? ''])?.[0] ?? null);
+
+    return { start, end };
+  }
+
+  return null;
 }

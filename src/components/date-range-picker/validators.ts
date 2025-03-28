@@ -4,40 +4,41 @@ import { formatString } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
+import type { DateRangeValue } from './date-range-picker.js';
 
 export const minDateRangeValidator: Validator<{
-  value?: (Date | null)[] | null;
+  value?: DateRangeValue | null;
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
   message: ({ min }) => formatString(messages.min, min),
   isValid: ({ value, min }) =>
-    value?.[0] && min
-      ? !DateTimeUtil.lessThanMinValue(value[0], min, false, true)
+    value?.start && min
+      ? !DateTimeUtil.lessThanMinValue(value.start, min, false, true)
       : true,
 };
 
 export const maxDateRangeValidator: Validator<{
-  value?: (Date | null)[] | null;
+  value?: DateRangeValue | null;
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
   message: ({ max }) => formatString(messages.max, max),
   isValid: ({ value, max }) =>
-    value?.[1] && max
-      ? !DateTimeUtil.greaterThanMaxValue(value[1], max, false, true)
+    value?.end && max
+      ? !DateTimeUtil.greaterThanMaxValue(value.end, max, false, true)
       : true,
 };
 
 export const requiredDateRangeValidator: Validator<{
   required: boolean;
-  value?: (Date | null)[] | null;
+  value?: DateRangeValue | null;
 }> = {
   key: 'valueMissing',
   message: messages.required,
   isValid: ({ required, value }) => {
     if (required) {
-      return !!(value?.[0] && value?.[1]);
+      return !!(value?.start && value?.end);
     }
     return true;
   },
@@ -52,10 +53,10 @@ export const dateRangePickerValidators: Validator<IgcDateRangePickerComponent>[]
       key: 'badInput',
       message: ({ value }) => formatString(messages.disabledDate, value),
       isValid: ({ value, disabledDates }) => {
-        if (value?.[0] && value?.[1] && disabledDates) {
+        if (value?.start && value?.end && disabledDates) {
           return (
-            !isDateInRanges(value[0], disabledDates) &&
-            !isDateInRanges(value[1], disabledDates)
+            !isDateInRanges(value.start, disabledDates) &&
+            !isDateInRanges(value.end, disabledDates)
           );
         }
         return true;

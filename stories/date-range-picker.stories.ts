@@ -346,7 +346,7 @@ const disabledDates: DateRangeDescriptor[] = [
 function selectToday() {
   const picker =
     document.querySelector<IgcDateRangePickerComponent>('#picker')!;
-  picker.value = [new Date(), new Date()];
+  picker.value = { start: new Date(), end: new Date() };
   picker.hide();
 }
 
@@ -359,7 +359,7 @@ export const Default: Story = {
   render: (args) => html`
     <igc-date-range-picker
       id="picker"
-      .value=${[today.native, tomorrow.native]}
+      .value=${{ start: today.native, end: tomorrow.native }}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}
@@ -497,7 +497,6 @@ export const Slots: Story = {
       </igc-date-range-picker>`,
 };
 
-const ISOdatesString = '2025-03-01T00:00:00.000Z, 2025-03-02T00:00:00.000Z';
 export const FormTwoInputs: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
@@ -509,7 +508,7 @@ export const FormTwoInputs: Story = {
         <h5>Initial value</h5>
         <igc-date-range-picker
           name="picker-initial"
-          value=${ISOdatesString}
+          .value=${{ start: today.native, end: tomorrow.native }}
         ></igc-date-range-picker>
 
         <h5>Readonly</h5>
@@ -586,7 +585,7 @@ export const FormSingleInput: Story = {
         <igc-date-range-picker
           name="picker-initial"
           .singleInput=${true}
-          .value=${[new Date(2025, 2, 19), new Date(2025, 2, 20)]}
+          .value=${{ start: today.native, end: tomorrow.native }}
         ></igc-date-range-picker>
 
         <h5>Readonly</h5>

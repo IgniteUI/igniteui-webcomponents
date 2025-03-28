@@ -18,7 +18,9 @@ import {
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcInputComponent from '../input/input.js';
-import IgcDateRangePickerComponent from './date-range-picker.js';
+import IgcDateRangePickerComponent, {
+  type DateRangeValue,
+} from './date-range-picker.js';
 
 describe('Date range picker', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
@@ -103,7 +105,7 @@ describe('Date range picker', () => {
     });
 
     it('should be successfully initialized with value', async () => {
-      const expectedValue = [today.native, tomorrow.native];
+      const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
           .value="${expectedValue}"
@@ -163,7 +165,7 @@ describe('Date range picker', () => {
   });
   describe('Properties', () => {
     it('should set value through attribute correctly in case the date values are valid ISO 8601 strings', async () => {
-      const expectedValue = [today.native, tomorrow.native];
+      const expectedValue = { start: today.native, end: tomorrow.native };
       const attributeValue = `${today.native.toISOString()}, ${tomorrow.native.toISOString()}`;
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
@@ -176,7 +178,7 @@ describe('Date range picker', () => {
     });
 
     it('should keep the calendar selection and input values on changing the mode', async () => {
-      const expectedValue = [today.native, tomorrow.native];
+      const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
           .value="${expectedValue}"
@@ -192,7 +194,7 @@ describe('Date range picker', () => {
     });
 
     it('should keep the calendar selection and input values on switching to singleInput and back', async () => {
-      const expectedValue = [today.native, tomorrow.native];
+      const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
           .value="${expectedValue}"
@@ -272,7 +274,7 @@ describe('Date range picker', () => {
       await selectDates(today, tomorrow, calendar);
 
       expect(eventSpy).calledWith('igcChange');
-      checkSelectedRange(picker, [today.native, tomorrow.native]);
+      checkSelectedRange(picker, { start: today.native, end: tomorrow.native });
       expect(picker.open).to.equal(true);
 
       await picker.hide();
@@ -284,10 +286,10 @@ describe('Date range picker', () => {
       await picker.show();
       await selectDates(today.add('day', 2), tomorrow.add('day', 2), calendar);
 
-      checkSelectedRange(picker, [
-        today.add('day', 2).native,
-        tomorrow.add('day', 2).native,
-      ]);
+      checkSelectedRange(picker, {
+        start: today.add('day', 2).native,
+        end: tomorrow.add('day', 2).native,
+      });
       expect(picker.open).to.equal(true);
     });
 
@@ -295,12 +297,12 @@ describe('Date range picker', () => {
       const eventSpy = spy(picker, 'emitEvent');
       picker.readOnly = true;
       await elementUpdated(picker);
-      expect(picker.value).to.deep.equal([null, null]); //TODO: refactor
+      expect(picker.value).to.deep.equal({ start: null, end: null });
 
       await picker.show();
       await selectDates(today, tomorrow, calendar);
 
-      expect(picker.value).to.deep.equal([null, null]);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
@@ -312,7 +314,7 @@ describe('Date range picker', () => {
 
       expect(isFocused(dateTimeInputs[0])).to.be.true;
       expect(dateTimeInputs[0].value).to.equal(null);
-      expect(picker.value).to.deep.equal([null, null]);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
@@ -324,7 +326,7 @@ describe('Date range picker', () => {
       calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
       await selectDates(today, tomorrow, calendar);
 
-      expect(picker.value).to.deep.equal([null, null]);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
     });
@@ -340,14 +342,14 @@ describe('Date range picker', () => {
 
       expect(isFocused(dateTimeInputs[0])).to.be.true;
       expect(dateTimeInputs[0].value).to.equal(null);
-      expect(picker.value).to.deep.equal([null, null]);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
       await picker.show();
       await selectDates(today, tomorrow, calendar);
 
-      checkSelectedRange(picker, [today.native, tomorrow.native]);
+      checkSelectedRange(picker, { start: today.native, end: tomorrow.native });
       expect(eventSpy).calledWith('igcChange');
     });
   });
@@ -361,9 +363,8 @@ describe('Date range picker', () => {
         await selectDates(today, null, calendar);
 
         expect(eventSpy).calledWith('igcChange');
-        expect(picker.value?.length).to.equal(2);
-        expect(picker.value?.[0]).to.deep.equal(today.native);
-        expect(picker.value?.[1]).to.deep.equal(today.native);
+        expect(picker.value?.start).to.deep.equal(today.native);
+        expect(picker.value?.end).to.deep.equal(today.native);
 
         const popover = picker.renderRoot.querySelector('igc-popover');
         // when selecting a single date, the calendar won't close
@@ -379,9 +380,8 @@ describe('Date range picker', () => {
         await selectDates(today, tomorrow, calendar);
 
         expect(eventSpy).calledWith('igcChange');
-        expect(picker.value?.length).to.equal(2);
-        expect(picker.value?.[0]).to.deep.equal(today.native);
-        expect(picker.value?.[1]).to.deep.equal(tomorrow.native);
+        expect(picker.value?.start).to.deep.equal(today.native);
+        expect(picker.value?.end).to.deep.equal(tomorrow.native);
 
         const popover = picker.renderRoot.querySelector('igc-popover');
         // with the second click, the calendar closes
@@ -409,9 +409,8 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).calledWith('igcChange');
-        expect(picker.value?.length).to.equal(2);
-        expect(picker.value?.[0]).to.deep.equal(today.native);
-        expect(picker.value?.[1]).to.deep.equal(tomorrow.native);
+        expect(picker.value?.start).to.deep.equal(today.native);
+        expect(picker.value?.end).to.deep.equal(tomorrow.native);
 
         dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(false);
@@ -423,7 +422,7 @@ describe('Date range picker', () => {
         picker.mode = 'dialog';
         const date1 = today.add('day', -2);
         const date2 = today.add('day', 2);
-        picker.value = [date1.native, date2.native];
+        picker.value = { start: date1.native, end: date2.native };
         await elementUpdated(picker);
         picker.open = true;
         await elementUpdated(picker);
@@ -441,9 +440,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).not.to.be.calledWith('igcChange');
-        expect(picker.value?.length).to.equal(2);
-        expect(picker.value?.[0]).to.deep.equal(date1.native);
-        expect(picker.value?.[1]).to.deep.equal(date2.native);
+        picker.value = { start: date1.native, end: date2.native };
         dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(false);
       });
@@ -562,7 +559,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).not.called;
-        expect(picker.value).to.deep.equal([null, null]);
+        expect(picker.value).to.deep.equal({ start: null, end: null });
       });
 
       it('should open the picker on calendar show icon click in dropdown mode', async () => {
@@ -600,26 +597,26 @@ describe('Date range picker', () => {
       });
 
       it('should not open the picker in dropdown mode when clicking the clear icon', async () => {
-        picker.value = [today.native, tomorrow.native];
+        picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
         simulateClick(getIcon(pickerClearIcon));
         await elementUpdated(picker);
 
         expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal([null, null]);
+        expect(picker.value).to.deep.equal({ start: null, end: null });
       });
 
       it('should not open the picker in dialog mode when clicking the clear icon', async () => {
         picker.mode = 'dialog';
-        picker.value = [today.native, tomorrow.native];
+        picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
         simulateClick(getIcon(pickerClearIcon));
         await elementUpdated(picker);
 
         expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal([null, null]);
+        picker.value = { start: null, end: null };
       });
     });
   });
@@ -645,35 +642,50 @@ const selectDates = async (
 
 const checkSelectedRange = (
   picker: IgcDateRangePickerComponent,
-  expectedValue: (Date | null)[],
+  expectedValue: DateRangeValue | null,
   singleInput = false
 ) => {
   const calendar = picker.renderRoot.querySelector(
     IgcCalendarComponent.tagName
   )!;
 
-  expect(picker.value).not.to.be.null;
-  expect(picker.value).to.deep.equal(expectedValue);
+  expect(picker.value?.start).to.deep.equal(expectedValue?.start);
+  expect(picker.value?.end).to.deep.equal(expectedValue?.end);
 
   if (singleInput) {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
-    const start = DateTimeUtil.formatDate(
-      expectedValue[0]!,
-      picker.locale,
-      picker.displayFormat || picker.inputFormat
-    );
-    const end = DateTimeUtil.formatDate(
-      expectedValue[1]!,
-      picker.locale,
-      picker.displayFormat || picker.inputFormat
-    );
+    const start = expectedValue?.start
+      ? DateTimeUtil.formatDate(
+          expectedValue.start,
+          picker.locale,
+          picker.displayFormat || picker.inputFormat
+        )
+      : '';
+    const end = expectedValue?.end
+      ? DateTimeUtil.formatDate(
+          expectedValue.end,
+          picker.locale,
+          picker.displayFormat || picker.inputFormat
+        )
+      : '';
     expect(input.value).to.equal(`${start} - ${end}`);
   } else {
     const inputs = picker.renderRoot.querySelectorAll(
       IgcDateTimeInputComponent.tagName
     );
-    expect(inputs[0].value).to.deep.equal(expectedValue[0]);
-    expect(inputs[1].value).to.deep.equal(expectedValue[1]);
+    expect(inputs[0].value).to.deep.equal(expectedValue?.start);
+    expect(inputs[1].value).to.deep.equal(expectedValue?.end);
   }
-  expect(calendar.values).to.deep.equal(expectedValue);
+
+  // Calendar values are still expected as array:
+  if (expectedValue?.start && expectedValue?.end) {
+    expect(calendar.values).to.deep.equal([
+      expectedValue.start,
+      expectedValue.end,
+    ]);
+  } else if (expectedValue?.start) {
+    expect(calendar.values).to.deep.equal([expectedValue.start]);
+  } else {
+    expect(calendar.values).to.deep.equal([]);
+  }
 };
