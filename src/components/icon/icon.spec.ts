@@ -4,7 +4,6 @@ import {
   expect,
   fixture,
   html,
-  nextFrame,
 } from '@open-wc/testing';
 import { stub } from 'sinon';
 
@@ -163,7 +162,7 @@ describe('Icon broadcast service', () => {
       const iconName = 'bug';
 
       registerIconFromText(iconName, bugSvg, collectionName);
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections } = first(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
@@ -183,7 +182,7 @@ describe('Icon broadcast service', () => {
       for (const each of icons) {
         registerIconFromText(each[0], each[1], collectionName);
       }
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(icons.length);
       for (const [idx, event] of events.entries()) {
@@ -207,7 +206,7 @@ describe('Icon broadcast service', () => {
         name: 'reference-test',
         collection: collectionName,
       });
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -227,7 +226,7 @@ describe('Icon broadcast service', () => {
       meta.name = 'reference-test';
       meta.collection = collectionName;
       setIconRef(refName, refCollectionName, meta);
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -250,7 +249,7 @@ describe('Icon broadcast service', () => {
         },
         overwrite: true,
       });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events.length).to.equal(0);
     });
@@ -286,7 +285,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
@@ -311,7 +310,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 

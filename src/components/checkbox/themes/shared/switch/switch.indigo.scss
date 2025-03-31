@@ -72,33 +72,6 @@ $border-width: rem(1px);
     margin-inline-start: calc(100% - var(--thumb-size) - var(--thumb-offset));
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='control'] {
-        background: var-get($theme, 'track-error-color');
-    }
-
-    [part~='control'],
-    [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'error-color');
-    }
-
-    [part~='control'][part~='checked'],
-    [part~='thumb'] {
-        background: var-get($theme, 'error-color');
-    }
-
-    [part~='control'][part~='focused'],
-    [part~='control'][part~='checked'][part~='focused'] {
-        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
-    }
-
-
-    [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'thumb-on-error-color');
-    }
-}
-
 :host([disabled]),
 :host(:disabled) {
     [part~='control'][part~='checked'] {

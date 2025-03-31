@@ -23,6 +23,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 | Components              | Status |         Documentation          | Released Version |
 | :---------------------- | :----: | :----------------------------: | :--------------: |
+| Tile Manager            |   ✅   |   [Docs][Tile Manager Docs]    |     [5.3.0]      |
 | Carousel                |   ✅   |     [Docs][Carousel Docs]      |     [5.1.0]      |
 | Date picker             |   ✅   |    [Docs][Date Picker Docs]    |     [4.10.0]     |
 | Divider                 |   ✅   |      [Docs][Divider Docs]      |     [4.10.0]     |
@@ -237,6 +238,7 @@ npm run storybook:build
 [Divider Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/divider
 [Date Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-picker
 [Carousel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/carousel
+[Tile Manager Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tile-manager
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -248,3 +250,4 @@ npm run storybook:build
 [4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.5.0
 [4.10.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.10.0
 [5.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.1.0
+[5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.3.0
