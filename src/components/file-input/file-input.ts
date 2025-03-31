@@ -83,6 +83,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     }
   }
 
+  public get value(): string {
+    return this.input?.value ?? '';
+  }
+
   /**
    * The multiple attribute of the control.
    * Used to indicate that a file input allows the user to select more than one file.
@@ -132,10 +136,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     this._updateValidity();
   }
 
-  public get value(): string {
-    return this.input?.value ?? '';
-  }
-
   /** @hidden */
   public override setSelectionRange(): void {}
 
@@ -149,10 +149,9 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   }
 
   private handleChange() {
-    this.value = this.input.value;
     this._formValue.setValueAndFormState(this.files);
-
     this._validate();
+    this.requestUpdate();
     this.emitEvent('igcChange', { detail: this.value });
   }
 

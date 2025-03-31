@@ -37,16 +37,22 @@ $theme: $base;
         grid-column: 2 / 4;
         appearance: none;
         opacity: 0;
-        cursor: pointer;
     }
 
     [part~='input']::file-selector-button {
-        cursor: pointer !important;
         width: 100%;
+        cursor: auto;
     }
 
     [part~='suffix'] {
         grid-area: 1 / 4;
+    }
+}
+
+:host(:not(:disabled)) {
+    [part~='input'],
+    [part~='input']::file-selector-button {
+        cursor: pointer;
     }
 }
 

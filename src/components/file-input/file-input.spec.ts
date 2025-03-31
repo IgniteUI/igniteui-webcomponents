@@ -3,10 +3,18 @@ import { spy } from 'sinon';
 
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateFileUpload } from '../common/utils.spec.js';
+import {
+  createFormAssociatedTestBed,
+  simulateFileUpload,
+} from '../common/utils.spec.js';
 import IgcFileInputComponent from './file-input.js';
 
-describe('File input component', () => {
+describe('File Input component', () => {
+  const files = [
+    new File(['test content'], 'test.txt', { type: 'text/plain' }),
+    new File(['image data'], 'image.png', { type: 'image/png' }),
+  ];
+
   before(() => {
     defineComponents(IgcFileInputComponent);
   });
@@ -50,12 +58,6 @@ describe('File input component', () => {
 
     it('returns the uploaded files when input is of type file', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
-
-      const files = [
-        new File(['test content'], 'test.txt', { type: 'text/plain' }),
-        new File(['image data'], 'image.png', { type: 'image/png' }),
-      ];
-
       await simulateFileUpload(element, files);
 
       expect(element.files).to.exist;
@@ -82,17 +84,27 @@ describe('File input component', () => {
           .textContent!.trim()
       ).to.equal('Select a document');
 
-      const file = new File(['test content'], 'test.txt', {
-        type: 'text/plain',
-      });
-
-      await simulateFileUpload(element, [file]);
+      await simulateFileUpload(element, [files[0]]);
 
       expect(
         element
           .shadowRoot!.querySelector('[part="file-names"]')!
           .textContent!.trim()
       ).to.equal('test.txt');
+    });
+
+    it('resets the file selection when empty string is passed for value', async () => {
+      const file = files[0];
+      await createFixture(html`<igc-file-input></igc-file-input>`);
+      await simulateFileUpload(element, [file]);
+
+      expect(element.value).to.equal(`C:\\fakepath\\${file.name}`);
+      expect(element.files!.length).to.equal(1);
+      expect(element.files![0]).to.equal(file);
+
+      element.value = '';
+      expect(element.value).to.equal('');
+      expect(element.files!.length).to.equal(0);
     });
   });
 
@@ -138,11 +150,7 @@ describe('File input component', () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
       const eventSpy = spy(element, 'emitEvent');
 
-      const files = [
-        new File(['test content'], 'test.txt', { type: 'text/plain' }),
-      ];
-
-      await simulateFileUpload(element, files);
+      await simulateFileUpload(element, [files[0]]);
 
       expect(eventSpy).calledWith('igcChange', {
         detail: element.value,
@@ -189,5 +197,99 @@ describe('File input component', () => {
 
       expect(element.invalid).to.be.true;
     });
+  });
+});
+
+describe('Form Validation', () => {
+  const files = [
+    new File(['test content'], 'test.txt', { type: 'text/plain' }),
+  ];
+  const _expectedValidation = Symbol();
+
+  type TestBedInput = IgcFileInputComponent & {
+    [_expectedValidation]: boolean;
+  };
+
+  function validateInput(event: CustomEvent<string>) {
+    const element = event.target as TestBedInput;
+    expect(element.checkValidity()).to.equal(element[_expectedValidation]);
+  }
+
+  function setExpectedValidationState(
+    state: boolean,
+    element: IgcFileInputComponent
+  ) {
+    (element as TestBedInput)[_expectedValidation] = state;
+  }
+
+  const spec = createFormAssociatedTestBed<IgcFileInputComponent>(
+    html`<igc-file-input
+      name="input"
+      required
+      @igcChange=${validateInput}
+    ></igc-file-input>`
+  );
+
+  beforeEach(async () => {
+    await spec.setup(IgcFileInputComponent.tagName);
+  });
+
+  it('validates component', async () => {
+    setExpectedValidationState(true, spec.element);
+    await simulateFileUpload(spec.element, files);
+  });
+});
+
+describe('Form Integration', () => {
+  const files = [
+    new File(['test content'], 'test.txt', { type: 'text/plain' }),
+  ];
+
+  const spec = createFormAssociatedTestBed<IgcFileInputComponent>(
+    html`<igc-file-input name="input" required></igc-file-input>`
+  );
+
+  beforeEach(async () => {
+    await spec.setup(IgcFileInputComponent.tagName);
+  });
+
+  it('correct initial state', () => {
+    spec.assertIsPristine();
+    expect(spec.element.value).to.equal('');
+  });
+
+  it('is form associated', () => {
+    expect(spec.element.form).to.equal(spec.form);
+  });
+
+  it('is not associated on submit if no value', () => {
+    spec.assertSubmitHasValue(null);
+  });
+
+  it('is associated on submit', async () => {
+    await simulateFileUpload(spec.element, files);
+    spec.assertSubmitHasValue(files[0]);
+  });
+
+  it('is correctly resets on form reset', async () => {
+    await simulateFileUpload(spec.element, files);
+    spec.reset();
+
+    expect(spec.element.value).to.be.empty;
+  });
+
+  it('reflects disabled ancestor state', () => {
+    spec.setAncestorDisabledState(true);
+    expect(spec.element.disabled).to.be.true;
+
+    spec.setAncestorDisabledState(false);
+    expect(spec.element.disabled).to.be.false;
+  });
+
+  it('fulfils required constraint', async () => {
+    spec.assertSubmitFails();
+
+    await simulateFileUpload(spec.element, files);
+    spec.assertSubmitPasses();
   });
 });
