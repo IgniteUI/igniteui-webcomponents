@@ -78,7 +78,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
    */
   @property()
   public set value(value: string) {
-    if (value === '') {
+    if (value === '' && this.input) {
       this.input.value = value;
     }
   }
