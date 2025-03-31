@@ -9,6 +9,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import {
   type FormValue,
   createFormValueState,
+  defaultFileListTransformer,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty, partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
@@ -60,7 +61,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return fileValidators;
   }
 
-  protected override _formValue: FormValue<string>;
+  protected override _formValue: FormValue<FileList | null>;
 
   private get _fileNames(): string | null {
     if (!this.files || this.files.length === 0) return null;
@@ -77,15 +78,9 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
    */
   @property()
   public set value(value: string) {
-    this._formValue.setValueAndFormState(value);
-
     if (value === '') {
       this.input.value = value;
     }
-  }
-
-  public get value(): string {
-    return this._formValue.value;
   }
 
   /**
@@ -123,29 +118,22 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
 
   constructor() {
     super();
-    this._formValue = createFormValueState(this, { initialValue: '' });
+    this._formValue = createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultFileListTransformer,
+    });
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.form?.addEventListener('formdata', this.handleFormData.bind(this));
+  protected override _restoreDefaultValue(): void {
+    this.input.value = '';
+    this._formValue.value = this._formValue.defaultValue;
+
+    this.requestUpdate();
+    this._updateValidity();
   }
 
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.form?.removeEventListener('formdata', this.handleFormData.bind(this));
-  }
-
-  private handleFormData(event: FormDataEvent) {
-    const formData = event.formData;
-
-    if (this.files) {
-      formData.delete(this.name);
-
-      Array.from(this.files).forEach((file) =>
-        formData.append(this.name ?? 'file', file)
-      );
-    }
+  public get value(): string {
+    return this.input?.value ?? '';
   }
 
   /** @hidden */
@@ -162,6 +150,8 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
 
   private handleChange() {
     this.value = this.input.value;
+    this._formValue.setValueAndFormState(this.files);
+
     this._validate();
     this.emitEvent('igcChange', { detail: this.value });
   }

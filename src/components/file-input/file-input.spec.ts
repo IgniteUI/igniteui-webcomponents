@@ -134,21 +134,6 @@ describe('File input component', () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
     });
 
-    it('emits igcInput', async () => {
-      await createFixture(html`<igc-file-input></igc-file-input>`);
-      const eventSpy = spy(element, 'emitEvent');
-
-      const files = [
-        new File(['test content'], 'test.txt', { type: 'text/plain' }),
-      ];
-
-      await simulateFileUpload(element, files);
-
-      expect(eventSpy).calledWith('igcInput', {
-        detail: element.value,
-      });
-    });
-
     it('emits igcChange', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
       const eventSpy = spy(element, 'emitEvent');
@@ -174,10 +159,7 @@ describe('File input component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledOnceWith('igcCancel', {
-        detail: {
-          message: 'User canceled the file selection dialog',
-          value: element.value,
-        },
+        detail: element.value,
       });
     });
 

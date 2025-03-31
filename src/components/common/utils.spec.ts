@@ -384,11 +384,7 @@ export async function simulateFileUpload(
   files.forEach((file) => dataTransfer.items.add(file));
 
   input.files = dataTransfer.files;
-
-  for (const event of ['input', 'change']) {
-    input.dispatchEvent(new Event(event, { bubbles: true }));
-  }
-
+  input.dispatchEvent(new Event('change', { bubbles: true }));
   await elementUpdated(element);
 }
 
