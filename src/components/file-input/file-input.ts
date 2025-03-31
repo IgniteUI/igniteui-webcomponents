@@ -1,7 +1,6 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
@@ -194,7 +193,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
         part=${partNameMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         type="file"
-        .value=${live(this.value)}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
