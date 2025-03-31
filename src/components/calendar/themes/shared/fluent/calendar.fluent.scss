@@ -36,13 +36,6 @@ $theme: $fluent;
     }
 }
 
-:host(igc-calendar[header-orientation='vertical']) {
-    [part~='header'] {
-        width: rem(168px);
-        min-width: rem(168px);
-    }
-}
-
 [part='header'] {
     color: var-get($theme, 'header-foreground');
     background: var-get($theme, 'header-background');
