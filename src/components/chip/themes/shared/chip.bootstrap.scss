@@ -15,7 +15,7 @@ $theme: $bootstrap;
 
 :host([selected]) button:not([disabled]) {
     &:focus {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-outline-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-selected-outline-color');
     }
 }
 
