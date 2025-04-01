@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 
 ::slotted([slot='title']) {
-    @include type-style('h5');
+    @include type-style('h5') {
+        margin: 0;
+    };
 }
 
 ::slotted([slot='subtitle']) {

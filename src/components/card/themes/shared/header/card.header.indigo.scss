@@ -1,8 +1,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    padding-block-end: 0;
-
     ::slotted(igc-avatar) {
         --ig-size: 3;
     }
