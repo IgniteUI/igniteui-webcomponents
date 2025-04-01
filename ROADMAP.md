@@ -2,9 +2,10 @@
 
 # Current Milestone
 
-## Milestone 13 (Due Aug, 2024)
+## Milestone 17 (Due May, 2025)
 
-1. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170) 
+1. Date range picker [1596](https://github.com/IgniteUI/igniteui-webcomponents/issues/1596)
+2. Tooltip component [1615](https://github.com/IgniteUI/igniteui-webcomponents/issues/1615)
 
 ## Going down the road
 
@@ -13,7 +14,23 @@
 
 # Previous Milestone
 
-## Milestone 12, version [4.10.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0) Released Jul 01st, 2024
+## Milestone 16, version 5.3.0, Released Mar 13th, 2025
+
+1. **[DONE]** Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402) 
+
+## Milestone 15, version 5.1.0, Released Oct 25th, 2024
+
+1. **[DONE]** Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
+
+## Going down the road
+
+1. **[DONE]** Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402) 
+
+## Milestone 14, version 5.0.0, Released Aug 27th, 2024
+
+1. **[DONE]** Support of custom icon libriries [#1304](https://github.com/IgniteUI/igniteui-webcomponents/issues/1304) 
+
+## Milestone 13, version [4.10.0](https://github.com/IgniteUI/igniteui-webcomponents/compare/4.9.0...4.10.0) Released Jul 01st, 2024
 
 1. **[DONE]** Banner component [#1174](https://github.com/IgniteUI/igniteui-webcomponents/issues/1174)
 2. **[DONE]** Divider component [#1178](https://github.com/IgniteUI/igniteui-webcomponents/issues/1237)
