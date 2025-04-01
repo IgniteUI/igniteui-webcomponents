@@ -74,6 +74,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Pivot Grid |   ✅   | [Docs][Pivot Grid Docs] |
 | Data Grid  |   ✅   | [Docs][Data Grid Docs]  |
 | Tree Grid  |   ✅   | [Docs][Tree Grid Docs]  |
+| Hierarchical Grid  |   ✅   | [Docs][Hierarchical Grid Docs] |
 
 ### The Lightweight Web Components Data Grid and Data Table
 
@@ -198,6 +199,7 @@ npm run storybook:build
 [Pivot Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview
 [Data Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview
 [Tree Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview
+[Hierarchical Grid Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/hierarchical-grid/overview)
 [Switch Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/switch
 [Ripple Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/ripple
 [Radio Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/radio
