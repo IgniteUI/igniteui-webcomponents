@@ -44,6 +44,7 @@ import { fileValidators } from './validators.js';
  */
 @themes(all, { exposeController: true })
 export default class IgcFileInputComponent extends IgcInputBaseComponent {
+  private _hasActivation = false;
   public static readonly tagName = 'igc-file-input';
   public static override styles = [...super.styles, styles];
 
@@ -129,10 +130,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
 
   protected override _restoreDefaultValue(): void {
     this.input.value = '';
-    this._formValue.value = this._formValue.defaultValue;
-
-    this.requestUpdate();
-    this._updateValidity();
+    super._restoreDefaultValue();
   }
 
   /** @hidden */
@@ -143,11 +141,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
 
   /** Returns the selected files when input type is 'file', otherwise returns null. */
   public get files(): FileList | null {
-    if (!this.input) return null;
-    return this.input.files;
+    return this.input?.files ?? null;
   }
 
   private handleChange() {
+    this._hasActivation = false;
     this._formValue.setValueAndFormState(this.files);
     this._validate();
     this.requestUpdate();
@@ -155,6 +153,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   }
 
   private handleCancel() {
+    this._hasActivation = false;
     this.emitEvent('igcCancel', {
       detail: this.value,
     });
@@ -165,7 +164,13 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   }
 
   protected handleBlur(): void {
-    this._validate();
+    if (!this._hasActivation) {
+      this._validate();
+    }
+  }
+
+  protected handleClick(): void {
+    this._hasActivation = true;
   }
 
   protected override renderFileParts() {
@@ -191,7 +196,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
       <input
         id=${this.inputId}
         part=${partNameMap(this.resolvePartNames('input'))}
-        name=${ifDefined(this.name)}
         type="file"
         ?disabled=${this.disabled}
         ?required=${this.required}
@@ -199,10 +203,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
         ?multiple=${this.multiple}
         tabindex=${this.tabIndex}
         accept=${ifDefined(this.accept === '' ? undefined : this.accept)}
-        aria-invalid=${this.invalid ? 'true' : 'false'}
+        aria-invalid=${this.invalid}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
+        @click=${this.handleClick}
         @change=${this.handleChange}
         @cancel=${this.handleCancel}
         @focus=${this.handleFocus}
