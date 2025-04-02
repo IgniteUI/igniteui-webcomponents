@@ -52,7 +52,7 @@ export function parseISODate(string: string) {
     return isValidDate(new Date(`${date}T${string}`));
   }
 
-  return null;
+  return isValidDate(new Date(Date.parse(string)));
 }
 
 /**
