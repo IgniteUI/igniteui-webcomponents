@@ -235,6 +235,32 @@ describe('Radio Component', () => {
       await elementUpdated(radio);
       expect(eventSpy.callCount).to.equal(1);
     });
+
+    it('should update the validity state of the group when a single radio is validated', async () => {
+      const radios = Array.from(
+        (
+          await fixture(html`
+            <div>
+              <igc-radio required name="radio" value="1">1</igc-radio>
+              <igc-radio name="radio" value="1">2</igc-radio>
+              <igc-radio name="radio" value="1">3</igc-radio>
+            </div>
+          `)
+        ).querySelectorAll(IgcRadioComponent.tagName)
+      );
+
+      // Initial render - invalid state but no styles applied
+      expect(radios.every((radio) => radio.invalid)).to.be.false;
+
+      // checkValidity - all radios from the group should have invalid styles applied
+      expect(first(radios).checkValidity()).to.be.false;
+      expect(radios.every((radio) => radio.invalid)).to.be.true;
+
+      // Set a checked radio - valid state, invalid styles should not be applied
+      first(radios).checked = true;
+      expect(first(radios).reportValidity()).to.be.true;
+      expect(radios.every((radio) => radio.invalid)).to.be.false;
+    });
   });
 
   describe('Form integration', () => {

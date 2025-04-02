@@ -108,7 +108,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     private _setInvalidState(): void {
-      if (this.hasUpdated || this._dirty) {
+      if (this._dirty || !this._pristine) {
         this.invalid = !this.checkValidity();
       }
     }
