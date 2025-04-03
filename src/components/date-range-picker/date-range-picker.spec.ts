@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
+import { parseISODate } from '../calendar/helpers.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -13,6 +14,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   checkDatesEqual,
+  createFormAssociatedTestBed,
   isFocused,
   simulateClick,
   simulateKeyboard,
@@ -707,6 +709,72 @@ describe('Date range picker', () => {
     it('should render area with chips to select predefined date ranges', async () => {});
 
     it('should render area for custom actions', async () => {});
+  });
+
+  // TODO
+  describe('Form integration', () => {
+    const spec = createFormAssociatedTestBed<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker name="rangePicker"></igc-date-range-picker>`
+    );
+
+    spec.assertSubmitHasValue = () => {
+      const formData = spec.submit();
+      const startDate = parseISODate(formData.get(startKey)?.toString()!);
+      const endDate = parseISODate(formData.get(endKey)?.toString()!);
+      if (startDate && endDate && value!.start && value!.end) {
+        checkDatesEqual(startDate, value!.start);
+        checkDatesEqual(endDate, value!.end);
+      } else {
+        expect(startDate).to.be.null;
+        expect(endDate).to.be.null;
+      }
+    };
+
+    let startKey = 'start';
+    let endKey = 'end';
+    let value: DateRangeValue | null = null;
+
+    beforeEach(async () => {
+      await spec.setup(IgcDateRangePickerComponent.tagName);
+      startKey = `${spec.element.name}-start`;
+      endKey = `${spec.element.name}-end`;
+      value = { start: today.native, end: tomorrow.native };
+      spec.setAttributes({ value: JSON.stringify(value) });
+    });
+
+    it('should be form associated', () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('should not participate in form submission if the value is empty/invalid', () => {
+      value = { start: null, end: null };
+      spec.setProperties({ value });
+      spec.assertSubmitHasValue(value);
+    });
+
+    it('should participate in form submission if there is a value and the value adheres to the validation constraints', () => {
+      spec.setProperties({ value });
+      spec.assertSubmitHasValue(value);
+    });
+
+    it('is correctly reset on form reset', async () => {
+      const initial = spec.element.value;
+
+      spec.setProperties({ value: { start: null, end: null } });
+      await elementUpdated(spec.element);
+
+      dateTimeInputs = Array.from(
+        picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
+      );
+      expect(dateTimeInputs[0].value).to.equal(null);
+      expect(dateTimeInputs[1].value).to.equal(null);
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(spec.element.value).to.deep.equal(initial);
+      checkSelectedRange(spec.element, initial);
+    });
   });
 });
 
