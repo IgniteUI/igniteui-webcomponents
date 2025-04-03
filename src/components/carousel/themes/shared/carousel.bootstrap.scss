@@ -7,7 +7,6 @@ igc-button::part(focused),
 igc-button::part(focused):hover {
     box-shadow: 0 0 0 rem(4px) var-get($theme, 'button-focus-border-color');
     border-color: var-get($theme, 'button-border-color');
-    color: var-get($theme, 'button-arrow-color');
 }
 
 :host {
