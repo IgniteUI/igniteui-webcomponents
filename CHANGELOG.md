@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- New File Input Component(`igc-file-input`)
+
 ### Fixed
 - Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
 
