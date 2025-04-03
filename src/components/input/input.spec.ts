@@ -380,6 +380,29 @@ describe('Input component', () => {
     });
   });
 
+  describe('issue-1632', () => {
+    let input: IgcInputComponent;
+
+    beforeEach(async () => {
+      input = await fixture(html`<igc-input></igc-input>`);
+    });
+
+    it('should not enter `invalid` state when not dirty and pristine with dynamic validator props', () => {
+      expect(input.invalid).to.be.false;
+
+      // Set required property on a pristine, non-touched input
+      // Invalid styles should not be applied
+      input.required = true;
+      expect(input.invalid).to.be.false;
+
+      // Transition to "touched" state
+      // Invalid styles should be applied
+      input.focus();
+      input.blur();
+      expect(input.invalid).to.be.true;
+    });
+  });
+
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcInputComponent>(
       html`<igc-input name="input"></igc-input>`
