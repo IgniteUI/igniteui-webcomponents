@@ -4,31 +4,19 @@
 $theme: $indigo;
 
 :host {
-    --btn-hover-color: #{var-get($theme, 'button-hover-color')};
-
-    border-top: rem(1px) solid transparent; 
-    border-bottom: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: rem(11px);
+    border-top: rem(1px) solid transparent;
 
     ::slotted(igc-icon) {
         --ig-size: 2;
-
-        color: var-get($theme, 'item-icon-color');
     }
 }
 
-:host(:hover) {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-hover-icon-color');
-    }
-}
-
-:host([disabled]) {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-disabled-icon-color');
-    }
+[part='tab-header'] {
+    padding: rem(12px) rem(16px);
 }
 
 [part='content'] {
     @include type-style('subtitle-2');
+
+    text-transform: uppercase;
 }
