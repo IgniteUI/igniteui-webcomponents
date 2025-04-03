@@ -3,7 +3,7 @@ import { spy } from 'sinon';
 
 import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
+import { CalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import {
   altKey,
@@ -14,6 +14,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   type ValidationContainerTestsParams,
+  checkDatesEqual,
   createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateClick,
@@ -1252,7 +1253,3 @@ const selectCurrentDate = (calendar: IgcCalendarComponent) => {
   )!;
   simulateClick(currentDaySpan?.children[0]);
 };
-
-function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
-  expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
-}
