@@ -55,6 +55,7 @@ $theme: $indigo;
 :host(igc-calendar[header-orientation='vertical']) {
     [part~='header'] {
         width: rem(136px);
+        min-width: rem(136px);
 
         &::after {
             inset-inline-start: calc(100% - #{rem(1px)});

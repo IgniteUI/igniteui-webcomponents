@@ -106,6 +106,8 @@
     flex-direction: row;
 
     [part='header'] {
+        width: rem(168px);
+        min-width: rem(168px);
         justify-content: flex-start;
         border-radius: inherit;
         border-start-end-radius: 0;
