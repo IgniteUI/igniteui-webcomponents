@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { themes } from '../../theming/theming-decorator.js';
@@ -42,14 +42,13 @@ import { fileValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(all, { exposeController: true })
+@themes(all)
 export default class IgcFileInputComponent extends IgcInputBaseComponent {
-  private _hasActivation = false;
   public static readonly tagName = 'igc-file-input';
   public static override styles = [...super.styles, styles];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcFileInputComponent,
       IgcValidationContainerComponent,
@@ -62,6 +61,9 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   }
 
   protected override _formValue: FormValue<FileList | null>;
+
+  @state()
+  private _hasActivation = false;
 
   private get _fileNames(): string | null {
     if (!this.files || this.files.length === 0) return null;
@@ -120,6 +122,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, attribute: false, noAccessor: true })
   public override readonly readOnly = false;
 
+  /** Returns the selected files when input type is 'file', otherwise returns null. */
+  public get files(): FileList | null {
+    return this.input?.files ?? null;
+  }
+
   constructor() {
     super();
     this._formValue = createFormValueState(this, {
@@ -133,43 +140,44 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     super._restoreDefaultValue();
   }
 
+  /* c8 ignore next 2 */
   /** @hidden */
   public override setSelectionRange(): void {}
 
+  /* c8 ignore next 2 */
   /** @hidden */
   public override setRangeText(): void {}
 
-  /** Returns the selected files when input type is 'file', otherwise returns null. */
-  public get files(): FileList | null {
-    return this.input?.files ?? null;
-  }
-
-  private handleChange() {
+  private _handleChange(): void {
     this._hasActivation = false;
     this._formValue.setValueAndFormState(this.files);
     this._validate();
+
     this.requestUpdate();
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  private handleCancel() {
+  private _handleCancel(): void {
     this._hasActivation = false;
+    this._validate();
+
     this.emitEvent('igcCancel', {
       detail: this.value,
     });
   }
 
-  protected handleFocus(): void {
+  protected _handleFocus(): void {
     this._dirty = true;
   }
 
-  protected handleBlur(): void {
+  protected _handleBlur(): void {
     if (!this._hasActivation) {
       this._validate();
     }
   }
 
-  protected handleClick(): void {
+  /* c8 ignore next 3 */
+  protected _handleClick(): void {
     this._hasActivation = true;
   }
 
@@ -207,11 +215,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
-        @click=${this.handleClick}
-        @change=${this.handleChange}
-        @cancel=${this.handleCancel}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
+        @click=${this._handleClick}
+        @change=${this._handleChange}
+        @cancel=${this._handleCancel}
+        @focus=${this._handleFocus}
+        @blur=${this._handleBlur}
       />
     `;
   }
