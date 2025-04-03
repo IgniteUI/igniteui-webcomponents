@@ -1,4 +1,4 @@
-import { isDateInRanges } from '../calendar/helpers.js';
+import { calendarRange, isDateInRanges } from '../calendar/helpers.js';
 import messages from '../common/localization/validation-en.js';
 import { formatString } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
@@ -54,10 +54,13 @@ export const dateRangePickerValidators: Validator<IgcDateRangePickerComponent>[]
       message: ({ value }) => formatString(messages.disabledDate, value),
       isValid: ({ value, disabledDates }) => {
         if (value?.start && value?.end && disabledDates) {
-          return (
-            !isDateInRanges(value.start, disabledDates) &&
-            !isDateInRanges(value.end, disabledDates)
+          const range = Array.from(
+            calendarRange({ start: value.start, end: value.end })
           );
+          const rangeIncludingDisabled = range.some((day) =>
+            isDateInRanges(day, disabledDates)
+          );
+          return !rangeIncludingDisabled;
         }
         return true;
       },
