@@ -25,6 +25,16 @@ describe('Calendar Rendering', () => {
       await expect(calendar).shadowDom.to.be.accessible();
     });
 
+    it('passes the a11y audit when a week of hidden days is rendered - issue #1636', async () => {
+      const aprilFirst2025 = new CalendarDay({ year: 2025, month: 3, date: 1 });
+      calendar.activeDate = aprilFirst2025.native;
+      calendar.visibleMonths = 2;
+      await elementUpdated(calendar);
+
+      await expect(calendar).dom.to.be.accessible();
+      await expect(calendar).shadowDom.to.be.accessible();
+    });
+
     it('renders the calendar successfully', async () => {
       const today = CalendarDay.today.native;
       const day = new Intl.DateTimeFormat('en', { weekday: 'short' }).format(

@@ -398,11 +398,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     };
   }
 
-  protected renderDay(day: CalendarDay, today: CalendarDay) {
+  protected renderDay(day: CalendarDay, props: any) {
     const ariaLabel = this.intlFormatDay(day);
     const { changePreview, clearPreview } = this.getDayHandlers(day);
 
-    const props = this.getDayProperties(day, today);
     const parts = partNameMap(props);
 
     return html`
@@ -481,12 +480,17 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const last = weeks.length - 1;
 
     for (const [idx, week] of weeks.entries()) {
+      const weekDaysProps: any[] = [];
+      for (const day of week) {
+        weekDaysProps.push(this.getDayProperties(day, today));
+      }
+      const hidden = weekDaysProps.every((p) => p.hidden);
       yield html`
-        <div role="row" part="days-row">
+        <div role="row" part="days-row" aria-hidden=${hidden}>
           ${this.showWeekNumbers
             ? this.renderWeekNumber(week[0], idx === last)
             : nothing}
-          ${week.map((day) => this.renderDay(day, today))}
+          ${week.map((day, i) => this.renderDay(day, weekDaysProps[i]))}
         </div>
       `;
     }
