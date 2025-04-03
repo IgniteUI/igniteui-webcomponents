@@ -9,6 +9,7 @@ import {
   defineComponents,
 } from 'igniteui-webcomponents';
 import { CalendarDay } from '../src/components/calendar/model.js';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
@@ -40,10 +41,10 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   argTypes: {
-    label: {
-      type: 'string',
-      description: 'The label of the date input.',
-      control: 'text',
+    value: {
+      type: 'DateRangeValue',
+      control: 'date',
+      table: { defaultValue: { summary: 'null' } },
     },
     mode: {
       type: '"dropdown" | "dialog"',
@@ -52,6 +53,13 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       options: ['dropdown', 'dialog'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'dropdown' } },
+    },
+    singleInput: {
+      type: 'boolean',
+      description:
+        'Use a single input to display the date range values. Makes the input non-editable.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
@@ -74,13 +82,30 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     usePredefinedRanges: {
       type: 'boolean',
       description:
-        'Whether the control will have predefined ranges in dialog mode.',
+        'Whether the control will show chips with predefined ranges in dialog mode.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    label: {
+      type: 'string',
+      description: 'The label of the control (single input).',
+      control: 'text',
+    },
+    labelStart: {
+      type: 'string',
+      description: 'The label attribute of the start input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    labelEnd: {
+      type: 'string',
+      description: 'The label attribute of the end input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the date input.',
+      description: 'The placeholder attribute of the control (single input).',
       control: 'text',
     },
     displayFormat: {
@@ -106,6 +131,18 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       description:
         'The maximum value required for the date range picker to remain valid.',
       control: 'date',
+    },
+    placeholderStart: {
+      type: 'string',
+      description: 'The placeholder attribute of the start input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    placeholderEnd: {
+      type: 'string',
+      description: 'The placeholder attribute of the end input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     prompt: {
       type: 'string',
@@ -218,25 +255,20 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    value: {
-      control: 'object',
-      defaultValue: [new Date(), new Date()],
-    },
-    singleInput: {
-      type: 'boolean',
-      description:
-        'Whether the component uses a single input for the date range.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
   },
   args: {
+    value: 'null',
     mode: 'dropdown',
+    singleInput: false,
     readOnly: false,
     nonEditable: false,
     outlined: false,
-    usePredefinedRanges: true,
-    prompt: '',
+    usePredefinedRanges: false,
+    labelStart: '',
+    labelEnd: '',
+    placeholderStart: '',
+    placeholderEnd: '',
+    prompt: '_',
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
     hideHeader: false,
@@ -250,26 +282,32 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
-    singleInput: false,
   },
 };
 
 export default metadata;
 
 interface IgcDateRangePickerArgs {
-  /** The label of the date input. */
-  label: string;
-  /** The label of the start date input. */
+  value: DateRangeValue;
+  /** Determines whether the calendar is opened in a dropdown or a modal dialog */
   mode: 'dropdown' | 'dialog';
+  /** Use a single input to display the date range values. Makes the input non-editable. */
+  singleInput: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** Whether to allow typing in the input. */
   nonEditable: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Whether the control will have predefined ranges in dialog mode. */
+  /** Whether the control will show chips with predefined ranges in dialog mode. */
   usePredefinedRanges: boolean;
-  /** The placeholder attribute of the date input. */
+  /** The label of the control (single input). */
+  label: string;
+  /** The label attribute of the start input. */
+  labelStart: string;
+  /** The label attribute of the end input. */
+  labelEnd: string;
+  /** The placeholder attribute of the control (single input). */
   placeholder: string;
   /**
    * Format to display the value in when not editing.
@@ -285,6 +323,10 @@ interface IgcDateRangePickerArgs {
   min: Date;
   /** The maximum value required for the date range picker to remain valid. */
   max: Date;
+  /** The placeholder attribute of the start input. */
+  placeholderStart: string;
+  /** The placeholder attribute of the end input. */
+  placeholderEnd: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
   /** The orientation of the calendar header. */
@@ -327,8 +369,6 @@ interface IgcDateRangePickerArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
-  /** Whether the component should render a single input or two inputs */
-  singleInput: boolean;
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 
@@ -355,6 +395,9 @@ const tomorrow = today.add('day', 1);
 export const Default: Story = {
   args: {
     open: false,
+    labelStart: 'Start',
+    labelEnd: 'End',
+    label: 'Date',
   },
   render: (args) => html`
     <igc-date-range-picker
@@ -375,6 +418,12 @@ export const Default: Story = {
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
       .activeDate=${args.activeDate}
+      .placeholderStart=${args.placeholderStart}
+      .placeholderEnd=${args.placeholderEnd}
+      .placeholder=${args.placeholder}
+      .labelStart=${args.labelStart}
+      .labelEnd=${args.labelEnd}
+      .label=${args.label}
       ?disabled=${args.disabled}
       .singleInput=${args.singleInput}
       ?invalid=${args.invalid}
@@ -508,7 +557,7 @@ export const FormTwoInputs: Story = {
         <h5>Initial value</h5>
         <igc-date-range-picker
           name="picker-initial"
-          .value=${{ start: today.native, end: tomorrow.native }}
+          value=${JSON.stringify({ start: today.native, end: tomorrow.native })}
         ></igc-date-range-picker>
 
         <h5>Readonly</h5>
@@ -585,7 +634,7 @@ export const FormSingleInput: Story = {
         <igc-date-range-picker
           name="picker-initial"
           .singleInput=${true}
-          .value=${{ start: today.native, end: tomorrow.native }}
+          value=${JSON.stringify({ start: today.native, end: tomorrow.native })}
         ></igc-date-range-picker>
 
         <h5>Readonly</h5>

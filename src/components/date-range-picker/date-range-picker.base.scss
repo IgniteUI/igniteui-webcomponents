@@ -1,21 +1,32 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
 :host {
     display: flex;
     flex-direction: column;
-  }
+}
 
-  [part='inputs'] {
+[part='inputs'] {
     display: flex;
     flex-direction: row;
     align-items: end;
-  }
+}
 
-  [part='separator'] {
+[part='separator'] {
     margin: 0 20px;
-  }
+}
 
-  [part='predefined-ranges'] {
+[part='predefined-ranges'] {
     display: flex;
     flex-direction: row;
-    gap:5px;
+    gap: 5px;
     margin-top: 20px;
-  }
+}
+
+dialog {
+    padding: 0 !important;
+    background-color: aqua;
+    [part~='content'] {
+        padding: 0 !important;
+    }
+}

@@ -53,11 +53,8 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
-import {
-  type DateRangePredefinedType,
-  convertToDateRangeObject,
-  selectDateRange,
-} from './date-range-util.js';
+import type { DateRangePredefinedType } from './date-range-util.js';
+import { selectDateRange } from './date-range-util.js';
 import { dateRangePickerValidators } from './validators.js';
 
 export interface DateRangeValue {
@@ -166,10 +163,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @queryAssignedElements({ slot: 'header-date' })
   private headerDateSlotItems!: Array<HTMLElement>;
 
-  protected override _formValue: FormValue<{
-    start: Date | null;
-    end: Date | null;
-  } | null>;
+  protected override _formValue: FormValue<DateRangeValue | null>;
 
   protected override get __validators() {
     return dateRangePickerValidators;
@@ -256,6 +250,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public label!: string;
 
   /**
+   * The label attribute of the start input.
+   * @attr label-start
+   */
+  @property({ attribute: 'label-start' })
+  public labelStart = '';
+
+  /**
+   * The label attribute of the end input.
+   * @attr label-end
+   */
+  @property({ attribute: 'label-end' })
+  public labelEnd = '';
+
+  /**
    * The placeholder attribute of the control (single input).
    * @attr
    */
@@ -330,6 +338,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public get max(): Date | null {
     return this._max;
   }
+
+  /**
+   * The placeholder attribute of the start input.
+   * @attr placeholder-start
+   */
+  @property({ attribute: 'placeholder-start' })
+  public placeholderStart = '';
+
+  /**
+   * The placeholder attribute of the end input.
+   * @attr placeholder-end
+   */
+  @property({ attribute: 'placeholder-end' })
+  public placeholderEnd = '';
 
   /** The prompt symbol to use for unfilled parts of the mask.
    *  @attr
@@ -753,7 +775,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
-    return !this.value || this.value.start === null || this.value.end === null
+    return !this.value || (this.value.start === null && this.value.end === null)
       ? nothing
       : html`
           <span slot="suffix" part="${picker}-clear-icon" @click=${this.clear}>
@@ -850,12 +872,34 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
+  protected renderPredefinedRanges() {
+    return this.usePredefinedRanges
+      ? html`
+          <div part="predefined-ranges">
+            <igc-chip @click=${() => this.setDateRange('last7Days')}
+              >Last 7 Days</igc-chip
+            >
+            <igc-chip @click=${() => this.setDateRange('currentMonth')}
+              >This Month</igc-chip
+            >
+            <igc-chip @click=${() => this.setDateRange('last30Days')}
+              >Last 30 Days</igc-chip
+            >
+            <igc-chip @click=${() => this.setDateRange('yearToDate')}
+              >Year To Date</igc-chip
+            >
+          </div>
+        `
+      : nothing;
+  }
+
   protected renderPicker(id: string) {
     return this.isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)}${this.renderActions()}
+              ${this.renderCalendar(id)} ${this.renderActions()}
+              ${this.renderPredefinedRanges()}
             </igc-focus-trap>
           </igc-popover>
         `
@@ -870,25 +914,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             @igcClosed=${this.handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
-            ${this.renderCalendar(id)}${this.renderActions()}
-            ${this.usePredefinedRanges
-              ? html`
-                  <div part="predefined-ranges">
-                    <igc-chip @click=${() => this.setDateRange('last7Days')}
-                      >Last 7 Days</igc-chip
-                    >
-                    <igc-chip @click=${() => this.setDateRange('currentMonth')}
-                      >This Month</igc-chip
-                    >
-                    <igc-chip @click=${() => this.setDateRange('last30Days')}
-                      >Last 30 Days</igc-chip
-                    >
-                    <igc-chip @click=${() => this.setDateRange('yearToDate')}
-                      >Year To Date</igc-chip
-                    >
-                  </div>
-                `
-              : nothing}
+            ${this.renderCalendar(id)} ${this.renderActions()}
+            ${this.renderPredefinedRanges()}
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
               >Cancel</igc-button
             >
@@ -906,7 +933,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected renderInput(id: string, picker: 'start' | 'end' = 'start') {
     const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;
-
+    const placeholder =
+      picker === 'start' ? this.placeholderStart : this.placeholderEnd;
+    const label = picker === 'start' ? this.labelStart : this.labelEnd;
     return html`
       <igc-date-time-input
         id=${id}
@@ -919,8 +948,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .locale=${this.locale}
         .prompt=${this.prompt}
         .outlined=${this.outlined}
-        .placeholder=${this.placeholder}
-        .invalid=${live(this.invalid)}
+        .placeholder=${placeholder}
+        label=${label}
+        ?invalid=${live(this.invalid)}
         @igcChange=${this.handleInputChangeEvent}
         @igcInput=${this.handleInputEvent}
         @click=${this.isDropDown ? nothing : this.handleInputClick}
