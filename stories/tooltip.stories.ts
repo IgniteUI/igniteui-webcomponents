@@ -4,9 +4,11 @@ import {
   IgcAvatarComponent,
   IgcButtonComponent,
   IgcCardComponent,
+  IgcIconComponent,
   IgcInputComponent,
   IgcTooltipComponent,
   defineComponents,
+  registerIcon,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
 
@@ -15,7 +17,8 @@ defineComponents(
   IgcInputComponent,
   IgcTooltipComponent,
   IgcCardComponent,
-  IgcAvatarComponent
+  IgcAvatarComponent,
+  IgcIconComponent
 );
 
 // region default
@@ -186,19 +189,23 @@ type Story = StoryObj<IgcTooltipArgs>;
 
 // endregion
 
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
 export const Basic: Story = {
   render: (args) => html`
     <igc-tooltip anchor="kek" ?open=${args.open}>
-      <div style="display: flex; align-items: center">
-        <igc-icon name="search"></igc-icon>
-        With an IDREF reference...
-      </div>
+      With an IDREF reference...
     </igc-tooltip>
 
     <igc-button>Focus me</igc-button>
 
     <igc-tooltip ?open=${args.open} show-triggers="focus" hide-triggers="blur">
-      I will be shown until you blur the button above.
+      I will be shown until you blur the button above. Some super long text that
+      never ends.
+      <igc-icon name="home"></igc-icon>
     </igc-tooltip>
 
     <igc-input label="Password" required minlength="12"></igc-input>
@@ -212,8 +219,14 @@ export const Basic: Story = {
       >Minimum of 12 characters</igc-tooltip
     >
 
-    <igc-button id="kek">TOP KEK</igc-button>
-    <igc-tooltip placement="bottom-start" open>Initial open state</igc-tooltip>
+    <div style="margin: 50px 50%;">
+      <igc-button id="kek">TOP KEK</igc-button>
+      <igc-tooltip placement="bottom-start" open
+        >Initial open state</igc-tooltip
+      >
+      <igc-tooltip placement="right" anchor="kek">Right Tooltip</igc-tooltip>
+      <igc-tooltip placement="left" anchor="kek">Left Tooltip</igc-tooltip>
+    </div>
 
     <p>
       Here is some text with a

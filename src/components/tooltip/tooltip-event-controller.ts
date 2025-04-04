@@ -8,20 +8,20 @@ type TooltipTriggers = {
 };
 
 class TooltipController implements ReactiveController {
-  private readonly _host: IgcTooltipComponent;
+  private readonly _tooltip: IgcTooltipComponent;
   private _showTriggers: string[] = [];
   private _hideTriggers: string[] = [];
 
-  constructor(host: IgcTooltipComponent) {
-    this._host = host;
-    this._host.addController(this);
+  constructor(tooltip: IgcTooltipComponent) {
+    this._tooltip = tooltip;
+    this._tooltip.addController(this);
   }
 
   /**
    * Sets the current collections of show/hide triggers on the given anchor for the tooltip.
    * Removes any previously set triggers.
    */
-  public set(anchor: TooltipAnchor, triggers: TooltipTriggers) {
+  public set(anchor: TooltipAnchor, triggers: TooltipTriggers): void {
     if (!anchor) {
       return;
     }
@@ -33,39 +33,51 @@ class TooltipController implements ReactiveController {
     this.remove(anchor);
 
     for (const trigger of show) {
-      anchor.addEventListener(trigger, this._host[showOnTrigger]);
+      anchor.addEventListener(trigger, this._tooltip[showOnTrigger]);
     }
 
     for (const trigger of hide) {
-      anchor.addEventListener(trigger, this._host[hideOnTrigger]);
+      anchor.addEventListener(trigger, this._tooltip[hideOnTrigger]);
     }
   }
 
   /** Removes all tooltip trigger events from the given anchor */
-  public remove(anchor?: TooltipAnchor) {
+  public remove(anchor?: TooltipAnchor): void {
     if (!anchor) {
       return;
     }
 
     for (const trigger of this._showTriggers) {
-      anchor.removeEventListener(trigger, this._host[showOnTrigger]);
+      anchor.removeEventListener(trigger, this._tooltip[showOnTrigger]);
     }
 
     for (const trigger of this._hideTriggers) {
-      anchor.removeEventListener(trigger, this._host[hideOnTrigger]);
+      anchor.removeEventListener(trigger, this._tooltip[hideOnTrigger]);
     }
   }
 
   /** @internal */
   public hostConnected(): void {
-    this._host.addEventListener('pointerenter', this._host[showOnTrigger]);
-    this._host.addEventListener('pointerleave', this._host[hideOnTrigger]);
+    this._tooltip.addEventListener(
+      'pointerenter',
+      this._tooltip[showOnTrigger]
+    );
+    this._tooltip.addEventListener(
+      'pointerleave',
+      this._tooltip[hideOnTrigger]
+    );
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._host.removeEventListener('pointerenter', this._host[showOnTrigger]);
-    this._host.removeEventListener('pointerleave', this._host[hideOnTrigger]);
+    this._tooltip.removeEventListener(
+      'pointerenter',
+      this._tooltip[showOnTrigger]
+    );
+    this._tooltip.removeEventListener(
+      'pointerleave',
+      this._tooltip[hideOnTrigger]
+    );
   }
 }
 

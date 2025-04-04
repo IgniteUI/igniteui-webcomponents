@@ -11,18 +11,21 @@
 [part="base"] {
     @include type-style('body-2');
 
-    background: linear-gradient(to bottom, #323232 0%, #3F3F3F 40%, #1C1C1C 150%), linear-gradient(to top, rgb(255 255 255 / 40%) 0%, rgb(0 0 0 / 25%) 200%);
-    background-blend-mode: multiply;
-    padding: 0.25rem;
-    color: #fff;
+    padding: rem(3px) rem(8px);
+    font-size: rem(10px);
+    font-weight: 600;
+    text-align: start;
+    max-width: 200px;
+    display: flex;
+    align-items: flex-start;
+    gap: rem(8px);
+    position: relative;
 }
 
 #arrow {
     position: absolute;
-    width: 8px;
-    height: 8px;
-    transform: rotate(45deg);
-    background: inherit;
+    width: 0;
+    height: 0;
 }
 
 igc-popover::part(container) {
