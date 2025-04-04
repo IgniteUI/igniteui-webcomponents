@@ -10,6 +10,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { getElementByIdFromRoot, isString } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 import { styles } from './themes/tooltip.base.css.js';
 import {
@@ -34,6 +35,7 @@ function parseTriggers(string: string): string[] {
  * @element igc-tooltip
  *
  * @slot - default slot
+ * @slot close-button - Slot for custom sticky-mode close action (e.g., an icon/button).
  *
  * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
  * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
@@ -50,7 +52,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcTooltipComponent, IgcPopoverComponent);
+    registerComponent(
+      IgcTooltipComponent,
+      IgcPopoverComponent,
+      IgcIconComponent
+    );
   }
   private _internals: ElementInternals;
   private _controller = addTooltipController(this);
@@ -62,8 +68,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _open = false;
   private _showTriggers = ['pointerenter'];
   private _hideTriggers = ['pointerleave'];
-  private _showDelay = 500;
-  private _hideDelay = 500;
+  private _showDelay = 200;
+  private _hideDelay = 300;
 
   @query('#arrow')
   protected _arrowElement!: HTMLElement;
@@ -192,10 +198,18 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   /**
    * Specifies a plain text as tooltip content.
    *
-   * @attr
+   * @attr message
    */
   @property({ type: String })
   public message = '';
+
+  /**
+   * Specifies if the tooltip remains visible until the user closes it via the close button or Esc key.
+   *
+   * @attr sticky
+   */
+  @property({ type: Boolean, reflect: true })
+  public sticky = false;
 
   constructor() {
     super();
@@ -319,7 +333,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this.showWithEvent();
   };
 
-  protected [hideOnTrigger] = () => {
+  protected [hideOnTrigger] = (event?: Event) => {
+    // Return if is sticky and the event does not explicitly indicate a forced hide
+    if (
+      this.sticky &&
+      !(event instanceof CustomEvent && event.detail?.forceHide)
+    ) {
+      return;
+    }
+
     this._animationPlayer.stopAll();
     clearTimeout(this._timeoutId);
     this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
@@ -328,10 +350,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <igc-popover
-        aria-hidden=${!this.open}
+        .inert=${!this.open}
         .placement=${this.placement}
         .offset=${this.offset}
-        .anchor=${this._target}
+        .anchor=${this._target ?? undefined}
         .arrow=${this.disableArrow ? null : this._arrowElement}
         ?open=${this.open}
         ?inline=${this.inline}
@@ -339,7 +361,19 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         shift
       >
         <div ${ref(this._containerRef)} part="base">
-          ${this.message ? html`${this.message}` : html`<slot></slot>`}
+          <slot>${this.message ? html`${this.message}` : nothing}</slot>
+          ${this.sticky
+            ? html`
+                <slot name="close-button">
+                  <igc-icon
+                    name="input_clear"
+                    collection="default"
+                    aria-hidden="true"
+                    @click=${this.hideWithEvent}
+                  ></igc-icon>
+                </slot>
+              `
+            : nothing}
           ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
         </div>
       </igc-popover>

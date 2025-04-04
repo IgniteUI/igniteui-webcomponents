@@ -59,7 +59,13 @@ class TooltipEscapeCallbacks {
     }
 
     const callback = last(Array.from(this._collection.values()));
-    callback?.();
+    const customEvent = new CustomEvent('escapeKey-tooltip-hide', {
+      detail: {
+        forceHide: true,
+        originalEvent: event,
+      },
+    });
+    callback?.(customEvent);
   }
 }
 

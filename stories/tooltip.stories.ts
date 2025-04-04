@@ -113,6 +113,13 @@ const metadata: Meta<IgcTooltipComponent> = {
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
+    sticky: {
+      type: 'boolean',
+      description:
+        'Specifies if the tooltip remains visible until the user closes it via the close button or Esc key.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
   args: {
     open: false,
@@ -121,6 +128,11 @@ const metadata: Meta<IgcTooltipComponent> = {
     offset: 4,
     placement: 'top',
     message: '',
+    showDelay: 200,
+    hideDelay: 300,
+    showTriggers: 'pointerenter',
+    hideTriggers: 'pointerleave',
+    sticky: false,
   },
 };
 
@@ -167,6 +179,8 @@ interface IgcTooltipArgs {
   hideDelay: number;
   /** Specifies a plain text as tooltip content. */
   message: string;
+  /** Specifies if the tooltip remains visible until the user closes it via the close button or Esc key. */
+  sticky: boolean;
 }
 type Story = StoryObj<IgcTooltipArgs>;
 
@@ -290,10 +304,8 @@ export const Triggers: Story = {
 };
 
 export const Toggle: Story = {
-  render: () => {
-    // Use a template ref id to target the tooltip instance
+  render: (args) => {
     const tooltipId = 'toggle-tooltip';
-    const buttonId = 'toggle-button';
     const buttonIdToggler = 'toggler-button';
 
     // Hook into the rendered DOM to attach click listener
@@ -310,16 +322,52 @@ export const Toggle: Story = {
 
     return html`
       <igc-button id=${buttonIdToggler}>Toggle</igc-button>
-      <igc-button id=${buttonId}>Toggle Tooltip</igc-button>
+      <igc-button id="toggle-button">Toggle Tooltip</igc-button>
       <igc-tooltip
         id=${tooltipId}
-        placement="bottom"
-        show-delay="500"
-        hide-delay="500"
-        message="Simple tooltip content"
+        placement=${args.placement || 'bottom'}
+        .disableArrow=${args.disableArrow}
+        .showDelay=${args.showDelay}
+        .hideDelay=${args.hideDelay}
+        message=${args.message || 'Simple tooltip content'}
+        show-triggers=${args.showTriggers}
+        hide-triggers=${args.hideTriggers}
       >
         This tooltip toggles on button click!
       </igc-tooltip>
     `;
   },
+};
+
+export const ReallyBasic: Story = {
+  render: (args) => html`
+    <style>
+      .container {
+        display: flex;
+        justify-content: center;
+        padding: 32px;
+      }
+    </style>
+    <igc-button onclick="tooltip.show()">Show</igc-button>
+    <igc-button onclick="tooltip.hide()">Hide</igc-button>
+    <igc-button onclick="tooltip.toggle()">Toggle</igc-button>
+    <div class="container">
+      <igc-button id="target">Hover me</igc-button>
+      <igc-tooltip
+        id="tooltip"
+        anchor="target"
+        ?open=${args.open}
+        ?disable-arrow=${args.disableArrow}
+        ?inline=${args.inline}
+        .offset=${args.offset}
+        .placement=${args.placement}
+        .showDelay=${args.showDelay}
+        .hideDelay=${args.hideDelay}
+        .message=${args.message}
+        .showTriggers=${args.showTriggers}
+        .hideTriggers=${args.hideTriggers}
+        ?sticky=${args.sticky}
+      ></igc-tooltip>
+    </div>
+  `,
 };
