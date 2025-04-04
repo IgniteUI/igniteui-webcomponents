@@ -41,11 +41,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   argTypes: {
-    value: {
-      type: 'DateRangeValue',
-      control: 'date',
-      table: { defaultValue: { summary: 'null' } },
-    },
+    value: { type: 'DateRangeValue', control: 'date' },
     mode: {
       type: '"dropdown" | "dialog"',
       description:
@@ -257,7 +253,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   args: {
-    value: 'null',
     mode: 'dropdown',
     singleInput: false,
     readOnly: false,

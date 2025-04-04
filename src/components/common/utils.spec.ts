@@ -148,6 +148,18 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   /**
+   * Whether the form is submitted and contains the given 'key'-'value' pair
+   * in its form data.
+   */
+  public assertSubmitHasKeyValue = (
+    key: string,
+    value: unknown,
+    msg?: string
+  ) => {
+    expect(this.submit().get(key), msg).to.eql(value);
+  };
+
+  /**
    * Whether the form fails to submit.
    * The component will be in invalid state and the form data will be empty.
    */

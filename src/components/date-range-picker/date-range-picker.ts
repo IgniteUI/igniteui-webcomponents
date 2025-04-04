@@ -12,7 +12,7 @@ import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   calendarRange,
   convertToDate,
-  isValidDate,
+  convertToDateRange,
 } from '../calendar/helpers.js';
 import { toCalendarDay } from '../calendar/model.js';
 import {
@@ -42,11 +42,11 @@ import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-r
 import {
   type FormValue,
   createFormValueState,
+  defaultDateRangeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import {
   createCounter,
   findElementFromEventPath,
-  isString,
   last,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -61,27 +61,6 @@ import { styles } from './date-range-picker.base.css.js';
 import type { DateRangePredefinedType } from './date-range-util.js';
 import { selectDateRange } from './date-range-util.js';
 import { dateRangePickerValidators } from './validators.js';
-
-export function convertToDateRange(
-  value?: DateRangeValue | string | null
-): DateRangeValue | null {
-  if (!value) {
-    return null;
-  }
-
-  if (isString(value)) {
-    const obj = JSON.parse(value);
-    if (obj.start && obj.end) {
-      return {
-        start: isValidDate(new Date(obj.start)),
-        end: isValidDate(new Date(obj.end)),
-      };
-    }
-  } else {
-    return value;
-  }
-  return { start: null, end: null };
-}
 
 export interface DateRangeValue {
   start: Date | null;
@@ -199,9 +178,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const converted = convertToDateRange(value);
     this._startDate = converted?.start ?? null;
     this._endDate = converted?.end ?? null;
-
     this.setCalendarRangeValues();
-    this.updateInputValues();
 
     this._formValue.setValueAndFormState(converted);
     this._validate();
@@ -444,7 +421,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ type: Boolean, reflect: true, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
 
-  //TODO: locale, prompt, etc. for two inputs
   /**
    * The locale settings used to display the value.
    * @attr
@@ -469,22 +445,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     super();
     this._formValue = createFormValueState<DateRangeValue | null>(this, {
       initialValue: null,
-      transformers: {
-        setValue: convertToDateRange,
-        setDefaultValue: convertToDateRange,
-        setFormValue: (value, host) => {
-          const fd = new FormData();
-          const namePrefix = host.name ? `${host.name}-` : '';
-          const start = value?.start?.toISOString() ?? '';
-          const end = value?.end?.toISOString() ?? '';
-          fd.append(`${namePrefix}start`, `${start}`);
-          fd.append(`${namePrefix}end`, `${end}`);
-          return fd;
-        },
-      },
+      transformers: defaultDateRangeTransformers,
     });
-
-    this.value = null;
 
     this._rootClickController.update({ hideCallback: this.handleClosing });
     this.addEventListener('focusin', this.handleFocusIn);
@@ -577,7 +539,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     [this._startDate, this._endDate] = selectDateRange(rangeType);
     this.setCalendarRangeValues();
     this.value = { start: this._startDate, end: this._endDate };
-    this.updateInputValues();
     this.emitEvent('igcChange', { detail: this.value ?? undefined });
   }
 
@@ -639,15 +600,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.setCalendarRangeValues();
     this.value = { start: this._startDate, end: this._endDate };
     this.emitEvent('igcChange', { detail: this.value ?? undefined });
-  }
-
-  private updateInputValues() {
-    if (!this.singleInput && this._inputs[0] && this._inputs[1]) {
-      this._inputs[0].value = this._startDate;
-      this._inputs[1].value = this._endDate;
-    } else if (this.singleInput && this._input) {
-      this._input.value = this._maskedRangeValue;
-    }
   }
 
   @watch('open')
