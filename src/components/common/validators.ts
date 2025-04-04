@@ -140,30 +140,6 @@ export const minDateValidator: Validator<{
       : true,
 };
 
-export const minDateRangeValidator: Validator<{
-  value?: (Date | null)[] | null;
-  min?: Date | null;
-}> = {
-  key: 'rangeUnderflow',
-  message: ({ min }) => formatString(validatorMessages.min, min),
-  isValid: ({ value, min }) =>
-    value?.[0] && min
-      ? !DateTimeUtil.lessThanMinValue(value[0], min, false, true)
-      : true,
-};
-
-export const maxDateRangeValidator: Validator<{
-  value?: (Date | null)[] | null;
-  max?: Date | null;
-}> = {
-  key: 'rangeOverflow',
-  message: ({ max }) => formatString(validatorMessages.max, max),
-  isValid: ({ value, max }) =>
-    value?.[1] && max
-      ? !DateTimeUtil.greaterThanMaxValue(value[1], max, false, true)
-      : true,
-};
-
 export const maxDateValidator: Validator<{
   value?: Date | null;
   max?: Date | null;
