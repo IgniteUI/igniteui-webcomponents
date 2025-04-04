@@ -287,12 +287,9 @@ export default class IgcPopoverComponent extends LitElement {
       left: 'right',
     }[first(placement.split('-'))]!;
 
-    // TODO: Clean-up this stuff
     Object.assign(this.arrow!.style, {
-      left: x !== null ? `${roundByDPR(x!)}px` : '',
-      top: y !== null ? `${roundByDPR(y!)}px` : '',
-      right: '',
-      bottom: '',
+      left: x != null ? `${roundByDPR(x)}px` : '',
+      top: y != null ? `${roundByDPR(y)}px` : '',
       [staticSide]: '-4px',
     });
   }
