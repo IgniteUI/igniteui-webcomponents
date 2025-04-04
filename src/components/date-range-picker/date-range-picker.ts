@@ -89,6 +89,8 @@ export interface IgcDateRangePickerComponentEventMap {
  *
  */
 
+const formats = new Set(['short', 'medium', 'long', 'full']);
+
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -289,7 +291,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: 'display-format', reflect: false })
   public set displayFormat(value: string) {
     this._displayFormat = value;
-    this.setFormats();
   }
 
   public get displayFormat(): string {
@@ -304,7 +305,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: 'input-format', reflect: false })
   public set inputFormat(value: string) {
     this._inputFormat = value;
-    this.setFormats();
   }
 
   public get inputFormat(): string {
@@ -479,15 +479,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.updateMaskedRangeValue();
   }
 
-  private setFormats() {
-    if (!this.singleInput && this._inputs[0] && this._inputs[1]) {
-      this._inputs[0].inputFormat = this.inputFormat;
-      this._inputs[0].displayFormat = this.displayFormat;
-      this._inputs[1].inputFormat = this.inputFormat;
-      this._inputs[1].displayFormat = this.displayFormat;
-    }
-  }
-
   private delegateInputsValidity() {
     const inputs = this.singleInput ? [this._input] : this._inputs;
 
@@ -616,7 +607,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
     if (this._inputs[0] && this._inputs[1]) {
       this._inputs[0].locale = this.locale;
-      this.setFormats();
     }
   }
 
@@ -939,12 +929,16 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
+    const format = formats.has(this._displayFormat!)
+      ? `${this._displayFormat}Date`
+      : this._displayFormat;
+
     return html`
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
         input-format=${ifDefined(this._inputFormat)}
-        display-format=${ifDefined(this._displayFormat)}
+        display-format=${format}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         .value=${picker === 'start' ? this.value?.start : this.value?.end}

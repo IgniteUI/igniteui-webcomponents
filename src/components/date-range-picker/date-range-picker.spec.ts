@@ -385,6 +385,8 @@ describe('Date range picker', () => {
         labelEnd: 'Sample label end',
         placeholderStart: 'Sample placeholder start',
         placeholderEnd: 'Sample placeholder end',
+        displayFormat: 'yyyy/MM/dd',
+        inputFormat: 'yyyy-MM-dd',
         outlined: true,
       };
 
@@ -435,6 +437,56 @@ describe('Date range picker', () => {
       for (const [prop, value] of Object.entries(propsSingle)) {
         expect((input as any)[prop], `Fail for ${prop}`).to.equal(value);
       }
+    });
+
+    describe('Localization', () => {
+      it('should properly set displayFormat to the set of predefined formats', async () => {
+        const predefinedFormats = ['short', 'medium', 'long', 'full'];
+
+        for (let i = 0; i < predefinedFormats.length; i++) {
+          const format = predefinedFormats[i];
+          picker.displayFormat = format;
+          await elementUpdated(picker);
+
+          dateTimeInputs = Array.from(
+            picker.renderRoot.querySelectorAll(
+              IgcDateTimeInputComponent.tagName
+            )
+          );
+          expect(dateTimeInputs[0].displayFormat).to.equal(`${format}Date`);
+          expect(dateTimeInputs[1].displayFormat).to.equal(`${format}Date`);
+        }
+      });
+
+      it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
+        const defaultFormat = 'MM/dd/yyyy';
+        expect(picker.locale).to.equal('en');
+        expect(picker.inputFormat).to.equal(defaultFormat);
+
+        picker.locale = 'fr';
+        await elementUpdated(picker);
+
+        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+      });
+
+      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+        expect(picker.locale).to.equal('en');
+        expect(picker.getAttribute('display-format')).to.be.null;
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // updates inputFormat according to changed locale
+        picker.locale = 'fr';
+        await elementUpdated(picker);
+        expect(picker.inputFormat).to.equal('dd/MM/yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // sets inputFormat as attribute
+        picker.setAttribute('input-format', 'dd-MM-yyyy');
+        await elementUpdated(picker);
+
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+      });
     });
   });
   describe('Interactions', () => {
