@@ -86,7 +86,7 @@ describe('Tooltip', () => {
       expect(tooltip).dom.to.equal('<igc-tooltip>It works!</igc-tooltip>');
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
-          aria-hidden="true"
+          inert
           flip
           shift
         >
@@ -103,7 +103,6 @@ describe('Tooltip', () => {
       expect(tooltip).dom.to.equal('<igc-tooltip open>It works!</igc-tooltip>');
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
-          aria-hidden="false"
           flip
           shift
           open
@@ -240,7 +239,7 @@ describe('Tooltip', () => {
       );
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
-          aria-hidden="true"
+          inert
           flip
           shift
         >
@@ -262,7 +261,7 @@ describe('Tooltip', () => {
       );
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
-          aria-hidden="true"
+          inert
           flip
           shift
         >

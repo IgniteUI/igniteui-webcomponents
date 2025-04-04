@@ -129,7 +129,7 @@ export default class IgcPopoverComponent extends LitElement {
   public shift = false;
 
   @watch('anchor')
-  protected async anchorChange() {
+  protected anchorChange() {
     const newTarget = isString(this.anchor)
       ? getElementByIdFromRoot(this, this.anchor)
       : this.anchor;
@@ -171,7 +171,10 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   protected show() {
-    if (!this.target) return;
+    if (!this.target) {
+      return;
+    }
+
     this._showPopover();
 
     this.dispose = autoUpdate(
@@ -250,7 +253,7 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private async _updatePosition() {
-    if (!this.open || !this.target) {
+    if (!(this.open && this.target)) {
       return;
     }
 
@@ -274,20 +277,26 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _positionArrow(placement: Placement, data: MiddlewareData) {
-    if (!data.arrow) {
+    if (!(data.arrow && this.arrow)) {
       return;
     }
 
     const { x, y } = data.arrow;
 
+    // The current placement of the popover along the x/y axis
+    const currentPlacement = first(placement.split('-'));
+
+    // The opposite side where the arrow element should render based on the `currentPlacement`
     const staticSide = {
       top: 'bottom',
       right: 'left',
       bottom: 'top',
       left: 'right',
-    }[first(placement.split('-'))]!;
+    }[currentPlacement]!;
 
-    Object.assign(this.arrow!.style, {
+    this.arrow.part = currentPlacement;
+
+    Object.assign(this.arrow.style, {
       left: x != null ? `${roundByDPR(x)}px` : '',
       top: y != null ? `${roundByDPR(y)}px` : '',
       [staticSide]: '-4px',
@@ -295,7 +304,9 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _anchorSlotChange() {
-    if (this.anchor || isEmpty(this._anchors)) return;
+    if (this.anchor || isEmpty(this._anchors)) {
+      return;
+    }
 
     this.target = this._anchors[0];
     this._updateState();

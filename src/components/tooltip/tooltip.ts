@@ -49,14 +49,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public static styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcTooltipComponent, IgcPopoverComponent);
   }
-  private _internals: ElementInternals;
+  private readonly _internals: ElementInternals;
   private _controller = addTooltipController(this);
   private _target?: Element | null;
-  private _containerRef: Ref<HTMLElement> = createRef();
-  private _animationPlayer = addAnimationController(this, this._containerRef);
+  private readonly _containerRef: Ref<HTMLElement> = createRef();
+  private readonly _animationPlayer = addAnimationController(
+    this,
+    this._containerRef
+  );
 
   private _timeoutId?: number;
   private _open = false;
@@ -76,7 +79,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
     this._open = value;
-    this._open ? service.add(this) : service.remove(this);
+    this._open ? service.add(this, this[hideOnTrigger]) : service.remove(this);
   }
 
   public get open(): boolean {
@@ -328,7 +331,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <igc-popover
-        aria-hidden=${!this.open}
+        .inert=${!this.open}
         .placement=${this.placement}
         .offset=${this.offset}
         .anchor=${this._target}
