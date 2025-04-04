@@ -1,7 +1,7 @@
 import { calendarRange, isDateInRanges } from '../calendar/helpers.js';
 import type { DateRangeDescriptor } from '../calendar/types.js';
 import messages from '../common/localization/validation-en.js';
-import { formatString } from '../common/util.js';
+import { formatString, last } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
@@ -57,6 +57,7 @@ export const badInputDateRangeValidator: Validator<{
       const range = Array.from(
         calendarRange({ start: value.start, end: value.end })
       );
+      range.push(last(range).add('day', 1));
       const rangeIncludingDisabled = range.some((day) =>
         isDateInRanges(day, disabledDates)
       );

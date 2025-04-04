@@ -583,6 +583,45 @@ describe('Date range picker', () => {
           end: tomorrow.native,
         });
       });
+
+      it('should revert to no value when cancel is clicked and initial value is null', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.mode = 'dialog';
+        const date1 = today.add('day', -2);
+        const date2 = today.add('day', 2);
+        picker.value = null;
+        await elementUpdated(picker);
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        await selectDates(date1, date2, calendar);
+        expect(eventSpy).not.to.be.calledWith('igcChange'); // TODO: should igcChange be emitted for dialog selection before clicking DONE?
+        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(true);
+        checkSelectedRange(picker, { start: date1.native, end: date2.native });
+
+        const cancelBtn = picker.shadowRoot!.querySelector(
+          'igc-button[slot="footer"]'
+        ) as HTMLButtonElement;
+        cancelBtn?.click();
+        await elementUpdated(picker);
+        expect(eventSpy).not.to.be.calledWith('igcChange');
+        dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(false);
+
+        dateTimeInputs = Array.from(
+          picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
+        );
+        calendar = picker.renderRoot.querySelector(
+          IgcCalendarComponent.tagName
+        )!;
+
+        expect(dateTimeInputs[0].value).to.equal(null);
+        expect(dateTimeInputs[1].value).to.equal(null);
+        expect(calendar.values).to.deep.equal([]);
+      });
     });
     describe('Keyboard navigation', () => {
       it('should close the picker when in open state on pressing Escape', async () => {
