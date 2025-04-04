@@ -27,6 +27,7 @@ export { default as IgcDropdownComponent } from './components/dropdown/dropdown.
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
 export { default as IgcDropdownItemComponent } from './components/dropdown/dropdown-item.js';
+export { default as IgcFileInputComponent } from './components/file-input/file-input.js';
 export { default as IgcSelectComponent } from './components/select/select.js';
 export { default as IgcSelectGroupComponent } from './components/select/select-group.js';
 export { default as IgcSelectHeaderComponent } from './components/select/select-header.js';
@@ -101,6 +102,7 @@ export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdow
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcInputComponentEventMap as IgcFileInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';

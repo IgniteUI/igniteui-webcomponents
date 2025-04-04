@@ -365,6 +365,37 @@ export function simulateWheel(node: Element, options?: WheelEventInit) {
   );
 }
 
+/**
+ * Simulates file upload for an input of type file.
+ *
+ * @param element - The custom element containing the file input
+ * @param files - Array of File objects to upload
+ * @param shadowRoot - Whether to look for the input in shadow DOM (default: true)
+ * @returns Promise that resolves when element updates
+ */
+export async function simulateFileUpload(
+  element: HTMLElement,
+  files: File[],
+  shadowRoot = true
+): Promise<void> {
+  const input = shadowRoot
+    ? (element.shadowRoot!.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement)
+    : (element.querySelector('input[type="file"]') as HTMLInputElement);
+
+  if (!input) {
+    throw new Error('File input not found');
+  }
+
+  const dataTransfer = new DataTransfer();
+  files.forEach((file) => dataTransfer.items.add(file));
+
+  input.files = dataTransfer.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  await elementUpdated(element);
+}
+
 export function simulateDoubleClick(node: Element) {
   node.dispatchEvent(
     new PointerEvent('dblclick', { bubbles: true, composed: true })

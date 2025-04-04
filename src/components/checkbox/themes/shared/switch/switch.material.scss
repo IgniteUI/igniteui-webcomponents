@@ -103,39 +103,3 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     animation-duration: .2s;
     animation-fill-mode: forwards;
 }
-
-:host([invalid]) {
-    [part~='control'] {
-        border-color: var-get($theme, 'track-error-color');
-        background: var-get($theme, 'track-error-color');
-    }
-
-    [part~='thumb'] {
-        background: var-get($theme, 'error-color');
-    }
-
-    [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'thumb-on-error-color');
-    }
-
-    [part~='thumb'][part~='focused'] {
-        &::after {
-            background: var-get($theme, 'error-color-hover');
-        }
-    }
-
-    &:hover {
-        [part~='thumb'] {
-            &::after {
-                background: var-get($theme, 'error-color-hover');
-            }
-        }
-    }
-}
-
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='control'] {
-        background: var-get($theme, 'track-error-color');
-    }
-}
