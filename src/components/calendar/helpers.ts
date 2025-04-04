@@ -1,3 +1,7 @@
+import type {
+  FormValueType,
+  IgcFormControl,
+} from '../common/mixins/forms/types.js';
 import {
   asNumber,
   findElementFromEventPath,
@@ -6,6 +10,7 @@ import {
   last,
   modulo,
 } from '../common/util.js';
+import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import {
   CalendarDay,
   type CalendarRangeParams,
@@ -72,6 +77,35 @@ export function convertToDate(value?: Date | string | null): Date | null {
 }
 
 /**
+ * Converts the given value to a DateRangeValue object.
+ *
+ * If the value is already a valid DateRangeValue object, it is returned directly.
+ * If the value is a string, it is parsed to object and returned if it fields are valid dates.
+ * If the value is null or undefined, null is returned.
+ * If the parsing fails, null is returned.
+ */
+export function convertToDateRange(
+  value?: DateRangeValue | string | null
+): DateRangeValue | null {
+  if (!value) {
+    return null;
+  }
+
+  if (isString(value)) {
+    const obj = JSON.parse(value);
+    if (obj.start && obj.end) {
+      return {
+        start: isValidDate(new Date(obj.start)),
+        end: isValidDate(new Date(obj.end)),
+      };
+    }
+  } else {
+    return value;
+  }
+  return null;
+}
+
+/**
  * Converts a Date object to an ISO 8601 string.
  *
  * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
@@ -79,6 +113,33 @@ export function convertToDate(value?: Date | string | null): Date | null {
  */
 export function getDateFormValue(value: Date | null) {
   return value ? value.toISOString() : null;
+}
+
+/**
+ * Converts a DateDateRangeValue object to FormData with
+ * start and end Date values as ISO 8601 strings.
+ * The keys are prefixed with the host name if it exists
+ * and suffixed with 'start' or 'end' accordingly.
+ *
+ * If the date values are null or undefined, the form data values
+ * are empty strings ''.
+ */
+export function getDateRangeFormValue(
+  value: DateRangeValue | null,
+  host: IgcFormControl
+): FormValueType {
+  if (!value?.start && !value?.end) return null;
+
+  const start = value?.start?.toISOString();
+  const end = value?.end?.toISOString();
+
+  const fd = new FormData();
+  const prefix = host.name ? `${host.name}-` : '';
+
+  if (start) fd.append(`${prefix}start`, start);
+  if (end) fd.append(`${prefix}end`, end);
+
+  return fd;
 }
 
 /**

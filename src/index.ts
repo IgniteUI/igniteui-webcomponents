@@ -20,6 +20,7 @@ export { default as IgcCircularGradientComponent } from './components/progress/c
 export { default as IgcChipComponent } from './components/chip/chip.js';
 export { default as IgcComboComponent } from './components/combo/combo.js';
 export { default as IgcDatePickerComponent } from './components/date-picker/date-picker.js';
+export { default as IgcDateRangePickerComponent } from './components/date-range-picker/date-range-picker.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
 export { default as IgcDividerComponent } from './components/divider/divider.js';
@@ -95,6 +96,7 @@ export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from 
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
+export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
 export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
