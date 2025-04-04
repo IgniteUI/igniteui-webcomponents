@@ -135,7 +135,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private _position = -1;
   private _resizeState = createTileResizeState();
   private _dragStack = createTileDragStack();
-  private _previousPointerPosition: { x: number; y: number } | null = null;
 
   private _customAdorners = new Map<string, boolean>(
     Object.entries({
@@ -400,58 +399,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return true;
   }
 
-  private _handleDragOver(parameters: DragCallbackParameters): void {
-    const match = parameters.state.element as IgcTileComponent;
+  private _handleDragOver({ event, state }: DragCallbackParameters): void {
+    const match = state.element as IgcTileComponent;
 
     if (this._dragStack.peek() === match) {
-      const direction = parameters.state.pointerState.direction;
-      const { clientX, clientY } = parameters.event;
-      const { left, top, width, height } = match.getBoundingClientRect();
-      const relativeX = (clientX - left) / width;
-      const relativeY = (clientY - top) / height;
-      const LTR = isLTR(this);
-
-      let shouldSwap = false;
-
-      switch (direction) {
-        case 'start':
-          shouldSwap =
-            this.position > match.position &&
-            (LTR ? relativeX <= 0.25 : relativeX >= 0.75);
-          break;
-
-        case 'end':
-          shouldSwap =
-            this.position < match.position &&
-            (LTR ? relativeX >= 0.75 : relativeX <= 0.25);
-          break;
-
-        case 'top':
-          shouldSwap = this.position > match.position && relativeY <= 0.25;
-          break;
-
-        case 'bottom':
-          shouldSwap = this.position < match.position && relativeY >= 0.75;
-          break;
-      }
-
-      if (shouldSwap) {
+      if (this._shouldSwap(event, state, match)) {
         this._dragStack.pop();
         this._dragStack.push(match);
-
-        startViewTransition(() => {
-          swapTiles(this, match);
-        });
+        this._performSwap(match);
       }
-
       return;
     }
 
     this._dragStack.push(match);
-
-    startViewTransition(() => {
-      swapTiles(this, match);
-    });
+    this._performSwap(match);
   }
 
   private _handleDragCancel() {
@@ -469,6 +430,42 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setDragState(false);
     this._dragStack.reset();
     this.emitEvent('igcTileDragEnd', { detail: this });
+  }
+
+  private _performSwap(match: IgcTileComponent): void {
+    startViewTransition(() => swapTiles(this, match));
+  }
+
+  private _shouldSwap(
+    { clientX, clientY }: PointerEvent,
+    state: DragCallbackParameters['state'],
+    match: IgcTileComponent
+  ): boolean {
+    const LTR = isLTR(this);
+    const direction = state.pointerState.direction;
+
+    const { left, top, width, height } = match.getBoundingClientRect();
+    const relativeX = (clientX - left) / width;
+    const relativeY = (clientY - top) / height;
+
+    switch (direction) {
+      case 'start':
+        return (
+          this.position > match.position &&
+          (LTR ? relativeX <= 0.25 : relativeX >= 0.75)
+        );
+      case 'end':
+        return (
+          this.position < match.position &&
+          (LTR ? relativeX >= 0.75 : relativeX <= 0.25)
+        );
+      case 'top':
+        return this.position > match.position && relativeY <= 0.25;
+      case 'bottom':
+        return this.position < match.position && relativeY >= 0.75;
+      default:
+        return false;
+    }
   }
 
   private _skipDrag(event: PointerEvent): boolean {
@@ -562,12 +559,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._fullscreenController.setState(!this.fullscreen);
   }
 
-  private _handleMaximize() {
+  private async _handleMaximize() {
     if (!this._emitMaximizedEvent()) {
       return;
     }
 
-    this.maximized = !this.maximized;
+    this.style.zIndex = '1';
+
+    await startViewTransition(() => {
+      this.maximized = !this.maximized;
+    }).transition?.finished;
+
+    this.style.zIndex = '';
   }
 
   private _emitFullScreenEvent(state: boolean) {

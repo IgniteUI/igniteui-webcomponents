@@ -27,8 +27,8 @@ type State = {
   position: { x: number; y: number };
   offset: { x: number; y: number };
   pointerState: {
-    initial: { initialX: number; initialY: number };
-    current: { currentX: number; currentY: number };
+    previous: { x: number; y: number };
+    current: { x: number; y: number };
     direction: Direction;
   };
 };
@@ -169,28 +169,11 @@ class DragController implements ReactiveController {
   }
 
   private get _stateParameters(): DragState {
-    this._state.pointerState.direction = this._trackPointerMovement();
-
     return {
       ...this._state,
       ghost: this._ghost,
       element: this._matchedElement,
     };
-  }
-
-  private _trackPointerMovement(): Direction {
-    const { initialX, initialY } = this._state.pointerState.initial;
-    const { currentX, currentY } = this._state.pointerState.current;
-    const deltaX = currentX - initialX;
-    const deltaY = currentY - initialY;
-    const LTR = isLTR(this._host);
-
-    const isHorizontalMove = Math.abs(deltaX) >= Math.abs(deltaY);
-
-    if (isHorizontalMove) {
-      return (LTR ? deltaX >= 0 : deltaX <= 0) ? 'end' : 'start';
-    }
-    return deltaY >= 0 ? 'bottom' : 'top';
   }
 
   constructor(
@@ -298,16 +281,8 @@ class DragController implements ReactiveController {
     }
 
     this._updatePosition(event);
+    this._updatePointerState(event);
     this._updateMatcher(event);
-
-    this._state.pointerState.initial = {
-      initialX: this._state.pointerState.current.currentX,
-      initialY: this._state.pointerState.current.currentY,
-    };
-    this._state.pointerState.current = {
-      currentX: event.clientX,
-      currentY: event.clientY,
-    };
 
     const parameters = {
       event,
@@ -360,8 +335,8 @@ class DragController implements ReactiveController {
       position,
       offset,
       pointerState: {
-        initial: { initialX: clientX, initialY: clientY },
-        current: { currentX: clientX, currentY: clientY },
+        previous: { x: clientX, y: clientY },
+        current: { x: clientX, y: clientY },
         direction: 'end',
       },
     };
@@ -434,7 +409,24 @@ class DragController implements ReactiveController {
     const posX = this._hasSnapping ? clientX - layerX : clientX - layerX + x;
     const posY = this._hasSnapping ? clientY - layerY : clientY - layerY + y;
 
-    Object.assign(this._state.position, { x: posX, y: posY });
+    this._state.position = { x: posX, y: posY };
+  }
+
+  private _updatePointerState({ clientX, clientY }: PointerEvent): void {
+    const state = this._state.pointerState;
+
+    state.previous = { ...state.current };
+    state.current = { x: clientX, y: clientY };
+
+    const dx = state.current.x - state.previous.x;
+    const dy = state.current.y - state.previous.y;
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const swapHorizontal = isLTR(this._host) ? dx >= 0 : dx <= 0;
+      state.direction = swapHorizontal ? 'end' : 'start';
+    } else {
+      state.direction = dy >= 0 ? 'bottom' : 'top';
+    }
   }
 
   private _assignPosition(element: HTMLElement): void {
