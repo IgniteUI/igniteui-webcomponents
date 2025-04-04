@@ -28,6 +28,9 @@ describe('Tooltip', () => {
 
   const endTick = (tick: number) => tick + 180;
 
+  const DEFAULT_SHOW_DELAY = 200;
+  const DEFAULT_HIDE_DELAY = 300;
+
   before(() => {
     defineComponents(IgcTooltipComponent);
   });
@@ -65,13 +68,13 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.false;
       expect(tooltip.disableArrow).to.be.false;
       expect(tooltip.inline).to.be.false;
-      expect(tooltip.offset).to.equal(4);
+      expect(tooltip.offset).to.equal(6);
       expect(tooltip.placement).to.equal('top');
       expect(tooltip.anchor).to.be.undefined;
       expect(tooltip.showTriggers).to.equal('pointerenter');
       expect(tooltip.hideTriggers).to.equal('pointerleave');
-      expect(tooltip.showDelay).to.equal(500);
-      expect(tooltip.hideDelay).to.equal(500);
+      expect(tooltip.showDelay).to.equal(200);
+      expect(tooltip.hideDelay).to.equal(300);
       expect(tooltip.message).to.equal('');
     });
 
@@ -163,17 +166,17 @@ describe('Tooltip', () => {
       // If no anchor is provided.
       // Considers the first preceding sibling that is an element as the target.
       simulatePointerEnter(third);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulatePointerLeave(third);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
       simulatePointerEnter(first);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.false;
 
@@ -182,18 +185,18 @@ describe('Tooltip', () => {
       await elementUpdated(tooltip);
 
       simulatePointerEnter(first);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulatePointerLeave(first);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
       // By providing an Element
       simulatePointerEnter(second);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.false;
 
@@ -201,7 +204,7 @@ describe('Tooltip', () => {
       await elementUpdated(tooltip);
 
       simulatePointerEnter(second);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
     });
@@ -231,8 +234,55 @@ describe('Tooltip', () => {
       expect(tooltip.shadowRoot!.querySelector('#arrow')).to.be.null;
     });
 
-    it('should set the tooltip content as plain text if the `message` property is set', async () => {
-      expect(tooltip.message).to.equal('');
+    it('should provide content via the `message` property', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip message="Hello"></igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      const defaultSlot =
+        tooltip.renderRoot.querySelector<HTMLSlotElement>('slot:not([name])');
+
+      const content1 = defaultSlot
+        ?.assignedNodes({ flatten: true })
+        .map((x) => x.textContent);
+      expect(content1).to.include('Hello');
+
+      const message = 'New Message!';
+      tooltip.message = message;
+      await elementUpdated(tooltip);
+
+      const content2 = defaultSlot
+        ?.assignedNodes({ flatten: true })
+        .map((x) => x.textContent);
+      expect(content2).to.include(message);
+    });
+
+    it('slotted content takes priority over the `message` property', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip message="Hello">
+            <button>Close</button>
+          </igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      const defaultSlot =
+        tooltip.renderRoot.querySelector<HTMLSlotElement>('slot:not([name])');
+
+      expect(defaultSlot).not.to.be.null;
+      expect(defaultSlot?.assignedElements()[0].matches('button')).to.be.true;
+    });
+
+    it('should render a default close button when in `sticky` mode', async () => {
+      tooltip.sticky = true;
+      await elementUpdated(tooltip);
+
       expect(tooltip).dom.to.equal(
         '<igc-tooltip>It works!</igc-tooltip>',
         DIFF_OPTIONS
@@ -245,32 +295,102 @@ describe('Tooltip', () => {
         >
           <div part="base">
             <slot></slot>
+            <slot name="close-button">
+              <igc-icon
+                aria-hidden="true"
+                collection="default"
+                name="input_clear"
+              ></igc-icon>
+            </slot>
             <div id="arrow"></div>
           </div>
         </igc-popover>`
       );
+    });
 
-      const message = 'Hello!';
-      tooltip.message = message;
+    it('should render custom content for close button when in `sticky` mode', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip message="Hello"
+            ><button slot="close-button">Close</button></igc-tooltip
+          >
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+
+      tooltip.sticky = true;
+      tooltip.open = true;
       await elementUpdated(tooltip);
 
-      expect(tooltip.message).to.equal(message);
-      expect(tooltip).dom.to.equal(
-        '<igc-tooltip>It works!</igc-tooltip>',
-        DIFF_OPTIONS
+      const defaultSlot =
+        tooltip.renderRoot.querySelector<HTMLSlotElement>('slot:not([name])');
+      const closeButtonSlot = tooltip.renderRoot.querySelector<HTMLSlotElement>(
+        'slot[name="close-button"]'
       );
-      expect(tooltip).shadowDom.to.equal(
-        `<igc-popover
-          inert
-          flip
-          shift
-        >
-          <div part="base">
-            ${message}
-            <div id="arrow"></div>
-          </div>
-        </igc-popover>`
+
+      const defaultSlotContent = defaultSlot
+        ?.assignedNodes({ flatten: true })
+        .map((x) => x.textContent);
+      const closeButtonContent = closeButtonSlot
+        ?.assignedNodes({ flatten: true })
+        .map((x) => x.textContent);
+
+      expect(defaultSlotContent).to.include('Hello');
+      expect(closeButtonContent).to.include('Close');
+      expect(closeButtonSlot?.assignedElements()[0].matches('button')).to.be
+        .true;
+    });
+
+    it('hide triggers should not close the tooltip when in `sticky` mode', async () => {
+      tooltip.sticky = true;
+      await elementUpdated(tooltip);
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.true;
+
+      simulatePointerLeave(anchor);
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete();
+      expect(tooltip.open).to.be.true;
+    });
+
+    it('should close the tooltip when in `sticky` mode by clicking the default close button', async () => {
+      tooltip.sticky = true;
+      tooltip.open = true;
+      await elementUpdated(tooltip);
+
+      expect(tooltip.open).to.be.true;
+
+      const closeIcon = tooltip.shadowRoot!.querySelector('igc-icon')!;
+
+      simulateClick(closeIcon);
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete();
+      expect(tooltip.open).to.be.false;
+    });
+
+    it('should close the tooltip when in `sticky` mode by pressing the `Esc` key', async () => {
+      tooltip.sticky = true;
+      tooltip.open = true;
+      await elementUpdated(tooltip);
+
+      expect(tooltip.open).to.be.true;
+
+      document.documentElement.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true,
+          composed: true,
+        })
       );
+
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete();
+      expect(tooltip.open).to.be.false;
     });
   });
 
@@ -290,7 +410,7 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.false;
 
       tooltip.show().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
 
       expect(tooltip.open).to.be.true;
@@ -300,7 +420,7 @@ describe('Tooltip', () => {
       );
 
       tooltip.hide().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
 
       expect(tooltip.open).to.be.false;
@@ -314,7 +434,7 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.false;
 
       tooltip.toggle().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
 
       expect(tooltip.open).to.be.true;
@@ -324,7 +444,7 @@ describe('Tooltip', () => {
       );
 
       tooltip.toggle().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
 
       expect(tooltip.open).to.be.false;
@@ -352,12 +472,12 @@ describe('Tooltip', () => {
       expect(tooltip.hideTriggers).to.equal('pointerleave');
 
       simulatePointerEnter(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulatePointerLeave(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
@@ -367,22 +487,22 @@ describe('Tooltip', () => {
       tooltip.hideTriggers = 'blur';
 
       simulateFocus(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulateBlur(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
       simulateClick(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulateBlur(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
@@ -401,29 +521,29 @@ describe('Tooltip', () => {
       anchor = container.querySelector('button')!;
 
       simulateFocus(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulateBlur(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
       simulateClick(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
       simulateBlur(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
 
     it('pointerenter over tooltip prevents hiding and pointerleave triggers hiding', async () => {
       simulatePointerEnter(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
@@ -437,7 +557,7 @@ describe('Tooltip', () => {
 
       // Move cursor outside the tooltip
       simulatePointerLeave(tooltip);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
@@ -494,14 +614,14 @@ describe('Tooltip', () => {
 
     it('events are correctly emitted on user interaction', async () => {
       simulatePointerEnter(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete(tooltip);
       verifyStateAndEventSequence({ open: true });
 
       eventSpy.resetHistory();
 
       simulatePointerLeave(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete(tooltip);
       verifyStateAndEventSequence({ open: false });
     });
@@ -512,7 +632,7 @@ describe('Tooltip', () => {
       });
 
       simulatePointerEnter(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete(tooltip);
 
       expect(tooltip.open).to.be.false;
@@ -531,7 +651,7 @@ describe('Tooltip', () => {
       });
 
       simulatePointerLeave(anchor);
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete(tooltip);
 
       expect(tooltip.open).to.be.true;
@@ -559,7 +679,7 @@ describe('Tooltip', () => {
       );
 
       simulatePointerEnter(anchor);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete(tooltip);
 
       expect(tooltip.open).to.be.true;
@@ -571,7 +691,7 @@ describe('Tooltip', () => {
           composed: true,
         })
       );
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete(tooltip);
 
       expect(tooltip.open).to.be.false;
@@ -585,7 +705,7 @@ describe('Tooltip', () => {
 
       first.show().then((x) => expect(x).to.be.true);
       last.show().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(500);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete(first);
       await showComplete(last);
 
@@ -600,7 +720,7 @@ describe('Tooltip', () => {
         })
       );
 
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete(first);
       await hideComplete(last);
 
@@ -615,7 +735,7 @@ describe('Tooltip', () => {
         })
       );
 
-      await clock.tickAsync(endTick(500));
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete(first);
       await hideComplete(last);
 

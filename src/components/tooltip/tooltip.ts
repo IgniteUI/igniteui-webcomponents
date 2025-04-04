@@ -5,12 +5,15 @@ import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { getElementByIdFromRoot, isString } from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import { styles as shared } from './themes/shared/tooltip.common.css.js';
+import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 import {
   addTooltipController,
@@ -40,13 +43,13 @@ function parseTriggers(string: string): string[] {
  * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
  * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
+@themes(all)
 export default class IgcTooltipComponent extends EventEmitterMixin<
   IgcTooltipComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tooltip';
-
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
