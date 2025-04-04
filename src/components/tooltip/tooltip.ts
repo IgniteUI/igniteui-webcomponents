@@ -30,6 +30,12 @@ export interface IgcTooltipComponentEventMap {
   igcClosed: CustomEvent<Element | null>;
 }
 
+type TooltipStateOptions = {
+  show: boolean;
+  withDelay?: boolean;
+  withEvents?: boolean;
+};
+
 function parseTriggers(string: string): string[] {
   return (string ?? '').split(',').map((part) => part.trim());
 }
@@ -278,11 +284,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     show,
     withDelay = false,
     withEvents = false,
-  }: {
-    show: boolean;
-    withDelay?: boolean;
-    withEvents?: boolean;
-  }): Promise<boolean> {
+  }: TooltipStateOptions): Promise<boolean> {
     if (show === this.open) return false;
 
     const delay = show ? this.showDelay : this.hideDelay;
@@ -329,32 +331,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return _commitStateChange();
   }
 
-  private _setDelay(ms: number, action: 'open' | 'close'): Promise<boolean> {
-    clearTimeout(this._timeoutId);
-    return new Promise((resolve) => {
-      this._timeoutId = setTimeout(async () => {
-        if (action === 'open') {
-          this.open = true;
-        }
-
-        const result = await this._toggleAnimation(action);
-        // Update `open` after the animation to reflect the correct state based on event.type:
-        // - Close → false if succeeded
-        // - Open → true if succeeded
-        this.open = action === 'close' ? !result : result;
-        resolve(result);
-      }, ms);
-    });
-  }
-
   /** Shows the tooltip if not already showing. */
   public show(): Promise<boolean> {
-    return this._applyTooltipState({ show: true, withDelay: false });
+    return this._applyTooltipState({ show: true });
   }
 
   /** Hides the tooltip if not already hidden. */
   public hide(): Promise<boolean> {
-    return this._applyTooltipState({ show: false, withDelay: false });
+    return this._applyTooltipState({ show: false });
   }
 
   /** Toggles the tooltip between shown/hidden state after the appropriate delay. */
@@ -385,11 +369,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   };
 
   protected [hideOnTrigger] = (event?: Event) => {
-    // Return if is sticky and the event does not explicitly indicate a forced hide
-    if (
-      this.sticky &&
-      !(event instanceof CustomEvent && event.detail?.forceHide)
-    ) {
+    //TODO: IF NEEDED CHECK FOR ESCAPE KEY =>
+    // Return if is sticky
+    if (this.sticky && event) {
       return;
     }
 
