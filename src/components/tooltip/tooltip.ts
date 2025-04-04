@@ -274,6 +274,61 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return this._animationPlayer.playExclusive(animation);
   }
 
+  private async _applyTooltipState({
+    show,
+    withDelay = false,
+    withEvents = false,
+  }: {
+    show: boolean;
+    withDelay?: boolean;
+    withEvents?: boolean;
+  }): Promise<boolean> {
+    if (show === this.open) return false;
+
+    const delay = show ? this.showDelay : this.hideDelay;
+
+    if (withEvents) {
+      const eventName = show ? 'igcOpening' : 'igcClosing';
+      const allowed = this.emitEvent(eventName, {
+        cancelable: true,
+        detail: this._target,
+      });
+
+      if (!allowed) return false;
+    }
+
+    const _commitStateChange = async () => {
+      if (show) {
+        this.open = true;
+      }
+
+      const result = await this._toggleAnimation(show ? 'open' : 'close');
+      this.open = result ? show : !show;
+
+      if (!result) {
+        return false;
+      }
+
+      if (withEvents) {
+        const eventName = show ? 'igcOpened' : 'igcClosed';
+        this.emitEvent(eventName, { detail: this._target });
+      }
+
+      return result;
+    };
+
+    if (withDelay) {
+      clearTimeout(this._timeoutId);
+      return new Promise((resolve) => {
+        this._timeoutId = setTimeout(() => {
+          _commitStateChange().then(resolve);
+        }, delay);
+      });
+    }
+
+    return _commitStateChange();
+  }
+
   private _setDelay(ms: number, action: 'open' | 'close'): Promise<boolean> {
     clearTimeout(this._timeoutId);
     return new Promise((resolve) => {
@@ -293,45 +348,35 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /** Shows the tooltip if not already showing. */
-  public show = async (): Promise<boolean> => {
-    if (this.open) return false;
-    return this._setDelay(this.showDelay, 'open');
-  };
+  public show(): Promise<boolean> {
+    return this._applyTooltipState({ show: true, withDelay: false });
+  }
 
   /** Hides the tooltip if not already hidden. */
-  public hide = async (): Promise<boolean> => {
-    if (!this.open) return false;
-    return this._setDelay(this.hideDelay, 'close');
-  };
+  public hide(): Promise<boolean> {
+    return this._applyTooltipState({ show: false, withDelay: false });
+  }
 
   /** Toggles the tooltip between shown/hidden state after the appropriate delay. */
   public toggle = async (): Promise<boolean> => {
     return this.open ? this.hide() : this.show();
   };
 
-  public showWithEvent = async () => {
-    if (
-      this.open ||
-      !this.emitEvent('igcOpening', { cancelable: true, detail: this._target })
-    ) {
-      return;
-    }
-    if (await this.show()) {
-      this.emitEvent('igcOpened', { detail: this._target });
-    }
-  };
+  public showWithEvent(): Promise<boolean> {
+    return this._applyTooltipState({
+      show: true,
+      withDelay: true,
+      withEvents: true,
+    });
+  }
 
-  public hideWithEvent = async () => {
-    if (
-      !this.open ||
-      !this.emitEvent('igcClosing', { cancelable: true, detail: this._target })
-    ) {
-      return;
-    }
-    if (await this.hide()) {
-      this.emitEvent('igcClosed', { detail: this._target });
-    }
-  };
+  public hideWithEvent(): Promise<boolean> {
+    return this._applyTooltipState({
+      show: false,
+      withDelay: true,
+      withEvents: true,
+    });
+  }
 
   protected [showOnTrigger] = () => {
     this._animationPlayer.stopAll();
