@@ -111,7 +111,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @attr offset
    */
   @property({ type: Number })
-  public offset = 4;
+  public offset = 6;
 
   /**
    * Where to place the floating element relative to the parent anchor element.
@@ -208,7 +208,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    *
    * @attr sticky
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean })
   public sticky = false;
 
   constructor() {
@@ -364,12 +364,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
           <slot>${this.message ? html`${this.message}` : nothing}</slot>
           ${this.sticky
             ? html`
-                <slot name="close-button">
+                <slot name="close-button" @click=${this.hideWithEvent}>
                   <igc-icon
                     name="input_clear"
                     collection="default"
                     aria-hidden="true"
-                    @click=${this.hideWithEvent}
                   ></igc-icon>
                 </slot>
               `

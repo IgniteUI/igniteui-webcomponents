@@ -53,7 +53,7 @@ const metadata: Meta<IgcTooltipComponent> = {
       type: 'number',
       description: 'The offset of the tooltip from the anchor.',
       control: 'number',
-      table: { defaultValue: { summary: '4' } },
+      table: { defaultValue: { summary: '6' } },
     },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
@@ -125,14 +125,14 @@ const metadata: Meta<IgcTooltipComponent> = {
     open: false,
     disableArrow: false,
     inline: false,
-    offset: 4,
+    offset: 6,
     placement: 'top',
     message: '',
+    sticky: false,
     showDelay: 200,
     hideDelay: 300,
     showTriggers: 'pointerenter',
     hideTriggers: 'pointerleave',
-    sticky: false,
   },
 };
 
@@ -366,7 +366,7 @@ export const ReallyBasic: Story = {
         .message=${args.message}
         .showTriggers=${args.showTriggers}
         .hideTriggers=${args.hideTriggers}
-        ?sticky=${args.sticky}
+        .sticky=${args.sticky}
       ></igc-tooltip>
     </div>
   `,
