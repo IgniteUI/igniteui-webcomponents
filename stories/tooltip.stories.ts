@@ -221,7 +221,7 @@ export const Basic: Story = {
 
     <div style="margin: 50px 50%;">
       <igc-button id="kek">TOP KEK</igc-button>
-      <igc-tooltip placement="bottom-start" open
+      <igc-tooltip placement="bottom-start" open .sticky=${args.sticky}
         >Initial open state</igc-tooltip
       >
       <igc-tooltip placement="right" anchor="kek">Right Tooltip</igc-tooltip>
