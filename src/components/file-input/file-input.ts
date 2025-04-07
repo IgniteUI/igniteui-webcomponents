@@ -45,7 +45,7 @@ import { fileValidators } from './validators.js';
 @themes(all)
 export default class IgcFileInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-file-input';
-  public static override styles = [...super.styles, styles];
+  public static override styles = [...IgcInputBaseComponent.styles, styles];
 
   /* blazorSuppress */
   public static register(): void {
