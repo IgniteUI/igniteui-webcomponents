@@ -192,9 +192,15 @@
 }
 
 [part~='start'] {
+    --align-text: end;
+
     [part='text'] {
         order: -1;
     }
+}
+
+[part~='end'] {
+    --align-text: start;
 }
 
 [part~='start'],
