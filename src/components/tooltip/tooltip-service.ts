@@ -3,7 +3,7 @@ import { escapeKey } from '../common/controllers/key-bindings.js';
 import { isEmpty, last } from '../common/util.js';
 import type IgcTooltipComponent from './tooltip.js';
 
-type TooltipHideCallback = () => unknown | Promise<unknown>;
+type TooltipHideCallback = () => unknown;
 
 class TooltipEscapeCallbacks {
   private _collection = new Map<IgcTooltipComponent, TooltipHideCallback>();

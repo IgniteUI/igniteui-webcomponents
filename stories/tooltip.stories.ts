@@ -91,24 +91,28 @@ const metadata: Meta<IgcTooltipComponent> = {
       description:
         'Which event triggers will show the tooltip.\nExpects a comma separate string of different event triggers.',
       control: 'text',
+      table: { defaultValue: { summary: 'pointerenter' } },
     },
     hideTriggers: {
       type: 'string',
       description:
         'Which event triggers will hide the tooltip.\nExpects a comma separate string of different event triggers.',
       control: 'text',
+      table: { defaultValue: { summary: 'pointerleave' } },
     },
     showDelay: {
       type: 'number',
       description:
         'Specifies the number of milliseconds that should pass before showing the tooltip.',
       control: 'number',
+      table: { defaultValue: { summary: '200' } },
     },
     hideDelay: {
       type: 'number',
       description:
         'Specifies the number of milliseconds that should pass before hiding the tooltip.',
       control: 'number',
+      table: { defaultValue: { summary: '300' } },
     },
     message: {
       type: 'string',
@@ -130,12 +134,12 @@ const metadata: Meta<IgcTooltipComponent> = {
     inline: false,
     offset: 6,
     placement: 'top',
-    message: '',
-    sticky: false,
-    showDelay: 200,
-    hideDelay: 300,
     showTriggers: 'pointerenter',
     hideTriggers: 'pointerleave',
+    showDelay: 200,
+    hideDelay: 300,
+    message: '',
+    sticky: false,
   },
 };
 
@@ -196,6 +200,12 @@ registerIcon(
 
 export const Basic: Story = {
   render: (args) => html`
+    <style>
+      #card-tooltip::part(base) {
+        max-width: 600px;
+      }
+    </style>
+
     <igc-tooltip anchor="kek" ?open=${args.open}>
       With an IDREF reference...
     </igc-tooltip>
@@ -235,8 +245,7 @@ export const Basic: Story = {
       that has a tooltip.
     </p>
 
-    <igc-tooltip anchor="build-info" inline>
-      <igc-card>
+    <igc-tooltip id="card-tooltip" anchor="build-info" inline>
         <div style="display:flex; flex-direction:row">
           <div>
             <igc-card-header>
@@ -313,5 +322,34 @@ export const Triggers: Story = {
     <igc-tooltip show-triggers="igcChange">
       You've changed the value to ${getValue()}
     </igc-tooltip>
+  `,
+};
+
+export const Default: Story = {
+  render: () => html`
+    <igc-button>Hover over me</igc-button>
+    <igc-tooltip>
+      <h1>Showing a tooltip!</h1>
+    </igc-tooltip>
+  `,
+};
+
+let tooltip!: IgcTooltipComponent;
+
+function createDynamicTooltip() {
+  tooltip ??= document.createElement('igc-tooltip');
+  tooltip.message = `I'm created on demand at ${new Date().toLocaleTimeString()}`;
+  tooltip.anchor = 'dynamic-target';
+  tooltip.id = 'dynamic';
+
+  tooltip.addEventListener('igcClosed', () => tooltip.remove());
+  document.body.appendChild(tooltip);
+  tooltip.show();
+}
+
+export const DynamicTooltip: Story = {
+  render: () => html`
+    <igc-button @click=${createDynamicTooltip}>Create tooltip</igc-button>
+    <igc-button id="dynamic-target">Target of the dynamic tooltip</igc-button>
   `,
 };

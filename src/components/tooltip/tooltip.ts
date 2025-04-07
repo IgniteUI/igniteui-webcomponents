@@ -10,17 +10,13 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { getElementByIdFromRoot, isString } from '../common/util.js';
+import { asNumber, getElementByIdFromRoot, isString } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 import { styles as shared } from './themes/shared/tooltip.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
-import {
-  addTooltipController,
-  hideOnTrigger,
-  showOnTrigger,
-} from './tooltip-event-controller.js';
+import { addTooltipController } from './tooltip-event-controller.js';
 import service from './tooltip-service.js';
 
 export interface IgcTooltipComponentEventMap {
@@ -35,10 +31,6 @@ type TooltipStateOptions = {
   withDelay?: boolean;
   withEvents?: boolean;
 };
-
-function parseTriggers(string: string): string[] {
-  return (string ?? '').split(',').map((part) => part.trim());
-}
 
 /**
  * @element igc-tooltip
@@ -68,18 +60,24 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     );
   }
   private readonly _internals: ElementInternals;
-  private _controller = addTooltipController(this);
-  private _target?: Element | null;
+  private readonly _controller = addTooltipController(this, {
+    onShow: this._showOnInteraction,
+    onHide: this._hideOnInteraction,
+  });
   private readonly _containerRef: Ref<HTMLElement> = createRef();
-  private readonly _animationPlayer = addAnimationController(
-    this,
-    this._containerRef
-  );
+  private readonly _player = addAnimationController(this, this._containerRef);
+
+  private readonly _showAnimation = scaleInCenter({
+    duration: 150,
+    easing: EaseOut.Quad,
+  });
+  private readonly _hideAnimation = fadeOut({
+    duration: 75,
+    easing: EaseOut.Sine,
+  });
 
   private _timeoutId?: number;
   private _open = false;
-  private _showTriggers = ['pointerenter'];
-  private _hideTriggers = ['pointerleave'];
   private _showDelay = 200;
   private _hideDelay = 300;
 
@@ -89,12 +87,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   /**
    * Whether the tooltip is showing.
    *
-   * @attr
+   * @attr open
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
     this._open = value;
-    this._open ? service.add(this, this[hideOnTrigger]) : service.remove(this);
+    this._open
+      ? service.add(this, this._hideOnInteraction)
+      : service.remove(this);
   }
 
   public get open(): boolean {
@@ -105,6 +106,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Whether to disable the rendering of the arrow indicator for the tooltip.
    *
    * @attr disable-arrow
+   * @default false
    */
   @property({ attribute: 'disable-arrow', type: Boolean, reflect: true })
   public disableArrow = false;
@@ -113,6 +115,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Improves positioning for inline based elements, such as links.
    *
    * @attr inline
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public inline = false;
@@ -121,6 +124,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * The offset of the tooltip from the anchor.
    *
    * @attr offset
+   * @default 6
    */
   @property({ type: Number })
   public offset = 6;
@@ -129,6 +133,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Where to place the floating element relative to the parent anchor element.
    *
    * @attr placement
+   * @default top
    */
   @property()
   public placement: IgcPlacement = 'top';
@@ -146,18 +151,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separate string of different event triggers.
    *
    * @attr show-triggers
+   * @default pointerenter
    */
   @property({ attribute: 'show-triggers' })
   public set showTriggers(value: string) {
-    this._showTriggers = parseTriggers(value);
-    this._controller.set(this._target, {
-      show: this._showTriggers,
-      hide: this._hideTriggers,
-    });
+    this._controller.showTriggers = value;
   }
 
   public get showTriggers(): string {
-    return this._showTriggers.join();
+    return this._controller.showTriggers;
   }
 
   /**
@@ -165,28 +167,26 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separate string of different event triggers.
    *
    * @attr hide-triggers
+   * @default pointerleave
    */
   @property({ attribute: 'hide-triggers' })
   public set hideTriggers(value: string) {
-    this._hideTriggers = parseTriggers(value);
-    this._controller.set(this._target, {
-      show: this._showTriggers,
-      hide: this._hideTriggers,
-    });
+    this._controller.hideTriggers = value;
   }
 
   public get hideTriggers(): string {
-    return this._hideTriggers.join();
+    return this._controller.hideTriggers;
   }
 
   /**
    * Specifies the number of milliseconds that should pass before showing the tooltip.
    *
    * @attr show-delay
+   * @default 200
    */
   @property({ attribute: 'show-delay', type: Number })
   public set showDelay(value: number) {
-    this._showDelay = Math.max(0, value);
+    this._showDelay = Math.max(0, asNumber(value));
   }
 
   public get showDelay(): number {
@@ -197,10 +197,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Specifies the number of milliseconds that should pass before hiding the tooltip.
    *
    * @attr hide-delay
+   * @default 300
    */
   @property({ attribute: 'hide-delay', type: Number })
   public set hideDelay(value: number) {
-    this._hideDelay = Math.max(0, value);
+    this._hideDelay = Math.max(0, asNumber(value));
   }
 
   public get hideDelay(): number {
@@ -212,15 +213,16 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    *
    * @attr message
    */
-  @property({ type: String })
+  @property()
   public message = '';
 
   /**
    * Specifies if the tooltip remains visible until the user closes it via the close button or Esc key.
    *
    * @attr sticky
+   * @default false
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public sticky = false;
 
   constructor() {
@@ -232,52 +234,24 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._internals.ariaLive = 'polite';
   }
 
-  protected override async firstUpdated() {
-    if (!this._target) {
-      this._setTarget(this.previousElementSibling);
-    }
+  protected override firstUpdated(): void {
+    this._controller.anchor ??= this.previousElementSibling;
 
     if (this.open) {
-      await this.updateComplete;
-      this.requestUpdate();
+      this.updateComplete.then(() => {
+        this._player.playExclusive(this._showAnimation);
+        this.requestUpdate();
+      });
     }
-  }
-
-  /** @internal */
-  public override disconnectedCallback() {
-    this._controller.remove(this._target);
-    service.remove(this);
-
-    super.disconnectedCallback();
   }
 
   @watch('anchor')
-  protected _anchorChanged() {
+  protected _anchorChanged(): void {
     const target = isString(this.anchor)
       ? getElementByIdFromRoot(this, this.anchor)
       : this.anchor;
 
-    this._setTarget(target);
-  }
-
-  private _setTarget(target?: Element | null) {
-    if (!target) {
-      return;
-    }
-
-    this._target = target;
-    this._controller.set(target, {
-      show: this._showTriggers,
-      hide: this._hideTriggers,
-    });
-  }
-
-  private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation =
-      dir === 'open'
-        ? scaleInCenter({ duration: 150, easing: EaseOut.Quad })
-        : fadeOut({ duration: 75, easing: EaseOut.Sine });
-    return this._animationPlayer.playExclusive(animation);
+    this._controller.anchor = target;
   }
 
   private async _applyTooltipState({
@@ -293,7 +267,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       const eventName = show ? 'igcOpening' : 'igcClosing';
       const allowed = this.emitEvent(eventName, {
         cancelable: true,
-        detail: this._target,
+        detail: this._controller.anchor,
       });
 
       if (!allowed) return false;
@@ -304,7 +278,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.open = true;
       }
 
-      const result = await this._toggleAnimation(show ? 'open' : 'close');
+      const result = await this._player.playExclusive(
+        show ? this._showAnimation : this._hideAnimation
+      );
       this.open = result ? show : !show;
 
       if (!result) {
@@ -313,7 +289,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
       if (withEvents) {
         const eventName = show ? 'igcOpened' : 'igcClosed';
-        this.emitEvent(eventName, { detail: this._target });
+        this.emitEvent(eventName, { detail: this._controller.anchor });
       }
 
       return result;
@@ -342,11 +318,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /** Toggles the tooltip between shown/hidden state */
-  public toggle = async (): Promise<boolean> => {
+  public toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
-  };
+  }
 
-  public showWithEvent(): Promise<boolean> {
+  protected _showWithEvent(): Promise<boolean> {
     return this._applyTooltipState({
       show: true,
       withDelay: true,
@@ -354,7 +330,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   }
 
-  public hideWithEvent(): Promise<boolean> {
+  protected _hideWithEvent(): Promise<boolean> {
     return this._applyTooltipState({
       show: false,
       withDelay: true,
@@ -362,23 +338,22 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   }
 
-  protected [showOnTrigger] = () => {
-    this._animationPlayer.stopAll();
+  private _showOnInteraction(): void {
+    this._player.stopAll();
     clearTimeout(this._timeoutId);
-    this.showWithEvent();
-  };
+    this._showWithEvent();
+  }
 
-  protected [hideOnTrigger] = (event?: Event) => {
+  private _hideOnInteraction(event?: Event): void {
     //TODO: IF NEEDED CHECK FOR ESCAPE KEY =>
-    // Return if is sticky
     if (this.sticky && event) {
       return;
     }
 
-    this._animationPlayer.stopAll();
+    this._player.stopAll();
     clearTimeout(this._timeoutId);
-    this._timeoutId = setTimeout(() => this.hideWithEvent(), 180);
-  };
+    this._timeoutId = setTimeout(() => this._hideWithEvent(), 180);
+  }
 
   protected override render() {
     return html`
@@ -386,7 +361,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .inert=${!this.open}
         .placement=${this.placement}
         .offset=${this.offset}
-        .anchor=${this._target ?? undefined}
+        .anchor=${this._controller.anchor ?? undefined}
         .arrow=${this.disableArrow ? null : this._arrowElement}
         ?open=${this.open}
         ?inline=${this.inline}
@@ -397,7 +372,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
           <slot>${this.message ? html`${this.message}` : nothing}</slot>
           ${this.sticky
             ? html`
-                <slot name="close-button" @click=${this.hideWithEvent}>
+                <slot name="close-button" @click=${this._hideWithEvent}>
                   <igc-icon
                     name="input_clear"
                     collection="default"

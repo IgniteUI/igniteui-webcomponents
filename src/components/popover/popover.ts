@@ -64,7 +64,7 @@ export default class IgcPopoverComponent extends LitElement {
   private dispose?: ReturnType<typeof autoUpdate>;
   private target?: Element;
 
-  @query('#container', true)
+  @query('#container')
   private _container!: HTMLElement;
 
   @queryAssignedElements({ slot: 'anchor', flatten: true })

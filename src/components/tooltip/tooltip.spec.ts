@@ -284,7 +284,7 @@ describe('Tooltip', () => {
       await elementUpdated(tooltip);
 
       expect(tooltip).dom.to.equal(
-        '<igc-tooltip>It works!</igc-tooltip>',
+        '<igc-tooltip sticky>It works!</igc-tooltip>',
         DIFF_OPTIONS
       );
       expect(tooltip).shadowDom.to.equal(
