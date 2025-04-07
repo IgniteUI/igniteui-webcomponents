@@ -35,6 +35,10 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
+import {
+  type IgcDateRangePickerResourceStrings,
+  IgcDateRangePickerResourceStringsEN,
+} from '../common/i18n/date-range-picker.resources.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -80,6 +84,33 @@ export interface IgcDateRangePickerComponentEventMap {
  *
  * @element igc-date-range-picker
  *
+ * @slot prefix - Renders content before the input (single input).
+ * @slot prefix-start - Renders content before the start input (two inputs).
+ * @slot prefix-end - Renders content before the end input (two inputs).
+ * @slot suffix - Renders content after the input (single input).
+ * @slot suffix-start - Renders content after the start input (single input).
+ * @slot suffix-end - Renders content after the end input (single input).
+ * @slot helper-text - Renders content below the input.
+ * @slot bad-input - Renders content when the value is in the disabledDates ranges.
+ * @slot value-missing - Renders content when the required validation fails.
+ * @slot range-overflow - Renders content when the max validation fails.
+ * @slot range-underflow - Renders content when the min validation fails.
+ * @slot custom-error - Renders content when setCustomValidity(message) is set.
+ * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
+ * @slot title - Renders content in the calendar title.
+ * @slot header-date - Renders content instead of the current date/range in the calendar header.
+ * @slot clear-icon - Renders a clear icon template.
+ * @slot clear-icon-start - Renders a clear icon template for the start input (two inputs).
+ * @slot clear-icon-end - Renders a clear icon template for the end input (two inputs).
+ * @slot calendar-icon - Renders the icon/content for the calendar picker.
+ * @slot calendar-icon-start - Renders the icon/content for the calendar picker for the start input (two inputs).
+ * @slot calendar-icon-end - Renders the icon/content for the calendar picker for the end input (two inputs).
+ * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
+ * @slot calendar-icon-open-start - Renders the icon/content for the picker in open state for the start input (two inputs).
+ * @slot calendar-icon-open-end - Renders the icon/content for the picker in open state for the end input (two inputs).
+ * @slot actions - Renders content in the action part of the picker in open state.
+ * @slot separator - Renders the separator element between the two inputs.
+ *
  * @fires igcOpening - Emitted just before the calendar dropdown is shown.
  * @fires igcOpened - Emitted after the calendar dropdown is shown.
  * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
@@ -87,6 +118,59 @@ export interface IgcDateRangePickerComponentEventMap {
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *
+ * @csspart separator - The separator element between the two inputs.
+ * @csspart label - The label wrapper that renders content above the target input.
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart input - The native input element.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
+ * @csspart calendar-icon - The calendar icon wrapper for closed state.
+ * @csspart calendar-icon-start - The calendar icon wrapper for closed state for the start input (two inputs).
+ * @csspart calendar-icon-end - The calendar icon wrapper for closed state for the end input (two inputs).
+ * @csspart calendar-icon-open - The calendar icon wrapper for opened state.
+ * @csspart calendar-icon-open-start - The calendar icon wrapper for opened state for the start input (two inputs).
+ * @csspart calendar-icon-open-end - The calendar icon wrapper for opened state for the end input (two inputs).
+ * @csspart clear-icon - The clear icon wrapper (single input).
+ * @csspart clear-icon-start - The clear icon wrapper for the start input (two inputs).
+ * @csspart clear-icon-end - The clear icon wrapper for the end input (two inputs).
+ * @csspart actions - The actions wrapper.
+ * @csspart helper-text - The helper-text wrapper that renders content below the target input.
+ * @csspart header - The calendar header element.
+ * @csspart header-title - The calendar header title element.
+ * @csspart header-date - The calendar header date element.
+ * @csspart calendar-content - The calendar content element which contains the views and navigation elements.
+ * @csspart navigation - The calendar navigation container element.
+ * @csspart months-navigation - The calendar months navigation button element.
+ * @csspart years-navigation - The calendar years navigation button element.
+ * @csspart years-range - The calendar years range element.
+ * @csspart navigation-buttons - The calendar navigation buttons container.
+ * @csspart navigation-button - The calendar previous/next navigation button.
+ * @csspart days-view-container - The calendar days view container element.
+ * @csspart days-view - The calendar days view element.
+ * @csspart months-view - The calendar months view element.
+ * @csspart years-view - The calendar years view element.
+ * @csspart days-row - The calendar days row element.
+ * @csspart calendar-label - The calendar week header label element.
+ * @csspart week-number - The calendar week number element.
+ * @csspart week-number-inner - The calendar week number inner element.
+ * @csspart date - The calendar date element.
+ * @csspart date-inner - The calendar date inner element.
+ * @csspart first - The calendar first selected date element in range selection.
+ * @csspart last - The calendar last selected date element in range selection.
+ * @csspart inactive - The calendar inactive date element.
+ * @csspart hidden - The calendar hidden date element.
+ * @csspart weekend - The calendar weekend date element.
+ * @csspart range - The calendar range selected element.
+ * @csspart special - The calendar special date element.
+ * @csspart disabled - The calendar disabled date element.
+ * @csspart single - The calendar single selected date element.
+ * @csspart preview - The calendar range selection preview date element.
+ * @csspart month - The calendar month element.
+ * @csspart month-inner - The calendar month inner element.
+ * @csspart year - The calendar year element.
+ * @csspart year-inner - The calendar year inner element.
+ * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
+ * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 
 const formats = new Set(['short', 'medium', 'long', 'full']);
@@ -427,8 +511,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /** The resource strings of the calendar. */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings =
-    IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings &
+    IgcDateRangePickerResourceStrings = {
+    ...IgcCalendarResourceStringEN,
+    ...IgcDateRangePickerResourceStringsEN,
+  };
 
   /** Gets/sets special dates. */
   @property({ attribute: false })
@@ -757,11 +844,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
+    const clearIcon = this.singleInput ? 'clear-icon' : `clear-icon-${picker}`;
     return !this.value || (this.value.start === null && this.value.end === null)
       ? nothing
       : html`
-          <span slot="suffix" part="${picker}-clear-icon" @click=${this.clear}>
-            <slot name="${picker}-clear-icon">
+          <span slot="suffix" part="${clearIcon}" @click=${this.clear}>
+            <slot name="${clearIcon}">
               <igc-icon
                 name="input_clear"
                 collection="default"
@@ -777,18 +865,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
 
-    const state = this.open
-      ? `${picker}-calendar-icon-open`
-      : `${picker}-calendar-icon`;
+    const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
+    const calendarIcon = this.singleInput ? state : `${state}-${picker}`;
 
     return html`
       <span
         slot="prefix"
-        part=${state}
+        part=${calendarIcon}
         @pointerdown=${this.handlerCalendarIconSlotPointerDown}
         @click=${this.handleAnchorClick}
       >
-        <slot name=${state}>${defaultIcon}</slot>
+        <slot name=${calendarIcon}>${defaultIcon}</slot>
       </span>
     `;
   }
@@ -899,11 +986,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             ${this.renderCalendar(id)} ${this.renderActions()}
             ${this.renderPredefinedRanges()}
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
-              >Cancel</igc-button
+              >${this.resourceStrings.cancel}</igc-button
             >
-            <!--TODO: Localize -->
             <igc-button slot="footer" @click=${this.dialogDone} variant="flat"
-              >Done</igc-button
+              >${this.resourceStrings.done}</igc-button
             >
           </igc-dialog>
         `;
@@ -943,15 +1029,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon(picker)}
-        <slot
-          name=${picker === 'start' ? 'prefix-start' : 'prefix-end'}
-          slot="prefix"
-        ></slot>
+        <slot name=${`prefix-${picker}` || 'prefix'} slot="prefix"></slot>
         ${this.renderClearIcon(picker)}
-        <slot
-          name=${picker === 'start' ? 'suffix-start' : 'suffix-end'}
-          slot="suffix"
-        ></slot>
+        <slot name=${`suffix-${picker}` || 'suffix'} slot="suffix"></slot>
       </igc-date-time-input>
     `;
   }
@@ -960,8 +1040,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return html`
       <div part="inputs">
         ${this.renderInput(idStart, 'start')}
-        <!-- TODO: localize separator string -->
-        <span part="separator">to</span>
+        <div part="separator">
+          <slot name="separator"> ${this.resourceStrings.separator} </slot>
+        </div>
         ${this.renderInput(idEnd, 'end')}
       </div>
       ${this.renderPicker(idStart)} ${this.renderHelperText()}

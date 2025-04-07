@@ -471,13 +471,15 @@ export const Slots: Story = {
         <span slot="suffix-start">🦀</span>
         <span slot="suffix-end">😂</span>
 
-        <span slot="start-calendar-icon-open">⬆️</span>
-        <span slot="start-calendar-icon">⬇️</span>
-        <span slot="end-calendar-icon-open">👩‍💻</span>
-        <span slot="end-calendar-icon">👩‍💻</span>
+        <span slot="calendar-icon-open-start">⬆️</span>
+        <span slot="calendar-icon-start">⬇️</span>
+        <span slot="calendar-icon-open-end">👩‍💻</span>
+        <span slot="calendar-icon-end">👩‍💻</span>
 
-        <span slot="start-clear-icon">🗑️</span>
-        <span slot="end-clear-icon">🚮</span>
+        <span slot="clear-icon-start">🗑️</span>
+        <span slot="clear-icon-end">🚮</span>
+
+        <span slot="separator">TO</span>
 
         <p slot="helper-text">
           For example, select the dates of your future vacation
@@ -524,9 +526,9 @@ export const Slots: Story = {
         <span slot="prefix-start">$</span>
         <span slot="suffix-start">🦀</span>
 
-        <span slot="start-calendar-icon-open">👩‍💻</span>
-        <span slot="start-calendar-icon">👩‍💻</span>
-        <span slot="start-clear-icon">🗑️</span>
+        <span slot="calendar-icon-open-start">👩‍💻</span>
+        <span slot="calendar-icon-start">👩‍💻</span>
+        <span slot="clear-icon-start">🗑️</span>
 
         <p slot="helper-text">
           For example, select the dates of your future vacation

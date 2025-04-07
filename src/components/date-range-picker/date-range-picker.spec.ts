@@ -488,6 +488,32 @@ describe('Date range picker', () => {
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
     });
+
+    it('should expose the default strings for localization', async () => {
+      picker.resourceStrings.done = 'Done - localized';
+      picker.resourceStrings.cancel = 'Cancel - localized';
+      picker.resourceStrings.separator = 'Separator - localized';
+      picker.mode = 'dialog';
+      picker.open = true;
+      await elementUpdated(picker);
+
+      const doneBtn = picker.shadowRoot!.querySelector(
+        'igc-button[slot="footer"]:last-of-type'
+      ) as HTMLButtonElement;
+      expect(doneBtn.innerText).to.equal('Done - localized');
+
+      const cancelBtn = picker.shadowRoot!.querySelector(
+        'igc-button[slot="footer"]'
+      ) as HTMLButtonElement;
+      expect(cancelBtn.innerText).to.equal('Cancel - localized');
+
+      picker.open = false;
+      await elementUpdated(picker);
+      const separator = picker.shadowRoot!.querySelector(
+        '[part="separator"]'
+      ) as any;
+      expect(separator?.innerText).to.equal('Separator - localized');
+    });
   });
   describe('Interactions', () => {
     describe('Selection via the calendar', () => {
@@ -794,10 +820,235 @@ describe('Date range picker', () => {
       });
     });
   });
-  // TODO
   describe('Slots', () => {
-    it('should render slotted elements', async () => {});
+    it('should render slotted elements - two inputs', async () => {
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker>
+          <span slot="prefix-start">$</span>
+          <span slot="prefix-end">$-end</span>
+          <span slot="suffix-start">~</span>
+          <span slot="suffix-end">~-end</span>
+          <p slot="helper-text">For example, select a range</p>
+          <p slot="title">Custom title</p>
+          <p slot="header-date">Custom header date</p>
+          <span slot="calendar-icon-open-start">v</span>
+          <span slot="calendar-icon-open-end">v-end</span>
+          <span slot="calendar-icon-start">^</span>
+          <span slot="calendar-icon-end">^-end</span>
+          <span slot="clear-icon-start">X</span>
+          <span slot="clear-icon-end">X-end</span>
+          <button slot="actions">Custom action</button>
+          <span slot="separator">Custom separator</span>
+        </igc-date-range-picker>`
+      );
+      await elementUpdated(picker);
 
+      const slotTests = [
+        {
+          slot: 'prefix-start',
+          tagName: 'span',
+          content: '$',
+        },
+        {
+          slot: 'prefix-end',
+          tagName: 'span',
+          content: '$-end',
+        },
+        {
+          slot: 'suffix-start',
+          tagName: 'span',
+          content: '~',
+        },
+        {
+          slot: 'suffix-end',
+          tagName: 'span',
+          content: '~-end',
+        },
+        {
+          slot: 'title',
+          tagName: 'p',
+          content: 'Custom title',
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
+        },
+        {
+          slot: 'header-date',
+          tagName: 'p',
+          content: 'Custom header date',
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
+        },
+        {
+          slot: 'helper-text',
+          tagName: 'p',
+          content: 'For example, select a range',
+        },
+        {
+          slot: 'calendar-icon-start',
+          tagName: 'span',
+          content: '^',
+        },
+        {
+          slot: 'calendar-icon-end',
+          tagName: 'span',
+          content: '^-end',
+        },
+        {
+          slot: 'calendar-icon-open-start',
+          tagName: 'span',
+          content: 'v',
+          prerequisite: async () => await picker.show(),
+        },
+        {
+          slot: 'calendar-icon-open-end',
+          tagName: 'span',
+          content: 'v-end',
+          prerequisite: async () => await picker.show(),
+        },
+        {
+          slot: 'clear-icon-start',
+          tagName: 'span',
+          content: 'X',
+          prerequisite: () => {
+            picker.value = { start: today.native, end: tomorrow.native };
+          },
+        },
+        {
+          slot: 'clear-icon-end',
+          tagName: 'span',
+          content: 'X-end',
+          prerequisite: () => {
+            picker.value = { start: today.native, end: tomorrow.native };
+          },
+        },
+        {
+          slot: 'actions',
+          tagName: 'button',
+          content: 'Custom action',
+          prerequisite: async () => await picker.show(),
+        },
+        {
+          slot: 'separator',
+          tagName: 'span',
+          content: 'Custom separator',
+        },
+      ];
+
+      for (let i = 0; i < slotTests.length; i++) {
+        await slotTests[i].prerequisite?.();
+        await elementUpdated(picker);
+
+        const slot = picker.renderRoot.querySelector(
+          `slot[name="${slotTests[i].slot}"]`
+        ) as HTMLSlotElement;
+        const elements = slot.assignedElements();
+
+        expect((elements[0] as HTMLElement).innerText).to.equal(
+          slotTests[i].content
+        );
+        expect(elements[0].tagName.toLowerCase()).to.equal(
+          slotTests[i].tagName
+        );
+      }
+    });
+
+    it('should render slotted elements - single input', async () => {
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker single-input mode="dialog">
+          <span slot="prefix">$</span>
+          <span slot="suffix">~</span>
+          <p slot="helper-text">For example, select a range</p>
+          <p slot="title">Custom title</p>
+          <p slot="header-date">Custom header date</p>
+          <span slot="calendar-icon-open">v</span>
+          <span slot="calendar-icon">^</span>
+          <span slot="clear-icon">X</span>
+          <button slot="actions">Custom action</button>
+          <span slot="separator">Custom separator</span>
+        </igc-date-range-picker>`
+      );
+      await elementUpdated(picker);
+
+      const slotTests = [
+        {
+          slot: 'prefix',
+          tagName: 'span',
+          content: '$',
+        },
+        {
+          slot: 'suffix',
+          tagName: 'span',
+          content: '~',
+        },
+        {
+          slot: 'title',
+          tagName: 'p',
+          content: 'Custom title',
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
+        },
+        {
+          slot: 'header-date',
+          tagName: 'p',
+          content: 'Custom header date',
+          prerequisite: () => {
+            picker.mode = 'dialog';
+          },
+        },
+        {
+          slot: 'helper-text',
+          tagName: 'p',
+          content: 'For example, select a range',
+        },
+        {
+          slot: 'calendar-icon',
+          tagName: 'span',
+          content: '^',
+        },
+        {
+          slot: 'calendar-icon-open',
+          tagName: 'span',
+          content: 'v',
+          prerequisite: async () => await picker.show(),
+        },
+        {
+          slot: 'clear-icon',
+          tagName: 'span',
+          content: 'X',
+          prerequisite: () => {
+            picker.value = { start: today.native, end: tomorrow.native };
+          },
+        },
+        {
+          slot: 'actions',
+          tagName: 'button',
+          content: 'Custom action',
+          prerequisite: async () => await picker.show(),
+        },
+      ];
+
+      for (let i = 0; i < slotTests.length; i++) {
+        await slotTests[i].prerequisite?.();
+        await elementUpdated(picker);
+
+        const slot = picker.renderRoot.querySelector(
+          `slot[name="${slotTests[i].slot}"]`
+        ) as HTMLSlotElement;
+        const elements = slot.assignedElements();
+
+        expect((elements[0] as HTMLElement).innerText).to.equal(
+          slotTests[i].content
+        );
+        expect(elements[0].tagName.toLowerCase()).to.equal(
+          slotTests[i].tagName
+        );
+      }
+    });
+
+    // TODO
     it('should render area with chips to select predefined date ranges', async () => {});
 
     it('should render area for custom actions', async () => {});
