@@ -41,7 +41,7 @@ describe('Date range picker', () => {
 
   beforeEach(async () => {
     picker = await fixture<IgcDateRangePickerComponent>(
-      html`<igc-date-range-picker></igc-date-range-picker>`
+      html`<igc-date-range-picker use-two-inputs></igc-date-range-picker>`
     );
     dateTimeInputs = Array.from(
       picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
@@ -110,6 +110,7 @@ describe('Date range picker', () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
           .value="${expectedValue}"
+          use-two-inputs
         ></igc-date-range-picker>`
       );
 
@@ -148,10 +149,10 @@ describe('Date range picker', () => {
 
     it('should be initialized as single input', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker single-input></igc-date-range-picker>`
+        html`<igc-date-range-picker></igc-date-range-picker>`
       );
 
-      expect(picker.singleInput).to.equal(true);
+      expect(picker.useTwoInputs).to.equal(false);
       await picker.show();
 
       const input = picker.renderRoot.querySelectorAll(
@@ -175,7 +176,7 @@ describe('Date range picker', () => {
       );
       await elementUpdated(picker);
 
-      checkSelectedRange(picker, expectedValue);
+      checkSelectedRange(picker, expectedValue, false);
     });
 
     it('should keep the calendar selection and input values on changing the mode', async () => {
@@ -186,30 +187,29 @@ describe('Date range picker', () => {
         ></igc-date-range-picker>`
       );
 
-      checkSelectedRange(picker, expectedValue);
+      checkSelectedRange(picker, expectedValue, false);
 
       picker.mode = 'dialog';
       await elementUpdated(picker);
 
-      checkSelectedRange(picker, expectedValue);
+      checkSelectedRange(picker, expectedValue, false);
     });
 
-    it('should keep the calendar selection and input values on switching to singleInput and back', async () => {
+    it('should keep the calendar selection and input values on switching to two inputs and back', async () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
           .value="${expectedValue}"
         ></igc-date-range-picker>`
       );
-      checkSelectedRange(picker, expectedValue);
+      checkSelectedRange(picker, expectedValue, false);
 
-      picker.singleInput = true;
+      await elementUpdated(picker);
+      checkSelectedRange(picker, expectedValue, false);
+
+      picker.useTwoInputs = true;
       await elementUpdated(picker);
       checkSelectedRange(picker, expectedValue, true);
-
-      picker.singleInput = false;
-      await elementUpdated(picker);
-      checkSelectedRange(picker, expectedValue);
     });
 
     it('should not close calendar on clicking outside of it when keepOpenOnOutsideClick is true', async () => {
@@ -305,7 +305,7 @@ describe('Date range picker', () => {
       expect(calendar.values).to.deep.equal([]);
       expect(eventSpy).not.to.be.called;
 
-      picker.singleInput = true;
+      picker.useTwoInputs = false;
       await elementUpdated(picker);
       await picker.show();
 
@@ -420,7 +420,7 @@ describe('Date range picker', () => {
         }
       }
 
-      picker.singleInput = true;
+      picker.useTwoInputs = false;
       await elementUpdated(picker);
 
       const propsSingle = {
@@ -823,7 +823,7 @@ describe('Date range picker', () => {
   describe('Slots', () => {
     it('should render slotted elements - two inputs', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker>
+        html`<igc-date-range-picker use-two-inputs>
           <span slot="prefix-start">$</span>
           <span slot="prefix-end">$-end</span>
           <span slot="suffix-start">~</span>
@@ -956,7 +956,7 @@ describe('Date range picker', () => {
 
     it('should render slotted elements - single input', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker single-input mode="dialog">
+        html`<igc-date-range-picker mode="dialog">
           <span slot="prefix">$</span>
           <span slot="suffix">~</span>
           <p slot="helper-text">For example, select a range</p>
@@ -1057,7 +1057,10 @@ describe('Date range picker', () => {
   // #region Forms
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcDateRangePickerComponent>(
-      html`<igc-date-range-picker name="rangePicker"></igc-date-range-picker>`
+      html`<igc-date-range-picker
+        name="rangePicker"
+        use-two-inputs
+      ></igc-date-range-picker>`
     );
 
     let startKey = '';
@@ -1314,7 +1317,10 @@ describe('Date range picker', () => {
   describe('Initial validation', () => {
     it('should not enter in invalid state when clicking the calendar toggle part - two inputs', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker required></igc-date-range-picker>`
+        html`<igc-date-range-picker
+          required
+          use-two-inputs
+        ></igc-date-range-picker>`
       );
 
       expect(picker.invalid).to.be.false;
@@ -1329,10 +1335,7 @@ describe('Date range picker', () => {
 
     it('should not enter in invalid state when clicking the calendar toggle part - single input', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker
-          single-input
-          required
-        ></igc-date-range-picker>`
+        html`<igc-date-range-picker required></igc-date-range-picker>`
       );
       const input = picker.renderRoot.querySelector(
         IgcInputComponent.tagName
@@ -1361,6 +1364,7 @@ describe('Date range picker', () => {
       <igc-date-range-picker
         name="rangePicker"
         .defaultValue=${value}
+        use-two-inputs
       ></igc-date-range-picker>
     `);
 
@@ -1458,7 +1462,7 @@ const selectDates = async (
 const checkSelectedRange = (
   picker: IgcDateRangePickerComponent,
   expectedValue: DateRangeValue | null,
-  singleInput = false
+  useTwoInputs = true
 ) => {
   const calendar = picker.renderRoot.querySelector(
     IgcCalendarComponent.tagName
@@ -1467,7 +1471,7 @@ const checkSelectedRange = (
   checkDatesEqual(picker.value?.start!, expectedValue?.start!);
   checkDatesEqual(picker.value?.end!, expectedValue?.end!);
 
-  if (singleInput) {
+  if (!useTwoInputs) {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
     const start = expectedValue?.start
       ? DateTimeUtil.formatDate(
