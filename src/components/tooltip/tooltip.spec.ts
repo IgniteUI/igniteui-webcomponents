@@ -396,33 +396,44 @@ describe('Tooltip', () => {
 
   describe('Methods` Tests', () => {
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
       const container = await fixture(createTooltipWithTarget());
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
       anchor = container.querySelector('button')!;
     });
 
-    afterEach(() => {
-      clock.restore();
-    });
-
     it('calls `show` and `hide` methods successfully and returns proper values', async () => {
       expect(tooltip.open).to.be.false;
 
-      tooltip.show().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY);
-      await showComplete();
+      // hide tooltip when already hidden
+      let animation = await tooltip.hide();
+      expect(animation).to.be.false;
+      expect(tooltip.open).to.be.false;
+      expect(tooltip).dom.to.equal(
+        '<igc-tooltip>It works!</igc-tooltip>',
+        DIFF_OPTIONS
+      );
 
+      // show tooltip when hidden
+      animation = await tooltip.show();
+      expect(animation).to.be.true;
       expect(tooltip.open).to.be.true;
       expect(tooltip).dom.to.equal(
         '<igc-tooltip open>It works!</igc-tooltip>',
         DIFF_OPTIONS
       );
 
-      tooltip.hide().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
-      await hideComplete();
+      // show tooltip when already shown
+      animation = await tooltip.show();
+      expect(animation).to.be.false;
+      expect(tooltip.open).to.be.true;
+      expect(tooltip).dom.to.equal(
+        '<igc-tooltip open>It works!</igc-tooltip>',
+        DIFF_OPTIONS
+      );
 
+      // hide tooltip when shown
+      animation = await tooltip.hide();
+      expect(animation).to.be.true;
       expect(tooltip.open).to.be.false;
       expect(tooltip).dom.to.equal(
         '<igc-tooltip>It works!</igc-tooltip>',
@@ -433,20 +444,16 @@ describe('Tooltip', () => {
     it('calls `toggle` method successfully and returns proper values', async () => {
       expect(tooltip.open).to.be.false;
 
-      tooltip.toggle().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY);
-      await showComplete();
-
+      let animation = await tooltip.toggle();
+      expect(animation).to.be.true;
       expect(tooltip.open).to.be.true;
       expect(tooltip).dom.to.equal(
         '<igc-tooltip open>It works!</igc-tooltip>',
         DIFF_OPTIONS
       );
 
-      tooltip.toggle().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
-      await hideComplete();
-
+      animation = await tooltip.toggle();
+      expect(animation).to.be.true;
       expect(tooltip.open).to.be.false;
       expect(tooltip).dom.to.equal(
         '<igc-tooltip>It works!</igc-tooltip>',
@@ -703,11 +710,8 @@ describe('Tooltip', () => {
         IgcTooltipComponent.tagName
       );
 
-      first.show().then((x) => expect(x).to.be.true);
-      last.show().then((x) => expect(x).to.be.true);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY);
-      await showComplete(first);
-      await showComplete(last);
+      first.show();
+      last.show();
 
       expect(first.open).to.be.true;
       expect(last.open).to.be.true;
