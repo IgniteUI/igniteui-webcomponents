@@ -18,6 +18,8 @@ export interface IgcInputComponentEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
+  /* blazorSuppress */
+  igcCancel: CustomEvent<string>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -129,6 +131,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     };
   }
 
+  protected renderFileParts(): TemplateResult | typeof nothing {
+    return nothing;
+  }
+
   /** Sets the text selection range of the control */
   public setSelectionRange(
     start: number,
@@ -175,7 +181,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()}
+        ${this.renderInput()} ${this.renderFileParts()}
         <div part="notch">${this.renderLabel()}</div>
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
@@ -187,7 +193,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   private renderStandard() {
     return html`${this.renderLabel()}
       <div part=${partNameMap(this.resolvePartNames('container'))}>
-        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
+        ${this.renderPrefix()} ${this.renderFileParts()} ${this.renderInput()}
+        ${this.renderSuffix()}
       </div>
       ${this.renderValidatorContainer()}`;
   }
