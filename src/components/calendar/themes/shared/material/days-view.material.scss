@@ -144,7 +144,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             }
         }
 
-        &[part~='current'][part~='range'] {
+        &[part~='current'][part~='range']:not([part~='last'], [part~='first']) {
             color: var-get($theme, 'date-current-foreground');
 
             &:focus {

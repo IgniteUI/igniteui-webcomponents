@@ -1,0 +1,12 @@
+@use 'styles/utilities' as *;
+@use '../../../input/themes/light/themes' as *;
+
+$theme: $indigo;
+
+[part='file-names'] {
+    @include type-style('body-2');
+
+    color: var-get($theme, 'idle-text-color');
+    font-size: rem(12px);
+    line-height: rem(16px);
+}
