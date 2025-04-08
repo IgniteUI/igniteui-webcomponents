@@ -173,13 +173,21 @@ describe('File Input component', () => {
       });
     });
 
-    it('should validate on blur when interacted', async () => {
+    it('should update UI invalid state on blur when interacted', async () => {
       await createFixture(html`<igc-file-input required></igc-file-input>`);
 
-      element.focus();
+      // Internal invalid state, invalid UI is in initial state.
+      expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.false;
 
+      // Internal invalid state, invalid UI is still in initial state.
+      element.focus();
+      expect(element.validity.valueMissing).to.be.true;
+      expect(element.invalid).to.be.false;
+
+      // Internal invalid state, invalid UI is updated.
       element.blur();
+      expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.true;
     });
   });
