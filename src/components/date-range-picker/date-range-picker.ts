@@ -14,7 +14,7 @@ import {
   convertToDate,
   convertToDateRange,
 } from '../calendar/helpers.js';
-import { toCalendarDay } from '../calendar/model.js';
+import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -237,8 +237,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     {
       label: IgcDateRangePickerResourceStringsEN.last7Days,
       dateRange: {
-        start: this.createDate(-7),
-        end: new Date(),
+        start: CalendarDay.from(this.today).add('day', -7).native,
+        end: CalendarDay.from(this.today).native,
       },
     },
     {
@@ -251,12 +251,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     {
       label: IgcDateRangePickerResourceStringsEN.last30Days,
       dateRange: {
-        start: this.createDate(-29),
-        end: new Date(
-          this.today.getFullYear(),
-          this.today.getMonth(),
-          this.today.getDate()
-        ),
+        start: CalendarDay.from(this.today).add('day', -29).native,
+        end: CalendarDay.from(this.today).native,
       },
     },
     {
@@ -912,12 +908,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (emitEvent) {
       this.emitEvent('igcChange', { detail: this.value });
     }
-  }
-
-  private createDate(daysOffset: number): Date {
-    const date = new Date();
-    date.setDate(date.getDate() + daysOffset);
-    return date;
   }
 
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
