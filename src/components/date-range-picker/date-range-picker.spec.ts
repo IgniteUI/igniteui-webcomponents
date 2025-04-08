@@ -515,6 +515,62 @@ describe('Date range picker', () => {
       expect(separator?.innerText).to.equal('Separator - localized');
     });
   });
+  describe('Methods', () => {
+    it('should open/close the picker on invoking show/hide/toggle and not emit events', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      expect(picker.open).to.be.false;
+      await picker.show();
+
+      expect(eventSpy).not.called;
+      expect(picker.open).to.be.true;
+
+      await picker.hide();
+
+      expect(eventSpy).not.called;
+      expect(picker.open).to.be.false;
+
+      await picker.toggle();
+
+      expect(eventSpy).not.called;
+      expect(picker.open).to.be.true;
+
+      await picker.toggle();
+
+      expect(eventSpy).not.called;
+      expect(picker.open).to.be.false;
+    });
+    it('should clear the input on invoking clear()', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.value = { start: today.native, end: tomorrow.native };
+      await elementUpdated(picker);
+
+      expect(dateTimeInputs[0].value).to.equal(picker.value.start);
+      expect(dateTimeInputs[1].value).to.equal(picker.value.end);
+      picker.clear();
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.called;
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(dateTimeInputs[0].value).to.be.null;
+      expect(dateTimeInputs[1].value).to.be.null;
+    });
+    it('should select a date range on invoking select', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+
+      picker.select({ start: today.native, end: tomorrow.native });
+      await elementUpdated(picker);
+
+      expect(picker.value).to.deep.equal({
+        start: today.native,
+        end: tomorrow.native,
+      });
+      expect(dateTimeInputs[0].value).to.equal(picker.value?.start);
+      expect(dateTimeInputs[1].value).to.equal(picker.value?.end);
+      expect(eventSpy).not.called;
+    });
+  });
   describe('Interactions', () => {
     describe('Selection via the calendar', () => {
       it('should select a single date in dropdown mode and emit igcChange', async () => {
@@ -548,6 +604,9 @@ describe('Date range picker', () => {
         // with the second click, the calendar closes
         expect(popover?.hasAttribute('open')).to.equal(false);
       });
+
+      // TODO
+      it('should swap the selected dates if the end is earlier than the start', async () => {});
 
       it('should select a range of dates in dialog mode and emit igcChange when done is clicked', async () => {
         const eventSpy = spy(picker, 'emitEvent');
@@ -818,6 +877,13 @@ describe('Date range picker', () => {
         expect(picker.open).to.be.false;
         picker.value = { start: null, end: null };
       });
+
+      // TODO
+      it('should emit igcInput and igcChange on input value change', async () => {});
+
+      it('should not swap the dates while typing', async () => {});
+
+      it('should set the calendar active date to the start of the range while typing', async () => {});
     });
   });
   describe('Slots', () => {

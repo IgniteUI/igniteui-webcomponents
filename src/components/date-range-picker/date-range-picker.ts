@@ -545,7 +545,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property()
   public locale = 'en';
 
-  /** The resource strings of the calendar. */
+  /** The resource strings of the date range picker. */
   @property({ attribute: false })
   public resourceStrings: IgcCalendarResourceStrings &
     IgcDateRangePickerResourceStrings = {
@@ -884,6 +884,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._activeDate = this._startDate ?? new Date();
     this._inputs[0]?.clear();
     this._inputs[1]?.clear();
+  }
+
+  /** Selects a date range value in the picker */
+  public select(value: DateRangeValue | null) {
+    this._select(value);
+  }
+
+  private _select(value: DateRangeValue | null, emitEvent = false) {
+    this.value = value;
+    if (emitEvent) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
   }
 
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
