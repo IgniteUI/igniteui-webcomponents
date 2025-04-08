@@ -75,6 +75,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     easing: EaseOut.Sine,
   });
 
+  private _closeButtonClick = false;
   private _timeoutId?: number;
   private _showDelay = 200;
   private _hideDelay = 300;
@@ -116,7 +117,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public inline = false;
 
   /**
-   * The offset of the tooltip from the anchor.
+   * The offset of the tooltip from the anchor in pixels.
    *
    * @attr offset
    * @default 6
@@ -278,7 +279,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         show ? this._showAnimation : this._hideAnimation
       );
 
-      this.open = show;
+      this.open = animationComplete ? show : !show;
 
       if (animationComplete && withEvents) {
         this._emitEvent(show ? 'igcOpened' : 'igcClosed');
@@ -331,15 +332,46 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   }
 
-  private _showOnInteraction(): void {
+  private _hideWithCloseButton(): void {
+    this._closeButtonClick = true;
+    this._hideWithEvent();
+  }
+
+  private _showOnInteraction(event?: Event): void {
+    // Check for overlapping tooltip and anchor to prevent canceling an ongoing open animation
+    if (
+      event instanceof PointerEvent &&
+      event.target === this &&
+      event.relatedTarget === this._controller.anchor
+    ) {
+      return;
+    }
+
     this._player.stopAll();
     clearTimeout(this._timeoutId);
     this._showWithEvent();
   }
 
   private _hideOnInteraction(event?: Event): void {
-    //TODO: IF NEEDED CHECK FOR ESCAPE KEY =>
-    if (this.sticky && event) {
+    // Check for overlapping tooltip and anchor to prevent flickering and being stuck in a show loop
+    if (
+      this.open &&
+      event instanceof PointerEvent &&
+      event.relatedTarget === this
+    ) {
+      return;
+    }
+
+    // When the close button is clicked we need a state to ensure the closing event does not emit twice
+    if (this._closeButtonClick) {
+      this._closeButtonClick = false;
+      return;
+    }
+
+    // If triggered by ESCAPE the event is undefined and it will proceed to hide
+    if (this.open && this.sticky && event) {
+      this._player.stopAll();
+      clearTimeout(this._timeoutId);
       return;
     }
 
@@ -366,7 +398,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
           <slot>${this.message ? html`${this.message}` : nothing}</slot>
           ${this.sticky
             ? html`
-                <slot name="close-button" @click=${this._hideWithEvent}>
+                <slot name="close-button" @click=${this._hideWithCloseButton}>
                   <igc-icon
                     name="input_clear"
                     collection="default"

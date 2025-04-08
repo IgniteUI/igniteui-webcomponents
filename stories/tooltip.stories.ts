@@ -54,7 +54,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     },
     offset: {
       type: 'number',
-      description: 'The offset of the tooltip from the anchor.',
+      description: 'The offset of the tooltip from the anchor in pixels.',
       control: 'number',
       table: { defaultValue: { summary: '6' } },
     },
@@ -152,7 +152,7 @@ interface IgcTooltipArgs {
   disableArrow: boolean;
   /** Improves positioning for inline based elements, such as links. */
   inline: boolean;
-  /** The offset of the tooltip from the anchor. */
+  /** The offset of the tooltip from the anchor in pixels. */
   offset: number;
   /** Where to place the floating element relative to the parent anchor element. */
   placement:
