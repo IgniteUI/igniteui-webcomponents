@@ -62,18 +62,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
-import type { DateRangePredefinedType } from './date-range-util.js';
-import { selectDateRange } from './date-range-util.js';
 import { dateRangePickerValidators } from './validators.js';
 
 export interface DateRangeValue {
   start: Date | null;
   end: Date | null;
-}
-
-export interface PredefinedDateRange {
-  label: string;
-  type: DateRangePredefinedType;
 }
 
 export interface CustomDateRange {
@@ -239,11 +232,40 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _endDate!: Date | null;
   private _swapDatesFlag = false;
   private _visibleMonths = 2;
-  private predefinedRanges: PredefinedDateRange[] = [
-    { label: 'Last 7 Days', type: 'last7Days' },
-    { label: 'This Month', type: 'currentMonth' },
-    { label: 'Last 30 Days', type: 'last30Days' },
-    { label: 'Year To Date', type: 'yearToDate' },
+  private today = new Date();
+  private predefinedRanges: CustomDateRange[] = [
+    {
+      label: IgcDateRangePickerResourceStringsEN.last7Days,
+      dateRange: {
+        start: this.createDate(-7),
+        end: new Date(),
+      },
+    },
+    {
+      label: IgcDateRangePickerResourceStringsEN.currentMonth,
+      dateRange: {
+        start: new Date(this.today.getFullYear(), this.today.getMonth(), 1),
+        end: new Date(this.today.getFullYear(), this.today.getMonth() + 1, 0),
+      },
+    },
+    {
+      label: IgcDateRangePickerResourceStringsEN.last30Days,
+      dateRange: {
+        start: this.createDate(-29),
+        end: new Date(
+          this.today.getFullYear(),
+          this.today.getMonth(),
+          this.today.getDate()
+        ),
+      },
+    },
+    {
+      label: IgcDateRangePickerResourceStringsEN.yearToDate,
+      dateRange: {
+        start: new Date(this.today.getFullYear(), 0, 1),
+        end: new Date(this.today),
+      },
+    },
   ];
 
   @state()
@@ -597,6 +619,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.updateMaskedRangeValue();
   }
 
+  private get allRanges(): CustomDateRange[] {
+    return this.usePredefinedRanges
+      ? [...this.predefinedRanges, ...this.customRanges]
+      : [...this.customRanges];
+  }
+
   // delegate the inputs validity state to the date-range-picker
   private delegateInputsValidity() {
     const inputs = !this.useTwoInputs ? [this._input] : this._inputs;
@@ -643,20 +671,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected handleDialogClosing(event: Event) {
     event.stopPropagation();
     this._hide(true);
-  }
-
-  protected setDateRange(rangeType: DateRangePredefinedType) {
-    [this._startDate, this._endDate] = selectDateRange(rangeType);
-    this.setCalendarRangeValues();
-    this.value = { start: this._startDate, end: this._endDate };
-    this.emitEvent('igcChange', { detail: this.value ?? undefined });
-  }
-
-  protected setCusomDateRange(start: Date | null, end: Date | null) {
-    [this._startDate, this._endDate] = [start, end];
-    this.setCalendarRangeValues();
-    this.value = { start: this._startDate, end: this._endDate };
-    this.emitEvent('igcChange', { detail: this.value ?? undefined });
   }
 
   protected revertValue() {
@@ -898,6 +912,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
+  private createDate(daysOffset: number): Date {
+    const date = new Date();
+    date.setDate(date.getDate() + daysOffset);
+    return date;
+  }
+
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
     const clearIcon = !this.useTwoInputs
       ? 'clear-icon'
@@ -998,46 +1018,22 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  protected renderPredefinedRanges() {
-    return this.usePredefinedRanges
-      ? html`
-          ${this.predefinedRanges.map(
-            (range) => html`
-              <igc-chip @click=${() => this.setDateRange(range.type)}>
-                ${range.label}
-              </igc-chip>
-            `
-          )}
-        `
-      : nothing;
-  }
-
-  protected renderCustomRanges() {
-    return this.customRanges.length > 0
-      ? html`
-          <div part="predefined-ranges">
-            ${this.customRanges.map(
-              (range) => html`
-                <igc-chip
-                  @click=${() =>
-                    this.setCusomDateRange(
-                      range.dateRange.start,
-                      range.dateRange.end
-                    )}
-                >
-                  ${range.label}
-                </igc-chip>
-              `
-            )}
-          </div>
-        `
-      : nothing;
-  }
-
   protected renderRanges() {
     return html`
       <div part="ranges">
-        ${this.renderPredefinedRanges()} ${this.renderCustomRanges()}
+        ${this.allRanges.map(
+          (range) => html`
+            <igc-chip
+              @click=${() =>
+                this._select(
+                  { start: range.dateRange.start, end: range.dateRange.end },
+                  true
+                )}
+            >
+              ${range.label}
+            </igc-chip>
+          `
+        )}
       </div>
     `;
   }

@@ -11,6 +11,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
 import {
   type ValidationContainerTestsParams,
   checkDatesEqual,
@@ -24,6 +25,7 @@ import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
+  type CustomDateRange,
   type DateRangeValue,
 } from './date-range-picker.js';
 
@@ -706,6 +708,221 @@ describe('Date range picker', () => {
         expect(dateTimeInputs[0].value).to.equal(null);
         expect(dateTimeInputs[1].value).to.equal(null);
         expect(calendar.values).to.deep.equal([]);
+      });
+    });
+    describe('Selection via the range selection chips', () => {
+      const previousThreeDaysStart = CalendarDay.from(today.native).add(
+        'day',
+        -3
+      ).native;
+      const nextThreeDaysEnd = CalendarDay.from(today.native).add(
+        'day',
+        +3
+      ).native;
+
+      const customRanges: CustomDateRange[] = [
+        {
+          label: 'Previous Three Days',
+          dateRange: {
+            start: previousThreeDaysStart,
+            end: today.native,
+          },
+        },
+        {
+          label: 'Next Three Days',
+          dateRange: {
+            start: today.native,
+            end: nextThreeDaysEnd,
+          },
+        },
+      ];
+
+      it('should not render any chips when usePredefinedRanges is false and there are no custom ranges added', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(0);
+      });
+      it('should render all predefined chips and custom chips when set', async () => {
+        picker.usePredefinedRanges = true;
+        picker.open = true;
+        const predefinedRangesLength = (picker as any).predefinedRanges.length;
+        await elementUpdated(picker);
+
+        let chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(predefinedRangesLength);
+
+        expect(chips[0].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.last7Days
+        );
+        expect(chips[1].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.currentMonth
+        );
+        expect(chips[2].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.last30Days
+        );
+        expect(chips[3].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.yearToDate
+        );
+
+        picker.customRanges = customRanges;
+        await elementUpdated(picker);
+
+        const allRangesLenght = (picker as any).allRanges.length;
+        chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(allRangesLenght);
+
+        expect(chips[0].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.last7Days
+        );
+        expect(chips[1].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.currentMonth
+        );
+        expect(chips[2].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.last30Days
+        );
+        expect(chips[3].innerText).to.equal(
+          IgcDateRangePickerResourceStringsEN.yearToDate
+        );
+        expect(chips[4].innerText).to.equal('Previous Three Days');
+        expect(chips[5].innerText).to.equal('Next Three Days');
+      });
+      it('should emit igcChange when the chips are clicked', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const popover = picker.renderRoot.querySelector('igc-popover');
+
+        picker.usePredefinedRanges = true;
+        picker.customRanges = customRanges;
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const allRangesLenght = (picker as any).allRanges.length;
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(allRangesLenght);
+
+        chips[0].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: new Date(
+            today.native.getFullYear(),
+            today.native.getMonth(),
+            today.native.getDate() - 7
+          ),
+          end: today.native,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[1].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: new Date(
+            today.native.getFullYear(),
+            today.native.getMonth(),
+            1
+          ),
+          end: new Date(
+            today.native.getFullYear(),
+            today.native.getMonth() + 1,
+            0
+          ),
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[2].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: CalendarDay.from(today.native).add('day', -29).native,
+          end: today.native,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[3].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: new Date(today.native.getFullYear(), 0, 1),
+          end: today.native,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[4].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: previousThreeDaysStart,
+          end: today.native,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[5].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: today.native,
+          end: nextThreeDaysEnd,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+      });
+
+      it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when chips are clicked', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const popover = picker.renderRoot.querySelector('igc-popover');
+
+        picker.customRanges = customRanges;
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(picker.customRanges.length);
+
+        expect(chips[0].innerText).to.equal('Previous Three Days');
+        expect(chips[1].innerText).to.equal('Next Three Days');
+
+        chips[0].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: previousThreeDaysStart,
+          end: today.native,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
+
+        chips[1].click();
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcChange');
+
+        checkSelectedRange(picker, {
+          start: today.native,
+          end: nextThreeDaysEnd,
+        });
+
+        expect(popover?.hasAttribute('open')).to.equal(true);
       });
     });
     describe('Keyboard navigation', () => {
