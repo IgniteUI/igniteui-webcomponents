@@ -212,7 +212,7 @@ export const Basic: Story = {
 
     <igc-button>Focus me</igc-button>
 
-    <igc-tooltip ?open=${args.open} show-triggers="focus" hide-triggers="blur">
+    <igc-tooltip ?open=${args.open} show-triggers="focus" hide-triggers="pointerleave">
       I will be shown until you blur the button above. Some super long text that
       never ends.
       <igc-icon name="home"></igc-icon>
@@ -223,7 +223,7 @@ export const Basic: Story = {
       .showDelay=${args.showDelay}
       .hideDelay=${args.hideDelay}
       placement="bottom-end"
-      offset="-4"
+      offset="-24"
       disable-arrow
       ?open=${args.open}
       >Minimum of 12 characters</igc-tooltip
@@ -299,11 +299,11 @@ function getValue() {
 export const Triggers: Story = {
   render: () => html`
     <igc-button>Pointerenter/Pointerleave (default)</igc-button>
-    <igc-tooltip>
+    <igc-tooltip ?sticky=${true}>
       I will show on pointerenter and hide on pointerleave
     </igc-tooltip>
 
-    <igc-button> Focus/Blur </igc-button>
+    <!-- <igc-button> Focus/Blur </igc-button>
     <igc-tooltip show-triggers="focus" hide-triggers="blur">
       I will show on focus and hide on blur
     </igc-tooltip>
@@ -321,14 +321,14 @@ export const Triggers: Story = {
     <igc-input label="Change my value"></igc-input>
     <igc-tooltip show-triggers="igcChange">
       You've changed the value to ${getValue()}
-    </igc-tooltip>
+    </igc-tooltip> -->
   `,
 };
 
 export const Default: Story = {
   render: () => html`
     <igc-button>Hover over me</igc-button>
-    <igc-tooltip>
+    <igc-tooltip offset="-40">
       <h1>Showing a tooltip!</h1>
     </igc-tooltip>
   `,

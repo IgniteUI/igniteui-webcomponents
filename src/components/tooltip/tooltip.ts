@@ -278,7 +278,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         show ? this._showAnimation : this._hideAnimation
       );
 
-      this.open = show;
+      this.open = animationComplete ? show : !show;
 
       if (animationComplete && withEvents) {
         this._emitEvent(show ? 'igcOpened' : 'igcClosed');
@@ -338,8 +338,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private _hideOnInteraction(event?: Event): void {
-    //TODO: IF NEEDED CHECK FOR ESCAPE KEY =>
-    if (this.sticky && event) {
+    if (this.open && this.sticky && event) {
+      this._player.stopAll();
+      clearTimeout(this._timeoutId);
       return;
     }
 
