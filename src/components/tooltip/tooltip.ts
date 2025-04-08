@@ -17,7 +17,6 @@ import { styles as shared } from './themes/shared/tooltip.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 import { addTooltipController } from './tooltip-event-controller.js';
-import service from './tooltip-service.js';
 
 export interface IgcTooltipComponentEventMap {
   igcOpening: CustomEvent<Element | null>;
@@ -77,7 +76,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   });
 
   private _timeoutId?: number;
-  private _open = false;
   private _showDelay = 200;
   private _hideDelay = 300;
 
@@ -92,14 +90,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
-    this._open = value;
-    this._open
-      ? service.add(this, this._hideOnInteraction)
-      : service.remove(this);
+    this._controller.open = value;
   }
 
   public get open(): boolean {
-    return this._open;
+    return this._controller.open;
   }
 
   /**
@@ -254,57 +249,55 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._controller.anchor = target;
   }
 
+  private _emitEvent(name: keyof IgcTooltipComponentEventMap): boolean {
+    return this.emitEvent(name, {
+      cancelable: name === 'igcOpening' || name === 'igcClosing',
+      detail: this._controller.anchor,
+    });
+  }
+
   private async _applyTooltipState({
     show,
     withDelay = false,
     withEvents = false,
   }: TooltipStateOptions): Promise<boolean> {
-    if (show === this.open) return false;
-
-    const delay = show ? this.showDelay : this.hideDelay;
-
-    if (withEvents) {
-      const eventName = show ? 'igcOpening' : 'igcClosing';
-      const allowed = this.emitEvent(eventName, {
-        cancelable: true,
-        detail: this._controller.anchor,
-      });
-
-      if (!allowed) return false;
+    if (show === this.open) {
+      return false;
     }
 
-    const _commitStateChange = async () => {
+    if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
+      return false;
+    }
+
+    const commitStateChange = async (): Promise<boolean> => {
       if (show) {
         this.open = true;
       }
 
-      const result = await this._player.playExclusive(
+      const animationComplete = await this._player.playExclusive(
         show ? this._showAnimation : this._hideAnimation
       );
-      this.open = result ? show : !show;
 
-      if (!result) {
-        return false;
+      this.open = show;
+
+      if (animationComplete && withEvents) {
+        this._emitEvent(show ? 'igcOpened' : 'igcClosed');
       }
 
-      if (withEvents) {
-        const eventName = show ? 'igcOpened' : 'igcClosed';
-        this.emitEvent(eventName, { detail: this._controller.anchor });
-      }
-
-      return result;
+      return animationComplete;
     };
 
     if (withDelay) {
       clearTimeout(this._timeoutId);
-      return new Promise((resolve) => {
-        this._timeoutId = setTimeout(() => {
-          _commitStateChange().then(resolve);
-        }, delay);
+      return new Promise(() => {
+        this._timeoutId = setTimeout(
+          async () => await commitStateChange(),
+          show ? this.showDelay : this.hideDelay
+        );
       });
     }
 
-    return _commitStateChange();
+    return commitStateChange();
   }
 
   /** Shows the tooltip if not already showing. */

@@ -334,16 +334,19 @@ export const Default: Story = {
   `,
 };
 
-let tooltip!: IgcTooltipComponent;
-
 function createDynamicTooltip() {
-  tooltip ??= document.createElement('igc-tooltip');
+  const tooltip = document.createElement('igc-tooltip');
   tooltip.message = `I'm created on demand at ${new Date().toLocaleTimeString()}`;
   tooltip.anchor = 'dynamic-target';
   tooltip.id = 'dynamic';
 
-  tooltip.addEventListener('igcClosed', () => tooltip.remove());
-  document.body.appendChild(tooltip);
+  const previousTooltip = document.querySelector('#dynamic');
+  const target = document.querySelector('#dynamic-target')!;
+
+  previousTooltip
+    ? previousTooltip.replaceWith(tooltip)
+    : target.after(tooltip);
+
   tooltip.show();
 }
 

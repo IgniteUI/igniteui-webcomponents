@@ -9,6 +9,7 @@ class TooltipEscapeCallbacks {
   private _collection = new Map<IgcTooltipComponent, TooltipHideCallback>();
 
   private _setListener(state = true): void {
+    /* c8 ignore next 3 */
     if (isServer) {
       return;
     }

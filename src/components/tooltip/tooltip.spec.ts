@@ -615,7 +615,7 @@ describe('Tooltip', () => {
       );
       expect(eventSpy.secondCall).calledWith(
         state.open ? 'igcOpened' : 'igcClosed',
-        { detail: anchor }
+        { cancelable: false, detail: anchor }
       );
     };
 
