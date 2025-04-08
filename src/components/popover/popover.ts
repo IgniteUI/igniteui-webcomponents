@@ -128,6 +128,12 @@ export default class IgcPopoverComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public shift = false;
 
+  /**
+   * Virtual padding for the resolved overflow detection offsets in pixels.
+   */
+  @property({ type: Number, attribute: 'shift-padding' })
+  public shiftPadding = 0;
+
   @watch('anchor')
   protected anchorChange() {
     const newTarget = isString(this.anchor)
@@ -152,6 +158,7 @@ export default class IgcPopoverComponent extends LitElement {
   @watch('placement', { waitUntilFirstUpdate: true })
   @watch('sameWidth', { waitUntilFirstUpdate: true })
   @watch('shift', { waitUntilFirstUpdate: true })
+  @watch('shiftPadding', { waitUntilFirstUpdate: true })
   protected floatingPropChange() {
     this._updateState();
   }
@@ -217,6 +224,7 @@ export default class IgcPopoverComponent extends LitElement {
     if (this.shift) {
       middleware.push(
         shift({
+          padding: this.shiftPadding,
           limiter: limitShift(),
         })
       );

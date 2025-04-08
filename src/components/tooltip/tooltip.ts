@@ -356,6 +356,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
         .arrow=${this.disableArrow ? null : this._arrowElement}
+        .shiftPadding=${8}
         ?open=${this.open}
         ?inline=${this.inline}
         flip
