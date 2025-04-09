@@ -17,6 +17,7 @@ import { styles as sharedLight } from './light/tab.shared.css.js';
 import { styles as bootstrap } from './shared/tabs/tabs.bootstrap.css.js';
 import { styles as fluent } from './shared/tabs/tabs.fluent.css.js';
 import { styles as indigo } from './shared/tabs/tabs.indigo.css.js';
+import { styles as material } from './shared/tabs/tabs.material.css.js';
 
 const light = {
   shared: css`
@@ -26,7 +27,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -44,7 +45,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}
