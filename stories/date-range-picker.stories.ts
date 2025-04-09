@@ -85,7 +85,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     usePredefinedRanges: {
       type: 'boolean',
       description:
-        'Whether the control will show chips with predefined ranges in dialog mode.',
+        'Whether the control will show chips with predefined ranges.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },

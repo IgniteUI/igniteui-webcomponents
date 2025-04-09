@@ -168,6 +168,42 @@ describe('Date range picker', () => {
     });
   });
   describe('Properties', () => {
+    it('should set the visibleMonths property correctly', async () => {
+      // picker = await fixture<IgcDateRangePickerComponent>(f
+      //   html`<igc-date-range-picker
+
+      //   ></igc-date-range-picker>`
+      // );
+
+      expect(picker.visibleMonths).to.equal(2);
+
+      picker.visibleMonths = 1;
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(1);
+
+      // in case value other than 1 or 2 the value defaults to 2
+      picker.visibleMonths = 11;
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(2);
+    });
+
+    it('should set the visibleMonths property via the attribute', async () => {
+      expect(picker.visibleMonths).to.equal(2);
+
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker visible-months="1"></igc-date-range-picker>`
+      );
+
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(1);
+
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker visible-months="2"></igc-date-range-picker>`
+      );
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(2);
+    });
+
     it('should set value through attribute correctly in case the date values are valid ISO 8601 strings', async () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       const attributeValue = { start: today.native, end: tomorrow.native };
@@ -888,11 +924,7 @@ describe('Date range picker', () => {
         expect(eventSpy).calledWith('igcChange');
 
         checkSelectedRange(picker, {
-          start: new Date(
-            today.native.getFullYear(),
-            today.native.getMonth(),
-            today.native.getDate() - 7
-          ),
+          start: CalendarDay.today.add('day', -7).native,
           end: today.native,
         });
 
