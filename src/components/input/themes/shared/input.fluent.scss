@@ -83,10 +83,6 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 }
 
 :host(:focus-within) {
-    [part='label'] {
-        color: color(gray, 800);
-    }
-
     [part^='container'] {
         border-color: var-get($theme, 'focused-border-color');
         border-width: #{$focused-border-width};
@@ -107,6 +103,14 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     [name='prefix']::slotted(*),
     [name='suffix']::slotted(*) {
         padding-block: pad-block(6px, 8px, 10px);
+    }
+}
+
+:host([type='search']) {
+    [part='prefix'],
+    [part='suffix'] {
+        background: transparent;
+        color: var(--ig-primary-500);
     }
 }
 
