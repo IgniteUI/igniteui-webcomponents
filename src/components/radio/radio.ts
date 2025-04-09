@@ -251,6 +251,32 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     this.input.blur();
   }
 
+  private _checkValidity() {
+    return super.checkValidity();
+  }
+
+  private _reportValidity() {
+    return super.reportValidity();
+  }
+
+  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  public override checkValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._checkValidity();
+    }
+
+    return this._checkValidity();
+  }
+
+  /** Checks for validity of the control and shows the browser message if it invalid. */
+  public override reportValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._reportValidity();
+    }
+
+    return this._reportValidity();
+  }
+
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.

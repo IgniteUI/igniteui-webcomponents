@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - New File Input Component(`igc-file-input`)
 
+### Fixed
+- Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
+
 ## [5.3.0] - 2025-03-13
 ### Added
 - Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402)
