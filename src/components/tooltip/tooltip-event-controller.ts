@@ -7,6 +7,7 @@ type TooltipAnchor = Element | null | undefined;
 type TooltipCallbacks = {
   onShow: (event?: Event) => unknown;
   onHide: (event?: Event) => unknown;
+  onEscape: (event?: Event) => unknown;
 };
 
 class TooltipController implements ReactiveController {
@@ -27,9 +28,14 @@ class TooltipController implements ReactiveController {
   /** Sets the shown state of the current tooltip. */
   public set open(value: boolean) {
     this._open = value;
-    this._open
-      ? service.add(this._host, this._options.onHide)
-      : service.remove(this._host);
+
+    if (this._open) {
+      this._addTooltipListeners();
+      service.add(this._host, this._options.onEscape);
+    } else {
+      this._removeTooltipListeners();
+      service.remove(this._host);
+    }
   }
 
   /**
@@ -110,13 +116,23 @@ class TooltipController implements ReactiveController {
     this._host.addController(this);
   }
 
+  private _addTooltipListeners(): void {
+    this._host.addEventListener('pointerenter', this, { passive: true });
+    this._host.addEventListener('pointerleave', this, { passive: true });
+  }
+
+  private _removeTooltipListeners(): void {
+    this._host.removeEventListener('pointerenter', this);
+    this._host.removeEventListener('pointerleave', this);
+  }
+
   private _toggleTriggers(previous: Set<string>, current: Set<string>): void {
     for (const each of previous) {
       this._anchor?.removeEventListener(each, this);
     }
 
     for (const each of current) {
-      this._anchor?.addEventListener(each, this);
+      this._anchor?.addEventListener(each, this, { passive: true });
     }
   }
 
@@ -133,17 +149,10 @@ class TooltipController implements ReactiveController {
   }
 
   /** @internal */
-  public hostConnected(): void {
-    this._host.addEventListener('pointerenter', this);
-    this._host.addEventListener('pointerleave', this);
-  }
-
-  /** @internal */
   public hostDisconnected(): void {
     this._dispose();
+    this._removeTooltipListeners();
     service.remove(this._host);
-    this._host.removeEventListener('pointerenter', this);
-    this._host.removeEventListener('pointerleave', this);
   }
 
   /** @internal */
@@ -152,10 +161,10 @@ class TooltipController implements ReactiveController {
     if (event.target === this._host) {
       switch (event.type) {
         case 'pointerenter':
-          this._options.onShow.call(this._host, event);
+          this._options.onShow.call(this._host);
           break;
         case 'pointerleave':
-          this._options.onHide.call(this._host, event);
+          this._options.onHide.call(this._host);
           break;
         default:
           return;
@@ -165,11 +174,11 @@ class TooltipController implements ReactiveController {
     // Anchor handlers
     if (event.target === this._anchor) {
       if (this._showTriggers.has(event.type)) {
-        this._options.onShow.call(this._host, event);
+        this._options.onShow.call(this._host);
       }
 
       if (this._hideTriggers.has(event.type)) {
-        this._options.onHide.call(this._host, event);
+        this._options.onHide.call(this._host);
       }
     }
   }

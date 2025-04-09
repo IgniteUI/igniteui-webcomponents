@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
@@ -58,30 +58,35 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       IgcIconComponent
     );
   }
+
   private readonly _internals: ElementInternals;
+
   private readonly _controller = addTooltipController(this, {
     onShow: this._showOnInteraction,
     onHide: this._hideOnInteraction,
+    onEscape: this._hideOnEscape,
   });
-  private readonly _containerRef: Ref<HTMLElement> = createRef();
+
+  private readonly _containerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._containerRef);
 
   private readonly _showAnimation = scaleInCenter({
     duration: 150,
     easing: EaseOut.Quad,
   });
+
   private readonly _hideAnimation = fadeOut({
     duration: 75,
     easing: EaseOut.Sine,
   });
 
-  private _closeButtonClick = false;
   private _timeoutId?: number;
+  private _autoHideDelay = 180;
   private _showDelay = 200;
   private _hideDelay = 300;
 
   @query('#arrow')
-  protected _arrowElement!: HTMLElement;
+  private _arrowElement!: HTMLElement;
 
   /**
    * Whether the tooltip is showing.
@@ -270,16 +275,22 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       return false;
     }
 
-    const commitStateChange = async (): Promise<boolean> => {
+    const commitStateChange = async () => {
       if (show) {
         this.open = true;
       }
+
+      // Make the tooltip ignore most interactions while the animation
+      // is running. In the rare case when the popover overlaps its anchor
+      // this will prevent looping between the anchor and tooltip handlers.
+      this.inert = true;
 
       const animationComplete = await this._player.playExclusive(
         show ? this._showAnimation : this._hideAnimation
       );
 
-      this.open = animationComplete ? show : !show;
+      this.inert = false;
+      this.open = show;
 
       if (animationComplete && withEvents) {
         this._emitEvent(show ? 'igcOpened' : 'igcClosed');
@@ -332,52 +343,31 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   }
 
-  private _hideWithCloseButton(): void {
-    this._closeButtonClick = true;
-    this._hideWithEvent();
-  }
-
-  private _showOnInteraction(event?: Event): void {
-    // Check for overlapping tooltip and anchor to prevent canceling an ongoing open animation
-    if (
-      event instanceof PointerEvent &&
-      event.target === this &&
-      event.relatedTarget === this._controller.anchor
-    ) {
-      return;
-    }
-
-    this._player.stopAll();
+  private _showOnInteraction(): void {
     clearTimeout(this._timeoutId);
+    this._player.stopAll();
     this._showWithEvent();
   }
 
-  private _hideOnInteraction(event?: Event): void {
-    // Check for overlapping tooltip and anchor to prevent flickering and being stuck in a show loop
-    if (
-      this.open &&
-      event instanceof PointerEvent &&
-      event.relatedTarget === this
-    ) {
-      return;
-    }
-
-    // When the close button is clicked we need a state to ensure the closing event does not emit twice
-    if (this._closeButtonClick) {
-      this._closeButtonClick = false;
-      return;
-    }
-
-    // If triggered by ESCAPE the event is undefined and it will proceed to hide
-    if (this.open && this.sticky && event) {
-      this._player.stopAll();
-      clearTimeout(this._timeoutId);
-      return;
-    }
-
-    this._player.stopAll();
+  private _runAutoHide(): void {
     clearTimeout(this._timeoutId);
-    this._timeoutId = setTimeout(() => this._hideWithEvent(), 180);
+    this._player.stopAll();
+
+    this._timeoutId = setTimeout(
+      () => this._hideWithEvent(),
+      this._autoHideDelay
+    );
+  }
+
+  private _hideOnInteraction(): void {
+    if (!this.sticky) {
+      this._runAutoHide();
+    }
+  }
+
+  private async _hideOnEscape(): Promise<void> {
+    await this.hide();
+    this._emitEvent('igcClosed');
   }
 
   protected override render() {
@@ -398,7 +388,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
           <slot>${this.message ? html`${this.message}` : nothing}</slot>
           ${this.sticky
             ? html`
-                <slot name="close-button" @click=${this._hideWithCloseButton}>
+                <slot name="close-button" @click=${this._runAutoHide}>
                   <igc-icon
                     name="input_clear"
                     collection="default"
