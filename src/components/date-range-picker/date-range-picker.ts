@@ -611,8 +611,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._endDate = this._formValue.defaultValue?.end ?? null;
 
     this.setCalendarRangeValues();
-
-    //this._activeDate = new Date(); reset active date? (date-picker does not)
     this.updateMaskedRangeValue();
   }
 
@@ -670,6 +668,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
+  protected handleDialogClosed(event: Event) {
+    event.stopPropagation();
+  }
+
   protected revertValue() {
     this.value = this._currentValue;
   }
@@ -682,10 +684,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected dialogDone() {
     this.emitEvent('igcChange', { detail: this.value ?? undefined });
     this._hide(true);
-  }
-
-  protected handleDialogClosed(event: Event) {
-    event.stopPropagation();
   }
 
   protected async handleInputEvent(event: CustomEvent<Date | null>) {
@@ -743,7 +741,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   @watch('useTwoInputs')
-  protected switchToSingleInput() {
+  protected async updateDateRange() {
+    await this._calendar?.updateComplete;
     this.updateMaskedRangeValue();
     this.setCalendarRangeValues();
   }
@@ -753,7 +752,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (this.mode === 'dialog') {
       this.keepOpenOnSelect = true;
     }
-    await this.setCalendarRangeValues();
+    await this._calendar?.updateComplete;
+    this.setCalendarRangeValues();
   }
 
   private updateMaskedRangeValue() {
@@ -765,17 +765,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
     const format = this.displayFormat || this.inputFormat;
-    const { start, end } = this.value;
     let startMask = '';
     let endMask = '';
     if (format) {
-      startMask = start
-        ? DateTimeUtil.formatDate(start, this.locale, format)
-        : '';
-      endMask = end ? DateTimeUtil.formatDate(end, this.locale, format) : '';
+      startMask = DateTimeUtil.formatDate(
+        this.value.start,
+        this.locale,
+        format
+      );
+      endMask = DateTimeUtil.formatDate(this.value.end, this.locale, format);
     } else {
-      startMask = start ? start.toLocaleDateString() : '';
-      endMask = end ? end.toLocaleDateString() : '';
+      startMask = this.value.start.toLocaleDateString();
+      endMask = this.value.end.toLocaleDateString();
     }
     this._maskedRangeValue = `${startMask} - ${endMask}`;
   }
@@ -802,12 +803,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         calendarRange({ start: this._startDate, end: this._endDate })
       );
       range.push(last(range).add('day', 1));
-      await this._calendar.updateComplete;
       this._calendar.values = range.map((d) => d.native);
     } else {
-      await this._calendar.updateComplete;
       this._calendar.values = [this._startDate];
     }
+    this._calendar.activeDate = this._startDate ?? this._calendar.activeDate;
   }
 
   private swapDates() {
@@ -838,7 +838,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       if (this.mode === 'dialog') {
         this.revertValue();
       }
-      this._inputs[0].focus();
+      this._inputs[0]?.focus();
     }
   }
 

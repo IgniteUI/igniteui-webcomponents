@@ -22,12 +22,3 @@
     gap: 5px;
     margin-top: 20px;
 }
-
-dialog {
-    padding: 0 !important;
-    background-color: aqua;
-
-    [part~='content'] {
-        padding: 0 !important;
-    }
-}

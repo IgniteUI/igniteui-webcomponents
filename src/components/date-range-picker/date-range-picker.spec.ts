@@ -516,8 +516,58 @@ describe('Date range picker', () => {
       ) as any;
       expect(separator?.innerText).to.equal('Separator - localized');
     });
-    // TODO
-    it('should set the default placeholder of the single input to the input format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {});
+    it('should update the masked value with the locale - single input', async () => {
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+      expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+      picker.value = {
+        start: CalendarDay.from(new Date(2025, 3, 9)).native,
+        end: CalendarDay.from(new Date(2025, 3, 10)).native,
+      };
+      await elementUpdated(picker);
+      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+
+      picker.locale = 'bg';
+      await elementUpdated(picker);
+
+      expect(input.value.normalize('NFKC')).to.equal(
+        '09.04.2025 г. - 10.04.2025 г.'
+      );
+    });
+    it('should set the default placeholder of the single input to the input format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      expect(input.placeholder).to.equal(
+        `${picker.inputFormat} - ${picker.inputFormat}`
+      );
+
+      picker.inputFormat = 'yyyy-MM-dd';
+      await elementUpdated(picker);
+
+      expect(input.placeholder).to.equal('yyyy-MM-dd - yyyy-MM-dd');
+    });
+    it('should set the mask of the single input per the display format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+      expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+      picker.value = {
+        start: CalendarDay.from(new Date(2025, 3, 9)).native,
+        end: CalendarDay.from(new Date(2025, 3, 10)).native,
+      };
+      await elementUpdated(picker);
+
+      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+
+      picker.displayFormat = 'yyyy-MM-dd';
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('2025-04-09 - 2025-04-10');
+    });
   });
   describe('Methods', () => {
     it('should open/close the picker on invoking show/hide/toggle and not emit events', async () => {
@@ -975,6 +1025,8 @@ describe('Date range picker', () => {
 
         // dialog mode
         picker.mode = 'dialog';
+        await elementUpdated(picker);
+
         await picker.show();
 
         simulateKeyboard(picker, escapeKey);
@@ -1019,7 +1071,6 @@ describe('Date range picker', () => {
 
         const dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(picker.open).to.be.true;
-        expect(dialog).not.to.be.undefined;
         expect(dialog?.open).to.be.true;
         expect(eventSpy).calledWith('igcOpening');
         expect(eventSpy).calledWith('igcOpened');
@@ -1377,11 +1428,6 @@ describe('Date range picker', () => {
         );
       }
     });
-
-    // TODO
-    it('should render area with chips to select predefined date ranges', async () => {});
-
-    it('should render area for custom actions', async () => {});
   });
 
   // #region Forms
