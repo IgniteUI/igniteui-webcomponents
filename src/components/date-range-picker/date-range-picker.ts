@@ -317,11 +317,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   public get value(): DateRangeValue | null {
-    if (!this._formValue.value) {
-      return { start: null, end: null }; // TODO what should the default value be? null?
-    }
-
-    return this._formValue.value;
+    // TODO what should the default value be? null?
+    return {
+      start: this._formValue?.value?.start ?? null,
+      end: this._formValue?.value?.end ?? null,
+    };
   }
   /**
    * Renders chips with custom ranges based on the elements of the array.
@@ -671,7 +671,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       event.preventDefault();
       return;
     }
-    const newValue = (event.target as IgcDateTimeInputComponent).value;
+    const input = event.target as IgcDateTimeInputComponent;
+    const newValue = input.value ? CalendarDay.from(input.value).native : null;
 
     if (event.target === this._inputs[0]) {
       this._startDate = newValue;
@@ -687,7 +688,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected handleInputChangeEvent(event: CustomEvent<Date | null>) {
     event.stopPropagation();
     this._swapDatesFlag = false;
-    const newValue = (event.target as IgcDateTimeInputComponent).value;
+
+    const input = event.target as IgcDateTimeInputComponent;
+    const newValue = input.value ? CalendarDay.from(input.value).native : null;
+
     if (event.target === this._inputs[0]) {
       this._startDate = newValue;
     } else {
@@ -876,21 +880,22 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     const calendarDayStart = toCalendarDay(this._startDate);
     const calendarDayEnd = toCalendarDay(this._endDate);
+    const isStartEarlierThanEnd = calendarDayStart.lessThan(calendarDayEnd);
 
     // dates should not be swapped while typing
-    if (!this._swapDatesFlag && calendarDayStart.greaterThan(calendarDayEnd)) {
+    if (!this._swapDatesFlag && !isStartEarlierThanEnd) {
       this.swapDates();
     }
     if (!calendarDayStart.equalTo(calendarDayEnd)) {
       const range = Array.from(
         calendarRange({ start: this._startDate, end: this._endDate })
       );
-      range.push(last(range).add('day', 1));
+      // calendarRange is non-inclusive
+      range.push(last(range).add('day', isStartEarlierThanEnd ? 1 : -1));
       this._calendar.values = range.map((d) => d.native);
     } else {
       this._calendar.values = [this._startDate];
     }
-    this._calendar.activeDate = this._startDate ?? this._calendar.activeDate;
   }
 
   private swapDates() {
@@ -916,6 +921,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private _select(value: DateRangeValue | null, emitEvent = false) {
     this.value = value;
+    this._calendar.activeDate = this._startDate ?? this._calendar.activeDate;
     if (emitEvent) {
       this.emitEvent('igcChange', { detail: this.value });
     }
