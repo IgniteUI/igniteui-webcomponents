@@ -713,6 +713,7 @@ describe('Date range picker', () => {
 
         dateTimeInputs[1].focus();
         // first arrow sets today, second sets aMonthAgo
+        dateTimeInputs[1].setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)
         simulateKeyboard(dateTimeInputs[1], arrowDown);
         simulateKeyboard(dateTimeInputs[1], arrowDown);
         await elementUpdated(picker);
@@ -1223,14 +1224,99 @@ describe('Date range picker', () => {
         simulateKeyboard(dateTimeInputs[0], arrowUp);
         await elementUpdated(picker);
 
-        expect(eventSpy).calledWith('igcInput');
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: today.native, end: null },
+        });
         eventSpy.resetHistory();
 
+        dateTimeInputs[0].setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)
         simulateKeyboard(dateTimeInputs[0], arrowDown);
         await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: today.add('month', -1).native, end: null },
+        });
+        eventSpy.resetHistory();
+
+        dateTimeInputs[0].blur();
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: today.add('month', -1).native, end: null },
+        });
       });
 
-      it('should set the calendar active date to the start of the range while typing', async () => {});
+      it('should set the calendar active date to the altered date of the range while typing', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const aMonthAgo = today.add('month', -1);
+        const twoMonthsAgo = today.add('month', -2);
+        picker.value = null;
+        picker.open = true;
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+
+        dateTimeInputs[0].setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)
+        simulateKeyboard(dateTimeInputs[0], arrowDown);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput');
+        eventSpy.resetHistory();
+        checkDatesEqual(dateTimeInputs[0].value!, today.native);
+        // typing a single date does not select a range in the calendar
+        checkSelectedRange(picker, { start: null, end: null });
+        checkDatesEqual(calendar.activeDate, today.native);
+
+        dateTimeInputs[1].focus();
+        expect(isFocused(dateTimeInputs[1])).to.be.true;
+
+        dateTimeInputs[1].setSelectionRange(0, 1);
+        simulateKeyboard(dateTimeInputs[1], arrowDown);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput');
+        eventSpy.resetHistory();
+        checkDatesEqual(dateTimeInputs[1].value!, today.native);
+        // typing the end date as well results in a selected range of a single date
+        checkSelectedRange(picker, { start: today.native, end: today.native });
+        checkDatesEqual(calendar.activeDate, today.native);
+
+        simulateKeyboard(dateTimeInputs[1], arrowDown);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput');
+        eventSpy.resetHistory();
+        checkDatesEqual(dateTimeInputs[1].value!, aMonthAgo.native);
+        // changing the end date while typing alters the selected range
+        // the active date is set to the typed date, in this case the end one
+        checkSelectedRange(picker, {
+          start: today.native,
+          end: aMonthAgo.native,
+        });
+        checkDatesEqual(calendar.activeDate, aMonthAgo.native);
+
+        // on losing focus of the end input, the dates are swapped since end is earlier than start
+        dateTimeInputs[0].focus();
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+        await elementUpdated(picker);
+
+        checkSelectedRange(picker, {
+          start: aMonthAgo.native,
+          end: today.native,
+        });
+        checkDatesEqual(calendar.activeDate, aMonthAgo.native);
+
+        dateTimeInputs[0].setSelectionRange(0, 1);
+        simulateKeyboard(dateTimeInputs[0], arrowDown);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput');
+        checkDatesEqual(dateTimeInputs[0].value!, twoMonthsAgo.native);
+        checkSelectedRange(picker, {
+          start: twoMonthsAgo.native,
+          end: today.native,
+        });
+        checkDatesEqual(calendar.activeDate, twoMonthsAgo.native);
+      });
     });
   });
   describe('Slots', () => {

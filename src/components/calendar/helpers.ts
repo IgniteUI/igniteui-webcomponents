@@ -93,16 +93,14 @@ export function convertToDateRange(
 
   if (isString(value)) {
     const obj = JSON.parse(value);
-    if (obj.start && obj.end) {
-      return {
-        start: isValidDate(new Date(obj.start)),
-        end: isValidDate(new Date(obj.end)),
-      };
-    }
-  } else {
-    return value;
+    const start = isValidDate(new Date(obj.start));
+    const end = isValidDate(new Date(obj.end));
+    return {
+      start: start ? CalendarDay.from(start).native : null,
+      end: end ? CalendarDay.from(end).native : null,
+    };
   }
-  return null;
+  return value;
 }
 
 /**
