@@ -13,22 +13,37 @@ export const minDateRangeValidator: Validator<{
 }> = {
   key: 'rangeUnderflow',
   message: ({ min }) => formatString(messages.min, min),
-  isValid: ({ value, min }) =>
-    value?.start && min
-      ? !DateTimeUtil.lessThanMinValue(value.start, min, false, true)
-      : true,
+  isValid: ({ value, min }) => {
+    if (
+      min &&
+      ((value?.start &&
+        DateTimeUtil.lessThanMinValue(value?.start, min, false, true)) ||
+        (value?.end &&
+          DateTimeUtil.lessThanMinValue(value?.end, min, false, true)))
+    ) {
+      return false;
+    }
+    return true;
+  },
 };
-
 export const maxDateRangeValidator: Validator<{
   value?: DateRangeValue | null;
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
   message: ({ max }) => formatString(messages.max, max),
-  isValid: ({ value, max }) =>
-    value?.end && max
-      ? !DateTimeUtil.greaterThanMaxValue(value.end, max, false, true)
-      : true,
+  isValid: ({ value, max }) => {
+    if (
+      max &&
+      ((value?.start &&
+        DateTimeUtil.greaterThanMaxValue(value?.start, max, false, true)) ||
+        (value?.end &&
+          DateTimeUtil.greaterThanMaxValue(value?.end, max, false, true)))
+    ) {
+      return false;
+    }
+    return true;
+  },
 };
 
 export const requiredDateRangeValidator: Validator<{

@@ -1608,9 +1608,23 @@ describe('Date range picker', () => {
       spec.assertSubmitPasses();
       await checkInputsInvalidState(spec.element, false, false);
 
-      // Invalid min constraint
+      // Invalid min constraint for both values
       spec.setProperties({
         value: { start: new Date(2022, 0, 1), end: new Date(2022, 0, 1) },
+      });
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
+
+      // Invalid min constraint for start value
+      spec.setProperties({
+        value: { start: new Date(2022, 0, 1), end: new Date(2026, 0, 2) },
+      });
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
+
+      // Invalid min constraint for end value
+      spec.setProperties({
+        value: { start: new Date(2026, 0, 2), end: new Date(2022, 0, 2) },
       });
       spec.assertSubmitFails();
       await checkInputsInvalidState(spec.element, true, true);
@@ -1629,8 +1643,22 @@ describe('Date range picker', () => {
       spec.assertSubmitPasses();
       await checkInputsInvalidState(spec.element, false, false);
 
-      // Invalid min constraint
+      // Invalid max constraint for both values
       spec.setProperties({ value });
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
+
+      // Invalid max constraint for start value
+      spec.setProperties({
+        value: { start: today.native, end: new Date(2019, 0, 2) },
+      });
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
+
+      // Invalid max constraint for end value
+      spec.setProperties({
+        value: { start: new Date(2019, 0, 2), end: today.native },
+      });
       spec.assertSubmitFails();
       await checkInputsInvalidState(spec.element, true, true);
 
