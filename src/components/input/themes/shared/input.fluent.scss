@@ -107,10 +107,14 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 }
 
 :host([type='search']) {
-    [part='prefix'],
+    [part='prefix'] {
+        background: var(--ig-input-group-input-prefix-background, transparent);
+        color: var(--ig-input-group-input-prefix-color, var(--ig-primary-500));
+    }
+
     [part='suffix'] {
-        background: transparent;
-        color: var(--ig-primary-500);
+        background: var(--ig-input-group-input-suffix-background, transparent);
+        color: var(--ig-input-group-input-suffix-color, var(--ig-primary-500));
     }
 }
 
