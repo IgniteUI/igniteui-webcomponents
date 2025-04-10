@@ -892,6 +892,32 @@ describe('Date range picker', () => {
         expect(chips.length).to.equal(0);
       });
 
+      it('should render all predefined ranges and content in the actions slot', async () => {
+        picker = await fixture<IgcDateRangePickerComponent>(
+          html`<igc-date-range-picker use-predefined-ranges>
+            <span slot="actions">Actions Slot</span>
+          </igc-date-range-picker>`
+        );
+
+        picker.open = true;
+        const predefinedRanges = (picker as any).predefinedRanges;
+        await elementUpdated(picker);
+
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        const slot = picker.renderRoot.querySelector(
+          `slot[name="actions"]`
+        ) as HTMLSlotElement;
+        const elements = slot.assignedElements();
+
+        expect(elements.length).to.equal(1);
+        expect(elements[0].tagName).to.equal('SPAN');
+        expect(elements[0].innerHTML).to.equal('Actions Slot');
+
+        for (let i = 0; i < chips.length; i++) {
+          expect(chips[i].innerText).to.equal(predefinedRanges[i].label);
+        }
+      });
+
       it('should emit igcChange when the chips are clicked', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const popover = picker.renderRoot.querySelector('igc-popover');
@@ -916,6 +942,9 @@ describe('Date range picker', () => {
           await elementUpdated(picker);
 
           expect(eventSpy).calledWith('igcChange');
+          expect(picker.activeDate).to.deep.equal(
+            predefinedRanges[i].dateRange.start
+          );
 
           checkSelectedRange(picker, {
             start: predefinedRanges[i].dateRange.start,
@@ -943,6 +972,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).calledWith('igcChange');
+        expect(picker.activeDate).to.deep.equal(previousThreeDaysStart);
 
         checkSelectedRange(picker, {
           start: previousThreeDaysStart,
@@ -955,6 +985,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).calledWith('igcChange');
+        expect(picker.activeDate).to.deep.equal(today.native);
 
         checkSelectedRange(picker, {
           start: today.native,

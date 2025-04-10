@@ -259,7 +259,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     {
       label: IgcDateRangePickerResourceStringsEN.yearToDate,
       dateRange: {
-        start: CalendarDay.today.add('year', -1).native,
+        start: CalendarDay.today.set({
+          year: CalendarDay.today.year,
+          month: 0,
+          date: 1,
+        }).native,
         end: CalendarDay.today.native,
       },
     },
