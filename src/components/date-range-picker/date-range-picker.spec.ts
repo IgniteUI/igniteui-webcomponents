@@ -169,12 +169,6 @@ describe('Date range picker', () => {
   });
   describe('Properties', () => {
     it('should set the visibleMonths property correctly', async () => {
-      // picker = await fixture<IgcDateRangePickerComponent>(f
-      //   html`<igc-date-range-picker
-
-      //   ></igc-date-range-picker>`
-      // );
-
       expect(picker.visibleMonths).to.equal(2);
 
       picker.visibleMonths = 1;
@@ -182,6 +176,7 @@ describe('Date range picker', () => {
       expect(picker.visibleMonths).to.equal(1);
 
       // in case value other than 1 or 2 the value defaults to 2
+      // @ts-expect-error: testing with an invalid visibleMonths value
       picker.visibleMonths = 11;
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
@@ -196,6 +191,15 @@ describe('Date range picker', () => {
 
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(1);
+
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker
+          visible-months="11"
+        ></igc-date-range-picker>`
+      );
+
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(2);
 
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker visible-months="2"></igc-date-range-picker>`
@@ -769,7 +773,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         await selectDates(date1, date2, calendar);
-        expect(eventSpy).not.to.be.calledWith('igcChange'); // TODO: should igcChange be emitted for dialog selection before clicking DONE?
+        expect(eventSpy).not.to.be.calledWith('igcChange');
         let dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(true);
         checkSelectedRange(picker, { start: date1.native, end: date2.native });
@@ -801,7 +805,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         await selectDates(date1, date2, calendar);
-        expect(eventSpy).not.to.be.calledWith('igcChange'); // TODO: should igcChange be emitted for dialog selection before clicking DONE?
+        expect(eventSpy).not.to.be.calledWith('igcChange');
         let dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(true);
         checkSelectedRange(picker, { start: date1.native, end: date2.native });
@@ -825,6 +829,38 @@ describe('Date range picker', () => {
         expect(dateTimeInputs[0].value).to.equal(null);
         expect(dateTimeInputs[1].value).to.equal(null);
         expect(calendar.values).to.deep.equal([]);
+      });
+
+      it('should not emit igcChange when escape is pressed and the value should be the initial value', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.mode = 'dialog';
+        const date1 = today.add('day', -3);
+        const date2 = today.add('day', 3);
+        picker.value = { start: today.native, end: tomorrow.native };
+        await elementUpdated(picker);
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        await selectDates(date1, date2, calendar);
+        expect(eventSpy).not.to.be.calledWith('igcChange');
+        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(true);
+        checkSelectedRange(picker, { start: date1.native, end: date2.native });
+
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+        await elementUpdated(dateTimeInputs[0]);
+        await elementUpdated(dateTimeInputs[1]);
+        expect(eventSpy).not.to.be.calledWith('igcChange');
+        dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(false);
+
+        checkSelectedRange(picker, {
+          start: today.native,
+          end: tomorrow.native,
+        });
       });
     });
     describe('Selection via the range selection chips', () => {

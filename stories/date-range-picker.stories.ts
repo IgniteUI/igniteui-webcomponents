@@ -358,10 +358,12 @@ const disabledDates: DateRangeDescriptor[] = [
   },
 ];
 
-function selectToday() {
+function selectToday(
+  pickerType: '#singleInput' | '#twoInputs' = '#singleInput'
+) {
   const picker =
-    document.querySelector<IgcDateRangePickerComponent>('#picker')!;
-  picker.value = { start: new Date(), end: new Date() };
+    document.querySelector<IgcDateRangePickerComponent>(pickerType)!;
+  picker.select({ start: new Date(), end: new Date() });
   picker.hide();
 }
 
@@ -511,7 +513,7 @@ export const Slots: Story = {
   render: (args) =>
     html` <h5>Two inputs</h5>
       <igc-date-range-picker
-        id="picker"
+        id="twoInputs"
         .displayFormat=${args.displayFormat}
         .inputFormat=${args.inputFormat}
         .locale=${args.locale}
@@ -528,6 +530,7 @@ export const Slots: Story = {
         .activeDate=${args.activeDate}
         .visibleMonths=${args.visibleMonths}
         .useTwoInputs=${true}
+        .usePredefinedRanges="${args.usePredefinedRanges};"
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
@@ -559,14 +562,14 @@ export const Slots: Story = {
         <p slot="title">🎉 Custom title 🎉</p>
 
         <div slot="actions">
-          <igc-button variant="flat" @click=${selectToday}
+          <igc-button variant="flat" @click=${() => selectToday('#twoInputs')}
             >Select today</igc-button
           >
         </div>
       </igc-date-range-picker>
       <h5>Single input</h5>
       <igc-date-range-picker
-        id="picker"
+        id="singleInput"
         .label=${args.label}
         .placeholder=${args.placeholder}
         .displayFormat=${args.displayFormat}
@@ -608,7 +611,7 @@ export const Slots: Story = {
         <p slot="title">🎉 Custom title 🎉</p>
 
         <div slot="actions">
-          <igc-button variant="flat" @click=${selectToday}
+          <igc-button variant="flat" @click=${() => selectToday()}
             >Select today</igc-button
           >
         </div>

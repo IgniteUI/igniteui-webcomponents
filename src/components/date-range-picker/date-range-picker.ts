@@ -386,12 +386,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return this._visibleMonths;
   }
   // setter used to ensure that the property is set to either 1 or 2
-  public set visibleMonths(value: number) {
-    if (value !== 1 && value !== 2) {
-      this._visibleMonths = 2;
-    } else {
-      this._visibleMonths = value as 1 | 2;
-    }
+  public set visibleMonths(value: 1 | 2) {
+    this._visibleMonths = [1, 2].includes(value) ? value : 2;
   }
 
   /**
@@ -646,6 +642,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected handleDialogClosing(event: Event) {
     event.stopPropagation();
+    this.revertValue();
     this._hide(true);
   }
 
@@ -1049,8 +1046,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)} ${this.renderActions()}
-              ${this.renderRanges()}
+              ${this.renderCalendar(id)} ${this.renderRanges()}
+              ${this.renderActions()}
             </igc-focus-trap>
           </igc-popover>
         `
