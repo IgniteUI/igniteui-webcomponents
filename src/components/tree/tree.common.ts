@@ -1,19 +1,20 @@
+import type { RequiredProps } from '../common/util.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
 export interface IgcTreeComponentEventMap {
   /* alternateName: selectionChanged */
-  igcSelection: CustomEvent<TreeSelectionChange>;
+  igcSelection: CustomEvent<IgcTreeSelectionEventArgs>;
   igcItemExpanding: CustomEvent<IgcTreeItemComponent>;
   igcItemExpanded: CustomEvent<IgcTreeItemComponent>;
   igcItemCollapsing: CustomEvent<IgcTreeItemComponent>;
   igcItemCollapsed: CustomEvent<IgcTreeItemComponent>;
   igcActiveItem: CustomEvent<IgcTreeItemComponent>;
 }
-export interface IgcSelectionEventArgs {
-  detail: TreeSelectionChange;
-  cancelable: boolean;
-}
+export type TreeSelectionEventInit = RequiredProps<
+  CustomEventInit<IgcTreeSelectionEventArgs>,
+  'detail' | 'cancelable'
+>;
 
-export interface TreeSelectionChange {
+export interface IgcTreeSelectionEventArgs {
   newSelection: IgcTreeItemComponent[];
 }

@@ -49,7 +49,9 @@ import {
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
-import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcPopoverComponent, {
+  type PopoverPlacement,
+} from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
@@ -225,7 +227,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public placement: IgcPlacement = 'bottom-start';
+  public placement: PopoverPlacement = 'bottom-start';
 
   /**
    * Determines the behavior of the component during scrolling of the parent container.
