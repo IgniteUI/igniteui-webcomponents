@@ -34,7 +34,9 @@ import {
   getElementByIdFromRoot,
   isString,
 } from '../common/util.js';
-import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcPopoverComponent, {
+  type PopoverPlacement,
+} from '../popover/popover.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
@@ -123,7 +125,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public placement: IgcPlacement = 'bottom-start';
+  public placement: PopoverPlacement = 'bottom-start';
 
   /**
    * Determines the behavior of the component during scrolling of the parent container.

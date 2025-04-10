@@ -12,7 +12,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber, getElementByIdFromRoot, isString } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcPopoverComponent, {
+  type PopoverPlacement,
+} from '../popover/popover.js';
 import { styles as shared } from './themes/shared/tooltip.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
@@ -137,7 +139,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default top
    */
   @property()
-  public placement: IgcPlacement = 'top';
+  public placement: PopoverPlacement = 'top';
 
   /**
    * An element instance or an IDREF to use as the anchor for the tooltip.

@@ -14,7 +14,7 @@ class TooltipController implements ReactiveController {
   private readonly _host: IgcTooltipComponent;
   private _anchor: TooltipAnchor;
 
-  private _options!: TooltipCallbacks;
+  private _options: TooltipCallbacks;
   private _showTriggers = new Set(['pointerenter']);
   private _hideTriggers = new Set(['pointerleave']);
 
@@ -185,7 +185,7 @@ class TooltipController implements ReactiveController {
 }
 
 function parseTriggers(string: string): Set<string> {
-  return new Set((string ?? '').split(',').map((part) => part.trim()));
+  return new Set((string ?? '').split(/[,\s]+/).filter((s) => s.trim()));
 }
 
 export function addTooltipController(

@@ -84,7 +84,10 @@ export {
 export { configureTheme } from './theming/config.js';
 
 // localization objects
-export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
+export {
+  IgcCalendarResourceStringEN,
+  type IgcCalendarResourceStrings,
+} from './components/common/i18n/calendar.resources.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
@@ -114,6 +117,7 @@ export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
 export type { IgcTreeComponentEventMap } from './components/tree/tree.common.js';
+export type { IgcTooltipComponentEventMap } from './components/tooltip/tooltip.js';
 
 // Public types
 export type {
@@ -129,22 +133,31 @@ export type {
   WeekDays,
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
-export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
+export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export { DatePart } from './components/date-time-input/date-util.js';
 export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export type { PopoverPlacement } from './components/popover/popover.js';
+export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
+export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
+export type {
+  IgcActiveStepChangingEventArgs,
+  IgcActiveStepChangedEventArgs,
+} from './components/stepper/stepper.common.js';
+export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
+export type {
+  ComboItemTemplate,
+  ComboTemplateProps,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboChangeEventArgs,
+} from './components/combo/types.js';
+export type { IconMeta } from './components/icon/registry/types.js';
+
+// deprecated types
+export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export type { RadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
   IgcActiveStepChangingArgs,
   IgcActiveStepChangedArgs,
 } from './components/stepper/stepper.common.js';
-export type {
-  ComboItemTemplate,
-  ComboTemplateProps,
-  FilteringOptions,
-  GroupingDirection,
-  GroupingOptions,
-  IgcComboChangeEventArgs,
-} from './components/combo/types.js';
-export type { IconMeta } from './components/icon/registry/types.js';
-export type { IgcPlacement } from './components/popover/popover.js';
