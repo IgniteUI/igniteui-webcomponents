@@ -39,13 +39,16 @@ import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
 import { radioValidators } from './validators.js';
 
-export interface RadioChangeEventArgs {
+export interface IgcRadioChangeEventArgs {
   checked: boolean;
   value?: string;
 }
 
+/** @deprecated use IgcRadioChangeEventArgs instead */
+export type RadioChangeEventArgs = IgcRadioChangeEventArgs;
+
 export interface IgcRadioComponentEventMap {
-  igcChange: CustomEvent<RadioChangeEventArgs>;
+  igcChange: CustomEvent<IgcRadioChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;

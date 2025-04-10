@@ -1,13 +1,18 @@
-export interface IgcActiveStepChangingArgs {
+export interface IgcActiveStepChangingEventArgs {
   oldIndex: number;
   newIndex: number;
 }
 
-export interface IgcActiveStepChangedArgs {
+export interface IgcActiveStepChangedEventArgs {
   index: number;
 }
 
+/** @deprecated use IgcActiveStepChangingEventArgs instead */
+export type IgcActiveStepChangingArgs = IgcActiveStepChangingEventArgs;
+/** @deprecated use IgcActiveStepChangedEventArgs instead */
+export type IgcActiveStepChangedArgs = IgcActiveStepChangedEventArgs;
+
 export interface IgcStepperComponentEventMap {
-  igcActiveStepChanging: CustomEvent<IgcActiveStepChangingArgs>;
-  igcActiveStepChanged: CustomEvent<IgcActiveStepChangedArgs>;
+  igcActiveStepChanging: CustomEvent<IgcActiveStepChangingEventArgs>;
+  igcActiveStepChanged: CustomEvent<IgcActiveStepChangedEventArgs>;
 }
