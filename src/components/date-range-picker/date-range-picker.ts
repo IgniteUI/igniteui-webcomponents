@@ -244,31 +244,23 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     {
       label: IgcDateRangePickerResourceStringsEN.currentMonth,
       dateRange: {
-        start: new Date(
-          CalendarDay.today.native.getFullYear(),
-          CalendarDay.today.native.getMonth(),
-          1
-        ),
-        end: new Date(
-          CalendarDay.today.native.getFullYear(),
-          CalendarDay.today.native.getMonth() + 1,
-          0
-        ),
+        start: CalendarDay.today.set({ date: 1 }).native,
+        end: CalendarDay.today.set({ date: 1 }).add('month', 1).add('day', -1)
+          .native,
       },
     },
     {
       label: IgcDateRangePickerResourceStringsEN.last30Days,
       dateRange: {
-        start: CalendarDay.from(CalendarDay.today.native).add('day', -29)
-          .native,
-        end: CalendarDay.from(CalendarDay.today.native).native,
+        start: CalendarDay.today.add('day', -29).native,
+        end: CalendarDay.today.native,
       },
     },
     {
       label: IgcDateRangePickerResourceStringsEN.yearToDate,
       dateRange: {
-        start: new Date(CalendarDay.today.native.getFullYear(), 0, 1),
-        end: new Date(CalendarDay.today.native),
+        start: CalendarDay.today.add('year', -1).native,
+        end: CalendarDay.today.native,
       },
     },
   ];
