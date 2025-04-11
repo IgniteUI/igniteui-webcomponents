@@ -1560,6 +1560,17 @@ describe('Date range picker', () => {
       expect(dateTimeInputs[1].value).to.equal(null);
     });
 
+    it('should not be in invalid state on reset for a required control with no value', async () => {
+      spec.setProperties({ value: null });
+      spec.setProperties({ required: true });
+
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
+
+      spec.reset();
+      await checkInputsInvalidState(spec.element, false, false);
+    });
+
     it('should reset to the new default value after setAttribute() call', async () => {
       const date1 = today.add('day', -2);
       const date2 = today.add('day', 2);
