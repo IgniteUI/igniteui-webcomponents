@@ -3,13 +3,19 @@ import {
   type AnimationReferenceMetadata,
   animation,
 } from '../../animations/types.js';
+import type {
+  HorizontalTransitionAnimation,
+  StepperVerticalAnimation,
+} from '../types.js';
 
 const baseOptions: KeyframeAnimationOptions = {
   duration: 320,
   easing: EaseOut.Quad,
 };
 
-export type Animation = 'grow' | 'fade' | 'slide' | 'none';
+export type Animation =
+  | StepperVerticalAnimation
+  | HorizontalTransitionAnimation;
 
 export type AnimationOptions = {
   keyframe: KeyframeAnimationOptions;

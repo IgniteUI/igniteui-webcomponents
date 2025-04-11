@@ -7,6 +7,7 @@ import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
+  type CalendarHeaderOrientation,
   type DateRangeDescriptor,
   DateRangeType,
   type WeekDays,
@@ -41,7 +42,12 @@ import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
+import type {
+  ContentOrientation,
+  PickerMode,
+  RangeTextSelectMode,
+  SelectionRangeDirection,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/date-picker.base.css.js';
 import { styles as shared } from './themes/shared/date-picker.common.css.js';
@@ -229,7 +235,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr mode
    */
   @property()
-  public mode: 'dropdown' | 'dialog' = 'dropdown';
+  public mode: PickerMode = 'dropdown';
 
   /**
    * Whether to allow typing in the input.
@@ -308,14 +314,14 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr header-orientation
    */
   @property({ attribute: 'header-orientation', reflect: true })
-  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+  public headerOrientation: CalendarHeaderOrientation = 'horizontal';
 
   /**
    * The orientation of the multiple months displayed in the calendar's days view.
    *  @attr
    */
   @property()
-  public orientation: 'vertical' | 'horizontal' = 'horizontal';
+  public orientation: ContentOrientation = 'horizontal';
 
   /**
    * Determines whether the calendar hides its header.

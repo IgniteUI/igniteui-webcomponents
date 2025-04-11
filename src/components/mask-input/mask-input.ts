@@ -10,6 +10,7 @@ import {
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty, partNameMap } from '../common/util.js';
+import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcMaskInputBaseComponent,
@@ -67,7 +68,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * @attr value-mode
    */
   @property({ attribute: 'value-mode' })
-  public valueMode: 'raw' | 'withFormatting' = 'raw';
+  public valueMode: MaskInputValueMode = 'raw';
 
   /**
    * The value of the input.

@@ -25,7 +25,11 @@ import {
   isEmpty,
   partNameMap,
 } from '../common/util.js';
-import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
+import type {
+  RangeTextSelectMode,
+  SelectionRangeDirection,
+  TextareaResize,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
@@ -228,7 +232,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public resize: 'auto' | 'vertical' | 'none' = 'vertical';
+  public resize: TextareaResize = 'vertical';
 
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.

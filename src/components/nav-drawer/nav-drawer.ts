@@ -4,6 +4,7 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { isEmpty, partNameMap } from '../common/util.js';
+import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
@@ -45,7 +46,7 @@ export default class IgcNavDrawerComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public position: 'start' | 'end' | 'top' | 'bottom' | 'relative' = 'start';
+  public position: NavDrawerPosition = 'start';
 
   /**
    * Determines whether the drawer is opened.

@@ -7,6 +7,13 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isLTR } from '../common/util.js';
+import type {
+  HorizontalTransitionAnimation,
+  StepperOrientation,
+  StepperStepType,
+  StepperTitlePosition,
+  StepperVerticalAnimation,
+} from '../types.js';
 import IgcStepComponent from './step.js';
 import type { IgcStepperComponentEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
@@ -72,7 +79,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * Default value is `horizontal`.
    */
   @property({ reflect: true })
-  public orientation: 'horizontal' | 'vertical' = 'horizontal';
+  public orientation: StepperOrientation = 'horizontal';
 
   /** Get/Set the type of the steps.
    *
@@ -80,7 +87,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * Default value is `full`.
    */
   @property({ reflect: true, attribute: 'step-type' })
-  public stepType: 'indicator' | 'title' | 'full' = 'full';
+  public stepType: StepperStepType = 'full';
 
   /**
    * Get/Set whether the stepper is linear.
@@ -105,14 +112,14 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * @attr vertical-animation
    */
   @property({ attribute: 'vertical-animation' })
-  public verticalAnimation: 'grow' | 'fade' | 'none' = 'grow';
+  public verticalAnimation: StepperVerticalAnimation = 'grow';
 
   /**
    * The animation type when in horizontal mode.
    * @attr horizontal-animation
    */
   @property({ attribute: 'horizontal-animation' })
-  public horizontalAnimation: 'slide' | 'fade' | 'none' = 'slide';
+  public horizontalAnimation: HorizontalTransitionAnimation = 'slide';
 
   /**
    * The animation duration in either vertical or horizontal mode.
@@ -130,7 +137,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
    */
   @property({ reflect: false, attribute: 'title-position' })
-  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
+  public titlePosition?: StepperTitlePosition;
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {

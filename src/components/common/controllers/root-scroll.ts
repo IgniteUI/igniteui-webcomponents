@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import type { PopoverScrollStrategy } from '../../types.js';
 
 type RootScrollControllerConfig = {
   hideCallback?: () => void;
@@ -8,7 +9,7 @@ type RootScrollControllerConfig = {
 type RootScrollControllerHost = ReactiveControllerHost & {
   open: boolean;
   hide(): void;
-  scrollStrategy?: 'scroll' | 'close' | 'block';
+  scrollStrategy?: PopoverScrollStrategy;
 };
 
 type ScrollRecord = { scrollTop: number; scrollLeft: number };

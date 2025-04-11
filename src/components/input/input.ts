@@ -9,7 +9,7 @@ import {
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty, partNameMap } from '../common/util.js';
-import type { RangeTextSelectMode } from '../types.js';
+import type { InputType, RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
 import { numberValidators, stringValidators } from './validators.js';
@@ -83,14 +83,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * @attr
    */
   @property({ reflect: true })
-  public type:
-    | 'email'
-    | 'number'
-    | 'password'
-    | 'search'
-    | 'tel'
-    | 'text'
-    | 'url' = 'text';
+  public type: InputType = 'text';
 
   /**
    * The input mode attribute of the control.

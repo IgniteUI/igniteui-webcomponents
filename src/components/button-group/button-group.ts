@@ -11,6 +11,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { findElementFromEventPath, last } from '../common/util.js';
+import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
 import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
@@ -91,14 +92,14 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ reflect: true })
-  public alignment: 'horizontal' | 'vertical' = 'horizontal';
+  public alignment: ContentOrientation = 'horizontal';
 
   /**
    * Controls the mode of selection for the button group.
    * @attr
    */
   @property({ reflect: false })
-  public selection: 'single' | 'single-required' | 'multiple' = 'single';
+  public selection: ButtonGroupSelection = 'single';
 
   /**
    * Gets/Sets the currently selected buttons (their values).

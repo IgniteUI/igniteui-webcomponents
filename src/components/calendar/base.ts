@@ -7,7 +7,11 @@ import { watch } from '../common/decorators/watch.js';
 import { first } from '../common/util.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
 import { CalendarDay } from './model.js';
-import type { DateRangeDescriptor, WeekDays } from './types.js';
+import type {
+  CalendarSelection,
+  DateRangeDescriptor,
+  WeekDays,
+} from './types.js';
 
 @blazorIndirectRender
 @blazorDeepImport
@@ -105,7 +109,7 @@ export class IgcCalendarBaseComponent extends LitElement {
    * @attr selection
    */
   @property()
-  public selection: 'single' | 'multiple' | 'range' = 'single';
+  public selection: CalendarSelection = 'single';
 
   /**
    * Whether to show the week numbers.

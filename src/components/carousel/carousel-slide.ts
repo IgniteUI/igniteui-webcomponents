@@ -69,6 +69,10 @@ export default class IgcCarouselSlideComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public previous = false;
 
+  /**
+   * @hidden @internal
+   * @deprecated since 5.4.0. Use Carousel's `select` method instead.
+   */
   public async toggleAnimation(
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'

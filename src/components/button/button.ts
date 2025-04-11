@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { ButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';
 import { styles as shared } from './themes/button/shared/button.common.css.js';
@@ -37,7 +38,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
    * @attr
    */
   @property({ reflect: true })
-  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'contained';
+  public variant: ButtonVariant = 'contained';
 
   protected renderContent() {
     return html`

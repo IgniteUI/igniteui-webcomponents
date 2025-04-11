@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { ContentOrientation } from '../types.js';
 import { all } from './themes/actions.js';
 import { styles } from './themes/card.actions.base.css.js';
 
@@ -28,7 +29,7 @@ export default class IgcCardActionsComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public orientation: 'vertical' | 'horizontal' = 'horizontal';
+  public orientation: ContentOrientation = 'horizontal';
 
   protected override render() {
     return html`

@@ -32,6 +32,7 @@ import {
   partNameMap,
   wrap,
 } from '../common/util.js';
+import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
@@ -44,7 +45,7 @@ export interface IgcRadioChangeEventArgs {
   value?: string;
 }
 
-/** @deprecated use IgcRadioChangeEventArgs instead */
+/** @deprecated since 5.4.0. Use IgcRadioChangeEventArgs instead */
 export type RadioChangeEventArgs = IgcRadioChangeEventArgs;
 
 export interface IgcRadioComponentEventMap {
@@ -186,7 +187,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    * @attr label-position
    */
   @property({ reflect: true, attribute: 'label-position' })
-  public labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: ToggleLabelPosition = 'after';
 
   constructor() {
     super();

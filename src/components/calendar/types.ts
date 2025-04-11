@@ -21,6 +21,9 @@ export type WeekDays =
   | 'thursday'
   | 'friday'
   | 'saturday';
+export type CalendarActiveView = 'days' | 'months' | 'years';
+export type CalendarHeaderOrientation = 'horizontal' | 'vertical';
+export type CalendarSelection = 'single' | 'multiple' | 'range';
 
 export interface IgcCalendarComponentEventMap {
   igcChange: CustomEvent<Date | Date[]>;
