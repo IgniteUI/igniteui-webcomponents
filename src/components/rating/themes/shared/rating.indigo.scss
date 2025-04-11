@@ -23,7 +23,5 @@ $theme: $indigo;
 }
 
 [part~='symbols'] {
-    --symbol-size: #{sizable(rem(18px), rem(24px), rem(30px))};
-
     padding-inline-end: 0;
 }
