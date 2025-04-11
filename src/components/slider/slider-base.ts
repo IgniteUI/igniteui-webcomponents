@@ -21,7 +21,6 @@ import {
   pageUpKey,
 } from '../common/controllers/key-bindings.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
 import {
   asNumber,
@@ -268,7 +267,6 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr tick-label-rotation
    */
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
-  @blazorTypeOverride('TickLabelRotation', true)
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
   @watch('min', { waitUntilFirstUpdate: true })
