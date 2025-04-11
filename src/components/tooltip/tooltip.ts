@@ -10,7 +10,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, getElementByIdFromRoot, isString } from '../common/util.js';
+import { asNumber } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 import { styles as shared } from './themes/shared/tooltip.common.css';
@@ -168,7 +168,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separate string of different event triggers.
    *
    * @attr hide-triggers
-   * @default pointerleave
+   * @default "pointerleave, click"
    */
   @property({ attribute: 'hide-triggers' })
   public set hideTriggers(value: string) {
@@ -236,8 +236,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   protected override firstUpdated(): void {
-    this._controller.anchor ??= this.previousElementSibling;
-
     if (this.open) {
       this.updateComplete.then(() => {
         this._player.playExclusive(this._showAnimation);
@@ -247,12 +245,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   @watch('anchor')
-  protected _anchorChanged(): void {
-    const target = isString(this.anchor)
-      ? getElementByIdFromRoot(this, this.anchor)
-      : this.anchor;
-
-    this._controller.anchor = target;
+  protected _onAnchorChange() {
+    this._controller.resolveAnchor(this.anchor);
   }
 
   @watch('sticky')
@@ -318,7 +312,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /** Shows the tooltip if not already showing. */
-  public show(): Promise<boolean> {
+  public show(target?: Element): Promise<boolean> {
+    if (target) {
+      clearTimeout(this._timeoutId);
+      this._player.stopAll();
+
+      if (this._controller.anchor !== target) {
+        this.open = false;
+      }
+      this._controller.setAnchor(target, true);
+    }
+
     return this._applyTooltipState({ show: true });
   }
 

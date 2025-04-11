@@ -72,7 +72,7 @@ describe('Tooltip', () => {
       expect(tooltip.placement).to.equal('top');
       expect(tooltip.anchor).to.be.undefined;
       expect(tooltip.showTriggers).to.equal('pointerenter');
-      expect(tooltip.hideTriggers).to.equal('pointerleave');
+      expect(tooltip.hideTriggers).to.equal('pointerleave,click');
       expect(tooltip.showDelay).to.equal(200);
       expect(tooltip.hideDelay).to.equal(300);
       expect(tooltip.message).to.equal('');
@@ -168,16 +168,11 @@ describe('Tooltip', () => {
       simulatePointerEnter(third);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
-      expect(tooltip.open).to.be.true;
+      expect(tooltip.open).to.be.false;
 
       simulatePointerLeave(third);
       await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
-      expect(tooltip.open).to.be.false;
-
-      simulatePointerEnter(first);
-      await clock.tickAsync(DEFAULT_SHOW_DELAY);
-      await showComplete();
       expect(tooltip.open).to.be.false;
 
       // By providing an IDREF
@@ -465,7 +460,7 @@ describe('Tooltip', () => {
   describe('Behaviors', () => {
     beforeEach(async () => {
       clock = useFakeTimers({ toFake: ['setTimeout'] });
-      const container = await fixture(createDefaultTooltip());
+      const container = await fixture(createTooltipWithTarget());
       anchor = container.querySelector('button')!;
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
     });
@@ -476,7 +471,7 @@ describe('Tooltip', () => {
 
     it('default triggers', async () => {
       expect(tooltip.showTriggers).to.equal('pointerenter');
-      expect(tooltip.hideTriggers).to.equal('pointerleave');
+      expect(tooltip.hideTriggers).to.equal('pointerleave,click');
 
       simulatePointerEnter(anchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
@@ -490,8 +485,8 @@ describe('Tooltip', () => {
     });
 
     it('custom triggers via property', async () => {
-      tooltip.showTriggers = 'focus,click';
-      tooltip.hideTriggers = 'blur';
+      tooltip.showTriggers = 'focus, pointerenter';
+      tooltip.hideTriggers = 'blur, click';
 
       simulateFocus(anchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
@@ -503,12 +498,12 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
-      simulateClick(anchor);
+      simulatePointerEnter(anchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.true;
 
-      simulateBlur(anchor);
+      simulateClick(anchor);
       await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
       await hideComplete();
       expect(tooltip.open).to.be.false;
@@ -517,8 +512,11 @@ describe('Tooltip', () => {
     it('custom triggers via attribute', async () => {
       const template = html`
         <div>
-          <button>Hover over me</button>
-          <igc-tooltip show-triggers="focus,click" hide-triggers="blur"
+          <button id="anchor1">Hover over me</button>
+          <igc-tooltip
+            anchor="anchor1"
+            show-triggers="focus,click"
+            hide-triggers="blur"
             >I am a tooltip</igc-tooltip
           >
         </div>
@@ -594,7 +592,7 @@ describe('Tooltip', () => {
 
     beforeEach(async () => {
       clock = useFakeTimers({ toFake: ['setTimeout'] });
-      const container = await fixture(createDefaultTooltip());
+      const container = await fixture(createTooltipWithTarget());
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
       anchor = container.querySelector('button')!;
       eventSpy = spy(tooltip, 'emitEvent');
@@ -664,6 +662,32 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.true;
       expect(eventSpy).calledOnceWith('igcClosing', {
         cancelable: true,
+        detail: anchor,
+      });
+    });
+
+    it('fires `igcClosed` when tooltip is hidden via Escape key', async () => {
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete(tooltip);
+
+      eventSpy.resetHistory();
+
+      document.documentElement.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true,
+          composed: true,
+        })
+      );
+
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete(tooltip);
+
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(1);
+      expect(eventSpy.firstCall).calledWith('igcClosed', {
+        cancelable: false,
         detail: anchor,
       });
     });
@@ -771,10 +795,10 @@ function createTooltipWithTarget(isOpen = false) {
 function createTooltips() {
   return html`
     <div>
-      <button>Target 1</button>
-      <igc-tooltip>First</igc-tooltip>
-      <button>Target 2</button>
-      <igc-tooltip>Second</igc-tooltip>
+      <button id="firstTarget">Target 1</button>
+      <igc-tooltip anchor="firstTarget">First</igc-tooltip>
+      <button id="secondTarget">Target 2</button>
+      <igc-tooltip anchor="secondTarget">Second</igc-tooltip>
     </div>
   `;
 }

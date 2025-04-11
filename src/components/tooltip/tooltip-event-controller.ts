@@ -1,4 +1,5 @@
 import type { ReactiveController } from 'lit';
+import { getElementByIdFromRoot } from '../common/util.js';
 import service from './tooltip-service.js';
 import type IgcTooltipComponent from './tooltip.js';
 
@@ -13,10 +14,11 @@ type TooltipCallbacks = {
 class TooltipController implements ReactiveController {
   private readonly _host: IgcTooltipComponent;
   private _anchor: TooltipAnchor;
+  private _isTransientAnchor = false;
 
   private _options!: TooltipCallbacks;
   private _showTriggers = new Set(['pointerenter']);
-  private _hideTriggers = new Set(['pointerleave']);
+  private _hideTriggers = new Set(['pointerleave', 'click']);
 
   private _open = false;
 
@@ -35,6 +37,11 @@ class TooltipController implements ReactiveController {
     } else {
       this._removeTooltipListeners();
       service.remove(this._host);
+
+      if (this._isTransientAnchor) {
+        this._dispose();
+        this._isTransientAnchor = false;
+      }
     }
   }
 
@@ -49,9 +56,12 @@ class TooltipController implements ReactiveController {
    * Removes all triggers from the previous `anchor` target and rebinds the current
    * sets back to the new value if it exists.
    */
-  public set anchor(value: TooltipAnchor) {
+  public setAnchor(value: TooltipAnchor, transient = false): void {
+    if (this._anchor === value) return;
+
     this._dispose();
     this._anchor = value;
+    this._isTransientAnchor = transient;
 
     for (const each of this._showTriggers) {
       this._anchor?.addEventListener(each, this);
@@ -116,6 +126,15 @@ class TooltipController implements ReactiveController {
     this._host.addController(this);
   }
 
+  public resolveAnchor(value: Element | string | undefined): void {
+    const resolvedAnchor =
+      typeof value === 'string'
+        ? getElementByIdFromRoot(this._host, value)
+        : (value ?? null);
+
+    this.setAnchor(resolvedAnchor);
+  }
+
   private _addTooltipListeners(): void {
     this._host.addEventListener('pointerenter', this, { passive: true });
     this._host.addEventListener('pointerleave', this, { passive: true });
@@ -146,6 +165,14 @@ class TooltipController implements ReactiveController {
     }
 
     this._anchor = null;
+  }
+
+  /** @internal */
+  public hostConnected(): void {
+    const attr = this._host.getAttribute('anchor');
+    if (attr) {
+      this.resolveAnchor(attr);
+    }
   }
 
   /** @internal */

@@ -98,7 +98,7 @@ const metadata: Meta<IgcTooltipComponent> = {
       description:
         'Which event triggers will hide the tooltip.\nExpects a comma separate string of different event triggers.',
       control: 'text',
-      table: { defaultValue: { summary: 'pointerleave' } },
+      table: { defaultValue: { summary: 'pointerleave, click' } },
     },
     showDelay: {
       type: 'number',
@@ -135,7 +135,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     offset: 6,
     placement: 'top',
     showTriggers: 'pointerenter',
-    hideTriggers: 'pointerleave',
+    hideTriggers: 'pointerleave, click',
     showDelay: 200,
     hideDelay: 300,
     message: '',
@@ -218,8 +218,9 @@ export const Basic: Story = {
       <igc-icon name="home"></igc-icon>
     </igc-tooltip>
 
-    <igc-input label="Password" required minlength="12"></igc-input>
+    <igc-input id="passLabel" label="Password" required minlength="12"></igc-input>
     <igc-tooltip
+      anchor="passLabel"
       .showDelay=${args.showDelay}
       .hideDelay=${args.hideDelay}
       placement="bottom-end"
@@ -231,7 +232,7 @@ export const Basic: Story = {
 
     <div style="margin: 50px 50%;">
       <igc-button id="kek">TOP KEK</igc-button>
-      <igc-tooltip placement="bottom-start" open .sticky=${args.sticky}
+      <igc-tooltip anchor="kek" placement="bottom-start" open .sticky=${args.sticky}
         >Initial open state</igc-tooltip
       >
       <igc-tooltip placement="right" anchor="kek">Right Tooltip</igc-tooltip>
@@ -297,9 +298,9 @@ function getValue() {
 }
 
 export const Triggers: Story = {
-  render: () => html`
+  render: (args) => html`
     <igc-button>Pointerenter/Pointerleave (default)</igc-button>
-    <igc-tooltip>
+    <igc-tooltip ?sticky=${args.sticky}>
       I will show on pointerenter and hide on pointerleave
     </igc-tooltip>
 
@@ -327,8 +328,8 @@ export const Triggers: Story = {
 
 export const Default: Story = {
   render: () => html`
-    <igc-button>Hover over me</igc-button>
-    <igc-tooltip>
+    <igc-button id="button">Hover over me</igc-button>
+    <igc-tooltip anchor="button">
       <h1>Showing a tooltip!</h1>
     </igc-tooltip>
   `,
@@ -338,6 +339,8 @@ function createDynamicTooltip() {
   const tooltip = document.createElement('igc-tooltip');
   tooltip.message = `I'm created on demand at ${new Date().toLocaleTimeString()}`;
   tooltip.anchor = 'dynamic-target';
+  tooltip.showTriggers = 'focus, click';
+  tooltip.hideTriggers = 'blur';
   tooltip.id = 'dynamic';
 
   const previousTooltip = document.querySelector('#dynamic');
@@ -355,4 +358,52 @@ export const DynamicTooltip: Story = {
     <igc-button @click=${createDynamicTooltip}>Create tooltip</igc-button>
     <igc-button id="dynamic-target">Target of the dynamic tooltip</igc-button>
   `,
+};
+
+export const SharedTooltipMultipleAnchors: Story = {
+  render: () => {
+    const tooltipId = 'shared-tooltip';
+
+    setTimeout(() => {
+      const tooltip = document.getElementById(tooltipId) as any;
+      const elementTooltip = document.querySelector(
+        'igc-tooltip:not([id])'
+      ) as any;
+      const elementButton = document.getElementById('elementButton');
+
+      // Set anchor for second tooltip dynamically
+      if (elementTooltip && elementButton) {
+        elementTooltip.anchor = elementButton;
+        elementTooltip.show();
+      }
+
+      document.querySelectorAll('.tooltip-trigger').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          tooltip.show(btn);
+        });
+      });
+    });
+
+    return html`
+      <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <igc-button id="first">Default Anchor</igc-button>
+        <igc-button class="tooltip-trigger">Transient 1</igc-button>
+        <igc-button class="tooltip-trigger">Transient 2</igc-button>
+        <igc-button id="elementButton">Element Anchor</igc-button>
+      </div>
+
+      <igc-tooltip
+        anchor="first"
+        id="shared-tooltip"
+        placement="top"
+        ?sticky=${true}
+      >
+        This is a shared tooltip!
+      </igc-tooltip>
+
+      <igc-tooltip
+        message="This is a tooltip with an element anchor"
+      ></igc-tooltip>
+    `;
+  },
 };
