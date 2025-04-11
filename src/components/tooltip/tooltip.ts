@@ -230,7 +230,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     super();
 
     this._internals = this.attachInternals();
-    this._internals.role = 'tooltip';
+    this._internals.role = this.sticky ? 'status' : 'tooltip';
     this._internals.ariaAtomic = 'true';
     this._internals.ariaLive = 'polite';
   }
@@ -253,6 +253,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       : this.anchor;
 
     this._controller.anchor = target;
+  }
+
+  @watch('sticky')
+  protected _onStickyChange(): void {
+    this._internals.role = this.sticky ? 'status' : 'tooltip';
   }
 
   private _emitEvent(name: keyof IgcTooltipComponentEventMap): boolean {
