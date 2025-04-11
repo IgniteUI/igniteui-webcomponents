@@ -7,9 +7,9 @@ export interface IgcActiveStepChangedEventArgs {
   index: number;
 }
 
-/** @deprecated use IgcActiveStepChangingEventArgs instead */
+/** @deprecated since 5.4.0. Use IgcActiveStepChangingEventArgs instead */
 export type IgcActiveStepChangingArgs = IgcActiveStepChangingEventArgs;
-/** @deprecated use IgcActiveStepChangedEventArgs instead */
+/** @deprecated since 5.4.0. Use IgcActiveStepChangedEventArgs instead */
 export type IgcActiveStepChangedArgs = IgcActiveStepChangedEventArgs;
 
 export interface IgcStepperComponentEventMap {

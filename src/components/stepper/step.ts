@@ -156,6 +156,10 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public animationDuration = 350;
 
+  /**
+   * @hidden @internal
+   * @deprecated since 5.4.0. Use the Stepper's `navigateTo` method instead.
+   */
   public async toggleAnimation(
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'

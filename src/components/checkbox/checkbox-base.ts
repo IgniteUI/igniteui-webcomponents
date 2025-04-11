@@ -20,7 +20,7 @@ export interface IgcCheckboxChangeEventArgs {
   value?: string;
 }
 
-/** @deprecated use IgcCheckboxChangeEventArgs instead */
+/** @deprecated since 5.4.0. Use IgcCheckboxChangeEventArgs instead */
 export type CheckboxChangeEventArgs = IgcCheckboxChangeEventArgs;
 
 export interface IgcCheckboxComponentEventMap {
