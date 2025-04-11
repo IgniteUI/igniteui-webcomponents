@@ -71,6 +71,15 @@ class AnimationController implements ReactiveController {
     );
   }
 
+  public async playExclusive(animation: AnimationReferenceMetadata) {
+    const [_, event] = await Promise.all([
+      this.stopAll(),
+      this.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   public hostConnected() {}
 }
 
