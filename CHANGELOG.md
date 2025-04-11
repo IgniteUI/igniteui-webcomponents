@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - New File Input Component(`igc-file-input`)
+- Exposed more public API type aliases for component property types like `ButtonVariant`, `PickerMode`, `StepperOrientation`, `HorizontalTransitionAnimation` (carousel and horizontal stepper) and more.
 
 ### Deprecated
 Some event argument types have been renamed for consistency:

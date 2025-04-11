@@ -10,6 +10,7 @@ import {
   registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
 } from '../icon/icon.registry.js';
+import type { IconButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/icon-button/icon-button.base.css.js';
 import { styles as shared } from './themes/icon-button/shared/icon-button.common.css.js';
@@ -58,7 +59,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
    * @attr
    */
   @property({ reflect: true })
-  public variant: 'flat' | 'contained' | 'outlined' = 'contained';
+  public variant: IconButtonVariant = 'contained';
 
   protected renderContent() {
     return html`

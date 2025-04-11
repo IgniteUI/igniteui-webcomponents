@@ -31,6 +31,10 @@ import {
   isDefined,
   isLTR,
 } from '../common/util.js';
+import type {
+  SliderTickLabelRotation,
+  SliderTickOrientation,
+} from '../types.js';
 import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
@@ -222,7 +226,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr tick-orientation
    */
   @property({ attribute: 'tick-orientation' })
-  public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
+  public tickOrientation: SliderTickOrientation = 'end';
 
   /**
    * Hides the primary tick labels.
@@ -265,7 +269,7 @@ export class IgcSliderBaseComponent extends LitElement {
    */
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   @blazorTypeOverride('TickLabelRotation', true)
-  public tickLabelRotation: 0 | 90 | -90 = 0;
+  public tickLabelRotation: SliderTickLabelRotation = 0;
 
   @watch('min', { waitUntilFirstUpdate: true })
   @watch('max', { waitUntilFirstUpdate: true })

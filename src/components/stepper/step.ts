@@ -9,6 +9,11 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import type {
+  StepperOrientation,
+  StepperStepType,
+  StepperTitlePosition,
+} from '../types.js';
 import {
   type Animation,
   bodyAnimations,
@@ -117,15 +122,15 @@ export default class IgcStepComponent extends LitElement {
 
   /** @hidden @internal @private */
   @property({ attribute: false })
-  public stepType: 'indicator' | 'title' | 'full' = 'full';
+  public stepType: StepperStepType = 'full';
 
   /** @hidden @internal @private */
   @property({ attribute: false })
-  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
+  public titlePosition?: StepperTitlePosition;
 
   /** @hidden @internal @private */
   @property({ attribute: false })
-  public orientation: 'horizontal' | 'vertical' = 'horizontal';
+  public orientation: StepperOrientation = 'horizontal';
 
   /** @hidden @internal @private */
   @property({ attribute: false })

@@ -12,6 +12,7 @@ import {
   defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty } from '../common/util.js';
+import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
 export interface IgcCheckboxChangeEventArgs {
@@ -90,7 +91,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    * @attr label-position
    */
   @property({ reflect: true, attribute: 'label-position' })
-  public labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: ToggleLabelPosition = 'after';
 
   constructor() {
     super();
