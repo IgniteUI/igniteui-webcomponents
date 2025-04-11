@@ -16,7 +16,7 @@ class TooltipController implements ReactiveController {
   private _anchor: TooltipAnchor;
   private _isTransientAnchor = false;
 
-  private _options!: TooltipCallbacks;
+  private _options: TooltipCallbacks;
   private _showTriggers = new Set(['pointerenter']);
   private _hideTriggers = new Set(['pointerleave', 'click']);
 
@@ -212,7 +212,7 @@ class TooltipController implements ReactiveController {
 }
 
 function parseTriggers(string: string): Set<string> {
-  return new Set((string ?? '').split(',').map((part) => part.trim()));
+  return new Set((string ?? '').split(/[,\s]+/).filter((s) => s.trim()));
 }
 
 export function addTooltipController(

@@ -7,10 +7,12 @@ import {
   IgcIconComponent,
   IgcInputComponent,
   IgcTooltipComponent,
+  type PopoverPlacement,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
+import { disableStoryControls } from './story.js';
 
 defineComponents(
   IgcButtonComponent,
@@ -59,24 +61,10 @@ const metadata: Meta<IgcTooltipComponent> = {
       table: { defaultValue: { summary: '6' } },
     },
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: 'IgcPlacement',
       description:
         'Where to place the floating element relative to the parent anchor element.',
-      options: [
-        'top',
-        'top-start',
-        'top-end',
-        'bottom',
-        'bottom-start',
-        'bottom-end',
-        'right',
-        'right-start',
-        'right-end',
-        'left',
-        'left-start',
-        'left-end',
-      ],
-      control: { type: 'select' },
+      control: 'IgcPlacement',
       table: { defaultValue: { summary: 'top' } },
     },
     anchor: {
@@ -155,19 +143,7 @@ interface IgcTooltipArgs {
   /** The offset of the tooltip from the anchor in pixels. */
   offset: number;
   /** Where to place the floating element relative to the parent anchor element. */
-  placement:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end';
+  placement: IgcPlacement;
   /** An element instance or an IDREF to use as the anchor for the tooltip. */
   anchor: Element | string;
   /**
@@ -200,96 +176,157 @@ registerIcon(
 
 export const Basic: Story = {
   render: (args) => html`
+    <div style="margin: 10dvh 5dvw">
+      <igc-button id="basic-tooltip"> Hover over me </igc-button>
+    </div>
+
+    <igc-tooltip
+      anchor="basic-tooltip"
+      .disableArrow=${args.disableArrow}
+      .offset=${args.offset}
+      .hideDelay=${args.hideDelay}
+      .showDelay=${args.showDelay}
+      .placement=${args.placement}
+      .open=${args.open}
+      .sticky=${args.sticky}
+      .showTriggers=${args.showTriggers}
+      .hideTriggers=${args.hideTriggers}
+    >
+      Hello from the tooltip!
+    </igc-tooltip>
+  `,
+};
+
+const Positions = ['top', 'bottom', 'left', 'right'].flatMap((each) => [
+  each,
+  `${each}-start`,
+  `${each}-end`,
+]) as Array<PopoverPlacement & {}>;
+
+export const Positioning: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
     <style>
-      #card-tooltip::part(base) {
-        max-width: 600px;
+      #tooltip-position {
+        align-content: center;
+        margin: 25dvh 25dvw;
+        width: 50dvw;
+        height: 50dvh;
+        background-color: var(--ig-primary-500);
+        color: var(--ig-primary-500-contrast);
+        box-shadow: var(--ig-elevation-2);
       }
     </style>
 
-    <igc-tooltip anchor="kek" ?open=${args.open}>
-      With an IDREF reference...
-    </igc-tooltip>
+    <div id="tooltip-position">
+      <h2 style="text-align: center">Supported placements</h2>
+    </div>
+    ${Positions.map(
+      (pos) => html`
+        <igc-tooltip anchor="tooltip-position" .placement=${pos}>
+          <div>
+            <strong>${pos}</strong>
+          </div>
+        </igc-tooltip>
+      `
+    )}
+  `,
+};
 
-    <igc-button>Focus me</igc-button>
+export const Inline: Story = {
+  render: () => html`
+    <style>
+      .article {
+        max-width: 35vmax;
 
-    <igc-tooltip ?open=${args.open} show-triggers="focus" hide-triggers="blur">
-      I will be shown until you blur the button above. Some super long text that
-      never ends.
-      <igc-icon name="home"></igc-icon>
-    </igc-tooltip>
+        & img {
+          object-fit: contain;
+          width: 16rem;
+          height: 16rem;
+        }
+      }
 
-    <igc-input id="passLabel" label="Password" required minlength="12"></igc-input>
-    <igc-tooltip
-      anchor="passLabel"
-      .showDelay=${args.showDelay}
-      .hideDelay=${args.hideDelay}
-      placement="bottom-end"
-      offset="-4"
-      disable-arrow
-      ?open=${args.open}
-      >Minimum of 12 characters</igc-tooltip
-    >
+      .rich-tooltip::part(base) {
+        max-width: 35vmax;
+      }
 
-    <div style="margin: 50px 50%;">
-      <igc-button id="kek">TOP KEK</igc-button>
-      <igc-tooltip anchor="kek" placement="bottom-start" open .sticky=${args.sticky}
-        >Initial open state</igc-tooltip
-      >
-      <igc-tooltip placement="right" anchor="kek">Right Tooltip</igc-tooltip>
-      <igc-tooltip placement="left" anchor="kek">Left Tooltip</igc-tooltip>
+      .rich {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        & img {
+          object-fit: contain;
+          width: 16rem;
+          height: 9rem;
+        }
+      }
+    </style>
+
+    <div class="article">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Official_CSS_Logo.svg/1024px-Official_CSS_Logo.svg.png"
+        alt="CSS Logo"
+      />
+      <p>
+        <strong>Cascading Style Sheets (CSS)</strong> is a
+        <a
+          id="style-sheet-language"
+          href="https://en.wikipedia.org/wiki/Style_sheet_language"
+          >style sheet language</a
+        >
+        used for specifying the presentation and styling of a document written
+        in a markup language such as
+        <a id="html" href="https://en.wikipedia.org/wiki/HTML">HTML</a> or
+        <a id="xml" href="https://en.wikipedia.org/wiki/XML">XML</a>
+        (including XML dialects such as SVG, MathML or XHTML). CSS is a
+        cornerstone technology of the World Wide Web, alongside HTML and
+        JavaScript.
+      </p>
     </div>
 
-    <p>
-      Here is some text with a
-      <strong>element</strong>
-      <igc-tooltip inline>😎</igc-tooltip>
-      that has a tooltip.
-    </p>
-
-    <igc-tooltip id="card-tooltip" anchor="build-info" inline>
-        <div style="display:flex; flex-direction:row">
-          <div>
-            <igc-card-header>
-              <igc-avatar
-                slot="thumbnail"
-                shape="rounded"
-                src="https://www.infragistics.com/angular-demos/assets/images/card/media/here_media.jpg"
-              >
-              </igc-avatar>
-              <h3 slot="title">HERE</h3>
-              <h5 slot="subtitle">By Mellow D</h5>
-            </igc-card-header>
-            <igc-card-content>
-              <p>
-                Far far away, behind the word mountains, far from the countries
-                Vokalia and Consonantia, there live the blind texts.
-              </p>
-            </igc-card-content>
-            <igc-card-actions>
-              <igc-button slot="start">PLAY ALBUM</igc-button>
-              <igc-tooltip placement="right-start">
-                <p>Look mom, tooltip inception!</p>
-                <igc-tooltip placement="right-start">
-                  <p>I can't stop...</p>
-                  <igc-tooltip placement="right-start"> HELP! </igc-tooltip>
-                </igc-tooltip>
-              </igc-tooltip>
-            </igc-card-actions>
-          </div>
-          <igc-card-media style="max-width: 96px">
-            <img
-              src="https://www.infragistics.com/angular-demos/assets/images/card/media/here_media.jpg"
-            />
-          </igc-card-media>
-        </div>
-      </igc-card>
+    <igc-tooltip class="rich-tooltip" anchor="xml">
+      <div inert class="rich">
+        <p>
+          <strong>Extensible Markup Language (XML)</strong> is a markup language
+          and file format for storing, transmitting, and reconstructing data. It
+          defines a set of rules for encoding documents in a format that is both
+          human-readable and machine-readable. The World Wide Web Consortium's
+          XML 1.0 Specification of 1998 and several other related
+          specifications—all of them free open standards—define XML.
+        </p>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Extensible_Markup_Language_%28XML%29_logo.svg/1920px-Extensible_Markup_Language_%28XML%29_logo.svg.png"
+          alt="XML Logo"
+        />
+      </div>
     </igc-tooltip>
-    <p><a id="build-info" href="#">Hover</a> for more!</p>
 
-    <igc-input label="Change me"></igc-input>
-    <igc-tooltip show-triggers="igcChange"
-      >Congrats you've changed the value!</igc-tooltip
-    >
+    <igc-tooltip anchor="style-sheet-language" inline>
+      <p inert>
+        A <strong>style sheet language</strong>, or
+        <strong>style language</strong>, is a computer language that expresses
+        the presentation of structured documents. One attractive feature of
+        structured documents is that the content can be reused in many contexts
+        and presented in various ways. Different style sheets can be attached to
+        the logical structure to produce different presentations.
+      </p>
+    </igc-tooltip>
+
+    <igc-tooltip class="rich-tooltip" anchor="html" inline>
+      <div inert class="rich">
+        <p>
+          Hypertext Markup Language (HTML) is the standard markup language for
+          documents designed to be displayed in a web browser. It defines the
+          content and structure of web content. It is often assisted by
+          technologies such as Cascading Style Sheets (CSS) and scripting
+          languages such as JavaScript, a programming language.
+        </p>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/HTML5_logo_and_wordmark.svg/1024px-HTML5_logo_and_wordmark.svg.png"
+          alt="HTML5 Logo"
+        />
+      </div>
+    </igc-tooltip>
   `,
 };
 
