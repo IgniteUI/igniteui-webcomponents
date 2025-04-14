@@ -14,29 +14,29 @@ $color-border: rem(4px) solid var-get($theme, 'background');
 #arrow {
     &[part='top'],
     &[part='bottom'] {
-        border-inline-start: $transparent-border;
-        border-inline-end: $transparent-border;
+        border-left: $transparent-border;
+        border-right: $transparent-border;
     }
 
     &[part='top'] {
-        border-block-start: $color-border;
+        border-top: $color-border;
     }
 
     &[part='bottom'] {
-        border-block-end: $color-border;
+        border-bottom: $color-border;
     }
 
     &[part='left'],
     &[part='right'] {
-        border-block-start: $transparent-border;
-        border-block-end: $transparent-border;
+        border-top: $transparent-border;
+        border-bottom: $transparent-border;
     }
 
     &[part='left'] {
-        border-inline-start: $color-border;
+        border-left: $color-border;
     }
 
     &[part='right'] {
-        border-inline-end: $color-border;
+        border-right: $color-border;
     }
 }
