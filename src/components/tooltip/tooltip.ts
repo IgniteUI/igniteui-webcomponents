@@ -196,7 +196,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separate string of different event triggers.
    *
    * @attr hide-triggers
-   * @default "pointerleave, click"
+   * @default pointerleave, click
    */
   @property({ attribute: 'hide-triggers' })
   public set hideTriggers(value: string) {
@@ -339,7 +339,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return commitStateChange();
   }
 
-  /** Shows the tooltip if not already showing. */
+  /**
+   *  Shows the tooltip if not already showing.
+   *  If a target is provided, sets it as a transient anchor.
+   */
   public show(target?: Element): Promise<boolean> {
     if (target) {
       this._stopTimeoutAndAnimation();
