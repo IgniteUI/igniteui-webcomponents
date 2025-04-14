@@ -63,6 +63,15 @@ describe('Tooltip', () => {
       await expect(tooltip).shadowDom.to.be.accessible();
     });
 
+    it('is accessible in sticky mode', async () => {
+      tooltip.sticky = true;
+      tooltip.open = true;
+      await elementUpdated(tooltip);
+
+      await expect(tooltip).to.be.accessible();
+      await expect(tooltip).shadowDom.to.be.accessible();
+    });
+
     it('is correctly initialized with its default component state', () => {
       expect(tooltip.dir).to.be.empty;
       expect(tooltip.open).to.be.false;
@@ -387,21 +396,6 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
-
-    it('should switch role to "status" when `sticky` is true, and back to "tooltip" when false', async () => {
-      expect(tooltip.sticky).to.be.false;
-      tooltip.sticky = true;
-      await elementUpdated(tooltip);
-
-      let internalsRole = (tooltip as any)._internals.role;
-      expect(internalsRole).to.equal('status');
-
-      tooltip.sticky = false;
-      await elementUpdated(tooltip);
-
-      internalsRole = (tooltip as any)._internals.role;
-      expect(internalsRole).to.equal('tooltip');
-    });
   });
 
   describe('Methods` Tests', () => {
@@ -490,9 +484,11 @@ describe('Tooltip', () => {
       expect(result).to.be.true;
       expect(tooltip.open).to.be.false;
 
-      // The controller's anchor should be null since the anchor is transient
-      const controllerAnchor = (tooltip as any)._controller.anchor;
-      expect(controllerAnchor).to.be.null;
+      // The anchor was transient and the tooltip should not be shown on pointerenter
+      simulatePointerEnter(secondAnchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.false;
     });
   });
 
