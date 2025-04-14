@@ -176,8 +176,6 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 
-const formats = new Set(['short', 'medium', 'long', 'full']);
-
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -841,9 +839,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._maskedRangeValue = '';
       return;
     }
-    const format = this.displayFormat || this.inputFormat;
     let startMask = '';
     let endMask = '';
+    const format =
+      DateTimeUtil.predefinedToDateDisplayFormat(this._displayFormat!) ??
+      this.displayFormat ??
+      this.inputFormat;
     if (format) {
       startMask = DateTimeUtil.formatDate(
         this.value.start,
@@ -1082,9 +1083,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
-    const format = formats.has(this._displayFormat!)
-      ? `${this._displayFormat}Date`
-      : this._displayFormat;
+    const format = DateTimeUtil.predefinedToDateDisplayFormat(
+      this._displayFormat!
+    );
     const value = picker === 'start' ? this.value?.start : this.value?.end;
 
     return html`

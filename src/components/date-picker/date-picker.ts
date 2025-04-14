@@ -36,7 +36,7 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import { createCounter, findElementFromEventPath } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import type { DatePart } from '../date-time-input/date-util.js';
+import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -56,8 +56,6 @@ export interface IgcDatePickerComponentEventMap {
   igcChange: CustomEvent<Date>;
   igcInput: CustomEvent<Date>;
 }
-
-const formats = new Set(['short', 'medium', 'long', 'full']);
 
 /**
  * igc-date-picker is a feature rich component used for entering a date through manual text input or
@@ -751,9 +749,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderInput(id: string) {
-    const format = formats.has(this._displayFormat!)
-      ? `${this._displayFormat}Date`
-      : this._displayFormat;
+    const format = DateTimeUtil.predefinedToDateDisplayFormat(
+      this._displayFormat!
+    );
 
     // Dialog mode is always readonly, rest depends on configuration
     const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;

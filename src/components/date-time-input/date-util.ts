@@ -54,6 +54,12 @@ export abstract class DateTimeUtil {
   public static readonly DEFAULT_TIME_INPUT_FORMAT = 'hh:mm tt';
   private static readonly SEPARATOR = 'literal';
   private static readonly DEFAULT_LOCALE = 'en';
+  private static readonly PREDEFINED_FORMATS = new Set([
+    'short',
+    'medium',
+    'long',
+    'full',
+  ]);
   private static _parser = new MaskParser();
 
   public static parseValueFromMask(
@@ -534,6 +540,17 @@ export abstract class DateTimeUtil {
     }
 
     return errors;
+  }
+
+  /**
+   * Transforms the predefined format to a display format containing only date parts.
+   *
+   * @param format The format to check and transform
+   */
+  public static predefinedToDateDisplayFormat(format: string) {
+    return format && DateTimeUtil.PREDEFINED_FORMATS.has(format)
+      ? `${format}Date`
+      : format;
   }
 
   private static setDisplayFormatOptions(

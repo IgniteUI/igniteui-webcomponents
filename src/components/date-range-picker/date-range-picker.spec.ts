@@ -481,7 +481,7 @@ describe('Date range picker', () => {
     });
 
     describe('Localization', () => {
-      it('should properly set displayFormat to the set of predefined formats', async () => {
+      it('should properly set displayFormat to the set of predefined formats - two inputs', async () => {
         const predefinedFormats = ['short', 'medium', 'long', 'full'];
 
         for (let i = 0; i < predefinedFormats.length; i++) {
@@ -496,6 +496,33 @@ describe('Date range picker', () => {
           );
           expect(dateTimeInputs[0].displayFormat).to.equal(`${format}Date`);
           expect(dateTimeInputs[1].displayFormat).to.equal(`${format}Date`);
+        }
+      });
+
+      it('should properly set displayFormat to the set of predefined formats - single input', async () => {
+        const predefinedFormats = [
+          { format: 'short', formattedValue: '4/14/25' },
+          { format: 'medium', formattedValue: 'Apr 14, 2025' },
+          { format: 'long', formattedValue: 'April 14, 2025' },
+          { format: 'full', formattedValue: 'Monday, April 14, 2025' },
+        ];
+        picker.value = {
+          start: CalendarDay.from(new Date(2025, 3, 14)).native,
+          end: CalendarDay.from(new Date(2025, 3, 14)).native,
+        };
+        picker.useTwoInputs = false;
+        await elementUpdated(picker);
+
+        for (let i = 0; i < predefinedFormats.length; i++) {
+          picker.displayFormat = predefinedFormats[i].format;
+          await elementUpdated(picker);
+
+          const input = picker.renderRoot.querySelector(
+            IgcInputComponent.tagName
+          )!;
+          expect(input.value).to.equal(
+            `${predefinedFormats[i].formattedValue} - ${predefinedFormats[i].formattedValue}`
+          );
         }
       });
 
