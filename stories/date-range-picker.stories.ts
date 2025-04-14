@@ -44,11 +44,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   argTypes: {
-    value: {
-      type: 'DateRangeValue',
-      control: 'date',
-      table: { defaultValue: { summary: 'null' } },
-    },
+    value: { type: 'DateRangeValue', control: 'date' },
     mode: {
       type: '"dropdown" | "dialog"',
       description:
@@ -90,15 +86,27 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     visibleMonths: {
-      type: 'number',
+      type: '1 | 2',
       description: 'The number of months displayed in the calendar.',
-      control: 'number',
+      options: ['1', '2'],
+      control: { type: 'inline-radio' },
     },
-
     label: {
       type: 'string',
       description: 'The label of the control (single input).',
       control: 'text',
+    },
+    labelStart: {
+      type: 'string',
+      description: 'The label attribute of the start input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    labelEnd: {
+      type: 'string',
+      description: 'The label attribute of the end input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     placeholder: {
       type: 'string',
@@ -128,6 +136,18 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       description:
         'The maximum value required for the date range picker to remain valid.',
       control: 'date',
+    },
+    placeholderStart: {
+      type: 'string',
+      description: 'The placeholder attribute of the start input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    placeholderEnd: {
+      type: 'string',
+      description: 'The placeholder attribute of the end input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     prompt: {
       type: 'string',
@@ -242,13 +262,16 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   args: {
-    value: 'null',
     mode: 'dropdown',
     useTwoInputs: false,
     readOnly: false,
     nonEditable: false,
     outlined: false,
     usePredefinedRanges: false,
+    labelStart: '',
+    labelEnd: '',
+    placeholderStart: '',
+    placeholderEnd: '',
     prompt: '_',
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
@@ -280,12 +303,16 @@ interface IgcDateRangePickerArgs {
   nonEditable: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Whether the control will show chips with predefined ranges in dialog mode. */
+  /** Whether the control will show chips with predefined ranges. */
   usePredefinedRanges: boolean;
+  /** The number of months displayed in the calendar. */
+  visibleMonths: 1 | 2;
   /** The label of the control (single input). */
   label: string;
-  /** The number of months displayed in the calendar. */
-  visibleMonths: number;
+  /** The label attribute of the start input. */
+  labelStart: string;
+  /** The label attribute of the end input. */
+  labelEnd: string;
   /** The placeholder attribute of the control (single input). */
   placeholder: string;
   /**
@@ -302,6 +329,10 @@ interface IgcDateRangePickerArgs {
   min: Date;
   /** The maximum value required for the date range picker to remain valid. */
   max: Date;
+  /** The placeholder attribute of the start input. */
+  placeholderStart: string;
+  /** The placeholder attribute of the end input. */
+  placeholderEnd: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
   /** The orientation of the calendar header. */

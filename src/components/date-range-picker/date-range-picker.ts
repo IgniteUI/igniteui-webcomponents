@@ -225,7 +225,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _inputFormat?: string;
   private _placeholder?: string;
   private _defaultMask!: string;
-  private _currentValue: DateRangeValue | null = null;
+  private _oldValue: DateRangeValue | null = null;
   private _visibleMonths: 1 | 2 = 2;
 
   private predefinedRanges: CustomDateRange[] = [
@@ -605,9 +605,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /** Clears the input parts of the component of any user input */
   public clear() {
-    this.value = null;
-    this._inputs[0]?.clear();
-    this._inputs[1]?.clear();
+    this._clear(false);
   }
 
   /** Selects a date range value in the picker */
@@ -646,7 +644,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected revertValue() {
-    this.value = this._currentValue;
+    this.value = this._oldValue;
   }
 
   protected dialogCancel() {
@@ -693,7 +691,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._rootClickController.update();
 
     if (this.open && this.mode === 'dialog') {
-      this._currentValue = this.value;
+      this._oldValue = this.value;
     }
   }
 
@@ -726,6 +724,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected handleFocusOut({ relatedTarget }: FocusEvent) {
     if (!this.contains(relatedTarget as Node)) {
       this.checkValidity();
+      if (
+        !this.useTwoInputs &&
+        !this.readOnly &&
+        this._oldValue !== this.value
+      ) {
+        this.emitEvent('igcChange', { detail: this.value });
+      }
     }
   }
 
@@ -921,6 +926,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
+  private _clear(checkReadOnly = false) {
+    if (checkReadOnly && this.readOnly) {
+      return;
+    }
+    this._oldValue = this.value;
+    this.value = null;
+    if (this.useTwoInputs) {
+      this._inputs[0]?.clear();
+      this._inputs[1]?.clear();
+    }
+  }
+
   private renderClearIcon(picker: 'start' | 'end' = 'start') {
     const clearIcon = !this.useTwoInputs
       ? 'clear-icon'
@@ -928,7 +945,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return !this.value || (this.value.start === null && this.value.end === null)
       ? nothing
       : html`
-          <span slot="suffix" part="${clearIcon}" @click=${this.clear}>
+          <span
+            slot="suffix"
+            part="${clearIcon}"
+            @click=${() => this._clear(true)}
+          >
             <slot name="${clearIcon}">
               <igc-icon
                 name="input_clear"
@@ -1109,9 +1130,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon(picker)}
-        <slot name=${`prefix-${picker}` || 'prefix'} slot="prefix"></slot>
+        <slot name=${`prefix-${picker}`} slot="prefix"></slot>
         ${this.renderClearIcon(picker)}
-        <slot name=${`suffix-${picker}` || 'suffix'} slot="suffix"></slot>
+        <slot name=${`suffix-${picker}`} slot="suffix"></slot>
       </igc-date-time-input>
     `;
   }

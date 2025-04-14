@@ -191,13 +191,9 @@ describe('Date range picker', () => {
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(1);
 
-      picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker
-          visible-months="11"
-        ></igc-date-range-picker>`
-      );
-
+      picker.setAttribute('visible-months', '11');
       await elementUpdated(picker);
+
       expect(picker.visibleMonths).to.equal(2);
 
       picker = await fixture<IgcDateRangePickerComponent>(
@@ -210,11 +206,8 @@ describe('Date range picker', () => {
     it('should set value through attribute correctly in case the date values are valid ISO 8601 strings', async () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       const attributeValue = { start: today.native, end: tomorrow.native };
-      picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker
-          value="${JSON.stringify(attributeValue)}"
-        ></igc-date-range-picker>`
-      );
+      picker.useTwoInputs = false;
+      picker.setAttribute('value', JSON.stringify(attributeValue));
       await elementUpdated(picker);
 
       checkSelectedRange(picker, expectedValue, false);
@@ -380,6 +373,7 @@ describe('Date range picker', () => {
 
     it('should set properties of the calendar correctly', async () => {
       const props = {
+        activeDate: new Date(2025, 3, 9),
         weekStart: 'friday',
         hideOutsideDays: true,
         hideHeader: true,
@@ -410,6 +404,7 @@ describe('Date range picker', () => {
       expect(picker.orientation).to.equal('horizontal');
       expect(calendar.disabledDates).to.be.undefined;
       expect(calendar.specialDates).to.be.undefined;
+      checkDatesEqual(calendar.activeDate, today.native);
 
       Object.assign(picker, props);
       await elementUpdated(picker);
@@ -1169,12 +1164,22 @@ describe('Date range picker', () => {
       });
 
       it('should clear the inputs on clicking the clear icon - two inputs', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
         picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
-        simulateClick(getIcon(picker, clearIcon));
-        await elementUpdated(picker);
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
 
+        simulateClick(getIcon(picker, clearIcon));
+
+        dateTimeInputs[0].blur();
+        await elementUpdated(dateTimeInputs[0]);
+
+        expect(isFocused(dateTimeInputs[0])).to.be.false;
+        expect(eventSpy).to.be.calledWith('igcChange', {
+          detail: { start: null, end: null },
+        });
         expect(picker.open).to.be.false;
         expect(picker.value).to.deep.equal({ start: null, end: null });
         expect(dateTimeInputs[0].value).to.be.null;
@@ -1182,19 +1187,63 @@ describe('Date range picker', () => {
       });
 
       it('should clear the inputs on clicking the clear icon - single input', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
         picker.useTwoInputs = false;
         picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
-        simulateClick(getIcon(picker, clearIcon));
-        await elementUpdated(picker);
-
-        expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal({ start: null, end: null });
         const input = picker.renderRoot!.querySelector(
           IgcInputComponent.tagName
         )!;
+        input.focus();
+        await elementUpdated(input);
+        simulateClick(getIcon(picker, clearIcon));
+        await elementUpdated(picker);
+        input.blur();
+        await elementUpdated(input);
+
+        expect(isFocused(input)).to.be.false;
+        expect(eventSpy).to.be.calledWith('igcChange', {
+          detail: { start: null, end: null },
+        });
+        expect(picker.open).to.be.false;
+        expect(picker.value).to.deep.equal({ start: null, end: null });
         expect(input.value).to.equal('');
+      });
+
+      it('should not clear the input(s) via the clear icon when readOnly is true', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const testValue = { start: today.native, end: tomorrow.native };
+        picker.value = testValue;
+        picker.readOnly = true;
+        await elementUpdated(picker);
+
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
+        simulateClick(getIcon(picker, clearIcon));
+        dateTimeInputs[0].blur();
+        await elementUpdated(dateTimeInputs[0]);
+
+        expect(picker.value).to.deep.equal(testValue);
+        expect(eventSpy).not.called;
+        checkSelectedRange(picker, testValue);
+
+        picker.useTwoInputs = false;
+        await elementUpdated(picker);
+
+        const input = picker.renderRoot!.querySelector(
+          IgcInputComponent.tagName
+        )!;
+        input.focus();
+        await elementUpdated(input);
+        simulateClick(getIcon(picker, clearIcon));
+        await elementUpdated(picker);
+        input.blur();
+        await elementUpdated(input);
+
+        expect(picker.value).to.deep.equal(testValue);
+        expect(eventSpy).not.called;
+        checkSelectedRange(picker, testValue, false);
       });
 
       it('should emit igcInput and igcChange on input value change', async () => {
