@@ -200,11 +200,11 @@ class TooltipController implements ReactiveController {
 
     // Anchor handlers
     if (event.target === this._anchor) {
-      if (this._showTriggers.has(event.type)) {
+      if (this._showTriggers.has(event.type) && !this._open) {
         this._options.onShow.call(this._host);
       }
 
-      if (this._hideTriggers.has(event.type)) {
+      if (this._hideTriggers.has(event.type) && this._open) {
         this._options.onHide.call(this._host);
       }
     }

@@ -316,8 +316,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   /** Shows the tooltip if not already showing. */
   public show(target?: Element): Promise<boolean> {
     if (target) {
-      clearTimeout(this._timeoutId);
-      this._player.stopAll();
+      this._stopTimeoutAndAnimation();
 
       if (this._controller.anchor !== target) {
         this.open = false;
@@ -355,14 +354,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private _showOnInteraction(): void {
-    clearTimeout(this._timeoutId);
-    this._player.stopAll();
+    this._stopTimeoutAndAnimation();
     this._showWithEvent();
   }
 
-  private _runAutoHide(): void {
+  private _stopTimeoutAndAnimation(): void {
     clearTimeout(this._timeoutId);
     this._player.stopAll();
+  }
+
+  private _setAutoHide(): void {
+    this._stopTimeoutAndAnimation();
 
     this._timeoutId = setTimeout(
       () => this._hideWithEvent(),
@@ -372,7 +374,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   private _hideOnInteraction(): void {
     if (!this.sticky) {
-      this._runAutoHide();
+      this._setAutoHide();
     }
   }
 
@@ -399,7 +401,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
           <slot>${this.message ? html`${this.message}` : nothing}</slot>
           ${this.sticky
             ? html`
-                <slot name="close-button" @click=${this._runAutoHide}>
+                <slot name="close-button" @click=${this._setAutoHide}>
                   <igc-icon
                     name="input_clear"
                     collection="default"
