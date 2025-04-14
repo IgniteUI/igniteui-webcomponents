@@ -4,7 +4,7 @@ import { spy } from 'sinon';
 import { defineComponents } from '../../index.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { SLOTS, TreeTestFunctions, navigationTree } from './tree-utils.spec.js';
-import type { IgcSelectionEventArgs } from './tree.common.js';
+import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
 
@@ -437,7 +437,7 @@ describe('Tree Navigation', () => {
     expect(topLevelItems[0].active).to.be.true;
     expect(topLevelItems[0].selected).to.be.true;
 
-    let args: IgcSelectionEventArgs = {
+    let args: TreeSelectionEventInit = {
       detail: {
         newSelection: [topLevelItems[0]],
       },
@@ -510,7 +510,7 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(topLevelItems[1]);
     expect(treeNavService.focusedItem).to.equal(topLevelItems[1]);
 
-    const args: IgcSelectionEventArgs = {
+    const args: TreeSelectionEventInit = {
       detail: {
         newSelection: [topLevelItems[1]],
       },
@@ -543,7 +543,7 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(topLevelItems[0]);
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 
-    let args: IgcSelectionEventArgs = {
+    let args: TreeSelectionEventInit = {
       detail: {
         newSelection: [topLevelItems[0]],
       },

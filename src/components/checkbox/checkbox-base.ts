@@ -14,13 +14,16 @@ import {
 import { isEmpty } from '../common/util.js';
 import { checkBoxValidators } from './validators.js';
 
-export interface CheckboxChangeEventArgs {
+export interface IgcCheckboxChangeEventArgs {
   checked: boolean;
   value?: string;
 }
 
+/** @deprecated use IgcCheckboxChangeEventArgs instead */
+export type CheckboxChangeEventArgs = IgcCheckboxChangeEventArgs;
+
 export interface IgcCheckboxComponentEventMap {
-  igcChange: CustomEvent<CheckboxChangeEventArgs>;
+  igcChange: CustomEvent<IgcCheckboxChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
