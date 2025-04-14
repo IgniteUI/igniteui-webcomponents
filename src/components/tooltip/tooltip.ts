@@ -10,7 +10,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber } from '../common/util.js';
+import { asNumber, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
@@ -89,6 +89,32 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   @query('#arrow')
   private _arrowElement!: HTMLElement;
+
+  private get _arrowOffset() {
+    if (/-/.test(this.placement)) {
+      // Horizontal start | end placement
+
+      if (/^(left|right)-start$/.test(this.placement)) {
+        return -8;
+      }
+
+      if (/^(left|right)-end$/.test(this.placement)) {
+        return 8;
+      }
+
+      // Vertical start | end placement
+
+      if (/start$/.test(this.placement)) {
+        return isLTR(this) ? -8 : 8;
+      }
+
+      if (/end$/.test(this.placement)) {
+        return isLTR(this) ? 8 : -8;
+      }
+    }
+
+    return 0;
+  }
 
   /**
    * Whether the tooltip is showing.
@@ -391,6 +417,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
         .arrow=${this.disableArrow ? null : this._arrowElement}
+        .arrowOffset=${this._arrowOffset}
         .shiftPadding=${8}
         ?open=${this.open}
         ?inline=${this.inline}

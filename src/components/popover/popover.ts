@@ -83,6 +83,10 @@ export default class IgcPopoverComponent extends LitElement {
   @property({ attribute: false })
   public arrow: HTMLElement | null = null;
 
+  /** Additional offset to apply to the arrow element if enabled. */
+  @property({ type: Number, attribute: 'arrow-offset' })
+  public arrowOffset = 0;
+
   /**
    * Improves positioning for inline reference elements that span over multiple lines.
    * Useful for tooltips or similar components.
@@ -152,6 +156,7 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   @watch('arrow', { waitUntilFirstUpdate: true })
+  @watch('arrowOffset', { waitUntilFirstUpdate: true })
   @watch('flip', { waitUntilFirstUpdate: true })
   @watch('inline', { waitUntilFirstUpdate: true })
   @watch('offset', { waitUntilFirstUpdate: true })
@@ -305,8 +310,8 @@ export default class IgcPopoverComponent extends LitElement {
     this.arrow.part = currentPlacement;
 
     Object.assign(this.arrow.style, {
-      left: x != null ? `${roundByDPR(x)}px` : '',
-      top: y != null ? `${roundByDPR(y)}px` : '',
+      left: x != null ? `${roundByDPR(x + this.arrowOffset)}px` : '',
+      top: y != null ? `${roundByDPR(y + this.arrowOffset)}px` : '',
       [staticSide]: '-4px',
     });
   }
