@@ -1,6 +1,7 @@
 // Public API types
 // NOTE: use default value as first in order where possible for union types
 
+//#region shared types
 export type AbsolutePosition = 'bottom' | 'middle' | 'top';
 export type ContentOrientation = 'horizontal' | 'vertical';
 export type HorizontalTransitionAnimation = 'slide' | 'fade' | 'none';
@@ -16,7 +17,9 @@ export type StyleVariant =
   | 'danger';
 export type ToggleLabelPosition = 'after' | 'before';
 export type TreeSelection = 'none' | 'multiple' | 'cascade';
+//#endregion
 
+//#region component-specific
 export type AvatarShape = 'square' | 'circle' | 'rounded';
 export type BadgeShape = 'rounded' | 'square';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
@@ -53,3 +56,4 @@ export type TabsAlignment = 'start' | 'end' | 'center' | 'justify';
 export type TextareaResize = 'vertical' | 'auto' | 'none';
 export type TileManagerDragMode = 'none' | 'tile-header' | 'tile';
 export type TileManagerResizeMode = 'none' | 'hover' | 'always';
+//#endregion

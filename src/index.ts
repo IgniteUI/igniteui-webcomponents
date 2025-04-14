@@ -118,41 +118,7 @@ export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js
 export type { IgcTreeComponentEventMap } from './components/tree/tree.common.js';
 
 // Public types
-export type {
-  AbsolutePosition,
-  AvatarShape,
-  BadgeShape,
-  ButtonGroupSelection,
-  ButtonVariant,
-  CarouselIndicatorsOrientation,
-  ContentOrientation,
-  DividerType,
-  ExpansionPanelIndicatorPosition,
-  HorizontalTransitionAnimation,
-  IconButtonVariant,
-  InputType,
-  LinearProgressLabelAlign,
-  MaskInputValueMode,
-  NavDrawerPosition,
-  PickerMode,
-  PopoverScrollStrategy,
-  RangeTextSelectMode,
-  SelectionRangeDirection,
-  SliderTickLabelRotation,
-  SliderTickOrientation,
-  StepperOrientation,
-  StepperStepType,
-  StepperTitlePosition,
-  StepperVerticalAnimation,
-  StyleVariant,
-  TabsActivation,
-  TabsAlignment,
-  TextareaResize,
-  TileManagerDragMode,
-  TileManagerResizeMode,
-  ToggleLabelPosition,
-  TreeSelection,
-} from './components/types.js';
+export type * from './components/types.js';
 export type { IgcTileChangeStateEventArgs } from './components/tile-manager/tile.js';
 export type {
   CalendarActiveView,
