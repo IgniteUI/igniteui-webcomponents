@@ -17,7 +17,7 @@
     text-align: start;
     max-width: 200px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: rem(8px);
     position: relative;
 }
@@ -30,4 +30,10 @@
 
 igc-popover::part(container) {
     background-color: transparent;
+}
+
+slot[name='close-button'] {
+    igc-icon {
+        --component-size: 1;
+    }
 }
