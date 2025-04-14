@@ -387,6 +387,21 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
     });
+
+    it('should switch role to "status" when `sticky` is true, and back to "tooltip" when false', async () => {
+      expect(tooltip.sticky).to.be.false;
+      tooltip.sticky = true;
+      await elementUpdated(tooltip);
+
+      let internalsRole = (tooltip as any)._internals.role;
+      expect(internalsRole).to.equal('status');
+
+      tooltip.sticky = false;
+      await elementUpdated(tooltip);
+
+      internalsRole = (tooltip as any)._internals.role;
+      expect(internalsRole).to.equal('tooltip');
+    });
   });
 
   describe('Methods` Tests', () => {
@@ -454,6 +469,30 @@ describe('Tooltip', () => {
         '<igc-tooltip>It works!</igc-tooltip>',
         DIFF_OPTIONS
       );
+    });
+
+    it('calls `show` with a new target, switches anchor, and resets anchor on hide', async () => {
+      const buttons = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      const [firstAnchor, secondAnchor] = buttons;
+
+      let result = await tooltip.show(firstAnchor);
+      expect(result).to.be.true;
+      expect(tooltip.open).to.be.true;
+
+      result = await tooltip.show(secondAnchor);
+      expect(result).to.be.true;
+      expect(tooltip.open).to.be.true;
+
+      result = await tooltip.hide();
+      expect(result).to.be.true;
+      expect(tooltip.open).to.be.false;
+
+      // The controller's anchor should be null since the anchor is transient
+      const controllerAnchor = (tooltip as any)._controller.anchor;
+      expect(controllerAnchor).to.be.null;
     });
   });
 
