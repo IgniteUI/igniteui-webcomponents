@@ -10,7 +10,7 @@ import {
   selectedItemsTree,
   simpleTree,
 } from './tree-utils.spec.js';
-import type { IgcSelectionEventArgs } from './tree.common.js';
+import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 
@@ -218,7 +218,7 @@ describe('Tree Selection', () => {
       initialSelection.shift();
 
       // Should emit igcSelection event w/ correct args when an item is deselected
-      let args: IgcSelectionEventArgs = {
+      let args: TreeSelectionEventInit = {
         detail: {
           newSelection: initialSelection,
         },
@@ -268,7 +268,7 @@ describe('Tree Selection', () => {
       expect(cb.checked).to.be.false;
       expect(cb.indeterminate).to.be.false;
 
-      const args: IgcSelectionEventArgs = {
+      const args: TreeSelectionEventInit = {
         detail: {
           newSelection: [...initialSelection, item12],
         },
@@ -300,7 +300,7 @@ describe('Tree Selection', () => {
         topLevelItems[1].getChildren()[1],
       ];
 
-      let args: IgcSelectionEventArgs = {
+      let args: TreeSelectionEventInit = {
         detail: {
           newSelection: [topLevelItems[0]],
         },
@@ -362,7 +362,7 @@ describe('Tree Selection', () => {
       tree.deselect();
       await elementUpdated(tree);
 
-      const args: IgcSelectionEventArgs = {
+      const args: TreeSelectionEventInit = {
         detail: {
           newSelection: [topLevelItems[2]],
         },
@@ -707,7 +707,7 @@ describe('Tree Selection', () => {
       expect(cb.checked).to.be.false;
       expect(cb.indeterminate).to.be.false;
 
-      const args: IgcSelectionEventArgs = {
+      const args: TreeSelectionEventInit = {
         detail: {
           newSelection: [...initialSelection, item211],
         },

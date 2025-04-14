@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - New File Input Component(`igc-file-input`)
 
+### Deprecated
+Some event argument types have been renamed for consistency:
+- `CheckboxChangeEventArgs` deprecated, use `IgcCheckboxChangeEventArgs` instead.
+- `RadioChangeEventArgs` deprecated, use `IgcRadioChangeEventArgs` instead.
+- `IgcRangeSliderValue` deprecated, use `IgcRangeSliderValueEventArgs` instead.
+- `IgcActiveStepChangingArgs` deprecated, use `IgcActiveStepChangingEventArgs` instead.
+- `IgcActiveStepChangedArgs` deprecated, use `IgcActiveStepChangedEventArgs` instead.
+
+### Fixed
+- Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
+- Exposed `IgcCalendarResourceStrings`, `PopoverPlacement` (Dropdown and Select) and `IgcTreeSelectionEventArgs` from the public API
+
 ## [5.3.0] - 2025-03-13
 ### Added
 - Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402)

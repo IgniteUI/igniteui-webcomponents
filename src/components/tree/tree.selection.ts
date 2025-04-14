@@ -1,6 +1,6 @@
 import { isEmpty } from '../common/util.js';
 import type IgcTreeItemComponent from './tree-item.js';
-import type { IgcSelectionEventArgs } from './tree.common.js';
+import type { TreeSelectionEventInit } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
 
 /* blazorSuppress */
@@ -113,7 +113,7 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    const args: IgcSelectionEventArgs = {
+    const args: TreeSelectionEventInit = {
       detail: {
         newSelection,
       },
@@ -182,7 +182,7 @@ export class IgcTreeSelectionService {
 
     this.calculateItemsNewSelectionState(currSelection, added, removed);
 
-    const args: IgcSelectionEventArgs = {
+    const args: TreeSelectionEventInit = {
       detail: {
         newSelection: Array.from(this.itemsToBeSelected),
       },

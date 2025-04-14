@@ -24,7 +24,7 @@ import { styles } from './themes/light/popover.base.css.js';
 /**
  * Describes the preferred placement of a toggle component.
  */
-export type IgcPlacement =
+export type PopoverPlacement =
   | 'top'
   | 'top-start'
   | 'top-end'
@@ -95,7 +95,7 @@ export default class IgcPopoverComponent extends LitElement {
    * Where to place the floating element relative to the parent anchor element.
    */
   @property()
-  public placement: IgcPlacement = 'bottom-start';
+  public placement: PopoverPlacement = 'bottom-start';
 
   /**
    * When enabled the floating element will match the width of its parent anchor element.
