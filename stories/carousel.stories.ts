@@ -68,9 +68,9 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: '"start" | "end"',
+      type: '"end" | "start"',
       description: 'Sets the orientation of the indicator controls (dots).',
-      options: ['start', 'end'],
+      options: ['end', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -137,7 +137,7 @@ interface IgcCarouselArgs {
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** Sets the orientation of the indicator controls (dots). */
-  indicatorsOrientation: 'start' | 'end';
+  indicatorsOrientation: 'end' | 'start';
   /**
    * The format used to set the aria-label on the carousel indicators.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.

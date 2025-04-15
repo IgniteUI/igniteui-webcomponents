@@ -44,6 +44,10 @@ import {
   wrap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import type {
+  CarouselIndicatorsOrientation,
+  HorizontalTransitionAnimation,
+} from '../types.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
@@ -217,7 +221,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * @attr indicators-orientation
    */
   @property({ reflect: false, attribute: 'indicators-orientation' })
-  public indicatorsOrientation: 'start' | 'end' = 'end';
+  public indicatorsOrientation: CarouselIndicatorsOrientation = 'end';
 
   /**
    * The format used to set the aria-label on the carousel indicators.
@@ -262,7 +266,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * @attr animation-type
    */
   @property({ attribute: 'animation-type' })
-  public animationType: 'slide' | 'fade' | 'none' = 'slide';
+  public animationType: HorizontalTransitionAnimation = 'slide';
 
   /* blazorSuppress */
   /**
