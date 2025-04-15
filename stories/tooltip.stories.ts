@@ -536,48 +536,29 @@ export const DynamicTooltip: Story = {
 
 export const SharedTooltipMultipleAnchors: Story = {
   render: () => {
-    const tooltipId = 'shared-tooltip';
-
-    setTimeout(() => {
-      const tooltip = document.getElementById(tooltipId) as any;
-      const elementTooltip = document.querySelector(
-        'igc-tooltip:not([id])'
-      ) as any;
-      const elementButton = document.getElementById('elementButton');
-
-      // Set anchor for second tooltip dynamically
-      if (elementTooltip && elementButton) {
-        elementTooltip.anchor = elementButton;
-        elementTooltip.show();
-      }
-
-      document.querySelectorAll('.tooltip-trigger').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          tooltip.show(btn);
-        });
-      });
-    });
-
     return html`
       <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
         <igc-button id="first">Default Anchor</igc-button>
-        <igc-button class="tooltip-trigger">Transient 1</igc-button>
-        <igc-button class="tooltip-trigger">Transient 2</igc-button>
-        <igc-button id="elementButton">Element Anchor</igc-button>
+        <igc-button
+          onpointerenter="sharedTooltip.show(transient1)"
+          id="transient1"
+          >Transient 1</igc-button
+        >
+        <igc-button
+          onpointerenter="sharedTooltip.show(transient2)"
+          id="transient2"
+          >Transient 2</igc-button
+        >
+        <igc-button
+          onpointerenter="sharedTooltip.show(transient3)"
+          id="transient3"
+          >Transient 3</igc-button
+        >
       </div>
 
-      <igc-tooltip
-        anchor="first"
-        id="shared-tooltip"
-        placement="top"
-        ?sticky=${true}
-      >
+      <igc-tooltip anchor="first" id="sharedTooltip" placement="top">
         This is a shared tooltip!
       </igc-tooltip>
-
-      <igc-tooltip
-        message="This is a tooltip with an element anchor"
-      ></igc-tooltip>
     `;
   },
 };

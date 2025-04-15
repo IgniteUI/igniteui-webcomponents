@@ -428,7 +428,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         shift
       >
         <div ${ref(this._containerRef)} part="base">
-          <slot>${this.message ? html`${this.message}` : nothing}</slot>
+          <slot>${this.message}</slot>
           ${this.sticky
             ? html`
                 <slot name="close-button" @click=${this._setAutoHide}>
