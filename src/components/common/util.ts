@@ -334,3 +334,8 @@ export function roundByDPR(value: number): number {
   const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
 }
+
+/** Required utility type for specific props */
+export type RequiredProps<T, K extends keyof T> = T & {
+  [P in K]-?: T[P];
+};

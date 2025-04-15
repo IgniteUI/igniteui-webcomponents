@@ -27,6 +27,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, getOffset, isLTR, wrap } from '../common/util.js';
+import type { TabsActivation, TabsAlignment } from '../types.js';
 import IgcTabPanelComponent from './tab-panel.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
@@ -170,7 +171,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ reflect: true })
-  public alignment: 'start' | 'end' | 'center' | 'justify' = 'start';
+  public alignment: TabsAlignment = 'start';
 
   /**
    * Determines the tab activation. When set to auto,
@@ -180,7 +181,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public activation: 'auto' | 'manual' = 'auto';
+  public activation: TabsActivation = 'auto';
 
   @watch('alignment', { waitUntilFirstUpdate: true })
   protected alignIndicator() {

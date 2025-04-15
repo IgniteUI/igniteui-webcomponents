@@ -49,7 +49,10 @@ import {
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
-import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
+import IgcPopoverComponent, {
+  type PopoverPlacement,
+} from '../popover/popover.js';
+import type { PopoverScrollStrategy } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
@@ -221,18 +224,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public placeholder!: string;
 
   /** The preferred placement of the select dropdown around its input.
-   * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
    * @attr
    */
   @property()
-  public placement: IgcPlacement = 'bottom-start';
+  public placement: PopoverPlacement = 'bottom-start';
 
   /**
    * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
+  public scrollStrategy: PopoverScrollStrategy = 'scroll';
 
   /** Returns the items of the igc-select component. */
   public get items() {
