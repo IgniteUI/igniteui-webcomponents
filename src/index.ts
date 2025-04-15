@@ -27,6 +27,7 @@ export { default as IgcDropdownComponent } from './components/dropdown/dropdown.
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
 export { default as IgcDropdownItemComponent } from './components/dropdown/dropdown-item.js';
+export { default as IgcFileInputComponent } from './components/file-input/file-input.js';
 export { default as IgcSelectComponent } from './components/select/select.js';
 export { default as IgcSelectGroupComponent } from './components/select/select-group.js';
 export { default as IgcSelectHeaderComponent } from './components/select/select-header.js';
@@ -82,7 +83,10 @@ export {
 export { configureTheme } from './theming/config.js';
 
 // localization objects
-export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
+export {
+  IgcCalendarResourceStringEN,
+  type IgcCalendarResourceStrings,
+} from './components/common/i18n/calendar.resources.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
@@ -100,6 +104,7 @@ export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdow
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcInputComponentEventMap as IgcFileInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';
@@ -126,21 +131,31 @@ export type {
   WeekDays,
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
-export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
+export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export { DatePart } from './components/date-time-input/date-util.js';
 export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export type { PopoverPlacement } from './components/popover/popover.js';
+export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
+export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
+export type {
+  IgcActiveStepChangingEventArgs,
+  IgcActiveStepChangedEventArgs,
+} from './components/stepper/stepper.common.js';
+export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
+export type {
+  ComboItemTemplate,
+  ComboTemplateProps,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboChangeEventArgs,
+} from './components/combo/types.js';
+export type { IconMeta } from './components/icon/registry/types.js';
+
+// deprecated types
+export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export type { RadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
   IgcActiveStepChangingArgs,
   IgcActiveStepChangedArgs,
 } from './components/stepper/stepper.common.js';
-export type {
-  ComboItemTemplate,
-  ComboTemplateProps,
-  FilteringOptions,
-  GroupingDirection,
-  GroupingOptions,
-  IgcComboChangeEventArgs,
-} from './components/combo/types.js';
-export type { IconMeta } from './components/icon/registry/types.js';

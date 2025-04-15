@@ -85,24 +85,6 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='control'],
-    [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'error-color');
-    }
-
-    [part~='control'][part~='checked'],
-    [part~='thumb']:not([part~='checked']) {
-        background: var-get($theme, 'error-color');
-    }
-
-    [part='focused'][part~='control'],
-    [part='focused'][part~='control'][part~='checked'] {
-        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
-    }
-}
-
 :host([disabled]) {
     [part~='control'][part~='checked'] {
         border-color: var-get($theme, 'track-on-disabled-color');

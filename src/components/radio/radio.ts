@@ -39,13 +39,16 @@ import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
 import { radioValidators } from './validators.js';
 
-export interface RadioChangeEventArgs {
+export interface IgcRadioChangeEventArgs {
   checked: boolean;
   value?: string;
 }
 
+/** @deprecated use IgcRadioChangeEventArgs instead */
+export type RadioChangeEventArgs = IgcRadioChangeEventArgs;
+
 export interface IgcRadioComponentEventMap {
-  igcChange: CustomEvent<RadioChangeEventArgs>;
+  igcChange: CustomEvent<IgcRadioChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -249,6 +252,32 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   /** Removes focus from the radio control. */
   public override blur() {
     this.input.blur();
+  }
+
+  private _checkValidity() {
+    return super.checkValidity();
+  }
+
+  private _reportValidity() {
+    return super.reportValidity();
+  }
+
+  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  public override checkValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._checkValidity();
+    }
+
+    return this._checkValidity();
+  }
+
+  /** Checks for validity of the control and shows the browser message if it invalid. */
+  public override reportValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._reportValidity();
+    }
+
+    return this._reportValidity();
   }
 
   /**
