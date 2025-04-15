@@ -122,6 +122,10 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     [part='prefix'] {
         display: none;
     }
+
+    [part='suffix'] {
+        color: var(--ig-input-group-input-suffix-color--focused, var(--ig-gray-900));
+    }
 }
 
 :host([required]) {
