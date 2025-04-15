@@ -11,20 +11,23 @@ import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
 
 /* blazorSuppress */
-export interface IgcRangeSliderValue {
+export interface IgcRangeSliderValueEventArgs {
   lower: number;
   upper: number;
 }
+
+/** @deprecated since 5.4.0. Use IgcRangeSliderValueEventArgs instead */
+export type IgcRangeSliderValue = IgcRangeSliderValueEventArgs;
 
 export interface IgcRangeSliderComponentEventMap {
   /**
    * Emitted when a value is changed via thumb drag or keyboard interaction.
    */
-  igcInput: CustomEvent<IgcRangeSliderValue>;
+  igcInput: CustomEvent<IgcRangeSliderValueEventArgs>;
   /**
    * Emitted when a value change is committed on a thumb drag end or keyboard interaction.
    */
-  igcChange: CustomEvent<IgcRangeSliderValue>;
+  igcChange: CustomEvent<IgcRangeSliderValueEventArgs>;
 }
 
 /**

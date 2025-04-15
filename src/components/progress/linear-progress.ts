@@ -4,6 +4,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
+import type { LinearProgressLabelAlign } from '../types.js';
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
 import { styles as shared } from './themes/linear/shared/linear.progress.common.css.js';
@@ -51,13 +52,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
    * @attr label-align
    */
   @property({ attribute: 'label-align', reflect: true })
-  public labelAlign:
-    | 'top-start'
-    | 'top'
-    | 'top-end'
-    | 'bottom-start'
-    | 'bottom'
-    | 'bottom-end' = 'top-start';
+  public labelAlign: LinearProgressLabelAlign = 'top-start';
 
   protected override render() {
     const parts = partNameMap({

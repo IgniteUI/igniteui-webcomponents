@@ -4,6 +4,7 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcRadioComponent from '../radio/radio.js';
+import type { ContentOrientation } from '../types.js';
 import { styles } from './radio-group.base.css.js';
 import { styles as fluent } from './radio-group.fluent.css.js';
 import { styles as indigo } from './radio-group.indigo.css.js';
@@ -42,7 +43,7 @@ export default class IgcRadioGroupComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public alignment: 'vertical' | 'horizontal' = 'vertical';
+  public alignment: ContentOrientation = 'vertical';
 
   /* blazorCSSuppress */
   @property({ attribute: false })
