@@ -61,9 +61,9 @@ const metadata: Meta<IgcSwitchComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     labelPosition: {
-      type: '"before" | "after"',
+      type: '"after" | "before"',
       description: 'The label position of the control.',
-      options: ['before', 'after'],
+      options: ['after', 'before'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'after' } },
     },
@@ -93,7 +93,7 @@ interface IgcSwitchArgs {
   /** The checked state of the control. */
   checked: boolean;
   /** The label position of the control. */
-  labelPosition: 'before' | 'after';
+  labelPosition: 'after' | 'before';
 }
 type Story = StoryObj<IgcSwitchArgs>;
 

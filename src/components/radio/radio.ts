@@ -32,6 +32,7 @@ import {
   partNameMap,
   wrap,
 } from '../common/util.js';
+import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
@@ -39,13 +40,16 @@ import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
 import { radioValidators } from './validators.js';
 
-export interface RadioChangeEventArgs {
+export interface IgcRadioChangeEventArgs {
   checked: boolean;
   value?: string;
 }
 
+/** @deprecated since 5.4.0. Use IgcRadioChangeEventArgs instead */
+export type RadioChangeEventArgs = IgcRadioChangeEventArgs;
+
 export interface IgcRadioComponentEventMap {
-  igcChange: CustomEvent<RadioChangeEventArgs>;
+  igcChange: CustomEvent<IgcRadioChangeEventArgs>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -183,7 +187,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    * @attr label-position
    */
   @property({ reflect: true, attribute: 'label-position' })
-  public labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: ToggleLabelPosition = 'after';
 
   constructor() {
     super();
@@ -249,6 +253,32 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   /** Removes focus from the radio control. */
   public override blur() {
     this.input.blur();
+  }
+
+  private _checkValidity() {
+    return super.checkValidity();
+  }
+
+  private _reportValidity() {
+    return super.reportValidity();
+  }
+
+  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  public override checkValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._checkValidity();
+    }
+
+    return this._checkValidity();
+  }
+
+  /** Checks for validity of the control and shows the browser message if it invalid. */
+  public override reportValidity(): boolean {
+    for (const radio of this._siblings) {
+      radio._reportValidity();
+    }
+
+    return this._reportValidity();
   }
 
   /**

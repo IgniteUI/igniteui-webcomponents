@@ -32,6 +32,7 @@ import {
   partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import {
@@ -46,7 +47,11 @@ import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
-import type { IgcCalendarComponentEventMap } from './types.js';
+import type {
+  CalendarActiveView,
+  CalendarHeaderOrientation,
+  IgcCalendarComponentEventMap,
+} from './types.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
@@ -186,7 +191,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    * @attr header-orientation
    */
   @property({ reflect: true, attribute: 'header-orientation' })
-  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+  public headerOrientation: CalendarHeaderOrientation = 'horizontal';
 
   /**
    * The orientation of the calendar months when more than one month
@@ -194,7 +199,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    * @attr orientation
    */
   @property()
-  public orientation: 'vertical' | 'horizontal' = 'horizontal';
+  public orientation: ContentOrientation = 'horizontal';
 
   /**
    * The number of months displayed in the days view.
@@ -208,7 +213,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    * @attr active-view
    */
   @property({ attribute: 'active-view' })
-  public activeView: 'days' | 'months' | 'years' = 'days';
+  public activeView: CalendarActiveView = 'days';
 
   /** The options used to format the months and the weekdays in the calendar views. */
   @property({ attribute: false })

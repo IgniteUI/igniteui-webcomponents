@@ -16,6 +16,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
 import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
 import { all } from './themes/themes.js';
@@ -94,7 +95,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
    * @attr indicator-position
    */
   @property({ reflect: true, attribute: 'indicator-position' })
-  public indicatorPosition: 'start' | 'end' | 'none' = 'start';
+  public indicatorPosition: ExpansionPanelIndicatorPosition = 'start';
 
   constructor() {
     super();

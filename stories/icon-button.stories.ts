@@ -37,9 +37,9 @@ const metadata: Meta<IgcIconButtonComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     variant: {
-      type: '"flat" | "contained" | "outlined"',
+      type: '"contained" | "flat" | "outlined"',
       description: 'The visual variant of the icon button.',
-      options: ['flat', 'contained', 'outlined'],
+      options: ['contained', 'flat', 'outlined'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'contained' } },
     },
@@ -99,7 +99,7 @@ interface IgcIconButtonArgs {
   /** Whether to flip the icon button. Useful for RTL layouts. */
   mirrored: boolean;
   /** The visual variant of the icon button. */
-  variant: 'flat' | 'contained' | 'outlined';
+  variant: 'contained' | 'flat' | 'outlined';
   /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */
