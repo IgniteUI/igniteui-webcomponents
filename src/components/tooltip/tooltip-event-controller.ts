@@ -169,10 +169,8 @@ class TooltipController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    const attr = this._host.getAttribute('anchor');
-    if (attr) {
-      this.resolveAnchor(attr);
-    }
+    const anchor = this._host.anchor;
+    this.resolveAnchor(anchor);
   }
 
   /** @internal */
