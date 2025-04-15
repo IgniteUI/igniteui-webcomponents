@@ -19,6 +19,7 @@ import type {
   ResizeState,
 } from './types.js';
 
+/** @ignore */
 export interface IgcResizeContainerComponentEventMap {
   igcResizeStart: CustomEvent<ResizeCallbackParams>;
   igcResize: CustomEvent<ResizeCallbackParams>;

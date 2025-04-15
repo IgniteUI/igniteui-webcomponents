@@ -78,28 +78,3 @@ $theme: $fluent;
         background: var-get($theme, 'thumb-on-color');
     }
 }
-
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
-    [part~='control'][part~='checked'] {
-        background: var-get($theme, 'track-error-color');
-    }
-
-    [part~='control'],
-    [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'error-color');
-    }
-
-    [part~='thumb'] {
-        background: var-get($theme, 'error-color');
-    }
-
-    [part~='control'][part~='focused'],
-    [part~='control'][part~='checked'][part~='focused'] {
-        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
-    }
-
-    [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'thumb-on-error-color');
-    }
-}

@@ -26,8 +26,8 @@ import {
   asNumber,
   createCounter,
   findElementFromEventPath,
-  getCenterPoint,
   isEmpty,
+  isLTR,
   partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
@@ -42,10 +42,10 @@ import { all } from './themes/tile.js';
 import { createTileDragGhost, createTileGhost } from './tile-ghost-util.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
-export type IgcTileChangeStateEventArgs = {
+export interface IgcTileChangeStateEventArgs {
   tile: IgcTileComponent;
   state: boolean;
-};
+}
 
 type AdornerType = 'side' | 'corner' | 'bottom';
 
@@ -399,35 +399,20 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return true;
   }
 
-  private _handleDragOver(parameters: DragCallbackParameters) {
-    const match = parameters.state.element as IgcTileComponent;
-    const { clientX, clientY } = parameters.event;
+  private _handleDragOver({ event, state }: DragCallbackParameters): void {
+    const match = state.element as IgcTileComponent;
 
     if (this._dragStack.peek() === match) {
-      const { x, y } = getCenterPoint(match);
-
-      const shouldSwap =
-        this.position <= match.position
-          ? clientX > x || clientY > y
-          : clientX < x || clientY < y;
-
-      if (shouldSwap) {
+      if (this._shouldSwap(event, state, match)) {
         this._dragStack.pop();
         this._dragStack.push(match);
-
-        startViewTransition(() => {
-          swapTiles(this, match);
-        });
+        this._performSwap(match);
       }
-
       return;
     }
 
     this._dragStack.push(match);
-
-    startViewTransition(() => {
-      swapTiles(this, match);
-    });
+    this._performSwap(match);
   }
 
   private _handleDragCancel() {
@@ -445,6 +430,42 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._setDragState(false);
     this._dragStack.reset();
     this.emitEvent('igcTileDragEnd', { detail: this });
+  }
+
+  private _performSwap(match: IgcTileComponent): void {
+    startViewTransition(() => swapTiles(this, match));
+  }
+
+  private _shouldSwap(
+    { clientX, clientY }: PointerEvent,
+    state: DragCallbackParameters['state'],
+    match: IgcTileComponent
+  ): boolean {
+    const LTR = isLTR(this);
+    const direction = state.pointerState.direction;
+
+    const { left, top, width, height } = match.getBoundingClientRect();
+    const relativeX = (clientX - left) / width;
+    const relativeY = (clientY - top) / height;
+
+    switch (direction) {
+      case 'start':
+        return (
+          this.position > match.position &&
+          (LTR ? relativeX <= 0.25 : relativeX >= 0.75)
+        );
+      case 'end':
+        return (
+          this.position < match.position &&
+          (LTR ? relativeX >= 0.75 : relativeX <= 0.25)
+        );
+      case 'top':
+        return this.position > match.position && relativeY <= 0.25;
+      case 'bottom':
+        return this.position < match.position && relativeY >= 0.75;
+      default:
+        return false;
+    }
   }
 
   private _skipDrag(event: PointerEvent): boolean {
@@ -538,12 +559,18 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._fullscreenController.setState(!this.fullscreen);
   }
 
-  private _handleMaximize() {
+  private async _handleMaximize() {
     if (!this._emitMaximizedEvent()) {
       return;
     }
 
-    this.maximized = !this.maximized;
+    this.style.zIndex = '1';
+
+    await startViewTransition(() => {
+      this.maximized = !this.maximized;
+    }).transition?.finished;
+
+    this.style.zIndex = '';
   }
 
   private _emitFullScreenEvent(state: boolean) {
