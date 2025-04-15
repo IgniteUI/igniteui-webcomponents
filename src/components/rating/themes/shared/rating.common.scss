@@ -33,11 +33,11 @@ $theme: $material;
     --disabled-symbol-empty-filter: #{var-get($theme, 'symbol-empty-filter')};
 
     igc-rating-symbol::part(full) {
-        color: #{var-get($theme, 'disabled-full-symbol-color')};
+        color: var-get($theme, 'disabled-full-symbol-color');
     }
 
     igc-rating-symbol::part(empty) {
-        color: #{var-get($theme, 'disabled-empty-symbol-color')};
+        color: var-get($theme, 'disabled-empty-symbol-color');
     }
 
     [part~='label'] {
@@ -46,5 +46,10 @@ $theme: $material;
 
     [part~='value-label'] {
         color: var-get($theme, 'disabled-label-color');
+    }
+
+    [part~='symbols'] {
+        --symbol-full-color: #{var-get($theme, 'disabled-full-symbol-color')};
+        --symbol-empty-color: #{var-get($theme, 'disabled-empty-symbol-color')};
     }
 }
