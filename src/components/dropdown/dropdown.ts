@@ -37,6 +37,7 @@ import {
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
+import type { PopoverScrollStrategy } from '../types.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
@@ -121,7 +122,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   protected trigger!: HTMLSlotElement;
 
   /** The preferred placement of the component around the target element.
-   * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
    * @attr
    */
   @property()
@@ -132,7 +132,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
+  public scrollStrategy: PopoverScrollStrategy = 'scroll';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
