@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 
 import type { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
+import type { AbsolutePosition } from '../../types.js';
 import { watch } from '../decorators/watch.js';
 
 // It'd be better to have this as a mixin rather than a base class once the analyzer
@@ -42,7 +43,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public position: 'bottom' | 'middle' | 'top' = 'bottom';
+  public position: AbsolutePosition = 'bottom';
 
   @watch('displayTime', { waitUntilFirstUpdate: true })
   protected displayTimeChange() {
