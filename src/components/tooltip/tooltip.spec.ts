@@ -400,9 +400,14 @@ describe('Tooltip', () => {
 
   describe('Methods` Tests', () => {
     beforeEach(async () => {
+      clock = useFakeTimers({ toFake: ['setTimeout'] });
       const container = await fixture(createTooltipWithTarget());
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
       anchor = container.querySelector('button')!;
+    });
+
+    afterEach(() => {
+      clock.restore();
     });
 
     it('calls `show` and `hide` methods successfully and returns proper values', async () => {
@@ -470,13 +475,13 @@ describe('Tooltip', () => {
         tooltip.parentElement!.querySelectorAll('button')
       );
 
-      const [firstAnchor, secondAnchor] = buttons;
+      const [defaultAnchor, transientAnchor] = buttons;
 
-      let result = await tooltip.show(firstAnchor);
+      let result = await tooltip.show(defaultAnchor);
       expect(result).to.be.true;
       expect(tooltip.open).to.be.true;
 
-      result = await tooltip.show(secondAnchor);
+      result = await tooltip.show(transientAnchor);
       expect(result).to.be.true;
       expect(tooltip.open).to.be.true;
 
@@ -484,11 +489,16 @@ describe('Tooltip', () => {
       expect(result).to.be.true;
       expect(tooltip.open).to.be.false;
 
-      // The anchor was transient and the tooltip should not be shown on pointerenter
-      simulatePointerEnter(secondAnchor);
+      // the transient anchor should not reopen the tooltip once its hidden
+      simulatePointerEnter(transientAnchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
       expect(tooltip.open).to.be.false;
+
+      simulatePointerEnter(defaultAnchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.true;
     });
   });
 

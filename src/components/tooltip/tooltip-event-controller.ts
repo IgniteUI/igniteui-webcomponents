@@ -16,6 +16,7 @@ class TooltipController implements ReactiveController {
   private _hideTriggers = new Set(['pointerleave', 'click']);
 
   private _anchor: TooltipAnchor;
+  private _defaultAnchor: TooltipAnchor;
   private _isTransientAnchor = false;
   private _open = false;
 
@@ -36,13 +37,13 @@ class TooltipController implements ReactiveController {
       this._addTooltipListeners();
       service.add(this._host, this._options.onEscape);
     } else {
+      if (this._isTransientAnchor) {
+        this._isTransientAnchor = false;
+        this.setAnchor(this._defaultAnchor);
+      }
+
       this._removeTooltipListeners();
       service.remove(this._host);
-
-      if (this._isTransientAnchor) {
-        this._dispose();
-        this._isTransientAnchor = false;
-      }
     }
   }
 
@@ -172,6 +173,9 @@ class TooltipController implements ReactiveController {
       this._handleTooltipEvent(event);
     } else if (event.target === this._anchor) {
       this._handleAnchorEvent(event);
+    } else if (event.target === this._defaultAnchor) {
+      this.open = false;
+      this._handleAnchorEvent(event);
     }
   }
 
@@ -191,16 +195,22 @@ class TooltipController implements ReactiveController {
   public setAnchor(value: TooltipAnchor, transient = false): void {
     if (this._anchor === value) return;
 
-    this._removeAnchorListeners();
+    if (this._anchor !== this._defaultAnchor) {
+      this._removeAnchorListeners();
+    }
+
     this._anchor = value;
     this._isTransientAnchor = transient;
     this._addAnchorListeners();
   }
 
   public resolveAnchor(value: Element | string | undefined): void {
-    this.setAnchor(
-      isString(value) ? getElementByIdFromRoot(this._host, value) : value
-    );
+    const resolvedElement = isString(value)
+      ? getElementByIdFromRoot(this._host, value)
+      : value;
+
+    this._defaultAnchor = resolvedElement;
+    this.setAnchor(resolvedElement);
   }
 
   //#endregion

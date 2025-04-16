@@ -554,6 +554,9 @@ export const SharedTooltipMultipleAnchors: Story = {
           id="transient3"
           >Transient 3</igc-button
         >
+        <igc-button onclick="sharedTooltip.anchor='transient1'"
+          >Switch default anchor to be Transient 1</igc-button
+        >
       </div>
 
       <igc-tooltip anchor="first" id="sharedTooltip" placement="top">
