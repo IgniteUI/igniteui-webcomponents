@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../../theming/theming-decorator.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
@@ -398,10 +399,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     };
   }
 
-  protected renderDay(day: CalendarDay, props: any) {
+  protected renderDay(day: CalendarDay, today: CalendarDay) {
     const ariaLabel = this.intlFormatDay(day);
     const { changePreview, clearPreview } = this.getDayHandlers(day);
 
+    const props = this.getDayProperties(day, today);
     const parts = partNameMap(props);
 
     return html`
@@ -480,17 +482,18 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const last = weeks.length - 1;
 
     for (const [idx, week] of weeks.entries()) {
-      const weekDaysProps: any[] = [];
-      for (const day of week) {
-        weekDaysProps.push(this.getDayProperties(day, today));
+      let hidden: boolean | undefined;
+      if (idx === 0 || idx === last) {
+        hidden =
+          week.every((day) => this.getDayProperties(day, today).hidden) ||
+          undefined;
       }
-      const hidden = weekDaysProps.every((p) => p.hidden);
       yield html`
-        <div role="row" part="days-row" aria-hidden=${hidden}>
+        <div role="row" part="days-row" aria-hidden=${ifDefined(hidden)}>
           ${this.showWeekNumbers
             ? this.renderWeekNumber(week[0], idx === last)
             : nothing}
-          ${week.map((day, i) => this.renderDay(day, weekDaysProps[i]))}
+          ${week.map((day) => this.renderDay(day, today))}
         </div>
       `;
     }
