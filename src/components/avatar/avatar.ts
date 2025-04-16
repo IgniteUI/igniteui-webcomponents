@@ -5,6 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';
 import { all } from './themes/themes.js';
@@ -63,7 +64,7 @@ export default class IgcAvatarComponent extends LitElement {
    * @attr
    */
   @property({ reflect: true })
-  public shape: 'circle' | 'rounded' | 'square' = 'square';
+  public shape: AvatarShape = 'square';
 
   constructor() {
     super();

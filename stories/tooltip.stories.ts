@@ -559,7 +559,7 @@ export const SharedTooltipMultipleAnchors: Story = {
         >
       </div>
 
-      <igc-tooltip anchor="first" id="sharedTooltip" placement="top">
+      <igc-tooltip anchor="first" sticky id="sharedTooltip" placement="top">
         This is a shared tooltip!
       </igc-tooltip>
     `;
