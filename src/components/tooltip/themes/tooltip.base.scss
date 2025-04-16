@@ -11,9 +11,10 @@
 [part="base"] {
     @include type-style('body-2');
 
-    padding: rem(3px) rem(8px);
+    padding: rem(4px) rem(8px);
     font-size: rem(10px);
     font-weight: 600;
+    line-height: rem(16px);
     text-align: start;
     max-width: 200px;
     display: flex;

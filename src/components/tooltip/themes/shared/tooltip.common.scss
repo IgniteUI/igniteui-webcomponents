@@ -9,6 +9,7 @@ $color-border: rem(4px) solid var-get($theme, 'background');
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
     border-radius: var-get($theme, 'border-radius');
+    box-shadow: var-get($theme, 'elevation');
 }
 
 #arrow {

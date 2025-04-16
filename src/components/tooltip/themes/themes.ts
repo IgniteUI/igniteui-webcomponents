@@ -1,8 +1,10 @@
 import { css } from 'lit';
 
 import type { Themes } from '../../../theming/types.js';
-import { styles as bootstrapDark } from './dark/tooltip.bootstrap.css.js';
+import { styles as indigo } from './shared/tooltip.indigo.css.js';
+
 // Dark Overrides
+import { styles as bootstrapDark } from './dark/tooltip.bootstrap.css.js';
 import { styles as fluentDark } from './dark/tooltip.fluent.css.js';
 import { styles as indigoDark } from './dark/tooltip.indigo.css.js';
 import { styles as materialDark } from './dark/tooltip.material.css.js';
@@ -27,7 +29,7 @@ const light = {
     ${fluentLight}
   `,
   indigo: css`
-    ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
@@ -45,7 +47,7 @@ const dark = {
     ${fluentDark}
   `,
   indigo: css`
-    ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 
