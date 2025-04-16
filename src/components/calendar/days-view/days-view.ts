@@ -1,7 +1,6 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../../theming/theming-decorator.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
@@ -482,14 +481,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const last = weeks.length - 1;
 
     for (const [idx, week] of weeks.entries()) {
-      let hidden: boolean | undefined;
+      let hidden = false;
       if (idx === 0 || idx === last) {
-        hidden =
-          week.every((day) => this.getDayProperties(day, today).hidden) ||
-          undefined;
+        hidden = week.every((day) => this.getDayProperties(day, today).hidden);
       }
       yield html`
-        <div role="row" part="days-row" aria-hidden=${ifDefined(hidden)}>
+        <div role="row" part="days-row" aria-hidden=${hidden}>
           ${this.showWeekNumbers
             ? this.renderWeekNumber(week[0], idx === last)
             : nothing}
