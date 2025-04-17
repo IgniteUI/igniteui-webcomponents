@@ -30,14 +30,16 @@ import {
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type CustomDateRange,
   type DateRangeValue,
 } from './date-range-picker.js';
 
 describe('Date range picker', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: Array<IgcDateTimeInputComponent>;
@@ -165,7 +167,7 @@ describe('Date range picker', () => {
       await picker.show();
 
       const input = picker.renderRoot.querySelectorAll(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input).to.have.length(1);
       const dateTimeInputs = picker.renderRoot.querySelectorAll(
@@ -379,6 +381,74 @@ describe('Date range picker', () => {
       expect(eventSpy).calledWith('igcChange');
     });
 
+    //TODO
+    it('should modify value only through calendar selection and not input in dialog mode (single input)', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.mode = 'dialog';
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
+
+      input.focus();
+      simulateKeyboard(input, 'ArrowDown');
+      await elementUpdated(picker);
+      expect(isFocused(input)).to.be.true;
+      expect(input.value).to.equal('');
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+      const doneBtn = picker.shadowRoot!.querySelector(
+        'igc-button[slot="footer"]:last-of-type'
+      ) as HTMLButtonElement;
+      doneBtn?.click();
+      await elementUpdated(picker);
+      checkSelectedRange(
+        picker,
+        { start: today.native, end: tomorrow.native },
+        false
+      );
+      expect(eventSpy).calledWith('igcChange');
+    });
+
+    it('should modify value only through calendar selection and not input when nonEditable is true (single input)', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.nonEditable = true;
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
+
+      input.focus();
+      simulateKeyboard(input, 'ArrowDown');
+      await elementUpdated(picker);
+
+      expect(isFocused(input)).to.be.true;
+      expect(input.value).to.equal('');
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(calendar.values).to.deep.equal([]);
+      expect(eventSpy).not.to.be.called;
+
+      await picker.show();
+      await selectDates(today, tomorrow, calendar);
+      checkSelectedRange(
+        picker,
+        { start: today.native, end: tomorrow.native },
+        false
+      );
+      expect(eventSpy).calledWith('igcChange');
+    });
+
     it('should set properties of the calendar correctly', async () => {
       const props = {
         activeDate: new Date(2025, 3, 9),
@@ -477,7 +547,9 @@ describe('Date range picker', () => {
       Object.assign(picker, propsSingle);
       await elementUpdated(picker);
 
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const input = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
       for (const [prop, value] of Object.entries(propsSingle)) {
         expect((input as any)[prop], `Fail for ${prop}`).to.equal(value);
       }
@@ -517,12 +589,14 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         for (let i = 0; i < predefinedFormats.length; i++) {
+          const rangeInput = picker.renderRoot.querySelector(
+            IgcDateRangeInputComponent.tagName
+          )!;
           picker.displayFormat = predefinedFormats[i].format;
           await elementUpdated(picker);
+          await elementUpdated(rangeInput);
 
-          const input = picker.renderRoot.querySelector(
-            IgcInputComponent.tagName
-          )!;
+          const input = rangeInput.renderRoot.querySelector('input')!;
           expect(input.value).to.equal(
             `${predefinedFormats[i].formattedValue} - ${predefinedFormats[i].formattedValue}`
           );
@@ -595,20 +669,26 @@ describe('Date range picker', () => {
         end: CalendarDay.from(new Date(2025, 3, 10)).native,
       };
       await elementUpdated(picker);
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.value).to.equal('04/09/2025 - 04/10/2025');
 
       picker.locale = 'bg';
       await elementUpdated(picker);
 
-      expect(input.value.normalize('NFKC')).to.equal(
+      expect(input.value?.toString().normalize('NFKC')).to.equal(
         '09.04.2025 г. - 10.04.2025 г.'
       );
     });
     it('should set the default placeholder of the single input to the input format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {
       picker.useTwoInputs = false;
       await elementUpdated(picker);
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.placeholder).to.equal(
         `${picker.inputFormat} - ${picker.inputFormat}`
       );
@@ -629,12 +709,20 @@ describe('Date range picker', () => {
       };
       await elementUpdated(picker);
 
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      let rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      let input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.value).to.equal('04/09/2025 - 04/10/2025');
 
       picker.displayFormat = 'yyyy-MM-dd';
       await elementUpdated(picker);
+      await elementUpdated(rangeInput);
 
+      rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.value).to.equal('2025-04-09 - 2025-04-10');
     });
   });
@@ -1286,6 +1374,20 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(picker.open).to.be.true;
+
+        picker.open = false;
+        picker.useTwoInputs = false;
+
+        await elementUpdated(picker);
+
+        const rangeInput = picker.renderRoot!.querySelector(
+          IgcDateRangeInputComponent.tagName
+        )!;
+        const input = rangeInput.renderRoot.querySelector('input')!;
+        simulateClick(input);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
       });
 
       it('should clear the inputs on clicking the clear icon - two inputs', async () => {
@@ -1318,7 +1420,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         const input = picker.renderRoot!.querySelector(
-          IgcInputComponent.tagName
+          IgcDateRangeInputComponent.tagName
         )!;
         input.focus();
         await elementUpdated(input);
@@ -1333,7 +1435,7 @@ describe('Date range picker', () => {
         });
         expect(picker.open).to.be.false;
         expect(picker.value).to.deep.equal({ start: null, end: null });
-        expect(input.value).to.equal('');
+        expect(input.value).to.equal(null);
       });
 
       it('should not clear the input(s) via the clear icon when readOnly is true', async () => {
@@ -1357,7 +1459,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         const input = picker.renderRoot!.querySelector(
-          IgcInputComponent.tagName
+          IgcDateRangeInputComponent.tagName
         )!;
         input.focus();
         await elementUpdated(input);
@@ -1398,6 +1500,42 @@ describe('Date range picker', () => {
         dateTimeInputs[0].blur();
         expect(eventSpy).calledWith('igcChange', {
           detail: { start: today.add('month', -1).native, end: null },
+        });
+      });
+
+      it('should emit igcInput and igcChange on input value change (single input)', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.useTwoInputs = false;
+        await elementUpdated(picker);
+
+        const rangeInput = picker.renderRoot.querySelector(
+          IgcDateRangeInputComponent.tagName
+        )!;
+        const input = rangeInput.renderRoot.querySelector('input')!;
+        input.focus();
+        await elementUpdated(input);
+        expect(isFocused(input)).to.be.true;
+
+        simulateKeyboard(input, arrowUp);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: today.native, end: today.native },
+        });
+        eventSpy.resetHistory();
+
+        input.setSelectionRange(0, 1); // make sure caret is on the month part (MM/dd/yyyy)
+        simulateKeyboard(input, arrowDown);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: today.add('month', -1).native, end: today.native },
+        });
+        eventSpy.resetHistory();
+
+        input.blur();
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: today.add('month', -1).native, end: today.native },
         });
       });
 
@@ -1839,8 +1977,6 @@ describe('Date range picker', () => {
     });
 
     it('is correctly reset on form reset', async () => {
-      const initial = spec.element.value;
-
       spec.setProperties({ value });
       await elementUpdated(spec.element);
 
@@ -1852,7 +1988,7 @@ describe('Date range picker', () => {
       spec.reset();
       await elementUpdated(spec.element);
 
-      expect(spec.element.value).to.deep.equal(initial);
+      expect(spec.element.value).to.deep.equal({ start: null, end: null });
       expect(dateTimeInputs[0].value).to.equal(null);
       expect(dateTimeInputs[1].value).to.equal(null);
     });
@@ -2141,9 +2277,9 @@ describe('Date range picker', () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker required></igc-date-range-picker>`
       );
-      const input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
+      const input = picker.shadowRoot!.querySelector(
+        IgcDateRangeInputComponent.tagName
+      ) as IgcDateRangeInputComponent;
 
       expect(picker.invalid).to.be.false;
       expect(input.invalid).to.be.false;
@@ -2275,7 +2411,10 @@ const checkSelectedRange = (
   DateTimeUtil.areDateRangesEqual(picker.value, expectedValue);
 
   if (!useTwoInputs) {
-    const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+    const rangeInput = picker.renderRoot.querySelector(
+      IgcDateRangeInputComponent.tagName
+    )!;
+    const input = rangeInput.renderRoot.querySelector('input')!;
     const start = expectedValue?.start
       ? DateTimeUtil.formatDate(
           expectedValue.start,

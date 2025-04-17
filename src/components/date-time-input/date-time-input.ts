@@ -94,7 +94,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   private _max: Date | null = null;
 
   private _inputDateParts!: DatePartInfo[];
-  private _inputFormat!: string;
+  protected _inputFormat!: string;
   private _datePartDeltas: DatePartDeltas = {
     date: 1,
     month: 1,
@@ -249,7 +249,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     );
   }
 
-  private get targetDatePart(): DatePart | undefined {
+  protected get targetDatePart(): DatePart | undefined {
     let result: DatePart | undefined;
 
     if (this.focused) {
@@ -274,7 +274,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return result;
   }
 
-  private get datePartDeltas(): DatePartDeltas {
+  protected get datePartDeltas(): DatePartDeltas {
     return Object.assign({}, this._datePartDeltas, this.spinDelta);
   }
 
@@ -416,7 +416,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.input.setSelectionRange(end, end);
   }
 
-  private trySpinValue(
+  protected trySpinValue(
     datePart: DatePart,
     delta?: number,
     negative = false
@@ -491,11 +491,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.setSelectionRange(start, end);
   }
 
-  private updateDefaultMask(): void {
+  protected updateDefaultMask(): void {
     this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
   }
 
-  private setMask(string: string): void {
+  protected setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
     this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
     const value = this._inputDateParts.map((p) => p.format).join('');
@@ -525,7 +525,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       : null;
   }
 
-  private getMaskedValue(): string {
+  protected getMaskedValue(): string {
     let mask = this.emptyMask;
 
     if (DateTimeUtil.isValidDate(this.value)) {
@@ -553,7 +553,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return this.maskedValue === '' ? mask : this.maskedValue;
   }
 
-  private isComplete(): boolean {
+  protected isComplete(): boolean {
     return !this.maskedValue.includes(this.prompt);
   }
 
