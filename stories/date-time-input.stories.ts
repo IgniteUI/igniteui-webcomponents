@@ -5,6 +5,7 @@ import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
@@ -27,15 +28,15 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
+    value: {
+      type: 'string | Date | DateRangeValue',
+      description: 'The value of the input.',
+      options: ['string', 'Date', 'DateRangeValue'],
+      control: 'text',
+    },
     inputFormat: {
       type: 'string',
       description: 'The date format to apply on the input.',
-      control: 'text',
-    },
-    value: {
-      type: 'string | Date',
-      description: 'The value of the input.',
-      options: ['string', 'Date'],
       control: 'text',
     },
     min: {
@@ -132,10 +133,10 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
+  /** The value of the input. */
+  value: string | Date | DateRangeValue;
   /** The date format to apply on the input. */
   inputFormat: string;
-  /** The value of the input. */
-  value: string | Date;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */

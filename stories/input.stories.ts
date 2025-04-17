@@ -10,6 +10,7 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
@@ -33,9 +34,9 @@ const metadata: Meta<IgcInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description: 'The value of the control.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     type: {
@@ -162,7 +163,7 @@ export default metadata;
 
 interface IgcInputArgs {
   /** The value of the control. */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The type attribute of the control. */
   type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
   /**

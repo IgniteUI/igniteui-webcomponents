@@ -36,6 +36,24 @@ export interface DatePartInfo {
   format: string;
 }
 
+/** @ignore */
+export enum DateRangePosition {
+  Start = 'start',
+  End = 'end',
+  Separator = 'separator',
+}
+
+/** @ignore */
+export interface DateRangePart {
+  part: DatePart;
+  position: DateRangePosition;
+}
+
+/** @ignore */
+export interface DateRangePartInfo extends DatePartInfo {
+  position?: DateRangePosition;
+}
+
 export interface DatePartDeltas {
   date?: number;
   month?: number;

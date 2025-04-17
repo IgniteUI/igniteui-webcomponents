@@ -6,7 +6,7 @@ import { equal } from '../common/util.js';
 import { checkDatesEqual, simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 import type { DateRangeValue } from './date-range-picker.js';
 
@@ -50,7 +50,7 @@ export const checkSelectedRange = (
       checkDatesEqual(inputs[1].value!, expectedValue.end);
     }
   } else {
-    const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+    const input = getInput(picker);
     const start = expectedValue?.start
       ? DateTimeUtil.formatDate(
           expectedValue.start,
@@ -95,4 +95,14 @@ export const checkInputsInvalidState = async (
   );
   expect(inputs[0].invalid).to.equal(first);
   expect(inputs[1].invalid).to.equal(second);
+};
+
+export const getInput = (
+  picker: IgcDateRangePickerComponent
+): HTMLInputElement => {
+  const rangeInput = picker.renderRoot.querySelector(
+    IgcDateRangeInputComponent.tagName
+  )! as IgcDateRangeInputComponent;
+  const input = rangeInput.renderRoot.querySelector('input')!;
+  return input;
 };

@@ -10,7 +10,7 @@ import {
   simulateInput,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -21,7 +21,9 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date Range Picker Two Inputs - Form integration', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: IgcDateTimeInputComponent[];
@@ -477,7 +479,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     await elementUpdated(spec.element);
 
     let singleInput = spec.element.renderRoot.querySelector(
-      IgcInputComponent.tagName
+      IgcDateRangeInputComponent.tagName
     )!;
     expect(singleInput.invalid).to.be.true;
 
@@ -517,7 +519,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     await elementUpdated(spec.element);
 
     singleInput = spec.element.renderRoot.querySelector(
-      IgcInputComponent.tagName
+      IgcDateRangeInputComponent.tagName
     )!;
     expect(singleInput.invalid).to.be.true;
   });

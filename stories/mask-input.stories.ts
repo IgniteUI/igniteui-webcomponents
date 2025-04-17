@@ -9,6 +9,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
@@ -41,10 +42,10 @@ const metadata: Meta<IgcMaskInputComponent> = {
       table: { defaultValue: { summary: 'raw' } },
     },
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     mask: {
@@ -129,7 +130,7 @@ interface IgcMaskInputArgs {
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The mask pattern to apply on the input. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
