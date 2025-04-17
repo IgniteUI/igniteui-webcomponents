@@ -36,6 +36,17 @@ export interface DatePartInfo {
   format: string;
 }
 
+/** @ignore */
+export interface DateRangePart {
+  part: DatePart;
+  rangePart: 'start' | 'end' | 'separator';
+}
+
+/** @ignore */
+export interface DateRangePartInfo extends DatePartInfo {
+  rangePart?: 'start' | 'end' | 'separator';
+}
+
 export interface DatePartDeltas {
   date?: number;
   month?: number;
