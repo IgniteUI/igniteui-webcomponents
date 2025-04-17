@@ -9,6 +9,7 @@ import {
   simulateClick,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -19,7 +20,9 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date Range Picker Two Inputs - Form integration', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: IgcDateTimeInputComponent[];

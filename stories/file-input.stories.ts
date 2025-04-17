@@ -10,6 +10,7 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import { formControls, formSubmitHandler } from './story.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
@@ -29,9 +30,9 @@ const metadata: Meta<IgcFileInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description: 'The value of the control.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     multiple: {
@@ -110,7 +111,7 @@ export default metadata;
 
 interface IgcFileInputArgs {
   /** The value of the control. */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /**
    * The multiple attribute of the control.
    * Used to indicate that a file input allows the user to select more than one file.
