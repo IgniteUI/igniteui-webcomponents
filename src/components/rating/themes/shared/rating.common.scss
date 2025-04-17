@@ -5,6 +5,7 @@ $theme: $material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --symbol-size: #{var-get($theme, 'symbol-size')};
     --symbol-full-color: #{var-get($theme, 'symbol-full-color')};
     --symbol-empty-color: #{var-get($theme, 'symbol-empty-color')};
 }
@@ -28,10 +29,16 @@ $theme: $material;
 
 :host([disabled]),
 :host(:disabled) {
-    --symbol-full-color: #{var-get($theme, 'disabled-full-symbol-color')};
-    --symbol-empty-color: #{var-get($theme, 'disabled-empty-symbol-color')};
     --disabled-symbol-full-filter: #{var-get($theme, 'symbol-full-filter')};
     --disabled-symbol-empty-filter: #{var-get($theme, 'symbol-empty-filter')};
+
+    igc-rating-symbol::part(full) {
+        color: var-get($theme, 'disabled-full-symbol-color');
+    }
+
+    igc-rating-symbol::part(empty) {
+        color: var-get($theme, 'disabled-empty-symbol-color');
+    }
 
     [part~='label'] {
         color: var-get($theme, 'disabled-label-color');
@@ -39,5 +46,10 @@ $theme: $material;
 
     [part~='value-label'] {
         color: var-get($theme, 'disabled-label-color');
+    }
+
+    [part~='symbols'] {
+        --symbol-full-color: #{var-get($theme, 'disabled-full-symbol-color')};
+        --symbol-empty-color: #{var-get($theme, 'disabled-empty-symbol-color')};
     }
 }

@@ -58,7 +58,7 @@ $theme: $bootstrap;
     }
 
     [part='control']::after {
-        border-color: color('primary', 200);
+        border-color: var-get($theme, 'focus-border-color');
     }
 }
 
@@ -90,7 +90,7 @@ $theme: $bootstrap;
 
     [part~='focused'] [part='control'] {
         &::after {
-            border-color: color('primary', 300);
+            border-color: hsl(from var-get($theme, 'focus-border-color') h calc(s * 1.12) calc(l * 0.82));
         }
     }
 }

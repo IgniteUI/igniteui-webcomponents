@@ -28,7 +28,7 @@ igc-button::part(base) {
 igc-button::part(focused),
 igc-button::part(focused):hover {
     border: rem(2px) solid var-get($theme, 'button-focus-border-color');
-    color: var-get($theme, 'button-focus-border-color');
+    color: var-get($theme, 'button-focus-arrow-color');
 }
 
 igc-button[disabled]::part(base) {
