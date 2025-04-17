@@ -8,33 +8,43 @@ import {
   runValidationContainerTests,
   simulateClick,
 } from '../common/utils.spec.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
-import { checkSelectedRange, getIcon } from './date-range-picker.utils.spec.js';
+import {
+  checkInputsInvalidState,
+  checkSelectedRange,
+  getIcon,
+} from './date-range-picker.utils.spec.js';
 
-describe('Date Range Picker Single Input - Form integration', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+describe('Date Range Picker Two Inputs - Form integration', () => {
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
-  let input: IgcInputComponent;
-  let startKey = '';
-  let endKey = '';
+  let dateTimeInputs: IgcDateTimeInputComponent[];
 
   const today = CalendarDay.today;
   const tomorrow = today.add('day', 1);
 
   const spec = createFormAssociatedTestBed<IgcDateRangePickerComponent>(
-    html`<igc-date-range-picker name="rangePicker"></igc-date-range-picker>`
+    html`<igc-date-range-picker
+      name="rangePicker"
+      use-two-inputs
+    ></igc-date-range-picker>`
   );
 
+  let startKey = '';
+  let endKey = '';
   let value: DateRangeValue;
 
   beforeEach(async () => {
     await spec.setup(IgcDateRangePickerComponent.tagName);
     picker = await fixture<IgcDateRangePickerComponent>(
-      html`<igc-date-range-picker></igc-date-range-picker>`
+      html`<igc-date-range-picker use-two-inputs></igc-date-range-picker>`
     );
     startKey = `${spec.element.name}-start`;
     endKey = `${spec.element.name}-end`;
@@ -49,12 +59,14 @@ describe('Date Range Picker Single Input - Form integration', () => {
     it('should not participate in form submission if the value is empty/invalid', () => {
       value = { start: null, end: null };
       spec.setProperties({ value });
-      spec.assertSubmitHasKeyValue('rangePicker', null);
+      spec.assertSubmitHasKeyValue(startKey, null);
+      spec.assertSubmitHasKeyValue(endKey, null);
     });
 
     it('should participate in form submission if there is a value and the value adheres to the validation constraints', () => {
       spec.setProperties({ value });
-      spec.assertSubmitHasKeyValue('rangePicker', null);
+      spec.assertSubmitHasKeyValue(startKey, value.start?.toISOString());
+      spec.assertSubmitHasKeyValue(endKey, value.end?.toISOString());
     });
 
     it('is correctly reset on form reset', async () => {
@@ -63,31 +75,30 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.setProperties({ value });
       await elementUpdated(spec.element);
 
-      input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
-
-      checkSelectedRange(spec.element, value, false);
+      dateTimeInputs = Array.from(
+        picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
+      );
+      checkSelectedRange(spec.element, value);
 
       spec.reset();
       await elementUpdated(spec.element);
 
       expect(spec.element.value).to.deep.equal(initial);
-      expect(input.value).to.equal('');
+      expect(dateTimeInputs[0].value).to.equal(null);
+      expect(dateTimeInputs[1].value).to.equal(null);
     });
 
-    it('should not be in invalid state on reset for a required control which previously had value', () => {
+    it('should not be in invalid state on reset for a required control which previously had value', async () => {
       spec.setProperties({ value: value });
       spec.setProperties({ required: true });
 
       spec.assertSubmitPasses();
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       spec.setProperties({ value: null });
 
       spec.reset();
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should not be in invalid state on reset for a required control with no value', async () => {
@@ -95,15 +106,10 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.setProperties({ required: true });
 
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       spec.reset();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should reset to the new default value after setAttribute() call', async () => {
@@ -114,18 +120,18 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.setProperties({ value: { start: null, end: null } });
       await elementUpdated(spec.element);
 
-      input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
-
-      expect(input.value).to.equal('');
+      dateTimeInputs = Array.from(
+        picker.renderRoot.querySelectorAll(IgcDateTimeInputComponent.tagName)
+      );
+      expect(dateTimeInputs[0].value).to.equal(null);
+      expect(dateTimeInputs[1].value).to.equal(null);
 
       spec.reset();
       await elementUpdated(spec.element);
 
       spec.assertSubmitHasKeyValue(startKey, newValue.start?.toISOString());
       spec.assertSubmitHasKeyValue(endKey, newValue.end?.toISOString());
-      checkSelectedRange(spec.element, newValue, false);
+      checkSelectedRange(spec.element, newValue);
     });
 
     it('should reflect disabled ancestor state (fieldset/form)', () => {
@@ -141,111 +147,86 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.setProperties({ required: true });
 
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       spec.setProperties({ value });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should enforce min value constraint', async () => {
       // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1) });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       // Invalid min constraint for both values
       spec.setProperties({
         value: { start: new Date(2022, 0, 1), end: new Date(2022, 0, 1) },
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Invalid min constraint for start value
       spec.setProperties({
         value: { start: new Date(2022, 0, 1), end: new Date(2026, 0, 2) },
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Invalid min constraint for end value
       spec.setProperties({
         value: { start: new Date(2026, 0, 2), end: new Date(2022, 0, 2) },
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Valid value
       spec.setProperties({
         value: { start: new Date(2026, 0, 2), end: new Date(2026, 0, 3) },
       });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should enforce max value constraint', async () => {
       // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1) });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       // Invalid max constraint for both values
       spec.setProperties({ value });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Invalid max constraint for start value
       spec.setProperties({
         value: { start: today.native, end: new Date(2019, 0, 2) },
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Invalid max constraint for end value
       spec.setProperties({
         value: { start: new Date(2019, 0, 2), end: today.native },
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Valid value
       spec.setProperties({
         value: { start: new Date(2019, 0, 2), end: new Date(2019, 0, 3) },
       });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should enforce min value constraint with string property', async () => {
       // No value - submit passes
       spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       // Invalid min constraint
       spec.setProperties({
@@ -255,8 +236,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
         }),
       });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Valid value
       spec.setProperties({
@@ -266,25 +246,19 @@ describe('Date Range Picker Single Input - Form integration', () => {
         }),
       });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should enforce max value constraint with string property', async () => {
       // No value - submit passes
       spec.setProperties({ max: new Date(2020, 0, 1).toISOString() });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       // Invalid min constraint
       spec.setProperties({ value: JSON.stringify(value) });
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // Valid value
       spec.setProperties({
@@ -294,8 +268,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
         }),
       });
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('should invalidate the component if a disabled date is typed in the input', async () => {
@@ -316,11 +289,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // start and end values are valid, but wrap the disabled range
       spec.setProperties({
@@ -329,8 +298,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // start within the disabled range, end is valid
       spec.setProperties({
@@ -339,8 +307,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // end within the disabled range, start is valid
       spec.setProperties({
@@ -349,8 +316,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       // single selected date outside the disabled range
       spec.setProperties({
@@ -359,8 +325,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.false;
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
 
       // single selected date in the disabled range
       spec.setProperties({
@@ -369,23 +334,17 @@ describe('Date Range Picker Single Input - Form integration', () => {
       });
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
     });
 
     it('should enforce custom constraint', async () => {
       spec.element.setCustomValidity('invalid');
       spec.assertSubmitFails();
-      await elementUpdated(spec.element);
-      const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      )!;
-      expect(input.invalid).to.be.true;
+      await checkInputsInvalidState(spec.element, true, true);
 
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
-      await elementUpdated(spec.element);
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(spec.element, false, false);
     });
 
     it('synchronous form validation', () => {
@@ -406,22 +365,22 @@ describe('Date Range Picker Single Input - Form integration', () => {
   describe('Initial validation', () => {
     const toggleIcon = 'today';
 
-    it('should not enter in invalid state when clicking the calendar toggle part', async () => {
+    it('should not enter in invalid state when clicking the calendar toggle part - two inputs', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker required></igc-date-range-picker>`
+        html`<igc-date-range-picker
+          required
+          use-two-inputs
+        ></igc-date-range-picker>`
       );
-      const input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
 
       expect(picker.invalid).to.be.false;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(picker, false, false);
 
       simulateClick(getIcon(picker, toggleIcon));
       await elementUpdated(picker);
 
       expect(picker.invalid).to.be.false;
-      expect(input.invalid).to.be.false;
+      await checkInputsInvalidState(picker, false, false);
     });
   });
 
@@ -437,6 +396,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       <igc-date-range-picker
         name="rangePicker"
         .defaultValue=${value}
+        use-two-inputs
       ></igc-date-range-picker>
     `);
 
@@ -448,7 +408,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
 
     it('correct initial state', () => {
       spec.assertIsPristine();
-      checkSelectedRange(spec.element, value, false);
+      checkSelectedRange(spec.element, value);
     });
 
     it('is correctly submitted', () => {
@@ -465,7 +425,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.reset();
       await elementUpdated(spec.element);
 
-      checkSelectedRange(spec.element, value, false);
+      checkSelectedRange(spec.element, value);
     });
   });
   describe('Validation message slots', () => {

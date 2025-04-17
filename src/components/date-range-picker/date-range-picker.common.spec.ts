@@ -17,6 +17,7 @@ import {
 } from '../common/utils.spec.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type CustomDateRange,
 } from './date-range-picker.js';
@@ -28,7 +29,9 @@ import {
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 
 describe('Date range picker - common tests for single and two inputs mode', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let calendar: IgcCalendarComponent;

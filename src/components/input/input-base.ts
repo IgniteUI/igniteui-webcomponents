@@ -7,6 +7,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { createCounter, partNameMap } from '../common/util.js';
+import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
@@ -46,7 +47,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   /* blazorSuppress */
   /** The value attribute of the control. */
-  public abstract value: string | Date | null;
+  public abstract value: string | Date | DateRangeValue | null;
 
   @query('input')
   protected input!: HTMLInputElement;
