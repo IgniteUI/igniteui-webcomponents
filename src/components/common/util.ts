@@ -292,6 +292,32 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+export function isObject(value: unknown): value is object {
+  return value != null && typeof value === 'object';
+}
+
+export function isEventListenerObject(x: unknown): x is EventListenerObject {
+  return isObject(x) && 'handleEvent' in x;
+}
+
+export function addWeakEventListener(
+  element: Element,
+  event: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions | boolean
+): void {
+  const weakRef = new WeakRef(listener);
+  const wrapped = (evt: Event) => {
+    const handler = weakRef.deref();
+
+    return isEventListenerObject(handler)
+      ? handler.handleEvent(evt)
+      : handler?.(evt);
+  };
+
+  element.addEventListener(event, wrapped, options);
+}
+
 /**
  * Returns whether a given collection is empty.
  */

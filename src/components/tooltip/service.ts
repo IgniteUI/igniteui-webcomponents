@@ -43,13 +43,13 @@ class TooltipEscapeCallbacks {
   }
 
   /** @internal */
-  public handleEvent(event: KeyboardEvent): void {
+  public async handleEvent(event: KeyboardEvent): Promise<void> {
     if (event.key !== escapeKey) {
       return;
     }
 
     const [tooltip, callback] = last(Array.from(this._collection.entries()));
-    callback?.call(tooltip);
+    await callback?.call(tooltip);
   }
 }
 

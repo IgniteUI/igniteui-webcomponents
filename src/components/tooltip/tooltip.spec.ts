@@ -500,6 +500,51 @@ describe('Tooltip', () => {
       await showComplete();
       expect(tooltip.open).to.be.true;
     });
+
+    it('should be able to pass and IDREF to `show` method', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      const [_, transientAnchor] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      transientAnchor.id = 'custom-target';
+
+      const result = await tooltip.show('custom-target');
+      expect(result).to.be.true;
+      expect(tooltip.open).to.be.true;
+      expect(eventSpy.callCount).to.equal(0);
+    });
+
+    it('should correctly handle open state and events between default and transient anchors', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      const [defaultAnchor, transientAnchor] = Array.from(
+        tooltip.parentElement!.querySelectorAll('button')
+      );
+
+      const result = await tooltip.show(transientAnchor);
+      expect(result).to.be.true;
+      expect(tooltip.open).to.be.true;
+      expect(eventSpy.callCount).to.equal(0);
+
+      simulatePointerEnter(defaultAnchor);
+      // Trigger on the initial default anchor. Tooltip must be hidden.
+      expect(tooltip.open).to.be.false;
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete();
+      expect(tooltip.open).to.be.true;
+
+      expect(eventSpy).calledWith('igcOpening', {
+        cancelable: true,
+        detail: defaultAnchor,
+      });
+
+      expect(eventSpy).calledWith('igcOpened', {
+        cancelable: false,
+        detail: defaultAnchor,
+      });
+    });
   });
 
   describe('Behaviors', () => {

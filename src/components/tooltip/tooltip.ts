@@ -15,10 +15,10 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
+import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
-import { addTooltipController } from './tooltip-event-controller.js';
 
 export interface IgcTooltipComponentEventMap {
   igcOpening: CustomEvent<Element | null>;
@@ -258,7 +258,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     super();
 
     this._internals = this.attachInternals();
-    this._internals.role = this.sticky ? 'status' : 'tooltip';
+    this._internals.role = 'tooltip';
     this._internals.ariaAtomic = 'true';
     this._internals.ariaLive = 'polite';
   }
@@ -273,7 +273,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   @watch('anchor')
-  protected _onAnchorChange() {
+  protected _onAnchorChange(): void {
     this._controller.resolveAnchor(this.anchor);
   }
 
@@ -328,6 +328,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
     if (withDelay) {
       clearTimeout(this._timeoutId);
+
       return new Promise(() => {
         this._timeoutId = setTimeout(
           async () => await commitStateChange(),
@@ -343,13 +344,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    *  Shows the tooltip if not already showing.
    *  If a target is provided, sets it as a transient anchor.
    */
-  public show(target?: Element): Promise<boolean> {
+  public async show(target?: Element | string): Promise<boolean> {
     if (target) {
       this._stopTimeoutAndAnimation();
-
-      if (this._controller.anchor !== target) {
-        this.open = false;
-      }
       this._controller.setAnchor(target, true);
     }
 
@@ -357,12 +354,12 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /** Hides the tooltip if not already hidden. */
-  public hide(): Promise<boolean> {
+  public async hide(): Promise<boolean> {
     return this._applyTooltipState({ show: false });
   }
 
   /** Toggles the tooltip between shown/hidden state */
-  public toggle(): Promise<boolean> {
+  public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }
 
