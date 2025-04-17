@@ -19,7 +19,7 @@ $theme: $base;
 
 [part~='filled'] {
     [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--filled');
+        color: var-get($theme, 'filled-text-color');
     }
 
     [part~='prefix'] {
