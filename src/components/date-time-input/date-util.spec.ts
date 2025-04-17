@@ -645,4 +645,28 @@ describe('Date Util', () => {
     DateTimeUtil.spinAmPm(currentDate, newDate, 'AM');
     expect(currentDate.getHours()).to.equal(4);
   });
+
+  it('should correctly compare DateRangeValue objects', () => {
+    const now = new Date();
+    const later = new Date(now.getTime() + 1000 * 60 * 60); // 1 hour later
+
+    const range1 = { start: now, end: later };
+    const range2 = { start: new Date(now), end: new Date(later) };
+    const range3 = { start: new Date(now), end: new Date(now) };
+
+    expect(DateTimeUtil.areDateRangesEqual(range1, range2)).to.be.true;
+
+    expect(DateTimeUtil.areDateRangesEqual(range1, range3)).to.be.false;
+
+    expect(DateTimeUtil.areDateRangesEqual(range1, null)).to.be.false;
+    expect(DateTimeUtil.areDateRangesEqual(null, range2)).to.be.false;
+
+    expect(DateTimeUtil.areDateRangesEqual(null, null)).to.be.true;
+
+    const partial1 = { start: null, end: later };
+    const partial2 = { start: null, end: new Date(later) };
+    const partial3 = { start: now, end: later };
+    expect(DateTimeUtil.areDateRangesEqual(partial1, partial2)).to.be.true;
+    expect(DateTimeUtil.areDateRangesEqual(partial1, partial3)).to.be.false;
+  });
 });

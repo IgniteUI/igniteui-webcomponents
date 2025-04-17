@@ -652,7 +652,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected dialogDone() {
-    this.emitEvent('igcChange', { detail: this.value });
+    if (!DateTimeUtil.areDateRangesEqual(this.value, this._oldValue)) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
     this._hide(true);
   }
 
@@ -723,11 +725,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected handleFocusOut({ relatedTarget }: FocusEvent) {
     if (!this.contains(relatedTarget as Node)) {
       this.checkValidity();
-      if (
-        !this.useTwoInputs &&
-        !this.readOnly &&
-        this._oldValue !== this.value
-      ) {
+
+      const isSameValue = DateTimeUtil.areDateRangesEqual(
+        this.value,
+        this._oldValue
+      );
+      if (!this.useTwoInputs && !this.readOnly && !isSameValue) {
         this.emitEvent('igcChange', { detail: this.value });
       }
     }

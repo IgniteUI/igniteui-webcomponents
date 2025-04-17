@@ -61,7 +61,7 @@ describe('Date range picker', () => {
       await expect(picker).lightDom.to.be.accessible();
     });
 
-    xit('is accessible (open state) - default dropdown mode', async () => {
+    it('is accessible (open state) - default dropdown mode', async () => {
       picker.open = true;
       await elementUpdated(picker);
 
@@ -69,7 +69,7 @@ describe('Date range picker', () => {
       await expect(picker).lightDom.to.be.accessible();
     });
 
-    xit('is accessible (open state) - dialog mode', async () => {
+    it('is accessible (open state) - dialog mode', async () => {
       picker.open = true;
       picker.mode = 'dialog';
       await elementUpdated(picker);
@@ -751,6 +751,27 @@ describe('Date range picker', () => {
           start: aMonthAgo.native,
           end: today.native,
         });
+      });
+
+      it('should not emit igcChange when value is unchanged and done is clicked (dialog)', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = { start: today.native, end: tomorrow.native };
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        expect(eventSpy).not.to.be.calledWith('igcChange');
+        const dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(true);
+
+        const doneBtn = picker.shadowRoot!.querySelector(
+          'igc-button[slot="footer"]:last-of-type'
+        ) as HTMLButtonElement;
+        doneBtn?.click();
+        await elementUpdated(picker);
+        expect(eventSpy).not.calledWith('igcChange');
       });
 
       it('should select a range of dates in dialog mode and emit igcChange when done is clicked', async () => {
@@ -2033,12 +2054,8 @@ const checkSelectedRange = (
     IgcCalendarComponent.tagName
   )!;
 
-  if (expectedValue?.start) {
-    checkDatesEqual(picker.value?.start!, expectedValue.start);
-  }
-  if (expectedValue?.end) {
-    checkDatesEqual(picker.value?.end!, expectedValue.end);
-  }
+  DateTimeUtil.areDateRangesEqual(picker.value, expectedValue);
+
   if (!useTwoInputs) {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
     const start = expectedValue?.start
