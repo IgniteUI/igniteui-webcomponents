@@ -1422,23 +1422,25 @@ describe('Date range picker', () => {
         picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
-        const input = picker.renderRoot!.querySelector(
+        const rangeInput = picker.renderRoot!.querySelector(
           IgcDateRangeInputComponent.tagName
         )!;
-        input.focus();
-        await elementUpdated(input);
+        const input = rangeInput.renderRoot.querySelector('input')!;
+        rangeInput.focus();
+        await elementUpdated(rangeInput);
         simulateClick(getIcon(picker, clearIcon));
         await elementUpdated(picker);
-        input.blur();
-        await elementUpdated(input);
+        rangeInput.blur();
+        await elementUpdated(rangeInput);
 
-        expect(isFocused(input)).to.be.false;
+        expect(isFocused(rangeInput)).to.be.false;
         expect(eventSpy).to.be.calledWith('igcChange', {
           detail: { start: null, end: null },
         });
         expect(picker.open).to.be.false;
         expect(picker.value).to.deep.equal({ start: null, end: null });
-        expect(input.value).to.equal(null);
+        expect(rangeInput.value).to.deep.equal({ start: null, end: null });
+        expect(input.value).to.equal('');
       });
 
       it('should not clear the input(s) via the clear icon when readOnly is true', async () => {

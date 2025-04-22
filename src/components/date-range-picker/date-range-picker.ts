@@ -678,7 +678,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
     const input = event.target as IgcDateRangeInputComponent;
-    const newValue = input.range;
+    const newValue = input.value;
 
     this.value = newValue;
     this._calendar.activeDate = newValue?.start;
@@ -707,7 +707,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     event.stopPropagation();
 
     const input = event.target as IgcDateRangeInputComponent;
-    const newValue = input.range!;
+    const newValue = input.value!;
 
     const { start, end } = this.swapDates(newValue) ?? {
       start: null,
@@ -951,7 +951,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         IgcDateRangeInputComponent.tagName
       );
       if (input) {
-        input.range = null;
+        input.value = null;
         input.clear();
       }
     }
@@ -1176,11 +1176,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     );
     return html`<igc-date-range-input
         id=${id}
-        .range=${live(this.value)}
+        .value=${live(this.value)}
         .placeholder=${this.placeholder}
         aria-haspopup="dialog"
         label=${this.label}
-        placeholder=${this.placeholder}
         ?readonly=${readOnly}
         ?required=${this.required}
         .outlined=${this.outlined}
