@@ -10,7 +10,6 @@ import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import {
   DatePart,
   type DatePartDeltas,
-  type DatePartInfo,
   DateParts,
   type DateRangePart,
   type DateRangePartInfo,
@@ -116,13 +115,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       if (partType) {
         result = { part: partType, rangePart: part?.rangePart! };
       }
-    } else if (
-      this._inputDateRangeParts.some((p) => p.type === DateParts.Date)
-    ) {
-      const datePart = this._inputDateRangeParts.find(
-        (p) => p.type === DateParts.Date
-      );
-      result = { part: DatePart.Date, rangePart: datePart?.rangePart! };
     } else {
       result = {
         part: this._inputDateRangeParts[0].type as string as DatePart,
@@ -172,7 +164,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     })) as DateRangePartInfo[];
 
     const separatorStart = startParts[startParts.length - 1].end;
-    const separatorParts: DatePartInfo[] = [];
+    const separatorParts: DateRangePartInfo[] = [];
 
     for (let i = 0; i < SINGLE_INPUT_SEPARATOR.length; i++) {
       const element = SINGLE_INPUT_SEPARATOR.charAt(i);
@@ -182,6 +174,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
         format: element,
         start: separatorStart + i,
         end: separatorStart + i + 1,
+        rangePart: 'separator',
       });
     }
 
@@ -237,6 +230,54 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
 
     return this.maskedValue === '' ? mask : this.maskedValue;
+  }
+
+  protected override navigateParts(delta: number) {
+    const position = this.getNewPosition(this.input.value, delta);
+    this.setSelectionRange(position, position);
+  }
+
+  protected override getNewPosition(value: string, direction = 0): number {
+    let cursorPos = this.selection.start;
+
+    const separatorPart = this._inputDateRangeParts.find(
+      (part) => part.rangePart === 'separator'
+    );
+
+    if (!direction) {
+      const firstSeparator =
+        this._inputDateRangeParts.find((p) => p.rangePart === 'separator')
+          ?.start ?? 0;
+      const lastSeparator =
+        this._inputDateRangeParts.findLast((p) => p.rangePart === 'separator')
+          ?.end ?? 0;
+      // Last literal before the current cursor position or start of input value
+      let part = this._inputDateRangeParts.findLast(
+        (part) => part.type === DateParts.Literal && part.end < cursorPos
+      );
+      // skip over the separator parts
+      if (part?.rangePart === 'separator' && cursorPos === lastSeparator) {
+        cursorPos = firstSeparator;
+        part = this._inputDateRangeParts.findLast(
+          (part) => part.type === DateParts.Literal && part.end < cursorPos
+        );
+      }
+      return part?.end ?? 0;
+    }
+
+    if (
+      separatorPart &&
+      cursorPos >= separatorPart.start &&
+      cursorPos <= separatorPart.end
+    ) {
+      // Cursor is inside the separator; skip over it
+      cursorPos = separatorPart.end + 1;
+    }
+    // First literal after the current cursor position or end of input value
+    const part = this._inputDateRangeParts.find(
+      (part) => part.type === DateParts.Literal && part.start > cursorPos
+    );
+    return part?.start ?? value.length;
   }
 
   private setDatePartInMask(
@@ -343,11 +384,11 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
     let newDate = this.range?.start
       ? CalendarDay.from(this.range.start).native
-      : new Date();
+      : CalendarDay.today.native;
     if (datePart.rangePart === 'end') {
       newDate = this.range?.end
         ? CalendarDay.from(this.range.end).native
-        : new Date();
+        : CalendarDay.today.native;
     }
 
     switch (datePart.part) {

@@ -570,7 +570,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.updateValue();
   }
 
-  private getNewPosition(value: string, direction = 0): number {
+  protected getNewPosition(value: string, direction = 0): number {
     const cursorPos = this.selection.start;
 
     if (!direction) {
