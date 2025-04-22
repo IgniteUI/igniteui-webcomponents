@@ -165,6 +165,9 @@ class TooltipController implements ReactiveController {
         break;
       case 'pointerleave':
         await this._options.onHide.call(this._host);
+        break;
+      default:
+        return;
     }
   }
 
@@ -256,8 +259,27 @@ class TooltipController implements ReactiveController {
 }
 
 function parseTriggers(string: string): Set<string> {
-  return new Set((string ?? '').split(/[,\s]+/).filter((s) => s.trim()));
+  return new Set(
+    (string ?? '').split(TooltipRegexes.triggers).filter((s) => s.trim())
+  );
 }
+
+export const TooltipRegexes = Object.freeze({
+  /** Used for parsing the strings passed in the tooltip `show/hide-trigger` properties. */
+  triggers: /[,\s]+/,
+
+  /** Matches horizontal `PopoverPlacement` start positions. */
+  horizontalStart: /^(left|right)-start$/,
+
+  /** Matches horizontal `PopoverPlacement` end positions. */
+  horizontalEnd: /^(left|right)-end$/,
+
+  /** Matches vertical `PopoverPlacement` start positions. */
+  start: /start$/,
+
+  /** Matches vertical `PopoverPlacement` end positions. */
+  end: /end$/,
+});
 
 export function addTooltipController(
   host: IgcTooltipComponent,

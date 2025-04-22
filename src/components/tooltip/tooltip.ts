@@ -15,7 +15,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import { addTooltipController } from './controller.js';
+import { TooltipRegexes, addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
@@ -91,24 +91,24 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _arrowElement!: HTMLElement;
 
   private get _arrowOffset() {
-    if (/-/.test(this.placement)) {
+    if (this.placement.includes('-')) {
       // Horizontal start | end placement
 
-      if (/^(left|right)-start$/.test(this.placement)) {
+      if (TooltipRegexes.horizontalStart.test(this.placement)) {
         return -8;
       }
 
-      if (/^(left|right)-end$/.test(this.placement)) {
+      if (TooltipRegexes.horizontalEnd.test(this.placement)) {
         return 8;
       }
 
       // Vertical start | end placement
 
-      if (/start$/.test(this.placement)) {
+      if (TooltipRegexes.start.test(this.placement)) {
         return isLTR(this) ? -8 : 8;
       }
 
-      if (/end$/.test(this.placement)) {
+      if (TooltipRegexes.end.test(this.placement)) {
         return isLTR(this) ? 8 : -8;
       }
     }
@@ -350,17 +350,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       this._controller.setAnchor(target, true);
     }
 
-    return this._applyTooltipState({ show: true });
+    return await this._applyTooltipState({ show: true });
   }
 
   /** Hides the tooltip if not already hidden. */
   public async hide(): Promise<boolean> {
-    return this._applyTooltipState({ show: false });
+    return await this._applyTooltipState({ show: false });
   }
 
   /** Toggles the tooltip between shown/hidden state */
   public async toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return await (this.open ? this.hide() : this.show());
   }
 
   protected _showWithEvent(): Promise<boolean> {
@@ -393,7 +393,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._stopTimeoutAndAnimation();
 
     this._timeoutId = setTimeout(
-      () => this._hideWithEvent(),
+      this._hideWithEvent.bind(this),
       this._autoHideDelay
     );
   }
