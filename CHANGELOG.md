@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Carousel Slide's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Carousel's `select` method.
 - #### Stepper
   - Stepper Step's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Stepper's `navigateTo` method.
-- #### Tabs - **v6.0.0 BREAKING CHANGE**
+- #### Tabs - **NEXT MAJOR (v6.0.0) BREAKING CHANGE**
   - `igc-tab` **panel** property is removed.
   - Starting with the next major release of the library (6.0.0) the `igc-tab-panel` will be removed.
     The `igc-tab` now encompasses both the tab header and the tab content in a single component. Slotted content in the default
