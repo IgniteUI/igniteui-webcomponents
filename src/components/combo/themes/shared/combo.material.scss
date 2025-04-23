@@ -16,7 +16,7 @@ $dropdown-theme: dropdown-theme.$material;
 
         margin-block-start: rem(4px);
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 
     ::slotted([slot='prefix']),
@@ -75,16 +75,24 @@ $dropdown-theme: dropdown-theme.$material;
     color: var-get($theme, 'toggle-button-foreground-filled');
 }
 
-:host(:focus-within) {
-    [part~='toggle-icon'] {
-        color: var-get($theme, 'toggle-button-foreground-filled');
-        background: var-get($theme, 'toggle-button-background-focus');
-    }
-}
-
 :host(:not([outlined]):focus-within) {
-    > igc-input::part(container) {
-        background: var-get($input-theme, 'box-background-focus');
+    igc-input::part(container) {
+        --_toggle-focus-background: #{var-get($theme, 'toggle-button-background')};
+        --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground')};
+
+        &:focus-within {
+            --_toggle-focus-background: #{var-get($theme, 'toggle-button-background-focus')};
+            --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground-filled')};
+        }
+    }
+
+    [part~='toggle-icon'] {
+        color: var(--_toggle-focus-foreground);
+        background: var(--_toggle-focus-background);
+    }
+
+    [part='toggle-icon filled'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
     }
 }
 

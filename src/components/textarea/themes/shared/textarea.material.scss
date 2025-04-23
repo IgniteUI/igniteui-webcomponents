@@ -17,7 +17,7 @@ $input-bottom-padding: rem(6px);
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: rem(4px);
-        padding-inline-start: pad-inline(rem(12px), rem(14px), rem(16px));
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 }
 
@@ -327,6 +327,22 @@ textarea {
 
     textarea {
         bottom: rem(2px);
+    }
+}
+
+:host([outlined]:hover) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+
+    [part~='container'][part~='filled'],
+    [part~='container'][part~='placeholder'] {
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
     }
 }
 

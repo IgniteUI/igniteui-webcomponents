@@ -1,14 +1,15 @@
 import {
+  aTimeout,
   elementUpdated,
   expect,
   fixture,
   html,
-  nextFrame,
 } from '@open-wc/testing';
 import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -16,6 +17,7 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import { createIconDefaultMap } from './registry/default-map.js';
 import {
   ActionType,
   type BroadcastIconsChangeMessage,
@@ -160,7 +162,7 @@ describe('Icon broadcast service', () => {
       const iconName = 'bug';
 
       registerIconFromText(iconName, bugSvg, collectionName);
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections } = first(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
@@ -180,7 +182,7 @@ describe('Icon broadcast service', () => {
       for (const each of icons) {
         registerIconFromText(each[0], each[1], collectionName);
       }
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(icons.length);
       for (const [idx, event] of events.entries()) {
@@ -204,7 +206,7 @@ describe('Icon broadcast service', () => {
         name: 'reference-test',
         collection: collectionName,
       });
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -224,7 +226,7 @@ describe('Icon broadcast service', () => {
       meta.name = 'reference-test';
       meta.collection = collectionName;
       setIconRef(refName, refCollectionName, meta);
-      await nextFrame();
+      await aTimeout(0);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -247,9 +249,32 @@ describe('Icon broadcast service', () => {
         },
         overwrite: true,
       });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events.length).to.equal(0);
+    });
+
+    it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
+      const collections = createIconDefaultMap<string, SvgIcon>();
+      const references = createIconDefaultMap<string, IconMeta>();
+      // 2 new broadcasts
+      const broadcast1 = new IconsStateBroadcast(collections, references);
+      const broadcast2 = new IconsStateBroadcast(collections, references);
+      // 1 global one, initialized when you get the icon registry first time.
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(20);
+
+      // all icon broadcasts must respond with their state
+      // 2 from broadcast service + 1 from global.
+      expect(events.length).to.equal(3);
+
+      // dispose of mock services.
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast1['dispose']();
+      // biome-ignore lint/complexity/useLiteralKeys: private access escape
+      broadcast2['dispose']();
     });
   });
 
@@ -260,7 +285,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
@@ -285,7 +310,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await nextFrame();
+      await aTimeout(0);
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 

@@ -1,0 +1,48 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+%indicator {
+    --_size: #{rem(11px)};
+
+    display: inline-flex;
+    visibility: var(--resize-visibility);
+    position: absolute;
+    z-index: 1;
+}
+
+:host {
+    display: contents;
+}
+
+[part~='resize-base'] {
+    position: relative;
+    height: 100%;
+}
+
+[part='trigger-side'],
+[part='trigger'],
+[part='trigger-bottom'] {
+    @extend %indicator;
+}
+
+[part='trigger-side'] {
+    top: calc(50% - var(--_size));
+    right: calc(var(--_size) / 2 * -1);
+    cursor: e-resize;
+}
+
+[part='trigger'] {
+    bottom: calc(var(--_size) / 2 * -1);
+    right: calc(var(--_size) / 2 * -1);
+    cursor: se-resize;
+}
+
+[part='trigger-bottom'] {
+    left: calc(50% - var(--_size));
+    bottom: calc(var(--_size) / 2 * -1);
+    cursor: s-resize;
+}
+
+[part='trigger']:focus {
+    outline: none;
+}

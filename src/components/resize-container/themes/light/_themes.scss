@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/resize-indicator' as *;
+
+$base: digest-schema($light-resize-indicator);
+$material: digest-schema($material-resize-indicator);
+$bootstrap: digest-schema($bootstrap-resize-indicator);
+$fluent: digest-schema($fluent-resize-indicator);
+$indigo: digest-schema($indigo-resize-indicator);

@@ -174,6 +174,42 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 }
 
+export function simulatePointerEnter(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerenter', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+export function simulatePointerLeave(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('pointerleave', {
+      bubbles: true,
+      composed: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+export function simulateFocus(node: Element) {
+  node.dispatchEvent(new FocusEvent('focus'));
+}
+
+export function simulateBlur(node: Element) {
+  node.dispatchEvent(new FocusEvent('blur'));
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
@@ -205,24 +241,16 @@ export function simulateLostPointerCapture(
   );
 }
 
-type PointerEventIncrement = {
-  x?: number;
-  y?: number;
-};
-
 export function simulatePointerMove(
   node: Element,
   options?: PointerEventInit,
-  increment?: PointerEventIncrement,
+  increment?: { x?: number; y?: number },
   times = 1
 ) {
   const { x = 0, y = 0 } = increment ?? {};
   const { clientX = 0, clientY = 0 } = options ?? {};
 
-  let i = 0;
-
-  do {
-    i += 1;
+  for (let i = 1; i <= times; i++) {
     node.dispatchEvent(
       new PointerEvent('pointermove', {
         bubbles: true,
@@ -233,7 +261,7 @@ export function simulatePointerMove(
         clientY: clientY + i * y,
       })
     );
-  } while (i < times);
+  }
 }
 
 export function simulateClick(
@@ -334,6 +362,12 @@ export async function simulateScroll(node: Element, options?: ScrollToOptions) {
 export function simulateWheel(node: Element, options?: WheelEventInit) {
   node.dispatchEvent(
     new WheelEvent('wheel', { bubbles: true, composed: true, ...options })
+  );
+}
+
+export function simulateDoubleClick(node: Element) {
+  node.dispatchEvent(
+    new PointerEvent('dblclick', { bubbles: true, composed: true })
   );
 }
 
@@ -473,4 +507,18 @@ export function runValidationContainerTests<T extends IgcFormControl>(
   for (const each of testParams) {
     runner(each);
   }
+}
+
+/**
+ * Compares and returns whether the passed in CSS `{ prop: value }` entries match against
+ * the resolved `(getComputedStyle)` styles of the element.
+ */
+export function compareStyles(
+  element: Element,
+  values: Partial<CSSStyleDeclaration>
+): boolean {
+  const computed = getComputedStyle(element);
+  return Object.entries(values).every(
+    ([key, value]) => computed.getPropertyValue(toKebabCase(key)) === value
+  );
 }

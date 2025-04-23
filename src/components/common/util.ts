@@ -15,6 +15,16 @@ export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
 
+export function numberOfDecimals(number: number): number {
+  const [_, decimals] = number.toString().split('.');
+  return decimals ? decimals.length : 0;
+}
+
+export function roundPrecise(number: number, magnitude = 1): number {
+  const factor = 10 ** magnitude;
+  return Math.round(number * factor) / factor;
+}
+
 export function numberInRangeInclusive(
   value: number,
   min: number,
@@ -161,8 +171,15 @@ export function* iterNodes<T = Node>(
   }
 }
 
+export function getRoot(
+  element: Element,
+  options?: GetRootNodeOptions
+): Document | ShadowRoot {
+  return element.getRootNode(options) as Document | ShadowRoot;
+}
+
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
-  return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+  return getRoot(root).getElementById(id);
 }
 
 export function isElement(node: unknown): node is Element {
@@ -275,10 +292,36 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+export function isObject(value: unknown): value is object {
+  return value != null && typeof value === 'object';
+}
+
+export function isEventListenerObject(x: unknown): x is EventListenerObject {
+  return isObject(x) && 'handleEvent' in x;
+}
+
+export function addWeakEventListener(
+  element: Element,
+  event: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions | boolean
+): void {
+  const weakRef = new WeakRef(listener);
+  const wrapped = (evt: Event) => {
+    const handler = weakRef.deref();
+
+    return isEventListenerObject(handler)
+      ? handler.handleEvent(evt)
+      : handler?.(evt);
+  };
+
+  element.addEventListener(event, wrapped, options);
+}
+
 /**
- * Returns whether a given collection has at least one member.
+ * Returns whether a given collection is empty.
  */
-export function isEmpty<T, U extends string>(
+export function isEmpty<T, U extends object>(
   x: ArrayLike<T> | Set<T> | Map<U, T>
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;
@@ -288,3 +331,37 @@ export function asArray<T>(value?: T | T[]): T[] {
   if (!isDefined(value)) return [];
   return Array.isArray(value) ? value : [value];
 }
+
+export function partition<T>(
+  array: T[],
+  isTruthy: (value: T) => boolean
+): [truthy: T[], falsy: T[]] {
+  const truthy: T[] = [];
+  const falsy: T[] = [];
+
+  for (const item of array) {
+    (isTruthy(item) ? truthy : falsy).push(item);
+  }
+
+  return [truthy, falsy];
+}
+
+/** Returns the center x/y coordinate of a given element. */
+export function getCenterPoint(element: Element) {
+  const { left, top, width, height } = element.getBoundingClientRect();
+
+  return {
+    x: left + width * 0.5,
+    y: top + height * 0.5,
+  };
+}
+
+export function roundByDPR(value: number): number {
+  const dpr = globalThis.devicePixelRatio || 1;
+  return Math.round(value * dpr) / dpr;
+}
+
+/** Required utility type for specific props */
+export type RequiredProps<T, K extends keyof T> = T & {
+  [P in K]-?: T[P];
+};

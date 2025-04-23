@@ -96,10 +96,10 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     resize: {
-      type: '"auto" | "vertical" | "none"',
+      type: '"vertical" | "auto" | "none"',
       description:
         'Controls whether the control can be resized.\nWhen `auto` is set, the control will try to expand and fit its content.',
-      options: ['auto', 'vertical', 'none'],
+      options: ['vertical', 'auto', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -225,7 +225,7 @@ interface IgcTextareaArgs {
    * Controls whether the control can be resized.
    * When `auto` is set, the control will try to expand and fit its content.
    */
-  resize: 'auto' | 'vertical' | 'none';
+  resize: 'vertical' | 'auto' | 'none';
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
    * If it is not specified, the default value is 2.
@@ -326,7 +326,7 @@ function getInput(event: CustomEvent<string>) {
 }
 
 export const Validation: Story = {
-  play: async (args) => {
+  play: async () => {
     setMaxChars();
   },
   render: () => html`

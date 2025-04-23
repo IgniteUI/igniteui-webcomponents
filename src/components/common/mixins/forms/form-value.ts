@@ -56,6 +56,28 @@ export const defaultDateTimeTransformers: Partial<
   setFormValue: getDateFormValue,
 };
 
+export const defaultFileListTransformer: Partial<
+  FormValueTransformers<FileList | null>
+> = {
+  setValue: (value) => value || null,
+  getValue: (value) => value,
+  setDefaultValue: (value) => value || null,
+  getDefaultValue: (value) => value,
+  setFormValue: (files: FileList | null, host: IgcFormControl) => {
+    if (!host.name || !files) {
+      return null;
+    }
+
+    const data = new FormData();
+
+    for (const file of Array.from(files)) {
+      data.append(host.name, file);
+    }
+
+    return data;
+  },
+};
+
 /* blazorSuppress */
 export class FormValue<T> {
   private static readonly setFormValueKey = '_setFormValue' as const;

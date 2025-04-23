@@ -1,8 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $base;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')}) !important;
+
+    background: var-get($theme, 'background');
+    border-radius: var-get($theme, 'border-radius');
 }

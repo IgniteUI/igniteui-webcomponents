@@ -14,6 +14,7 @@ import { styles as indigoLight } from './light/container/card.indigo.css.js';
 import { styles as materialLight } from './light/container/card.material.css.js';
 import { styles as sharedLight } from './light/container/card.shared.css.js';
 // Shared Styles
+import { styles as bootstrap } from './shared/container/card.bootstrap.css.js';
 import { styles as fluent } from './shared/container/card.fluent.css.js';
 import { styles as indigo } from './shared/container/card.indigo.css.js';
 
@@ -22,7 +23,7 @@ const light = {
     ${sharedLight}
   `,
   bootstrap: css`
-    ${bootstrapLight}
+    ${bootstrap} ${bootstrapLight}
   `,
   material: css`
     ${materialLight}

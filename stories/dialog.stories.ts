@@ -91,10 +91,6 @@ const closeDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).hide();
 
 const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
-const authSelected = (ev: CustomEvent) => {
-  (ev.target as HTMLElement).querySelector('igc-input')!.value =
-    ev.detail.value;
-};
 
 const Template = ({
   keepOpenOnEscape,
@@ -124,10 +120,12 @@ const Template = ({
         .open=${open}
         title=${ifDefined(title)}
       >
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus rerum
-        enim, incidunt magni ea asperiores laudantium, ducimus itaque quisquam
-        dolore hic labore facere qui unde aliquam, dignissimos perspiciatis?
-        Iusto, iure.
+        <span slot="message">
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus
+          rerum enim, incidunt magni ea asperiores laudantium, ducimus itaque
+          quisquam dolore hic labore facere qui unde aliquam, dignissimos
+          perspiciatis? Iusto, iure.
+        </span>
       </igc-dialog>
 
       <igc-dialog

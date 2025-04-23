@@ -120,7 +120,7 @@ class StoriesBuilder {
     const isArray = (type) => type.includes('[]');
     const isGeneric = (type) => type.match(/<.*>/);
 
-    const t = type.split('|').map((t) => {
+    type.split('|').map((t) => {
       const part = t.trim().replace(/'/g, '"');
       if (
         part &&
@@ -348,7 +348,7 @@ class StoriesBuilder {
 
     try {
       data = await readFile(file, 'utf8');
-    } catch (e) {
+    } catch {
       return;
     }
 

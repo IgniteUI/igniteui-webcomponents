@@ -87,6 +87,8 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     this.toggleAttribute('disabled', Boolean(this._disabled));
   }
 
+  /* blazorCSSuppress */
+  /* alternateType: object */
   /** Returns the HTMLFormElement associated with this element. */
   public get form() {
     return this.__internals.form;

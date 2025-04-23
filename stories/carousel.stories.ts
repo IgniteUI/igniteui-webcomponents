@@ -68,9 +68,9 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: '"start" | "end"',
+      type: '"end" | "start"',
       description: 'Sets the orientation of the indicator controls (dots).',
-      options: ['start', 'end'],
+      options: ['end', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -137,7 +137,7 @@ interface IgcCarouselArgs {
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** Sets the orientation of the indicator controls (dots). */
-  indicatorsOrientation: 'start' | 'end';
+  indicatorsOrientation: 'end' | 'start';
   /**
    * The format used to set the aria-label on the carousel indicators.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
@@ -293,22 +293,26 @@ export const InputsTemplate: Story = {
     <style>
       igc-carousel {
         border-radius: 10px;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 12px oklch(from #333 l c h / 0.1);
+        border: 1px solid var(--ig-gray-200);
         max-width: 75%;
         margin-inline: auto;
         height: 350px;
       }
+
       igc-carousel-slide {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        max-width: 75%;
+        display: grid;
+        place-items: center stretch;
         margin-inline: auto;
-        padding-block: 8px;
+        padding-inline: 96px;
+        padding-block-start: 8px;
+        padding-block-end: 32px;
       }
-      igc-carousel-slide > * {
-        margin-block: 8px;
+
+      igc-carousel-slide > igc-button {
+        max-width: fit-content;
       }
+
       igc-carousel-slide div {
         text-align: center;
       }
@@ -329,7 +333,8 @@ export const InputsTemplate: Story = {
     >
       <igc-carousel-slide>
         <igc-input type="text" placeholder="Username">
-          <span slot="prefix">🐱‍💻</span>
+          <span slot="prefix">🐱</span>
+          <span slot="prefix">💻</span>
         </igc-input>
         <igc-textarea label="Leave your comment">
           <span slot="prefix">💬</span>

@@ -5,17 +5,22 @@
 
 $theme: $material;
 
+:host {
+    --track-size: #{var-get($theme, 'track-height')};
+}
+
+:host([striped]) {
+    --stripe-size: #{var-get($theme, 'strip-size')};
+}
+
 [part~='track'] {
+    height: var(--track-size);
     border-radius: var-get($theme, 'track-border-radius');
     background: var-get($theme, 'track-color');
 }
 
 [part~='value'] {
     color: var-get($theme, 'text-color');
-}
-
-:host([striped]) {
-    --stripe-size: #{rem(16px)};
 }
 
 @mixin part-styles($part, $color-key) {
@@ -25,7 +30,7 @@ $theme: $material;
 
     :host([striped][variant='#{$part}']) {
         --striped-bg: #{var-get($theme, $color-key) repeating-linear-gradient(
-            -45deg,
+            var(--linear-strips-orientation),
             var-get($theme, $color-key),
             var-get($theme, $color-key) var(--stripe-size),
             var-get($theme, 'stripes-color') var(--stripe-size),

@@ -1,10 +1,17 @@
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import validatorMessages from './localization/validation-en.js';
-import { asNumber, formatString, isDefined } from './util.js';
+import {
+  asNumber,
+  formatString,
+  isDefined,
+  numberOfDecimals,
+  roundPrecise,
+} from './util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
 type ValidatorMessageFormat<T> = (host: T) => string;
 
+/** @ignore */
 export interface Validator<T = any> {
   key: keyof ValidityStateFlags;
   message: string | ValidatorMessageFormat<T>;
@@ -93,10 +100,20 @@ export const stepValidator: Validator<{
 }> = {
   key: 'stepMismatch',
   message: 'Value does not conform to step constraint',
-  isValid: ({ min, step, value }) =>
-    isDefined(value) && value !== '' && isDefined(step)
-      ? (asNumber(value) - asNumber(min)) % asNumber(step, 1) === 0
-      : true,
+  isValid: ({ min, step, value }) => {
+    if (isDefined(value) && value !== '' && isDefined(step)) {
+      const _value = asNumber(value) - asNumber(min);
+      const _step = asNumber(step);
+      const magnitude = numberOfDecimals(_step) + 1;
+      const rem = roundPrecise(
+        Math.abs(_value - _step * Math.round(_value / _step)),
+        magnitude
+      );
+
+      return !rem;
+    }
+    return true;
+  },
 };
 
 export const emailValidator: Validator<{ value: string }> = {

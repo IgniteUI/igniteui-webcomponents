@@ -83,10 +83,6 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 }
 
 :host(:focus-within) {
-    [part='label'] {
-        color: color(gray, 800);
-    }
-
     [part^='container'] {
         border-color: var-get($theme, 'focused-border-color');
         border-width: #{$focused-border-width};
@@ -110,9 +106,25 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 }
 
+:host([type='search']) {
+    [part='prefix'] {
+        background: var(--ig-input-group-input-prefix-background, transparent);
+        color: var(--ig-input-group-input-prefix-color, var(--ig-primary-500));
+    }
+
+    [part='suffix'] {
+        background: var(--ig-input-group-input-suffix-background, transparent);
+        color: var(--ig-input-group-input-suffix-color, var(--ig-primary-500));
+    }
+}
+
 :host([type='search']:focus-within) {
     [part='prefix'] {
         display: none;
+    }
+
+    [part='suffix'] {
+        color: var(--ig-input-group-input-suffix-color--focused, var(--ig-gray-900));
     }
 }
 

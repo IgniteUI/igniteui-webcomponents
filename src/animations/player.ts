@@ -71,6 +71,15 @@ class AnimationController implements ReactiveController {
     );
   }
 
+  public async playExclusive(animation: AnimationReferenceMetadata) {
+    const [_, event] = await Promise.all([
+      this.stopAll(),
+      this.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   public hostConnected() {}
 }
 
@@ -84,4 +93,20 @@ export function addAnimationController(
   target?: Ref<HTMLElement> | HTMLElement
 ) {
   return new AnimationController(host, target);
+}
+
+type ViewTransitionResult = {
+  transition?: ViewTransition;
+};
+
+export function startViewTransition(
+  callback?: ViewTransitionUpdateCallback
+): ViewTransitionResult {
+  /* c8 ignore next 4 */
+  if (getPrefersReducedMotion() || !document.startViewTransition) {
+    callback?.();
+    return {};
+  }
+
+  return { transition: document.startViewTransition(callback) };
 }

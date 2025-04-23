@@ -11,17 +11,9 @@ $row-gap: rem(6px);
 
 [part~='date'] {
     height: var-get($theme, 'size');
-}
-
-[part~='date'],
-[part~='date-inner'] {
-    border-radius: var-get($theme, 'date-border-radius');
-}
-
-[part~='date'],
-[part~='week-number'] {
     border-top: $border-size solid transparent;
     border-bottom: $border-size solid transparent;
+    border-radius: 0;
 }
 
 [part~='date-inner'],
@@ -31,6 +23,7 @@ $row-gap: rem(6px);
 
 [part~='week-number'] {
     width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
 }
 
 [part~='week-number-inner'] {
@@ -43,7 +36,6 @@ $row-gap: rem(6px);
 
     &::after {
         width: var-get($theme, 'size');
-        height: calc(var-get($theme, 'size') / 2);
         background: var-get($theme, 'week-number-background');
         border-inline-start: rem(1px) solid var-get($theme, 'week-number-background');
         border-inline-end: rem(1px) solid var-get($theme, 'week-number-background');
@@ -85,6 +77,7 @@ $row-gap: rem(6px);
 [part~='date-inner'] {
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
+    border-radius: var-get($theme, 'date-border-radius');
 
     &::after {
         content: '';
@@ -112,6 +105,7 @@ $row-gap: rem(6px);
     &[part~='selected'][part~='first'][part~='last'] {
         background: transparent;
         border-color: var-get($theme, 'date-range-preview-border-color');
+        border-radius: var-get($theme, 'date-range-border-radius');
     }
 
     &[part~='disabled'] {
@@ -150,6 +144,10 @@ $row-gap: rem(6px);
             color: var-get($theme, 'date-selected-foreground');
             background: var-get($theme, 'date-selected-background');
             border-color: transparent;
+            border-start-start-radius: var-get($theme, 'date-range-border-radius');
+            border-end-start-radius: var-get($theme, 'date-range-border-radius');
+            border-start-end-radius: var-get($theme, 'date-border-radius');
+            border-end-end-radius: var-get($theme, 'date-border-radius');
 
             &:hover {
                 color: var-get($theme, 'date-selected-hover-foreground');
@@ -171,6 +169,10 @@ $row-gap: rem(6px);
             color: var-get($theme, 'date-selected-foreground');
             background: var-get($theme, 'date-selected-background');
             border-color: transparent;
+            border-start-end-radius: var-get($theme, 'date-range-border-radius');
+            border-end-end-radius: var-get($theme, 'date-range-border-radius');
+            border-start-start-radius: var-get($theme, 'date-border-radius');
+            border-end-start-radius: var-get($theme, 'date-border-radius');
 
             &:hover {
                 color: var-get($theme, 'date-selected-hover-foreground');
@@ -289,7 +291,7 @@ $row-gap: rem(6px);
         }
     }
 
-    &[part~='selected'][part~='special'] {
+    &[part~='selected'][part~='special']:not([part~='current']) {
         &::after {
             border-color: var-get($theme, 'date-selected-special-border-color');
         }
@@ -406,7 +408,7 @@ $row-gap: rem(6px);
         &::before {
             content: '';
             position: absolute;
-            width: calc(var-get($theme, 'size') / 2 + #{$border-size});
+            width: var-get($theme, 'size');
             border-block: $border-size solid var-get($theme, 'date-range-border-color');
             z-index: 3;
             pointer-events: none;
@@ -415,19 +417,27 @@ $row-gap: rem(6px);
 
     &[part~='first'] {
         &::before {
-            inset-inline-end: calc(50% - #{$border-size});
+            inset-inline-end: initial;
             border-inline: $border-size solid;
             border-inline-start-color: var-get($theme, 'date-range-border-color');
             border-inline-end-color: transparent;
+            border-start-start-radius: var-get($theme, 'date-range-border-radius');
+            border-end-start-radius: var-get($theme, 'date-range-border-radius');
+            border-start-end-radius: 0;
+            border-end-end-radius: 0;
         }
     }
 
     &[part~='last'] {
         &::before {
-            inset-inline-start: calc(50% - #{$border-size});
+            inset-inline-start: initial;
             border-inline: $border-size solid;
             border-inline-start-color: transparent;
             border-inline-end-color: var-get($theme, 'date-range-border-color');
+            border-start-end-radius: var-get($theme, 'date-range-border-radius');
+            border-end-end-radius: var-get($theme, 'date-range-border-radius');
+            border-start-start-radius: 0;
+            border-end-start-radius: 0;
         }
     }
 

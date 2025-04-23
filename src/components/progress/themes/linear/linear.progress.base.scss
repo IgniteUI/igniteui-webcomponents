@@ -5,8 +5,13 @@
 @use '../vars' as *;
 
 :host {
-    --track-size: #{rem(4px)};
     --linear-animation-duration: 2000ms;
+    --linear-strips-orientation: -45deg;
+}
+
+:host(:dir(rtl)),
+:host([dir='rtl']) {
+    --linear-strips-orientation: 45deg;
 }
 
 [part~='base'] {
@@ -37,7 +42,6 @@
 [part~='track'] {
     position: relative;
     width: inherit;
-    height: var(--track-size);
     overflow: hidden;
     z-index: 0;
 }
@@ -51,7 +55,7 @@
 
 [part~='fill']:not([part~='indeterminate']) {
     overflow: hidden;
-    animation: initial-width var(--_transition-duration) linear;
+    animation: igc-initial-width var(--_transition-duration) linear;
 }
 
 [part~='indeterminate'],
@@ -74,20 +78,20 @@
 
 [part~='indeterminate']:not([part~='secondary']) {
     transform: scale3d(0, 1, 1);
-    animation: indeterminate-primary var(--linear-animation-duration) infinite linear;
+    animation: igc-indeterminate-primary var(--linear-animation-duration) infinite linear;
     left: -145.1666%;
 
     &::after {
-        animation: indeterminate-primary-scale var(--linear-animation-duration) infinite linear;
+        animation: igc-indeterminate-primary-scale var(--linear-animation-duration) infinite linear;
     }
 }
 
 [part~='secondary'] {
-    animation: indeterminate-secondary var(--linear-animation-duration) infinite linear;
+    animation: igc-indeterminate-secondary var(--linear-animation-duration) infinite linear;
     left: -54.8888%;
 
     &::after {
-        animation: indeterminate-secondary-scale var(--linear-animation-duration) infinite linear;
+        animation: igc-indeterminate-secondary-scale var(--linear-animation-duration) infinite linear;
         width: 100%;
         height: inherit;
     }
@@ -98,7 +102,7 @@
 }
 
 [part~='counter'] {
-    animation: initial-counter var(--_transition-duration) ease-in-out;
+    animation: igc-initial-counter var(--_transition-duration) ease-in-out;
     counter-reset:
             progress-integer var(--_progress-integer, 0)
             progress-fraction var(--_progress-fraction, 0);

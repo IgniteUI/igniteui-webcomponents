@@ -6,10 +6,6 @@
 $theme: $fluent;
 $track-color: color(gray, 200);
 
-:host {
-    --track-size: #{rem(2px)};
-}
-
 :host(:dir(rtl)[indeterminate]),
 :host([dir='rtl']) {
     [part~='track'] {
@@ -17,7 +13,7 @@ $track-color: color(gray, 200);
     }
 
     [part~='indeterminate'] {
-        animation-name: indeterminate-bar-fluent-rtl;
+        animation-name: igc-indeterminate-bar-fluent-rtl;
     }
 }
 
@@ -40,7 +36,7 @@ $track-color: color(gray, 200);
 [part~='indeterminate']:not([part~='secondary']) {
     width: 33% !important;
     min-width: 33%;
-    animation-name: indeterminate-bar-fluent;
+    animation-name: igc-indeterminate-bar-fluent;
     animation-duration: var(--linear-animation-duration);
     animation-timing-function: ease;
     animation-iteration-count: infinite;

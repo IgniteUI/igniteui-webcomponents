@@ -35,6 +35,8 @@ import {
   formatString,
   isEmpty,
   isLTR,
+  numberOfDecimals,
+  roundPrecise,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
@@ -323,21 +325,15 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
-    const value = this.round(this.max * percent + this.step / 2);
+    const value = this.round(this.max * percent);
 
     return clamp(value, this.step, this.max);
   }
 
-  protected getPrecision(num: number) {
-    const [_, decimal] = num.toString().split('.');
-    return decimal ? decimal.length : 0;
-  }
-
   protected round(value: number) {
-    return Number(
-      (Math.round(value / this.step) * this.step).toFixed(
-        this.getPrecision(this.step)
-      )
+    return roundPrecise(
+      Math.ceil(value / this.step) * this.step,
+      numberOfDecimals(this.step)
     );
   }
 

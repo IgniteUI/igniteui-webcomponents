@@ -4,7 +4,6 @@ import {
   IgcAvatarComponent,
   IgcIconComponent,
   defineComponents,
-  registerIcon,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
 
@@ -39,9 +38,9 @@ const metadata: Meta<IgcAvatarComponent> = {
       control: 'text',
     },
     shape: {
-      type: '"circle" | "rounded" | "square"',
+      type: '"square" | "circle" | "rounded"',
       description: 'The shape of the avatar.',
-      options: ['circle', 'rounded', 'square'],
+      options: ['square', 'circle', 'rounded'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'square' } },
     },
@@ -59,14 +58,9 @@ interface IgcAvatarArgs {
   /** Initials to use as a fallback when no image is available. */
   initials: string;
   /** The shape of the avatar. */
-  shape: 'circle' | 'rounded' | 'square';
+  shape: 'square' | 'circle' | 'rounded';
 }
 type Story = StoryObj<IgcAvatarArgs>;
-
-registerIcon(
-  'home',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
-);
 
 // endregion
 
