@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.4.1] - 2025-04-23
+### Fixed
+- Internal library issues
+
 ## [5.4.0] - 2025-04-23
 ### Added
 - File Input component
@@ -817,6 +821,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.4...5.3.0
 [5.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.3...5.2.4
