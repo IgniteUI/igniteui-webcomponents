@@ -357,10 +357,6 @@ export function roundByDPR(value: number): number {
   return Math.round(value * dpr) / dpr;
 }
 
-export function isObject(value: unknown): value is object {
-  return value != null && typeof value === 'object';
-}
-
 export function isRegExp(value: unknown): value is RegExp {
   return value != null && value.constructor === RegExp;
 }
