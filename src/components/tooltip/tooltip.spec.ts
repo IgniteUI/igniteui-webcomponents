@@ -76,7 +76,6 @@ describe('Tooltip', () => {
       expect(tooltip.dir).to.be.empty;
       expect(tooltip.open).to.be.false;
       expect(tooltip.disableArrow).to.be.false;
-      expect(tooltip.inline).to.be.false;
       expect(tooltip.offset).to.equal(6);
       expect(tooltip.placement).to.equal('top');
       expect(tooltip.anchor).to.be.undefined;

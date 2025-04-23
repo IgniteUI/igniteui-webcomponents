@@ -28,7 +28,12 @@ const metadata: Meta<IgcTooltipComponent> = {
   title: 'Tooltip',
   component: 'igc-tooltip',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'Provides a way to display supplementary information related to an element when a user interacts with it (e.g., hover, focus).\nIt offers features such as placement customization, delays, sticky mode, and animations.',
+      },
+    },
     actions: {
       handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
     },
@@ -44,13 +49,6 @@ const metadata: Meta<IgcTooltipComponent> = {
       type: 'boolean',
       description:
         'Whether to disable the rendering of the arrow indicator for the tooltip.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    inline: {
-      type: 'boolean',
-      description:
-        'Improves positioning for inline based elements, such as links.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -133,7 +131,6 @@ const metadata: Meta<IgcTooltipComponent> = {
   args: {
     open: false,
     disableArrow: false,
-    inline: false,
     offset: 6,
     placement: 'top',
     showTriggers: 'pointerenter',
@@ -152,8 +149,6 @@ interface IgcTooltipArgs {
   open: boolean;
   /** Whether to disable the rendering of the arrow indicator for the tooltip. */
   disableArrow: boolean;
-  /** Improves positioning for inline based elements, such as links. */
-  inline: boolean;
   /** The offset of the tooltip from the anchor in pixels. */
   offset: number;
   /** Where to place the floating element relative to the parent anchor element. */
@@ -327,7 +322,7 @@ export const Inline: Story = {
       </div>
     </igc-tooltip>
 
-    <igc-tooltip anchor="style-sheet-language" inline>
+    <igc-tooltip anchor="style-sheet-language">
       <p inert>
         A <strong>style sheet language</strong>, or
         <strong>style language</strong>, is a computer language that expresses
@@ -338,7 +333,7 @@ export const Inline: Story = {
       </p>
     </igc-tooltip>
 
-    <igc-tooltip class="rich-tooltip" anchor="html" inline>
+    <igc-tooltip class="rich-tooltip" anchor="html">
       <div inert class="rich">
         <p>
           Hypertext Markup Language (HTML) is the standard markup language for
@@ -511,10 +506,8 @@ export const Default: Story = {
 
 function createDynamicTooltip() {
   const tooltip = document.createElement('igc-tooltip');
-  tooltip.message = `I'm created on demand at ${new Date().toLocaleTimeString()}`;
+  tooltip.message = `Created on demand at ${new Date().toLocaleTimeString()}`;
   tooltip.anchor = 'dynamic-target';
-  tooltip.showTriggers = 'focus, click';
-  tooltip.hideTriggers = 'blur';
   tooltip.id = 'dynamic';
 
   const previousTooltip = document.querySelector('#dynamic');

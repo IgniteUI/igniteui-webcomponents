@@ -34,10 +34,15 @@ type TooltipStateOptions = {
 };
 
 /**
+ * Provides a way to display supplementary information related to an element when a user interacts with it (e.g., hover, focus).
+ * It offers features such as placement customization, delays, sticky mode, and animations.
+ *
  * @element igc-tooltip
  *
- * @slot - default slot
+ * @slot - Default slot of the tooltip component.
  * @slot close-button - Slot for custom sticky-mode close action (e.g., an icon/button).
+ *
+ * @csspart base - The wrapping container of the tooltip content.
  *
  * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
  * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
@@ -139,15 +144,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'disable-arrow', type: Boolean, reflect: true })
   public disableArrow = false;
-
-  /**
-   * Improves positioning for inline based elements, such as links.
-   *
-   * @attr inline
-   * @default false
-   */
-  @property({ type: Boolean, reflect: true })
-  public inline = false;
 
   /**
    * The offset of the tooltip from the anchor in pixels.
@@ -420,7 +416,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .arrowOffset=${this._arrowOffset}
         .shiftPadding=${8}
         ?open=${this.open}
-        ?inline=${this.inline}
         flip
         shift
       >
