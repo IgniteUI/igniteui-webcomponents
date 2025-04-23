@@ -634,7 +634,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected handleDialogClosing(event: Event) {
     event.stopPropagation();
-    this.revertValue();
+    this.emitEvent('igcChange', { detail: this.value });
     this._hide(true);
   }
 

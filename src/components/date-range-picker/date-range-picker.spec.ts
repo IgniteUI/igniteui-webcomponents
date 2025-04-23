@@ -803,6 +803,32 @@ describe('Date range picker', () => {
         expect(dialog?.hasAttribute('open')).to.equal(false);
       });
 
+      it('should select a range of dates in dialog mode and emit igcChange when clicked outside of dialog', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        picker.open = true;
+        await elementUpdated(picker);
+        await selectDates(today, tomorrow, calendar);
+
+        expect(eventSpy).not.to.be.calledWith('igcChange');
+        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(true);
+
+        simulateClick(document.body);
+        await elementUpdated(picker);
+        expect(eventSpy).calledWith('igcChange');
+        checkSelectedRange(picker, {
+          start: today.native,
+          end: tomorrow.native,
+        });
+
+        dialog = picker.renderRoot.querySelector('igc-dialog');
+        expect(dialog?.hasAttribute('open')).to.equal(false);
+      });
+
       it('should not emit igcChange when cancel is clicked and the value should be the initial value', async () => {
         const eventSpy = spy(picker, 'emitEvent');
 
