@@ -402,7 +402,7 @@ export const Form: Story = {
         <fieldset>
           <igc-combo
             .data=${primitiveData}
-            .value=${[1, 'one']}
+            value='[1, "one"]'
             name="combo-primitive"
             label="Primitives binding"
           ></igc-combo>
