@@ -163,6 +163,10 @@ export function* iterNodes<T = Node>(
       yield node;
     }
 
+    if (isElement(node) && node.shadowRoot && node.shadowRoot.mode === 'open') {
+      yield* iterNodes(node.shadowRoot, whatToShow, filter);
+    }
+
     node = iter.nextNode() as T;
   }
 }
