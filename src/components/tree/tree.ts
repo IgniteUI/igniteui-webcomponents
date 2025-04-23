@@ -7,6 +7,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -68,7 +69,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ reflect: true })
-  public selection: 'none' | 'multiple' | 'cascade' = 'none';
+  public selection: TreeSelection = 'none';
 
   @watch('dir')
   protected onDirChange(): void {

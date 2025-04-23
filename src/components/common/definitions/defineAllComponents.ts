@@ -62,6 +62,7 @@ import IgcTextareaComponent from '../../textarea/textarea.js';
 import IgcTileManagerComponent from '../../tile-manager/tile-manager.js';
 import IgcTileComponent from '../../tile-manager/tile.js';
 import IgcToastComponent from '../../toast/toast.js';
+import IgcTooltipComponent from '../../tooltip/tooltip.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
 import IgcTreeComponent from '../../tree/tree.js';
 import { defineComponents } from './defineComponents.js';
@@ -134,6 +135,7 @@ const allComponents: IgniteComponent[] = [
   IgcTextareaComponent,
   IgcTileComponent,
   IgcTileManagerComponent,
+  IgcTooltipComponent,
 ];
 
 export function defineAllComponents() {

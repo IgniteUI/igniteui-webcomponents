@@ -1,0 +1,43 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+$transparent-border: rem(4px) solid transparent;
+$color-border: rem(4px) solid var-get($theme, 'background');
+
+[part='base'] {
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
+    border-radius: var-get($theme, 'border-radius');
+    box-shadow: var-get($theme, 'elevation');
+}
+
+#arrow {
+    &[part='top'],
+    &[part='bottom'] {
+        border-left: $transparent-border;
+        border-right: $transparent-border;
+    }
+
+    &[part='top'] {
+        border-top: $color-border;
+    }
+
+    &[part='bottom'] {
+        border-bottom: $color-border;
+    }
+
+    &[part='left'],
+    &[part='right'] {
+        border-top: $transparent-border;
+        border-bottom: $transparent-border;
+    }
+
+    &[part='left'] {
+        border-left: $color-border;
+    }
+
+    &[part='right'] {
+        border-right: $color-border;
+    }
+}

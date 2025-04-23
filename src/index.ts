@@ -66,6 +66,7 @@ export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
+export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -115,17 +116,15 @@ export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
 export type { IgcTreeComponentEventMap } from './components/tree/tree.common.js';
+export type { IgcTooltipComponentEventMap } from './components/tooltip/tooltip.js';
 
 // Public types
-export type {
-  RangeTextSelectMode,
-  SelectionRangeDirection,
-  StyleVariant,
-  TileManagerDragMode,
-  TileManagerResizeMode,
-} from './components/types.js';
+export type * from './components/types.js';
 export type { IgcTileChangeStateEventArgs } from './components/tile-manager/tile.js';
 export type {
+  CalendarActiveView,
+  CalendarHeaderOrientation,
+  CalendarSelection,
   DateRangeDescriptor,
   WeekDays,
 } from './components/calendar/types.js';

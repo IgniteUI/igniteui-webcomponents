@@ -6,15 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- New File Input Component(`igc-file-input`)
+- File Input component
+- Exposed more public API type aliases for component property types like `ButtonVariant`, `PickerMode`, `StepperOrientation`, `HorizontalTransitionAnimation` (carousel and horizontal stepper) and more.
+- Tooltip component
 
 ### Deprecated
-Some event argument types have been renamed for consistency:
-- `CheckboxChangeEventArgs` deprecated, use `IgcCheckboxChangeEventArgs` instead.
-- `RadioChangeEventArgs` deprecated, use `IgcRadioChangeEventArgs` instead.
-- `IgcRangeSliderValue` deprecated, use `IgcRangeSliderValueEventArgs` instead.
-- `IgcActiveStepChangingArgs` deprecated, use `IgcActiveStepChangingEventArgs` instead.
-- `IgcActiveStepChangedArgs` deprecated, use `IgcActiveStepChangedEventArgs` instead.
+- Some event argument types have been renamed for consistency:
+  - `CheckboxChangeEventArgs` deprecated, use `IgcCheckboxChangeEventArgs` instead.
+  - `RadioChangeEventArgs` deprecated, use `IgcRadioChangeEventArgs` instead.
+  - `IgcRangeSliderValue` deprecated, use `IgcRangeSliderValueEventArgs` instead.
+  - `IgcActiveStepChangingArgs` deprecated, use `IgcActiveStepChangingEventArgs` instead.
+  - `IgcActiveStepChangedArgs` deprecated, use `IgcActiveStepChangedEventArgs` instead.
+- Carousel Slide's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Carousel's `select` method.
+- Stepper Step's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Stepper's `navigateTo` method.
 
 ### Fixed
 - Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)

@@ -38,6 +38,7 @@ import {
   scrollIntoView,
   wrap,
 } from '../common/util.js';
+import type { TabsActivation, TabsAlignment } from '../types.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { all } from './themes/tabs-themes.js';
@@ -144,7 +145,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ reflect: true })
-  public alignment: 'start' | 'end' | 'center' | 'justify' = 'start';
+  public alignment: TabsAlignment = 'start';
 
   /**
    * Determines the tab activation. When set to auto,
@@ -154,7 +155,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public activation: 'auto' | 'manual' = 'auto';
+  public activation: TabsActivation = 'auto';
 
   @watch('alignment', { waitUntilFirstUpdate: true })
   protected alignmentChanged() {

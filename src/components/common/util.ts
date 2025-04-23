@@ -264,10 +264,36 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+export function isObject(value: unknown): value is object {
+  return value != null && typeof value === 'object';
+}
+
+export function isEventListenerObject(x: unknown): x is EventListenerObject {
+  return isObject(x) && 'handleEvent' in x;
+}
+
+export function addWeakEventListener(
+  element: Element,
+  event: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions | boolean
+): void {
+  const weakRef = new WeakRef(listener);
+  const wrapped = (evt: Event) => {
+    const handler = weakRef.deref();
+
+    return isEventListenerObject(handler)
+      ? handler.handleEvent(evt)
+      : handler?.(evt);
+  };
+
+  element.addEventListener(event, wrapped, options);
+}
+
 /**
- * Returns whether a given collection has at least one member.
+ * Returns whether a given collection is empty.
  */
-export function isEmpty<T, U extends string>(
+export function isEmpty<T, U extends object>(
   x: ArrayLike<T> | Set<T> | Map<U, T>
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;

@@ -71,13 +71,13 @@ $theme: $bootstrap;
 
     [part='control'] {
         &::after {
-            box-shadow: inset 0 0 0 rem(1px) color(primary, 200);
+            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'focus-border-color');
         }
     }
 
     &:hover {
         [part='control']::after {
-            box-shadow: inset 0 0 0 rem(1px) color(primary, 300);
+            box-shadow: inset 0 0 0 rem(1px) hsl(from var-get($theme, 'focus-border-color') h calc(s * 1.12) calc(l * 0.82));;
         }
     }
 }
