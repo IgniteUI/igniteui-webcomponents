@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
@@ -22,6 +28,7 @@ import {
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
+import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
   type CustomDateRange,
@@ -814,18 +821,28 @@ describe('Date range picker', () => {
         await selectDates(today, tomorrow, calendar);
 
         expect(eventSpy).not.to.be.calledWith('igcChange');
-        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        let dialog = picker.renderRoot.querySelector(
+          'igc-dialog'
+        ) as IgcDialogComponent;
+        const nativeDialog = dialog.renderRoot.querySelector('dialog')!;
         expect(dialog?.hasAttribute('open')).to.equal(true);
 
-        simulateClick(document.body);
+        const { x, y } = dialog.getBoundingClientRect();
+        simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
+        await elementUpdated(dialog);
+
+        await waitUntil(() => eventSpy.calledWith('igcClosed'));
         await elementUpdated(picker);
+
         expect(eventSpy).calledWith('igcChange');
         checkSelectedRange(picker, {
           start: today.native,
           end: tomorrow.native,
         });
 
-        dialog = picker.renderRoot.querySelector('igc-dialog');
+        dialog = picker.renderRoot.querySelector(
+          'igc-dialog'
+        ) as IgcDialogComponent;
         expect(dialog?.hasAttribute('open')).to.equal(false);
       });
 
