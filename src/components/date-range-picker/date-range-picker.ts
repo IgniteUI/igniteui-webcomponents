@@ -277,6 +277,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       : [...this.customRanges];
   }
 
+  private get firstDefinedInRange(): Date | null {
+    return this.value?.start ?? this.value?.end ?? null;
+  }
+
   @queryAll(IgcDateTimeInputComponent.tagName)
   private _inputs!: IgcDateTimeInputComponent[];
 
@@ -670,7 +674,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const newValue = input.value ? CalendarDay.from(input.value).native : null;
 
     this.value = this.getUpdatedDateRange(input, newValue);
-    this._calendar.activeDate = newValue;
+    this._calendar.activeDate =
+      newValue ?? this.firstDefinedInRange ?? this._calendar.activeDate;
 
     this.emitEvent('igcInput', { detail: this.value });
   }
@@ -755,7 +760,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected override async handleAnchorClick() {
-    this._calendar.activeDate = this.value?.start ?? this._calendar.activeDate;
+    this._calendar.activeDate =
+      this.firstDefinedInRange ?? this._calendar.activeDate;
     super.handleAnchorClick();
     await this.updateComplete;
     this._calendar[focusActiveDate]();
@@ -897,6 +903,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     } else {
       this._calendar.values = [this.value.start!];
     }
+    this._calendar.activeDate = this.firstDefinedInRange;
   }
 
   private swapDates(range: DateRangeValue): DateRangeValue {
@@ -930,7 +937,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private _select(value: DateRangeValue | null, chipSelection = false) {
     this.value = value;
-    this._calendar.activeDate = this.value?.start ?? this._calendar.activeDate;
+    this._calendar.activeDate =
+      this.firstDefinedInRange ?? this._calendar.activeDate;
     if (chipSelection && this.isDropDown) {
       this.emitEvent('igcChange', { detail: this.value });
       this._hide(true);
@@ -1018,7 +1026,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
-        .activeDate=${this.activeDate ?? this.value?.start}
+        .activeDate=${this.activeDate ?? this.firstDefinedInRange}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this._visibleMonths}

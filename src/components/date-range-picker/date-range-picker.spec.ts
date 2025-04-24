@@ -1533,6 +1533,43 @@ describe('Date range picker', () => {
           detail: { start: expectedDate, end: expectedDate2 },
         });
       });
+
+      it('should set the calendar active date to any of the defined dates start/end', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const march1st2025 = today.set({
+          month: 2,
+          date: 1,
+          year: 2025,
+        }).native;
+        const june3rd2025 = today.set({ month: 5, date: 3, year: 2025 }).native;
+        picker.value = { start: march1st2025, end: june3rd2025 };
+        picker.open = true;
+        await elementUpdated(picker);
+
+        // initially set active date as per assigned value
+        checkDatesEqual(calendar.activeDate, march1st2025);
+
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+
+        const input1 = dateTimeInputs[0].shadowRoot!.querySelector('input')!;
+        dateTimeInputs[0].setSelectionRange(0, input1.value.length);
+        simulateInput(input1, { inputType: 'deleteContentBackward' });
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput');
+        // the active date is set to the end date as it is the first defined in the range
+        checkDatesEqual(calendar.activeDate, june3rd2025);
+
+        // when end value is cleared as well, the last active date remains
+        const input2 = dateTimeInputs[1].shadowRoot!.querySelector('input')!;
+        dateTimeInputs[1].setSelectionRange(0, input2.value.length);
+        simulateInput(input2, { inputType: 'deleteContentBackward' });
+        await elementUpdated(picker);
+
+        checkDatesEqual(calendar.activeDate, june3rd2025);
+      });
     });
   });
   describe('Slots', () => {
