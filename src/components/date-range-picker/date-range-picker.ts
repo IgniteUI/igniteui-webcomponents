@@ -873,8 +873,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
 
-    if (!this.value?.start || !this.value?.end) {
+    if (!this.value?.start && !this.value?.end) {
       this._calendar.values = null;
+      return;
+    }
+
+    if (!this.value?.start || !this.value?.end) {
+      const single = this.value?.start ?? this.value?.end!;
+      this._calendar.values = [single];
       return;
     }
 

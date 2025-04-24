@@ -24,6 +24,7 @@ import {
   isFocused,
   runValidationContainerTests,
   simulateClick,
+  simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -1416,14 +1417,21 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).calledWith('igcInput');
+        expect(eventSpy).not.calledWith('igcChange');
         eventSpy.resetHistory();
         checkDatesEqual(dateTimeInputs[0].value!, today.native);
         // typing a single date does not select a range in the calendar
-        checkSelectedRange(picker, { start: null, end: null });
+        checkSelectedRange(picker, { start: today.native, end: null });
         checkDatesEqual(calendar.activeDate, today.native);
 
         dateTimeInputs[1].focus();
         expect(isFocused(dateTimeInputs[1])).to.be.true;
+
+        // emit igcChange on losing focus of the edited input
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: today.native, end: null },
+        });
+        eventSpy.resetHistory();
 
         dateTimeInputs[1].setSelectionRange(0, 1);
         simulateKeyboard(dateTimeInputs[1], arrowDown);
@@ -1455,6 +1463,11 @@ describe('Date range picker', () => {
         expect(isFocused(dateTimeInputs[0])).to.be.true;
         await elementUpdated(picker);
 
+        expect(eventSpy).calledWith('igcChange', {
+          detail: { start: aMonthAgo.native, end: today.native },
+        });
+        eventSpy.resetHistory();
+
         checkSelectedRange(picker, {
           start: aMonthAgo.native,
           end: today.native,
@@ -1472,6 +1485,53 @@ describe('Date range picker', () => {
           end: today.native,
         });
         checkDatesEqual(calendar.activeDate, twoMonthsAgo.native);
+      });
+
+      it('should set the calendar active date to the typed date and reflect selection in calendar', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = null;
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const input1 = dateTimeInputs[0].shadowRoot!.querySelector('input')!;
+        dateTimeInputs[0].focus();
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+
+        dateTimeInputs[0].setSelectionRange(0, 0);
+        simulateInput(input1, { value: '04/24/2025', inputType: 'insertText' });
+        await elementUpdated(picker);
+
+        const expectedDate = CalendarDay.today.set({
+          month: 3,
+          date: 24,
+          year: 2025,
+        }).native;
+        checkSelectedRange(picker, { start: expectedDate, end: null });
+        checkDatesEqual(calendar.activeDate, expectedDate);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: expectedDate, end: null },
+        });
+
+        const input2 = dateTimeInputs[1].shadowRoot!.querySelector('input')!;
+        dateTimeInputs[1].focus();
+        expect(isFocused(dateTimeInputs[1])).to.be.true;
+
+        dateTimeInputs[1].setSelectionRange(0, 0);
+        simulateInput(input2, { value: '04/25/2025', inputType: 'insertText' });
+        await elementUpdated(picker);
+
+        const expectedDate2 = CalendarDay.today.set({
+          month: 3,
+          date: 25,
+          year: 2025,
+        }).native;
+        checkSelectedRange(picker, { start: expectedDate, end: expectedDate2 });
+        checkDatesEqual(calendar.activeDate, expectedDate2);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: expectedDate, end: expectedDate2 },
+        });
       });
     });
   });
