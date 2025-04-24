@@ -16,7 +16,7 @@ import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
 import { TooltipRegexes, addTooltipController } from './controller.js';
-import { styles as shared } from './themes/shared/tooltip.common.css';
+import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 
