@@ -443,7 +443,7 @@ export const Default: Story = {
     open: false,
     labelStart: 'Start',
     labelEnd: 'End',
-    label: 'Date',
+    label: 'Date range',
     visibleMonths: 2,
   },
   render: (args) => html`
@@ -460,7 +460,7 @@ export const Default: Story = {
       .nonEditable=${args.nonEditable}
       .orientation=${args.orientation}
       .outlined=${args.outlined}
-      .usePredefinedRanges=${args.usePredefinedRanges}
+      ?use-predefined-ranges=${args.usePredefinedRanges}
       .mode=${args.mode}
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
@@ -471,7 +471,7 @@ export const Default: Story = {
       .labelStart=${args.labelStart}
       .labelEnd=${args.labelEnd}
       .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
+      .visibleMonths=${+args.visibleMonths as 1 | 2}
       ?disabled=${args.disabled}
       .useTwoInputs=${args.useTwoInputs}
       ?invalid=${args.invalid}
@@ -492,7 +492,7 @@ export const CustomRanges: Story = {
     open: false,
     labelStart: 'Start',
     labelEnd: 'End',
-    label: 'Date',
+    label: 'Date range',
     visibleMonths: 2,
   },
   render: (args) => html`
@@ -510,7 +510,7 @@ export const CustomRanges: Story = {
       .nonEditable=${args.nonEditable}
       .orientation=${args.orientation}
       .outlined=${args.outlined}
-      .usePredefinedRanges=${args.usePredefinedRanges}
+      ?use-predefined-ranges=${args.usePredefinedRanges}
       .mode=${args.mode}
       .min=${new Date(args.min)}
       .max=${new Date(args.max)}
@@ -521,7 +521,7 @@ export const CustomRanges: Story = {
       .labelStart=${args.labelStart}
       .labelEnd=${args.labelEnd}
       .label=${args.label}
-      .visibleMonths=${args.visibleMonths}
+      .visibleMonths=${+args.visibleMonths as 1 | 2}
       ?disabled=${args.disabled}
       .useTwoInputs=${args.useTwoInputs}
       ?invalid=${args.invalid}
@@ -539,7 +539,7 @@ export const CustomRanges: Story = {
 
 export const Slots: Story = {
   args: {
-    label: 'Select Date',
+    label: 'Select Date Range',
   },
   render: (args) =>
     html` <h5>Two inputs</h5>
@@ -559,9 +559,9 @@ export const Slots: Story = {
         .min=${new Date(args.min)}
         .max=${new Date(args.max)}
         .activeDate=${args.activeDate}
-        .visibleMonths=${args.visibleMonths}
+        .visibleMonths=${+args.visibleMonths as 1 | 2}
         .useTwoInputs=${true}
-        .usePredefinedRanges="${args.usePredefinedRanges};"
+        ?use-predefined-ranges="${args.usePredefinedRanges}"
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
@@ -613,12 +613,12 @@ export const Slots: Story = {
         .nonEditable=${args.nonEditable}
         .orientation=${args.orientation}
         .outlined=${args.outlined}
-        .usePredefinedRanges=${args.usePredefinedRanges}
+        ?use-predefined-ranges=${args.usePredefinedRanges}
         .mode=${args.mode}
         .min=${new Date(args.min)}
         .max=${new Date(args.max)}
         .activeDate=${args.activeDate}
-        .visibleMonths=${args.visibleMonths}
+        .visibleMonths=${+args.visibleMonths as 1 | 2}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
