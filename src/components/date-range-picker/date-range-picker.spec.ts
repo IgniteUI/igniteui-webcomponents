@@ -1004,7 +1004,7 @@ describe('Date range picker', () => {
         }
       });
 
-      it('should emit igcChange when the chips are clicked', async () => {
+      it('should emit igcChange when the chips are clicked and should be closed - dropdown mode', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const popover = picker.renderRoot.querySelector('igc-popover');
 
@@ -1014,6 +1014,7 @@ describe('Date range picker', () => {
         ];
         picker.usePredefinedRanges = true;
         picker.customRanges = customRanges;
+
         picker.open = true;
         await elementUpdated(picker);
 
@@ -1022,6 +1023,9 @@ describe('Date range picker', () => {
         expect(chips.length).to.equal(allRangesLength);
 
         for (let i = 0; i < chips.length; i++) {
+          picker.open = true;
+          await elementUpdated(picker);
+
           expect(chips[i].innerText).to.equal(predefinedRanges[i].label);
 
           chips[i].click();
@@ -1036,7 +1040,61 @@ describe('Date range picker', () => {
             start: predefinedRanges[i].dateRange.start,
             end: predefinedRanges[i].dateRange.end,
           });
-          expect(popover?.hasAttribute('open')).to.equal(true);
+          expect(popover?.hasAttribute('open')).to.equal(false);
+          eventSpy.resetHistory();
+        }
+      });
+
+      it('should emit igcChange on committing the new selection through chips - dialog mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.mode = 'dialog';
+
+        const predefinedRanges = [
+          ...(picker as any).predefinedRanges,
+          ...customRanges,
+        ];
+        picker.usePredefinedRanges = true;
+        picker.customRanges = customRanges;
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        const allRangesLength = (picker as any).allRanges.length;
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(allRangesLength);
+
+        for (let i = 0; i < chips.length; i++) {
+          picker.open = true;
+          await elementUpdated(picker);
+          dialog = picker.renderRoot.querySelector('igc-dialog');
+          expect(chips[i].innerText).to.equal(predefinedRanges[i].label);
+
+          chips[i].click();
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.calledWith('igcChange');
+          expect(picker.activeDate).to.deep.equal(
+            predefinedRanges[i].dateRange.start
+          );
+
+          checkSelectedRange(picker, {
+            start: predefinedRanges[i].dateRange.start,
+            end: predefinedRanges[i].dateRange.end,
+          });
+          expect(dialog?.hasAttribute('open')).to.equal(true);
+
+          const doneBtn = picker.shadowRoot!.querySelector(
+            'igc-button[slot="footer"]:last-of-type'
+          ) as HTMLButtonElement;
+          doneBtn?.click();
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange');
+          expect(eventSpy).calledWith('igcClosing');
+          expect(eventSpy).calledWith('igcClosed');
+          expect(dialog?.hasAttribute('open')).to.equal(false);
+          eventSpy.resetHistory();
         }
       });
 
@@ -1065,8 +1123,10 @@ describe('Date range picker', () => {
           end: today.native,
         });
 
-        expect(popover?.hasAttribute('open')).to.equal(true);
+        expect(popover?.hasAttribute('open')).to.equal(false);
 
+        picker.open = true;
+        await elementUpdated(picker);
         chips[1].click();
         await elementUpdated(picker);
 
@@ -1078,7 +1138,7 @@ describe('Date range picker', () => {
           end: nextThreeDaysEnd,
         });
 
-        expect(popover?.hasAttribute('open')).to.equal(true);
+        expect(popover?.hasAttribute('open')).to.equal(false);
       });
     });
     describe('Keyboard navigation', () => {

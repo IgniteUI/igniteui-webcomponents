@@ -922,11 +922,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
-  private _select(value: DateRangeValue | null, emitEvent = false) {
+  private _select(value: DateRangeValue | null, chipSelection = false) {
     this.value = value;
     this._calendar.activeDate = this.value?.start ?? this._calendar.activeDate;
-    if (emitEvent) {
+    if (chipSelection && this.isDropDown) {
       this.emitEvent('igcChange', { detail: this.value });
+      this._hide(true);
     }
   }
 
