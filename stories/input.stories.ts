@@ -10,6 +10,7 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
