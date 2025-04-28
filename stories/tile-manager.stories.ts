@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { type TemplateResult, html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';

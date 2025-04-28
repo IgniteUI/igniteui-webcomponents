@@ -1,5 +1,5 @@
 import { sourceCode } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing, render } from 'lit';
 
 import {
