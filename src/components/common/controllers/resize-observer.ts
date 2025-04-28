@@ -24,10 +24,10 @@ export interface ResizeControllerConfig {
 }
 
 class ResizeController implements ReactiveController {
-  private _host: ReactiveControllerHost & Element;
-  private _targets = new Set<Element>();
-  private _config: ResizeControllerConfig;
-  private _observer!: ResizeObserver;
+  private readonly _host: ReactiveControllerHost & Element;
+  private readonly _targets = new Set<Element>();
+  private readonly _observer!: ResizeObserver;
+  private readonly _config: ResizeControllerConfig;
 
   constructor(
     host: ReactiveControllerHost & Element,
@@ -40,6 +40,7 @@ class ResizeController implements ReactiveController {
       this._targets.add(this._config.target ?? host);
     }
 
+    /* c8 ignore next 3 */
     if (isServer) {
       return;
     }
@@ -64,17 +65,15 @@ class ResizeController implements ReactiveController {
     this._observer.unobserve(target);
   }
 
+  /** @internal */
   public hostConnected(): void {
     for (const target of this._targets) {
       this.observe(target);
     }
   }
 
+  /** @internal */
   public hostDisconnected(): void {
-    this.disconnect();
-  }
-
-  protected disconnect(): void {
     this._observer.disconnect();
   }
 }
@@ -86,6 +85,6 @@ class ResizeController implements ReactiveController {
 export function createResizeController(
   host: ReactiveControllerHost & Element,
   config: ResizeControllerConfig
-) {
+): ResizeController {
   return new ResizeController(host, config);
 }

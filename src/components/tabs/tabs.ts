@@ -2,11 +2,11 @@ import { LitElement, html, nothing } from 'lit';
 import {
   eventOptions,
   property,
-  query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { cache } from 'lit/directives/cache.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -30,6 +30,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   findElementFromEventPath,
   first,
+  getRoot,
   isEmpty,
   isLTR,
   isString,
@@ -39,6 +40,7 @@ import {
   wrap,
 } from '../common/util.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
+import { createTabHelpers, getTabHeader } from './tab-dom.js';
 import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { all } from './themes/tabs-themes.js';
@@ -50,9 +52,9 @@ export interface IgcTabsComponentEventMap {
 
 /* blazorAdditionalDependency: IgcTabComponent */
 /**
- * `IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.
+ * Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.
  *
- * The tabs component allows the user to navigate between multiple tabs.
+ * The `<igc-tabs>` component allows the user to navigate between multiple `<igc-tab>` elements.
  * It supports keyboard navigation and provides API methods to control the selected tab.
  *
  * @element igc-tabs
@@ -74,7 +76,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcTabsComponent,
       IgcTabComponent,
@@ -82,63 +84,39 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     );
   }
 
-  private _resizeController!: ReturnType<typeof createResizeController>;
-  private _headerRef: Ref<HTMLDivElement> = createRef();
+  //#region Private state & properties
 
-  /** Used in the `update` hook to check if a dynamic ltr-rtl change has happened,
-   * and calls `alignIndicator` if there is one.
-   */
-  private _isLtr = true;
+  private readonly _resizeController = createResizeController(this, {
+    callback: this._resizeCallback,
+    options: { box: 'border-box' },
+    target: null,
+  });
 
-  @query('[part~="tabs"]', true)
-  protected _scrollContainer!: HTMLElement;
+  /** The tabs container reference holding the tab headers. */
+  private readonly _headerRef = createRef<HTMLElement>();
 
-  @query('[part="selected-indicator"] span', true)
-  protected _selectedIndicator!: HTMLElement;
+  /** The selected tab indicator reference.  */
+  private readonly _indicatorRef = createRef<HTMLElement>();
+
+  private readonly _domHelpers = createTabHelpers(
+    this,
+    this._headerRef,
+    this._indicatorRef
+  );
+
+  @queryAssignedElements({ selector: IgcTabComponent.tagName })
+  private _tabs!: IgcTabComponent[];
+
+  protected get _enabledTabs(): IgcTabComponent[] {
+    return this._tabs.filter((tab) => !tab.disabled);
+  }
 
   @state()
   private _activeTab?: IgcTabComponent;
 
-  @state()
-  private _cssVars = {
-    '--_tabs-count': '',
-    '--_ig-tabs-width': '',
-  };
+  //#endregion
 
-  @state()
-  private _scrollButtonsDisabled = {
-    start: true,
-    end: false,
-  };
-
-  @state()
-  protected showScrollButtons = false;
-
-  private get _closestActiveTabIndex() {
-    const root = this.getRootNode() as Document | ShadowRoot;
-    const tab = root.activeElement
-      ? root.activeElement.closest(IgcTabComponent.tagName)
-      : null;
-
-    return this._enabledTabs.indexOf(tab!);
-  }
-
-  protected get _enabledTabs() {
-    return this.tabs.filter((tab) => !tab.disabled);
-  }
-
-  /* blazorSuppress */
-  @queryAssignedElements({ selector: IgcTabComponent.tagName })
-  public tabs!: IgcTabComponent[];
-
-  /** Returns the currently selected tab label or id if not label is present. */
-  public get selected(): string {
-    if (this._activeTab) {
-      return this._activeTab.label || this._activeTab.id;
-    }
-
-    return '';
-  }
+  //#region Public properties
 
   /**
    * Sets the alignment for the tab headers
@@ -157,10 +135,29 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @property()
   public activation: TabsActivation = 'auto';
 
-  @watch('alignment', { waitUntilFirstUpdate: true })
-  protected alignmentChanged() {
-    this._alignIndicator();
+  /* blazorSuppress */
+  /** Returns the direct `igc-tab` elements that are children of this element. */
+  public get tabs(): IgcTabComponent[] {
+    return this._tabs;
   }
+
+  /** Returns the currently selected tab label or IDREF if no label property is set. */
+  public get selected(): string {
+    if (this._activeTab) {
+      return this._activeTab.label || this._activeTab.id;
+    }
+
+    return '';
+  }
+
+  //#endregion
+
+  @watch('alignment', { waitUntilFirstUpdate: true })
+  protected _alignmentChanged(): void {
+    this._domHelpers.setIndicator(this._activeTab);
+  }
+
+  //#region Life-cycle hooks
 
   constructor() {
     super();
@@ -170,11 +167,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       skip: this._skipKeyboard,
       bindingDefaults: { preventDefault: true },
     })
-      .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
-      .set(homeKey, this.handleHomeKey)
-      .set(endKey, this.handleEndKey)
-      .setActivateHandler(this.handleActivationKeys, { preventDefault: false });
+      .set(arrowLeft, () => this._handleArrowKeys(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this._handleArrowKeys(isLTR(this) ? 1 : -1))
+      .set(homeKey, this._handleHomeKey)
+      .set(endKey, this._handleEndKey)
+      .setActivateHandler(this._handleActivationKeys, {
+        preventDefault: false,
+      });
 
     createMutationController(this, {
       callback: this._mutationCallback,
@@ -185,145 +184,115 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       },
       filter: [IgcTabComponent.tagName],
     });
-
-    this._resizeController = createResizeController(this, {
-      callback: this._resizeCallback,
-      options: { box: 'border-box' },
-      target: null,
-    });
   }
 
   protected override async firstUpdated() {
     await this.updateComplete;
 
     const selectedTab =
-      this.tabs.findLast((tab) => tab.selected) ?? first(this._enabledTabs);
+      this._tabs.findLast((tab) => tab.selected) ?? first(this._enabledTabs);
 
-    this._setCssProps();
-    this._updateButtonsOnResize();
-    this._selectTab(selectedTab, false);
+    this._domHelpers.setStyleProperties();
+    this._domHelpers.setScrollButtonState();
+    this._setSelectedTab(selectedTab, false);
 
-    this._resizeController.observe(this._scrollContainer);
+    this._resizeController.observe(this._headerRef.value!);
   }
 
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'tablist';
   }
 
-  protected override updated() {
-    if (this._isLtr !== isLTR(this)) {
-      this._isLtr = isLTR(this);
-      this._alignIndicator();
+  protected override updated(): void {
+    if (this._domHelpers.isLeftToRightChanged) {
+      this._domHelpers.setIndicator(this._activeTab);
     }
   }
 
-  private async _resizeCallback() {
-    this._updateButtonsOnResize();
-    await this.updateComplete;
-    this._alignIndicator();
-    this._setCssProps();
+  //#endregion
+
+  //#region Observers callbacks
+
+  private _resizeCallback(): void {
+    this._domHelpers.setStyleProperties();
+    this._domHelpers.setScrollButtonState();
+    this._domHelpers.setIndicator(this._activeTab);
   }
 
-  private _mutationCallback({
+  private _mutationCallback(
+    parameters: MutationControllerParams<IgcTabComponent>
+  ): void {
+    this._selectedAttributeChanged(parameters);
+    this._handleTabsRemoved(parameters);
+    this._handleTabsAdded(parameters);
+
+    this._domHelpers.setStyleProperties();
+    this._domHelpers.setScrollButtonState();
+    this._domHelpers.setIndicator(this._activeTab);
+  }
+
+  private _selectedAttributeChanged({
     changes,
-  }: MutationControllerParams<IgcTabComponent>) {
+  }: MutationControllerParams<IgcTabComponent>): void {
     const selected = changes.attributes.find(
-      (tab) => this.tabs.includes(tab) && tab.selected
+      (tab) => this._tabs.includes(tab) && tab.selected
     );
-    const added = changes.added.filter(
-      (change) => change.target.closest(this.tagName) === this
-    );
-    const removed = changes.removed.filter(
-      (change) => change.target.closest(this.tagName) === this
-    );
+    this._setSelectedTab(selected, false);
+  }
 
-    this._selectTab(selected, false);
+  private _handleTabsAdded({
+    changes,
+  }: MutationControllerParams<IgcTabComponent>): void {
+    if (!isEmpty(changes.added)) {
+      const lastAdded = changes.added.findLast(
+        (change) =>
+          change.target.closest(this.tagName) === this && change.node.selected
+      )?.node;
 
-    if (!(isEmpty(removed) && isEmpty(added))) {
+      this._setSelectedTab(lastAdded, false);
+    }
+  }
+
+  private _handleTabsRemoved({
+    changes,
+  }: MutationControllerParams<IgcTabComponent>): void {
+    if (!isEmpty(changes.removed)) {
       let nextSelectedTab: IgcTabComponent | null = null;
 
-      for (const { node: tab } of removed) {
-        if (tab.selected && tab === this._activeTab) {
+      const removed = changes.removed.filter(
+        (change) => change.target.closest(this.tagName) === this
+      );
+
+      for (const each of removed) {
+        if (each.node.selected && each.node === this._activeTab) {
           nextSelectedTab = first(this._enabledTabs);
+          break;
         }
       }
-
-      for (const { node: tab } of added) {
-        if (tab.selected) {
-          nextSelectedTab = tab;
-        }
-      }
-
-      this._setCssProps();
-      this._updateButtonsOnResize();
 
       if (nextSelectedTab) {
-        this._selectTab(nextSelectedTab, false);
+        this._setSelectedTab(nextSelectedTab, false);
       }
-
-      this._alignIndicator();
     }
   }
 
-  private async _alignIndicator() {
-    const styles: Partial<CSSStyleDeclaration> = {
-      visibility: this._activeTab ? 'visible' : 'hidden',
-    };
+  //#endregion
 
-    await this.updateComplete;
+  //#region Private API
 
-    if (this._activeTab) {
-      const activeTabHeader = this._getTabHeader(this._activeTab);
-
-      const headerRect = activeTabHeader.getBoundingClientRect();
-      const containerRect = this._scrollContainer.getBoundingClientRect();
-
-      const headerOffset = activeTabHeader.offsetLeft;
-      const containerOffset = this._scrollContainer.offsetLeft;
-
-      const translateX = isLTR(this)
-        ? headerOffset - containerOffset
-        : headerRect.width + headerOffset - containerRect.width;
-
-      Object.assign(styles, {
-        width: `${headerRect.width}px`,
-        transform: `translateX(${translateX}px)`,
-      });
-    }
-
-    Object.assign(this._selectedIndicator.style, styles);
+  private _getClosestActiveTabIndex(): number {
+    const active = getRoot(this).activeElement;
+    const tab = active ? active.closest(IgcTabComponent.tagName) : null;
+    return tab ? this._enabledTabs.indexOf(tab) : -1;
   }
 
-  private _updateButtonsOnResize() {
-    const { scrollWidth, clientWidth } = this._scrollContainer;
-
-    this.showScrollButtons = scrollWidth > clientWidth;
-    this._updateScrollButtons();
-  }
-
-  private _updateScrollButtons() {
-    const { scrollLeft, scrollWidth } = this._scrollContainer;
-    const { width } = this._scrollContainer.getBoundingClientRect();
-
-    this._scrollButtonsDisabled = {
-      start: scrollLeft === 0,
-      end: Math.abs(Math.abs(scrollLeft) + width - scrollWidth) <= 1,
-    };
-  }
-
-  private _selectTab(tab?: IgcTabComponent, shouldEmit = true) {
+  private _setSelectedTab(tab?: IgcTabComponent, shouldEmit = true): void {
     if (!tab || tab === this._activeTab) {
       return;
     }
 
-    this._setSelectedTab(tab);
-    if (shouldEmit) {
-      this.emitEvent('igcChange', { detail: this._activeTab });
-    }
-  }
-
-  private _setSelectedTab(tab: IgcTabComponent) {
     if (this._activeTab) {
       this._activeTab.selected = false;
     }
@@ -331,34 +300,30 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     tab.selected = true;
     this._activeTab = tab;
 
-    scrollIntoView(this._getTabHeader(tab));
-    this._alignIndicator();
-  }
+    scrollIntoView(getTabHeader(tab));
+    this._domHelpers.setIndicator(this._activeTab);
 
-  private _scrollByOffset(direction: 'start' | 'end') {
-    const factor = isLTR(this) ? 1 : -1;
-    const step = direction === 'start' ? -180 : 180;
-
-    this._setScrollSnap(direction);
-    this._scrollContainer.scrollBy({ left: step * factor, behavior: 'smooth' });
+    if (shouldEmit) {
+      this.emitEvent('igcChange', { detail: this._activeTab });
+    }
   }
 
   private _keyboardActivateTab(tab: IgcTabComponent) {
-    const header = this._getTabHeader(tab);
+    const header = getTabHeader(tab);
 
-    this._setScrollSnap('unset');
+    this._domHelpers.setScrollSnap();
     scrollIntoView(header);
     header.focus({ preventScroll: true });
 
     if (this.activation === 'auto') {
-      this._selectTab(tab);
+      this._setSelectedTab(tab);
     }
   }
 
-  private _skipKeyboard(node: Element, event: KeyboardEvent) {
+  private _skipKeyboard(node: Element, event: KeyboardEvent): boolean {
     return !(
       this._isEventFromTabHeader(event) &&
-      this.tabs.includes(node.closest(IgcTabComponent.tagName)!)
+      this._tabs.includes(node.closest(IgcTabComponent.tagName)!)
     );
   }
 
@@ -366,22 +331,36 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return findElementFromEventPath('[part~="tab-header"]', event);
   }
 
-  private _getTabHeader(tab: IgcTabComponent) {
-    return tab.renderRoot.querySelector<HTMLElement>('[part~="tab-header"]')!;
+  //#endregion
+
+  //#region Event handlers
+
+  protected _handleArrowKeys(delta: -1 | 1): void {
+    const tabs = this._enabledTabs;
+    this._keyboardActivateTab(
+      tabs[wrap(0, tabs.length - 1, this._getClosestActiveTabIndex() + delta)]
+    );
   }
 
-  private _setCssProps() {
-    this._cssVars = {
-      '--_tabs-count': this.tabs.length.toString(),
-      '--_ig-tabs-width': `${this._scrollContainer.getBoundingClientRect().width}px`,
-    };
+  protected _handleHomeKey(): void {
+    this._keyboardActivateTab(first(this._enabledTabs));
   }
 
-  private _setScrollSnap(value: 'start' | 'end' | 'unset') {
-    this._scrollContainer.style.setProperty('--_ig-tab-snap', value);
+  protected _handleEndKey(): void {
+    this._keyboardActivateTab(last(this._enabledTabs));
   }
 
-  protected handleClick(event: PointerEvent) {
+  protected _handleActivationKeys(): void {
+    const tabs = this._enabledTabs;
+    const index = this._getClosestActiveTabIndex();
+
+    if (index > -1) {
+      this._setSelectedTab(tabs[index], false);
+      this._keyboardActivateTab(tabs[index]);
+    }
+  }
+
+  protected _handleClick(event: PointerEvent): void {
     if (!this._isEventFromTabHeader(event)) {
       return;
     }
@@ -391,103 +370,86 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       event
     );
 
-    if (!this.tabs.includes(tab!) || tab?.disabled) {
+    if (!(tab && this._tabs.includes(tab)) || tab?.disabled) {
       return;
     }
 
-    this._setScrollSnap('unset');
-    this._getTabHeader(tab!).focus();
-    this._selectTab(tab);
-  }
-
-  protected handleArrowKeys(delta: -1 | 1) {
-    const tabs = this._enabledTabs;
-    this._keyboardActivateTab(
-      tabs[wrap(0, tabs.length - 1, this._closestActiveTabIndex + delta)]
-    );
-  }
-
-  protected handleHomeKey() {
-    this._keyboardActivateTab(first(this._enabledTabs));
-  }
-
-  protected handleEndKey() {
-    this._keyboardActivateTab(last(this._enabledTabs));
-  }
-
-  protected handleActivationKeys() {
-    const tabs = this._enabledTabs;
-    const index = this._closestActiveTabIndex;
-
-    if (index > -1) {
-      this._selectTab(tabs[index], false);
-      this._keyboardActivateTab(tabs[index]);
-    }
+    this._domHelpers.setScrollSnap();
+    getTabHeader(tab).focus();
+    this._setSelectedTab(tab);
   }
 
   @eventOptions({ passive: true })
-  protected handleScroll() {
-    this._updateScrollButtons();
+  protected _handleScroll(): void {
+    this._domHelpers.setScrollButtonState();
   }
 
-  /** Selects the specified tab and displays the corresponding panel.  */
-  public select(tab: IgcTabComponent | string) {
-    const element = isString(tab) ? this.tabs.find((t) => t.id === tab) : tab;
+  //#endregion
 
-    if (element) {
-      this._selectTab(element, false);
+  //#region Public API methods
+
+  /** Selects the specified tab and displays the corresponding panel.  */
+  public select(ref: IgcTabComponent | string): void {
+    const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
+
+    if (tab) {
+      this._setSelectedTab(tab, false);
     }
   }
 
-  protected renderScrollButton(direction: 'start' | 'end') {
-    const start = direction === 'start';
+  //#endregion
 
-    return this.showScrollButtons
-      ? html`
-          <igc-icon-button
-            tabindex="-1"
-            variant="flat"
-            collection="default"
-            part="${direction}-scroll-button"
-            exportparts="icon"
-            name="${start ? 'prev' : 'next'}"
-            ?disabled=${start
-              ? this._scrollButtonsDisabled.start
-              : this._scrollButtonsDisabled.end}
-            @click=${() => this._scrollByOffset(direction)}
-          >
-          </igc-icon-button>
-        `
-      : nothing;
+  //#region Render
+
+  protected _renderScrollButton(direction: 'start' | 'end') {
+    const isStart = direction === 'start';
+    const { start, end } = this._domHelpers.scrollButtonsDisabled;
+
+    return html`${cache(
+      this._domHelpers.hasScrollButtons
+        ? html`
+            <igc-icon-button
+              tabindex="-1"
+              variant="flat"
+              collection="default"
+              part="${direction}-scroll-button"
+              exportparts="icon"
+              name=${isStart ? 'prev' : 'next'}
+              ?disabled=${isStart ? start : end}
+              @click=${() => this._domHelpers.scrollTabs(direction)}
+            >
+            </igc-icon-button>
+          `
+        : nothing
+    )}`;
   }
 
   protected override render() {
     const part = partNameMap({
       inner: true,
-      scrollable: this.showScrollButtons,
+      scrollable: this._domHelpers.hasScrollButtons,
     });
 
     return html`
       <div
         ${ref(this._headerRef)}
         part="tabs"
-        style=${styleMap(this._cssVars)}
-        @scroll=${this.handleScroll}
+        style=${styleMap(this._domHelpers.styleProperties)}
+        @scroll=${this._handleScroll}
       >
         <div part=${part}>
-          ${this.renderScrollButton('start')}
-
-          <slot @click=${this.handleClick}></slot>
-
-          ${this.renderScrollButton('end')}
-
+          ${this._renderScrollButton('start')}
+          <slot @click=${this._handleClick}></slot>
+          ${this._renderScrollButton('end')}
           <div part="selected-indicator">
-            <span></span>
+            <span ${ref(this._indicatorRef)}></span>
           </div>
         </div>
       </div>
     `;
   }
+
+  //#endregion
 }
 
 declare global {

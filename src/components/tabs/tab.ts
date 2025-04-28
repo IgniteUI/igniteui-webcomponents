@@ -9,7 +9,7 @@ import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
 
 /**
- * Represents the tab header.
+ * A tab element slotted into an `igc-tabs` container.
  *
  * @element igc-tab
  *
@@ -31,7 +31,7 @@ export default class IgcTabComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcTabComponent);
   }
 
@@ -58,6 +58,7 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
     this.id = this.id || `igc-tab-${IgcTabComponent.increment()}`;
