@@ -276,7 +276,7 @@ export default class IgcPopoverComponent extends LitElement {
       {
         placement: this.placement ?? 'bottom-start',
         middleware: this._createMiddleware(),
-        strategy: 'fixed',
+        strategy: 'absolute',
       }
     );
 
