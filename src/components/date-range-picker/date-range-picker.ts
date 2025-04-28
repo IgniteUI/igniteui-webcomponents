@@ -62,7 +62,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
-import { dateRangePickerValidators } from './validators.js';
+import { dateRangeValidators } from './validators.js';
 
 export interface DateRangeValue {
   start: Date | null;
@@ -197,7 +197,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
 
   protected override get __validators() {
-    return dateRangePickerValidators;
+    return dateRangeValidators;
   }
 
   /* blazorSuppress */

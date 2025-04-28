@@ -68,24 +68,33 @@ export const badInputDateRangeValidator: Validator<{
   key: 'badInput',
   message: ({ value }) => formatString(messages.disabledDate, value),
   isValid: ({ value, disabledDates }) => {
-    if (value?.start && value?.end && disabledDates) {
-      const range = Array.from(
-        calendarRange({ start: value.start, end: value.end })
-      );
-      range.push(last(range).add('day', 1));
-      const rangeIncludingDisabled = range.some((day) =>
-        isDateInRanges(day, disabledDates)
-      );
-      return !rangeIncludingDisabled;
+    if (!value?.start || !value?.end || !disabledDates) {
+      return true;
+    }
+
+    let range = [];
+    if (value.start.getTime() === value.end.getTime()) {
+      range = [value.start];
+    } else {
+      range = Array.from(calendarRange({ start: value.start, end: value.end }));
+      const lastDay = last(range);
+      if (lastDay) {
+        range.push(lastDay.add('day', 1));
+      }
+    }
+
+    for (let i = 0; i < range.length; i++) {
+      if (isDateInRanges(range[i], disabledDates)) {
+        return false;
+      }
     }
     return true;
   },
 };
 
-export const dateRangePickerValidators: Validator<IgcDateRangePickerComponent>[] =
-  [
-    requiredDateRangeValidator,
-    minDateRangeValidator,
-    maxDateRangeValidator,
-    badInputDateRangeValidator,
-  ];
+export const dateRangeValidators: Validator<IgcDateRangePickerComponent>[] = [
+  requiredDateRangeValidator,
+  minDateRangeValidator,
+  maxDateRangeValidator,
+  badInputDateRangeValidator,
+];

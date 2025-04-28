@@ -2073,6 +2073,24 @@ describe('Date range picker', () => {
       expect(spec.element.invalid).to.be.true;
       spec.assertSubmitFails();
       await checkInputsInvalidState(spec.element, true, true);
+
+      // single selected date outside the disabled range
+      spec.setProperties({
+        disabledDates,
+        value: { start: new Date(2025, 0, 20), end: new Date(2025, 0, 20) },
+      });
+      expect(spec.element.invalid).to.be.false;
+      spec.assertSubmitPasses();
+      await checkInputsInvalidState(spec.element, false, false);
+
+      // single selected date in the disabled range
+      spec.setProperties({
+        disabledDates,
+        value: { start: new Date(2025, 1, 20), end: new Date(2025, 1, 20) },
+      });
+      expect(spec.element.invalid).to.be.true;
+      spec.assertSubmitFails();
+      await checkInputsInvalidState(spec.element, true, true);
     });
 
     it('should enforce custom constraint', async () => {
