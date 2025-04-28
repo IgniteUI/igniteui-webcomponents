@@ -1,4 +1,4 @@
-import type { ArgTypes, Meta } from '@storybook/web-components';
+import type { ArgTypes, Meta } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import { IgcDialogComponent, defineComponents } from 'igniteui-webcomponents';
