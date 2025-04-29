@@ -3,14 +3,28 @@
 
 $theme: $fluent;
 
-:host {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-icon-color');
-    }
+[part='tab-header'] {
+    transition: all .3s cubic-bezier(.35, 0, .25, 1);
+    padding: rem(10px) rem(16px);
 }
 
-:host([disabled]) {
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-disabled-icon-color');
+[part='content'] {
+    @include type-style('body-2');
+}
+
+:host([selected]) {
+    [part='content'] {
+        font-weight: 700;
+    }
+
+    [part='tab-header'] {
+        &:hover,
+        &:focus-within {
+            color: var-get($theme, 'item-hover-color');
+
+            ::slotted(igc-icon) {
+                color: var-get($theme, 'item-hover-icon-color');
+            }
+        }
     }
 }
