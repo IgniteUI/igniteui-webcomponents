@@ -3,16 +3,32 @@
 
 $theme: $bootstrap;
 
-[part='headers-wrapper'] {
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: var-get($theme, 'border-color');
-        z-index: 0;
+:host {
+    --header-min-height: #{rem(48px)};
+}
+
+:host([alignment='start']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::after {
+            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
+        }
+    }
+}
+
+:host([alignment='center']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::before,
+        &::after {
+            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
+        }
+    }
+}
+
+:host([alignment='end']) {
+    [part~='inner']:not([part~='scrollable']) {
+        &::before {
+            box-shadow: inset 0 calc(var(--_border-size) * -1) 0 0 var-get($theme, 'border-color');
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { type TemplateResult, html } from 'lit';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
@@ -24,7 +24,6 @@ import {
   IgcRippleComponent,
   IgcStepComponent,
   IgcStepperComponent,
-  IgcTabPanelComponent,
   IgcTabsComponent,
   type IgcTileComponent,
   IgcTileManagerComponent,
@@ -47,7 +46,6 @@ defineComponents(
   IgcChipComponent,
   IgcCalendarComponent,
   IgcListComponent,
-  IgcTabPanelComponent,
   IgcListItemComponent,
   IgcAvatarComponent,
   IgcTabsComponent,

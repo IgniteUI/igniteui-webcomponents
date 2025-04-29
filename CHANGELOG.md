@@ -4,25 +4,108 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.4.1] - 2025-04-23
+### Fixed
+- Internal library issues
+
+## [5.4.0] - 2025-04-23
 ### Added
 - File Input component
-- Exposed more public API type aliases for component property types like `ButtonVariant`, `PickerMode`, `StepperOrientation`, `HorizontalTransitionAnimation` (carousel and horizontal stepper) and more.
 - Tooltip component
+- #### Library
+  - Exposed more public API type aliases for component property types like `ButtonVariant`, `PickerMode`, `StepperOrientation`, `HorizontalTransitionAnimation` (carousel and horizontal stepper) and more.
+
+### Changed
+- #### Card
+  - Spacing styles [#1620](https://github.com/IgniteUI/igniteui-webcomponents/pull/1620)
+- #### Carousel
+  - Use the new `button-focus-arrow-color` [#1612](https://github.com/IgniteUI/igniteui-webcomponents/pull/1612)
+- #### Checkbox
+  - Use the new `focus-border-color` [#1611](https://github.com/IgniteUI/igniteui-webcomponents/pull/1611)
+- #### Radio
+  - Use the new `focus-border-color` [#1644](https://github.com/IgniteUI/igniteui-webcomponents/pull/1644)
+- #### Tile manager
+  - Improved tile swap behavior based on drag direction [#1608](https://github.com/IgniteUI/igniteui-webcomponents/pull/1608)
+  - View transition for UI triggered maximized state changes [#1624](https://github.com/IgniteUI/igniteui-webcomponents/pull/1624)
 
 ### Deprecated
-- Some event argument types have been renamed for consistency:
-  - `CheckboxChangeEventArgs` deprecated, use `IgcCheckboxChangeEventArgs` instead.
-  - `RadioChangeEventArgs` deprecated, use `IgcRadioChangeEventArgs` instead.
-  - `IgcRangeSliderValue` deprecated, use `IgcRangeSliderValueEventArgs` instead.
-  - `IgcActiveStepChangingArgs` deprecated, use `IgcActiveStepChangingEventArgs` instead.
-  - `IgcActiveStepChangedArgs` deprecated, use `IgcActiveStepChangedEventArgs` instead.
-- Carousel Slide's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Carousel's `select` method.
-- Stepper Step's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Stepper's `navigateTo` method.
+- #### Carousel
+  - Carousel Slide's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Carousel's `select` method.
+- #### Stepper
+  - Stepper Step's `toggleAnimation` is now marked internal and deprecated for use in favor of parent Stepper's `navigateTo` method.
+- #### Tabs - **NEXT MAJOR (v6.0.0) BREAKING CHANGE**
+  - `igc-tab` **panel** property is removed.
+  - Starting with the next major release of the library (6.0.0) the `igc-tab-panel` will be removed.
+    The `igc-tab` now encompasses both the tab header and the tab content in a single component. Slotted content in the default
+    slot of the `igc-tab` element now replaces the `igc-tab-panel` role while elements slotted inside the **label** slot
+    will end up as content for the `igc-tab` header.
+
+    Before 6.0.0:
+    ```html
+      <igc-tabs>
+        <igc-tab panel="home">
+          <igc-icon name="home"></igc-icon>
+        </igc-tab>
+        <igc-tab panel="search">
+          <igc-icon name="search"></igc-icon>
+        </igc-tab>
+        <igc-tab panel="favorite">
+          <igc-icon name="favorite"></igc-icon>
+        </igc-tab>
+        <igc-tab-panel id="home">Home tab panel</igc-tab-panel>
+        <igc-tab-panel id="search">Search tab panel</igc-tab-panel>
+        <igc-tab-panel id="favorite">Favorite tab panel</igc-tab-panel>
+      </igc-tabs>
+    ```
+
+    6.0.0 and onwards:
+    ```html
+      <igc-tabs>
+        <igc-tab>
+          <igc-icon name="home" slot="label"></igc-icon>
+          Home tab panel
+        </igc-tab>
+        <igc-tab>
+          <igc-icon name="search" slot="label"></igc-icon>
+          Search tab panel
+        </igc-tab>
+        <igc-tab>
+          <igc-icon name="favorite" slot="label"></igc-icon>
+          Favorite tab panel
+        </igc-tab>
+      </igc-tabs>
+    ```
+- #### Library
+  - Some event argument types have been renamed for consistency:
+    - `CheckboxChangeEventArgs` deprecated, use `IgcCheckboxChangeEventArgs` instead.
+    - `RadioChangeEventArgs` deprecated, use `IgcRadioChangeEventArgs` instead.
+    - `IgcRangeSliderValue` deprecated, use `IgcRangeSliderValueEventArgs` instead.
+    - `IgcActiveStepChangingArgs` deprecated, use `IgcActiveStepChangingEventArgs` instead.
+    - `IgcActiveStepChangedArgs` deprecated, use `IgcActiveStepChangedEventArgs` instead.
+  - Node versions < 20 are now deprecated. The next major release (6.0.0) will require Node version > 20. [Nodejs support](https://nodejs.org/en/about/previous-releases)
+
+### Removed
+- #### Switch
+  - Invalid state CSS properties [#1622](https://github.com/IgniteUI/igniteui-webcomponents/pull/1622)
 
 ### Fixed
-- Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
-- Exposed `IgcCalendarResourceStrings`, `PopoverPlacement` (Dropdown and Select) and `IgcTreeSelectionEventArgs` from the public API
+- #### Chip
+  - Bootstrap styles [#1635](https://github.com/IgniteUI/igniteui-webcomponents/pull/1635)
+- #### Calendar
+  - Date text color in range selection [#1630](https://github.com/IgniteUI/igniteui-webcomponents/pull/1630)
+  - Header size [#1629](https://github.com/IgniteUI/igniteui-webcomponents/pull/1629)
+  - Fluent theme range radius [#1650](https://github.com/IgniteUI/igniteui-webcomponents/pull/1650)
+  - ARIA violation when a week with all days hidden is rendered [#1637](https://github.com/IgniteUI/igniteui-webcomponents/pull/1637)
+- #### Input
+  - Fluent theme discrepancies [#1651](https://github.com/IgniteUI/igniteui-webcomponents/pull/1651)
+- #### Rating
+  - Overwritten properties [#1654](https://github.com/IgniteUI/igniteui-webcomponents/pull/1654)
+- #### Stepper
+  - Header text alignment [#1624](https://github.com/IgniteUI/igniteui-webcomponents/pull/1624)
+- #### Forms
+  - Setting validation properties on a pristine non-dirty form associated element does not apply invalid styles [#1632](https://github.com/IgniteUI/igniteui-webcomponents/issues/1632)
+- #### Library
+  - Exposed `IgcCalendarResourceStrings`, `PopoverPlacement` (Dropdown and Select) and `IgcTreeSelectionEventArgs` from the public API
 
 ## [5.3.0] - 2025-03-13
 ### Added
@@ -738,6 +821,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[5.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.0...5.4.1
+[5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.4...5.3.0
 [5.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.3...5.2.4
 [5.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.2...5.2.3
