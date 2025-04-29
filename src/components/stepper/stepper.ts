@@ -132,12 +132,12 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * Get/Set the position of the steps title.
    *
    * @remarks
-   * The default value is undefined.
+   * The default value is auto.
    * When the stepper is horizontally orientated the title is positioned below the indicator.
    * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
    */
   @property({ reflect: false, attribute: 'title-position' })
-  public titlePosition?: StepperTitlePosition;
+  public titlePosition: StepperTitlePosition = 'auto';
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
@@ -158,16 +158,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   @watch('titlePosition', { waitUntilFirstUpdate: true })
   protected titlePositionChange(): void {
     this.steps.forEach((step: IgcStepComponent) => {
-      if (
-        this.titlePosition !== 'bottom' &&
-        this.titlePosition !== 'top' &&
-        this.titlePosition !== 'end' &&
-        this.titlePosition !== 'start'
-      ) {
-        step.titlePosition = undefined;
-      } else {
-        step.titlePosition = this.titlePosition;
-      }
+      step.titlePosition = this.titlePosition;
     });
   }
 

@@ -760,7 +760,7 @@ describe('Stepper', () => {
           PARTS.headerContainer
         ) as HTMLElement;
 
-        expect(step.titlePosition).to.be.undefined;
+        expect(step.titlePosition).to.equal('auto');
         expect(stepHeaderContainer.part.contains('bottom')).to.be.true;
       }
 
@@ -781,7 +781,7 @@ describe('Stepper', () => {
       }
 
       stepper.orientation = 'vertical';
-      stepper.titlePosition = undefined;
+      stepper.titlePosition = 'auto';
       await elementUpdated(stepper);
 
       // test default title positions
@@ -791,7 +791,7 @@ describe('Stepper', () => {
           PARTS.headerContainer
         ) as HTMLElement;
 
-        expect(step.titlePosition).to.be.undefined;
+        expect(step.titlePosition).to.equal('auto');
         expect(stepHeaderContainer.part.contains('end')).to.be.true;
       }
 
@@ -839,7 +839,7 @@ describe('Stepper', () => {
 
       // set to the default title position
       stepper.orientation = 'horizontal';
-      stepper.titlePosition = undefined;
+      stepper.titlePosition = 'auto';
       await elementUpdated(stepper);
 
       // test default title positions
@@ -849,7 +849,7 @@ describe('Stepper', () => {
           PARTS.headerContainer
         ) as HTMLElement;
 
-        expect(step.titlePosition).to.be.undefined;
+        expect(step.titlePosition).to.equal('auto');
         expect(stepHeaderContainer.part.contains('bottom')).to.be.true;
       }
 
@@ -863,7 +863,7 @@ describe('Stepper', () => {
           PARTS.headerContainer
         ) as HTMLElement;
 
-        expect(step.titlePosition).to.undefined;
+        expect(step.titlePosition).to.equal('auto');
         expect(stepHeaderContainer.part.contains('end')).to.be.true;
       }
     });
