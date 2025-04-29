@@ -16,13 +16,13 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IgniteUI/igniteui-webcomponents"
+    "url": "git+https://github.com/IgniteUI/igniteui-webcomponents.git"
   },
   "bugs": {
     "url": "https://github.com/IgniteUI/igniteui-webcomponents/issues"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "keywords": [
     "webcomponents",
@@ -67,6 +67,7 @@
     "tabs",
     "textarea",
     "toast",
+    "tooltip",
     "tree"
   ],
   "customElements": "custom-elements.json",
