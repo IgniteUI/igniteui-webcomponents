@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Minimum Node version required is now >= 20.
 
 ### Removed
+- #### Library
+  - `CheckboxChangeEventArgs` removed, use `IgcCheckboxChangeEventArgs` instead.
+  - `RadioChangeEventArgs` removed, use `IgcRadioChangeEventArgs` instead.
+  - `IgcRangeSliderValue` removed, use `IgcRangeSliderValueEventArgs` instead.
+  - `IgcActiveStepChangingArgs` removed, use `IgcActiveStepChangingEventArgs` instead.
+  - `IgcActiveStepChangedArgs` removed, use `IgcActiveStepChangedEventArgs` instead.
 - #### Tabs
   - `igc-tab` **panel** property is removed.
   - `igc-tab-panel` component is removed.
