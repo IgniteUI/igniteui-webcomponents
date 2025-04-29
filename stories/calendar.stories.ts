@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -40,17 +40,17 @@ const metadata: Meta<IgcCalendarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     headerOrientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'The orientation of the calendar header.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description:
         'The orientation of the calendar months when more than one month\nis being shown.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
@@ -140,12 +140,12 @@ interface IgcCalendarArgs {
    */
   hideHeader: boolean;
   /** The orientation of the calendar header. */
-  headerOrientation: 'vertical' | 'horizontal';
+  headerOrientation: 'horizontal' | 'vertical';
   /**
    * The orientation of the calendar months when more than one month
    * is being shown.
    */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /** The number of months displayed in the days view. */
   visibleMonths: number;
   /** The current active view of the component. */

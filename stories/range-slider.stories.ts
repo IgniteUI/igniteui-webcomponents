@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
@@ -107,9 +107,9 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
-      type: '"mirror" | "start" | "end"',
+      type: '"end" | "mirror" | "start"',
       description: 'Changes the orientation of the ticks.',
-      options: ['mirror', 'start', 'end'],
+      options: ['end', 'mirror', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -139,10 +139,10 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       control: 'text',
     },
     tickLabelRotation: {
-      type: '0 | 90 | -90',
+      type: '"0" | "90"',
       description:
         'The degrees for the rotation of the tick labels. Defaults to 0.',
-      options: ['0', '90', '-90'],
+      options: ['0', '90'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: '0' } },
     },
@@ -220,7 +220,7 @@ interface IgcRangeSliderArgs {
   /** The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed. */
   secondaryTicks: number;
   /** Changes the orientation of the ticks. */
-  tickOrientation: 'mirror' | 'start' | 'end';
+  tickOrientation: 'end' | 'mirror' | 'start';
   /** Hides the primary tick labels. */
   hidePrimaryLabels: boolean;
   /** Hides the secondary tick labels. */
@@ -230,7 +230,7 @@ interface IgcRangeSliderArgs {
   /** String format used for the thumb and tick label values in the slider. */
   valueFormat: string;
   /** The degrees for the rotation of the tick labels. Defaults to 0. */
-  tickLabelRotation: 0 | 90 | -90;
+  tickLabelRotation: '0' | '90';
 }
 type Story = StoryObj<IgcRangeSliderArgs>;
 

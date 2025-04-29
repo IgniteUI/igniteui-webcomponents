@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
@@ -33,9 +33,9 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: 'horizontal' } },
     },
     stepType: {
-      type: '"indicator" | "title" | "full"',
+      type: '"full" | "indicator" | "title"',
       description: 'Get/Set the type of the steps.',
-      options: ['indicator', 'title', 'full'],
+      options: ['full', 'indicator', 'title'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'full' } },
     },
@@ -96,7 +96,7 @@ interface IgcStepperArgs {
   /** Gets/Sets the orientation of the stepper. */
   orientation: 'horizontal' | 'vertical';
   /** Get/Set the type of the steps. */
-  stepType: 'indicator' | 'title' | 'full';
+  stepType: 'full' | 'indicator' | 'title';
   /** Get/Set whether the stepper is linear. */
   linear: boolean;
   /** Get/Set whether the content is displayed above the steps. */

@@ -33,38 +33,6 @@ export function numberInRangeInclusive(
   return value >= min && value <= max;
 }
 
-export function sameObject(a: object, b: object) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-/**
- *
- * Returns an element's offset relative to its parent. Similar to element.offsetTop and element.offsetLeft, except the
- * parent doesn't have to be positioned relative or absolute.
- *
- * Work around for the following issues in Chromium based browsers:
- *
- * https://bugs.chromium.org/p/chromium/issues/detail?id=1330819
- * https://bugs.chromium.org/p/chromium/issues/detail?id=1334556
- *
- */
-export function getOffset(element: HTMLElement, parent: HTMLElement) {
-  const { top, left, bottom, right } = element.getBoundingClientRect();
-  const {
-    top: pTop,
-    left: pLeft,
-    bottom: pBottom,
-    right: pRight,
-  } = parent.getBoundingClientRect();
-
-  return {
-    top: Math.round(top - pTop),
-    left: Math.round(left - pLeft),
-    right: Math.round(right - pRight),
-    bottom: Math.round(bottom - pBottom),
-  };
-}
-
 export function createCounter() {
   let i = 0;
   return () => {
@@ -165,6 +133,10 @@ export function* iterNodes<T = Node>(
       }
     } else {
       yield node;
+    }
+
+    if (isElement(node) && node.shadowRoot && node.shadowRoot.mode === 'open') {
+      yield* iterNodes(node.shadowRoot, whatToShow, filter);
     }
 
     node = iter.nextNode() as T;
@@ -292,10 +264,36 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+export function isObject(value: unknown): value is object {
+  return value != null && typeof value === 'object';
+}
+
+export function isEventListenerObject(x: unknown): x is EventListenerObject {
+  return isObject(x) && 'handleEvent' in x;
+}
+
+export function addWeakEventListener(
+  element: Element,
+  event: string,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions | boolean
+): void {
+  const weakRef = new WeakRef(listener);
+  const wrapped = (evt: Event) => {
+    const handler = weakRef.deref();
+
+    return isEventListenerObject(handler)
+      ? handler.handleEvent(evt)
+      : handler?.(evt);
+  };
+
+  element.addEventListener(event, wrapped, options);
+}
+
 /**
- * Returns whether a given collection has at least one member.
+ * Returns whether a given collection is empty.
  */
-export function isEmpty<T, U extends string>(
+export function isEmpty<T, U extends object>(
   x: ArrayLike<T> | Set<T> | Map<U, T>
 ): boolean {
   return 'length' in x ? x.length < 1 : x.size < 1;
@@ -333,6 +331,144 @@ export function getCenterPoint(element: Element) {
 export function roundByDPR(value: number): number {
   const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
+}
+
+export function scrollIntoView(
+  element?: HTMLElement,
+  config?: ScrollIntoViewOptions
+): void {
+  if (!element) {
+    return;
+  }
+
+  element.scrollIntoView(
+    Object.assign(
+      {
+        behavior: 'auto',
+        block: 'nearest',
+        inline: 'nearest',
+      },
+      config
+    )
+  );
+}
+
+export function isRegExp(value: unknown): value is RegExp {
+  return value != null && value.constructor === RegExp;
+}
+
+export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
+  // Early return
+  if (Object.is(a, b)) {
+    return true;
+  }
+
+  if (isObject(a) && isObject(b)) {
+    if (a.constructor !== b.constructor) {
+      return false;
+    }
+
+    // Circular references
+    if (visited.has(a) && visited.has(b)) {
+      return true;
+    }
+
+    visited.add(a);
+    visited.add(b);
+
+    // RegExp
+    if (isRegExp(a) && isRegExp(b)) {
+      return a.source === b.source && a.flags === b.flags;
+    }
+
+    // Maps
+    if (a instanceof Map && b instanceof Map) {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const [keyA, valueA] of a.entries()) {
+        let found = false;
+        for (const [keyB, valueB] of b.entries()) {
+          if (equal(keyA, keyB, visited) && equal(valueA, valueB, visited)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Sets
+    if (a instanceof Set && b instanceof Set) {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const valueA of a) {
+        let found = false;
+        for (const valueB of b) {
+          if (equal(valueA, valueB, visited)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Arrays
+    if (Array.isArray(a) && Array.isArray(b)) {
+      const length = a.length;
+      if (length !== b.length) {
+        return false;
+      }
+      for (let i = 0; i < length; i++) {
+        if (!equal(a[i], b[i], visited)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // toPrimitive
+    if (a.valueOf !== Object.prototype.valueOf) {
+      return a.valueOf() === b.valueOf();
+    }
+    // Strings based
+    if (a.toString !== Object.prototype.toString) {
+      return a.toString() === b.toString();
+    }
+
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) {
+      return false;
+    }
+
+    for (const key of aKeys) {
+      if (!Object.prototype.hasOwnProperty.call(b, key)) {
+        return false;
+      }
+    }
+
+    for (const key of aKeys) {
+      if (!equal(a[key as keyof typeof a], b[key as keyof typeof b], visited)) {
+        return false;
+      }
+    }
+
+    visited.delete(a);
+    visited.delete(b);
+
+    return true;
+  }
+
+  return false;
 }
 
 /** Required utility type for specific props */

@@ -26,12 +26,6 @@ $theme: $fluent;
     min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
 }
 
-:host(:focus-within) {
-    [part='label'] {
-        color: color(gray, 800);
-    }
-}
-
 :host([required]) {
     [part='label']::after {
         color: var-get($theme, 'error-secondary-color');

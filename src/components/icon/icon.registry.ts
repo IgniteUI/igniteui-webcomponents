@@ -1,5 +1,5 @@
 import type { Theme } from '../../theming/types.js';
-import { sameObject } from '../common/util.js';
+import { equal } from '../common/util.js';
 import { iconReferences } from './icon-references.js';
 import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
@@ -66,7 +66,7 @@ class IconsRegistry {
         this.setIconRef({
           alias,
           target: _target,
-          overwrite: !external && !sameObject(_ref, _target),
+          overwrite: !(external || equal(_ref, _target)),
         });
       }
     }

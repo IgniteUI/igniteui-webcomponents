@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
@@ -402,7 +402,7 @@ export const Form: Story = {
         <fieldset>
           <igc-combo
             .data=${primitiveData}
-            .value=${[1, 'one']}
+            value='[1, "one"]'
             name="combo-primitive"
             label="Primitives binding"
           ></igc-combo>

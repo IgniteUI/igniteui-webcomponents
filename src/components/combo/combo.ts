@@ -19,6 +19,7 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import {
   asArray,
+  equal,
   findElementFromEventPath,
   first,
   isEmpty,
@@ -173,10 +174,10 @@ export default class IgcComboComponent<
   });
 
   @queryAssignedElements({ slot: 'suffix' })
-  protected inputSuffix!: Array<HTMLElement>;
+  protected inputSuffix!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'prefix' })
-  protected inputPrefix!: Array<HTMLElement>;
+  protected inputPrefix!: HTMLElement[];
 
   /** The data source used to generate the list of options. */
   /* treatAsRef */
@@ -210,7 +211,11 @@ export default class IgcComboComponent<
    */
   @property({ type: Boolean, reflect: true, attribute: 'single-select' })
   public set singleSelect(value: boolean) {
-    this._singleSelect = value;
+    if (this._singleSelect === Boolean(value)) {
+      return;
+    }
+
+    this._singleSelect = Boolean(value);
     this._selection.clear();
     if (this.hasUpdated) {
       this.updateValue();
@@ -301,8 +306,10 @@ export default class IgcComboComponent<
    */
   @property({ attribute: 'group-key' })
   public set groupKey(value: Keys<T> | undefined) {
-    this._groupKey = value;
-    this._state.runPipeline();
+    if (this._groupKey !== value) {
+      this._groupKey = value;
+      this._state.runPipeline();
+    }
   }
 
   public get groupKey() {
@@ -317,8 +324,10 @@ export default class IgcComboComponent<
    */
   @property({ attribute: 'group-sorting' })
   public set groupSorting(value: GroupingDirection) {
-    this._groupSorting = value;
-    this._state.runPipeline();
+    if (this._groupSorting !== value) {
+      this._groupSorting = value;
+      this._state.runPipeline();
+    }
   }
 
   public get groupSorting() {
@@ -335,8 +344,11 @@ export default class IgcComboComponent<
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
-    this._filteringOptions = { ...this._filteringOptions, ...value };
-    this._state.runPipeline();
+    const options = { ...this._filteringOptions, ...value };
+    if (!equal(options, this._filteringOptions)) {
+      this._filteringOptions = options;
+      this._state.runPipeline();
+    }
   }
 
   public get filteringOptions(): FilteringOptions<T> {
@@ -444,7 +456,9 @@ export default class IgcComboComponent<
 
   private _rootClickController = addRootClickHandler(this, {
     hideCallback: async () => {
-      if (!this.handleClosing()) return;
+      if (!this.handleClosing()) {
+        return;
+      }
       this.open = false;
 
       await this.updateComplete;
@@ -664,7 +678,7 @@ export default class IgcComboComponent<
 
   /** Shows the list of options. */
   public async show(): Promise<boolean> {
-    return this._show(false);
+    return await this._show(false);
   }
 
   protected async _hide(emitEvent = true) {
@@ -684,7 +698,7 @@ export default class IgcComboComponent<
 
   /** Hides the list of options. */
   public async hide(): Promise<boolean> {
-    return this._hide(false);
+    return await this._hide(false);
   }
 
   protected _toggle(emit = true) {
@@ -693,7 +707,7 @@ export default class IgcComboComponent<
 
   /** Toggles the list of options. */
   public async toggle(): Promise<boolean> {
-    return this._toggle(false);
+    return await this._toggle(false);
   }
 
   private _getActiveDescendantId(index: number) {

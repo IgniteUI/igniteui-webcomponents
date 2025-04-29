@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
@@ -24,9 +24,9 @@ const metadata: Meta<IgcButtonComponent> = {
   },
   argTypes: {
     variant: {
-      type: '"flat" | "contained" | "outlined" | "fab"',
+      type: '"contained" | "flat" | "outlined" | "fab"',
       description: 'Sets the variant of the button.',
-      options: ['flat', 'contained', 'outlined', 'fab'],
+      options: ['contained', 'flat', 'outlined', 'fab'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'contained' } },
     },
@@ -75,7 +75,7 @@ export default metadata;
 
 interface IgcButtonArgs {
   /** Sets the variant of the button. */
-  variant: 'flat' | 'contained' | 'outlined' | 'fab';
+  variant: 'contained' | 'flat' | 'outlined' | 'fab';
   /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */

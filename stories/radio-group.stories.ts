@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -24,9 +24,9 @@ const metadata: Meta<IgcRadioGroupComponent> = {
   },
   argTypes: {
     alignment: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'Alignment of the radio controls inside this group.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -49,7 +49,7 @@ export default metadata;
 
 interface IgcRadioGroupArgs {
   /** Alignment of the radio controls inside this group. */
-  alignment: 'vertical' | 'horizontal';
+  alignment: 'horizontal' | 'vertical';
   /** Gets/Sets the name for all child igc-radio components. */
   name: string;
   /** Gets/Sets the checked igc-radio element that matches `value` */
