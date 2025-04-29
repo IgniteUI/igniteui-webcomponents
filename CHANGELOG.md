@@ -4,6 +4,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.0] - 2025-04-29
+### Changed
+- Minimum Node version required is now >= 20.
+
+### Removed
+- #### Tabs
+  - `igc-tab` **panel** property is removed.
+  - `igc-tab-panel` component is removed.
+    The `igc-tab` now encompasses both the tab header and the tab content in a single component.
+
+    Slotted content in the default slot of the `igc-tab` element now replaces the `igc-tab-panel` role
+    while elements slotted inside the **label** slot will end up as content for the `igc-tab` header.
+
+    Before:
+    ```html
+      <igc-tabs>
+        <igc-tab panel="home">
+          <igc-icon name="home"></igc-icon>
+        </igc-tab>
+        <igc-tab panel="search">
+          <igc-icon name="search"></igc-icon>
+        </igc-tab>
+        <igc-tab panel="favorite">
+          <igc-icon name="favorite"></igc-icon>
+        </igc-tab>
+        <igc-tab-panel id="home">Home tab panel</igc-tab-panel>
+        <igc-tab-panel id="search">Search tab panel</igc-tab-panel>
+        <igc-tab-panel id="favorite">Favorite tab panel</igc-tab-panel>
+      </igc-tabs>
+    ```
+
+    After:
+    ```html
+      <igc-tabs>
+        <igc-tab>
+          <igc-icon name="home" slot="label"></igc-icon>
+          Home tab panel
+        </igc-tab>
+        <igc-tab>
+          <igc-icon name="search" slot="label"></igc-icon>
+          Search tab panel
+        </igc-tab>
+        <igc-tab>
+          <igc-icon name="favorite" slot="label"></igc-icon>
+          Favorite tab panel
+        </igc-tab>
+      </igc-tabs>
+    ```
+
 ## [5.4.1] - 2025-04-23
 ### Fixed
 - Internal library issues
@@ -821,6 +870,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.1...6.0.0
 [5.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.2.4...5.3.0
