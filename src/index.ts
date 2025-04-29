@@ -148,12 +148,3 @@ export type {
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';
-
-// deprecated types
-export type { CheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
-export type { RadioChangeEventArgs } from './components/radio/radio.js';
-export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
-export type {
-  IgcActiveStepChangingArgs,
-  IgcActiveStepChangedArgs,
-} from './components/stepper/stepper.common.js';
