@@ -383,7 +383,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const inactive = !areSameMonth(day, this._activeDate);
 
     return {
-      // date: true,
       disabled: disabled || hidden,
       first: this.isFirstInRange(day),
       last: this.isLastInRange(day),
