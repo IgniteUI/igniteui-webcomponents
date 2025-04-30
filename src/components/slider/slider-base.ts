@@ -571,7 +571,7 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
         aria-label=${ifDefined(ariaLabel)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.disabled}
         @pointerenter=${this.showThumbLabels}
         @pointerleave=${this.hideThumbLabels}
         @focus=${this.handleThumbFocus}

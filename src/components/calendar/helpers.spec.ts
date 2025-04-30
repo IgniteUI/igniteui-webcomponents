@@ -47,7 +47,7 @@ export function getDayViewDOM(element: IgcDaysViewComponent) {
       get disabled() {
         return Array.from(
           root.querySelectorAll<HTMLElement>(
-            'span[part*="date-inner disabled"]'
+            'span[part~="date-inner"][part~="disabled"]'
           )
         );
       },

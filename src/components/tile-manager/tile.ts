@@ -22,13 +22,13 @@ import { addFullscreenController } from '../common/controllers/fullscreen.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   asNumber,
   createCounter,
   findElementFromEventPath,
   isEmpty,
   isLTR,
-  partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
@@ -666,7 +666,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderContent() {
-    const parts = partNameMap({
+    const parts = {
       base: true,
       draggable: this._tileManager?.dragMode !== 'none',
       fullscreen: this.fullscreen,
@@ -675,10 +675,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
         !this.disableResize && this._tileManager?.resizeMode !== 'none',
       resizing: this._isResizing,
       maximized: this.maximized,
-    });
+    };
 
     return html`
-      <div part=${parts}>
+      <div part=${partMap(parts)}>
         ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>
@@ -705,7 +705,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       ? this._renderContent()
       : html`
           <igc-resize
-            part=${partNameMap({
+            part=${partMap({
               resize: true,
               'side-adorner': this._customAdorners.get('side')!,
               'corner-adorner': this._customAdorners.get('corner')!,

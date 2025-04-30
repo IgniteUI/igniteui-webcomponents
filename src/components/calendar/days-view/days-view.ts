@@ -11,7 +11,8 @@ import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resource
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, first, last, partNameMap, take } from '../../common/util.js';
+import { partMap } from '../../common/part-map.js';
+import { chunk, first, last, take } from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -382,7 +383,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const inactive = !areSameMonth(day, this._activeDate);
 
     return {
-      date: true,
+      // date: true,
       disabled: disabled || hidden,
       first: this.isFirstInRange(day),
       last: this.isLastInRange(day),
@@ -403,13 +404,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const { changePreview, clearPreview } = this.getDayHandlers(day);
 
     const props = this.getDayProperties(day, today);
-    const parts = partNameMap(props);
 
     return html`
-      <span part=${parts}>
+      <span part=${partMap({ date: true, ...props })}>
         <span
           role="gridcell"
-          part=${parts.replace('date', 'date-inner')}
+          part=${partMap({ 'date-inner': true, ...props })}
           aria-label=${ariaLabel}
           aria-disabled=${props.disabled}
           aria-selected=${props.selected}
@@ -438,8 +438,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   protected renderWeekNumber(start: CalendarDay, last: boolean) {
     return html`
-      <span role="rowheader" part=${partNameMap({ 'week-number': true, last })}>
-        <span part=${partNameMap({ 'week-number-inner': true, last })}>
+      <span role="rowheader" part=${partMap({ 'week-number': true, last })}>
+        <span part=${partMap({ 'week-number-inner': true, last })}>
           ${start.week}
         </span>
       </span>

@@ -19,12 +19,8 @@ import {
   type FormValue,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
-import {
-  asNumber,
-  createCounter,
-  isEmpty,
-  partNameMap,
-} from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { asNumber, createCounter, isEmpty } from '../common/util.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -439,7 +435,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   protected renderStandard() {
     return html`
       ${this.renderLabel()}
-      <div part=${partNameMap(this.resolvePartNames())}>
+      <div part=${partMap(this.resolvePartNames())}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
       ${this.renderValidationContainer()}
@@ -449,7 +445,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   protected renderMaterial() {
     return html`
       <div
-        part=${partNameMap({
+        part=${partMap({
           ...this.resolvePartNames(),
           labelled: this.label,
           placeholder: this.placeholder,
