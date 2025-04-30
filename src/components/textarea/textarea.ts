@@ -10,7 +10,7 @@ import { live } from 'lit/directives/live.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
-import { createResizeController } from '../common/controllers/resize-observer.js';
+import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -297,7 +297,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    createResizeController(this, {
+    createResizeObserverController(this, {
       callback: this.setAreaHeight,
     });
 
