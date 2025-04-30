@@ -68,6 +68,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   );
 
   private activeStep!: IgcStepComponent;
+  private _shouldUpdateLinearState = false;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -171,6 +172,10 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   @watch('linear', { waitUntilFirstUpdate: true })
   protected linearChange(): void {
+    if (!this.activeStep) {
+      this._shouldUpdateLinearState = true;
+      return;
+    }
     this.steps.forEach((step: IgcStepComponent) => {
       step.linearDisabled = this.linear;
       if (step.index <= this.activeStep.index) {
@@ -480,6 +485,10 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
 
     this.syncProperties();
+    if (this._shouldUpdateLinearState) {
+      this.linearChange();
+      this._shouldUpdateLinearState = false;
+    }
     if (this.linear) {
       this.updateStepsLinearDisabled();
     }
