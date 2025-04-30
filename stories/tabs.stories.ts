@@ -76,7 +76,10 @@ const icons = [
     url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg',
   },
 ];
-await Promise.all(icons.map(async (each) => registerIcon(each.name, each.url)));
+
+for (const icon of icons) {
+  registerIcon(icon.name, icon.url);
+}
 
 function remove({ target }: PointerEvent) {
   (target as Element).closest(IgcTabComponent.tagName)!.remove();
