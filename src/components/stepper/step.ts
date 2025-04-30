@@ -126,7 +126,7 @@ export default class IgcStepComponent extends LitElement {
 
   /** @hidden @internal @private */
   @property({ attribute: false })
-  public titlePosition?: StepperTitlePosition;
+  public titlePosition: StepperTitlePosition = 'auto';
 
   /** @hidden @internal @private */
   @property({ attribute: false })
@@ -252,11 +252,11 @@ export default class IgcStepComponent extends LitElement {
       top: this.titlePosition === 'top',
       bottom:
         this.titlePosition === 'bottom' ||
-        (this.orientation === 'horizontal' && !this.titlePosition),
+        (this.orientation === 'horizontal' && this.titlePosition === 'auto'),
       start: this.titlePosition === 'start',
       end:
         this.titlePosition === 'end' ||
-        (this.orientation === 'vertical' && !this.titlePosition),
+        (this.orientation === 'vertical' && this.titlePosition === 'auto'),
     };
   }
 

@@ -150,13 +150,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr
    */
   @property()
-  public override autocapitalize!:
-    | 'off'
-    | 'none'
-    | 'on'
-    | 'sentences'
-    | 'words'
-    | 'characters';
+  public override autocapitalize!: string;
 
   /**
    * Hints at the type of data that might be entered by the user while editing the element or its contents.
@@ -167,15 +161,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * @attr inputmode
    */
   @property({ attribute: 'inputmode' })
-  public override inputMode!:
-    | 'none'
-    | 'text'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  public override inputMode!: string;
 
   /**
    * The label for the control.
@@ -493,7 +479,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         .value=${live(this.value)}
         .wrap=${this.wrap}
         autocomplete=${ifDefined(this.autocomplete as any)}
-        autocapitalize=${ifDefined(this.autocapitalize)}
+        autocapitalize=${ifDefined(this.autocapitalize as any)}
         inputmode=${ifDefined(this.inputMode)}
         spellcheck=${ifDefined(this.spellcheck)}
         minlength=${ifDefined(this.minLength)}

@@ -16,9 +16,6 @@ export interface IgcRangeSliderValueEventArgs {
   upper: number;
 }
 
-/** @deprecated since 5.4.0. Use IgcRangeSliderValueEventArgs instead */
-export type IgcRangeSliderValue = IgcRangeSliderValueEventArgs;
-
 export interface IgcRangeSliderComponentEventMap {
   /**
    * Emitted when a value is changed via thumb drag or keyboard interaction.

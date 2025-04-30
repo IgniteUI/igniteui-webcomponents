@@ -20,7 +20,7 @@ const metadata: Meta<IgcTabsComponent> = {
     docs: {
       description: {
         component:
-          '`IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.\n\nThe tabs component allows the user to navigate between multiple tabs.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
+          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.\n\nThe `<igc-tabs>` component allows the user to navigate between multiple `<igc-tab>` elements.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -76,7 +76,10 @@ const icons = [
     url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg',
   },
 ];
-await Promise.all(icons.map(async (each) => registerIcon(each.name, each.url)));
+
+for (const icon of icons) {
+  registerIcon(icon.name, icon.url);
+}
 
 function remove({ target }: PointerEvent) {
   (target as Element).closest(IgcTabComponent.tagName)!.remove();

@@ -73,10 +73,11 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: '320' } },
     },
     titlePosition: {
-      type: '"bottom" | "top" | "end" | "start"',
+      type: '"auto" | "bottom" | "top" | "end" | "start"',
       description: 'Get/Set the position of the steps title.',
-      options: ['bottom', 'top', 'end', 'start'],
+      options: ['auto', 'bottom', 'top', 'end', 'start'],
       control: { type: 'select' },
+      table: { defaultValue: { summary: 'auto' } },
     },
   },
   args: {
@@ -87,6 +88,7 @@ const metadata: Meta<IgcStepperComponent> = {
     verticalAnimation: 'grow',
     horizontalAnimation: 'slide',
     animationDuration: 320,
+    titlePosition: 'auto',
   },
 };
 
@@ -108,7 +110,7 @@ interface IgcStepperArgs {
   /** The animation duration in either vertical or horizontal mode. */
   animationDuration: number;
   /** Get/Set the position of the steps title. */
-  titlePosition: 'bottom' | 'top' | 'end' | 'start';
+  titlePosition: 'auto' | 'bottom' | 'top' | 'end' | 'start';
 }
 type Story = StoryObj<IgcStepperArgs>;
 
