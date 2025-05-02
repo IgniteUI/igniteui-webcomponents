@@ -14,6 +14,7 @@ export { default as IgcCardMediaComponent } from './components/card/card.media.j
 export { default as IgcCarouselComponent } from './components/carousel/carousel.js';
 export { default as IgcCarouselIndicatorComponent } from './components/carousel/carousel-indicator.js';
 export { default as IgcCarouselSlideComponent } from './components/carousel/carousel-slide.js';
+export { default as IgcChatComponent } from './components/chat/chat.js';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.js';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
