@@ -22,13 +22,13 @@ export default class IgcChatMessageListComponent extends LitElement {
     registerComponent(IgcChatMessageListComponent, IgcChatMessageComponent);
   }
 
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: false })
   public user: IgcUser | undefined;
 
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
-  @property({ reflect: true, attribute: 'typing-users' })
+  @property({ reflect: true, attribute: false })
   public typingUsers: IgcUser[] = [];
 
   @property({ type: Boolean, attribute: 'scroll-bottom' })
@@ -126,7 +126,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                 <igc-chat-message
                   .message=${message}
                   .user=${this.user}
-                  .enable-reactions=${this.enableReactions}
+                  .enableReactions=${this.enableReactions}
                   @add-reaction=${this.handleReaction}
                 ></igc-chat-message>
               `

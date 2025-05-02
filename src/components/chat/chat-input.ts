@@ -201,9 +201,11 @@ export default class IgcChatInputComponent extends LitElement {
 
         ${this.showEmojiPicker
           ? html`
-                <div class="emoji-picker-container">
-                  <igc-emoji-picker @emoji-selected=${this.addEmoji}></emoji-picker>
-                </div>
+              <div class="emoji-picker-container">
+                <igc-emoji-picker
+                  @emoji-selected=${this.addEmoji}
+                ></igc-emoji-picker>
+              </div>
             `
           : ''}
       </div>

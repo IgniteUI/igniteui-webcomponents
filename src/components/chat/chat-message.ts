@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcMessageAttachmentsComponent } from './message-attachments.js';
@@ -28,10 +29,10 @@ export default class IgcChatMessageComponent extends LitElement {
     );
   }
 
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: false })
   public message: IgcMessage | undefined;
 
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: false })
   public user: IgcUser | undefined;
 
   @property({ type: Boolean, attribute: 'enable-reactions' })
@@ -78,7 +79,11 @@ export default class IgcChatMessageComponent extends LitElement {
 
     return html`
       <div class=${containerClass}>
-        <igc-avatar src=${sender?.avatar} alt=${sender?.name} shape="circle">
+        <igc-avatar
+          src=${ifDefined(sender?.avatar)}
+          alt=${ifDefined(sender?.name)}
+          shape="circle"
+        >
         </igc-avatar>
         <div class="message-content">
           ${this.message?.text.trim()

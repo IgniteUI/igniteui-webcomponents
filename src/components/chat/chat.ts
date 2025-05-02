@@ -37,13 +37,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  @property()
+  @property({ attribute: false })
   public user: IgcUser | undefined;
 
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
-  @property({ reflect: true, attribute: 'typing-users' })
+  @property({ reflect: true, attribute: false })
   public typingUsers: IgcUser[] = [];
 
   @property({ type: Boolean, attribute: 'scroll-bottom' })
@@ -183,14 +183,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <igc-chat-message-list
           .messages=${this.messages}
           .user=${this.user}
-          .typing-users=${this.typingUsers}
-          .scroll-bottom=${this.scrollBottom}
-          .enable-reactions=${this.enableReactions}
+          .typingUsers=${this.typingUsers}
+          .scrollBottom=${this.scrollBottom}
+          .enableReactions=${this.enableReactions}
         >
         </igc-chat-message-list>
         <igc-chat-input
-          .enable-attachments=${this.enableAttachments}
-          .enable-emoji-picker=${this.enableEmojiPicker}
+          .enableAttachments=${this.enableAttachments}
+          .enableEmojiPicker=${this.enableEmojiPicker}
           @message-send=${this.handleSendMessage}
         ></igc-chat-input>
       </div>
