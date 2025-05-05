@@ -11,6 +11,16 @@ const metadata: Meta<IgcChatComponent> = {
   component: 'igc-chat',
   parameters: { docs: { description: { component: '' } } },
   argTypes: {
+    scrollBottom: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'true' } },
+    },
+    enableReactions: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'true' } },
+    },
     enableAttachments: {
       type: 'boolean',
       control: 'boolean',
@@ -21,15 +31,29 @@ const metadata: Meta<IgcChatComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'true' } },
     },
+    headerText: {
+      type: 'string',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
   },
-  args: { enableAttachments: true, enableEmojiPicker: true },
+  args: {
+    scrollBottom: true,
+    enableReactions: true,
+    enableAttachments: true,
+    enableEmojiPicker: true,
+    headerText: '',
+  },
 };
 
 export default metadata;
 
 interface IgcChatArgs {
+  scrollBottom: boolean;
+  enableReactions: boolean;
   enableAttachments: boolean;
   enableEmojiPicker: boolean;
+  headerText: string;
 }
 type Story = StoryObj<IgcChatArgs>;
 

@@ -60,7 +60,7 @@
     animation: bounce 1.2s infinite 0.4s;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
     from {
         opacity: 0;
     }
@@ -71,7 +71,6 @@
 }
 
 @keyframes bounce {
-
     0%,
     80%,
     100% {
@@ -84,7 +83,6 @@
 }
 
 @media (prefers-color-scheme: dark) {
-
     .day-separator::before,
     .day-separator::after {
         background-color: #525253;

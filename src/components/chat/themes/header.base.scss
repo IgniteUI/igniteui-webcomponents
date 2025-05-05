@@ -5,9 +5,8 @@
     display: block;
     padding: 12px 16px;
     border-bottom: 1px solid #D1D1D6;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: #f7f7f7;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
 
   .header {
@@ -86,15 +85,4 @@
 
   .action-button:hover {
     background-color: #E5E5EA;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :host {
-      background-color: rgba(125, 125, 128, 0.8);
-      border-bottom: 1px solid var(--color-gray-800);
-    }
-
-    .action-button:hover {
-      background-color: var(--color-gray-800);
-    }
   }

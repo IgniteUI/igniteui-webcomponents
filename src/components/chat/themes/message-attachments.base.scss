@@ -61,11 +61,8 @@
 
 .image-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    inset: 0;
+    background-color: #1f1f1f;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,7 +79,7 @@
     top: 1rem;
     right: 1rem;
     color: white;
-    background: rgba(0, 0, 0, 0.5);
+    background: #1f1f1f;
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
@@ -94,7 +91,7 @@
 }
 
 .close-overlay:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: #1f1f1f;
 }
 
 .large {

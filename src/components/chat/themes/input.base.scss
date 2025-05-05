@@ -101,7 +101,7 @@ igc-file-input::part(file-names){
 .attachment-name {
     font-size: small;
     font-style: italic;
-    margin: 0px 5px;
+    margin: 0 5px;
 }
 
 .send-button {
@@ -125,25 +125,3 @@ igc-file-input::part(file-names){
     z-index: 10;
 }
 
-@media (prefers-color-scheme: dark) {
-    :host {
-        border-top: 1px solid #3A3A3C;
-    }
-
-    .attachment-button:hover,
-    .send-button:hover {
-        background-color: #48484A;
-    }
-}
-
-@media (max-width: 480px) {
-    .input-container {
-        gap: 8px;
-    }
-
-    .attachment-button,
-    .send-button {
-        width: 36px;
-        height: 36px;
-    }
-}

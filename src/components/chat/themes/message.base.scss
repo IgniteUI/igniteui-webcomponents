@@ -3,6 +3,7 @@
 
 :host {
     display: block;
+
     --message-max-width: 75%;
   }
 
@@ -51,7 +52,7 @@
   }
 
   .sent .bubble {
-    border-radius: 18px 18px 4px 18px;
+    border-radius: 18px 18px 4px;
     background-color: #0A84FF;
     color: white;
   }
@@ -94,30 +95,20 @@
     border-radius: 10px;
     padding: 2px 5px;
     font-size: 0.8rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px #1f1f1f;
     display: flex;
     align-items: center;
     z-index: 1;
   }
 
-  @keyframes fadeIn {
+  @keyframes fade-in {
     from {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 480px) {
-    :host {
-      --message-max-width: 85%;
-    }
-
-    .avatar {
-      width: 24px;
-      height: 24px;
     }
   }
