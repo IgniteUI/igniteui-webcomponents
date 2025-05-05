@@ -12,7 +12,6 @@ import { styles } from './themes/input.base.css.js';
 import {
   type IgcMessageAttachment,
   attachmentIcon,
-  emojiPickerIcon,
   sendButtonIcon,
 } from './types.js';
 
@@ -55,12 +54,8 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private attachments: IgcMessageAttachment[] = [];
 
-  @state()
-  private showEmojiPicker = false;
-
   constructor() {
     super();
-    registerIconFromText('emoji-picker', emojiPickerIcon, 'material');
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
   }
@@ -107,14 +102,9 @@ export default class IgcChatInputComponent extends LitElement {
     }, 0);
   }
 
-  private toggleEmojiPicker() {
-    this.showEmojiPicker = !this.showEmojiPicker;
-  }
-
   private addEmoji(e: CustomEvent) {
     const emoji = e.detail.emoji;
     this.inputValue += emoji;
-    this.showEmojiPicker = false;
 
     // Focus back on input after selecting an emoji
     this.updateComplete.then(() => {
@@ -178,13 +168,9 @@ export default class IgcChatInputComponent extends LitElement {
         <div class="buttons-container">
           ${this.enableEmojiPicker
             ? html`
-                <igc-icon-button
-                  name="emoji-picker"
-                  collection="material"
-                  variant="contained"
-                  class="small"
-                  @click=${this.toggleEmojiPicker}
-                ></igc-icon-button>
+                <igc-emoji-picker
+                  @emoji-selected=${this.addEmoji}
+                ></igc-emoji-picker>
               `
             : ''}
 
@@ -198,16 +184,6 @@ export default class IgcChatInputComponent extends LitElement {
             @click=${this.sendMessage}
           ></igc-icon-button>
         </div>
-
-        ${this.showEmojiPicker
-          ? html`
-              <div class="emoji-picker-container">
-                <igc-emoji-picker
-                  @emoji-selected=${this.addEmoji}
-                ></igc-emoji-picker>
-              </div>
-            `
-          : ''}
       </div>
       <div>
         ${this.attachments?.map(

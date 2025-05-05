@@ -56,10 +56,6 @@ export class IgcMessageReactionsComponent extends LitElement {
     document.removeEventListener('click', this.handleClickOutside);
   }
 
-  private toggleEmojiPicker() {
-    this.showEmojiPicker = !this.showEmojiPicker;
-  }
-
   private handleClickOutside = (e: MouseEvent) => {
     if (this.showEmojiPicker && !e.composedPath().includes(this)) {
       this.showEmojiPicker = false;
@@ -101,23 +97,7 @@ export class IgcMessageReactionsComponent extends LitElement {
           `
         )}
 
-        <igc-icon-button
-          name="emoji-picker"
-          collection="material"
-          variant="contained"
-          class="small"
-          @click=${this.toggleEmojiPicker}
-        ></igc-icon-button>
-
-        ${this.showEmojiPicker
-          ? html`
-              <div class="emoji-picker-container">
-                <igc-emoji-picker
-                  @emoji-selected=${this.addEmoji}
-                ></igc-emoji-picker>
-              </div>
-            `
-          : ''}
+        <igc-emoji-picker @emoji-selected=${this.addEmoji}></igc-emoji-picker>
       </div>
     `;
   }
