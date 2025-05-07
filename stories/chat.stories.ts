@@ -63,14 +63,19 @@ const currentUser: any = {
   id: 'user1',
   name: 'You',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
-  isOnline: true,
 };
 
 const otherUser: any = {
   id: 'user2',
   name: 'Alice',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
-  isOnline: true,
+  isTyping: false,
+};
+
+const thirdUser: any = {
+  id: 'user3',
+  name: 'Sam',
+  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
   isTyping: false,
 };
 
@@ -79,7 +84,7 @@ const initialMessages: any[] = [
     id: '1',
     text: 'Hey there! How are you doing today?',
     sender: otherUser,
-    timestamp: new Date(Date.now() - 3600000),
+    timestamp: new Date(2025, 4, 5),
     status: 'read',
   },
   {
@@ -103,6 +108,13 @@ const initialMessages: any[] = [
         users: ['user1'],
       },
     ],
+  },
+  {
+    id: '4',
+    text: 'Hi guys! I just joined the chat.',
+    sender: thirdUser,
+    timestamp: new Date(Date.now() - 3300000),
+    status: 'read',
   },
 ];
 

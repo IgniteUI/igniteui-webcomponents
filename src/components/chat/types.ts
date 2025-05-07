@@ -1,12 +1,11 @@
 export type IgcMessageStatusType = 'sent' | 'delivered' | 'read';
 export type IgcMessageAttachmentType = 'image' | 'file';
-export type IgcUserStatus = 'online' | 'offline';
 
 export interface IgcUser {
   id: string;
   name: string;
   avatar: string;
-  isOnline: boolean;
+  status?: any;
   isTyping?: boolean;
 }
 
@@ -18,7 +17,6 @@ export interface IgcMessage {
   status?: IgcMessageStatusType;
   attachments?: IgcMessageAttachment[];
   reactions?: IgcMessageReaction[];
-  reaction?: string;
 }
 
 export interface IgcMessageAttachment {
