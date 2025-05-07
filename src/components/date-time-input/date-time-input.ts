@@ -22,7 +22,8 @@ import {
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
-import { noop, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { noop } from '../common/util.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -649,7 +650,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return html`
       <input
         type="text"
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}

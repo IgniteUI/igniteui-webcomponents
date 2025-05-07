@@ -13,11 +13,8 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  findElementFromEventPath,
-  isLTR,
-  partNameMap,
-} from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { findElementFromEventPath, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
@@ -264,6 +261,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private get parts() {
     return {
+      wrapper: true,
       selected: this.selected,
       focused: this.isFocused,
       active: this.active,
@@ -513,7 +511,7 @@ export default class IgcTreeItemComponent extends LitElement {
     };
 
     return html`
-      <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
+      <div id="wrapper" part=${partMap(this.parts)}>
         <div
           style="width: calc(${this.level} * var(--igc-tree-indentation-size))"
           part="indentation"
@@ -521,7 +519,7 @@ export default class IgcTreeItemComponent extends LitElement {
         >
           <slot name="indentation"></slot>
         </div>
-        <div part="${partNameMap(indicatorParts)}" aria-hidden="true">
+        <div part=${partMap(indicatorParts)} aria-hidden="true">
           ${this.loading
             ? html`
                 <slot name="loading">

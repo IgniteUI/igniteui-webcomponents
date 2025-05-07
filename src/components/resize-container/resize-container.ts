@@ -6,7 +6,7 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import IgcIconComponent from '../icon/icon.js';
 import { addResizeController } from './resize-controller.js';
 import { styles } from './themes/resize-container.base.css.js';
@@ -187,15 +187,15 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const parts = partNameMap({
+    const parts = {
       'resize-base': true,
       active: this._isActive || this.active,
-    });
+    };
 
     return html`
       <div
         ${ref(this._container)}
-        part=${parts}
+        part=${partMap(parts)}
         @pointerenter=${this.active ? nothing : this._handlePointerEnter}
         @pointerleave=${this.active ? nothing : this._handlePointerLeave}
       >

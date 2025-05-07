@@ -13,7 +13,8 @@ import {
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { asNumber, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { asNumber } from '../common/util.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
@@ -274,16 +275,16 @@ export default class IgcTileManagerComponent extends LitElement {
   // #region Rendering
 
   protected override render() {
-    const parts = partNameMap({
+    const parts = {
       base: true,
       'maximized-tile': this.tiles.some((tile) => tile.maximized),
-    });
+    };
 
     return html`
       <div
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
-        part=${parts}
+        part=${partMap(parts)}
       >
         <slot></slot>
       </div>

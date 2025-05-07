@@ -4,7 +4,8 @@ import { live } from 'lit/directives/live.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
 import { all } from './themes/switch-themes.js';
@@ -45,7 +46,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
     return html`
       <label
-        part=${partNameMap({ base: true, checked })}
+        part=${partMap({ base: true, checked })}
         for=${this.inputId}
         @pointerdown=${this._kbFocus.reset}
       >
@@ -65,17 +66,17 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           @focus=${this.handleFocus}
         />
         <span
-          part=${partNameMap({
+          part=${partMap({
             control: true,
             checked,
             focused: this._kbFocus.focused,
           })}
         >
-          <span part=${partNameMap({ thumb: true, checked })}></span>
+          <span part=${partMap({ thumb: true, checked })}></span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
+          part=${partMap({ label: true, checked })}
           id=${this.labelId}
         >
           <slot></slot>
