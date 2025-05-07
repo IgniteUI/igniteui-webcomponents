@@ -18,7 +18,7 @@
     padding: 0.5rem;
     border-bottom: 1px solid #bdbcbc;
     overflow-x: auto;
-    scrollbar-width: none;
+    scrollbar-width: thin;
   }
 
   .emoji-categories::-webkit-scrollbar {
@@ -55,10 +55,10 @@
 
   .emoji-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.25rem;
     padding: 0.5rem;
-    height: auto;
+    height: 150px;
     overflow: auto;
   }
 

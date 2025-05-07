@@ -97,9 +97,10 @@ const initialMessages: any[] = [
     status: 'read',
     reactions: [
       {
+        id: 'red_heart',
         emoji: '❤️',
         count: 1,
-        users: ['You'],
+        users: ['user1'],
       },
     ],
   },

@@ -7,7 +7,7 @@ import IgcChatHeaderComponent from './chat-header.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
-import type { IgcMessage, IgcUser } from './types.js';
+import type { IgcMessage, IgcMessageReaction, IgcUser } from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageEntered: CustomEvent<IgcMessage>;
@@ -106,73 +106,61 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private handleAddReaction(e: CustomEvent) {
-    const { messageId, emoji } = e.detail;
+    const { messageId, emojiId, emoji } = e.detail;
 
-    this.messages.map((message) => {
+    if (!messageId) return;
+
+    this.messages = this.messages.map((message) => {
       if (message.id === messageId) {
-        const existingReaction = message.reactions?.find(
-          (r) => r.emoji === emoji
+        const userReaction = message.reactions?.find(
+          (r) => this.user && r.users.includes(this.user.id)
         );
 
-        if (existingReaction && this.user) {
-          // Toggle reaction for current user
-          const userId = this.user.id;
-          const hasReacted = existingReaction.users.includes(userId);
+        if (userReaction) {
+          // Remove reaction
+          message.reactions?.forEach((r) => {
+            if (r.id === userReaction.id) {
+              r.count -= 1;
+              r.users = (r.users ?? []).filter((id) => id !== this.user?.id);
+            }
+          });
 
-          if (hasReacted) {
-            // Remove reaction
-            const updatedReactions =
-              message.reactions
-                ?.map((r) => {
-                  if (r.emoji === emoji) {
-                    return {
-                      ...r,
-                      count: r.count - 1,
-                      users: r.users.filter((id) => id !== userId),
-                    };
-                  }
-                  return r;
-                })
-                .filter((r) => r.count > 0) || [];
-
-            return {
-              ...message,
-              reactions: updatedReactions,
-            };
-          }
-
-          // Add reaction
-          const updatedReactions =
-            message.reactions?.map((r) => {
-              if (r.emoji === emoji) {
-                return {
-                  ...r,
-                  count: r.count + 1,
-                  users: [...r.users, userId],
-                };
-              }
-              return r;
-            }) || [];
-
-          return {
-            ...message,
-            reactions: updatedReactions,
-          };
+          message.reactions =
+            message.reactions?.filter((r) => r.count > 0) || [];
         }
 
-        // Create new reaction
-        const newReaction = {
-          emoji,
-          count: 1,
-          users: [this.user?.id],
-        };
+        const existingReaction = message.reactions?.find(
+          (r) => r.id === emojiId
+        );
 
-        return {
-          ...message,
-          reactions: [...(message.reactions || []), newReaction],
-        };
+        if (existingReaction) {
+          // Add reaction
+          message.reactions?.forEach((r) => {
+            if (r.id === emojiId) {
+              r.count += 1;
+              if (this.user) {
+                r.users.push(this.user.id);
+              }
+            }
+          });
+
+          message.reactions = message.reactions ?? [];
+        }
+
+        if (!existingReaction && userReaction?.id !== emojiId) {
+          // Create new reaction
+          const newReaction: IgcMessageReaction = {
+            id: emojiId,
+            emoji,
+            count: 1,
+            users: this.user ? [this.user.id] : [],
+          };
+
+          message.reactions = [...(message.reactions || []), newReaction];
+        }
       }
-      return message;
+
+      return { ...message };
     });
   }
 

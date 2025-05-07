@@ -76,18 +76,6 @@ export default class IgcChatMessageListComponent extends LitElement {
     }));
   }
 
-  private handleReaction(e: CustomEvent) {
-    const { messageId, emoji } = e.detail;
-
-    this.dispatchEvent(
-      new CustomEvent('add-reaction', {
-        detail: { messageId, emoji },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
   private scrollToBottom() {
     requestAnimationFrame(() => {
       const container = this.shadowRoot?.host as HTMLElement;
@@ -127,7 +115,6 @@ export default class IgcChatMessageListComponent extends LitElement {
                   .message=${message}
                   .user=${this.user}
                   .enableReactions=${this.enableReactions}
-                  @add-reaction=${this.handleReaction}
                 ></igc-chat-message>
               `
             )}
