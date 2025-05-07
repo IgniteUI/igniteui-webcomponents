@@ -30,3 +30,7 @@ custom-elements.json
 
 # Localization data
 i18nRepo
+
+# Development environment
+.envrc
+.direnv
