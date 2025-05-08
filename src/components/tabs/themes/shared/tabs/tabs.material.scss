@@ -1,0 +1,20 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --header-min-height: #{rem(48px)};
+}
+
+[part='selected-indicator'] {
+    $indicator-height: rem(2px);
+
+    height: $indicator-height;
+    margin-block-start: calc(#{$indicator-height} * -1);
+
+    span {
+        height: $indicator-height;
+        background: var-get($theme, 'indicator-color');
+    }
+}

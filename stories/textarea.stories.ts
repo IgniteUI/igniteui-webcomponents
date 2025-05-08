@@ -1,5 +1,5 @@
 import { sourceCode } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing, render } from 'lit';
 
 import {
@@ -39,27 +39,16 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'text',
     },
     autocapitalize: {
-      type: '"off" | "none" | "on" | "sentences" | "words" | "characters"',
+      type: 'string',
       description:
         'Controls whether and how text input is automatically capitalized as it is entered/edited by the user.\n\n[MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).',
-      options: ['off', 'none', 'on', 'sentences', 'words', 'characters'],
-      control: { type: 'select' },
+      control: 'text',
     },
     inputMode: {
-      type: '"none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"',
+      type: 'string',
       description:
         'Hints at the type of data that might be entered by the user while editing the element or its contents.\nThis allows a browser to display an appropriate virtual keyboard.\n\n[MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
-      options: [
-        'none',
-        'text',
-        'decimal',
-        'numeric',
-        'tel',
-        'search',
-        'email',
-        'url',
-      ],
-      control: { type: 'select' },
+      control: 'text',
     },
     label: {
       type: 'string',
@@ -190,22 +179,14 @@ interface IgcTextareaArgs {
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).
    */
-  autocapitalize: 'off' | 'none' | 'on' | 'sentences' | 'words' | 'characters';
+  autocapitalize: string;
   /**
    * Hints at the type of data that might be entered by the user while editing the element or its contents.
    * This allows a browser to display an appropriate virtual keyboard.
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    */
-  inputMode:
-    | 'none'
-    | 'text'
-    | 'decimal'
-    | 'numeric'
-    | 'tel'
-    | 'search'
-    | 'email'
-    | 'url';
+  inputMode: string;
   /** The label for the control. */
   label: string;
   /**

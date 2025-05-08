@@ -45,9 +45,6 @@ export interface IgcRadioChangeEventArgs {
   value?: string;
 }
 
-/** @deprecated since 5.4.0. Use IgcRadioChangeEventArgs instead */
-export type RadioChangeEventArgs = IgcRadioChangeEventArgs;
-
 export interface IgcRadioComponentEventMap {
   igcChange: CustomEvent<IgcRadioChangeEventArgs>;
   // For analyzer meta only:

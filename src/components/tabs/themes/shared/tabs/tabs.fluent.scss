@@ -3,6 +3,10 @@
 
 $theme: $fluent;
 
+:host {
+    --header-min-height: #{rem(44px)};
+}
+
 igc-icon-button::part(base) {
     igc-icon {
         color: var-get($theme, 'button-color');
@@ -10,5 +14,17 @@ igc-icon-button::part(base) {
 }
 
 igc-icon-button[disabled]::part(base) {
-    background: inherit;
+    background: var(--disabled-background);
+}
+
+[part='selected-indicator'] {
+    $indicator-height: rem(2px);
+
+    height: $indicator-height;
+    margin-block-start: calc(#{$indicator-height} * -1);
+
+    span {
+        height: $indicator-height;
+        background: var-get($theme, 'indicator-color');
+    }
 }

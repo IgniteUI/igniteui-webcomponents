@@ -1,0 +1,16 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='content'] {
+    @include type-style('button');
+}
+
+[part='tab-header'] {
+    padding: rem(12px) rem(16px);
+}
+
+::slotted(igc-icon) {
+    --size: #{rem(24px)};
+}

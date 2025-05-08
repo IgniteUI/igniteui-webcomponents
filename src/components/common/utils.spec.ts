@@ -215,6 +215,14 @@ export function simulatePointerLeave(
   );
 }
 
+export function simulateFocus(node: Element) {
+  node.dispatchEvent(new FocusEvent('focus'));
+}
+
+export function simulateBlur(node: Element) {
+  node.dispatchEvent(new FocusEvent('blur'));
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
