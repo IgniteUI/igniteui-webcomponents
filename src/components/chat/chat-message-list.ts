@@ -34,8 +34,8 @@ export default class IgcChatMessageListComponent extends LitElement {
   @property({ type: Boolean, attribute: 'scroll-bottom' })
   public scrollBottom = true;
 
-  @property({ type: Boolean, attribute: 'enable-reactions' })
-  public enableReactions = true;
+  @property({ type: Boolean, attribute: 'disable-reactions' })
+  public disableReactions = false;
 
   private formatDate(date: Date): string {
     const today = new Date();
@@ -114,7 +114,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                 <igc-chat-message
                   .message=${message}
                   .user=${this.user}
-                  .enableReactions=${this.enableReactions}
+                  .disableReactions=${this.disableReactions}
                 ></igc-chat-message>
               `
             )}

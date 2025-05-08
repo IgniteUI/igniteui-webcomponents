@@ -39,11 +39,11 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
-  @property({ type: Boolean, attribute: 'enable-attachments' })
-  public enableAttachments = true;
+  @property({ type: Boolean, attribute: 'disable-attachments' })
+  public disableAttachments = false;
 
-  @property({ type: Boolean, attribute: 'enable-emoji-picker' })
-  public enableEmojiPicker = true;
+  @property({ type: Boolean, attribute: 'disable-emojis' })
+  public disableEmojis = false;
 
   @query('textarea')
   private textInputElement!: HTMLTextAreaElement;
@@ -142,8 +142,9 @@ export default class IgcChatInputComponent extends LitElement {
   protected override render() {
     return html`
       <div class="input-container">
-        ${this.enableAttachments
-          ? html`
+        ${this.disableAttachments
+          ? ''
+          : html`
               <igc-file-input multiple @igcChange=${this.handleFileUpload}>
                 <igc-icon
                   slot="file-selector-text"
@@ -151,8 +152,7 @@ export default class IgcChatInputComponent extends LitElement {
                   collection="material"
                 ></igc-icon>
               </igc-file-input>
-            `
-          : ''}
+            `}
 
         <div class="input-wrapper">
           <igc-textarea
@@ -166,13 +166,13 @@ export default class IgcChatInputComponent extends LitElement {
         </div>
 
         <div class="buttons-container">
-          ${this.enableEmojiPicker
-            ? html`
+          ${this.disableEmojis
+            ? ''
+            : html`
                 <igc-emoji-picker
                   @emoji-selected=${this.addEmoji}
                 ></igc-emoji-picker>
-              `
-            : ''}
+              `}
 
           <igc-icon-button
             name="send-message"

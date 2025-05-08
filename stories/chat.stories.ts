@@ -16,20 +16,20 @@ const metadata: Meta<IgcChatComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'true' } },
     },
-    enableReactions: {
+    disableReactions: {
       type: 'boolean',
       control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
+      table: { defaultValue: { summary: 'false' } },
     },
-    enableAttachments: {
+    disableAttachments: {
       type: 'boolean',
       control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
+      table: { defaultValue: { summary: 'false' } },
     },
-    enableEmojiPicker: {
+    disableEmojis: {
       type: 'boolean',
       control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
+      table: { defaultValue: { summary: 'false' } },
     },
     headerText: {
       type: 'string',
@@ -39,9 +39,9 @@ const metadata: Meta<IgcChatComponent> = {
   },
   args: {
     scrollBottom: true,
-    enableReactions: true,
-    enableAttachments: true,
-    enableEmojiPicker: true,
+    disableReactions: false,
+    disableAttachments: false,
+    disableEmojis: false,
     headerText: '',
   },
 };
@@ -50,9 +50,9 @@ export default metadata;
 
 interface IgcChatArgs {
   scrollBottom: boolean;
-  enableReactions: boolean;
-  enableAttachments: boolean;
-  enableEmojiPicker: boolean;
+  disableReactions: boolean;
+  disableAttachments: boolean;
+  disableEmojis: boolean;
   headerText: string;
 }
 type Story = StoryObj<IgcChatArgs>;
@@ -69,14 +69,12 @@ const otherUser: any = {
   id: 'user2',
   name: 'Alice',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
-  isTyping: false,
 };
 
 const thirdUser: any = {
   id: 'user3',
   name: 'Sam',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
-  isTyping: false,
 };
 
 const initialMessages: any[] = [

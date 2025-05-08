@@ -49,14 +49,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'scroll-bottom' })
   public scrollBottom = true;
 
-  @property({ type: Boolean, attribute: 'enable-reactions' })
-  public enableReactions = true;
+  @property({ type: Boolean, attribute: 'disable-reactions' })
+  public disableReactions = false;
 
-  @property({ type: Boolean, attribute: 'enable-attachments' })
-  public enableAttachments = true;
+  @property({ type: Boolean, attribute: 'disable-attachments' })
+  public disableAttachments = false;
 
-  @property({ type: Boolean, attribute: 'enable-emoji-picker' })
-  public enableEmojiPicker = true;
+  @property({ type: Boolean, attribute: 'disable-emojis' })
+  public disableEmojis = false;
 
   @property({ type: String, attribute: 'header-text', reflect: true })
   public headerText = '';
@@ -173,12 +173,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .user=${this.user}
           .typingUsers=${this.typingUsers}
           .scrollBottom=${this.scrollBottom}
-          .enableReactions=${this.enableReactions}
+          .disableReactions=${this.disableReactions}
         >
         </igc-chat-message-list>
         <igc-chat-input
-          .enableAttachments=${this.enableAttachments}
-          .enableEmojiPicker=${this.enableEmojiPicker}
+          .disableAttachments=${this.disableAttachments}
+          .disableEmojis=${this.disableEmojis}
           @message-send=${this.handleSendMessage}
         ></igc-chat-input>
       </div>

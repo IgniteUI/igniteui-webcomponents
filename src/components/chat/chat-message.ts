@@ -35,8 +35,8 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public user: IgcUser | undefined;
 
-  @property({ type: Boolean, attribute: 'enable-reactions' })
-  public enableReactions = true;
+  @property({ type: Boolean, attribute: 'disable-reactions' })
+  public disableReactions = false;
 
   private formatTime(date: Date | undefined): string | undefined {
     return date?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -89,6 +89,13 @@ export default class IgcChatMessageComponent extends LitElement {
           ${this.message?.text.trim()
             ? html` <div class="bubble">${this.message?.text}</div>`
             : ''}
+          ${this.message?.attachments && this.message?.attachments.length > 0
+            ? html`<igc-message-attachments
+                .attachments=${this.message?.attachments}
+              >
+              </igc-message-attachments>`
+            : ''}
+
           <div class="meta">
             <span class="time"
               >${this.formatTime(this.message?.timestamp)}</span
@@ -101,21 +108,15 @@ export default class IgcChatMessageComponent extends LitElement {
                 >`
               : ''}
           </div>
-          ${this.message?.attachments && this.message?.attachments.length > 0
-            ? html`<igc-message-attachments
-                .attachments=${this.message?.attachments}
-              >
-              </igc-message-attachments>`
-            : ''}
         </div>
-        ${this.enableReactions
-          ? html`<igc-message-reactions
+        ${this.disableReactions
+          ? ''
+          : html`<igc-message-reactions
               .reactions=${this.message?.reactions}
               .messageId=${this.message?.id}
               .currentUserId=${this.isCurrentUser() ? sender?.id : ''}
               @add-reaction=${this.handleAddReaction}
-            ></igc-message-reactions>`
-          : ''}
+            ></igc-message-reactions>`}
       </div>
     `;
   }
