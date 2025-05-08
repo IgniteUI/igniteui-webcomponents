@@ -1,4 +1,5 @@
 import { parseISODate } from '../calendar/helpers.js';
+import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
 export enum FormatDesc {
@@ -54,6 +55,12 @@ export abstract class DateTimeUtil {
   public static readonly DEFAULT_TIME_INPUT_FORMAT = 'hh:mm tt';
   private static readonly SEPARATOR = 'literal';
   private static readonly DEFAULT_LOCALE = 'en';
+  private static readonly PREDEFINED_FORMATS = new Set([
+    'short',
+    'medium',
+    'long',
+    'full',
+  ]);
   private static _parser = new MaskParser();
 
   public static parseValueFromMask(
@@ -534,6 +541,40 @@ export abstract class DateTimeUtil {
     }
 
     return errors;
+  }
+
+  /**
+   * Transforms the predefined format to a display format containing only date parts.
+   *
+   * @param format The format to check and transform
+   */
+  public static predefinedToDateDisplayFormat(format: string) {
+    return format && DateTimeUtil.PREDEFINED_FORMATS.has(format)
+      ? `${format}Date`
+      : format;
+  }
+
+  /**
+   * Compares two date-range values.
+   *
+   * @param first, @param second - the values to compare
+   */
+  public static areDateRangesEqual(
+    first: DateRangeValue | null,
+    second: DateRangeValue | null
+  ): boolean {
+    if (!first && !second) {
+      return true;
+    }
+
+    if (!first || !second) {
+      return false;
+    }
+
+    const isStartEqual = first.start?.getTime() === second.start?.getTime();
+    const isEndEqual = first.end?.getTime() === second.end?.getTime();
+
+    return isStartEqual && isEndEqual;
   }
 
   private static setDisplayFormatOptions(
