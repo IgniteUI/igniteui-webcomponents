@@ -38,8 +38,6 @@ describe('Focus ring controller', () => {
         protected override render() {
           return html`<button
             part=${partNameMap({ focused: this.manager.focused })}
-            @blur=${this.manager.reset}
-            @pointerdown=${this.manager.reset}
           >
             Button
           </button>`;
@@ -74,13 +72,15 @@ describe('Focus ring controller', () => {
     expect(hasKeyboardFocusStyles(instance.button)).to.be.false;
   });
 
-  it('it should remove keyboard focus styles on blur', async () => {
+  it('it should remove keyboard focus styles when losing focus', async () => {
     simulateKeyboard(instance.button, tabKey);
     await elementUpdated(instance);
 
     expect(hasKeyboardFocusStyles(instance.button)).to.be.true;
 
-    instance.button.dispatchEvent(new Event('blur'));
+    instance.button.dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, composed: true })
+    );
     await elementUpdated(instance);
 
     expect(hasKeyboardFocusStyles(instance.button)).to.be.false;

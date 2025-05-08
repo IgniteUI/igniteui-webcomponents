@@ -39,18 +39,18 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     return checkBoxValidators;
   }
 
-  protected _kbFocus = addKeyboardFocusRing(this);
+  protected readonly _focusRingManager = addKeyboardFocusRing(this);
   protected override _formValue: FormValue<boolean>;
   protected _value!: string;
 
   @query('input', true)
-  protected input!: HTMLInputElement;
+  protected readonly _input!: HTMLInputElement;
 
   @queryAssignedNodes({ flatten: true })
-  protected label!: Array<Node>;
+  protected readonly _label!: Array<Node>;
 
   @state()
-  protected hideLabel = false;
+  protected _hideLabel = false;
 
   /**
    * The value attribute of the control.
@@ -99,35 +99,35 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     });
   }
 
-  protected override createRenderRoot() {
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
-    this.hideLabel = isEmpty(this.label);
+    this._hideLabel = isEmpty(this._label);
 
     root.addEventListener('slotchange', () => {
-      this.hideLabel = isEmpty(this.label);
+      this._hideLabel = isEmpty(this._label);
     });
 
     return root;
   }
 
   /** Simulates a click on the control. */
-  public override click() {
-    this.input.click();
+  public override click(): void {
+    this._input.click();
   }
 
   /* alternateName: focusComponent */
   /** Sets focus on the control. */
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
+  public override focus(options?: FocusOptions): void {
+    this._input.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the control. */
-  public override blur() {
-    this.input.blur();
+  public override blur(): void {
+    this._input.blur();
   }
 
-  protected handleClick(event: PointerEvent) {
+  protected _handleClick(event: PointerEvent): void {
     event.stopPropagation();
 
     this.checked = !this.checked;
@@ -136,11 +136,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     });
   }
 
-  protected handleBlur() {
-    this._kbFocus.reset();
-  }
-
-  protected handleFocus() {
+  protected _handleFocus(): void {
     this._dirty = true;
   }
 }

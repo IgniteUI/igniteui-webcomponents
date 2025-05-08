@@ -1,6 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-/* blazorSuppress */
 /**
  * A controller class which determines whether a focus ring should be shown to indicate keyboard focus.
  * Focus rings are visible only when the user is interacting with a keyboard, not with a mouse, touch, or other input methods.
@@ -8,15 +7,21 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
  * By default the class attaches a keyup event handler on the component host and will update its keyboard focus
  * state based on it.
  */
-export class KeyboardFocusRingController implements ReactiveController {
+class KeyboardFocusRingController implements ReactiveController {
+  private static readonly _events = [
+    'keyup',
+    'focusout',
+    'pointerdown',
+  ] as const;
+
   private readonly _host: ReactiveControllerHost & HTMLElement;
-  private _focused = false;
+  private _isKeyboardFocused = false;
 
   /**
    * Gets whether the current focus state is activated through a keyboard interaction.
    */
-  public get focused() {
-    return this._focused;
+  public get focused(): boolean {
+    return this._isKeyboardFocused;
   }
 
   constructor(readonly host: ReactiveControllerHost & HTMLElement) {
@@ -24,31 +29,25 @@ export class KeyboardFocusRingController implements ReactiveController {
     host.addController(this);
   }
 
-  public hostConnected() {
-    this._host.addEventListener('keyup', this);
-  }
-
-  public hostDisconnected() {
-    this._host.removeEventListener('keyup', this);
-  }
-
-  public handleEvent() {
-    if (!this._focused) {
-      this._focused = true;
+  /** @internal */
+  public hostConnected(): void {
+    for (const event of KeyboardFocusRingController._events) {
+      this._host.addEventListener(event, this, { passive: true });
     }
-    this._host.requestUpdate();
   }
 
-  /**
-   * Resets the keyboard focus state.
-   *
-   * Usually called on blur of the component or when a pointer based interaction
-   * is executed.
-   */
-  public reset = () => {
-    this._focused = false;
+  /** @internal */
+  public hostDisconnected(): void {
+    for (const event of KeyboardFocusRingController._events) {
+      this._host.removeEventListener(event, this);
+    }
+  }
+
+  /** @internal */
+  public handleEvent(event: Event): void {
+    this._isKeyboardFocused = event.type === 'keyup';
     this._host.requestUpdate();
-  };
+  }
 }
 
 /**
@@ -56,6 +55,6 @@ export class KeyboardFocusRingController implements ReactiveController {
  */
 export function addKeyboardFocusRing(
   host: ReactiveControllerHost & HTMLElement
-) {
+): KeyboardFocusRingController {
   return new KeyboardFocusRingController(host);
 }
