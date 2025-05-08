@@ -46,6 +46,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: false })
   public typingUsers: IgcUser[] = [];
 
+  @property({ type: Boolean, attribute: 'hide-avatar' })
+  public hideAvatar = false;
+
+  @property({ type: Boolean, attribute: 'hide-user-name' })
+  public hideUserName = false;
+
+  @property({ type: Boolean, attribute: 'hide-meta-data' })
+  public hideMetaData = false;
+
   @property({ type: Boolean, attribute: 'scroll-bottom' })
   public scrollBottom = true;
 
@@ -174,6 +183,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .typingUsers=${this.typingUsers}
           .scrollBottom=${this.scrollBottom}
           .disableReactions=${this.disableReactions}
+          .hideAvatar=${this.hideAvatar}
+          .hideUserName=${this.hideUserName}
+          .hideMetaData=${this.hideMetaData}
         >
         </igc-chat-message-list>
         <igc-chat-input

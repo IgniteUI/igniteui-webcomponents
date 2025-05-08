@@ -11,6 +11,21 @@ const metadata: Meta<IgcChatComponent> = {
   component: 'igc-chat',
   parameters: { docs: { description: { component: '' } } },
   argTypes: {
+    hideAvatar: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideUserName: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideMetaData: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     scrollBottom: {
       type: 'boolean',
       control: 'boolean',
@@ -38,6 +53,9 @@ const metadata: Meta<IgcChatComponent> = {
     },
   },
   args: {
+    hideAvatar: false,
+    hideUserName: false,
+    hideMetaData: false,
     scrollBottom: true,
     disableReactions: false,
     disableAttachments: false,
@@ -49,6 +67,9 @@ const metadata: Meta<IgcChatComponent> = {
 export default metadata;
 
 interface IgcChatArgs {
+  hideAvatar: boolean;
+  hideUserName: boolean;
+  hideMetaData: boolean;
   scrollBottom: boolean;
   disableReactions: boolean;
   disableAttachments: boolean;
@@ -117,11 +138,18 @@ const initialMessages: any[] = [
 ];
 
 export const Basic: Story = {
-  render: () => html`
+  render: (args) => html`
     <igc-chat
       .user=${currentUser}
       .messages=${initialMessages}
-      header-text="Chat Component"
+      .headerText=${args.headerText}
+      .scrollBottom=${args.scrollBottom}
+      .disableReactions=${args.disableReactions}
+      .disableAttachments=${args.disableAttachments}
+      .disableEmojis=${args.disableEmojis}
+      .hideAvatar=${args.hideAvatar}
+      .hideUserName=${args.hideUserName}
+      .hideMetaData=${args.hideMetaData}
     >
     </igc-chat>
   `,

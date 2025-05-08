@@ -35,6 +35,15 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public user: IgcUser | undefined;
 
+  @property({ type: Boolean, attribute: 'hide-avatar' })
+  public hideAvatar = false;
+
+  @property({ type: Boolean, attribute: 'hide-user-name' })
+  public hideUserName = false;
+
+  @property({ type: Boolean, attribute: 'hide-meta-data' })
+  public hideMetaData = false;
+
   @property({ type: Boolean, attribute: 'disable-reactions' })
   public disableReactions = false;
 
@@ -79,13 +88,19 @@ export default class IgcChatMessageComponent extends LitElement {
 
     return html`
       <div class=${containerClass}>
-        <igc-avatar
-          src=${ifDefined(sender?.avatar)}
-          alt=${ifDefined(sender?.name)}
-          shape="circle"
-        >
-        </igc-avatar>
+        ${this.hideAvatar
+          ? ''
+          : html`<igc-avatar
+              src=${ifDefined(sender?.avatar)}
+              alt=${ifDefined(sender?.name)}
+              shape="circle"
+            >
+            </igc-avatar>`}
+
         <div class="message-content">
+          ${this.hideUserName || this.isCurrentUser()
+            ? ''
+            : html`<span class="meta">${ifDefined(sender?.name)}</span>`}
           ${this.message?.text.trim()
             ? html` <div class="bubble">${this.message?.text}</div>`
             : ''}
@@ -95,19 +110,22 @@ export default class IgcChatMessageComponent extends LitElement {
               >
               </igc-message-attachments>`
             : ''}
-
-          <div class="meta">
-            <span class="time"
-              >${this.formatTime(this.message?.timestamp)}</span
-            >
-            ${this.isCurrentUser()
-              ? html`<span class="status"
-                  >${this.renderStatusIcon(
-                    this.message?.status || 'sent'
-                  )}</span
-                >`
-              : ''}
-          </div>
+          ${this.hideMetaData
+            ? ''
+            : html`
+                <div class="meta">
+                  <span class="time"
+                    >${this.formatTime(this.message?.timestamp)}</span
+                  >
+                  ${this.isCurrentUser()
+                    ? html`<span class="status"
+                        >${this.renderStatusIcon(
+                          this.message?.status || 'sent'
+                        )}</span
+                      >`
+                    : ''}
+                </div>
+              `}
         </div>
         ${this.disableReactions
           ? ''
