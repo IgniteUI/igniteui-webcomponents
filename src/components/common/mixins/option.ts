@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
-  protected _internals: ElementInternals;
+  protected readonly _internals: ElementInternals;
 
   protected _active = false;
   protected _disabled = false;
@@ -10,9 +10,9 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected _value!: string;
 
   @queryAssignedNodes({ flatten: true })
-  protected _content!: Array<Element>;
+  protected readonly _content!: Array<Element>;
 
-  protected get _contentSlotText() {
+  protected get _contentSlotText(): string {
     return this._content.map((node) => node.textContent).join('');
   }
 
@@ -25,7 +25,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     this._active = Boolean(value);
   }
 
-  public get active() {
+  public get active(): boolean {
     return this._active;
   }
 
@@ -39,7 +39,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     this._internals.ariaDisabled = `${this._disabled}`;
   }
 
-  public get disabled() {
+  public get disabled(): boolean {
     return this._disabled;
   }
 
@@ -54,7 +54,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     this.active = this.selected;
   }
 
-  public get selected() {
+  public get selected(): boolean {
     return this._selected;
   }
 
@@ -79,6 +79,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     this._internals.role = 'option';
   }
 
+  /** @internal */
   public override connectedCallback(): void {
     // R.K. Workaround for Axe accessibility unit tests.
     // I guess it does not support ElementInternals ARIAMixin state yet
