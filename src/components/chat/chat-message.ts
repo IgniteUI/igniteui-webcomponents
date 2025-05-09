@@ -67,11 +67,11 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private handleAddReaction(e: CustomEvent) {
-    const { emojiId, emoji } = e.detail;
+    const { emojiId } = e.detail;
 
     this.dispatchEvent(
       new CustomEvent('add-reaction', {
-        detail: { messageId: this.message?.id, emojiId, emoji },
+        detail: { messageId: this.message?.id, emojiId },
         bubbles: true,
         composed: true,
       })

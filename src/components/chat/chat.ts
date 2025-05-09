@@ -10,7 +10,7 @@ import { styles } from './themes/chat.base.css.js';
 import type { IgcMessage, IgcMessageReaction, IgcUser } from './types.js';
 
 export interface IgcChatComponentEventMap {
-  igcMessageEntered: CustomEvent<IgcMessage>;
+  igcMessageSend: CustomEvent<IgcMessage>;
 }
 
 /**
@@ -55,8 +55,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'hide-meta-data' })
   public hideMetaData = false;
 
-  @property({ type: Boolean, attribute: 'scroll-bottom' })
-  public scrollBottom = true;
+  @property({ type: Boolean, attribute: 'disable-auto-scroll' })
+  public disableAutoScroll = false;
 
   @property({ type: Boolean, attribute: 'disable-reactions' })
   public disableReactions = false;
@@ -111,11 +111,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     };
 
     this.messages = [...this.messages, newMessage];
-    this.emitEvent('igcMessageEntered', { detail: newMessage });
+    this.emitEvent('igcMessageSend', { detail: newMessage });
   }
 
   private handleAddReaction(e: CustomEvent) {
-    const { messageId, emojiId, emoji } = e.detail;
+    const { messageId, emojiId } = e.detail;
 
     if (!messageId) return;
 
@@ -129,39 +129,35 @@ export default class IgcChatComponent extends EventEmitterMixin<
           // Remove reaction
           message.reactions?.forEach((r) => {
             if (r.id === userReaction.id) {
-              r.count -= 1;
               r.users = (r.users ?? []).filter((id) => id !== this.user?.id);
             }
           });
 
           message.reactions =
-            message.reactions?.filter((r) => r.count > 0) || [];
+            message.reactions?.filter((r) => r.users.length > 0) || [];
         }
 
         const existingReaction = message.reactions?.find(
           (r) => r.id === emojiId
         );
 
-        if (existingReaction) {
-          // Add reaction
+        if (existingReaction && userReaction?.id !== emojiId) {
+          // Update existing reaction
           message.reactions?.forEach((r) => {
             if (r.id === emojiId) {
-              r.count += 1;
               if (this.user) {
                 r.users.push(this.user.id);
               }
             }
           });
 
-          message.reactions = message.reactions ?? [];
+          message.reactions = [...(message.reactions || [])];
         }
 
         if (!existingReaction && userReaction?.id !== emojiId) {
           // Create new reaction
           const newReaction: IgcMessageReaction = {
             id: emojiId,
-            emoji,
-            count: 1,
             users: this.user ? [this.user.id] : [],
           };
 
@@ -181,7 +177,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .messages=${this.messages}
           .user=${this.user}
           .typingUsers=${this.typingUsers}
-          .scrollBottom=${this.scrollBottom}
+          .disableAutoScroll=${this.disableAutoScroll}
           .disableReactions=${this.disableReactions}
           .hideAvatar=${this.hideAvatar}
           .hideUserName=${this.hideUserName}

@@ -31,8 +31,6 @@ export interface IgcMessageAttachment {
 
 export interface IgcMessageReaction {
   id: string;
-  emoji: string;
-  count: number;
   users: string[];
 }
 

@@ -122,9 +122,7 @@ const initialMessages: any[] = [
     reactions: [
       {
         id: 'red_heart',
-        emoji: '❤️',
-        count: 1,
-        users: ['user1'],
+        users: ['user3'],
       },
     ],
   },
