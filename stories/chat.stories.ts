@@ -80,43 +80,43 @@ type Story = StoryObj<IgcChatArgs>;
 
 // endregion
 
-const currentUser: any = {
+const userJohn: any = {
   id: 'user1',
-  name: 'You',
+  name: 'John',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
 };
 
-const otherUser: any = {
+const userRichard: any = {
   id: 'user2',
-  name: 'Alice',
+  name: 'Richard',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
 };
 
-const thirdUser: any = {
+const userSam: any = {
   id: 'user3',
   name: 'Sam',
   avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
 };
 
-const initialMessages: any[] = [
+const messages: any[] = [
   {
     id: '1',
     text: 'Hey there! How are you doing today?',
-    sender: otherUser,
+    sender: userRichard,
     timestamp: new Date(2025, 4, 5),
     status: 'read',
   },
   {
     id: '2',
     text: "I'm doing well, thanks for asking! How about you?",
-    sender: currentUser,
+    sender: userJohn,
     timestamp: new Date(Date.now() - 3500000),
     status: 'read',
   },
   {
     id: '3',
     text: 'Pretty good! I was wondering if you wanted to grab coffee sometime this week?',
-    sender: otherUser,
+    sender: userRichard,
     timestamp: new Date(Date.now() - 3400000),
     status: 'read',
     reactions: [
@@ -129,7 +129,7 @@ const initialMessages: any[] = [
   {
     id: '4',
     text: 'Hi guys! I just joined the chat.',
-    sender: thirdUser,
+    sender: userSam,
     timestamp: new Date(Date.now() - 3300000),
     status: 'read',
     attachments: [
@@ -146,8 +146,8 @@ const initialMessages: any[] = [
 export const Basic: Story = {
   render: (args) => html`
     <igc-chat
-      .user=${currentUser}
-      .messages=${initialMessages}
+      .user=${userJohn}
+      .messages=${messages}
       .headerText=${args.headerText}
       .disableAutoScroll=${args.disableAutoScroll}
       .disableReactions=${args.disableReactions}
@@ -158,5 +158,70 @@ export const Basic: Story = {
       .hideMetaData=${args.hideMetaData}
     >
     </igc-chat>
+  `,
+};
+
+function handleMessageEntered(e: CustomEvent) {
+  const newMessage = e.detail;
+  messages.push(newMessage);
+  const chatElements = document.querySelectorAll('igc-chat');
+  chatElements.forEach((chat) => {
+    chat.messages = [...messages];
+  });
+}
+
+function handleTypingChange(e: CustomEvent) {
+  const user = e.detail.user;
+  const isTyping = e.detail.isTyping;
+  const chatElements = document.querySelectorAll('igc-chat');
+  chatElements.forEach((chat) => {
+    if (chat.user === user) {
+      return;
+    }
+
+    if (!isTyping && chat.typingUsers.includes(user)) {
+      chat.typingUsers = chat.typingUsers.filter((u) => u !== user);
+    } else if (isTyping && !chat.typingUsers.includes(user)) {
+      chat.typingUsers = [...chat.typingUsers, user];
+    }
+  });
+}
+
+export const SideBySide: Story = {
+  render: (args) => html`
+    <div style="display: flex; gap: 20px;">
+      <igc-chat
+        .user=${userJohn}
+        .messages=${messages}
+        @igcMessageSend=${handleMessageEntered}
+        @igcTypingChange=${handleTypingChange}
+        header-text="Richard"
+        .disableAutoScroll=${args.disableAutoScroll}
+        .disableReactions=${args.disableReactions}
+        .disableAttachments=${args.disableAttachments}
+        .disableEmojis=${args.disableEmojis}
+        .hideAvatar=${args.hideAvatar}
+        .hideUserName=${args.hideUserName}
+        .hideMetaData=${args.hideMetaData}
+        style="width: 50%;"
+      >
+      </igc-chat>
+      <igc-chat
+        .user=${userRichard}
+        .messages=${messages}
+        @igcMessageSend=${handleMessageEntered}
+        @igcTypingChange=${handleTypingChange}
+        header-text="John"
+        .disableAutoScroll=${args.disableAutoScroll}
+        .disableReactions=${args.disableReactions}
+        .disableAttachments=${args.disableAttachments}
+        .disableEmojis=${args.disableEmojis}
+        .hideAvatar=${args.hideAvatar}
+        .hideUserName=${args.hideUserName}
+        .hideMetaData=${args.hideMetaData}
+        style="width: 50%;"
+      >
+      </igc-chat>
+    </div>
   `,
 };

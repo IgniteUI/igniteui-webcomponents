@@ -66,10 +66,26 @@ export default class IgcChatInputComponent extends LitElement {
     this.adjustTextareaHeight();
   }
 
+  private isTyping = false;
+
   private handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
+    } else if (this.isTyping === false) {
+      const typingEvent = new CustomEvent('typing-change', {
+        detail: { isTyping: true },
+      });
+      this.dispatchEvent(typingEvent);
+      this.isTyping = true;
+      // wait 3 seconds and dispatch a stop-typing event
+      setTimeout(() => {
+        const stopTypingEvent = new CustomEvent('typing-change', {
+          detail: { isTyping: false },
+        });
+        this.dispatchEvent(stopTypingEvent);
+        this.isTyping = false;
+      }, 3000);
     }
   }
 

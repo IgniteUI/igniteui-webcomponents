@@ -11,6 +11,12 @@ import type { IgcMessage, IgcMessageReaction, IgcUser } from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageSend: CustomEvent<IgcMessage>;
+  igcTypingChange: CustomEvent<IgcTypingChangeEventArgs>;
+}
+
+export interface IgcTypingChangeEventArgs {
+  user: IgcUser;
+  isTyping: boolean;
 }
 
 /**
@@ -114,6 +120,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.emitEvent('igcMessageSend', { detail: newMessage });
   }
 
+  private handleTypingChange(e: CustomEvent) {
+    const isTyping = e.detail.isTyping;
+    const user = this.user;
+    if (!user) return;
+    const typingArgs = { user, isTyping };
+    this.emitEvent('igcTypingChange', { detail: typingArgs });
+  }
+
   private handleAddReaction(e: CustomEvent) {
     const { messageId, emojiId } = e.detail;
 
@@ -188,6 +202,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .disableAttachments=${this.disableAttachments}
           .disableEmojis=${this.disableEmojis}
           @message-send=${this.handleSendMessage}
+          @typing-change=${this.handleTypingChange}
         ></igc-chat-input>
       </div>
     `;
