@@ -40,8 +40,8 @@ export default class IgcChatMessageListComponent extends LitElement {
   @property({ type: Boolean, attribute: 'hide-meta-data' })
   public hideMetaData = false;
 
-  @property({ type: Boolean, attribute: 'scroll-bottom' })
-  public scrollBottom = true;
+  @property({ type: Boolean, attribute: 'disable-auto-scroll' })
+  public disableAutoScroll = false;
 
   @property({ type: Boolean, attribute: 'disable-reactions' })
   public disableReactions = false;
@@ -95,13 +95,13 @@ export default class IgcChatMessageListComponent extends LitElement {
   }
 
   protected override updated(changedProperties: Map<string, any>) {
-    if (changedProperties.has('messages') && this.scrollBottom) {
+    if (changedProperties.has('messages') && !this.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
 
   protected override firstUpdated() {
-    if (this.scrollBottom) {
+    if (!this.disableAutoScroll) {
       this.scrollToBottom();
     }
   }

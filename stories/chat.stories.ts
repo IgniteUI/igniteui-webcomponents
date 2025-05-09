@@ -26,10 +26,10 @@ const metadata: Meta<IgcChatComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    scrollBottom: {
+    disableAutoScroll: {
       type: 'boolean',
       control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
+      table: { defaultValue: { summary: 'false' } },
     },
     disableReactions: {
       type: 'boolean',
@@ -56,7 +56,7 @@ const metadata: Meta<IgcChatComponent> = {
     hideAvatar: false,
     hideUserName: false,
     hideMetaData: false,
-    scrollBottom: true,
+    disableAutoScroll: false,
     disableReactions: false,
     disableAttachments: false,
     disableEmojis: false,
@@ -70,7 +70,7 @@ interface IgcChatArgs {
   hideAvatar: boolean;
   hideUserName: boolean;
   hideMetaData: boolean;
-  scrollBottom: boolean;
+  disableAutoScroll: boolean;
   disableReactions: boolean;
   disableAttachments: boolean;
   disableEmojis: boolean;
@@ -134,6 +134,14 @@ const initialMessages: any[] = [
     sender: thirdUser,
     timestamp: new Date(Date.now() - 3300000),
     status: 'read',
+    attachments: [
+      {
+        id: 'men3_img',
+        type: 'image',
+        url: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+        name: 'men3.png',
+      },
+    ],
   },
 ];
 
@@ -143,7 +151,7 @@ export const Basic: Story = {
       .user=${currentUser}
       .messages=${initialMessages}
       .headerText=${args.headerText}
-      .scrollBottom=${args.scrollBottom}
+      .disableAutoScroll=${args.disableAutoScroll}
       .disableReactions=${args.disableReactions}
       .disableAttachments=${args.disableAttachments}
       .disableEmojis=${args.disableEmojis}

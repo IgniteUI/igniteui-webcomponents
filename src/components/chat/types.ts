@@ -6,7 +6,7 @@ export interface IgcUser {
   name: string;
   avatar: string;
   status?: any;
-  isTyping?: boolean;
+  //isTyping?: boolean;
 }
 
 export interface IgcMessage {
@@ -14,6 +14,7 @@ export interface IgcMessage {
   text: string;
   sender: IgcUser;
   timestamp: Date;
+  chatId?: string;
   status?: IgcMessageStatusType;
   attachments?: IgcMessageAttachment[];
   reactions?: IgcMessageReaction[];
