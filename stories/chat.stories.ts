@@ -175,11 +175,7 @@ function handleTypingChange(e: CustomEvent) {
   const isTyping = e.detail.isTyping;
   const chatElements = document.querySelectorAll('igc-chat');
   chatElements.forEach((chat) => {
-    if (chat.user === user) {
-      return;
-    }
-
-    if (!isTyping && chat.typingUsers.includes(user)) {
+    if (!isTyping) {
       chat.typingUsers = chat.typingUsers.filter((u) => u !== user);
     } else if (isTyping && !chat.typingUsers.includes(user)) {
       chat.typingUsers = [...chat.typingUsers, user];

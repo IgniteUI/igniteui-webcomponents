@@ -94,8 +94,8 @@ export default class IgcChatMessageListComponent extends LitElement {
     });
   }
 
-  protected override updated(changedProperties: Map<string, any>) {
-    if (changedProperties.has('messages') && !this.disableAutoScroll) {
+  protected override updated() {
+    if (!this.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
@@ -132,7 +132,7 @@ export default class IgcChatMessageListComponent extends LitElement {
             )}
           `
         )}
-        ${this.typingUsers.length > 0
+        ${this.typingUsers.filter((u) => u !== this.user).length > 0
           ? html`
               <div class="typing-indicator">
                 <div class="typing-dot"></div>
