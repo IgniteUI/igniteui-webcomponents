@@ -246,54 +246,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _oldValue: DateRangeValue | null = null;
   private _visibleMonths = 2;
 
-  private _predefinedRanges: CustomDateRange[] = [
-    {
-      label: IgcDateRangePickerResourceStringsEN.last7Days,
-      dateRange: {
-        start: CalendarDay.today.add('day', -7).native,
-        end: CalendarDay.today.native,
-      },
-    },
-    {
-      label: IgcDateRangePickerResourceStringsEN.currentMonth,
-      dateRange: {
-        start: CalendarDay.today.set({ date: 1 }).native,
-        end: CalendarDay.today.set({ date: 1 }).add('month', 1).add('day', -1)
-          .native,
-      },
-    },
-    {
-      label: IgcDateRangePickerResourceStringsEN.last30Days,
-      dateRange: {
-        start: CalendarDay.today.add('day', -29).native,
-        end: CalendarDay.today.native,
-      },
-    },
-    {
-      label: IgcDateRangePickerResourceStringsEN.yearToDate,
-      dateRange: {
-        start: CalendarDay.today.set({
-          year: CalendarDay.today.year,
-          month: 0,
-          date: 1,
-        }).native,
-        end: CalendarDay.today.native,
-      },
-    },
-  ];
-
   protected override get __validators() {
     return dateRangeValidators;
   }
 
   private get _isDropDown() {
     return this.mode === 'dropdown';
-  }
-
-  private get _allRanges(): CustomDateRange[] {
-    return this.usePredefinedRanges
-      ? [...this._predefinedRanges, ...this.customRanges]
-      : [...this.customRanges];
   }
 
   private get _firstDefinedInRange(): Date | null {
@@ -1125,26 +1083,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  protected renderRanges() {
-    return html`
-      <div part="ranges">
-        ${this._allRanges.map(
-          (range) => html`
-            <igc-chip
-              @click=${() =>
-                this._select(
-                  { start: range.dateRange.start, end: range.dateRange.end },
-                  true
-                )}
-            >
-              ${range.label}
-            </igc-chip>
-          `
-        )}
-      </div>
-    `;
-  }
-
   protected renderPicker(id: string) {
     return this._isDropDown
       ? html`
@@ -1152,7 +1090,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
               ${this.renderCalendar(id)}
               <igc-predefined-ranges-area
-                .ranges=${this._allRanges}
+                .usePredefinedRanges=${this.usePredefinedRanges}
+                .customRanges=${this.customRanges}
                 @range-select=${this._selectPredefinedRange}
               >
               </igc-predefined-ranges-area>
@@ -1173,7 +1112,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           >
             ${this.renderCalendar(id)} ${this.renderActions()}
             <igc-predefined-ranges-area
-              .ranges=${this._allRanges}
+              .usePredefinedRanges=${this.usePredefinedRanges}
+              .customRanges=${this.customRanges}
               @range-select=${this._selectPredefinedRange}
             >
             </igc-predefined-ranges-area>
