@@ -1857,6 +1857,19 @@ describe('Date range picker', () => {
       expect(dateTimeInputs[1].value).to.equal(null);
     });
 
+    it('should not be in invalid state on reset for a required control which previously had value', async () => {
+      spec.setProperties({ value: value });
+      spec.setProperties({ required: true });
+
+      spec.assertSubmitPasses();
+      await checkInputsInvalidState(spec.element, false, false);
+
+      spec.setProperties({ value: null });
+
+      spec.reset();
+      await checkInputsInvalidState(spec.element, false, false);
+    });
+
     it('should not be in invalid state on reset for a required control with no value', async () => {
       spec.setProperties({ value: null });
       spec.setProperties({ required: true });
