@@ -86,10 +86,9 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     visibleMonths: {
-      type: '1 | 2',
+      type: 'number',
       description: 'The number of months displayed in the calendar.',
-      options: ['1', '2'],
-      control: { type: 'inline-radio' },
+      control: 'number',
     },
     label: {
       type: 'string',
@@ -156,17 +155,17 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       table: { defaultValue: { summary: '_' } },
     },
     headerOrientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'The orientation of the calendar header.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description:
         "The orientation of the multiple months displayed in the calendar's days view.",
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
@@ -306,7 +305,7 @@ interface IgcDateRangePickerArgs {
   /** Whether the control will show chips with predefined ranges. */
   usePredefinedRanges: boolean;
   /** The number of months displayed in the calendar. */
-  visibleMonths: 1 | 2;
+  visibleMonths: number;
   /** The label of the control (single input). */
   label: string;
   /** The label attribute of the start input. */
@@ -336,9 +335,9 @@ interface IgcDateRangePickerArgs {
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
   /** The orientation of the calendar header. */
-  headerOrientation: 'vertical' | 'horizontal';
+  headerOrientation: 'horizontal' | 'vertical';
   /** The orientation of the multiple months displayed in the calendar's days view. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /** Determines whether the calendar hides its header. */
   hideHeader: boolean;
   /**

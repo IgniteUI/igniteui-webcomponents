@@ -49,7 +49,9 @@ import {
   defaultDateRangeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import {
+  clamp,
   createCounter,
+  equal,
   findElementFromEventPath,
   last,
 } from '../common/util.js';
@@ -60,6 +62,11 @@ import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import type {
+  ContentOrientation,
+  DateRangePickerInput,
+  PickerMode,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeValidators } from './validators.js';
@@ -226,7 +233,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _placeholder?: string;
   private _defaultMask!: string;
   private _oldValue: DateRangeValue | null = null;
-  private _visibleMonths: 1 | 2 = 2;
+  private _visibleMonths = 2;
 
   private predefinedRanges: CustomDateRange[] = [
     {
@@ -333,7 +340,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * @attr mode
    */
   @property()
-  public mode: 'dropdown' | 'dialog' = 'dropdown';
+  public mode: PickerMode = 'dropdown';
 
   /**
    * Use two inputs to display the date range values. Makes the input editable in dropdown mode.
@@ -380,12 +387,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    */
   //
   @property({ type: Number, attribute: 'visible-months' })
-  public get visibleMonths(): 1 | 2 {
+  public get visibleMonths(): number {
     return this._visibleMonths;
   }
 
-  public set visibleMonths(value: 1 | 2) {
-    this._visibleMonths = [1, 2].includes(value) ? value : 2;
+  public set visibleMonths(value: number) {
+    this._visibleMonths = clamp(value, 1, 2);
   }
 
   /**
@@ -508,14 +515,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * @attr header-orientation
    */
   @property({ attribute: 'header-orientation', reflect: true })
-  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+  public headerOrientation: ContentOrientation = 'horizontal';
 
   /**
    * The orientation of the multiple months displayed in the calendar's days view.
    *  @attr
    */
   @property()
-  public orientation: 'vertical' | 'horizontal' = 'horizontal';
+  public orientation: ContentOrientation = 'horizontal';
 
   /**
    * Determines whether the calendar hides its header.
@@ -638,7 +645,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected handleDialogClosing(event: Event) {
     event.stopPropagation();
-    if (!DateTimeUtil.areDateRangesEqual(this.value, this._oldValue)) {
+    if (!equal(this.value, this._oldValue)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
     this._hide(true);
@@ -658,7 +665,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected dialogDone() {
-    if (!DateTimeUtil.areDateRangesEqual(this.value, this._oldValue)) {
+    if (!equal(this.value, this._oldValue)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
     this._hide(true);
@@ -733,10 +740,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (!this.contains(relatedTarget as Node)) {
       this.checkValidity();
 
-      const isSameValue = DateTimeUtil.areDateRangesEqual(
-        this.value,
-        this._oldValue
-      );
+      const isSameValue = equal(this.value, this._oldValue);
       if (!this.useTwoInputs && !this.readOnly && !isSameValue) {
         this.emitEvent('igcChange', { detail: this.value });
       }
@@ -957,7 +961,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
-  private renderClearIcon(picker: 'start' | 'end' = 'start') {
+  private renderClearIcon(picker: DateRangePickerInput = 'start') {
     const clearIcon = !this.useTwoInputs
       ? 'clear-icon'
       : `clear-icon-${picker}`;
@@ -980,7 +984,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         `;
   }
 
-  private renderCalendarIcon(picker: 'start' | 'end' = 'start') {
+  private renderCalendarIcon(picker: DateRangePickerInput = 'start') {
     const defaultIcon = html`
       <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
@@ -1118,7 +1122,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return IgcValidationContainerComponent.create(this);
   }
 
-  protected renderInput(id: string, picker: 'start' | 'end' = 'start') {
+  protected renderInput(id: string, picker: DateRangePickerInput = 'start') {
     const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;

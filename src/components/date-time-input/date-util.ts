@@ -1,5 +1,4 @@
 import { parseISODate } from '../calendar/helpers.js';
-import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
 export enum FormatDesc {
@@ -552,29 +551,6 @@ export abstract class DateTimeUtil {
     return format && DateTimeUtil.PREDEFINED_FORMATS.has(format)
       ? `${format}Date`
       : format;
-  }
-
-  /**
-   * Compares two date-range values.
-   *
-   * @param first, @param second - the values to compare
-   */
-  public static areDateRangesEqual(
-    first: DateRangeValue | null,
-    second: DateRangeValue | null
-  ): boolean {
-    if (!first && !second) {
-      return true;
-    }
-
-    if (!first || !second) {
-      return false;
-    }
-
-    const isStartEqual = first.start?.getTime() === second.start?.getTime();
-    const isEndEqual = first.end?.getTime() === second.end?.getTime();
-
-    return isStartEqual && isEndEqual;
   }
 
   private static setDisplayFormatOptions(

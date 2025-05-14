@@ -17,6 +17,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { equal } from '../common/util.js';
 import {
   type ValidationContainerTestsParams,
   checkDatesEqual,
@@ -2272,7 +2273,7 @@ const checkSelectedRange = (
     IgcCalendarComponent.tagName
   )!;
 
-  DateTimeUtil.areDateRangesEqual(picker.value, expectedValue);
+  equal(picker.value, expectedValue);
 
   if (!useTwoInputs) {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
