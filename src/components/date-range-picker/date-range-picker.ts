@@ -72,6 +72,8 @@ import { styles } from './date-range-picker.base.css.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { dateRangeValidators } from './validators.js';
 
+// #region Interfaces
+
 export interface DateRangeValue {
   start: Date | null;
   end: Date | null;
@@ -89,6 +91,10 @@ export interface IgcDateRangePickerComponentEventMap {
   igcChange: CustomEvent<DateRangeValue | null>;
   igcInput: CustomEvent<DateRangeValue | null>;
 }
+
+// #endregion
+
+// #region Annotations
 
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
@@ -184,6 +190,8 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 
+// #endregion
+
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -202,11 +210,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   };
 
   private static readonly increment = createCounter();
-  protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
-
-  protected override get __validators() {
-    return dateRangeValidators;
-  }
 
   /* blazorSuppress */
   public static register() {
@@ -225,11 +228,16 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     );
   }
 
+  // #region Internal state & properties
+
+  protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
+  protected override _formValue: FormValue<DateRangeValue | null>;
+
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
-  private _disabledDates?: DateRangeDescriptor[];
-  private _dateConstraints?: DateRangeDescriptor[];
+  private _disabledDates: DateRangeDescriptor[] = [];
+  private _dateConstraints: DateRangeDescriptor[] = [];
   private _displayFormat?: string;
   private _inputFormat?: string;
   private _placeholder?: string;
@@ -237,7 +245,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _oldValue: DateRangeValue | null = null;
   private _visibleMonths = 2;
 
-  private predefinedRanges: CustomDateRange[] = [
+  private _predefinedRanges: CustomDateRange[] = [
     {
       label: IgcDateRangePickerResourceStringsEN.last7Days,
       dateRange: {
@@ -273,22 +281,26 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     },
   ];
 
-  @state()
-  private _maskedRangeValue = '';
+  protected override get __validators() {
+    return dateRangeValidators;
+  }
 
-  private get isDropDown() {
+  private get _isDropDown() {
     return this.mode === 'dropdown';
   }
 
-  private get allRanges(): CustomDateRange[] {
+  private get _allRanges(): CustomDateRange[] {
     return this.usePredefinedRanges
-      ? [...this.predefinedRanges, ...this.customRanges]
+      ? [...this._predefinedRanges, ...this.customRanges]
       : [...this.customRanges];
   }
 
-  private get firstDefinedInRange(): Date | null {
+  private get _firstDefinedInRange(): Date | null {
     return this.value?.start ?? this.value?.end ?? null;
   }
+
+  @state()
+  private _maskedRangeValue = '';
 
   @queryAll(IgcDateTimeInputComponent.tagName)
   private _inputs!: IgcDateTimeInputComponent[];
@@ -300,18 +312,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _calendar!: IgcCalendarComponent;
 
   @queryAssignedElements({ slot: 'prefix' })
-  private prefixes!: Array<HTMLElement>;
+  private _prefixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'suffix' })
-  private suffixes!: Array<HTMLElement>;
+  private _suffixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'actions' })
-  private actions!: Array<HTMLElement>;
+  private _actions!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'header-date' })
-  private headerDateSlotItems!: Array<HTMLElement>;
+  private _headerDateSlotItems!: HTMLElement[];
 
-  protected override _formValue: FormValue<DateRangeValue | null>;
+  // #endregion
+
+  // #region Public properties
 
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
@@ -320,8 +334,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._formValue.setValueAndFormState(converted);
     this._validate();
 
-    this.setCalendarRangeValues();
-    this.updateMaskedRangeValue();
+    this._setCalendarRangeValues();
+    this._updateMaskedRangeValue();
   }
 
   public get value(): DateRangeValue | null {
@@ -352,6 +366,34 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public useTwoInputs = false;
 
   /**
+   * Whether the control will show chips with predefined ranges.
+   * @attr
+   */
+  @property({
+    reflect: true,
+    type: Boolean,
+    attribute: 'use-predefined-ranges',
+  })
+  public usePredefinedRanges = false;
+
+  /**
+   * The locale settings used to display the value.
+   * @attr
+   */
+  @property()
+  public locale = 'en';
+
+  /** The resource strings of the date range picker. */
+  @property({ attribute: false })
+  public resourceStrings: IgcCalendarResourceStrings &
+    IgcDateRangePickerResourceStrings = {
+    ...IgcCalendarResourceStringEN,
+    ...IgcDateRangePickerResourceStringsEN,
+  };
+
+  // #region Input-related properties
+
+  /**
    * Makes the control a readonly field.
    * @attr readonly
    */
@@ -371,31 +413,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
-
-  /**
-   * Whether the control will show chips with predefined ranges.
-   * @attr
-   */
-  @property({
-    reflect: true,
-    type: Boolean,
-    attribute: 'use-predefined-ranges',
-  })
-  public usePredefinedRanges = false;
-
-  /**
-   * The number of months displayed in the calendar.
-   * @attr visible-months
-   */
-  //
-  @property({ type: Number, attribute: 'visible-months' })
-  public get visibleMonths(): number {
-    return this._visibleMonths;
-  }
-
-  public set visibleMonths(value: number) {
-    this._visibleMonths = clamp(value, 1, 2);
-  }
 
   /**
    * The label of the control (single input).
@@ -433,66 +450,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   /**
-   * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
-   * @attr display-format
-   */
-  @property({ attribute: 'display-format', reflect: false })
-  public set displayFormat(value: string) {
-    this._displayFormat = value;
-    this.updateMaskedRangeValue();
-  }
-
-  public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
-  }
-
-  /**
-   * The date format to apply on the inputs.
-   * Defaults to the current locale Intl.DateTimeFormat
-   * @attr input-format
-   */
-  @property({ attribute: 'input-format', reflect: false })
-  public set inputFormat(value: string) {
-    this._inputFormat = value;
-    this.updateMaskedRangeValue();
-  }
-
-  public get inputFormat(): string {
-    return this._inputFormat ?? this._defaultMask;
-  }
-
-  /**
-   * The minimum value required for the date range picker to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public set min(value: Date | string | null | undefined) {
-    this._min = convertToDate(value);
-    this.setDateConstraints();
-    this._updateValidity();
-  }
-
-  public get min(): Date | null {
-    return this._min;
-  }
-
-  /**
-   * The maximum value required for the date range picker to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public set max(value: Date | string | null | undefined) {
-    this._max = convertToDate(value);
-    this.setDateConstraints();
-    this._updateValidity();
-  }
-
-  public get max(): Date | null {
-    return this._max;
-  }
-
-  /**
    * The placeholder attribute of the start input.
    * @attr placeholder-start
    */
@@ -512,6 +469,99 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property()
   public prompt = '_';
 
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   * @attr display-format
+   */
+  @property({ attribute: 'display-format', reflect: false })
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
+    this._updateMaskedRangeValue();
+  }
+
+  public get displayFormat(): string {
+    return this._displayFormat ?? this.inputFormat;
+  }
+
+  /**
+   * The date format to apply on the inputs.
+   * Defaults to the current locale Intl.DateTimeFormat
+   * @attr input-format
+   */
+  @property({ attribute: 'input-format', reflect: false })
+  public set inputFormat(value: string) {
+    this._inputFormat = value;
+    this._updateMaskedRangeValue();
+  }
+
+  public get inputFormat(): string {
+    return this._inputFormat ?? this._defaultMask;
+  }
+
+  // #endregion
+
+  // #region Validation properties
+
+  /**
+   * The minimum value required for the date range picker to remain valid.
+   * @attr
+   */
+  @property({ converter: convertToDate })
+  public set min(value: Date | string | null | undefined) {
+    this._min = convertToDate(value);
+    this._setDateConstraints();
+    this._updateValidity();
+  }
+
+  public get min(): Date | null {
+    return this._min;
+  }
+
+  /**
+   * The maximum value required for the date range picker to remain valid.
+   * @attr
+   */
+  @property({ converter: convertToDate })
+  public set max(value: Date | string | null | undefined) {
+    this._max = convertToDate(value);
+    this._setDateConstraints();
+    this._updateValidity();
+  }
+
+  public get max(): Date | null {
+    return this._max;
+  }
+
+  /** Gets/sets disabled dates. */
+  @property({ attribute: false })
+  public set disabledDates(dates: DateRangeDescriptor[]) {
+    this._disabledDates = dates;
+    this._setDateConstraints();
+    this._updateValidity();
+  }
+
+  public get disabledDates() {
+    return this._disabledDates as DateRangeDescriptor[];
+  }
+
+  // #endregion
+
+  // #region Calendar properties
+
+  /**
+   * The number of months displayed in the calendar.
+   * @attr visible-months
+   */
+  //
+  @property({ type: Number, attribute: 'visible-months' })
+  public get visibleMonths(): number {
+    return this._visibleMonths;
+  }
+
+  public set visibleMonths(value: number) {
+    this._visibleMonths = clamp(value, 1, 2);
+  }
   /**
    * The orientation of the calendar header.
    * @attr header-orientation
@@ -546,18 +596,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return this._activeDate ?? this._calendar?.activeDate;
   }
 
-  /** Gets/sets disabled dates. */
-  @property({ attribute: false })
-  public set disabledDates(dates: DateRangeDescriptor[]) {
-    this._disabledDates = dates;
-    this.setDateConstraints();
-    this._updateValidity();
-  }
-
-  public get disabledDates() {
-    return this._disabledDates as DateRangeDescriptor[];
-  }
-
   /**
    * Whether to show the number of the week in the calendar.
    * @attr show-week-numbers
@@ -572,21 +610,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ type: Boolean, reflect: true, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
 
-  /**
-   * The locale settings used to display the value.
-   * @attr
-   */
-  @property()
-  public locale = 'en';
-
-  /** The resource strings of the date range picker. */
-  @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings &
-    IgcDateRangePickerResourceStrings = {
-    ...IgcCalendarResourceStringEN,
-    ...IgcDateRangePickerResourceStringsEN,
-  };
-
   /** Gets/sets special dates. */
   @property({ attribute: false })
   public specialDates!: DateRangeDescriptor[];
@@ -595,6 +618,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
 
+  // #endregion
+
+  // #endregion
+
+  // #region Life-cycle hooks
+
   constructor() {
     super();
     this._formValue = createFormValueState<DateRangeValue | null>(this, {
@@ -602,18 +631,38 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       transformers: defaultDateRangeTransformers,
     });
 
-    this._rootClickController.update({ hideCallback: this.handleClosing });
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    this._rootClickController.update({ hideCallback: this._handleClosing });
+    this.addEventListener('focusin', this._handleFocusIn);
+    this.addEventListener('focusout', this._handleFocusOut);
 
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true },
     })
       .set([altKey, arrowDown], this.handleAnchorClick)
-      .set([altKey, arrowUp], this.onEscapeKey)
-      .set(escapeKey, this.onEscapeKey);
+      .set([altKey, arrowUp], this._onEscapeKey)
+      .set(escapeKey, this._onEscapeKey);
   }
+
+  protected override firstUpdated() {
+    this._setCalendarRangeValues();
+    this._delegateInputsValidity();
+  }
+
+  protected override formResetCallback() {
+    super.formResetCallback();
+    this._formValue.setValueAndFormState({
+      start: this._formValue.defaultValue?.start ?? null,
+      end: this._formValue.defaultValue?.end ?? null,
+    });
+
+    this._setCalendarRangeValues();
+    this._updateMaskedRangeValue();
+  }
+
+  // #endregion
+
+  // #region Public API methods
 
   /** Clears the input parts of the component of any user input */
   public clear() {
@@ -625,86 +674,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._select(value);
   }
 
-  protected override firstUpdated() {
-    this.setCalendarRangeValues();
-    this.delegateInputsValidity();
-  }
+  // #endregion
 
-  protected override formResetCallback() {
-    super.formResetCallback();
-    this._formValue.setValueAndFormState({
-      start: this._formValue.defaultValue?.start ?? null,
-      end: this._formValue.defaultValue?.end ?? null,
-    });
-
-    this.setCalendarRangeValues();
-    this.updateMaskedRangeValue();
-  }
-
-  protected handleClosing() {
-    this._hide(true);
-  }
-
-  protected handleDialogClosing(event: Event) {
-    event.stopPropagation();
-    if (!equal(this.value, this._oldValue)) {
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-    this._hide(true);
-  }
-
-  protected handleDialogClosed(event: Event) {
-    event.stopPropagation();
-  }
-
-  protected revertValue() {
-    this.value = this._oldValue;
-  }
-
-  protected dialogCancel() {
-    this.revertValue();
-    this._hide(true);
-  }
-
-  protected dialogDone() {
-    if (!equal(this.value, this._oldValue)) {
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-    this._hide(true);
-  }
-
-  protected async handleInputEvent(event: CustomEvent<Date | null>) {
-    event.stopPropagation();
-    if (this.nonEditable) {
-      event.preventDefault();
-      return;
-    }
-    const input = event.target as IgcDateTimeInputComponent;
-    const newValue = input.value ? CalendarDay.from(input.value).native : null;
-
-    this.value = this.getUpdatedDateRange(input, newValue);
-    this._calendar.activeDate =
-      newValue ?? this.firstDefinedInRange ?? this._calendar.activeDate;
-
-    this.emitEvent('igcInput', { detail: this.value });
-  }
-
-  protected handleInputChangeEvent(event: CustomEvent<Date | null>) {
-    event.stopPropagation();
-
-    const input = event.target as IgcDateTimeInputComponent;
-    const newValue = input.value ? CalendarDay.from(input.value).native : null;
-
-    const updatedRange = this.getUpdatedDateRange(input, newValue);
-    const { start, end } = this.swapDates(updatedRange);
-
-    this.setCalendarRangeValues();
-    this.value = { start, end };
-    this.emitEvent('igcChange', { detail: this.value });
-  }
+  // #region Observed properties
 
   @watch('open')
-  protected openChange() {
+  protected _openChange() {
     this._rootClickController.update();
 
     if (this.open && this.mode === 'dialog') {
@@ -713,53 +688,115 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   @watch('locale')
-  protected updateDefaultMask(): void {
+  protected _updateDefaultMask(): void {
     this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
-    this.updateMaskedRangeValue();
+    this._updateMaskedRangeValue();
   }
 
   @watch('useTwoInputs')
-  protected async updateDateRange() {
+  protected async _updateDateRange() {
     await this._calendar?.updateComplete;
-    this.updateMaskedRangeValue();
-    this.setCalendarRangeValues();
+    this._updateMaskedRangeValue();
+    this._setCalendarRangeValues();
   }
 
   @watch('mode')
-  protected async modeChanged() {
+  protected async _modeChanged() {
     if (this.mode === 'dialog') {
       this.keepOpenOnSelect = true;
     }
     await this._calendar?.updateComplete;
-    this.setCalendarRangeValues();
+    this._setCalendarRangeValues();
   }
 
-  protected handleFocusIn() {
+  // #endregion
+
+  // #region Event handlers
+
+  protected _handleClosing() {
+    this._hide(true);
+  }
+
+  protected _handleDialogClosing(event: Event) {
+    event.stopPropagation();
+    if (!equal(this.value, this._oldValue)) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
+    this._hide(true);
+  }
+
+  protected _handleDialogClosed(event: Event) {
+    event.stopPropagation();
+  }
+
+  protected _dialogCancel() {
+    this._revertValue();
+    this._hide(true);
+  }
+
+  protected _dialogDone() {
+    if (!equal(this.value, this._oldValue)) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
+    this._hide(true);
+  }
+
+  protected _handleInputEvent(event: CustomEvent<Date | null>) {
+    event.stopPropagation();
+    if (this.nonEditable) {
+      event.preventDefault();
+      return;
+    }
+    const input = event.target as IgcDateTimeInputComponent;
+    const newValue = input.value ? CalendarDay.from(input.value).native : null;
+
+    this.value = this._getUpdatedDateRange(input, newValue);
+    this._calendar.activeDate =
+      newValue ?? this._firstDefinedInRange ?? this._calendar.activeDate;
+
+    this.emitEvent('igcInput', { detail: this.value });
+  }
+
+  protected _handleInputChangeEvent(event: CustomEvent<Date | null>) {
+    event.stopPropagation();
+
+    const input = event.target as IgcDateTimeInputComponent;
+    const newValue = input.value ? CalendarDay.from(input.value).native : null;
+
+    const updatedRange = this._getUpdatedDateRange(input, newValue);
+    const { start, end } = this._swapDates(updatedRange);
+
+    this._setCalendarRangeValues();
+    this.value = { start, end };
+    this.emitEvent('igcChange', { detail: this.value });
+  }
+
+  protected _handleFocusIn() {
     this._dirty = true;
   }
 
-  protected handleFocusOut({ relatedTarget }: FocusEvent) {
+  protected _handleFocusOut({ relatedTarget }: FocusEvent) {
     if (!this.contains(relatedTarget as Node)) {
       this.checkValidity();
 
       const isSameValue = equal(this.value, this._oldValue);
-      if (!this.useTwoInputs && !this.readOnly && !isSameValue) {
+      if (!(this.useTwoInputs || this.readOnly || isSameValue)) {
         this.emitEvent('igcChange', { detail: this.value });
       }
     }
   }
 
-  protected handleInputClick(event: Event) {
+  protected _handleInputClick(event: Event) {
     if (findElementFromEventPath('input', event)) {
       // Open only if the click originates from the underlying input
       this.handleAnchorClick();
     }
   }
 
-  protected async onEscapeKey() {
+  protected async _onEscapeKey() {
     if (await this._hide(true)) {
       if (this.mode === 'dialog') {
-        this.revertValue();
+        this._revertValue();
       }
       this._inputs[0]?.focus();
     }
@@ -767,13 +804,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected override async handleAnchorClick() {
     this._calendar.activeDate =
-      this.firstDefinedInRange ?? this._calendar.activeDate;
+      this._firstDefinedInRange ?? this._calendar.activeDate;
     super.handleAnchorClick();
     await this.updateComplete;
     this._calendar[focusActiveDate]();
   }
 
-  protected async handleCalendarChangeEvent(event: CustomEvent<Date>) {
+  protected async _handleCalendarChangeEvent(event: CustomEvent<Date>) {
     event.stopPropagation();
 
     if (this.readOnly) {
@@ -790,18 +827,26 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       end: rangeValues[rangeValues.length - 1],
     };
 
-    if (this.isDropDown) {
+    if (this._isDropDown) {
       this.emitEvent('igcChange', { detail: this.value });
     }
 
     this._shouldCloseCalendarDropdown();
   }
 
-  protected handlerCalendarIconSlotPointerDown(event: PointerEvent) {
+  protected _handleCalendarIconSlotPointerDown(event: PointerEvent) {
     event.preventDefault();
   }
 
-  private getUpdatedDateRange(
+  // #endregion
+
+  // #region Private methods
+
+  protected _revertValue() {
+    this.value = this._oldValue;
+  }
+
+  private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
     newValue: Date | null
   ): DateRangeValue {
@@ -814,8 +859,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   // delegate the inputs validity state to the date-range-picker
-  private delegateInputsValidity() {
-    const inputs = !this.useTwoInputs ? [this._input] : this._inputs;
+  private _delegateInputsValidity() {
+    const inputs = this.useTwoInputs ? this._inputs : [this._input];
 
     inputs.forEach((input) => {
       input.checkValidity = () => this.checkValidity();
@@ -823,7 +868,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     });
   }
 
-  private setDateConstraints() {
+  private _setDateConstraints() {
     const dates: DateRangeDescriptor[] = [];
     if (this._min) {
       dates.push({
@@ -845,18 +890,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         this._inputs[1].max = this._max;
       }
     }
-    if (this._disabledDates?.length) {
+    if (this._disabledDates?.length > 0) {
       dates.push(...this.disabledDates);
     }
 
-    this._dateConstraints = dates.length ? dates : undefined;
+    this._dateConstraints = dates.length > 0 ? dates : [];
   }
 
-  private updateMaskedRangeValue() {
+  private _updateMaskedRangeValue() {
     if (this.useTwoInputs) {
       return;
     }
-    if (!this.value || !this.value.start || !this.value.end) {
+    if (!(this.value?.start && this.value?.end)) {
       this._maskedRangeValue = '';
       return;
     }
@@ -880,17 +925,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._maskedRangeValue = `${startMask} - ${endMask}`;
   }
 
-  private async setCalendarRangeValues() {
+  private _setCalendarRangeValues() {
     if (!this._calendar) {
       return;
     }
 
-    if (!this.value?.start && !this.value?.end) {
+    if (!(this.value?.start || this.value?.end)) {
       this._calendar.values = null;
       return;
     }
 
-    if (!this.value?.start || !this.value?.end) {
+    if (!(this.value?.start && this.value?.end)) {
       const single = this.value?.start ?? this.value?.end!;
       this._calendar.values = [single];
       return;
@@ -899,20 +944,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const start = toCalendarDay(this.value.start);
     const end = toCalendarDay(this.value.end);
 
-    if (!start.equalTo(end)) {
+    if (start.equalTo(end)) {
+      this._calendar.values = [this.value.start!];
+    } else {
       const range = Array.from(
         calendarRange({ start: this.value.start!, end: this.value.end! })
       );
       // calendarRange is non-inclusive
       range.push(last(range).add('day', start.lessThan(end) ? 1 : -1));
       this._calendar.values = range.map((d) => d.native);
-    } else {
-      this._calendar.values = [this.value.start!];
     }
-    this._calendar.activeDate = this.firstDefinedInRange;
+    this._calendar.activeDate = this._firstDefinedInRange;
   }
 
-  private swapDates(range: DateRangeValue): DateRangeValue {
+  private _swapDates(range: DateRangeValue): DateRangeValue {
     const { start, end } = range;
     if (start && end) {
       const calendarDayStart = toCalendarDay(start);
@@ -932,11 +977,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._calendar.values.length > 1 &&
       (await this._hide(true))
     ) {
-      if (!this.useTwoInputs) {
-        this._input.focus();
-      } else {
+      if (this.useTwoInputs) {
         this._inputs[0].focus();
         this._inputs[0].select();
+      } else {
+        this._input.focus();
       }
     }
   }
@@ -944,8 +989,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _select(value: DateRangeValue | null, chipSelection = false) {
     this.value = value;
     this._calendar.activeDate =
-      this.firstDefinedInRange ?? this._calendar.activeDate;
-    if (chipSelection && this.isDropDown) {
+      this._firstDefinedInRange ?? this._calendar.activeDate;
+    if (chipSelection && this._isDropDown) {
       this.emitEvent('igcChange', { detail: this.value });
       this._hide(true);
     }
@@ -971,10 +1016,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
-  private renderClearIcon(picker: DateRangePickerInput = 'start') {
-    const clearIcon = !this.useTwoInputs
-      ? 'clear-icon'
-      : `clear-icon-${picker}`;
+  // #endregion
+
+  // #region Rendering
+
+  private _renderClearIcon(picker: DateRangePickerInput = 'start') {
+    const clearIcon = this.useTwoInputs ? `clear-icon-${picker}` : 'clear-icon';
     return !this.value || (this.value.start === null && this.value.end === null)
       ? nothing
       : html`
@@ -1000,13 +1047,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
-    const calendarIcon = !this.useTwoInputs ? state : `${state}-${picker}`;
+    const calendarIcon = this.useTwoInputs ? `${state}-${picker}` : state;
 
     return html`
       <span
         slot="prefix"
         part=${calendarIcon}
-        @pointerdown=${this.handlerCalendarIconSlotPointerDown}
+        @pointerdown=${this._handleCalendarIconSlotPointerDown}
         @click=${this.handleAnchorClick}
       >
         <slot name=${calendarIcon}>${defaultIcon}</slot>
@@ -1015,11 +1062,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderCalendarSlots() {
-    if (this.isDropDown) {
+    if (this._isDropDown) {
       return nothing;
     }
 
-    const hasHeaderDate = this.headerDateSlotItems.length ? 'header-date' : '';
+    const hasHeaderDate =
+      this._headerDateSlotItems.length > 0 ? 'header-date' : '';
 
     return html`
       <slot name="title" slot="title">
@@ -1030,7 +1078,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private renderCalendar(id: string) {
-    const hideHeader = this.isDropDown ? true : this.hideHeader;
+    const hideHeader = this._isDropDown ? true : this.hideHeader;
 
     return html`
       <igc-calendar
@@ -1040,7 +1088,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
-        .activeDate=${this.activeDate ?? this.firstDefinedInRange}
+        .activeDate=${this.activeDate ?? this._firstDefinedInRange}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this._visibleMonths}
@@ -1048,7 +1096,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}
         selection="range"
-        @igcChange=${this.handleCalendarChangeEvent}
+        @igcChange=${this._handleCalendarChangeEvent}
         exportparts="header, header-title, header-date, content: calendar-content, navigation, months-navigation,
           years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
           days-view, months-view, years-view, days-row, label: calendar-label, week-number, week-number-inner, date,
@@ -1061,13 +1109,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected renderActions() {
-    const slot = this.isDropDown || !this.actions.length ? undefined : 'footer';
+    const slot =
+      this._isDropDown || this._actions.length === 0 ? undefined : 'footer';
 
     // If in dialog mode use the dialog footer slot
     return html`
       <div
         part="actions"
-        ?hidden=${!this.actions.length}
+        ?hidden=${this._actions.length === 0}
         slot=${ifDefined(slot)}
       >
         <slot name="actions"></slot>
@@ -1078,7 +1127,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected renderRanges() {
     return html`
       <div part="ranges">
-        ${this.allRanges.map(
+        ${this._allRanges.map(
           (range) => html`
             <igc-chip
               @click=${() =>
@@ -1096,13 +1145,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected renderPicker(id: string) {
-    return this.isDropDown
+    return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
               ${this.renderCalendar(id)}
               <igc-predefined-ranges-area
-                .ranges=${this.allRanges}
+                .ranges=${this._allRanges}
                 @range-select=${this._selectPredefinedRange}
               >
               </igc-predefined-ranges-area>
@@ -1117,20 +1166,23 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
-            @igcClosing=${this.handleDialogClosing}
-            @igcClosed=${this.handleDialogClosed}
+            @igcClosing=${this._handleDialogClosing}
+            @igcClosed=${this._handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)} ${this.renderActions()}
             <igc-predefined-ranges-area
-              .ranges=${this.allRanges}
+              .ranges=${this._allRanges}
               @range-select=${this._selectPredefinedRange}
             >
             </igc-predefined-ranges-area>
-            <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
+            <igc-button
+              slot="footer"
+              @click=${this._dialogCancel}
+              variant="flat"
               >${this.resourceStrings.cancel}</igc-button
             >
-            <igc-button slot="footer" @click=${this.dialogDone} variant="flat"
+            <igc-button slot="footer" @click=${this._dialogDone} variant="flat"
               >${this.resourceStrings.done}</igc-button
             >
           </igc-dialog>
@@ -1142,7 +1194,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected renderInput(id: string, picker: DateRangePickerInput = 'start') {
-    const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;
+    const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
@@ -1166,20 +1218,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .placeholder=${placeholder}
         label=${label}
         ?invalid=${live(this.invalid)}
-        @igcChange=${this.handleInputChangeEvent}
-        @igcInput=${this.handleInputEvent}
-        @click=${this.isDropDown ? nothing : this.handleInputClick}
+        @igcChange=${this._handleInputChangeEvent}
+        @igcInput=${this._handleInputEvent}
+        @click=${this._isDropDown ? nothing : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon(picker)}
         <slot name=${`prefix-${picker}`} slot="prefix"></slot>
-        ${this.renderClearIcon(picker)}
+        ${this._renderClearIcon(picker)}
         <slot name=${`suffix-${picker}`} slot="suffix"></slot>
       </igc-date-time-input>
     `;
   }
 
-  private renderInputs(idStart: string, idEnd: string) {
+  private _renderInputs(idStart: string, idEnd: string) {
     return html`
       <div part="inputs">
         ${this.renderInput(idStart, 'start')}
@@ -1192,7 +1244,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  private renderSingleInput(id: string) {
+  private _renderSingleInput(id: string) {
     return html`<igc-input
         id=${id}
         aria-haspopup="dialog"
@@ -1204,18 +1256,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .outlined=${this.outlined}
         ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}
-        @click=${this.isDropDown ? nothing : this.handleInputClick}
+        @click=${this._isDropDown ? nothing : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this.renderCalendarIcon()}
         <slot
           name="prefix"
-          slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
+          slot=${ifDefined(this._prefixes.length > 0 ? 'prefix' : undefined)}
         ></slot>
-        ${this.renderClearIcon()}
+        ${this._renderClearIcon()}
         <slot
           name="suffix"
-          slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
+          slot=${ifDefined(this._suffixes.length > 0 ? 'suffix' : undefined)}
         ></slot>
       </igc-input>
       ${this.renderHelperText()} ${this.renderPicker(id)}`;
@@ -1226,14 +1278,16 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const idStart = `${id}-start`;
     const idEnd = `${id}-end`;
     if (!this.useTwoInputs) {
-      return this.renderSingleInput(id);
+      return this._renderSingleInput(id);
     }
-    return this.renderInputs(idStart, idEnd);
+    return this._renderInputs(idStart, idEnd);
   }
+
+  // #endregion
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
+  interface HtmlElementTagNameMap {
     'igc-date-range-picker': IgcDateRangePickerComponent;
   }
 }
