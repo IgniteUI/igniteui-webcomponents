@@ -69,6 +69,7 @@ import type {
 } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
+import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { dateRangeValidators } from './validators.js';
 
 export interface DateRangeValue {
@@ -219,7 +220,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       IgcChipComponent,
       IgcPopoverComponent,
       IgcDialogComponent,
-      IgcValidationContainerComponent
+      IgcValidationContainerComponent,
+      IgcPredefinedRangesAreaComponent
     );
   }
 
@@ -949,6 +951,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
+  private _selectPredefinedRange(e: CustomEvent) {
+    const range: CustomDateRange = e.detail;
+    this._select(
+      { start: range.dateRange.start, end: range.dateRange.end },
+      true
+    );
+  }
+
   private _clear(checkReadOnly = false) {
     if (checkReadOnly && this.readOnly) {
       return;
@@ -1090,7 +1100,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)} ${this.renderRanges()}
+              ${this.renderCalendar(id)}
+              <igc-predefined-ranges-area
+                .ranges=${this.allRanges}
+                @range-select=${this._selectPredefinedRange}
+              >
+              </igc-predefined-ranges-area>
               ${this.renderActions()}
             </igc-focus-trap>
           </igc-popover>
@@ -1107,7 +1122,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this.renderCalendar(id)} ${this.renderActions()}
-            ${this.renderRanges()}
+            <igc-predefined-ranges-area
+              .ranges=${this.allRanges}
+              @range-select=${this._selectPredefinedRange}
+            >
+            </igc-predefined-ranges-area>
             <igc-button slot="footer" @click=${this.dialogCancel} variant="flat"
               >${this.resourceStrings.cancel}</igc-button
             >

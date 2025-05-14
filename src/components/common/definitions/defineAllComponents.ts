@@ -21,6 +21,7 @@ import IgcChipComponent from '../../chip/chip.js';
 import IgcComboComponent from '../../combo/combo.js';
 import IgcDatePickerComponent from '../../date-picker/date-picker.js';
 import IgcDateRangePickerComponent from '../../date-range-picker/date-range-picker.js';
+import IgcPredefinedRangesAreaComponent from '../../date-range-picker/predefined-ranges-area.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../../dialog/dialog.js';
 import IgcDividerComponent from '../../divider/divider.js';
@@ -110,6 +111,7 @@ const allComponents: IgniteComponent[] = [
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,
   IgcNavbarComponent,
+  IgcPredefinedRangesAreaComponent,
   IgcRadioComponent,
   IgcRadioGroupComponent,
   IgcRatingComponent,

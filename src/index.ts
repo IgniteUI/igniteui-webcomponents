@@ -61,6 +61,7 @@ export { default as IgcTileComponent } from './components/tile-manager/tile.js';
 export { default as IgcTileManagerComponent } from './components/tile-manager/tile-manager.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcToggleButtonComponent } from './components/button-group/toggle-button.js';
+export { default as IgcPredefinedRangesAreaComponent } from './components/date-range-picker/predefined-ranges-area.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
