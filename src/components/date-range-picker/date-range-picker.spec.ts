@@ -988,7 +988,7 @@ describe('Date range picker', () => {
         );
 
         picker.open = true;
-        const predefinedRanges = (picker as any).predefinedRanges;
+        const predefinedRanges = (picker as any)._predefinedRanges;
         await elementUpdated(picker);
 
         const chips = picker.renderRoot.querySelectorAll('igc-chip');
@@ -1011,7 +1011,7 @@ describe('Date range picker', () => {
         const popover = picker.renderRoot.querySelector('igc-popover');
 
         const predefinedRanges = [
-          ...(picker as any).predefinedRanges,
+          ...(picker as any)._predefinedRanges,
           ...customRanges,
         ];
         picker.usePredefinedRanges = true;
@@ -1020,7 +1020,7 @@ describe('Date range picker', () => {
         picker.open = true;
         await elementUpdated(picker);
 
-        const allRangesLength = (picker as any).allRanges.length;
+        const allRangesLength = (picker as any)._allRanges.length;
         const chips = picker.renderRoot.querySelectorAll('igc-chip');
         expect(chips.length).to.equal(allRangesLength);
 
@@ -1052,7 +1052,7 @@ describe('Date range picker', () => {
         picker.mode = 'dialog';
 
         const predefinedRanges = [
-          ...(picker as any).predefinedRanges,
+          ...(picker as any)._predefinedRanges,
           ...customRanges,
         ];
         picker.usePredefinedRanges = true;
@@ -1062,7 +1062,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         let dialog = picker.renderRoot.querySelector('igc-dialog');
-        const allRangesLength = (picker as any).allRanges.length;
+        const allRangesLength = (picker as any)._allRanges.length;
         const chips = picker.renderRoot.querySelectorAll('igc-chip');
         expect(chips.length).to.equal(allRangesLength);
 
@@ -2253,8 +2253,8 @@ const selectDates = async (
 ) => {
   const daysView = getCalendarDOM(calendar).views.days;
   if (startDate) {
-    const startDayDOM = getDOMDate(startDate, daysView);
-    simulateClick(startDayDOM);
+    const startDayDom = getDOMDate(startDate, daysView);
+    simulateClick(startDayDom);
     await elementUpdated(calendar);
   }
   if (endDate) {
@@ -2275,7 +2275,17 @@ const checkSelectedRange = (
 
   equal(picker.value, expectedValue);
 
-  if (!useTwoInputs) {
+  if (useTwoInputs) {
+    const inputs = picker.renderRoot.querySelectorAll(
+      IgcDateTimeInputComponent.tagName
+    );
+    if (expectedValue?.start) {
+      checkDatesEqual(inputs[0].value!, expectedValue.start);
+    }
+    if (expectedValue?.end) {
+      checkDatesEqual(inputs[1].value!, expectedValue.end);
+    }
+  } else {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
     const start = expectedValue?.start
       ? DateTimeUtil.formatDate(
@@ -2292,16 +2302,6 @@ const checkSelectedRange = (
         )
       : '';
     expect(input.value).to.equal(`${start} - ${end}`);
-  } else {
-    const inputs = picker.renderRoot.querySelectorAll(
-      IgcDateTimeInputComponent.tagName
-    );
-    if (expectedValue?.start) {
-      checkDatesEqual(inputs[0].value!, expectedValue.start);
-    }
-    if (expectedValue?.end) {
-      checkDatesEqual(inputs[1].value!, expectedValue.end);
-    }
   }
 
   if (expectedValue?.start) {
