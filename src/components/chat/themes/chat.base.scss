@@ -16,3 +16,62 @@
     flex-direction: column;
     height: 100%;
   }
+  
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+  }
+
+  .info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-container {
+    position: relative;
+  }
+
+  .status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #30D158;
+    border: 2px solid white;
+  }
+
+  .actions {
+    display: flex;
+    gap: 16px;
+  }
+
+  .action-button {
+    background: none;
+    border: none;
+    color: #0A84FF;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: white 0.2s;
+  }
+
+  .action-button:hover {
+    background-color: #E5E5EA;
+  }
