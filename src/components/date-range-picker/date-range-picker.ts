@@ -53,6 +53,7 @@ import {
   createCounter,
   equal,
   findElementFromEventPath,
+  isEmpty,
   last,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -339,11 +340,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   public get value(): DateRangeValue | null {
-    // TODO what should the default value be? null?
-    return {
-      start: this._formValue?.value?.start ?? null,
-      end: this._formValue?.value?.end ?? null,
-    };
+    return this._formValue.value;
   }
   /**
    * Renders chips with custom ranges based on the elements of the array.
@@ -627,7 +624,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   constructor() {
     super();
     this._formValue = createFormValueState<DateRangeValue | null>(this, {
-      initialValue: null,
+      initialValue: {
+        start: null,
+        end: null,
+      },
       transformers: defaultDateRangeTransformers,
     });
 
@@ -651,11 +651,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected override formResetCallback() {
     super.formResetCallback();
-    this._formValue.setValueAndFormState({
-      start: this._formValue.defaultValue?.start ?? null,
-      end: this._formValue.defaultValue?.end ?? null,
-    });
-
     this._setCalendarRangeValues();
     this._updateMaskedRangeValue();
   }
@@ -858,13 +853,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       : { start: currentStart, end: newValue };
   }
 
-  // delegate the inputs validity state to the date-range-picker
+  // Delegates the validity methods of internal input elements
+  // to the component's own validation logic specific to date-range values.
+  // Checks for dirty state to avoid unnecessary validation on form reset,
+  // caused by the inputs value being set.
   private _delegateInputsValidity() {
     const inputs = this.useTwoInputs ? this._inputs : [this._input];
 
     inputs.forEach((input) => {
-      input.checkValidity = () => this.checkValidity();
-      input.reportValidity = () => this.reportValidity();
+      input.checkValidity = () =>
+        this._dirty || !this._pristine ? this.checkValidity() : true;
+      input.reportValidity = () =>
+        this._dirty || !this._pristine ? this.reportValidity() : true;
     });
   }
 
@@ -890,11 +890,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         this._inputs[1].max = this._max;
       }
     }
-    if (this._disabledDates?.length > 0) {
+    if (!isEmpty(this.disabledDates)) {
       dates.push(...this.disabledDates);
     }
 
-    this._dateConstraints = dates.length > 0 ? dates : [];
+    this._dateConstraints = isEmpty(dates) ? [] : dates;
   }
 
   private _updateMaskedRangeValue() {
@@ -1066,8 +1066,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return nothing;
     }
 
-    const hasHeaderDate =
-      this._headerDateSlotItems.length > 0 ? 'header-date' : '';
+    const hasHeaderDate = isEmpty(this._headerDateSlotItems)
+      ? ''
+      : 'header-date';
 
     return html`
       <slot name="title" slot="title">
@@ -1110,13 +1111,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected renderActions() {
     const slot =
-      this._isDropDown || this._actions.length === 0 ? undefined : 'footer';
+      this._isDropDown || isEmpty(this._actions) ? undefined : 'footer';
 
     // If in dialog mode use the dialog footer slot
     return html`
       <div
         part="actions"
-        ?hidden=${this._actions.length === 0}
+        ?hidden=${isEmpty(this._actions)}
         slot=${ifDefined(slot)}
       >
         <slot name="actions"></slot>
@@ -1262,12 +1263,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ${this.renderCalendarIcon()}
         <slot
           name="prefix"
-          slot=${ifDefined(this._prefixes.length > 0 ? 'prefix' : undefined)}
+          slot=${ifDefined(isEmpty(this._prefixes) ? undefined : 'prefix')}
         ></slot>
         ${this._renderClearIcon()}
         <slot
           name="suffix"
-          slot=${ifDefined(this._suffixes.length > 0 ? 'suffix' : undefined)}
+          slot=${ifDefined(isEmpty(this._suffixes) ? undefined : 'suffix')}
         ></slot>
       </igc-input>
       ${this.renderHelperText()} ${this.renderPicker(id)}`;

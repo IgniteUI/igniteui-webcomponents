@@ -1,4 +1,5 @@
 import { calendarRange, isDateInRanges } from '../calendar/helpers.js';
+import { CalendarDay } from '../calendar/model.js';
 import type { DateRangeDescriptor } from '../calendar/types.js';
 import messages from '../common/localization/validation-en.js';
 import { formatString, last } from '../common/util.js';
@@ -68,13 +69,13 @@ export const badInputDateRangeValidator: Validator<{
   key: 'badInput',
   message: ({ value }) => formatString(messages.disabledDate, value),
   isValid: ({ value, disabledDates }) => {
-    if (!value?.start || !value?.end || !disabledDates) {
+    if (!(value?.start && value?.end && disabledDates)) {
       return true;
     }
 
-    let range = [];
+    let range: CalendarDay[] = [];
     if (value.start.getTime() === value.end.getTime()) {
-      range = [value.start];
+      range = [CalendarDay.from(value.start)];
     } else {
       range = Array.from(calendarRange({ start: value.start, end: value.end }));
       const lastDay = last(range);
@@ -83,8 +84,8 @@ export const badInputDateRangeValidator: Validator<{
       }
     }
 
-    for (let i = 0; i < range.length; i++) {
-      if (isDateInRanges(range[i], disabledDates)) {
+    for (const dateRange of range) {
+      if (isDateInRanges(dateRange, disabledDates)) {
         return false;
       }
     }

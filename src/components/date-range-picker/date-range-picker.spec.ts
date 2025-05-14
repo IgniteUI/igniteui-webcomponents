@@ -33,7 +33,6 @@ import { DateTimeUtil } from '../date-time-input/date-util.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
-  type CustomDateRange,
   type DateRangeValue,
 } from './date-range-picker.js';
 
@@ -675,7 +674,7 @@ describe('Date range picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).not.called;
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.deep.equal(null);
       expect(dateTimeInputs[0].value).to.be.null;
       expect(dateTimeInputs[1].value).to.be.null;
     });
@@ -952,25 +951,25 @@ describe('Date range picker', () => {
       });
     });
     describe('Selection via the range selection chips', () => {
-      const previousThreeDaysStart = CalendarDay.today.add('day', -3).native;
-      const nextThreeDaysEnd = CalendarDay.today.add('day', 3).native;
+      //const previousThreeDaysStart = CalendarDay.today.add('day', -3).native;
+      //const nextThreeDaysEnd = CalendarDay.today.add('day', 3).native;
 
-      const customRanges: CustomDateRange[] = [
-        {
-          label: 'Previous Three Days',
-          dateRange: {
-            start: previousThreeDaysStart,
-            end: today.native,
-          },
-        },
-        {
-          label: 'Next Three Days',
-          dateRange: {
-            start: today.native,
-            end: nextThreeDaysEnd,
-          },
-        },
-      ];
+      // const customRanges: CustomDateRange[] = [
+      //   {
+      //     label: 'Previous Three Days',
+      //     dateRange: {
+      //       start: previousThreeDaysStart,
+      //       end: today.native,
+      //     },
+      //   },
+      //   {
+      //     label: 'Next Three Days',
+      //     dateRange: {
+      //       start: today.native,
+      //       end: nextThreeDaysEnd,
+      //     },
+      //   },
+      // ];
 
       it('should not render any chips when usePredefinedRanges is false and there are no custom ranges added', async () => {
         picker.open = true;
@@ -988,7 +987,7 @@ describe('Date range picker', () => {
         );
 
         picker.open = true;
-        const predefinedRanges = (picker as any).predefinedRanges;
+        const predefinedRanges = (picker as any)._predefinedRanges;
         await elementUpdated(picker);
 
         const chips = picker.renderRoot.querySelectorAll('igc-chip');
@@ -1252,7 +1251,7 @@ describe('Date range picker', () => {
         await elementUpdated(picker);
 
         expect(eventSpy).not.to.be.called;
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.deep.equal(null);
       });
 
       it('should open the picker on calendar show icon click in dropdown mode', async () => {
@@ -1330,10 +1329,10 @@ describe('Date range picker', () => {
 
         expect(isFocused(input)).to.be.false;
         expect(eventSpy).to.be.calledWith('igcChange', {
-          detail: { start: null, end: null },
+          detail: null,
         });
         expect(picker.open).to.be.false;
-        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(picker.value).to.deep.equal(null);
         expect(input.value).to.equal('');
       });
 

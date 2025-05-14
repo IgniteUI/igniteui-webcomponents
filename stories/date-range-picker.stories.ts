@@ -60,6 +60,19 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    usePredefinedRanges: {
+      type: 'boolean',
+      description:
+        'Whether the control will show chips with predefined ranges.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    locale: {
+      type: 'string',
+      description: 'The locale settings used to display the value.',
+      control: 'text',
+      table: { defaultValue: { summary: 'en' } },
+    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
@@ -77,18 +90,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
-    },
-    usePredefinedRanges: {
-      type: 'boolean',
-      description:
-        'Whether the control will show chips with predefined ranges.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    visibleMonths: {
-      type: 'number',
-      description: 'The number of months displayed in the calendar.',
-      control: 'number',
     },
     label: {
       type: 'string',
@@ -111,6 +112,24 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the control (single input).',
       control: 'text',
+    },
+    placeholderStart: {
+      type: 'string',
+      description: 'The placeholder attribute of the start input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    placeholderEnd: {
+      type: 'string',
+      description: 'The placeholder attribute of the end input.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    prompt: {
+      type: 'string',
+      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      control: 'text',
+      table: { defaultValue: { summary: '_' } },
     },
     displayFormat: {
       type: 'string',
@@ -136,23 +155,10 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
         'The maximum value required for the date range picker to remain valid.',
       control: 'date',
     },
-    placeholderStart: {
-      type: 'string',
-      description: 'The placeholder attribute of the start input.',
-      control: 'text',
-      table: { defaultValue: { summary: '' } },
-    },
-    placeholderEnd: {
-      type: 'string',
-      description: 'The placeholder attribute of the end input.',
-      control: 'text',
-      table: { defaultValue: { summary: '' } },
-    },
-    prompt: {
-      type: 'string',
-      description: 'The prompt symbol to use for unfilled parts of the mask.',
-      control: 'text',
-      table: { defaultValue: { summary: '_' } },
+    visibleMonths: {
+      type: 'number',
+      description: 'The number of months displayed in the calendar.',
+      control: 'number',
     },
     headerOrientation: {
       type: '"horizontal" | "vertical"',
@@ -193,12 +199,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
         'Controls the visibility of the dates that do not belong to the current month.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
-    },
-    locale: {
-      type: 'string',
-      description: 'The locale settings used to display the value.',
-      control: 'text',
-      table: { defaultValue: { summary: 'en' } },
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
@@ -263,10 +263,11 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
   args: {
     mode: 'dropdown',
     useTwoInputs: false,
+    usePredefinedRanges: false,
+    locale: 'en',
     readOnly: false,
     nonEditable: false,
     outlined: false,
-    usePredefinedRanges: false,
     labelStart: '',
     labelEnd: '',
     placeholderStart: '',
@@ -277,7 +278,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     hideHeader: false,
     showWeekNumbers: false,
     hideOutsideDays: false,
-    locale: 'en',
     weekStart: 'sunday',
     required: false,
     disabled: false,
@@ -296,16 +296,16 @@ interface IgcDateRangePickerArgs {
   mode: 'dropdown' | 'dialog';
   /** Use two inputs to display the date range values. Makes the input editable in dropdown mode. */
   useTwoInputs: boolean;
+  /** Whether the control will show chips with predefined ranges. */
+  usePredefinedRanges: boolean;
+  /** The locale settings used to display the value. */
+  locale: string;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** Whether to allow typing in the input. */
   nonEditable: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Whether the control will show chips with predefined ranges. */
-  usePredefinedRanges: boolean;
-  /** The number of months displayed in the calendar. */
-  visibleMonths: number;
   /** The label of the control (single input). */
   label: string;
   /** The label attribute of the start input. */
@@ -314,6 +314,12 @@ interface IgcDateRangePickerArgs {
   labelEnd: string;
   /** The placeholder attribute of the control (single input). */
   placeholder: string;
+  /** The placeholder attribute of the start input. */
+  placeholderStart: string;
+  /** The placeholder attribute of the end input. */
+  placeholderEnd: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
+  prompt: string;
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
@@ -328,12 +334,8 @@ interface IgcDateRangePickerArgs {
   min: Date;
   /** The maximum value required for the date range picker to remain valid. */
   max: Date;
-  /** The placeholder attribute of the start input. */
-  placeholderStart: string;
-  /** The placeholder attribute of the end input. */
-  placeholderEnd: string;
-  /** The prompt symbol to use for unfilled parts of the mask. */
-  prompt: string;
+  /** The number of months displayed in the calendar. */
+  visibleMonths: number;
   /** The orientation of the calendar header. */
   headerOrientation: 'horizontal' | 'vertical';
   /** The orientation of the multiple months displayed in the calendar's days view. */
@@ -349,8 +351,6 @@ interface IgcDateRangePickerArgs {
   showWeekNumbers: boolean;
   /** Controls the visibility of the dates that do not belong to the current month. */
   hideOutsideDays: boolean;
-  /** The locale settings used to display the value. */
-  locale: string;
   /** Sets the start day of the week for the calendar. */
   weekStart:
     | 'sunday'
