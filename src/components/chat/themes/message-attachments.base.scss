@@ -97,3 +97,13 @@
 .large {
     --ig-size: var(--ig-size-large);
 }
+
+.actions {
+    display: flex;
+}
+
+.attachment {
+    display: flex;
+    justify-content: space-between;    
+    gap: 2rem;
+}
