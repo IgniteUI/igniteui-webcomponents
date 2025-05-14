@@ -21,27 +21,12 @@ const metadata: Meta<IgcChatComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    hideMetaData: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     disableAutoScroll: {
       type: 'boolean',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    disableReactions: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     disableAttachments: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    disableEmojis: {
       type: 'boolean',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
@@ -55,11 +40,8 @@ const metadata: Meta<IgcChatComponent> = {
   args: {
     hideAvatar: false,
     hideUserName: false,
-    hideMetaData: false,
     disableAutoScroll: false,
-    disableReactions: false,
     disableAttachments: false,
-    disableEmojis: false,
     headerText: '',
   },
 };
@@ -69,155 +51,87 @@ export default metadata;
 interface IgcChatArgs {
   hideAvatar: boolean;
   hideUserName: boolean;
-  hideMetaData: boolean;
   disableAutoScroll: boolean;
-  disableReactions: boolean;
   disableAttachments: boolean;
-  disableEmojis: boolean;
   headerText: string;
 }
 type Story = StoryObj<IgcChatArgs>;
 
 // endregion
 
-const userJohn: any = {
-  id: 'user1',
-  name: 'John',
-  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
-};
-
-const userRichard: any = {
-  id: 'user2',
-  name: 'Richard',
-  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
-};
-
-const userSam: any = {
-  id: 'user3',
-  name: 'Sam',
-  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
-};
-
 const messages: any[] = [
   {
     id: '1',
-    text: 'Hey there! How are you doing today?',
-    sender: userRichard,
-    timestamp: new Date(2025, 4, 5),
-    status: 'read',
-  },
-  {
-    id: '2',
-    text: "I'm doing well, thanks for asking! How about you?",
-    sender: userJohn,
-    timestamp: new Date(Date.now() - 3500000),
-    status: 'read',
-  },
-  {
-    id: '3',
-    text: 'Pretty good! I was wondering if you wanted to grab coffee sometime this week?',
-    sender: userRichard,
-    timestamp: new Date(Date.now() - 3400000),
-    status: 'read',
-    reactions: [
-      {
-        id: 'red_heart',
-        users: ['user3'],
-      },
-    ],
-  },
-  {
-    id: '4',
-    text: 'Hi guys! I just joined the chat.',
-    sender: userSam,
-    timestamp: new Date(Date.now() - 3300000),
-    status: 'read',
-    attachments: [
-      {
-        id: 'men3_img',
-        type: 'image',
-        url: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
-        name: 'men3.png',
-      },
-    ],
+    text: "Hello! I'm an AI assistant created with Lit. How can I help you today?",
+    isResponse: true,
+    timestamp: new Date(),
   },
 ];
+
+function handleMessageSend(e: CustomEvent) {
+  const newMessage = e.detail;
+  messages.push(newMessage);
+  const chat = document.querySelector('igc-chat');
+  if (!chat) {
+    return;
+  }
+
+  chat.messages = [...messages];
+
+  chat.isAiResponding = true;
+  setTimeout(() => {
+    const aiResponse = {
+      id: (Date.now() + 1).toString(),
+      text: generateAIResponse(e.detail.text),
+      isResponse: true,
+      timestamp: new Date(),
+    };
+
+    chat.isAiResponding = false;
+    chat.messages = [...messages, aiResponse];
+    messages.push(aiResponse);
+  }, 1500);
+}
+
+function generateAIResponse(message: string): string {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+    return 'Hello there! How can I assist you today?';
+  }
+  if (lowerMessage.includes('help')) {
+    return "I'm here to help! What would you like to know about?";
+  }
+  if (lowerMessage.includes('feature') || lowerMessage.includes('can you')) {
+    return "As a demo AI, I can simulate conversations, display markdown formatting like **bold** and `code`, and adapt to light and dark themes. I'm built with Lit as a web component that can be integrated into any application.";
+  }
+  if (lowerMessage.includes('weather')) {
+    return "I'm sorry, I don't have access to real-time weather data. This is just a demonstration of a chat interface.";
+  }
+  if (lowerMessage.includes('thank')) {
+    return "You're welcome! Let me know if you need anything else.";
+  }
+  if (lowerMessage.includes('code') || lowerMessage.includes('example')) {
+    return "Here's an example of code formatting:\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n```";
+  }
+  if (lowerMessage.includes('list') || lowerMessage.includes('items')) {
+    return "Here's an example of a list:\n\n- First item\n- Second item\n- Third item with **bold text**";
+  }
+
+  return 'Thanks for your message. This is a demonstration of a chat interface built with Lit components. Feel free to ask about features or try different types of messages!';
+}
 
 export const Basic: Story = {
   render: (args) => html`
     <igc-chat
-      .user=${userJohn}
       .messages=${messages}
       .headerText=${args.headerText}
       .disableAutoScroll=${args.disableAutoScroll}
-      .disableReactions=${args.disableReactions}
       .disableAttachments=${args.disableAttachments}
-      .disableEmojis=${args.disableEmojis}
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
-      .hideMetaData=${args.hideMetaData}
+      @igcMessageSend=${handleMessageSend}
     >
     </igc-chat>
-  `,
-};
-
-function handleMessageEntered(e: CustomEvent) {
-  const newMessage = e.detail;
-  messages.push(newMessage);
-  const chatElements = document.querySelectorAll('igc-chat');
-  chatElements.forEach((chat) => {
-    chat.messages = [...messages];
-  });
-}
-
-function handleTypingChange(e: CustomEvent) {
-  const user = e.detail.user;
-  const isTyping = e.detail.isTyping;
-  const chatElements = document.querySelectorAll('igc-chat');
-  chatElements.forEach((chat) => {
-    if (!isTyping) {
-      chat.typingUsers = chat.typingUsers.filter((u) => u !== user);
-    } else if (isTyping && !chat.typingUsers.includes(user)) {
-      chat.typingUsers = [...chat.typingUsers, user];
-    }
-  });
-}
-
-export const SideBySide: Story = {
-  render: (args) => html`
-    <div style="display: flex; gap: 20px;">
-      <igc-chat
-        .user=${userJohn}
-        .messages=${messages}
-        @igcMessageSend=${handleMessageEntered}
-        @igcTypingChange=${handleTypingChange}
-        header-text="Richard, Sam"
-        .disableAutoScroll=${args.disableAutoScroll}
-        .disableReactions=${args.disableReactions}
-        .disableAttachments=${args.disableAttachments}
-        .disableEmojis=${args.disableEmojis}
-        .hideAvatar=${args.hideAvatar}
-        .hideUserName=${args.hideUserName}
-        .hideMetaData=${args.hideMetaData}
-        style="width: 50%;"
-      >
-      </igc-chat>
-      <igc-chat
-        .user=${userRichard}
-        .messages=${messages}
-        @igcMessageSend=${handleMessageEntered}
-        @igcTypingChange=${handleTypingChange}
-        header-text="John, Sam"
-        .disableAutoScroll=${args.disableAutoScroll}
-        .disableReactions=${args.disableReactions}
-        .disableAttachments=${args.disableAttachments}
-        .disableEmojis=${args.disableEmojis}
-        .hideAvatar=${args.hideAvatar}
-        .hideUserName=${args.hideUserName}
-        .hideMetaData=${args.hideMetaData}
-        style="width: 50%;"
-      >
-      </igc-chat>
-    </div>
   `,
 };

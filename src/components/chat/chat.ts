@@ -7,16 +7,10 @@ import IgcChatHeaderComponent from './chat-header.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
-import type { IgcMessage, IgcMessageReaction, IgcUser } from './types.js';
+import type { IgcMessage } from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageSend: CustomEvent<IgcMessage>;
-  igcTypingChange: CustomEvent<IgcTypingChangeEventArgs>;
-}
-
-export interface IgcTypingChangeEventArgs {
-  user: IgcUser;
-  isTyping: boolean;
 }
 
 /**
@@ -43,14 +37,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  @property({ attribute: false })
-  public user: IgcUser | undefined;
-
   @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
   @property({ reflect: true, attribute: false })
-  public typingUsers: IgcUser[] = [];
+  public isAiResponding = false;
 
   @property({ type: Boolean, attribute: 'hide-avatar' })
   public hideAvatar = false;
@@ -58,30 +49,17 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'hide-user-name' })
   public hideUserName = false;
 
-  @property({ type: Boolean, attribute: 'hide-meta-data' })
-  public hideMetaData = false;
-
   @property({ type: Boolean, attribute: 'disable-auto-scroll' })
   public disableAutoScroll = false;
 
-  @property({ type: Boolean, attribute: 'disable-reactions' })
-  public disableReactions = false;
-
   @property({ type: Boolean, attribute: 'disable-attachments' })
   public disableAttachments = false;
-
-  @property({ type: Boolean, attribute: 'disable-emojis' })
-  public disableEmojis = false;
 
   @property({ type: String, attribute: 'header-text', reflect: true })
   public headerText = '';
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.addEventListener(
-      'add-reaction',
-      this.handleAddReaction as EventListener
-    );
     this.addEventListener(
       'message-send',
       this.handleSendMessage as EventListener
@@ -94,93 +72,24 @@ export default class IgcChatComponent extends EventEmitterMixin<
       'message-send',
       this.handleSendMessage as EventListener
     );
-    this.removeEventListener(
-      'add-reaction',
-      this.handleAddReaction as EventListener
-    );
   }
 
   private handleSendMessage(e: CustomEvent) {
     const text = e.detail.text;
     const attachments = e.detail.attachments || [];
 
-    if ((!text.trim() && attachments.length === 0) || !this.user) return;
+    if (!text.trim() && attachments.length === 0) return;
 
     const newMessage: IgcMessage = {
       id: Date.now().toString(),
       text,
-      sender: this.user,
+      isResponse: false,
       timestamp: new Date(),
-      status: 'sent',
       attachments,
-      reactions: [],
     };
 
     this.messages = [...this.messages, newMessage];
     this.emitEvent('igcMessageSend', { detail: newMessage });
-  }
-
-  private handleTypingChange(e: CustomEvent) {
-    const isTyping = e.detail.isTyping;
-    const user = this.user;
-    if (!user) return;
-    const typingArgs = { user, isTyping };
-    this.emitEvent('igcTypingChange', { detail: typingArgs });
-  }
-
-  private handleAddReaction(e: CustomEvent) {
-    const { messageId, emojiId } = e.detail;
-
-    if (!messageId) return;
-
-    this.messages = this.messages.map((message) => {
-      if (message.id === messageId) {
-        const userReaction = message.reactions?.find(
-          (r) => this.user && r.users.includes(this.user.id)
-        );
-
-        if (userReaction) {
-          // Remove reaction
-          message.reactions?.forEach((r) => {
-            if (r.id === userReaction.id) {
-              r.users = (r.users ?? []).filter((id) => id !== this.user?.id);
-            }
-          });
-
-          message.reactions =
-            message.reactions?.filter((r) => r.users.length > 0) || [];
-        }
-
-        const existingReaction = message.reactions?.find(
-          (r) => r.id === emojiId
-        );
-
-        if (existingReaction && userReaction?.id !== emojiId) {
-          // Update existing reaction
-          message.reactions?.forEach((r) => {
-            if (r.id === emojiId) {
-              if (this.user) {
-                r.users.push(this.user.id);
-              }
-            }
-          });
-
-          message.reactions = [...(message.reactions || [])];
-        }
-
-        if (!existingReaction && userReaction?.id !== emojiId) {
-          // Create new reaction
-          const newReaction: IgcMessageReaction = {
-            id: emojiId,
-            users: this.user ? [this.user.id] : [],
-          };
-
-          message.reactions = [...(message.reactions || []), newReaction];
-        }
-      }
-
-      return { ...message };
-    });
   }
 
   protected override render() {
@@ -189,20 +98,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <igc-chat-header .text=${this.headerText}></igc-chat-header>
         <igc-chat-message-list
           .messages=${this.messages}
-          .user=${this.user}
-          .typingUsers=${this.typingUsers}
           .disableAutoScroll=${this.disableAutoScroll}
-          .disableReactions=${this.disableReactions}
-          .hideAvatar=${this.hideAvatar}
-          .hideUserName=${this.hideUserName}
-          .hideMetaData=${this.hideMetaData}
+          .isAiResponding=${this.isAiResponding}
         >
         </igc-chat-message-list>
         <igc-chat-input
           .disableAttachments=${this.disableAttachments}
-          .disableEmojis=${this.disableEmojis}
+          .isAiResponding=${this.isAiResponding}
           @message-send=${this.handleSendMessage}
-          @typing-change=${this.handleTypingChange}
         ></igc-chat-input>
       </div>
     `;

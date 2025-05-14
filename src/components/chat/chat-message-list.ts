@@ -4,7 +4,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import { styles } from './themes/message-list.base.css.js';
-import type { IgcMessage, IgcUser } from './types.js';
+import type { IgcMessage } from './types.js';
 
 /**
  *
@@ -23,28 +23,13 @@ export default class IgcChatMessageListComponent extends LitElement {
   }
 
   @property({ reflect: true, attribute: false })
-  public user: IgcUser | undefined;
-
-  @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
   @property({ reflect: true, attribute: false })
-  public typingUsers: IgcUser[] = [];
-
-  @property({ type: Boolean, attribute: 'hide-avatar' })
-  public hideAvatar = false;
-
-  @property({ type: Boolean, attribute: 'hide-user-name' })
-  public hideUserName = false;
-
-  @property({ type: Boolean, attribute: 'hide-meta-data' })
-  public hideMetaData = false;
+  public isAiResponding = false;
 
   @property({ type: Boolean, attribute: 'disable-auto-scroll' })
   public disableAutoScroll = false;
-
-  @property({ type: Boolean, attribute: 'disable-reactions' })
-  public disableReactions = false;
 
   private formatDate(date: Date): string {
     const today = new Date();
@@ -110,37 +95,37 @@ export default class IgcChatMessageListComponent extends LitElement {
     const groupedMessages = this.groupMessagesByDate(this.messages);
 
     return html`
-      <div class="message-list">
-        ${repeat(
-          groupedMessages,
-          (group) => group.date,
-          (group) => html`
-            <div class="day-separator">${group.date}</div>
-            ${repeat(
-              group.messages,
-              (message) => message.id,
-              (message) => html`
-                <igc-chat-message
-                  .message=${message}
-                  .user=${this.user}
-                  .disableReactions=${this.disableReactions}
-                  .hideAvatar=${this.hideAvatar}
-                  .hideUserName=${this.hideUserName}
-                  .hideMetaData=${this.hideMetaData}
-                ></igc-chat-message>
-              `
-            )}
-          `
-        )}
-        ${this.typingUsers.filter((u) => u !== this.user).length > 0
-          ? html`
-              <div class="typing-indicator">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-              </div>
+      <div class='message-container'></div>
+        <div class="message-list">
+          ${repeat(
+            groupedMessages,
+            (group) => group.date,
+            (group) => html`
+              <div class="day-separator">${group.date}</div>
+              ${repeat(
+                group.messages,
+                (message) => message.id,
+                (message) => html`
+                  <igc-chat-message
+                    .message=${message}
+                    .isResponse=${message.isResponse}
+                  ></igc-chat-message>
+                `
+              )}
             `
-          : ''}
+          )}
+          ${
+            this.isAiResponding
+              ? html`
+                  <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                  </div>
+                `
+              : ''
+          }
+        </div>
       </div>
     `;
   }

@@ -33,10 +33,19 @@
     opacity: 1;
   }
 
-  .message-content {
-    display: flex;
-    flex-direction: column;
-    max-width: var(--message-max-width);
+  .message-container pre {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+
+  .message-container code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    padding: 2px 4px;
+    border-radius: 4px;
   }
 
   .bubble {
@@ -75,30 +84,6 @@
 
   .time {
     margin-right: 4px;
-  }
-
-  .status {
-    display: flex;
-    align-items: center;
-  }
-
-  .status-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .reaction {
-    position: absolute;
-    bottom: -10px;
-    right: 8px;
-    background-color: white;
-    border-radius: 10px;
-    padding: 2px 5px;
-    font-size: 0.8rem;
-    box-shadow: 0 1px 2px #1f1f1f;
-    display: flex;
-    align-items: center;
-    z-index: 1;
   }
 
   @keyframes fade-in {

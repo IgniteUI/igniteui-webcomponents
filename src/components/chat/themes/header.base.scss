@@ -32,21 +32,6 @@
     position: relative;
   }
 
-  .status-indicator {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #30D158;
-    border: 2px solid white;
-  }
-
-  .status-indicator.offline {
-    background-color: #AEAEB2;
-  }
-
   .user-details {
     display: flex;
     flex-direction: column;
@@ -56,11 +41,6 @@
     font-weight: 600;
     font-size: 1rem;
     color: #1C1C1E;
-  }
-
-  .user-status {
-    font-size: 0.8rem;
-    color: #636366;
   }
 
   .actions {

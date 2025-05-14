@@ -7,7 +7,6 @@ import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
-import IgcEmojiPickerComponent from './emoji-picker.js';
 import { styles } from './themes/input.base.css.js';
 import {
   type IgcMessageAttachment,
@@ -33,7 +32,6 @@ export default class IgcChatInputComponent extends LitElement {
       IgcTextareaComponent,
       IgcIconButtonComponent,
       IgcChipComponent,
-      IgcEmojiPickerComponent,
       IgcFileInputComponent,
       IgcIconComponent
     );
@@ -42,8 +40,8 @@ export default class IgcChatInputComponent extends LitElement {
   @property({ type: Boolean, attribute: 'disable-attachments' })
   public disableAttachments = false;
 
-  @property({ type: Boolean, attribute: 'disable-emojis' })
-  public disableEmojis = false;
+  @property({ type: Boolean })
+  public isAiResponding = false;
 
   @query('textarea')
   private textInputElement!: HTMLTextAreaElement;
@@ -70,18 +68,6 @@ export default class IgcChatInputComponent extends LitElement {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
-    } else {
-      const typingEvent = new CustomEvent('typing-change', {
-        detail: { isTyping: true },
-      });
-      this.dispatchEvent(typingEvent);
-      // wait 3 seconds and dispatch a stop-typing event
-      setTimeout(() => {
-        const stopTypingEvent = new CustomEvent('typing-change', {
-          detail: { isTyping: false },
-        });
-        this.dispatchEvent(stopTypingEvent);
-      }, 3000);
     }
   }
 
@@ -112,19 +98,6 @@ export default class IgcChatInputComponent extends LitElement {
     setTimeout(() => {
       this.textInputElement?.focus();
     }, 0);
-  }
-
-  private addEmoji(e: CustomEvent) {
-    const emoji = e.detail.emoji;
-    this.inputValue += emoji;
-
-    // Focus back on input after selecting an emoji
-    this.updateComplete.then(() => {
-      const textarea = this.shadowRoot?.querySelector('textarea');
-      if (textarea) {
-        textarea.focus();
-      }
-    });
   }
 
   private handleFileUpload(e: Event) {
@@ -178,14 +151,6 @@ export default class IgcChatInputComponent extends LitElement {
         </div>
 
         <div class="buttons-container">
-          ${this.disableEmojis
-            ? ''
-            : html`
-                <igc-emoji-picker
-                  @emoji-selected=${this.addEmoji}
-                ></igc-emoji-picker>
-              `}
-
           <igc-icon-button
             name="send-message"
             collection="material"

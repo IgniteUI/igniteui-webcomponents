@@ -110,6 +110,6 @@ export class IgcMessageAttachmentsComponent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-message-attachmants': IgcMessageAttachmentsComponent;
+    'igc-message-attachments': IgcMessageAttachmentsComponent;
   }
 }
