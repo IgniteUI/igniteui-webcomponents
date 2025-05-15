@@ -16,7 +16,6 @@ import {
   isFocused,
   runValidationContainerTests,
   simulateInput,
-  simulateScroll,
 } from '../common/utils.spec.js';
 import IgcTextareaComponent from './textarea.js';
 
@@ -209,17 +208,20 @@ describe('Textarea component', () => {
       element.appendChild(text);
       await elementUpdated(element);
 
-      await simulateScroll(element, { top: yDelta, left: xDelta });
+      element.scrollTo({ top: yDelta, left: xDelta });
       expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta,
         yDelta,
       ]);
 
-      await simulateScroll(element, { top: yDelta * 2, left: xDelta * 2 });
+      element.scrollTo({ top: yDelta * 2, left: xDelta * 2 });
       expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta * 2,
         yDelta * 2,
       ]);
+
+      element.scrollTo(0, 0);
+      expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([0, 0]);
     });
   });
 
