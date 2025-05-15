@@ -1014,8 +1014,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         part=${calendarIcon}
         @pointerdown=${this._handleCalendarIconSlotPointerDown}
         @click=${this.readOnly ? nothing : this.handleAnchorClick}
-          if (!this.readOnly) this.handleAnchorClick();
-        }}
       >
         <slot name=${calendarIcon}>${defaultIcon}</slot>
       </span>
