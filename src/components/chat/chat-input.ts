@@ -16,7 +16,7 @@ import {
 
 /**
  *
- * @element igc-chat
+ * @element igc-chat-input
  *
  */
 export default class IgcChatInputComponent extends LitElement {
