@@ -87,6 +87,15 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       picker.visibleMonths = 11;
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
+
+      // test with NaN or undefined
+      picker.visibleMonths = Number.NaN;
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(2);
+
+      picker.visibleMonths = undefined as any;
+      await elementUpdated(picker);
+      expect(picker.visibleMonths).to.equal(2);
     });
 
     it('should set the visibleMonths property via attribute', async () => {

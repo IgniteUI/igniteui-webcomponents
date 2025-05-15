@@ -49,6 +49,7 @@ import {
   defaultDateRangeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import {
+  asNumber,
   clamp,
   createCounter,
   equal,
@@ -515,7 +516,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   public set visibleMonths(value: number) {
-    this._visibleMonths = clamp(value, 1, 2);
+    this._visibleMonths = clamp(asNumber(value, 2), 1, 2);
   }
   /**
    * The orientation of the calendar header.
