@@ -7,11 +7,17 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
-import type { IgcMessage, IgcMessageReaction, IgcUser } from './types.js';
+import type {
+  IgcMessage,
+  IgcMessageAttachment,
+  IgcMessageReaction,
+  IgcUser,
+} from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageSend: CustomEvent<IgcMessage>;
   igcTypingChange: CustomEvent<IgcTypingChangeEventArgs>;
+  igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
 }
 
 export interface IgcTypingChangeEventArgs {
@@ -86,6 +92,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
       'message-send',
       this.handleSendMessage as EventListener
     );
+    this.addEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
+    );
   }
 
   public override disconnectedCallback() {
@@ -97,6 +107,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.removeEventListener(
       'add-reaction',
       this.handleAddReaction as EventListener
+    );
+    this.removeEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
     );
   }
 
@@ -181,6 +195,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
       return { ...message };
     });
+  }
+
+  private handleAttachmentClick(e: CustomEvent) {
+    const attachmentArgs = e.detail.attachment;
+    this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
   }
 
   protected override render() {

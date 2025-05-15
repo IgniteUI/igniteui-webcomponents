@@ -64,8 +64,19 @@ export class IgcMessageAttachmentsComponent extends LitElement {
     this.previewImage = '';
   }
 
-  private preventToggle(e: CustomEvent) {
+  private handleToggle(e: CustomEvent, attachment: IgcMessageAttachment) {
+    this.handleAttachmentClick(attachment);
     e.preventDefault();
+  }
+
+  private handleAttachmentClick(attachment: IgcMessageAttachment) {
+    this.dispatchEvent(
+      new CustomEvent('attachment-click', {
+        detail: { attachment },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   protected override render() {
@@ -76,8 +87,10 @@ export class IgcMessageAttachmentsComponent extends LitElement {
             <igc-expansion-panel
               indicator-position="none"
               .open=${attachment.type === 'image'}
-              @igcClosing=${this.preventToggle}
-              @igcOpening=${this.preventToggle}
+              @igcClosing=${(ev: CustomEvent) =>
+                this.handleToggle(ev, attachment)}
+              @igcOpening=${(ev: CustomEvent) =>
+                this.handleToggle(ev, attachment)}
             >
               <div slot="title" class="attachment">
                 <div class="details">
