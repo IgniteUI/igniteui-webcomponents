@@ -1013,7 +1013,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         slot="prefix"
         part=${calendarIcon}
         @pointerdown=${this._handleCalendarIconSlotPointerDown}
-        @click=${() => {
+        @click=${this.readOnly ? nothing : this.handleAnchorClick}
           if (!this.readOnly) this.handleAnchorClick();
         }}
       >
