@@ -6,7 +6,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import type { CustomDateRange } from './date-range-picker.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 
-describe('Divider', () => {
+describe('Predefined Area', () => {
   before(() => {
     defineComponents(IgcPredefinedRangesAreaComponent);
   });
@@ -109,6 +109,20 @@ describe('Divider', () => {
       const chips = component.renderRoot.querySelectorAll('igc-chip');
 
       expect(allRanges.length).to.equal(chips.length);
+
+      for (let i = 0; i < chips.length; i++) {
+        expect(chips[i].innerText).to.equal(allRanges[i].label);
+      }
+    });
+
+    it('is correctly initialized and rendered with only custom ranges', async () => {
+      component.customRanges = customRanges;
+      await elementUpdated(component);
+
+      const allRanges = (component as any)._allRanges;
+      const chips = component.renderRoot.querySelectorAll('igc-chip');
+
+      expect(customRanges.length).to.equal(chips.length);
 
       for (let i = 0; i < chips.length; i++) {
         expect(chips[i].innerText).to.equal(allRanges[i].label);

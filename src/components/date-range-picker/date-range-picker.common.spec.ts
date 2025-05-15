@@ -15,7 +15,9 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
-import IgcDateRangePickerComponent from './date-range-picker.js';
+import IgcDateRangePickerComponent, {
+  type CustomDateRange,
+} from './date-range-picker.js';
 import {
   checkSelectedRange,
   getIcon,
@@ -459,6 +461,132 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
     });
     //TODO - check that the component is rendered, etc.
-    describe('Predefined ranges', () => {});
+    describe('Predefined ranges', () => {
+      const previousThreeDaysStart = CalendarDay.today.add('day', -3).native;
+      const nextThreeDaysEnd = CalendarDay.today.add('day', 3).native;
+
+      const customRanges: CustomDateRange[] = [
+        {
+          label: 'Previous Three Days',
+          dateRange: {
+            start: previousThreeDaysStart,
+            end: today.native,
+          },
+        },
+        {
+          label: 'Next Three Days',
+          dateRange: {
+            start: today.native,
+            end: nextThreeDaysEnd,
+          },
+        },
+      ];
+
+      it('should not render any chips when usePredefinedRanges is false and there are no custom ranges added', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        expect(chips.length).to.equal(0);
+      });
+
+      it('should render all predefined ranges and content in the actions slot', async () => {
+        picker = await fixture<IgcDateRangePickerComponent>(
+          html`<igc-date-range-picker use-predefined-ranges>
+            <span slot="actions">Actions Slot</span>
+          </igc-date-range-picker>`
+        );
+
+        picker.open = true;
+
+        await elementUpdated(picker);
+
+        const predefinedArea = picker.renderRoot.querySelectorAll(
+          'igc-predefined-ranges-area'
+        );
+        const allRanges = (predefinedArea[0] as any)._allRanges.length;
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+        const slot = picker.renderRoot.querySelector(
+          `slot[name="actions"]`
+        ) as HTMLSlotElement;
+        const elements = slot.assignedElements();
+
+        expect(elements.length).to.equal(1);
+        expect(elements[0].tagName).to.equal('SPAN');
+        expect(elements[0].innerHTML).to.equal('Actions Slot');
+
+        for (let i = 0; i < chips.length; i++) {
+          expect(chips[i].innerText).to.equal(allRanges[i].label);
+        }
+      });
+
+      it('should emit igcChange when the chips are clicked and should close the picker - dropdown mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const popover = picker.renderRoot.querySelector('igc-popover');
+
+        picker.usePredefinedRanges = true;
+        picker.customRanges = customRanges;
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const predefinedArea = picker.renderRoot.querySelectorAll(
+          'igc-predefined-ranges-area'
+        );
+        const allRanges = (predefinedArea[0] as any)._allRanges.length;
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+
+        for (let i = 0; i < chips.length; i++) {
+          picker.open = true;
+          await elementUpdated(picker);
+          chips[i].click();
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange');
+          expect(picker.activeDate).to.deep.equal(allRanges[i].dateRange.start);
+
+          checkSelectedRange(picker, {
+            start: allRanges[i].dateRange.start,
+            end: allRanges[i].dateRange.end,
+          });
+          expect(popover?.hasAttribute('open')).to.equal(false);
+          eventSpy.resetHistory();
+        }
+      });
+
+      it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when chips are clicked', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const popover = picker.renderRoot.querySelector('igc-popover');
+
+        picker.usePredefinedRanges = false;
+        picker.customRanges = customRanges;
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const predefinedArea = picker.renderRoot.querySelectorAll(
+          'igc-predefined-ranges-area'
+        );
+        const allRanges = (predefinedArea[0] as any)._allRanges.length;
+        const chips = picker.renderRoot.querySelectorAll('igc-chip');
+
+        for (let i = 0; i < chips.length; i++) {
+          picker.open = true;
+          await elementUpdated(picker);
+          chips[i].click();
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange');
+          expect(picker.activeDate).to.deep.equal(allRanges[i].dateRange.start);
+
+          checkSelectedRange(picker, {
+            start: allRanges[i].dateRange.start,
+            end: allRanges[i].dateRange.end,
+          });
+          expect(popover?.hasAttribute('open')).to.equal(false);
+          eventSpy.resetHistory();
+        }
+      });
+    });
   });
 });
