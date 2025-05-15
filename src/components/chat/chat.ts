@@ -211,7 +211,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
             <slot name="title" part="title">${this.headerText}</slot>
           </div>
           <slot name="actions" class="actions">
-            <igc-button variant="flat">⋯</igcbutton>
+            <igc-button variant="flat">⋯</igc-button>
           </slot>
         </div>
         <igc-chat-message-list
