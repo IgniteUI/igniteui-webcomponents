@@ -110,36 +110,40 @@ export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
 }
 
-export function* iterNodes<T = Node>(
+export type IterNodesOptions<T = Node> = {
+  show?: keyof typeof NodeFilter;
+  filter?: (node: T) => boolean;
+};
+
+function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
+  return {
+    acceptNode: (node: T): number =>
+      !predicate || predicate(node)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_SKIP,
+  };
+}
+
+export function* iterNodes<T extends Node>(
   root: Node,
-  whatToShow?: keyof typeof NodeFilter,
-  filter?: (node: T) => boolean
+  options?: IterNodesOptions<T>
 ): Generator<T> {
   if (!isDefined(globalThis.document)) {
     return;
   }
 
-  const iter = globalThis.document.createTreeWalker(
-    root,
-    NodeFilter[whatToShow ?? 'SHOW_ALL']
-  );
+  const whatToShow = options?.show
+    ? NodeFilter[options.show]
+    : NodeFilter.SHOW_ALL;
 
-  let node = iter.nextNode() as T;
+  const nodeFilter = options?.filter
+    ? createNodeFilter(options.filter)
+    : undefined;
 
-  while (node) {
-    if (filter) {
-      if (filter(node)) {
-        yield node;
-      }
-    } else {
-      yield node;
-    }
+  const treeWalker = document.createTreeWalker(root, whatToShow, nodeFilter);
 
-    if (isElement(node) && node.shadowRoot && node.shadowRoot.mode === 'open') {
-      yield* iterNodes(node.shadowRoot, whatToShow, filter);
-    }
-
-    node = iter.nextNode() as T;
+  while (treeWalker.nextNode()) {
+    yield treeWalker.currentNode as T;
   }
 }
 
