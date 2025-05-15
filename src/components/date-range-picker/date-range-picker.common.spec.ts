@@ -458,6 +458,25 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
           expect(picker.open).to.be.true;
         });
+        it('should not open the picker on calendar show icon click in dropdown mode when readOnly is true', async () => {
+          picker.readOnly = true;
+          await elementUpdated(picker);
+
+          simulateClick(getIcon(picker, toggleIcon));
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
+        it('should not open the picker on calendar show icon click in dialog mode when readOnly is true', async () => {
+          picker.mode = 'dialog';
+          picker.readOnly = true;
+          await elementUpdated(picker);
+
+          simulateClick(getIcon(picker, toggleIcon));
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
       });
     });
     //TODO - check that the component is rendered, etc.
