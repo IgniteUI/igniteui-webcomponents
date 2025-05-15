@@ -7,10 +7,11 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
-import type { IgcMessage } from './types.js';
+import type { IgcMessage, IgcMessageAttachment } from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageSend: CustomEvent<IgcMessage>;
+  igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
 }
 
 /**
@@ -64,6 +65,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
       'message-send',
       this.handleSendMessage as EventListener
     );
+    this.addEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
+    );
   }
 
   public override disconnectedCallback() {
@@ -71,6 +76,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.removeEventListener(
       'message-send',
       this.handleSendMessage as EventListener
+    );
+    this.removeEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
     );
   }
 
@@ -92,6 +101,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.emitEvent('igcMessageSend', { detail: newMessage });
   }
 
+  private handleAttachmentClick(e: CustomEvent) {
+    const attachmentArgs = e.detail.attachment;
+    this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
+  }
+
   protected override render() {
     return html`
       <div class="chat-container">
@@ -101,7 +115,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
             <slot name="title" part="title">${this.headerText}</slot>
           </div>
           <slot name="actions" class="actions">
-            <igc-button variant="flat">⋯</igcbutton>
+            <igc-button variant="flat">⋯</igc-button>
           </slot>
         </div>
         <igc-chat-message-list
