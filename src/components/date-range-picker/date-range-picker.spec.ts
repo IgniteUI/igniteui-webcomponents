@@ -183,7 +183,6 @@ describe('Date range picker', () => {
       expect(picker.visibleMonths).to.equal(1);
 
       // in case value other than 1 or 2 the value defaults to 2
-      // @ts-expect-error: testing with an invalid visibleMonths value
       picker.visibleMonths = 11;
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);

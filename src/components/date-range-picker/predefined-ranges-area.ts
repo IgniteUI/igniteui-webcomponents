@@ -5,11 +5,9 @@ import IgcChipComponent from '../chip/chip.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
 import type { CustomDateRange } from './date-range-picker.js';
-import { styles } from './predefined-ranges.area.css.js';
 
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
-  public static override styles = [styles];
 
   private _predefinedRanges: CustomDateRange[] = [
     {
@@ -82,7 +80,10 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div class="ranges">
+      <div
+        class="ranges"
+        style="display: flex; flex-direction: row; gap: 5px; margin-top: 20px;"
+      >
         ${this._allRanges.map(
           (range) => html`
             <igc-chip @click=${() => this.handleRangeSelect(range)}>
@@ -96,7 +97,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
+  interface HtmlElementTagNameMap {
     'igc-predefined-ranges-area': IgcPredefinedRangesAreaComponent;
   }
 }
