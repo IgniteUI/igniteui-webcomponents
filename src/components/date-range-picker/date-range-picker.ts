@@ -999,7 +999,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         `;
   }
 
-  private renderCalendarIcon(picker: DateRangePickerInput = 'start') {
+  private _renderCalendarIcon(picker: DateRangePickerInput = 'start') {
     const defaultIcon = html`
       <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
@@ -1019,7 +1019,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  private renderCalendarSlots() {
+  private _renderCalendarSlots() {
     if (this._isDropDown) {
       return nothing;
     }
@@ -1036,7 +1036,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  private renderCalendar(id: string) {
+  private _renderCalendar(id: string) {
     const hideHeader = this._isDropDown ? true : this.hideHeader;
 
     return html`
@@ -1062,12 +1062,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
           month, month-inner, year, year-inner, selected, current"
       >
-        ${this.renderCalendarSlots()}
+        ${this._renderCalendarSlots()}
       </igc-calendar>
     `;
   }
 
-  protected renderActions() {
+  protected _renderActions() {
     const slot =
       this._isDropDown || isEmpty(this._actions) ? undefined : 'footer';
 
@@ -1083,19 +1083,19 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
-  protected renderPicker(id: string) {
+  protected _renderPicker(id: string) {
     return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)}
+              ${this._renderCalendar(id)}
               <igc-predefined-ranges-area
                 .usePredefinedRanges=${this.usePredefinedRanges}
                 .customRanges=${this.customRanges}
                 @range-select=${this._selectPredefinedRange}
               >
               </igc-predefined-ranges-area>
-              ${this.renderActions()}
+              ${this._renderActions()}
             </igc-focus-trap>
           </igc-popover>
         `
@@ -1110,7 +1110,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             @igcClosed=${this._handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
-            ${this.renderCalendar(id)} ${this.renderActions()}
+            ${this._renderCalendar(id)} ${this._renderActions()}
             <igc-predefined-ranges-area
               .usePredefinedRanges=${this.usePredefinedRanges}
               .customRanges=${this.customRanges}
@@ -1130,11 +1130,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         `;
   }
 
-  private renderHelperText(): TemplateResult {
+  private _renderHelperText(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
   }
 
-  protected renderInput(id: string, picker: DateRangePickerInput = 'start') {
+  protected _renderInput(id: string, picker: DateRangePickerInput = 'start') {
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
@@ -1164,7 +1164,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         @click=${this._isDropDown ? nothing : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
-        ${this.renderCalendarIcon(picker)}
+        ${this._renderCalendarIcon(picker)}
         <slot name=${`prefix-${picker}`} slot="prefix"></slot>
         ${this._renderClearIcon(picker)}
         <slot name=${`suffix-${picker}`} slot="suffix"></slot>
@@ -1175,13 +1175,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _renderInputs(idStart: string, idEnd: string) {
     return html`
       <div part="inputs">
-        ${this.renderInput(idStart, 'start')}
+        ${this._renderInput(idStart, 'start')}
         <div part="separator">
           <slot name="separator"> ${this.resourceStrings.separator} </slot>
         </div>
-        ${this.renderInput(idEnd, 'end')}
+        ${this._renderInput(idEnd, 'end')}
       </div>
-      ${this.renderPicker(idStart)} ${this.renderHelperText()}
+      ${this._renderPicker(idStart)} ${this._renderHelperText()}
     `;
   }
 
@@ -1200,7 +1200,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         @click=${this._isDropDown ? nothing : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
-        ${this.renderCalendarIcon()}
+        ${this._renderCalendarIcon()}
         <slot
           name="prefix"
           slot=${ifDefined(isEmpty(this._prefixes) ? undefined : 'prefix')}
@@ -1211,7 +1211,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           slot=${ifDefined(isEmpty(this._suffixes) ? undefined : 'suffix')}
         ></slot>
       </igc-input>
-      ${this.renderHelperText()} ${this.renderPicker(id)}`;
+      ${this._renderHelperText()} ${this._renderPicker(id)}`;
   }
 
   protected override render() {
