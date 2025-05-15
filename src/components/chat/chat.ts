@@ -1,9 +1,9 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import IgcChatHeaderComponent from './chat-header.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
@@ -31,9 +31,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(
       IgcChatComponent,
-      IgcChatHeaderComponent,
       IgcChatInputComponent,
-      IgcChatMessageListComponent
+      IgcChatMessageListComponent,
+      IgcButtonComponent
     );
   }
 
@@ -95,7 +95,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div class="chat-container">
-        <igc-chat-header .text=${this.headerText}></igc-chat-header>
+        <div class="header" part="header">
+          <div class="info">
+            <slot name="prefix" part="prefix"></slot>
+            <slot name="title" part="title">${this.headerText}</slot>
+          </div>
+          <slot name="actions" class="actions">
+            <igc-button variant="flat">⋯</igcbutton>
+          </slot>
+        </div>
         <igc-chat-message-list
           .messages=${this.messages}
           .disableAutoScroll=${this.disableAutoScroll}

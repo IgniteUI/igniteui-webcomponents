@@ -2,10 +2,18 @@ import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { registerComponent } from '../common/definitions/register.js';
+import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import { styles } from './themes/message-attachments.base.css';
-import { type IgcMessageAttachment, closeIcon, fileIcon } from './types.js';
+import {
+  type IgcMessageAttachment,
+  closeIcon,
+  fileIcon,
+  imageIcon,
+  moreIcon,
+  previewIcon,
+} from './types.js';
 
 /**
  *
@@ -23,7 +31,8 @@ export class IgcMessageAttachmentsComponent extends LitElement {
     registerComponent(
       IgcMessageAttachmentsComponent,
       IgcIconComponent,
-      IgcIconButtonComponent
+      IgcIconButtonComponent,
+      IgcExpansionPanelComponent
     );
   }
   @property({ type: Array })
@@ -36,6 +45,9 @@ export class IgcMessageAttachmentsComponent extends LitElement {
     super();
     registerIconFromText('close', closeIcon, 'material');
     registerIconFromText('file', fileIcon, 'material');
+    registerIconFromText('image', imageIcon, 'material');
+    registerIconFromText('preview', previewIcon, 'material');
+    registerIconFromText('more', moreIcon, 'material');
   }
 
   private formatFileSize(bytes = 0): string {
@@ -52,41 +64,64 @@ export class IgcMessageAttachmentsComponent extends LitElement {
     this.previewImage = '';
   }
 
+  private preventToggle(e: CustomEvent) {
+    e.preventDefault();
+  }
+
   protected override render() {
     return html`
       <div class="attachments-container">
-        ${this.attachments.map((attachment) =>
-          attachment.type === 'image'
-            ? html`
-                <div class="attachment-preview">
-                  <img
+        ${this.attachments.map(
+          (attachment) => html`
+            <igc-expansion-panel
+              indicator-position="none"
+              .open=${attachment.type === 'image'}
+              @igcClosing=${this.preventToggle}
+              @igcOpening=${this.preventToggle}
+            >
+              <div slot="title" class="attachment">
+                <div class="details">
+                  ${attachment.type === 'image'
+                    ? html`<igc-icon
+                        name="image"
+                        collection="material"
+                        class="medium"
+                      ></igc-icon>`
+                    : html`<igc-icon
+                        name="file"
+                        collection="material"
+                        class="medium"
+                      ></igc-icon>`}
+                  <span class="file-name">${attachment.name}</span>
+                </div>
+                <div class="actions">
+                  ${attachment.type === 'image'
+                    ? html` <igc-icon-button
+                        name="preview"
+                        collection="material"
+                        variant="flat"
+                        class="small"
+                        @click=${() => this.openImagePreview(attachment.url)}
+                      ></igc-icon-button>`
+                    : ''}
+                  <igc-icon-button
+                    name="more"
+                    collection="material"
+                    variant="flat"
+                    class="small"
+                  ></igc-icon-button>
+                </div>
+              </div>
+
+              ${attachment.type === 'image'
+                ? html` <img
                     class="image-attachment"
                     src=${attachment.url}
                     alt=${attachment.name}
-                    @click=${() => this.openImagePreview(attachment.url)}
-                  />
-                </div>
-              `
-            : html`
-                <a
-                  class="file-attachment"
-                  href=${attachment.url}
-                  target="_blank"
-                  download=${attachment.name}
-                >
-                  <igc-icon
-                    name="file"
-                    collection="material"
-                    class="large"
-                  ></igc-icon>
-                  <div class="file-info">
-                    <div class="file-name">${attachment.name}</div>
-                    <div class="file-size">
-                      ${this.formatFileSize(attachment.size)}
-                    </div>
-                  </div>
-                </a>
-              `
+                  />`
+                : ''}
+            </igc-expansion-panel>
+          `
         )}
       </div>
 
