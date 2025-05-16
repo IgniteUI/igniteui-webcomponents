@@ -467,45 +467,93 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).calledWith('igcClosing');
           expect(eventSpy).calledWith('igcClosed');
         });
+
+        describe('Interactions with the show icon', () => {
+          it('should open the picker on calendar show icon click in dropdown mode', async () => {
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
+
+            expect(picker.open).to.be.true;
+          });
+          it('should open the picker on calendar show icon click in dialog mode', async () => {
+            picker.mode = 'dialog';
+            await elementUpdated(picker);
+
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
+
+            expect(picker.open).to.be.true;
+          });
+        });
       });
-      describe('Interactions with the show icon', () => {
-        it('should open the picker on calendar show icon click in dropdown mode', async () => {
-          simulateClick(getIcon(picker, toggleIcon));
-          await elementUpdated(picker);
+      describe('Readonly state', () => {
+        describe('Dropdown mode', () => {
+          beforeEach(async () => {
+            picker.readOnly = true;
+            picker.value = { start: today.native, end: tomorrow.native };
+            await elementUpdated(picker);
+          });
 
-          expect(picker.open).to.be.true;
+          it('should not show the picker on calendar icon click', async () => {
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
+
+            expect(picker.open).to.be.false;
+          });
+
+          it('should not show the picker on keyboard shortcut', async () => {
+            simulateKeyboard(picker, [altKey, arrowDown]);
+            await elementUpdated(picker);
+
+            expect(picker.open).to.be.false;
+          });
+
+          it('should not clear the value by clicking on the clear icon', async () => {
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
+
+            checkSelectedRange(
+              picker,
+              { start: today.native, end: tomorrow.native },
+              false
+            );
+          });
         });
-        it('should open the picker on calendar show icon click in dialog mode', async () => {
-          picker.mode = 'dialog';
-          await elementUpdated(picker);
+        describe('Dialog mode', () => {
+          beforeEach(async () => {
+            picker.readOnly = true;
+            picker.mode = 'dialog';
+            picker.value = { start: today.native, end: tomorrow.native };
+            await elementUpdated(picker);
+          });
 
-          simulateClick(getIcon(picker, toggleIcon));
-          await elementUpdated(picker);
+          it('should not show the picker on calendar icon click', async () => {
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
 
-          expect(picker.open).to.be.true;
-        });
-        it('should not open the picker on calendar show icon click in dropdown mode when readOnly is true', async () => {
-          picker.readOnly = true;
-          await elementUpdated(picker);
+            expect(picker.open).to.be.false;
+          });
 
-          simulateClick(getIcon(picker, toggleIcon));
-          await elementUpdated(picker);
+          it('should not show the picker on keyboard shortcut', async () => {
+            simulateKeyboard(picker, [altKey, arrowDown]);
+            await elementUpdated(picker);
 
-          expect(picker.open).to.be.false;
-        });
-        it('should not open the picker on calendar show icon click in dialog mode when readOnly is true', async () => {
-          picker.mode = 'dialog';
-          picker.readOnly = true;
-          await elementUpdated(picker);
+            expect(picker.open).to.be.false;
+          });
 
-          simulateClick(getIcon(picker, toggleIcon));
-          await elementUpdated(picker);
+          it('should not clear the value by clicking on the clear icon', async () => {
+            simulateClick(getIcon(picker, toggleIcon));
+            await elementUpdated(picker);
 
-          expect(picker.open).to.be.false;
+            checkSelectedRange(
+              picker,
+              { start: today.native, end: tomorrow.native },
+              false
+            );
+          });
         });
       });
     });
-    //TODO - check that the component is rendered, etc.
     describe('Predefined ranges', () => {
       const previousThreeDaysStart = CalendarDay.today.add('day', -3).native;
       const nextThreeDaysEnd = CalendarDay.today.add('day', 3).native;

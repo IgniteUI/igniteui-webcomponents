@@ -588,7 +588,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.addEventListener('focusout', this._handleFocusOut);
 
     addKeybindings(this, {
-      skip: () => this.disabled,
+      skip: () => this.disabled || this.readOnly,
       bindingDefaults: { preventDefault: true },
     })
       .set([altKey, arrowDown], this.handleAnchorClick)
@@ -980,7 +980,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           <span
             slot="suffix"
             part="${clearIcon}"
-            @click=${() => this._clear(true)}
+            @click=${this.readOnly ? nothing : this.clear}
           >
             <slot name="${clearIcon}">
               <igc-icon
