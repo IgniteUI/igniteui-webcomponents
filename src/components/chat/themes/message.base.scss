@@ -8,12 +8,17 @@
   }
 
   .message-container {
-    display: block;
+    display: flex;
     justify-content: flex-start;
     align-items: flex-end;
     gap: 8px;
     margin-bottom: 4px;
     animation: fadeIn 0.2s ease-out;
+  }
+
+  .message-container.sent {
+    display: flex;
+    flex-direction: row-reverse;
   }
 
   .avatar {
@@ -45,6 +50,7 @@
   }
 
   .bubble {
+    display: block;
     padding: 12px 16px;
     border-radius: 18px;
     color: black;
@@ -58,6 +64,9 @@
 
   .sent {
     border-radius: 18px 18px 4px;
+  }
+
+  .sent .bubble {
     background-color: #E5E5EA;
   }
 
