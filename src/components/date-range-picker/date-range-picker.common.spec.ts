@@ -15,6 +15,8 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
+import IgcDialogComponent from '../dialog/dialog.js';
+import IgcPopoverComponent from '../popover/popover.js';
 import IgcDateRangePickerComponent, {
   type CustomDateRange,
 } from './date-range-picker.js';
@@ -23,6 +25,7 @@ import {
   getIcon,
   selectDates,
 } from './date-range-picker.utils.spec.js';
+import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 
 describe('Date range picker - common tests for single and two inputs mode', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
@@ -51,7 +54,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       expect(picker.mode).to.equal('dropdown');
       await picker.show();
 
-      const popover = picker.renderRoot.querySelector('igc-popover');
+      const popover = picker.renderRoot.querySelector(
+        IgcPopoverComponent.tagName
+      );
       expect(popover).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.have.tagName('igc-focus-trap');
@@ -70,7 +75,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       expect(picker.mode).to.equal('dialog');
       await picker.show();
 
-      const dialog = picker.renderRoot.querySelector('igc-dialog');
+      const dialog = picker.renderRoot.querySelector(
+        IgcDialogComponent.tagName
+      );
       expect(dialog).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.equal(dialog);
@@ -379,7 +386,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           await elementUpdated(picker);
 
           expect(eventSpy).not.to.be.calledWith('igcChange');
-          const dialog = picker.renderRoot.querySelector('igc-dialog');
+          const dialog = picker.renderRoot.querySelector(
+            IgcDialogComponent.tagName
+          );
           expect(dialog?.hasAttribute('open')).to.equal(true);
 
           const doneBtn = picker.shadowRoot!.querySelector(
@@ -453,7 +462,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           simulateKeyboard(picker, [altKey, arrowDown]);
           await elementUpdated(picker);
 
-          const dialog = picker.renderRoot.querySelector('igc-dialog');
+          const dialog = picker.renderRoot.querySelector(
+            IgcDialogComponent.tagName
+          );
           expect(picker.open).to.be.true;
           expect(dialog?.open).to.be.true;
           expect(eventSpy).calledWith('igcOpening');
@@ -588,7 +599,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
       it('should emit igcChange when predefined date is selected and should close the picker - dropdown mode', async () => {
         const eventSpy = spy(picker, 'emitEvent');
-        const popover = picker.renderRoot.querySelector('igc-popover');
+        const popover = picker.renderRoot.querySelector(
+          IgcPopoverComponent.tagName
+        );
 
         picker.usePredefinedRanges = true;
         picker.customRanges = customRanges;
@@ -597,26 +610,26 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         await elementUpdated(picker);
 
         const predefinedArea = picker.renderRoot.querySelectorAll(
-          'igc-predefined-ranges-area'
+          IgcPredefinedRangesAreaComponent.tagName
         );
         const allRanges = (predefinedArea[0] as any)._allRanges;
 
-        for (let i = 0; i < allRanges.length; i++) {
+        for (const range of allRanges) {
           picker.open = true;
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('range-select', { detail: allRanges[i] })
+            new CustomEvent('rangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 
           expect(eventSpy).calledWith('igcChange');
-          expect(picker.activeDate).to.deep.equal(allRanges[i].dateRange.start);
+          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
 
           checkSelectedRange(
             picker,
             {
-              start: allRanges[i].dateRange.start,
-              end: allRanges[i].dateRange.end,
+              start: range.dateRange.start,
+              end: range.dateRange.end,
             },
             false
           );
@@ -637,27 +650,29 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         picker.open = true;
         await elementUpdated(picker);
 
-        let dialog = picker.renderRoot.querySelector('igc-dialog');
+        let dialog = picker.renderRoot.querySelector(
+          IgcDialogComponent.tagName
+        );
         const predefinedArea = picker.renderRoot.querySelectorAll(
-          'igc-predefined-ranges-area'
+          IgcPredefinedRangesAreaComponent.tagName
         );
         const allRanges = (predefinedArea[0] as any)._allRanges;
 
-        for (let i = 0; i < allRanges.length; i++) {
+        for (const range of allRanges) {
           picker.open = true;
-          dialog = picker.renderRoot.querySelector('igc-dialog');
+          dialog = picker.renderRoot.querySelector(IgcDialogComponent.tagName);
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('range-select', { detail: allRanges[i] })
+            new CustomEvent('rangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 
-          expect(picker.activeDate).to.deep.equal(allRanges[i].dateRange.start);
+          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
           checkSelectedRange(
             picker,
             {
-              start: allRanges[i].dateRange.start,
-              end: allRanges[i].dateRange.end,
+              start: range.dateRange.start,
+              end: range.dateRange.end,
             },
             false
           );
@@ -677,9 +692,11 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         }
       });
 
-      it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when custeom date is selected', async () => {
+      it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when custom date is selected', async () => {
         const eventSpy = spy(picker, 'emitEvent');
-        const popover = picker.renderRoot.querySelector('igc-popover');
+        const popover = picker.renderRoot.querySelector(
+          IgcPopoverComponent.tagName
+        );
 
         picker.usePredefinedRanges = false;
         picker.customRanges = customRanges;
@@ -687,26 +704,26 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         await elementUpdated(picker);
 
         const predefinedArea = picker.renderRoot.querySelectorAll(
-          'igc-predefined-ranges-area'
+          IgcPredefinedRangesAreaComponent.tagName
         );
         const allRanges = (predefinedArea[0] as any)._allRanges;
 
-        for (let i = 0; i < allRanges.length; i++) {
+        for (const range of allRanges) {
           picker.open = true;
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('range-select', { detail: allRanges[i] })
+            new CustomEvent('rangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 
           expect(eventSpy).calledWith('igcChange');
-          expect(picker.activeDate).to.deep.equal(allRanges[i].dateRange.start);
+          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
 
           checkSelectedRange(
             picker,
             {
-              start: allRanges[i].dateRange.start,
-              end: allRanges[i].dateRange.end,
+              start: range.dateRange.start,
+              end: range.dateRange.end,
             },
             false
           );

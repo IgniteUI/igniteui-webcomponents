@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { spy } from 'sinon';
 import { CalendarDay } from '../calendar/model.js';
+import IgcChipComponent from '../chip/chip.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import type { CustomDateRange } from './date-range-picker.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
@@ -91,7 +92,9 @@ describe('Predefined Area', () => {
       );
 
       const predefinedRanges = (component as any)._predefinedRanges;
-      const chips = component.renderRoot.querySelectorAll('igc-chip');
+      const chips = component.renderRoot.querySelectorAll(
+        IgcChipComponent.tagName
+      );
 
       expect((component as any)._allRanges.length).to.equal(chips.length);
 
@@ -106,7 +109,9 @@ describe('Predefined Area', () => {
       );
 
       const allRanges = (component as any)._allRanges;
-      const chips = component.renderRoot.querySelectorAll('igc-chip');
+      const chips = component.renderRoot.querySelectorAll(
+        IgcChipComponent.tagName
+      );
 
       expect(allRanges.length).to.equal(chips.length);
 
@@ -120,7 +125,9 @@ describe('Predefined Area', () => {
       await elementUpdated(component);
 
       const allRanges = (component as any)._allRanges;
-      const chips = component.renderRoot.querySelectorAll('igc-chip');
+      const chips = component.renderRoot.querySelectorAll(
+        IgcChipComponent.tagName
+      );
 
       expect(customRanges.length).to.equal(chips.length);
 
@@ -135,9 +142,11 @@ describe('Predefined Area', () => {
       );
 
       const eventSpy = spy();
-      component.addEventListener('range-select', eventSpy);
+      component.addEventListener('rangeSelect', eventSpy);
       const allRanges = (component as any)._allRanges;
-      const chips = component.renderRoot.querySelectorAll('igc-chip');
+      const chips = component.renderRoot.querySelectorAll(
+        IgcChipComponent.tagName
+      );
 
       expect(allRanges.length).to.equal(chips.length);
 
@@ -147,7 +156,8 @@ describe('Predefined Area', () => {
         chips[i].click();
         await elementUpdated(component);
 
-        expect(eventSpy.calledWithMatch({ detail: allRanges[i] })).to.be.true;
+        expect(eventSpy.calledWithMatch({ detail: allRanges[i].dateRange })).to
+          .be.true;
       }
     });
   });

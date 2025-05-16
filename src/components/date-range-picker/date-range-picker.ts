@@ -20,7 +20,6 @@ import {
   DateRangeType,
   type WeekDays,
 } from '../calendar/types.js';
-import IgcChipComponent from '../chip/chip.js';
 import {
   addKeybindings,
   altKey,
@@ -218,7 +217,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       IgcInputComponent,
       IgcFocusTrapComponent,
       IgcIconComponent,
-      IgcChipComponent,
       IgcPopoverComponent,
       IgcDialogComponent,
       IgcValidationContainerComponent,
@@ -938,33 +936,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
-  private _select(value: DateRangeValue | null, chipSelection = false) {
+  private _select(value: DateRangeValue | null, emitEvent = false) {
     this.value = value;
     this._calendar.activeDate =
       this._firstDefinedInRange ?? this._calendar.activeDate;
-    if (chipSelection && this._isDropDown) {
+    if (emitEvent) {
       this.emitEvent('igcChange', { detail: this.value });
       this._hide(true);
-    }
-  }
-
-  private _selectPredefinedRange(e: CustomEvent) {
-    const range: CustomDateRange = e.detail;
-    this._select(
-      { start: range.dateRange.start, end: range.dateRange.end },
-      true
-    );
-  }
-
-  private _clear(checkReadOnly = false) {
-    if (checkReadOnly && this.readOnly) {
-      return;
-    }
-    this._oldValue = this.value;
-    this.value = null;
-    if (this.useTwoInputs) {
-      this._inputs[0]?.clear();
-      this._inputs[1]?.clear();
     }
   }
 
@@ -1087,6 +1065,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
                 .usePredefinedRanges=${this.usePredefinedRanges}
                 .customRanges=${this.customRanges}
                 .resourceStrings=${this.resourceStrings}
+                @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
+                  this._select(e.detail, true)}
               >
               </igc-predefined-ranges-area>
               ${this._renderActions()}
@@ -1109,6 +1089,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
               .usePredefinedRanges=${this.usePredefinedRanges}
               .customRanges=${this.customRanges}
               .resourceStrings=${this.resourceStrings}
+              @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
+                this._select(e.detail)}
             >
             </igc-predefined-ranges-area>
             <igc-button

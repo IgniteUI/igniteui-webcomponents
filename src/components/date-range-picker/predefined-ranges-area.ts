@@ -88,9 +88,10 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
       : [...this.customRanges];
   }
 
-  private handleRangeSelect(range: CustomDateRange) {
-    const event = new CustomEvent('range-select', { detail: range });
-    this.dispatchEvent(event);
+  private _handleRangeSelect(range: CustomDateRange) {
+    this.dispatchEvent(
+      new CustomEvent('rangeSelect', { detail: range.dateRange })
+    );
   }
 
   protected override render() {
@@ -101,7 +102,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
       >
         ${this._allRanges.map(
           (range) => html`
-            <igc-chip @click=${() => this.handleRangeSelect(range)}>
+            <igc-chip @click=${() => this._handleRangeSelect(range)}>
               ${range.label}
             </igc-chip>
           `
@@ -112,7 +113,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 }
 
 declare global {
-  interface HtmlElementTagNameMap {
+  interface HTMLElementTagNameMap {
     'igc-predefined-ranges-area': IgcPredefinedRangesAreaComponent;
   }
 }
