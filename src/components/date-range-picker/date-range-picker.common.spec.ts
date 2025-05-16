@@ -287,34 +287,60 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
+
+      it('should expose the default strings for localization', async () => {
+        picker.useTwoInputs = true;
+        picker.resourceStrings.done = 'Done - localized';
+        picker.resourceStrings.cancel = 'Cancel - localized';
+        picker.resourceStrings.separator = 'Separator - localized';
+        picker.mode = 'dialog';
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const doneBtn = picker.shadowRoot!.querySelector(
+          'igc-button[slot="footer"]:last-of-type'
+        ) as HTMLButtonElement;
+        expect(doneBtn.innerText).to.equal('Done - localized');
+
+        const cancelBtn = picker.shadowRoot!.querySelector(
+          'igc-button[slot="footer"]'
+        ) as HTMLButtonElement;
+        expect(cancelBtn.innerText).to.equal('Cancel - localized');
+
+        picker.open = false;
+        await elementUpdated(picker);
+        const separator = picker.shadowRoot!.querySelector(
+          '[part="separator"]'
+        ) as any;
+        expect(separator?.innerText).to.equal('Separator - localized');
+      });
+
+      it('should set the resource strings of the predefined-ranges-area component', async () => {
+        picker.resourceStrings.currentMonth = 'Current month - localized';
+        picker.resourceStrings.nextMonth = 'Next month - localized';
+        picker.resourceStrings.last30Days = 'Last 30 days - localized';
+        picker.resourceStrings.yearToDate = 'Year to date - localized';
+        picker.usePredefinedRanges = true;
+        await elementUpdated(picker);
+
+        const predefinedArea = picker.renderRoot.querySelector(
+          IgcPredefinedRangesAreaComponent.tagName
+        );
+        expect(predefinedArea?.resourceStrings.currentMonth).to.equal(
+          'Current month - localized'
+        );
+        expect(predefinedArea?.resourceStrings.nextMonth).to.equal(
+          'Next month - localized'
+        );
+        expect(predefinedArea?.resourceStrings.last30Days).to.equal(
+          'Last 30 days - localized'
+        );
+        expect(predefinedArea?.resourceStrings.yearToDate).to.equal(
+          'Year to date - localized'
+        );
+      });
     });
 
-    it('should expose the default strings for localization', async () => {
-      picker.useTwoInputs = true;
-      picker.resourceStrings.done = 'Done - localized';
-      picker.resourceStrings.cancel = 'Cancel - localized';
-      picker.resourceStrings.separator = 'Separator - localized';
-      picker.mode = 'dialog';
-      picker.open = true;
-      await elementUpdated(picker);
-
-      const doneBtn = picker.shadowRoot!.querySelector(
-        'igc-button[slot="footer"]:last-of-type'
-      ) as HTMLButtonElement;
-      expect(doneBtn.innerText).to.equal('Done - localized');
-
-      const cancelBtn = picker.shadowRoot!.querySelector(
-        'igc-button[slot="footer"]'
-      ) as HTMLButtonElement;
-      expect(cancelBtn.innerText).to.equal('Cancel - localized');
-
-      picker.open = false;
-      await elementUpdated(picker);
-      const separator = picker.shadowRoot!.querySelector(
-        '[part="separator"]'
-      ) as any;
-      expect(separator?.innerText).to.equal('Separator - localized');
-    });
     describe('Methods', () => {
       it('should open/close the picker on invoking show/hide/toggle and not emit events', async () => {
         const eventSpy = spy(picker, 'emitEvent');

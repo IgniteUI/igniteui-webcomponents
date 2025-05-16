@@ -32,10 +32,6 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  IgcCalendarResourceStringEN,
-  type IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources.js';
-import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
 } from '../common/i18n/date-range-picker.resources.js';
@@ -341,11 +337,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings &
-    IgcDateRangePickerResourceStrings = {
-    ...IgcCalendarResourceStringEN,
-    ...IgcDateRangePickerResourceStringsEN,
-  };
+  public resourceStrings: IgcDateRangePickerResourceStrings =
+    IgcDateRangePickerResourceStringsEN;
 
   // #region Input-related properties
 
@@ -1093,7 +1086,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
               <igc-predefined-ranges-area
                 .usePredefinedRanges=${this.usePredefinedRanges}
                 .customRanges=${this.customRanges}
-                @range-select=${this._selectPredefinedRange}
+                .resourceStrings=${this.resourceStrings}
               >
               </igc-predefined-ranges-area>
               ${this._renderActions()}
@@ -1115,7 +1108,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-predefined-ranges-area
               .usePredefinedRanges=${this.usePredefinedRanges}
               .customRanges=${this.customRanges}
-              @range-select=${this._selectPredefinedRange}
+              .resourceStrings=${this.resourceStrings}
             >
             </igc-predefined-ranges-area>
             <igc-button

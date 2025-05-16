@@ -1,5 +1,11 @@
+import {
+  IgcCalendarResourceStringEN,
+  type IgcCalendarResourceStrings,
+} from './calendar.resources';
+
 /* blazorSuppress */
-export interface IgcDateRangePickerResourceStrings {
+export interface IgcDateRangePickerResourceStrings
+  extends IgcCalendarResourceStrings {
   separator: string;
   done: string;
   cancel: string;
@@ -18,4 +24,5 @@ export const IgcDateRangePickerResourceStringsEN: IgcDateRangePickerResourceStri
     last30Days: 'Last 30 days',
     currentMonth: 'Current month',
     yearToDate: 'Year to date',
+    ...IgcCalendarResourceStringEN,
   };
