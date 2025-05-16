@@ -11,7 +11,8 @@ import { registerComponent } from '../../common/definitions/register.js';
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, partNameMap } from '../../common/util.js';
+import { partMap } from '../../common/part-map.js';
+import { chunk } from '../../common/util.js';
 import { MONTHS_PER_ROW, areSameMonth, getViewElement } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
@@ -119,14 +120,12 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     const current = areSameMonth(now, entry);
     const selected = this._value.month === entry.month;
 
-    const parts = { selected, current };
-
     return html`
-      <span part=${partNameMap({ month: true, ...parts })}>
+      <span part=${partMap({ month: true, selected, current })}>
         <span
           role="gridcell"
           data-value=${entry.month}
-          part=${partNameMap({ 'month-inner': true, ...parts })}
+          part=${partMap({ 'month-inner': true, selected, current })}
           aria-selected=${selected}
           aria-label=${ariaLabel}
           tabindex=${active ? 0 : -1}

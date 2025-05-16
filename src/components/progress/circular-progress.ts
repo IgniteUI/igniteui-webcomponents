@@ -3,7 +3,8 @@ import { queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter, isEmpty } from '../common/util.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
@@ -54,14 +55,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   private _assignedGradients!: IgcCircularGradientComponent[];
 
   protected renderSvg() {
-    const parts = partNameMap({
-      indeterminate: this.indeterminate,
-      track: true,
-    });
-    const styles = {
-      stroke: `url(#${this._gradientId})`,
-    };
-
     const gradients = !isEmpty(this._assignedGradients)
       ? this._assignedGradients.map(
           ({ offset, color, opacity }) =>
@@ -73,8 +66,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       `;
 
     return svg`
-      <circle part=${parts}/>
-      <circle style=${styleMap(styles)} part="fill"/>
+      <circle part=${partMap({ track: true, indeterminate: this.indeterminate })}/>
+      <circle style=${styleMap({ stroke: `url(#${this._gradientId})` })} part="fill"/>
 
       <defs>
           <linearGradient id=${this._gradientId} gradientTransform="rotate(90)">
@@ -85,14 +78,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   }
 
   protected override render() {
-    const parts = partNameMap({
-      svg: true,
-      indeterminate: this.indeterminate,
-    });
-
     return html`
       <div part="base" style=${styleMap(this._styleInfo)}>
-        <svg part=${parts}>${this.renderSvg()}</svg>
+        <svg part=${partMap({ svg: true, indeterminate: this.indeterminate })}>
+          ${this.renderSvg()}
+        </svg>
         <slot name="gradient"></slot>
         ${this.renderDefaultSlot()}
       </div>

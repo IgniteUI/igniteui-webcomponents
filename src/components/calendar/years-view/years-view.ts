@@ -9,7 +9,8 @@ import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressC
 import { registerComponent } from '../../common/definitions/register.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, partNameMap } from '../../common/util.js';
+import { partMap } from '../../common/part-map.js';
+import { chunk } from '../../common/util.js';
 import { YEARS_PER_ROW, getViewElement, getYearRange } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { styles } from '../themes/year-month-view.base.css.js';
@@ -96,14 +97,13 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   protected renderYear(year: number, now: CalendarDay) {
     const selected = this._value.year === year;
     const current = year === now.year;
-    const parts = { selected, current };
 
     return html`
-      <span part=${partNameMap({ year: true, ...parts })}>
+      <span part=${partMap({ year: true, selected, current })}>
         <span
           role="gridcell"
           data-value=${year}
-          part=${partNameMap({ 'year-inner': true, ...parts })}
+          part=${partMap({ 'year-inner': true, selected, current })}
           aria-selected=${selected}
           tabindex=${selected ? 0 : -1}
         >
