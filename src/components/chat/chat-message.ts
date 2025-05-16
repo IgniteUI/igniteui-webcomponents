@@ -46,14 +46,12 @@ export default class IgcChatMessageComponent extends LitElement {
   public attachmentContentTemplate?: AttachmentTemplate;
 
   protected override render() {
-    const containerClass = `message-container ${!this.isResponse ? 'sent' : ''}`;
+    const containerClass = `message-container ${!this.isResponse ? 'sent' : ''} bubble`;
 
     return html`
       <div class=${containerClass}>
         ${this.message?.text.trim()
-          ? html` <div class="bubble">
-              ${renderMarkdown(this.message?.text)}
-            </div>`
+          ? html` <div>${renderMarkdown(this.message?.text)}</div>`
           : ''}
         ${this.message?.attachments && this.message?.attachments.length > 0
           ? html`<igc-message-attachments
