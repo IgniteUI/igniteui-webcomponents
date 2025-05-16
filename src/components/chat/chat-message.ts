@@ -33,10 +33,6 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public isResponse = false;
 
-  private formatTime(date: Date | undefined): string | undefined {
-    return date?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-
   protected override render() {
     const containerClass = `message-container ${!this.isResponse ? 'sent' : ''}`;
 

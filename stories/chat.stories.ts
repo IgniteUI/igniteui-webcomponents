@@ -59,7 +59,7 @@ type Story = StoryObj<IgcChatArgs>;
 
 // endregion
 
-const messages: any[] = [
+let messages: any[] = [
   {
     id: '1',
     text: "Hello! I'm an AI assistant created with Lit. How can I help you today?",
@@ -76,21 +76,32 @@ function handleMessageSend(e: CustomEvent) {
     return;
   }
 
+  // create empty response
+  const emptyResponse = {
+    id: Date.now().toString(),
+    text: '',
+    isResponse: true,
+    timestamp: new Date(),
+    attachments: [],
+  };
+  messages = [...messages, emptyResponse];
   chat.messages = [...messages];
 
-  chat.isAiResponding = true;
+  chat.startResponse();
   setTimeout(() => {
-    const aiResponse = {
-      id: (Date.now() + 1).toString(),
-      text: generateAIResponse(e.detail.text),
-      isResponse: true,
-      timestamp: new Date(),
-    };
+    const responseParts = generateAIResponse(e.detail.text).split(' ');
+    showResponse(chat, responseParts).then(() => {
+      messages = chat.messages;
+      chat.endResponse();
+    });
+  }, 1000);
+}
 
-    chat.isAiResponding = false;
-    chat.messages = [...messages, aiResponse];
-    messages.push(aiResponse);
-  }, 1500);
+async function showResponse(chat: any, responseParts: any) {
+  for (let i = 0; i < responseParts.length; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    chat.showResponsePart(responseParts[i]);
+  }
 }
 
 function generateAIResponse(message: string): string {
@@ -116,6 +127,17 @@ function generateAIResponse(message: string): string {
   }
   if (lowerMessage.includes('list') || lowerMessage.includes('items')) {
     return "Here's an example of a list:\n\n- First item\n- Second item\n- Third item with **bold text**";
+  }
+  if (lowerMessage.includes('heading') || lowerMessage.includes('headings')) {
+    return `Here's how you can use different headings in Markdown:
+
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+`;
   }
 
   return 'Thanks for your message. This is a demonstration of a chat interface built with Lit components. Feel free to ask about features or try different types of messages!';
