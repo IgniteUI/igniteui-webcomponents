@@ -175,6 +175,24 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('22-07-2024');
     });
 
+    it('should emit igcChange on blur after an incomplete mask has been parsed - issue #1695', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.focus();
+      await elementUpdated(el);
+
+      simulateInput(input, {
+        value: '0',
+        inputType: 'insertText',
+      });
+      await elementUpdated(el);
+
+      el.blur();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcChange');
+      expect(input.value).to.deep.equal('01/01/2000');
+    });
+
     it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 
