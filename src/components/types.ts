@@ -6,6 +6,7 @@ export type AbsolutePosition = 'bottom' | 'middle' | 'top';
 export type ContentOrientation = 'horizontal' | 'vertical';
 export type HorizontalTransitionAnimation = 'slide' | 'fade' | 'none';
 export type PickerMode = 'dropdown' | 'dialog';
+export type DateRangePickerInput = 'start' | 'end';
 export type PopoverScrollStrategy = 'scroll' | 'block' | 'close';
 export type RangeTextSelectMode = 'preserve' | 'select' | 'start' | 'end';
 export type SelectionRangeDirection = 'none' | 'backward' | 'forward';
