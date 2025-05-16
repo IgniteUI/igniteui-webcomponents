@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import { IgcChatComponent, defineComponents } from 'igniteui-webcomponents';
+import type { IgcMessageAttachment } from '../src/components/chat/types.js';
 
 defineComponents(IgcChatComponent);
 
@@ -76,6 +77,20 @@ function handleMessageSend(e: CustomEvent) {
     return;
   }
 
+  const attachments: IgcMessageAttachment[] =
+    newMessage.text.includes('picture') ||
+    newMessage.text.includes('image') ||
+    newMessage.text.includes('file')
+      ? [
+          {
+            id: 'random_img',
+            type: newMessage.text.includes('file') ? 'file' : 'image',
+            url: 'https://picsum.photos/378/395',
+            name: 'random.png',
+          },
+        ]
+      : [];
+
   // create empty response
   const emptyResponse = {
     id: Date.now().toString(),
@@ -92,7 +107,7 @@ function handleMessageSend(e: CustomEvent) {
     const responseParts = generateAIResponse(e.detail.text).split(' ');
     showResponse(chat, responseParts).then(() => {
       messages = chat.messages;
-      chat.endResponse();
+      chat.endResponse(attachments);
     });
   }, 1000);
 }
@@ -124,6 +139,9 @@ function generateAIResponse(message: string): string {
   }
   if (lowerMessage.includes('code') || lowerMessage.includes('example')) {
     return "Here's an example of code formatting:\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n```";
+  }
+  if (lowerMessage.includes('image') || lowerMessage.includes('picture')) {
+    return "Here's an image!";
   }
   if (lowerMessage.includes('list') || lowerMessage.includes('items')) {
     return "Here's an example of a list:\n\n- First item\n- Second item\n- Third item with **bold text**";

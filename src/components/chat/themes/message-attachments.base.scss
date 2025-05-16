@@ -20,8 +20,8 @@
 }
 
 .image-attachment {
-    max-width: 200px;
-    max-height: 150px;
+    max-width: 250px;
+    max-height: 250px;
     object-fit: cover;
     cursor: pointer;
     border-radius: 0.375rem;
@@ -106,4 +106,10 @@
     display: flex;
     justify-content: space-between;    
     gap: 2rem;
+}
+
+.details {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
 }
