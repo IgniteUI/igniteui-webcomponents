@@ -4,7 +4,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import { styles } from './themes/message-list.base.css.js';
-import type { IgcMessage } from './types.js';
+import type { AttachmentTemplate, IgcMessage } from './types.js';
 
 /**
  *
@@ -30,6 +30,18 @@ export default class IgcChatMessageListComponent extends LitElement {
 
   @property({ type: Boolean, attribute: 'disable-auto-scroll' })
   public disableAutoScroll = false;
+
+  @property({ type: Function })
+  public attachmentTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentHeaderTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentActionsTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentContentTemplate?: AttachmentTemplate;
 
   private formatDate(date: Date): string {
     const today = new Date();
@@ -109,6 +121,10 @@ export default class IgcChatMessageListComponent extends LitElement {
                   <igc-chat-message
                     .message=${message}
                     .isResponse=${message.isResponse}
+                    .attachmentTemplate=${this.attachmentTemplate}
+                    .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
+                    .attachmentActionsTemplate=${this.attachmentActionsTemplate}
+                    .attachmentContentTemplate=${this.attachmentContentTemplate}
                   ></igc-chat-message>
                 `
               )}

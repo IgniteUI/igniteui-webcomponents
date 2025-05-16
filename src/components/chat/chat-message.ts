@@ -5,7 +5,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { renderMarkdown } from './markdown-util.js';
 import { IgcMessageAttachmentsComponent } from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import type { IgcMessage } from './types.js';
+import type { AttachmentTemplate, IgcMessage } from './types.js';
 
 /**
  *
@@ -33,9 +33,17 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public isResponse = false;
 
-  private formatTime(date: Date | undefined): string | undefined {
-    return date?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+  @property({ type: Function })
+  public attachmentTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentHeaderTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentActionsTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentContentTemplate?: AttachmentTemplate;
 
   protected override render() {
     const containerClass = `message-container ${!this.isResponse ? 'sent' : ''}`;
@@ -50,6 +58,10 @@ export default class IgcChatMessageComponent extends LitElement {
         ${this.message?.attachments && this.message?.attachments.length > 0
           ? html`<igc-message-attachments
               .attachments=${this.message?.attachments}
+              .attachmentTemplate=${this.attachmentTemplate}
+              .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
+              .attachmentActionsTemplate=${this.attachmentActionsTemplate}
+              .attachmentContentTemplate=${this.attachmentContentTemplate}
             >
             </igc-message-attachments>`
           : ''}
