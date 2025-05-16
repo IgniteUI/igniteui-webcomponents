@@ -10,6 +10,7 @@ import { live } from 'lit/directives/live.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -79,7 +80,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
@@ -97,8 +98,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   protected override _formValue: FormValue<string>;
 
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
-
-  private observer!: ResizeObserver;
 
   @queryAssignedNodes({ flatten: true })
   private projected!: Array<Node>;
@@ -294,29 +293,18 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
+    createResizeObserverController(this, {
+      callback: this.setAreaHeight,
+    });
+
     this._formValue = createFormValueState(this, { initialValue: '' });
 
     this.addEventListener('focus', this.handleFocus);
     this.addEventListener('blur', this.handleBlur);
   }
 
-  public override async connectedCallback() {
-    super.connectedCallback();
-
-    await this.updateComplete;
-
-    this.setAreaHeight();
-    this.observer = new ResizeObserver(() => this.setAreaHeight());
-    this.observer.observe(this.input);
-  }
-
-  public override disconnectedCallback(): void {
-    this.observer.disconnect();
-    super.disconnectedCallback();
-  }
-
   /** Selects all text within the control. */
-  public select() {
+  public select(): void {
     this.input.select();
   }
 
@@ -325,7 +313,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     start: number,
     end: number,
     direction: SelectionRangeDirection = 'none'
-  ) {
+  ): void {
     this.input.setSelectionRange(start, end, direction);
   }
 
@@ -335,7 +323,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     start: number,
     end: number,
     selectMode: RangeTextSelectMode = 'preserve'
-  ) {
+  ): void {
     this.input.setRangeText(replacement, start, end, selectMode);
     this.value = this.input.value;
   }
@@ -345,7 +333,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   /* blazorSuppress */
   public override scrollTo(x: number, y: number): void;
   public override scrollTo(x?: unknown, y?: unknown): void {
-    x !== undefined && y !== undefined
+    x != null && y != null
       ? this.input.scrollTo(x as number, y as number)
       : this.input.scrollTo(x as ScrollToOptions);
   }
