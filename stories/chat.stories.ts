@@ -99,7 +99,7 @@ function handleMessageSend(e: CustomEvent) {
 
 async function showResponse(chat: any, responseParts: any) {
   for (let i = 0; i < responseParts.length; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     chat.showResponsePart(responseParts[i]);
   }
 }
