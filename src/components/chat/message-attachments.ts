@@ -7,6 +7,7 @@ import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import { styles } from './themes/message-attachments.base.css';
 import {
+  type AttachmentTemplate,
   type IgcMessageAttachment,
   closeIcon,
   fileIcon,
@@ -41,6 +42,18 @@ export class IgcMessageAttachmentsComponent extends LitElement {
   @property({ type: String })
   previewImage = '';
 
+  @property({ type: Function })
+  attachmentTemplate: AttachmentTemplate | undefined;
+
+  @property({ type: Function })
+  attachmentHeaderTemplate: AttachmentTemplate | undefined;
+
+  @property({ type: Function })
+  attachmentActionsTemplate: AttachmentTemplate | undefined;
+
+  @property({ type: Function })
+  attachmentContentTemplate: AttachmentTemplate | undefined;
+
   constructor() {
     super();
     registerIconFromText('close', closeIcon, 'material');
@@ -48,12 +61,6 @@ export class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('image', imageIcon, 'material');
     registerIconFromText('preview', previewIcon, 'material');
     registerIconFromText('more', moreIcon, 'material');
-  }
-
-  private formatFileSize(bytes = 0): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   private openImagePreview(url: string) {
@@ -82,60 +89,82 @@ export class IgcMessageAttachmentsComponent extends LitElement {
   protected override render() {
     return html`
       <div class="attachments-container">
-        ${this.attachments.map(
-          (attachment) => html`
-            <igc-expansion-panel
-              indicator-position="none"
-              .open=${attachment.type === 'image'}
-              @igcClosing=${(ev: CustomEvent) =>
-                this.handleToggle(ev, attachment)}
-              @igcOpening=${(ev: CustomEvent) =>
-                this.handleToggle(ev, attachment)}
-            >
-              <div slot="title" class="attachment">
-                <div class="details">
-                  ${attachment.type === 'image'
-                    ? html`<igc-icon
-                        name="image"
-                        collection="material"
-                        class="medium"
-                      ></igc-icon>`
-                    : html`<igc-icon
-                        name="file"
-                        collection="material"
-                        class="medium"
-                      ></igc-icon>`}
-                  <span class="file-name">${attachment.name}</span>
-                </div>
-                <div class="actions">
-                  ${attachment.type === 'image'
-                    ? html` <igc-icon-button
-                        name="preview"
-                        collection="material"
-                        variant="flat"
-                        class="small"
-                        @click=${() => this.openImagePreview(attachment.url)}
-                      ></igc-icon-button>`
-                    : ''}
-                  <igc-icon-button
-                    name="more"
-                    collection="material"
-                    variant="flat"
-                    class="small"
-                  ></igc-icon-button>
-                </div>
-              </div>
+        ${this.attachmentTemplate
+          ? this.attachmentTemplate(this.attachments)
+          : html` ${this.attachments.map(
+              (attachment) =>
+                html` <igc-expansion-panel
+                  indicator-position="none"
+                  .open=${attachment.type === 'image'}
+                  @igcClosing=${(ev: CustomEvent) =>
+                    this.handleToggle(ev, attachment)}
+                  @igcOpening=${(ev: CustomEvent) =>
+                    this.handleToggle(ev, attachment)}
+                >
+                  <div slot="title" class="attachment">
+                    <div class="details">
+                      ${this.attachmentHeaderTemplate
+                        ? this.attachmentHeaderTemplate(this.attachments)
+                        : html`
+                            <slot name="attachment-icon">
+                              ${attachment.type === 'image'
+                                ? html`<igc-icon
+                                    name="image"
+                                    collection="material"
+                                    class="medium"
+                                  ></igc-icon>`
+                                : html`<igc-icon
+                                    name="file"
+                                    collection="material"
+                                    class="medium"
+                                  ></igc-icon>`}
+                            </slot>
+                            <slot name="attachment-name">
+                              <span class="file-name">${attachment.name}</span>
+                            </slot>
+                          `}
+                    </div>
+                    <div class="actions">
+                      ${this.attachmentActionsTemplate
+                        ? this.attachmentActionsTemplate(this.attachments)
+                        : html`
+                            <slot name="attachment-actions">
+                              ${attachment.type === 'image'
+                                ? html` <igc-icon-button
+                                    name="preview"
+                                    collection="material"
+                                    variant="flat"
+                                    class="small"
+                                    @click=${() =>
+                                      this.openImagePreview(attachment.url)}
+                                  ></igc-icon-button>`
+                                : ''}
+                              <igc-icon-button
+                                name="more"
+                                collection="material"
+                                variant="flat"
+                                class="small"
+                              ></igc-icon-button>
+                            </slot>
+                          `}
+                    </div>
+                  </div>
 
-              ${attachment.type === 'image'
-                ? html` <img
-                    class="image-attachment"
-                    src=${attachment.url}
-                    alt=${attachment.name}
-                  />`
-                : ''}
-            </igc-expansion-panel>
-          `
-        )}
+                  ${this.attachmentContentTemplate
+                    ? this.attachmentContentTemplate(this.attachments)
+                    : html`
+                        <slot name="attachment-content">
+                          ${attachment.type === 'image'
+                            ? html` <img
+                                class="image-attachment"
+                                src=${attachment.url}
+                                alt=${attachment.name}
+                              />`
+                            : ''}
+                        </slot>
+                      `}
+                </igc-expansion-panel>`
+            )}`}
       </div>
 
       ${this.previewImage

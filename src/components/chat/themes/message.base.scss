@@ -8,16 +8,12 @@
   }
 
   .message-container {
-    display: flex;
+    display: block;
     justify-content: flex-start;
     align-items: flex-end;
     gap: 8px;
     margin-bottom: 4px;
     animation: fadeIn 0.2s ease-out;
-  }
-
-  .message-container.sent {
-    flex-direction: row-reverse;
   }
 
   .avatar {
@@ -51,19 +47,18 @@
   .bubble {
     padding: 12px 16px;
     border-radius: 18px;
-    background-color: #E5E5EA;
     color: black;
     word-break: break-all;
     font-weight: 400;
     line-height: 1.4;
     position: relative;
     transition: all 0.2s ease;
+    width: fit-content;
   }
 
-  .sent .bubble {
+  .sent {
     border-radius: 18px 18px 4px;
-    background-color: #0A84FF;
-    color: white;
+    background-color: #E5E5EA;
   }
 
   .received .bubble {

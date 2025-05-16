@@ -7,7 +7,11 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
-import type { IgcMessage, IgcMessageAttachment } from './types.js';
+import type {
+  AttachmentTemplate,
+  IgcMessage,
+  IgcMessageAttachment,
+} from './types.js';
 
 export interface IgcChatComponentEventMap {
   igcMessageSend: CustomEvent<IgcMessage>;
@@ -58,6 +62,18 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   @property({ type: String, attribute: 'header-text', reflect: true })
   public headerText = '';
+
+  @property({ type: Function })
+  public attachmentTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentHeaderTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentActionsTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public attachmentContentTemplate?: AttachmentTemplate;
 
   public override connectedCallback() {
     super.connectedCallback();
@@ -155,6 +171,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .messages=${this.messages}
           .disableAutoScroll=${this.disableAutoScroll}
           .isAiResponding=${this.isAiResponding}
+          .attachmentTemplate=${this.attachmentTemplate}
+          .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
+          .attachmentActionsTemplate=${this.attachmentActionsTemplate}
+          .attachmentContentTemplate=${this.attachmentContentTemplate}
         >
         </igc-chat-message-list>
         <igc-chat-input
