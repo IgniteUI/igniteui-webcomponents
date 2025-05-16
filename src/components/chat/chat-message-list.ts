@@ -113,7 +113,6 @@ export default class IgcChatMessageListComponent extends LitElement {
             groupedMessages,
             (group) => group.date,
             (group) => html`
-              <div class="day-separator">${group.date}</div>
               ${repeat(
                 group.messages,
                 (message) => message.id,

@@ -42,7 +42,7 @@ const metadata: Meta<IgcChatComponent> = {
     hideUserName: false,
     disableAutoScroll: false,
     disableAttachments: false,
-    headerText: '',
+    headerText: 'AI Chat',
   },
 };
 
