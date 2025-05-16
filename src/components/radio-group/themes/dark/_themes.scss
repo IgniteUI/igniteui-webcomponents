@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/label' as *;
+
+$material: digest-schema($dark-material-label);
+$bootstrap: digest-schema($dark-bootstrap-label);
+$fluent: digest-schema($dark-fluent-label);
+$indigo: digest-schema($dark-indigo-label);

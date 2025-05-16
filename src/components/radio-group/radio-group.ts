@@ -1,14 +1,13 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-
 import { themes } from '../../theming/theming-decorator.js';
+import { createMutationController } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
-import { styles } from './radio-group.base.css.js';
-import { styles as fluent } from './radio-group.fluent.css.js';
-import { styles as indigo } from './radio-group.indigo.css.js';
-import { styles as material } from './radio-group.material.css.js';
+import { styles } from './themes/radio-group.base.css.js';
+import { styles as shared } from './themes/shared/radio-group.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * The igc-radio-group component unifies one or more igc-radio buttons.
@@ -17,13 +16,10 @@ import { styles as material } from './radio-group.material.css.js';
  *
  * @slot - Default slot
  */
-@themes({
-  light: { material, fluent, indigo },
-  dark: { material, fluent, indigo },
-})
+@themes(all)
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -34,6 +30,12 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _internals: ElementInternals;
   private _name!: string;
   private _value!: string;
+
+  @property({ type: Boolean, reflect: true })
+  private disabled = false;
+
+  @property({ type: Boolean, reflect: true })
+  private labelBefore = false;
 
   @queryAssignedElements({ flatten: true })
   private _radios!: NodeListOf<IgcRadioComponent>;
@@ -90,11 +92,29 @@ export default class IgcRadioGroupComponent extends LitElement {
     return this._value;
   }
 
+  private _observerCallback() {
+    const radios = Array.from(this._radios as unknown as Element[]).filter(
+      (el) => el.tagName.toLowerCase() === 'igc-radio'
+    ) as IgcRadioComponent[];
+    this.disabled = radios.every((radio) => radio.disabled);
+    this.labelBefore =
+      radios.some((radio) => radio.labelPosition === 'before') ?? false;
+  }
+
   constructor() {
     super();
 
     this._internals = this.attachInternals();
     this._internals.role = 'radiogroup';
+
+    createMutationController(this, {
+      callback: this._observerCallback,
+      filter: [IgcRadioComponent.tagName],
+      config: {
+        attributeFilter: ['disabled', 'label-position'],
+        subtree: true,
+      },
+    });
   }
 
   protected override createRenderRoot() {
