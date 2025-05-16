@@ -46,7 +46,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('should not participate in form submission if the value is empty/invalid', async () => {
+    it('should not participate in form submission if the value is empty/invalid', () => {
       value = { start: null, end: null };
       spec.setProperties({ value });
       spec.assertSubmitHasKeyValue('rangePicker', null);
@@ -76,7 +76,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       expect(input.value).to.equal('');
     });
 
-    it('should not be in invalid state on reset for a required control which previously had value', async () => {
+    it('should not be in invalid state on reset for a required control which previously had value', () => {
       spec.setProperties({ value: value });
       spec.setProperties({ required: true });
 
@@ -446,7 +446,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       endKey = `${spec.element.name}-end`;
     });
 
-    it('correct initial state', async () => {
+    it('correct initial state', () => {
       spec.assertIsPristine();
       checkSelectedRange(spec.element, value, false);
     });
@@ -469,7 +469,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
   });
   describe('Validation message slots', () => {
-    it('', async () => {
+    it('', () => {
       const now = CalendarDay.today;
       const tomorrow = now.add('day', 1);
       const yesterday = now.add('day', -1);

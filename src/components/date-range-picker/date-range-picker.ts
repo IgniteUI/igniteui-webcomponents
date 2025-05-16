@@ -206,8 +206,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     delegatesFocus: true,
   };
 
-  private static readonly increment = createCounter();
-
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -225,6 +223,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   // #region Internal state & properties
+
+  private static readonly increment = createCounter();
 
   protected inputId = `date-range-picker-${IgcDateRangePickerComponent.increment()}`;
   protected override _formValue: FormValue<DateRangeValue | null>;
@@ -257,25 +257,25 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _maskedRangeValue = '';
 
   @queryAll(IgcDateTimeInputComponent.tagName)
-  private _inputs!: IgcDateTimeInputComponent[];
+  private readonly _inputs!: IgcDateTimeInputComponent[];
 
   @query(IgcInputComponent.tagName)
-  private _input!: IgcInputComponent;
+  private readonly _input!: IgcInputComponent;
 
   @query(IgcCalendarComponent.tagName)
-  private _calendar!: IgcCalendarComponent;
+  private readonly _calendar!: IgcCalendarComponent;
 
   @queryAssignedElements({ slot: 'prefix' })
-  private _prefixes!: HTMLElement[];
+  private readonly _prefixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'suffix' })
-  private _suffixes!: HTMLElement[];
+  private readonly _suffixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'actions' })
-  private _actions!: HTMLElement[];
+  private readonly _actions!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'header-date' })
-  private _headerDateSlotItems!: HTMLElement[];
+  private readonly _headerDateSlotItems!: HTMLElement[];
 
   // #endregion
 
@@ -611,7 +611,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /** Clears the input parts of the component of any user input */
   public clear() {
-    this._clear(false);
+    this._oldValue = this.value;
+    this.value = null;
+    if (this.useTwoInputs) {
+      this._inputs[0]?.clear();
+      this._inputs[1]?.clear();
+    }
   }
 
   /** Selects a date range value in the picker */
@@ -627,7 +632,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected _openChange() {
     this._rootClickController.update();
 
-    if (this.open && this.mode === 'dialog') {
+    if (this.open) {
       this._oldValue = this.value;
     }
   }
@@ -1040,16 +1045,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected _renderActions() {
-    const slot =
-      this._isDropDown || isEmpty(this._actions) ? undefined : 'footer';
+    const hasActions = !isEmpty(this._actions);
+    const slot = this._isDropDown || hasActions ? undefined : 'footer';
 
     // If in dialog mode use the dialog footer slot
     return html`
-      <div
-        part="actions"
-        ?hidden=${isEmpty(this._actions)}
-        slot=${ifDefined(slot)}
-      >
+      <div part="actions" ?hidden=${!hasActions} slot=${ifDefined(slot)}>
         <slot name="actions"></slot>
       </div>
     `;
@@ -1204,7 +1205,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 }
 
 declare global {
-  interface HtmlElementTagNameMap {
+  interface HTMLElementTagNameMap {
     'igc-date-range-picker': IgcDateRangePickerComponent;
   }
 }

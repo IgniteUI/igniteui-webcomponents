@@ -75,7 +75,7 @@ export const checkSelectedRange = (
     const length = calendar.values.length;
     checkDatesEqual(calendar.values[length - 1], expectedValue?.end!);
   }
-  if (!expectedValue?.start && !expectedValue?.end) {
+  if (!(expectedValue?.start || expectedValue?.end)) {
     expect(calendar.values).to.deep.equal([]);
   }
 };

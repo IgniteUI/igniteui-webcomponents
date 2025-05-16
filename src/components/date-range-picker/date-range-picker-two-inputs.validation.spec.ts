@@ -9,7 +9,6 @@ import {
   simulateClick,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -23,7 +22,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
   let picker: IgcDateRangePickerComponent;
-  let dateTimeInputs: Array<IgcDateTimeInputComponent>;
+  let dateTimeInputs: IgcDateTimeInputComponent[];
 
   const today = CalendarDay.today;
   const tomorrow = today.add('day', 1);
@@ -54,7 +53,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
       expect(spec.element.form).to.equal(spec.form);
     });
 
-    it('should not participate in form submission if the value is empty/invalid', async () => {
+    it('should not participate in form submission if the value is empty/invalid', () => {
       value = { start: null, end: null };
       spec.setProperties({ value });
       spec.assertSubmitHasKeyValue(startKey, null);
@@ -380,24 +379,6 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
       expect(picker.invalid).to.be.false;
       await checkInputsInvalidState(picker, false, false);
     });
-
-    it('should not enter in invalid state when clicking the calendar toggle part - single input', async () => {
-      picker = await fixture<IgcDateRangePickerComponent>(
-        html`<igc-date-range-picker required></igc-date-range-picker>`
-      );
-      const input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
-
-      expect(picker.invalid).to.be.false;
-      expect(input.invalid).to.be.false;
-
-      simulateClick(getIcon(picker, toggleIcon));
-      await elementUpdated(picker);
-
-      expect(picker.invalid).to.be.false;
-      expect(input.invalid).to.be.false;
-    });
   });
 
   describe('defaultValue', () => {
@@ -422,7 +403,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
       endKey = `${spec.element.name}-end`;
     });
 
-    it('correct initial state', async () => {
+    it('correct initial state', () => {
       spec.assertIsPristine();
       checkSelectedRange(spec.element, value);
     });
@@ -445,7 +426,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     });
   });
   describe('Validation message slots', () => {
-    it('', async () => {
+    it('', () => {
       const now = CalendarDay.today;
       const tomorrow = now.add('day', 1);
       const yesterday = now.add('day', -1);

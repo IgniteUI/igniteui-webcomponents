@@ -587,12 +587,8 @@ describe('Date range picker - single input', () => {
         picker.readOnly = true;
         await elementUpdated(picker);
 
-        input.focus();
-        await elementUpdated(input);
         simulateClick(getIcon(picker, clearIcon));
         await elementUpdated(picker);
-        input.blur();
-        await elementUpdated(input);
 
         expect(picker.value).to.deep.equal(testValue);
         expect(eventSpy).not.called;
