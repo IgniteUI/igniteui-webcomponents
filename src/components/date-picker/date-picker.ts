@@ -534,7 +534,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected handlerCalendarIconSlotPointerDown(event: PointerEvent) {
+  protected _handlerCalendarIconSlotPointerDown(event: PointerEvent) {
     // This is where the delegateFocus of the underlying input is a chore.
     // If we have a required validator we don't want the input to enter an invalid
     // state right off the bat when opening the picker which will happen since focus is transferred to the calendar element.
@@ -686,7 +686,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <span
         slot="prefix"
         part=${state}
-        @pointerdown=${this.handlerCalendarIconSlotPointerDown}
+        @pointerdown=${this._handlerCalendarIconSlotPointerDown}
         @click=${this.readOnly ? nothing : this.handleAnchorClick}
       >
         <slot name=${state}>${defaultIcon}</slot>
