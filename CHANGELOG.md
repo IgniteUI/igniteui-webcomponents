@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Fixed
+- #### DateTime Input
+  - Ensure `igcChange` is emitted in case an incomplete mask value has been filled [#1695](https://github.com/IgniteUI/igniteui-webcomponents/issues/1695)
 - #### Textarea
   - Dynamic prefix/suffix slot content state [#1686](https://github.com/IgniteUI/igniteui-webcomponents/issues/1686)
 
