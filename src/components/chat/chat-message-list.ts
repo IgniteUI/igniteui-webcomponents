@@ -4,7 +4,11 @@ import { repeat } from 'lit/directives/repeat.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import { styles } from './themes/message-list.base.css.js';
-import type { AttachmentTemplate, IgcMessage } from './types.js';
+import type {
+  AttachmentTemplate,
+  IgcMessage,
+  MessageActionsTemplate,
+} from './types.js';
 
 /**
  *
@@ -39,6 +43,9 @@ export default class IgcChatMessageListComponent extends LitElement {
 
   @property({ type: Function })
   public attachmentContentTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public messageActionsTemplate?: MessageActionsTemplate;
 
   private formatDate(date: Date): string {
     const today = new Date();
@@ -121,6 +128,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                     .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
                     .attachmentActionsTemplate=${this.attachmentActionsTemplate}
                     .attachmentContentTemplate=${this.attachmentContentTemplate}
+                    .messageActionsTemplate=${this.messageActionsTemplate}
                   ></igc-chat-message>
                 `
               )}

@@ -11,6 +11,7 @@ import type {
   AttachmentTemplate,
   IgcMessage,
   IgcMessageAttachment,
+  MessageActionsTemplate,
 } from './types.js';
 
 export interface IgcChatComponentEventMap {
@@ -71,6 +72,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   @property({ type: Function })
   public attachmentContentTemplate?: AttachmentTemplate;
+
+  @property({ type: Function })
+  public messageActionsTemplate?: MessageActionsTemplate;
 
   public override connectedCallback() {
     super.connectedCallback();
@@ -138,6 +142,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
           .attachmentActionsTemplate=${this.attachmentActionsTemplate}
           .attachmentContentTemplate=${this.attachmentContentTemplate}
+          .messageActionsTemplate=${this.messageActionsTemplate}
         >
         </igc-chat-message-list>
         <igc-chat-input

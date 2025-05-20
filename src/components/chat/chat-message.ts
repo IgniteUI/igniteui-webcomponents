@@ -5,7 +5,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import { renderMarkdown } from './markdown-util.js';
 import { IgcMessageAttachmentsComponent } from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import type { AttachmentTemplate, IgcMessage } from './types.js';
+import type {
+  AttachmentTemplate,
+  IgcMessage,
+  MessageActionsTemplate,
+} from './types.js';
 
 /**
  *
@@ -45,6 +49,9 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ type: Function })
   public attachmentContentTemplate?: AttachmentTemplate;
 
+  @property({ type: Function })
+  public messageActionsTemplate?: MessageActionsTemplate;
+
   protected override render() {
     const containerClass = `message-container ${!this.isResponse ? 'sent' : ''}`;
 
@@ -63,6 +70,9 @@ export default class IgcChatMessageComponent extends LitElement {
                 .attachmentContentTemplate=${this.attachmentContentTemplate}
               >
               </igc-message-attachments>`
+            : ''}
+          ${this.messageActionsTemplate && this.message
+            ? this.messageActionsTemplate(this.message)
             : ''}
         </div>
       </div>
