@@ -45,9 +45,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
-  @property({ reflect: true, attribute: false })
-  public isAiResponding = false;
-
   @property({ type: Boolean, attribute: 'hide-avatar' })
   public hideAvatar = false;
 
@@ -99,39 +96,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  /** Starts the response */
-  public startResponse() {
-    this.isAiResponding = true;
-  }
-
-  /** Show response part. */
-  public showResponsePart(part: string) {
-    if (!this.isAiResponding) {
-      return false;
-    }
-
-    let responseMessage = this.messages[this.messages.length - 1];
-    responseMessage = {
-      ...responseMessage,
-      text: `${responseMessage.text} ${part}`,
-    };
-    this.messages[this.messages.length - 1] = responseMessage;
-    this.messages = [...this.messages];
-
-    return true;
-  }
-
-  /** Ends the response */
-  public endResponse(attachments?: IgcMessageAttachment[]) {
-    this.isAiResponding = false;
-
-    const response = this.messages[this.messages.length - 1];
-    response.timestamp = new Date();
-    if (attachments) {
-      response.attachments = attachments;
-    }
-  }
-
   private handleSendMessage(e: CustomEvent) {
     const text = e.detail.text;
     const attachments = e.detail.attachments || [];
@@ -170,7 +134,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <igc-chat-message-list
           .messages=${this.messages}
           .disableAutoScroll=${this.disableAutoScroll}
-          .isAiResponding=${this.isAiResponding}
           .attachmentTemplate=${this.attachmentTemplate}
           .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
           .attachmentActionsTemplate=${this.attachmentActionsTemplate}
@@ -179,7 +142,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
         </igc-chat-message-list>
         <igc-chat-input
           .disableAttachments=${this.disableAttachments}
-          .isAiResponding=${this.isAiResponding}
           @message-send=${this.handleSendMessage}
         ></igc-chat-input>
       </div>

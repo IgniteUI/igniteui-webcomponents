@@ -25,9 +25,6 @@ export default class IgcChatMessageListComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
-  @property({ reflect: true, attribute: false })
-  public isAiResponding = false;
-
   @property({ type: Boolean, attribute: 'disable-auto-scroll' })
   public disableAutoScroll = false;
 
@@ -130,15 +127,16 @@ export default class IgcChatMessageListComponent extends LitElement {
             `
           )}
           ${
-            this.isAiResponding
-              ? html`
-                  <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                  </div>
-                `
-              : ''
+            ''
+            // this.isAiResponding
+            //   ? html`
+            //       <div class="typing-indicator">
+            //         <div class="typing-dot"></div>
+            //         <div class="typing-dot"></div>
+            //         <div class="typing-dot"></div>
+            //       </div>
+            //     `
+            //   : ''
           }
         </div>
       </div>

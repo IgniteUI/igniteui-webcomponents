@@ -37,13 +37,29 @@ const metadata: Meta<IgcChatComponent> = {
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
+    attachmentTemplate: {
+      type: 'AttachmentTemplate',
+      control: 'AttachmentTemplate',
+    },
+    attachmentHeaderTemplate: {
+      type: 'AttachmentTemplate',
+      control: 'AttachmentTemplate',
+    },
+    attachmentActionsTemplate: {
+      type: 'AttachmentTemplate',
+      control: 'AttachmentTemplate',
+    },
+    attachmentContentTemplate: {
+      type: 'AttachmentTemplate',
+      control: 'AttachmentTemplate',
+    },
   },
   args: {
     hideAvatar: false,
     hideUserName: false,
     disableAutoScroll: false,
     disableAttachments: false,
-    headerText: 'AI Chat',
+    headerText: '',
   },
 };
 
@@ -55,6 +71,10 @@ interface IgcChatArgs {
   disableAutoScroll: boolean;
   disableAttachments: boolean;
   headerText: string;
+  attachmentTemplate: AttachmentTemplate;
+  attachmentHeaderTemplate: AttachmentTemplate;
+  attachmentActionsTemplate: AttachmentTemplate;
+  attachmentContentTemplate: AttachmentTemplate;
 }
 type Story = StoryObj<IgcChatArgs>;
 
@@ -97,17 +117,15 @@ function handleMessageSend(e: CustomEvent) {
     text: '',
     isResponse: true,
     timestamp: new Date(),
-    attachments: [],
+    attachments: attachments,
   };
-  messages = [...messages, emptyResponse];
-  chat.messages = [...messages];
+  chat.messages = [...messages, emptyResponse];
 
-  chat.startResponse();
   setTimeout(() => {
     const responseParts = generateAIResponse(e.detail.text).split(' ');
     showResponse(chat, responseParts).then(() => {
       messages = chat.messages;
-      chat.endResponse(attachments);
+      // TODO: add attachments (if any) to the response message
     });
   }, 1000);
 }
@@ -115,7 +133,14 @@ function handleMessageSend(e: CustomEvent) {
 async function showResponse(chat: any, responseParts: any) {
   for (let i = 0; i < responseParts.length; i++) {
     await new Promise((resolve) => setTimeout(resolve, 100));
-    chat.showResponsePart(responseParts[i]);
+
+    const lastMessageIndex = chat.messages.length - 1;
+    chat.messages[lastMessageIndex] = {
+      ...chat.messages[lastMessageIndex],
+      text: `${chat.messages[lastMessageIndex].text} ${responseParts[i]}`,
+    };
+
+    chat.messages = [...chat.messages];
   }
 }
 

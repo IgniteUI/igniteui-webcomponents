@@ -40,9 +40,6 @@ export default class IgcChatInputComponent extends LitElement {
   @property({ type: Boolean, attribute: 'disable-attachments' })
   public disableAttachments = false;
 
-  @property({ type: Boolean })
-  public isAiResponding = false;
-
   @query('textarea')
   private textInputElement!: HTMLTextAreaElement;
 
@@ -67,9 +64,7 @@ export default class IgcChatInputComponent extends LitElement {
   private handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!this.isAiResponding) {
-        this.sendMessage();
-      }
+      this.sendMessage();
     }
   }
 
@@ -158,8 +153,8 @@ export default class IgcChatInputComponent extends LitElement {
             collection="material"
             variant="contained"
             class="small"
-            ?disabled=${this.isAiResponding ||
-            (!this.inputValue.trim() && this.attachments.length === 0)}
+            ?disabled=${!this.inputValue.trim() &&
+            this.attachments.length === 0}
             @click=${this.sendMessage}
           ></igc-icon-button>
         </div>
