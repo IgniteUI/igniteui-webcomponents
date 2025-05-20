@@ -5,12 +5,11 @@ $theme: $material;
 
 :host {
     ::slotted(label) {
-        margin-block-end: rem(16px);
         color: var-get($theme, 'color');
     }
 }
 
-:host([disabled]) {
+:host(:state(disabled)) {
     ::slotted(label) {
         color: var-get($theme, 'disabled-color');
     }

@@ -10,6 +10,10 @@
 
 :host([alignment='vertical']) {
     gap: 0;
+
+    ::slotted(label) {
+        margin-block-end: rem(16px);
+    }
 }
 
 :host([alignment='horizontal']) {

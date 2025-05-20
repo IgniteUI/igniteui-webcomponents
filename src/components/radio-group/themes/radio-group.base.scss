@@ -12,9 +12,13 @@
     flex-direction: column;
     gap: rem(8px);
     width: max-content;
+
+    ::slotted(label) {
+        margin-block-end: rem(8px);
+    }
 }
 
-:host([alignment='vertical'][labelBefore]) {
+:host(:state(labelBefore)[alignment='vertical']) {
     ::slotted(*) {
         align-self: flex-end;
     }

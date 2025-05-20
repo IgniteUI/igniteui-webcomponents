@@ -31,13 +31,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   private _name!: string;
   private _value!: string;
 
-  @property({ type: Boolean, reflect: true })
-  private disabled = false;
-
-  @property({ type: Boolean, reflect: true })
-  private labelBefore = false;
-
-  @queryAssignedElements({ flatten: true })
+  @queryAssignedElements({ selector: 'igc-radio', flatten: true })
   private _radios!: NodeListOf<IgcRadioComponent>;
 
   /**
@@ -93,12 +87,20 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   private _observerCallback() {
-    const radios = Array.from(this._radios as unknown as Element[]).filter(
-      (el) => el.tagName.toLowerCase() === 'igc-radio'
-    ) as IgcRadioComponent[];
-    this.disabled = radios.every((radio) => radio.disabled);
-    this.labelBefore =
-      radios.some((radio) => radio.labelPosition === 'before') ?? false;
+    const radios = Array.from(this._radios);
+    const setState = (state: string, condition: boolean) =>
+      condition
+        ? this._internals.states.add(state)
+        : this._internals.states.delete(state);
+
+    setState(
+      'disabled',
+      radios.every((radio) => radio.disabled)
+    );
+    setState(
+      'labelBefore',
+      radios.some((radio) => radio.labelPosition === 'before')
+    );
   }
 
   constructor() {
