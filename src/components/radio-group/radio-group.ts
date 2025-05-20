@@ -98,7 +98,7 @@ export default class IgcRadioGroupComponent extends LitElement {
       radios.every((radio) => radio.disabled)
     );
     setState(
-      'labelBefore',
+      'label-before',
       radios.some((radio) => radio.labelPosition === 'before')
     );
   }

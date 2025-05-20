@@ -18,7 +18,7 @@
     }
 }
 
-:host(:state(labelBefore)[alignment='vertical']) {
+:host(:state(label-before)[alignment='vertical']) {
     ::slotted(*) {
         align-self: flex-end;
     }
