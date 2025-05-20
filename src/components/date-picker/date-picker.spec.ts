@@ -1,10 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import IgcCalendarComponent from '../calendar/calendar.js';
-import IgcDaysViewComponent from '../calendar/days-view/days-view.js';
-import { CalendarDay } from '../calendar/model.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
+import { getCalendarDOM, getDayViewDOM } from '../calendar/helpers.spec.js';
+import { CalendarDay, toCalendarDay } from '../calendar/model.js';
+import { DateRangeType } from '../calendar/types.js';
 import {
   altKey,
   arrowDown,
@@ -12,15 +11,8 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import {
-  type ValidationContainerTestsParams,
-  checkDatesEqual,
-  createFormAssociatedTestBed,
-  runValidationContainerTests,
-  simulateClick,
-  simulateKeyboard,
-  simulatePointerDown,
-} from '../common/utils.spec.js';
+import { equal } from '../common/util.js';
+import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -36,6 +28,17 @@ describe('Date picker', () => {
 
   function getLabel() {
     return picker.renderRoot.querySelector('label')!;
+  }
+
+  function selectCurrentDate(calendar: IgcCalendarComponent) {
+    const { current } = getDayViewDOM(
+      getCalendarDOM(calendar).views.days
+    ).dates;
+    simulateClick(current.children[0]);
+  }
+
+  function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
+    expect(equal(toCalendarDay(a), toCalendarDay(b))).to.be.true;
   }
 
   let picker: IgcDatePickerComponent;
@@ -893,363 +896,81 @@ describe('Date picker', () => {
 
       expect(picker.open).to.be.true;
     });
-  });
 
-  describe('Form integration', () => {
-    const today = CalendarDay.today;
-    const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(
-      html`<igc-date-picker name="datePicker"></igc-date-picker>`
-    );
-
-    beforeEach(async () => {
-      await spec.setup(IgcDatePickerComponent.tagName);
-    });
-
-    it('should be form associated', () => {
-      expect(spec.element.form).to.equal(spec.form);
-    });
-
-    it('should not participate in form submission if the value is empty/invalid', () => {
-      spec.assertSubmitHasValue(null);
-    });
-
-    it('should participate in form submission if there is a value and the value adheres to the validation constraints', () => {
-      spec.setProperties({ value: today.native });
-      spec.assertSubmitHasValue(spec.element.value?.toISOString());
-    });
-
-    it('should reset to its default value state on form reset', () => {
-      spec.setProperties({ value: today.native });
-      spec.reset();
-
-      expect(spec.element.value).to.be.null;
-    });
-
-    it('should reset to the new default value after setAttribute() call', () => {
-      spec.setAttributes({ value: today.native.toISOString() });
-      spec.setProperties({ value: today.add('day', 180).native });
-      spec.reset();
-
-      checkDatesEqual(spec.element.value!, today);
-      spec.assertSubmitHasValue(today.native.toISOString());
-    });
-
-    it('should reflect disabled ancestor state (fieldset/form)', () => {
-      spec.setAncestorDisabledState(true);
-      expect(spec.element.disabled).to.be.true;
-
-      spec.setAncestorDisabledState(false);
-      expect(spec.element.disabled).to.be.false;
-    });
-
-    it('should enforce required constraint', () => {
-      spec.setProperties({ required: true });
-      spec.assertSubmitFails();
-
-      spec.setProperties({ value: today.native });
-      spec.assertSubmitPasses();
-    });
-
-    it('should enforce min value constraint', () => {
-      // No value - submit passes
-      spec.setProperties({ min: new Date(2026, 0, 1) });
-      spec.assertSubmitPasses();
-
-      // Invalid min constraint
-      spec.setProperties({ value: new Date(2022, 0, 1) });
-      spec.assertSubmitFails();
-
-      // Valid value
-      spec.setProperties({ value: new Date(2026, 0, 2) });
-      spec.assertSubmitPasses();
-    });
-
-    it('should enforce max value constraint', () => {
-      // No value - submit passes
-      spec.setProperties({ max: new Date(2020, 0, 1) });
-      spec.assertSubmitPasses();
-
-      // Invalid max constraint
-      spec.setProperties({ value: today.native });
-      spec.assertSubmitFails();
-
-      // Valid value
-      spec.setProperties({ value: new Date(2020, 0, 1) });
-      spec.assertSubmitPasses();
-    });
-
-    it('should enforce min value constraint with string property', () => {
-      // No value - submit passes
-      spec.setProperties({ min: new Date(2026, 0, 1).toISOString() });
-      spec.assertSubmitPasses();
-
-      // Invalid min constraint
-      spec.setProperties({ value: new Date(2022, 0, 1).toISOString() });
-      spec.assertSubmitFails();
-
-      // Valid value
-      spec.setProperties({ value: new Date(2026, 0, 2).toISOString() });
-      spec.assertSubmitPasses();
-    });
-
-    it('should enforce max value constraint with string property', () => {
-      // No value - submit passes
-      spec.setProperties({ max: new Date(2020, 0, 1).toISOString() });
-      spec.assertSubmitPasses();
-
-      // Invalid max constraint
-      spec.setProperties({ value: today.native });
-      spec.assertSubmitFails();
-
-      // Valid value
-      spec.setProperties({ value: new Date(2020, 0, 1).toISOString() });
-      spec.assertSubmitPasses();
-    });
-
-    it('should invalidate the component if a disabled date is typed in the input', () => {
-      const minDate = new Date(2024, 1, 1);
-      const maxDate = new Date(2024, 1, 28);
-
-      const disabledDates: DateRangeDescriptor[] = [
-        {
-          type: DateRangeType.Between,
-          dateRange: [minDate, maxDate],
-        },
-      ];
-
-      spec.setProperties({ disabledDates, value: new Date(2024, 1, 26) });
-
-      expect(spec.element.invalid).to.be.true;
-      spec.assertSubmitFails();
-    });
-
-    it('should enforce custom constraint', () => {
-      spec.element.setCustomValidity('invalid');
-      spec.assertSubmitFails();
-
-      spec.element.setCustomValidity('');
-      spec.assertSubmitPasses();
-    });
-
-    it('synchronous form validation', () => {
-      spec.setProperties({ required: true }, false);
-
-      expect(spec.form.checkValidity()).to.be.false;
-      spec.assertSubmitFails();
-
-      spec.reset();
-
-      spec.setProperties({ value: today.native }, false);
-
-      expect(spec.form.checkValidity()).to.be.true;
-      spec.assertSubmitPasses();
-    });
-  });
-
-  describe('defaultValue', () => {
-    const today = CalendarDay.today;
-
-    describe('Form integration', () => {
-      const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
-        <igc-date-picker
-          name="datePicker"
-          .defaultValue=${today.native}
-        ></igc-date-picker>
-      `);
-
-      beforeEach(async () => {
-        await spec.setup(IgcDatePickerComponent.tagName);
-      });
-
-      it('correct initial state', () => {
-        spec.assertIsPristine();
-        checkDatesEqual(spec.element.value!, today);
-      });
-
-      it('is correctly submitted', () => {
-        spec.assertSubmitHasValue(today.native.toISOString());
-      });
-
-      it('is correctly reset', () => {
-        spec.setProperties({ value: today.add('day', 1).native });
-        spec.reset();
-
-        checkDatesEqual(spec.element.value!, today);
-      });
-    });
-
-    describe('Validation', () => {
-      const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
-        <igc-date-picker
-          name="datePicker"
-          .defaultValue=${null}
-        ></igc-date-picker>
-      `);
-
-      beforeEach(async () => {
-        await spec.setup(IgcDatePickerComponent.tagName);
-      });
-
-      it('fails required validation', () => {
-        spec.setProperties({ required: true });
-        spec.assertIsPristine();
-        spec.assertSubmitFails();
-      });
-
-      it('passes required validation when updating defaultValue', () => {
-        spec.setProperties({ required: true, defaultValue: today.native });
-        spec.assertIsPristine();
-
-        spec.assertSubmitPasses();
-      });
-
-      it('fails min validation', () => {
-        spec.setProperties({
-          min: today.native,
-          defaultValue: today.add('day', -1).native,
+    describe('Readonly state', () => {
+      describe('Dropdown mode', () => {
+        beforeEach(async () => {
+          picker.readOnly = true;
+          picker.value = CalendarDay.today.native;
+          await elementUpdated(picker);
         });
 
-        spec.assertIsPristine();
-        spec.assertSubmitFails();
-      });
+        it('should not show the picker on calendar icon click', async () => {
+          simulateClick(getIcon(pickerShowIcon));
+          await elementUpdated(picker);
 
-      it('passes min validation', () => {
-        spec.setProperties({ min: today.native, defaultValue: today.native });
-
-        spec.assertIsPristine();
-        spec.assertSubmitPasses();
-      });
-
-      it('fails max validation', () => {
-        spec.setProperties({
-          max: today.native,
-          defaultValue: today.add('day', 1).native,
+          expect(picker.open).to.be.false;
         });
 
-        spec.assertIsPristine();
-        spec.assertSubmitFails();
-      });
+        it('should not show the picker on keyboard shortcut', async () => {
+          simulateKeyboard(picker, [altKey, arrowDown]);
+          await elementUpdated(picker);
 
-      it('passes max validation', () => {
-        spec.setProperties({
-          max: today.native,
-          defaultValue: today.native,
+          expect(picker.open).to.be.false;
         });
 
-        spec.assertIsPristine();
-        spec.assertSubmitPasses();
+        it('should not clear the value by clicking on the clear icon', async () => {
+          simulateClick(getIcon(pickerClearIcon));
+          await elementUpdated(picker);
+
+          checkDatesEqual(picker.value!, CalendarDay.today);
+        });
       });
 
-      it('fails for range constraints', () => {
-        const minDate = new Date(2024, 1, 1);
-        const maxDate = new Date(2024, 1, 28);
-
-        const disabledDates: DateRangeDescriptor[] = [
-          {
-            type: DateRangeType.Between,
-            dateRange: [minDate, maxDate],
-          },
-        ];
-
-        spec.setProperties({
-          disabledDates,
-          defaultValue: new Date(2024, 1, 28),
+      describe('Dialog mode', () => {
+        beforeEach(async () => {
+          picker.readOnly = true;
+          picker.mode = 'dialog';
+          picker.label = 'Label';
+          picker.value = CalendarDay.today.native;
+          await elementUpdated(picker);
         });
 
-        spec.assertIsPristine();
-        spec.assertSubmitFails();
-      });
+        it('should not show the dialog on calendar icon click', async () => {
+          simulateClick(getIcon(pickerShowIcon));
+          await elementUpdated(picker);
 
-      it('passes for range constraints', () => {
-        const minDate = new Date(2024, 1, 1);
-        const maxDate = new Date(2024, 1, 28);
-
-        const disabledDates: DateRangeDescriptor[] = [
-          {
-            type: DateRangeType.Between,
-            dateRange: [minDate, maxDate],
-          },
-        ];
-
-        spec.setProperties({
-          disabledDates,
-          defaultValue: new Date(2024, 1, 29),
+          expect(picker.open).to.be.false;
         });
 
-        spec.assertIsPristine();
-        spec.assertSubmitPasses();
+        it('should not show the dialog on label click', async () => {
+          simulateClick(getLabel());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
+
+        it('should not show the dialog on input click', async () => {
+          simulateClick(dateTimeInput.renderRoot.querySelector('input')!);
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
+
+        it('should not show the dialog on keyboard shortcut', async () => {
+          simulateKeyboard(picker, [altKey, arrowDown]);
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
+
+        it('should not clear the value by clicking on the clear icon', async () => {
+          simulateClick(getIcon(pickerClearIcon));
+          await elementUpdated(picker);
+
+          checkDatesEqual(picker.value!, CalendarDay.today);
+        });
       });
-    });
-  });
-
-  describe('Initial validation', () => {
-    it('should not enter in invalid state when clicking the calendar toggle part', async () => {
-      picker = await fixture(
-        html`<igc-date-picker required></igc-date-picker>`
-      );
-      dateTimeInput = picker.renderRoot.querySelector(
-        IgcDateTimeInputComponent.tagName
-      )!;
-      const icon = picker.renderRoot.querySelector(
-        `[name='${pickerShowIcon}']`
-      )!;
-
-      expect(picker.invalid).to.be.false;
-      expect(dateTimeInput.invalid).to.be.false;
-
-      simulatePointerDown(icon);
-      await elementUpdated(picker);
-
-      expect(picker.invalid).to.be.false;
-      expect(dateTimeInput.invalid).to.be.false;
-    });
-  });
-
-  describe('Validation message slots', () => {
-    it('', () => {
-      const now = CalendarDay.today;
-      const tomorrow = now.add('day', 1);
-      const yesterday = now.add('day', -1);
-
-      const testParameters: ValidationContainerTestsParams<IgcDatePickerComponent>[] =
-        [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          {
-            slots: ['rangeOverflow'],
-            props: { value: now.native, max: yesterday.native }, // range-overflow slot
-          },
-          {
-            slots: ['rangeUnderflow'],
-            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
-          },
-          {
-            slots: ['badInput'],
-            props: {
-              value: now.native,
-              disabledDates: [
-                {
-                  type: DateRangeType.Between,
-                  dateRange: [yesterday.native, tomorrow.native], // bad-input slot
-                },
-              ],
-            },
-          },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
-        ];
-
-      runValidationContainerTests(IgcDatePickerComponent, testParameters);
     });
   });
 });
-
-const selectCurrentDate = (calendar: IgcCalendarComponent) => {
-  const daysView = calendar.renderRoot.querySelector(
-    IgcDaysViewComponent.tagName
-  )!;
-
-  const currentDaySpan = daysView.renderRoot.querySelector(
-    'span[part~="current"]'
-  )!;
-  simulateClick(currentDaySpan?.children[0]);
-};

@@ -51,6 +51,9 @@ export function getDayViewDOM(element: IgcDaysViewComponent) {
           )
         );
       },
+      get current() {
+        return root.querySelector('span[part~="current"]')!;
+      },
     },
   };
 }
