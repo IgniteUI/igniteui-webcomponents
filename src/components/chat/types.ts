@@ -5,7 +5,7 @@ export type IgcMessageAttachmentType = 'image' | 'file';
 export interface IgcMessage {
   id: string;
   text: string;
-  isResponse: boolean;
+  sender: string;
   timestamp: Date;
   attachments?: IgcMessageAttachment[];
 }

@@ -109,7 +109,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     const newMessage: IgcMessage = {
       id: Date.now().toString(),
       text,
-      isResponse: false,
+      sender: 'user',
       timestamp: new Date(),
       attachments,
     };

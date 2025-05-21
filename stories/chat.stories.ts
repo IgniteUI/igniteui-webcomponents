@@ -108,7 +108,7 @@ let messages: any[] = [
   {
     id: '1',
     text: "Hello! I'm an AI assistant created with Lit. How can I help you today?",
-    isResponse: true,
+    sender: 'bot',
     timestamp: new Date(),
   },
 ];
@@ -141,7 +141,7 @@ function handleMessageSend(e: CustomEvent) {
   const emptyResponse = {
     id: Date.now().toString(),
     text: '',
-    isResponse: true,
+    sender: 'bot',
     timestamp: new Date(),
     attachments: attachments,
   };
@@ -225,7 +225,7 @@ export const Basic: Story = {
       .hideUserName=${args.hideUserName}
       @igcMessageSend=${handleMessageSend}
       .messageActionsTemplate=${(msg) =>
-        msg.isResponse && msg.text.trim()
+        msg.sender === 'bot' && msg.text.trim()
           ? isResponseSent
             ? html`
                 <div>
