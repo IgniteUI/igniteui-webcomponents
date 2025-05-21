@@ -228,7 +228,7 @@ export const Basic: Story = {
         msg.sender === 'bot' && msg.text.trim()
           ? isResponseSent
             ? html`
-                <div>
+                <div style="float: right">
                   <igc-icon-button
                     name="thumb_up"
                     collection="material"
