@@ -22,6 +22,7 @@ import {
   createFormValueState,
   defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
   createCounter,
   isDefined,
@@ -29,7 +30,6 @@ import {
   isLTR,
   last,
   noop,
-  partNameMap,
   wrap,
 } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -357,7 +357,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     return html`
       <label
-        part=${partNameMap({
+        part=${partMap({
           base: true,
           checked,
           focused: this._kbFocus.focused,
@@ -374,21 +374,21 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           .disabled=${this.disabled}
           .checked=${live(checked)}
           tabindex=${this._tabIndex}
-          aria-checked=${checked ? 'true' : 'false'}
-          aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-checked=${checked}
+          aria-disabled=${this.disabled}
           aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
         />
-        <span part=${partNameMap({ control: true, checked })}>
+        <span part=${partMap({ control: true, checked })}>
           <span
             .hidden=${this.disabled}
-            part=${partNameMap({ ripple: true, checked })}
+            part=${partMap({ ripple: true, checked })}
           ></span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
+          part=${partMap({ label: true, checked })}
           id=${this.labelId}
         >
           <slot></slot>

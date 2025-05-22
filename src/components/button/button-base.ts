@@ -6,7 +6,7 @@ import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
@@ -140,10 +140,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private renderButton() {
     return html`
       <button
-        part=${partNameMap({
-          base: true,
-          focused: this._kbFocus.focused,
-        })}
+        part=${partMap({ base: true, focused: this._kbFocus.focused })}
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
@@ -158,13 +155,10 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private renderLinkButton() {
     return html`
       <a
-        part=${partNameMap({
-          base: true,
-          focused: this._kbFocus.focused,
-        })}
+        part=${partMap({ base: true, focused: this._kbFocus.focused })}
         role="button"
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.disabled}
         href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}

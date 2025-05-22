@@ -128,9 +128,9 @@ export default class IgcChipComponent extends EventEmitterMixin<
     return html`
       <button
         part="base"
-        .disabled="${this.disabled}"
-        aria-selected="${this.selected ? 'true' : 'false'}"
-        aria-disabled="${this.disabled ? 'true' : 'false'}"
+        .disabled=${this.disabled}
+        aria-selected=${this.selected}
+        aria-disabled=${this.disabled}
         @click=${this.handleSelect}
       >
         <span

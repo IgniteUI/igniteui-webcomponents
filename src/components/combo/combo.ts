@@ -21,13 +21,13 @@ import {
   type FormValue,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
   asArray,
   equal,
   findElementFromEventPath,
   first,
   isEmpty,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -748,7 +748,7 @@ export default class IgcComboComponent<
     return html`
       <igc-combo-item
         id=${id}
-        part=${partNameMap({ item: true, selected, active })}
+        part=${partMap({ item: true, selected, active })}
         aria-setsize=${this._state.dataState.length}
         aria-posinset=${position}
         exportparts="checkbox, checkbox-indicator, checked"
@@ -856,7 +856,7 @@ export default class IgcComboComponent<
     return html`
       <span
         slot="suffix"
-        part=${partNameMap({
+        part=${partMap({
           'toggle-icon': true,
           filled: !isEmpty(this.value),
         })}
@@ -947,7 +947,7 @@ export default class IgcComboComponent<
             slot=${this.caseSensitiveIcon && 'suffix'}
             name="case_sensitive"
             collection="default"
-            part=${partNameMap({
+            part=${partMap({
               'case-icon': true,
               active: this.filteringOptions.caseSensitive ?? false,
             })}

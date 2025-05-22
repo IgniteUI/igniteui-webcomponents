@@ -12,11 +12,11 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   createCounter,
   isEmpty,
   numberInRangeInclusive,
-  partNameMap,
 } from '../common/util.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
@@ -242,21 +242,21 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   protected override render() {
     const label = this.ariaLabel ? this.ariaLabel : undefined;
     const labelledby = label ? undefined : this.titleId;
-    const backdropParts = partNameMap({
+    const backdropParts = {
       backdrop: true,
       animating: this.animating,
-    });
-    const baseParts = partNameMap({
+    };
+    const baseParts = {
       base: true,
       titled: this.titleElements.length > 0 || this.title,
       footed: this.footerElements.length > 0 || !this.hideDefaultAction,
-    });
+    };
 
     return html`
-      <div part=${backdropParts} aria-hidden=${!this.open}></div>
+      <div part=${partMap(backdropParts)} aria-hidden=${!this.open}></div>
       <dialog
         ${ref(this.dialogRef)}
-        part=${baseParts}
+        part=${partMap(baseParts)}
         role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}

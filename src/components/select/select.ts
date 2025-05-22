@@ -41,12 +41,8 @@ import {
   type FormValue,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
-import {
-  findElementFromEventPath,
-  isEmpty,
-  isString,
-  partNameMap,
-} from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { findElementFromEventPath, isEmpty, isString } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
@@ -597,12 +593,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderToggleIcon() {
-    const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
+    const parts = { 'toggle-icon': true, filled: this.value! };
     const iconHidden = this.open && !isEmpty(this._expandedIconSlot);
     const iconExpandedHidden = !iconHidden;
 
     return html`
-      <span slot="suffix" part=${parts} aria-hidden="true">
+      <span slot="suffix" part=${partMap(parts)} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
             name=${this.open ? 'input_collapse' : 'input_expand'}
