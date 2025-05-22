@@ -17,6 +17,7 @@ import {
   pageUpKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
+import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
@@ -55,7 +56,7 @@ import type {
 import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
-
+@blazorIndirectRender
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
