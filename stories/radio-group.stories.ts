@@ -78,7 +78,10 @@ export const Default: Story = {
       alignment=${ifDefined(args.alignment)}
       name=${ifDefined(args.name)}
       value=${ifDefined(args.value)}
+      aria-labelledby="radio-group-label"
+      role="radiogroup"
     >
+      <label id="radio-group-label">Radio Group Label</label>
       <igc-radio value="apple">Apple</igc-radio>
       <igc-radio value="orange">Orange</igc-radio>
       <igc-radio value="mango">Mango</igc-radio>

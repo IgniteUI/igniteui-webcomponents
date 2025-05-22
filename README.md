@@ -9,7 +9,7 @@
 [![npm version](https://badge.fury.io/js/igniteui-webcomponents.svg)](https://badge.fury.io/js/igniteui-webcomponents)
 [![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
 
-[Ignite UI for Web Components] is a complete library of UI components, giving you the ability to build modern web applications using encapsulation and the concept of reusable components in a dependency-free approach. All components are based on the [Indigo.Design Design System] and are backed by ready-to-use UI kits for Sketch, Adobe XD and Figma.
+[Ignite UI for Web Components] is a complete library of UI components, giving you the ability to build modern web applications using encapsulation and the concept of reusable components in a dependency-free approach. All components are based on the [Indigo.Design Design System] and are backed by ready-to-use UI kit for Figma.
 
 See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
