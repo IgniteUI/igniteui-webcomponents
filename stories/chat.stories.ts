@@ -13,10 +13,9 @@ import type {
   MessageActionsTemplate,
 } from '../src/components/chat/types.js';
 
-const VITE_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtybnhzc2FycnBpZ3RvY3N2Z2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5MDk4MjYsImV4cCI6MjA2MTQ4NTgyNn0.9TTnNXXXnxAwEFuSn-i-ctGc6LKAPAHmAMxBUSP0vWI';
-const VITE_SUPABASE_URL = 'https://krnxssarrpigtocsvglo.supabase.co';
-const supabase = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 defineComponents(IgcChatComponent);
 
