@@ -1,10 +1,27 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
+:host {
+    ::slotted(label) {
+        display: block;
+    }
+}
+
 :host([alignment='vertical']) {
     display: flex;
     flex-direction: column;
     gap: rem(8px);
+    width: max-content;
+
+    ::slotted(label) {
+        margin-block-end: rem(8px);
+    }
+}
+
+:host(:state(label-before)[alignment='vertical']) {
+    ::slotted(*) {
+        align-self: flex-end;
+    }
 }
 
 :host([alignment='horizontal']) {
@@ -12,11 +29,10 @@
 
     display: grid;
     grid-template-columns: repeat(var(--layout-count), minmax(min-content, max-content));
-    grid-template-rows: auto auto;
     column-gap: rem(8px);
     align-items: start;
 
-    > * {
-        grid-row: 1;
+    ::slotted(label) {
+        grid-column: 1 / -1;
     }
 }
