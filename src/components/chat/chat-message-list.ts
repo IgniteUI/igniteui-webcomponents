@@ -123,7 +123,6 @@ export default class IgcChatMessageListComponent extends LitElement {
                 (message) => html`
                   <igc-chat-message
                     .message=${message}
-                    .sender=${message.sender}
                     .attachmentTemplate=${this.attachmentTemplate}
                     .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
                     .attachmentActionsTemplate=${this.attachmentActionsTemplate}

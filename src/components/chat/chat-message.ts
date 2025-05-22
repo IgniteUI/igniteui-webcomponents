@@ -34,9 +34,6 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public message: IgcMessage | undefined;
 
-  @property({ reflect: true, attribute: false })
-  public sender: string | undefined;
-
   @property({ type: Function })
   public attachmentTemplate?: AttachmentTemplate;
 
@@ -53,7 +50,7 @@ export default class IgcChatMessageComponent extends LitElement {
   public messageActionsTemplate?: MessageActionsTemplate;
 
   protected override render() {
-    const containerClass = `message-container ${this.sender !== 'bot' ? 'sent' : ''}`;
+    const containerClass = `message-container ${this.message?.sender === 'user' ? 'sent' : ''}`;
 
     return html`
       <div class=${containerClass}>

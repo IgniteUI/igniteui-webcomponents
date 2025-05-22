@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
+import { createClient } from '@supabase/supabase-js';
 import {
   IgcChatComponent,
   defineComponents,
@@ -11,6 +12,11 @@ import type {
   IgcMessageAttachment,
   MessageActionsTemplate,
 } from '../src/components/chat/types.js';
+
+const VITE_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtybnhzc2FycnBpZ3RvY3N2Z2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5MDk4MjYsImV4cCI6MjA2MTQ4NTgyNn0.9TTnNXXXnxAwEFuSn-i-ctGc6LKAPAHmAMxBUSP0vWI';
+const VITE_SUPABASE_URL = 'https://krnxssarrpigtocsvglo.supabase.co';
+const supabase = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY);
 
 defineComponents(IgcChatComponent);
 
@@ -113,7 +119,57 @@ let messages: any[] = [
   },
 ];
 
-let isResponseSent = false;
+// load messages from supabase
+async function fetchMessages() {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .order('timestamp', { ascending: true });
+
+  if (error) {
+    // console.log('Error fetching messages:', error);
+    return [];
+  }
+
+  return data.map((message) => ({
+    id: message.id,
+    text: message.text,
+    sender: message.sender,
+    timestamp: new Date(message.timestamp),
+  }));
+}
+
+let isResponseSent: boolean;
+
+const messageActionsTemplate = (msg: any) => {
+  return msg.sender !== 'user' && msg.text.trim()
+    ? isResponseSent !== false
+      ? html`
+          <div style="float: right">
+            <igc-icon-button
+              name="thumb_up"
+              collection="material"
+              variant="flat"
+              @click=${() => alert(`Liked message: ${msg.text}`)}
+            ></igc-icon-button>
+            <igc-icon-button
+              name="thumb_down"
+              variant="flat"
+              collection="material"
+              @click=${() => alert(`Disliked message: ${msg.text}`)}
+            ></igc-icon-button>
+            <igc-icon-button
+              name="regenerate"
+              variant="flat"
+              collection="material"
+              @click=${() =>
+                alert(`Response should be re-generated: ${msg.text}`)}
+            ></igc-icon-button>
+          </div>
+        `
+      : ''
+    : '';
+};
 
 function handleMessageSend(e: CustomEvent) {
   const newMessage = e.detail;
@@ -156,6 +212,70 @@ function handleMessageSend(e: CustomEvent) {
       // TODO: add attachments (if any) to the response message
     });
   }, 1000);
+}
+
+async function handleMessageSendSupabase(e: CustomEvent) {
+  const newMessage = e.detail;
+  const chat = document.querySelector('igc-chat');
+  if (!chat) {
+    return;
+  }
+
+  saveMessageToSupabase(newMessage);
+
+  const attachments: IgcMessageAttachment[] =
+    newMessage.text.includes('picture') ||
+    newMessage.text.includes('image') ||
+    newMessage.text.includes('file')
+      ? [
+          {
+            id: 'random_img',
+            type: newMessage.text.includes('file') ? 'file' : 'image',
+            url: 'https://picsum.photos/378/395',
+            name: 'random.png',
+          },
+        ]
+      : [];
+
+  isResponseSent = false;
+  setTimeout(() => {
+    // create empty response
+    const emptyResponse = {
+      id: Date.now().toString(),
+      text: '',
+      sender: 'bot',
+      timestamp: new Date(),
+      attachments: attachments,
+    };
+    chat.messages = [...chat.messages, emptyResponse];
+
+    const responseParts = generateAIResponse(e.detail.text).split(' ');
+    showResponse(chat, responseParts).then(() => {
+      const lastMessageIndex = chat.messages.length - 1;
+      const lastMessage = chat.messages[lastMessageIndex];
+      saveMessageToSupabase(lastMessage);
+      isResponseSent = true;
+      // TODO: add attachments (if any) to the response message
+    });
+  }, 1000);
+}
+
+async function saveMessageToSupabase(message: any) {
+  const { error } = await supabase
+    .from('messages')
+    .insert([
+      {
+        id: message.id,
+        text: message.text,
+        sender: message.sender,
+        timestamp: message.timestamp,
+      },
+    ])
+    .select();
+  if (error) {
+    // console.log('Error saving message:', error);
+  }
+  return message;
 }
 
 async function showResponse(chat: any, responseParts: any) {
@@ -224,34 +344,31 @@ export const Basic: Story = {
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
       @igcMessageSend=${handleMessageSend}
-      .messageActionsTemplate=${(msg) =>
-        msg.sender === 'bot' && msg.text.trim()
-          ? isResponseSent
-            ? html`
-                <div style="float: right">
-                  <igc-icon-button
-                    name="thumb_up"
-                    collection="material"
-                    variant="flat"
-                    @click=${() => alert(`Liked·message:·${msg.text}`)}
-                  ></igc-icon-button>
-                  <igc-icon-button
-                    name="thumb_down"
-                    variant="flat"
-                    collection="material"
-                    @click=${() => alert(`Disliked·message:·${msg.text}`)}
-                  ></igc-icon-button>
-                  <igc-icon-button
-                    name="regenerate"
-                    variant="flat"
-                    collection="material"
-                    @click=${() =>
-                      alert(`Response·should·be·re-generated:·${msg.text}`)}
-                  ></igc-icon-button>
-                </div>
-              `
-            : ''
-          : ''}
+      .messageActionsTemplate=${messageActionsTemplate}
+    >
+    </igc-chat>
+  `,
+};
+
+export const Supabase: Story = {
+  play: async () => {
+    fetchMessages().then((msgs) => {
+      messages = msgs;
+      const chat = document.querySelector('igc-chat');
+      if (chat) {
+        chat.messages = messages;
+      }
+    });
+  },
+  render: (args) => html`
+    <igc-chat
+      .headerText=${args.headerText}
+      .disableAutoScroll=${args.disableAutoScroll}
+      .disableAttachments=${args.disableAttachments}
+      .hideAvatar=${args.hideAvatar}
+      .hideUserName=${args.hideUserName}
+      @igcMessageSend=${handleMessageSendSupabase}
+      .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>
   `,
