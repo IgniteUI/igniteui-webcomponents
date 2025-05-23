@@ -1,6 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../date-picker/themes/shared/date-picker.common.scss';
+@use '../../../date-picker/themes/shared/date-picker.common';
 
 $theme: $material;
 

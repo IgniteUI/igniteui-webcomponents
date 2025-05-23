@@ -1,6 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use '../date-picker/themes/date-picker.base.scss';
+@use '../date-picker/themes/date-picker.base';
 
 :host {
     display: flex;
