@@ -118,26 +118,6 @@ let messages: any[] = [
   },
 ];
 
-// load messages from supabase
-async function fetchMessages() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .order('timestamp', { ascending: true });
-
-  if (error) {
-    // console.log('Error fetching messages:', error);
-    return [];
-  }
-
-  return data.map((message) => ({
-    id: message.id,
-    text: message.text,
-    sender: message.sender,
-    timestamp: new Date(message.timestamp),
-  }));
-}
-
 let isResponseSent: boolean;
 
 const messageActionsTemplate = (msg: any) => {
@@ -185,7 +165,7 @@ function handleMessageSend(e: CustomEvent) {
       ? [
           {
             id: 'random_img',
-            type: newMessage.text.includes('file') ? 'file' : 'image',
+            // type: newMessage.text.includes('file') ? 'file' : 'image',
             url: 'https://picsum.photos/378/395',
             name: 'random.png',
           },
@@ -213,7 +193,73 @@ function handleMessageSend(e: CustomEvent) {
   }, 1000);
 }
 
-async function handleMessageSendSupabase(e: CustomEvent) {
+// load messages and attachments from supabase
+async function fetchMessages() {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, text, sender, timestamp, attachments (id, name, type)')
+    .order('timestamp', { ascending: true });
+
+  if (error) {
+    // console.log('Error fetching messages:', error);
+    return [];
+  }
+
+  if (!data || data.length === 0) {
+    return messages;
+  }
+
+  const mappedData = data.map((message) => ({
+    id: message.id,
+    text: message.text,
+    sender: message.sender,
+    timestamp: new Date(message.timestamp),
+    attachments: message.attachments.map((attachment: any) => ({
+      id: attachment.id,
+      name: attachment.name,
+      type: attachment.type,
+      url: supabase.storage.from('files').getPublicUrl(attachment.name).data
+        .publicUrl,
+    })),
+  }));
+  await processMappedData(mappedData);
+  return mappedData;
+}
+
+async function processMappedData(data: any) {
+  for (const message of data) {
+    for (const attachment of message.attachments) {
+      if (attachment.type.startsWith('image/')) {
+        const file = await fetchAttachment(attachment.name);
+        if (file) {
+          attachment.file = file;
+        }
+      } else {
+        attachment.file = new File([], attachment.name, {
+          type: attachment.type,
+        });
+      }
+    }
+  }
+  return data;
+}
+
+async function fetchAttachment(name: string) {
+  const { data, error } = await supabase.storage.from('files').download(name);
+
+  if (error) {
+    // console.log('Error fetching attachment:', error);
+    return null;
+  }
+
+  const file = new File([data], name, {
+    type: data.type,
+  });
+
+  return file;
+}
+
+async function handleMessageCreatedSupabase(e: CustomEvent) {
   const newMessage = e.detail;
   const chat = document.querySelector('igc-chat');
   if (!chat) {
@@ -222,19 +268,19 @@ async function handleMessageSendSupabase(e: CustomEvent) {
 
   saveMessageToSupabase(newMessage);
 
-  const attachments: IgcMessageAttachment[] =
-    newMessage.text.includes('picture') ||
-    newMessage.text.includes('image') ||
-    newMessage.text.includes('file')
-      ? [
-          {
-            id: 'random_img',
-            type: newMessage.text.includes('file') ? 'file' : 'image',
-            url: 'https://picsum.photos/378/395',
-            name: 'random.png',
-          },
-        ]
-      : [];
+  const attachments: IgcMessageAttachment[] = [];
+  // newMessage.text.includes('picture') ||
+  // newMessage.text.includes('image') ||
+  // newMessage.text.includes('file')
+  //   ? [
+  //       {
+  //         id: 'random_img',
+  //         // type: newMessage.text.includes('file') ? 'file' : 'image',
+  //         url: 'https://picsum.photos/378/395',
+  //         name: 'random.png',
+  //       },
+  //     ]
+  //   : [];
 
   isResponseSent = false;
   setTimeout(() => {
@@ -274,6 +320,42 @@ async function saveMessageToSupabase(message: any) {
   if (error) {
     // console.log('Error saving message:', error);
   }
+
+  // save attachments to supabase storage
+  if (message.attachments) {
+    message.attachments.forEach(async (attachment: IgcMessageAttachment) => {
+      if (!attachment.file) {
+        return;
+      }
+
+      const { error } = await supabase.storage
+        .from('files')
+        .upload(attachment.file.name, attachment.file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+      if (error) {
+        // console.log('Error saving attachment:', error);
+      }
+
+      // save attachment metadata to database
+      const { error: attachmentError } = await supabase
+        .from('attachments')
+        .insert([
+          {
+            id: attachment.id,
+            message_id: message.id,
+            name: attachment.file.name,
+            type: attachment.file.type,
+          },
+        ])
+        .select();
+      if (attachmentError) {
+        // console.log('Error saving attachment to table "attachments":', attachmentError);
+      }
+    });
+  }
+
   return message;
 }
 
@@ -300,7 +382,7 @@ function generateAIResponse(message: string): string {
   if (lowerMessage.includes('help')) {
     return "I'm here to help! What would you like to know about?";
   }
-  if (lowerMessage.includes('feature') || lowerMessage.includes('can you')) {
+  if (lowerMessage.includes('feature')) {
     return "As a demo AI, I can simulate conversations, display markdown formatting like **bold** and `code`, and adapt to light and dark themes. I'm built with Lit as a web component that can be integrated into any application.";
   }
   if (lowerMessage.includes('weather')) {
@@ -309,13 +391,13 @@ function generateAIResponse(message: string): string {
   if (lowerMessage.includes('thank')) {
     return "You're welcome! Let me know if you need anything else.";
   }
-  if (lowerMessage.includes('code') || lowerMessage.includes('example')) {
+  if (lowerMessage.includes('code')) {
     return "Here's an example of code formatting:\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n```";
   }
   if (lowerMessage.includes('image') || lowerMessage.includes('picture')) {
     return "Here's an image!";
   }
-  if (lowerMessage.includes('list') || lowerMessage.includes('items')) {
+  if (lowerMessage.includes('list')) {
     return "Here's an example of a list:\n\n- First item\n- Second item\n- Third item with **bold text**";
   }
   if (lowerMessage.includes('heading') || lowerMessage.includes('headings')) {
@@ -330,7 +412,7 @@ function generateAIResponse(message: string): string {
 `;
   }
 
-  return 'Thanks for your message. This is a demonstration of a chat interface built with Lit components. Feel free to ask about features or try different types of messages!';
+  return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
 }
 
 export const Basic: Story = {
@@ -342,7 +424,7 @@ export const Basic: Story = {
       .disableAttachments=${args.disableAttachments}
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
-      @igcMessageSend=${handleMessageSend}
+      @igcMessageCreated=${handleMessageSend}
       .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>
@@ -366,7 +448,7 @@ export const Supabase: Story = {
       .disableAttachments=${args.disableAttachments}
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
-      @igcMessageSend=${handleMessageSendSupabase}
+      @igcMessageCreated=${handleMessageCreatedSupabase}
       .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>

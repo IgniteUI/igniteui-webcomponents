@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 
-export type IgcMessageAttachmentType = 'image' | 'file';
+// export type IgcMessageAttachmentType = 'image' | 'file';
 
 export interface IgcMessage {
   id: string;
@@ -12,10 +12,10 @@ export interface IgcMessage {
 
 export interface IgcMessageAttachment {
   id: string;
-  type: IgcMessageAttachmentType;
+  // type: IgcMessageAttachmentType;
   url: string;
   name: string;
-  size?: number;
+  file?: File;
   thumbnail?: string;
 }
 

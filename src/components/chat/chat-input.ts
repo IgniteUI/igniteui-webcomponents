@@ -80,7 +80,7 @@ export default class IgcChatInputComponent extends LitElement {
   private sendMessage() {
     if (!this.inputValue.trim() && this.attachments.length === 0) return;
 
-    const messageEvent = new CustomEvent('message-send', {
+    const messageEvent = new CustomEvent('message-created', {
       detail: { text: this.inputValue, attachments: this.attachments },
     });
 
@@ -103,14 +103,15 @@ export default class IgcChatInputComponent extends LitElement {
 
     const files = Array.from(input.files);
     const newAttachments: IgcMessageAttachment[] = [];
+    let count = 0;
     files.forEach((file) => {
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
-        id: `attach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: isImage ? 'image' : 'file',
+        id: Date.now().toString() + count++,
+        // type: isImage ? 'image' : 'file',
         url: URL.createObjectURL(file),
         name: file.name,
-        size: file.size,
+        file: file,
         thumbnail: isImage ? URL.createObjectURL(file) : undefined,
       });
     });

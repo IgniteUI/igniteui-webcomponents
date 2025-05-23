@@ -92,10 +92,14 @@ igc-file-input::part(file-names){
 }
 
 .attachment-wrapper {
-    border: #C7C7CC solid 1px;
-    width: fit-content;
-    padding: 5px;
-    border-radius: 50px;
+    max-width: 200px;
+    margin-right: 5px;
+    float: left;
+
+    igc-chip {
+        border: 1px solid #E5E5EA;
+        border-radius: 5px;
+    }
 }
 
 .attachment-name {

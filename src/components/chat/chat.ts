@@ -15,7 +15,7 @@ import type {
 } from './types.js';
 
 export interface IgcChatComponentEventMap {
-  igcMessageSend: CustomEvent<IgcMessage>;
+  igcMessageCreated: CustomEvent<IgcMessage>;
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
 }
 
@@ -79,7 +79,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.addEventListener(
-      'message-send',
+      'message-created',
       this.handleSendMessage as EventListener
     );
     this.addEventListener(
@@ -91,7 +91,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(
-      'message-send',
+      'message-created',
       this.handleSendMessage as EventListener
     );
     this.removeEventListener(
@@ -115,7 +115,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     };
 
     this.messages = [...this.messages, newMessage];
-    this.emitEvent('igcMessageSend', { detail: newMessage });
+    this.emitEvent('igcMessageCreated', { detail: newMessage });
   }
 
   private handleAttachmentClick(e: CustomEvent) {
@@ -147,7 +147,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
         </igc-chat-message-list>
         <igc-chat-input
           .disableAttachments=${this.disableAttachments}
-          @message-send=${this.handleSendMessage}
+          @message-created=${this.handleSendMessage}
         ></igc-chat-input>
       </div>
     `;

@@ -95,7 +95,7 @@ export class IgcMessageAttachmentsComponent extends LitElement {
               (attachment) =>
                 html` <igc-expansion-panel
                   indicator-position="none"
-                  .open=${attachment.type === 'image'}
+                  .open=${attachment.file?.type.startsWith('image/')}
                   @igcClosing=${(ev: CustomEvent) =>
                     this.handleToggle(ev, attachment)}
                   @igcOpening=${(ev: CustomEvent) =>
@@ -107,7 +107,7 @@ export class IgcMessageAttachmentsComponent extends LitElement {
                         ? this.attachmentHeaderTemplate(this.attachments)
                         : html`
                             <slot name="attachment-icon">
-                              ${attachment.type === 'image'
+                              ${attachment.file?.type.startsWith('image/')
                                 ? html`<igc-icon
                                     name="image"
                                     collection="material"
@@ -129,7 +129,7 @@ export class IgcMessageAttachmentsComponent extends LitElement {
                         ? this.attachmentActionsTemplate(this.attachments)
                         : html`
                             <slot name="attachment-actions">
-                              ${attachment.type === 'image'
+                              ${attachment.file?.type.startsWith('image/')
                                 ? html` <igc-icon-button
                                     name="preview"
                                     collection="material"
@@ -154,7 +154,7 @@ export class IgcMessageAttachmentsComponent extends LitElement {
                     ? this.attachmentContentTemplate(this.attachments)
                     : html`
                         <slot name="attachment-content">
-                          ${attachment.type === 'image'
+                          ${attachment.file?.type.startsWith('image/')
                             ? html` <img
                                 class="image-attachment"
                                 src=${attachment.url}

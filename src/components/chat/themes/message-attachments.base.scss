@@ -7,7 +7,6 @@
 }
 
 .attachments-container {
-    display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
@@ -112,4 +111,8 @@
     display: flex;
     align-items: center;
     gap: 0.2rem;
+}
+
+igc-expansion-panel{
+    width: 100%;
 }
