@@ -389,6 +389,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Public API methods
 
   /** Selects the specified tab and displays the corresponding panel.  */
+  public select(id: string): void;
+  /* blazorSuppress (ref is reserved) */
+  public select(ref: IgcTabComponent): void;
+  /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent | string): void {
     const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
 

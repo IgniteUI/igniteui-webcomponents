@@ -11,6 +11,7 @@ const defaultState: GestureState = Object.freeze({ x: 0, y: 0, time: 0 });
 
 /**
  * Configuration object for a {@link GesturesController} instance.
+ * @ignore
  */
 export interface GesturesOptions {
   /**

@@ -29,12 +29,12 @@ export type DividerType = 'solid' | 'dashed';
 export type ExpansionPanelIndicatorPosition = 'start' | 'end' | 'none';
 export type IconButtonVariant = 'contained' | 'flat' | 'outlined';
 export type InputType =
+  | 'text'
   | 'email'
   | 'number'
   | 'password'
   | 'search'
   | 'tel'
-  | 'text'
   | 'url';
 export type LinearProgressLabelAlign =
   | 'top-start'

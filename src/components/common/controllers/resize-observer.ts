@@ -8,7 +8,10 @@ type ResizeObserverControllerCallback = (
   ...args: Parameters<ResizeObserverCallback>
 ) => unknown;
 
-/** Configuration for initializing a resize controller. */
+/**
+ * Configuration for initializing a resize controller.
+ * @ignore
+ */
 export interface ResizeObserverControllerConfig {
   /** The callback function to run when a resize mutation is triggered. */
   callback: ResizeObserverControllerCallback;
