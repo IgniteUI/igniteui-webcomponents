@@ -36,13 +36,13 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   protected static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCheckboxComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
-  private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
-  private labelId = `checkbox-label-${this.inputId}`;
+  private readonly _inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
+  private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**
    * Draws the checkbox in indeterminate state.
@@ -55,9 +55,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     return getThemeController(this)?.theme === 'indigo';
   }
 
-  protected override handleClick(event: PointerEvent) {
+  protected override _handleClick(event: PointerEvent): void {
     this.indeterminate = false;
-    super.handleClick(event);
+    super._handleClick(event);
   }
 
   protected renderValidatorContainer(): TemplateResult {
@@ -92,13 +92,12 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         part=${partNameMap({
           base: true,
           checked,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
-        for=${this.inputId}
-        @pointerdown=${this._kbFocus.reset}
+        for=${this._inputId}
       >
         <input
-          id=${this.inputId}
+          id=${this._inputId}
           type="checkbox"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
@@ -108,10 +107,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           .indeterminate=${live(this.indeterminate)}
           aria-checked=${this.indeterminate && !checked ? 'mixed' : checked}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
-          @click=${this.handleClick}
-          @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
+          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          @click=${this._handleClick}
+          @focus=${this._handleFocus}
         />
         <span part=${partNameMap({ control: true, checked })}>
           <span part=${partNameMap({ indicator: true, checked })}>
@@ -119,9 +117,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           </span>
         </span>
         <span
-          .hidden=${this.hideLabel}
+          .hidden=${this._hideLabel}
           part=${partNameMap({ label: true, checked })}
-          id=${this.labelId}
+          id=${this._labelId}
           ><slot></slot>
         </span>
       </label>
