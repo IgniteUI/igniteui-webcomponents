@@ -1056,20 +1056,26 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     `;
   }
 
+  protected _renderPredefinedRanges() {
+    const hasRanges = this.usePredefinedRanges || !isEmpty(this.customRanges);
+    return html`${hasRanges
+      ? html`<igc-predefined-ranges-area
+          .usePredefinedRanges=${this.usePredefinedRanges}
+          .customRanges=${this.customRanges}
+          .resourceStrings=${this.resourceStrings}
+          @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
+            this._select(e.detail, this._isDropDown)}
+        >
+        </igc-predefined-ranges-area>`
+      : nothing}`;
+  }
+
   protected _renderPicker(id: string) {
     return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor="${id}" flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this._renderCalendar(id)}
-              <igc-predefined-ranges-area
-                .usePredefinedRanges=${this.usePredefinedRanges}
-                .customRanges=${this.customRanges}
-                .resourceStrings=${this.resourceStrings}
-                @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
-                  this._select(e.detail, true)}
-              >
-              </igc-predefined-ranges-area>
+              ${this._renderCalendar(id)} ${this._renderPredefinedRanges()}
               ${this._renderActions()}
             </igc-focus-trap>
           </igc-popover>
@@ -1086,14 +1092,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this._renderCalendar(id)} ${this._renderActions()}
-            <igc-predefined-ranges-area
-              .usePredefinedRanges=${this.usePredefinedRanges}
-              .customRanges=${this.customRanges}
-              .resourceStrings=${this.resourceStrings}
-              @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
-                this._select(e.detail)}
-            >
-            </igc-predefined-ranges-area>
+            ${this._renderPredefinedRanges()}
             <igc-button
               slot="footer"
               @click=${this._dialogCancel}

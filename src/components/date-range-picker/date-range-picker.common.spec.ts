@@ -586,15 +586,14 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         },
       ];
 
-      it('should not render any chips when usePredefinedRanges is false and there are no custom ranges added', async () => {
+      it('should not render the predefined ranges in the DOM when usePredefinedRanges is false and there are no custom ranges added', async () => {
         picker.open = true;
         await elementUpdated(picker);
 
-        const predefinedArea = picker.renderRoot.querySelectorAll(
+        const predefinedArea = picker.renderRoot.querySelector(
           'igc-predefined-ranges-area'
         );
-        const allRanges = (predefinedArea[0] as any)._allRanges;
-        expect(allRanges.length).to.equal(0);
+        expect(predefinedArea).to.be.null;
       });
 
       it('should emit igcChange when predefined date is selected and should close the picker - dropdown mode', async () => {
