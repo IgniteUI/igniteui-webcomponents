@@ -1,0 +1,16 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: rem(8px);
+}
+
+[part='ranges'] {
+    display: flex;
+    flex-flow: wrap;
+    padding: rem(4px);
+    gap: rem(8px);
+}
