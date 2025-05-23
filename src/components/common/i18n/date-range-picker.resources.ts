@@ -1,7 +1,7 @@
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
-} from './calendar.resources';
+} from './calendar.resources.js';
 
 /* blazorSuppress */
 export interface IgcDateRangePickerResourceStrings
