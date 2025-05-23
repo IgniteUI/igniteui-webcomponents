@@ -1,0 +1,11 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+@use '../../../date-picker/themes/shared/date-picker.common.scss';
+
+$theme: $material;
+
+[part='separator'] {
+    @include type-style('caption');
+
+    color: var-get($theme, 'label-color');
+}

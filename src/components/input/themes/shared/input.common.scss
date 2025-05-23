@@ -57,6 +57,13 @@ $theme: $base;
 }
 /* stylelint-enable */
 
+:host([readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
 :host([invalid]) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');

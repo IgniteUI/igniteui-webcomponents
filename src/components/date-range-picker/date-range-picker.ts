@@ -8,6 +8,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   calendarRange,
@@ -67,6 +68,8 @@ import type {
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './date-range-picker.base.css.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
+import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
+import { all } from './themes/themes.js';
 import { dateRangeValidators } from './validators.js';
 
 // #region Interfaces
@@ -189,6 +192,7 @@ export interface IgcDateRangePickerComponentEventMap {
 
 // #endregion
 
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -199,7 +203,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-range-picker';
-  public static styles = [styles]; // poc styles, TODO
+  public static styles = [styles, shared];
 
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,

@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { property } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -8,6 +9,9 @@ import {
   IgcDateRangePickerResourceStringsEN,
 } from '../common/i18n/date-range-picker.resources.js';
 import type { CustomDateRange } from './date-range-picker.js';
+import { styles } from './predefined-ranges-area.base.css.js';
+import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * The predefined ranges area component is used within the `igc-date-range picker` element and it
@@ -16,8 +20,10 @@ import type { CustomDateRange } from './date-range-picker.js';
  *
  * @element igc-predefined-ranges-area
  */
+@themes(all)
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -96,10 +102,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div
-        class="ranges"
-        style="display: flex; flex-direction: row; gap: 5px; margin-top: 20px;"
-      >
+      <div part="ranges">
         ${this._allRanges.map(
           (range) => html`
             <igc-chip @click=${() => this._handleRangeSelect(range)}>

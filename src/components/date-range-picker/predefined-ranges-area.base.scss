@@ -1,15 +1,16 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use '../date-picker/themes/date-picker.base.scss';
 
 :host {
     display: flex;
-    flex-direction: column;
-}
-
-[part='inputs'] {
-    display: flex;
     flex-direction: row;
     align-items: center;
-    gap: rem(8px)
+    padding: rem(8px);
+}
+
+[part='ranges'] {
+    display: flex;
+    flex-flow: wrap;
+    padding: rem(4px);
+    gap: rem(8px);
 }
