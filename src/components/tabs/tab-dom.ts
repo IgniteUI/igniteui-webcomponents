@@ -102,16 +102,18 @@ class TabsHelpers {
    * Scrolls the tabs header strip in the given direction with `scroll-snap-align` set.
    */
   public scrollTabs(direction: 'start' | 'end'): void {
-    if (this.container) {
-      const factor = isLTR(this._host) ? 1 : -1;
-      const amount =
-        direction === 'start'
-          ? -TabsHelpers.SCROLL_AMOUNT
-          : TabsHelpers.SCROLL_AMOUNT;
-
-      this.setScrollSnap(direction);
-      this.container.scrollBy({ left: factor * amount, behavior: 'smooth' });
+    if (!this.container) {
+      return;
     }
+
+    const factor = isLTR(this._host) ? 1 : -1;
+    const amount =
+      direction === 'start'
+        ? -TabsHelpers.SCROLL_AMOUNT
+        : TabsHelpers.SCROLL_AMOUNT;
+
+    this.setScrollSnap(direction);
+    this.container.scrollBy({ left: factor * amount, behavior: 'smooth' });
   }
 
   /**
@@ -119,48 +121,52 @@ class TabsHelpers {
    * Triggers an update cycle (rerender) of the `igc-tabs` component.
    */
   public setScrollButtonState(): void {
-    if (this.container) {
-      const { scrollLeft, scrollWidth, clientWidth } = this.container;
-
-      this._hasScrollButtons = scrollWidth > clientWidth;
-      this._scrollButtonsDisabled = {
-        start: scrollLeft === 0,
-        end: Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1,
-      };
-
-      this._host.requestUpdate();
+    if (!this.container) {
+      return;
     }
+
+    const { scrollLeft, scrollWidth, clientWidth } = this.container;
+
+    this._hasScrollButtons = scrollWidth > clientWidth;
+    this._scrollButtonsDisabled = {
+      start: scrollLeft === 0,
+      end: Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1,
+    };
+
+    this._host.requestUpdate();
   }
 
   /**
    * Updates the indicator DOM element styles based on the current "active" tab.
    */
   public async setIndicator(active?: IgcTabComponent): Promise<void> {
-    if (this.container && this.indicator) {
-      const styles = {
-        visibility: active ? 'visible' : 'hidden',
-      } satisfies Partial<CSSStyleDeclaration>;
-
-      await this._host.updateComplete;
-
-      if (active) {
-        const tabHeader = getTabHeader(active);
-        const { width } = tabHeader.getBoundingClientRect();
-
-        const offset = this._isLeftToRight
-          ? tabHeader.offsetLeft - this.container.offsetLeft
-          : width +
-            tabHeader.offsetLeft -
-            this.container.getBoundingClientRect().width;
-
-        Object.assign(styles, {
-          width: `${width}px`,
-          transform: `translateX(${offset}px)`,
-        });
-      }
-
-      Object.assign(this.indicator.style, styles);
+    if (!(this.container && this.indicator)) {
+      return;
     }
+
+    const styles = {
+      visibility: active ? 'visible' : 'hidden',
+    } satisfies Partial<CSSStyleDeclaration>;
+
+    await this._host.updateComplete;
+
+    if (active) {
+      const tabHeader = getTabHeader(active);
+      const { width } = tabHeader.getBoundingClientRect();
+
+      const offset = this._isLeftToRight
+        ? tabHeader.offsetLeft - this.container.offsetLeft
+        : width +
+          tabHeader.offsetLeft -
+          this.container.getBoundingClientRect().width;
+
+      Object.assign(styles, {
+        width: `${width}px`,
+        transform: `translateX(${offset}px)`,
+      });
+    }
+
+    Object.assign(this.indicator.style, styles);
   }
 }
 
