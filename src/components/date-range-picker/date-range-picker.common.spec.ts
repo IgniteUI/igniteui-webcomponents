@@ -36,6 +36,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
   let calendar: IgcCalendarComponent;
 
   const toggleIcon = 'today';
+  const clearIcon = 'input_clear';
   const today = CalendarDay.today;
   const tomorrow = today.add('day', 1);
 
@@ -83,6 +84,33 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       expect(dialog).not.to.be.undefined;
       expect(calendar).not.to.be.undefined;
       expect(calendar.parentElement).to.equal(dialog);
+    });
+    it('should render the clear icon as soon as there is a start or end date defined', async () => {
+      expect(picker.open).to.equal(false);
+      expect(picker.value).to.deep.equal({ start: null, end: null });
+
+      let clear = getIcon(picker, clearIcon);
+      expect(clear).to.be.null;
+
+      picker.value = { start: today.native, end: null };
+      await elementUpdated(picker);
+
+      expect(picker.value).to.deep.equal({
+        start: today.native,
+        end: null,
+      });
+      clear = getIcon(picker, clearIcon);
+      expect(clear).not.to.be.null;
+
+      picker.value = { start: null, end: tomorrow.native };
+      await elementUpdated(picker);
+
+      expect(picker.value).to.deep.equal({
+        start: null,
+        end: tomorrow.native,
+      });
+      clear = getIcon(picker, clearIcon);
+      expect(clear).not.to.be.null;
     });
   });
 
@@ -578,7 +606,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
             expect(picker.open).to.be.false;
           });
 
-          it('should not clear the value by clicking on the clear icon', async () => {
+          it('should not clear the value by clicking on the toggle icon', async () => {
             simulateClick(getIcon(picker, toggleIcon));
             await elementUpdated(picker);
 
@@ -611,7 +639,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
             expect(picker.open).to.be.false;
           });
 
-          it('should not clear the value by clicking on the clear icon', async () => {
+          it('should not clear the value by clicking on the toggle icon', async () => {
             simulateClick(getIcon(picker, toggleIcon));
             await elementUpdated(picker);
 
