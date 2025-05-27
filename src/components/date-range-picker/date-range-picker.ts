@@ -72,8 +72,6 @@ import { styles as shared } from './themes/shared/date-range-picker.common.css.j
 import { all } from './themes/themes.js';
 import { dateRangeValidators } from './validators.js';
 
-// #region Interfaces
-
 export interface DateRangeValue {
   start: Date | null;
   end: Date | null;
@@ -91,10 +89,6 @@ export interface IgcDateRangePickerComponentEventMap {
   igcChange: CustomEvent<DateRangeValue | null>;
   igcInput: CustomEvent<DateRangeValue | null>;
 }
-
-// #endregion
-
-// #region Annotations
 
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
@@ -190,8 +184,6 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 
-// #endregion
-
 @themes(all)
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
@@ -249,7 +241,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return dateRangeValidators;
   }
 
-  private get _isDropDown() {
+  private get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
 
@@ -283,7 +275,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #endregion
 
-  // #region Public properties
+  // #region General properties
 
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
@@ -341,6 +333,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: false })
   public resourceStrings: IgcDateRangePickerResourceStrings =
     IgcDateRangePickerResourceStringsEN;
+
+  // #endregion
 
   // #region Input-related properties
 
@@ -425,7 +419,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * Defaults to the input format if not set.
    * @attr display-format
    */
-  @property({ attribute: 'display-format', reflect: false })
+  @property({ attribute: 'display-format' })
   public set displayFormat(value: string) {
     this._displayFormat = value;
     this._updateMaskedRangeValue();
@@ -440,7 +434,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * Defaults to the current locale Intl.DateTimeFormat
    * @attr input-format
    */
-  @property({ attribute: 'input-format', reflect: false })
+  @property({ attribute: 'input-format' })
   public set inputFormat(value: string) {
     this._inputFormat = value;
     this._updateMaskedRangeValue();
@@ -504,7 +498,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * The number of months displayed in the calendar.
    * @attr visible-months
    */
-  //
   @property({ type: Number, attribute: 'visible-months' })
   public get visibleMonths(): number {
     return this._visibleMonths;
@@ -568,8 +561,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
-
-  // #endregion
 
   // #endregion
 
@@ -656,7 +647,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @watch('mode')
   protected async _modeChanged() {
-    if (this.mode === 'dialog') {
+    if (!this._isDropDown) {
       this.keepOpenOnSelect = true;
     }
     await this._calendar?.updateComplete;
@@ -749,7 +740,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected async _onEscapeKey() {
     if (await this._hide(true)) {
-      if (this.mode === 'dialog') {
+      if (!this._isDropDown) {
         this._revertValue();
       }
       this._inputs[0]?.focus();
