@@ -195,8 +195,9 @@ export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
 }
 
 /**
- * Returns a generator yielding day values between `start` and `end` (non-inclusive)
+ * Returns a generator yielding day values between `start` and `end` (non-inclusive by default)
  * by a given `unit` as a step.
+ * To include the end date set the `inclusive` option to true.
  *
  * @remarks
  * By default, `unit` is set to 'day'.
@@ -212,7 +213,17 @@ export function* calendarRange(options: CalendarRangeParams) {
   const reverse = high.lessThan(low);
   const step = reverse ? -1 : 1;
 
-  while (!reverse ? low.lessThan(high) : low.greaterThan(high)) {
+  const shouldYield = () => {
+    return reverse
+      ? options.inclusive
+        ? low.greaterThanOrEqual(high)
+        : low.greaterThan(high)
+      : options.inclusive
+        ? low.lessThanOrEqual(high)
+        : low.lessThan(high);
+  };
+
+  while (shouldYield()) {
     yield low;
     low = low.add(unit, step);
   }

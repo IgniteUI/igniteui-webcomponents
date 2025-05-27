@@ -51,7 +51,6 @@ import {
   equal,
   findElementFromEventPath,
   isEmpty,
-  last,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
@@ -898,10 +897,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._calendar.values = [this.value.start!];
     } else {
       const range = Array.from(
-        calendarRange({ start: this.value.start!, end: this.value.end! })
+        calendarRange({
+          start: this.value!.start!,
+          end: this.value!.end!,
+          inclusive: true,
+        })
       );
-      // calendarRange is non-inclusive
-      range.push(last(range).add('day', start.lessThan(end) ? 1 : -1));
       this._calendar.values = range.map((d) => d.native);
     }
     this._calendar.activeDate = this._firstDefinedInRange;

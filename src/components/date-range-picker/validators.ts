@@ -77,11 +77,9 @@ export const badInputDateRangeValidator: Validator<{
     if (value.start.getTime() === value.end.getTime()) {
       range = [CalendarDay.from(value.start)];
     } else {
-      range = Array.from(calendarRange({ start: value.start, end: value.end }));
-      const lastDay = last(range);
-      if (lastDay) {
-        range.push(lastDay.add('day', 1));
-      }
+      range = Array.from(
+        calendarRange({ start: value.start, end: value.end, inclusive: true })
+      );
     }
 
     for (const dateRange of range) {
