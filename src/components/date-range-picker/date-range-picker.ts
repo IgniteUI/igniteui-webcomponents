@@ -669,6 +669,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     event.stopPropagation();
     if (!equal(this.value, this._oldValue)) {
       this.emitEvent('igcChange', { detail: this.value });
+      this._oldValue = this.value;
     }
     this._hide(true);
   }
@@ -685,6 +686,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected _dialogDone() {
     if (!equal(this.value, this._oldValue)) {
       this.emitEvent('igcChange', { detail: this.value });
+      this._oldValue = this.value;
     }
     this._hide(true);
   }
@@ -730,6 +732,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       const isSameValue = equal(this.value, this._oldValue);
       if (!(this.useTwoInputs || this.readOnly || isSameValue)) {
         this.emitEvent('igcChange', { detail: this.value });
+        this._oldValue = this.value;
       }
     }
   }
@@ -941,6 +944,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._firstDefinedInRange ?? this._calendar.activeDate;
     if (emitEvent) {
       this.emitEvent('igcChange', { detail: this.value });
+      this._oldValue = this.value;
       this._hide(true);
     }
   }
