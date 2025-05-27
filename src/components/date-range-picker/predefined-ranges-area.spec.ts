@@ -142,7 +142,7 @@ describe('Predefined Area', () => {
       );
 
       const eventSpy = spy();
-      component.addEventListener('rangeSelect', eventSpy);
+      component.addEventListener('igcRangeSelect', eventSpy);
       const allRanges = (component as any)._allRanges;
       const chips = component.renderRoot.querySelectorAll(
         IgcChipComponent.tagName

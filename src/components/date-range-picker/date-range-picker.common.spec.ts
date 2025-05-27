@@ -3,6 +3,7 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
+import type IgcChipComponent from '../chip/chip.js';
 import {
   altKey,
   arrowDown,
@@ -10,6 +11,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import type { IgcDateRangePickerResourceStrings } from '../common/i18n/date-range-picker.resources.js';
 import {
   checkDatesEqual,
   simulateClick,
@@ -265,6 +267,13 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       }
     });
     describe('Localization', () => {
+      beforeEach(async () => {
+        picker = await fixture<IgcDateRangePickerComponent>(
+          html`<igc-date-range-picker></igc-date-range-picker>`
+        );
+        picker.usePredefinedRanges = true;
+      });
+
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
         expect(picker.locale).to.equal('en');
@@ -323,28 +332,78 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
 
       it('should set the resource strings of the predefined-ranges-area component', async () => {
-        picker.resourceStrings.currentMonth = 'Current month - localized';
-        picker.resourceStrings.nextMonth = 'Next month - localized';
-        picker.resourceStrings.last30Days = 'Last 30 days - localized';
-        picker.resourceStrings.yearToDate = 'Year to date - localized';
+        const tests: {
+          key: keyof IgcDateRangePickerResourceStrings;
+          value: string;
+        }[] = [
+          { key: 'last7Days', value: 'Last 7 days - localized' },
+          { key: 'currentMonth', value: 'Current month - localized' },
+          { key: 'last30Days', value: 'Last 30 days - localized' },
+          { key: 'yearToDate', value: 'Year to date - localized' },
+        ];
+        for (const test of tests) {
+          picker.resourceStrings[test.key] = test.value;
+        }
         picker.usePredefinedRanges = true;
         await elementUpdated(picker);
 
         const predefinedArea = picker.renderRoot.querySelector(
           IgcPredefinedRangesAreaComponent.tagName
         );
-        expect(predefinedArea?.resourceStrings.currentMonth).to.equal(
-          'Current month - localized'
+
+        for (const test of tests) {
+          expect(predefinedArea?.resourceStrings[test.key]).to.equal(
+            test.value
+          );
+        }
+
+        const chipElements = predefinedArea?.shadowRoot!.querySelectorAll(
+          'igc-chip'
+        ) as NodeListOf<IgcChipComponent>;
+        for (const test of tests) {
+          expect(chipElements[tests.indexOf(test)].innerText.trim()).to.equal(
+            test.value
+          );
+        }
+      });
+
+      it('should set the resource strings of the predefined ranges area by passing a new resource strings object', async () => {
+        const tests: {
+          key: keyof IgcDateRangePickerResourceStrings;
+          value: string;
+        }[] = [
+          { key: 'last7Days', value: 'Last 7 days - localized' },
+          { key: 'currentMonth', value: 'Current month - localized' },
+          { key: 'last30Days', value: 'Last 30 days - localized' },
+          { key: 'yearToDate', value: 'Year to date - localized' },
+        ];
+        const testResourceStrings = {
+          ...picker.resourceStrings,
+          last7Days: 'Last 7 days - localized',
+          currentMonth: 'Current month - localized',
+          last30Days: 'Last 30 days - localized',
+          yearToDate: 'Year to date - localized',
+        };
+        picker.resourceStrings = testResourceStrings;
+        await elementUpdated(picker);
+
+        const predefinedArea = picker.renderRoot.querySelector(
+          IgcPredefinedRangesAreaComponent.tagName
         );
-        expect(predefinedArea?.resourceStrings.nextMonth).to.equal(
-          'Next month - localized'
-        );
-        expect(predefinedArea?.resourceStrings.last30Days).to.equal(
-          'Last 30 days - localized'
-        );
-        expect(predefinedArea?.resourceStrings.yearToDate).to.equal(
-          'Year to date - localized'
-        );
+        for (const test of tests) {
+          expect(predefinedArea?.resourceStrings[test.key]).to.equal(
+            test.value
+          );
+        }
+
+        const chipElements = predefinedArea?.shadowRoot!.querySelectorAll(
+          'igc-chip'
+        ) as NodeListOf<IgcChipComponent>;
+        for (const test of tests) {
+          expect(chipElements[tests.indexOf(test)].innerText.trim()).to.equal(
+            test.value
+          );
+        }
       });
     });
 
@@ -617,7 +676,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           picker.open = true;
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('rangeSelect', { detail: range.dateRange })
+            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 
@@ -662,7 +721,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           dialog = picker.renderRoot.querySelector(IgcDialogComponent.tagName);
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('rangeSelect', { detail: range.dateRange })
+            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 
@@ -711,7 +770,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           picker.open = true;
           await elementUpdated(picker);
           predefinedArea[0].dispatchEvent(
-            new CustomEvent('rangeSelect', { detail: range.dateRange })
+            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
           );
           await elementUpdated(picker);
 

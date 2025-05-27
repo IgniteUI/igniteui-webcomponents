@@ -1058,7 +1058,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
           .usePredefinedRanges=${this.usePredefinedRanges}
           .customRanges=${this.customRanges}
           .resourceStrings=${this.resourceStrings}
-          @rangeSelect=${(e: CustomEvent<DateRangeValue>) =>
+          @igcRangeSelect=${(e: CustomEvent<DateRangeValue>) =>
             this._select(e.detail, this._isDropDown)}
         >
         </igc-predefined-ranges-area>`
