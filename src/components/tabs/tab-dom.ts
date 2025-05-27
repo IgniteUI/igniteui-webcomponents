@@ -22,15 +22,15 @@ class TabsHelpers {
   /**
    * Returns the DOM container holding the tabs headers.
    */
-  public get container(): HTMLElement {
-    return this._container.value!;
+  public get container(): HTMLElement | undefined {
+    return this._container.value;
   }
 
   /**
    * Returns the selected indicator DOM element.
    */
-  public get indicator(): HTMLElement {
-    return this._indicator.value!;
+  public get indicator(): HTMLElement | undefined {
+    return this._indicator.value;
   }
 
   /**
@@ -82,7 +82,9 @@ class TabsHelpers {
   public setStyleProperties(): void {
     this._styleProperties = {
       '--_tabs-count': this._host.tabs.length.toString(),
-      '--_ig-tabs-width': `${this.container.getBoundingClientRect().width}px`,
+      '--_ig-tabs-width': this.container
+        ? `${this.container.getBoundingClientRect().width}px`
+        : '',
     };
     this._host.requestUpdate();
   }
@@ -91,21 +93,25 @@ class TabsHelpers {
    * Sets the type of the `scroll-snap-align` CSS property for the tabs header strip.
    */
   public setScrollSnap(type?: 'start' | 'end'): void {
-    this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
+    if (this.container) {
+      this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
+    }
   }
 
   /**
    * Scrolls the tabs header strip in the given direction with `scroll-snap-align` set.
    */
   public scrollTabs(direction: 'start' | 'end'): void {
-    const factor = isLTR(this._host) ? 1 : -1;
-    const amount =
-      direction === 'start'
-        ? -TabsHelpers.SCROLL_AMOUNT
-        : TabsHelpers.SCROLL_AMOUNT;
+    if (this.container) {
+      const factor = isLTR(this._host) ? 1 : -1;
+      const amount =
+        direction === 'start'
+          ? -TabsHelpers.SCROLL_AMOUNT
+          : TabsHelpers.SCROLL_AMOUNT;
 
-    this.setScrollSnap(direction);
-    this.container.scrollBy({ left: factor * amount, behavior: 'smooth' });
+      this.setScrollSnap(direction);
+      this.container.scrollBy({ left: factor * amount, behavior: 'smooth' });
+    }
   }
 
   /**
@@ -113,44 +119,48 @@ class TabsHelpers {
    * Triggers an update cycle (rerender) of the `igc-tabs` component.
    */
   public setScrollButtonState(): void {
-    const { scrollLeft, scrollWidth, clientWidth } = this.container;
+    if (this.container) {
+      const { scrollLeft, scrollWidth, clientWidth } = this.container;
 
-    this._hasScrollButtons = scrollWidth > clientWidth;
-    this._scrollButtonsDisabled = {
-      start: scrollLeft === 0,
-      end: Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1,
-    };
+      this._hasScrollButtons = scrollWidth > clientWidth;
+      this._scrollButtonsDisabled = {
+        start: scrollLeft === 0,
+        end: Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1,
+      };
 
-    this._host.requestUpdate();
+      this._host.requestUpdate();
+    }
   }
 
   /**
    * Updates the indicator DOM element styles based on the current "active" tab.
    */
   public async setIndicator(active?: IgcTabComponent): Promise<void> {
-    const styles = {
-      visibility: active ? 'visible' : 'hidden',
-    } satisfies Partial<CSSStyleDeclaration>;
+    if (this.container && this.indicator) {
+      const styles = {
+        visibility: active ? 'visible' : 'hidden',
+      } satisfies Partial<CSSStyleDeclaration>;
 
-    await this._host.updateComplete;
+      await this._host.updateComplete;
 
-    if (active) {
-      const tabHeader = getTabHeader(active);
-      const { width } = tabHeader.getBoundingClientRect();
+      if (active) {
+        const tabHeader = getTabHeader(active);
+        const { width } = tabHeader.getBoundingClientRect();
 
-      const offset = this._isLeftToRight
-        ? tabHeader.offsetLeft - this.container.offsetLeft
-        : width +
-          tabHeader.offsetLeft -
-          this.container.getBoundingClientRect().width;
+        const offset = this._isLeftToRight
+          ? tabHeader.offsetLeft - this.container.offsetLeft
+          : width +
+            tabHeader.offsetLeft -
+            this.container.getBoundingClientRect().width;
 
-      Object.assign(styles, {
-        width: `${width}px`,
-        transform: `translateX(${offset}px)`,
-      });
+        Object.assign(styles, {
+          width: `${width}px`,
+          transform: `translateX(${offset}px)`,
+        });
+      }
+
+      Object.assign(this.indicator.style, styles);
     }
-
-    Object.assign(this.indicator.style, styles);
   }
 }
 
