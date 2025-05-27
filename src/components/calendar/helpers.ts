@@ -1,7 +1,3 @@
-import type {
-  FormValueType,
-  IgcFormControl,
-} from '../common/mixins/forms/types.js';
 import {
   asNumber,
   findElementFromEventPath,
@@ -93,8 +89,8 @@ export function convertToDateRange(
 
   if (isString(value)) {
     const obj = JSON.parse(value);
-    const start = isValidDate(new Date(obj.start));
-    const end = isValidDate(new Date(obj.end));
+    const start = convertToDate(obj.start);
+    const end = convertToDate(obj.end);
     return {
       start: start ? CalendarDay.from(start).native : null,
       end: end ? CalendarDay.from(end).native : null,
@@ -111,33 +107,6 @@ export function convertToDateRange(
  */
 export function getDateFormValue(value: Date | null) {
   return value ? value.toISOString() : null;
-}
-
-/**
- * Converts a DateDateRangeValue object to FormData with
- * start and end Date values as ISO 8601 strings.
- * The keys are prefixed with the host name if it exists
- * and suffixed with 'start' or 'end' accordingly.
- *
- * If the date values are null or undefined, the form data values
- * are empty strings ''.
- */
-export function getDateRangeFormValue(
-  value: DateRangeValue | null,
-  host: IgcFormControl
-): FormValueType {
-  if (!value?.start && !value?.end) return null;
-
-  const start = value?.start?.toISOString();
-  const end = value?.end?.toISOString();
-
-  const fd = new FormData();
-  const prefix = host.name ? `${host.name}-` : '';
-
-  if (start) fd.append(`${prefix}start`, start);
-  if (end) fd.append(`${prefix}end`, end);
-
-  return fd;
 }
 
 /**
