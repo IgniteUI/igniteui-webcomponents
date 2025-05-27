@@ -2,7 +2,7 @@ import { calendarRange, isDateInRanges } from '../calendar/helpers.js';
 import { CalendarDay } from '../calendar/model.js';
 import type { DateRangeDescriptor } from '../calendar/types.js';
 import messages from '../common/localization/validation-en.js';
-import { formatString, last } from '../common/util.js';
+import { formatString } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
 import { DateTimeUtil } from '../date-time-input/date-util.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
@@ -15,18 +15,20 @@ export const minDateRangeValidator: Validator<{
   key: 'rangeUnderflow',
   message: ({ min }) => formatString(messages.min, min),
   isValid: ({ value, min }) => {
-    if (
-      min &&
-      ((value?.start &&
-        DateTimeUtil.lessThanMinValue(value?.start, min, false, true)) ||
-        (value?.end &&
-          DateTimeUtil.lessThanMinValue(value?.end, min, false, true)))
-    ) {
-      return false;
+    if (!min) {
+      return true;
     }
-    return true;
+
+    const isStartInvalid =
+      value?.start &&
+      DateTimeUtil.lessThanMinValue(value.start, min, false, true);
+    const isEndInvalid =
+      value?.end && DateTimeUtil.lessThanMinValue(value.end, min, false, true);
+
+    return !(isStartInvalid || isEndInvalid);
   },
 };
+
 export const maxDateRangeValidator: Validator<{
   value?: DateRangeValue | null;
   max?: Date | null;
@@ -34,16 +36,18 @@ export const maxDateRangeValidator: Validator<{
   key: 'rangeOverflow',
   message: ({ max }) => formatString(messages.max, max),
   isValid: ({ value, max }) => {
-    if (
-      max &&
-      ((value?.start &&
-        DateTimeUtil.greaterThanMaxValue(value?.start, max, false, true)) ||
-        (value?.end &&
-          DateTimeUtil.greaterThanMaxValue(value?.end, max, false, true)))
-    ) {
-      return false;
+    if (!max) {
+      return true;
     }
-    return true;
+
+    const isStartInvalid =
+      value?.start &&
+      DateTimeUtil.greaterThanMaxValue(value.start, max, false, true);
+    const isEndInvalid =
+      value?.end &&
+      DateTimeUtil.greaterThanMaxValue(value.end, max, false, true);
+
+    return !(isStartInvalid || isEndInvalid);
   },
 };
 
