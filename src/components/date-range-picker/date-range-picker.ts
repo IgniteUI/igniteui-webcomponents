@@ -244,6 +244,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return this.mode === 'dropdown';
   }
 
+  private get _areStartAndEndSet(): boolean {
+    return !!this.value?.start && !!this.value?.end;
+  }
+
   private get _firstDefinedInRange(): Date | null {
     return this.value?.start ?? this.value?.end ?? null;
   }
@@ -293,7 +297,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   /**
    * Renders chips with custom ranges based on the elements of the array.
    */
-  @property({ type: Array })
+  @property({ type: Array, attribute: 'custom-ranges' })
   public customRanges: CustomDateRange[] = [];
 
   /**
@@ -850,10 +854,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     if (this.useTwoInputs) {
       return;
     }
-    if (!(this.value?.start && this.value?.end)) {
+    if (!this._areStartAndEndSet) {
       this._maskedRangeValue = '';
       return;
     }
+    const start = this.value!.start!;
+    const end = this.value!.end!;
     let startMask = '';
     let endMask = '';
     const format =
@@ -861,15 +867,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this.displayFormat ??
       this.inputFormat;
     if (format) {
-      startMask = DateTimeUtil.formatDate(
-        this.value.start,
-        this.locale,
-        format
-      );
-      endMask = DateTimeUtil.formatDate(this.value.end, this.locale, format);
+      startMask = DateTimeUtil.formatDate(start, this.locale, format);
+      endMask = DateTimeUtil.formatDate(end, this.locale, format);
     } else {
-      startMask = this.value.start.toLocaleDateString();
-      endMask = this.value.end.toLocaleDateString();
+      startMask = start.toLocaleDateString();
+      endMask = end.toLocaleDateString();
     }
     this._maskedRangeValue = `${startMask} - ${endMask}`;
   }
@@ -879,27 +881,23 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
 
-    if (!(this.value?.start || this.value?.end)) {
-      this._calendar.values = null;
+    if (!this._areStartAndEndSet) {
+      this._calendar.values = this._firstDefinedInRange
+        ? [this._firstDefinedInRange]
+        : null;
       return;
     }
 
-    if (!(this.value?.start && this.value?.end)) {
-      const single = this.value?.start ?? this.value?.end!;
-      this._calendar.values = [single];
-      return;
-    }
+    const start = this.value!.start!;
+    const end = this.value!.end!;
 
-    const start = toCalendarDay(this.value.start);
-    const end = toCalendarDay(this.value.end);
-
-    if (start.equalTo(end)) {
-      this._calendar.values = [this.value.start!];
+    if (toCalendarDay(start).equalTo(toCalendarDay(end))) {
+      this._calendar.values = [start];
     } else {
       const range = Array.from(
         calendarRange({
-          start: this.value!.start!,
-          end: this.value!.end!,
+          start,
+          end,
           inclusive: true,
         })
       );
@@ -953,9 +951,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private _renderClearIcon(picker: DateRangePickerInput = 'start') {
     const clearIcon = this.useTwoInputs ? `clear-icon-${picker}` : 'clear-icon';
-    return !this.value || (this.value.start === null && this.value.end === null)
-      ? nothing
-      : html`
+    return this._firstDefinedInRange
+      ? html`
           <span
             slot="suffix"
             part="${clearIcon}"
@@ -969,7 +966,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
               ></igc-icon>
             </slot>
           </span>
-        `;
+        `
+      : nothing;
   }
 
   private _renderCalendarIcon(picker: DateRangePickerInput = 'start') {
