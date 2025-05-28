@@ -59,29 +59,23 @@ $theme: $material;
 
 :host(:not([readonly])) {
     --affix-color: #{var-get($theme, 'input-prefix-color')};
-}
 
-:host(:not([readonly])) {
     [part='calendar-icon'],
     [part='calendar-icon-open'],
     [part='clear-icon'] {
         color: var(--affix-color);
     }
-}
 
-:host(:not([readonly]):not([disabled])) {
-    ::part(filled) {
-        --affix-color: #{var-get($theme, 'input-prefix-color--filled')};
-    }
-}
-
-:host(:not([readonly])) {
     igc-input:focus-within {
         --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
 
         &::part(filled) {
             --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
         }
+    }
+
+    ::part(filled) {
+        --affix-color: #{var-get($theme, 'input-prefix-color--filled')};
     }
 }
 
@@ -94,6 +88,12 @@ $theme: $material;
 
 :host(:disabled),
 :host([disabled]) {
+    --affix-color: var-get($theme, 'disabled-text-color');
+
+    ::part(filled) {
+        --affix-color: var-get($theme, 'disabled-text-color');
+    }
+
     ::part(helper-text),
     [part='label'],
     igc-validator {
