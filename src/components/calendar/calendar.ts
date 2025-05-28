@@ -17,7 +17,6 @@ import {
   pageUpKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
@@ -106,7 +105,7 @@ export const focusActiveDate = Symbol();
  * @csspart selected - Indicates selected state. Applies to date, month and year elements of the calendar.
  * @csspart current - Indicates current state. Applies to date, month and year elements of the calendar.
  */
-@blazorIndirectRender
+/** blazorElement */
 @themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
