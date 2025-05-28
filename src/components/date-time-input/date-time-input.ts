@@ -610,7 +610,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     const isEmptyMask = this.maskedValue === this.emptyMask;
-    const isSameValue = this._oldValue === this.value;
 
     this.focused = false;
 
@@ -626,6 +625,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     } else {
       this.updateMask();
     }
+
+    const isSameValue = this._oldValue === this.value;
 
     if (!(this.readOnly || isSameValue)) {
       this.emitEvent('igcChange', { detail: this.value });

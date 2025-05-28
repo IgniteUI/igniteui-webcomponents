@@ -21,9 +21,13 @@ import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 
 export interface IgcTooltipComponentEventMap {
+  /* blazorAlternateType: CustomEvent<void> */
   igcOpening: CustomEvent<Element | null>;
+  /* blazorAlternateType: CustomEvent<void> */
   igcOpened: CustomEvent<Element | null>;
+  /* blazorAlternateType: CustomEvent<void> */
   igcClosing: CustomEvent<Element | null>;
+  /* blazorAlternateType: CustomEvent<void> */
   igcClosed: CustomEvent<Element | null>;
 }
 

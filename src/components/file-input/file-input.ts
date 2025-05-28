@@ -18,6 +18,7 @@ import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
+/* blazorSuppress */
 /**
  * @element igc-file-input
  *
@@ -123,7 +124,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, attribute: false, noAccessor: true })
   public override readonly readOnly = false;
 
-  /** Returns the selected files when input type is 'file', otherwise returns null. */
+  /** Returns the selected files, if any; otherwise returns null. */
   public get files(): FileList | null {
     return this.input?.files ?? null;
   }

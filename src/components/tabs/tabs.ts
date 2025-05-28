@@ -22,7 +22,7 @@ import {
   type MutationControllerParams,
   createMutationController,
 } from '../common/controllers/mutation-observer.js';
-import { createResizeController } from '../common/controllers/resize-observer.js';
+import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -86,7 +86,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Private state & properties
 
-  private readonly _resizeController = createResizeController(this, {
+  private readonly _resizeController = createResizeObserverController(this, {
     callback: this._resizeCallback,
     options: { box: 'border-box' },
     target: null,
@@ -389,6 +389,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Public API methods
 
   /** Selects the specified tab and displays the corresponding panel.  */
+  public select(id: string): void;
+  /* blazorSuppress (ref is reserved) */
+  public select(ref: IgcTabComponent): void;
+  /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent | string): void {
     const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
 
