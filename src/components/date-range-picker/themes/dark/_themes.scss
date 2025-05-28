@@ -1,7 +1,58 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/date-range-picker' as *;
+@use 'components/calendar/themes/dark/themes' as calendar-theme;
+@use 'components/input/themes/dark/themes' as input-theme;
 
-$material: digest-schema($dark-material-date-range-picker);
-$bootstrap: digest-schema($dark-bootstrap-date-range-picker);
-$fluent: digest-schema($dark-fluent-date-range-picker);
-$indigo: digest-schema($dark-indigo-date-range-picker);
+$material: map.merge(digest-schema($dark-material-date-range-picker), (
+    default-size: map.get(calendar-theme.$material, 'default-size'),
+    border-radius: map.get(calendar-theme.$material, 'border-radius'),
+    border-color: map.get(calendar-theme.$material, 'border-color'),
+    content-background: map.get(calendar-theme.$material, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$material, 'actions-divider-color'),
+    input-prefix-color: map.get(input-theme.$material, 'input-prefix-color'),
+    input-prefix-color--filled: map.get(input-theme.$material, 'input-prefix-color--filled'),
+    input-prefix-color--focused: map.get(input-theme.$material, 'input-prefix-color--focused'),
+    helper-text-color: map.get(input-theme.$material, 'helper-text-color'),
+    disabled-text-color: map.get(input-theme.$material, 'disabled-text-color'),
+    error-secondary-color: map.get(input-theme.$material, 'error-secondary-color')
+));
+$bootstrap: map.merge(digest-schema($dark-bootstrap-date-range-picker), (
+    default-size: map.get(calendar-theme.$bootstrap, 'default-size'),
+    border-radius: map.get(calendar-theme.$bootstrap, 'border-radius'),
+    border-color: map.get(calendar-theme.$bootstrap, 'border-color'),
+    content-background: map.get(calendar-theme.$bootstrap, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$bootstrap, 'actions-divider-color'),
+    input-prefix-color: map.get(input-theme.$bootstrap, 'input-prefix-color'),
+    input-prefix-color--filled: map.get(input-theme.$bootstrap, 'input-prefix-color--filled'),
+    input-prefix-color--focused: map.get(input-theme.$bootstrap, 'input-prefix-color--focused'),
+    helper-text-color: map.get(input-theme.$bootstrap, 'helper-text-color'),
+    disabled-text-color: map.get(input-theme.$bootstrap, 'disabled-text-color'),
+    error-secondary-color: map.get(input-theme.$bootstrap, 'error-secondary-color')
+));
+$fluent: map.merge(digest-schema($dark-fluent-date-range-picker), (
+    default-size: map.get(calendar-theme.$fluent, 'default-size'),
+    border-radius: map.get(calendar-theme.$fluent, 'border-radius'),
+    border-color: map.get(calendar-theme.$fluent, 'border-color'),
+    content-background: map.get(calendar-theme.$fluent, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$fluent, 'actions-divider-color'),
+    input-prefix-color: map.get(input-theme.$fluent, 'input-prefix-color'),
+    input-prefix-color--filled: map.get(input-theme.$fluent, 'input-prefix-color--filled'),
+    input-prefix-color--focused: map.get(input-theme.$fluent, 'input-prefix-color--focused'),
+    helper-text-color: map.get(input-theme.$fluent, 'helper-text-color'),
+    disabled-text-color: map.get(input-theme.$fluent, 'disabled-text-color'),
+    error-secondary-color: map.get(input-theme.$fluent, 'error-secondary-color')
+));
+$indigo: map.merge(digest-schema($dark-indigo-date-range-picker), (
+    default-size: map.get(calendar-theme.$indigo, 'default-size'),
+    border-radius: map.get(calendar-theme.$indigo, 'border-radius'),
+    border-color: map.get(calendar-theme.$indigo, 'border-color'),
+    content-background: map.get(calendar-theme.$indigo, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$indigo, 'actions-divider-color'),
+    input-prefix-color: map.get(input-theme.$indigo, 'input-prefix-color'),
+    input-prefix-color--filled: map.get(input-theme.$indigo, 'input-prefix-color--filled'),
+    input-prefix-color--focused: map.get(input-theme.$indigo, 'input-prefix-color--focused'),
+    helper-text-color: map.get(input-theme.$indigo, 'helper-text-color'),
+    disabled-text-color: map.get(input-theme.$indigo, 'disabled-text-color'),
+    error-secondary-color: map.get(input-theme.$indigo, 'error-secondary-color')
+));

@@ -57,7 +57,7 @@ $theme: $base;
 }
 /* stylelint-enable */
 
-:host([readonly]) {
+:host(:not([role='combobox'])[readonly]) {
     [part='prefix'],
     [part='suffix'] {
         color: var-get($theme, 'disabled-text-color');

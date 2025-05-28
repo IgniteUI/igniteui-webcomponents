@@ -1,5 +1,37 @@
 @use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    igc-dialog {
+        igc-calendar {
+            border: none;
+        }
+    }
+
+    igc-dialog::part(base) {
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
+    igc-focus-trap {
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+    }
+
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(20px), auto);
+        padding-inline-start: 0;
+	    margin-block-start: rem(4px)
+    }
+}
 
 [part='separator'] {
     @include type-style('body-1');
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
 }

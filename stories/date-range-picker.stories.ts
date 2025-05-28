@@ -482,6 +482,7 @@ export const Default: Story = {
       ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
       ?keep-open-on-select=${args.keepOpenOnSelect}
     >
+      <p slot="helper-text">Sample helper text.</p>
     </igc-date-range-picker>
   `,
 };

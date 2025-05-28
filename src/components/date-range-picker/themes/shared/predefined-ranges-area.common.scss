@@ -4,6 +4,6 @@
 $theme: $material;
 
 :host {
-    // background: var-get($theme, 'ranges-background');
-    // border-top: rem(1px) solid var-get($theme, 'ranges-border');
+    background: var-get($theme, 'ranges-background');
+    border-top: rem(1px) solid var-get($theme, 'ranges-border');
 }

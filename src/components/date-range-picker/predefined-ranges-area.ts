@@ -11,8 +11,8 @@ import {
 } from '../common/i18n/date-range-picker.resources.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import { styles } from './predefined-ranges-area.base.css.js';
+import { all } from './themes/ranges-themes.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
-import { all } from './themes/themes.js';
 
 /* blazorSuppress */
 /**

@@ -1,11 +1,119 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../date-picker/themes/shared/date-picker.common';
 
 $theme: $material;
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    igc-dialog {
+        box-shadow: none;
+        border: none;
+
+        [part='actions'] {
+            border: none;
+        }
+
+        igc-calendar {
+            box-shadow: none;
+        }
+    }
+
+    igc-dialog[open]::part(base) {
+        box-shadow: var(--ig-elevation-24);
+    }
+
+    igc-dialog::part(content) {
+        padding: 0;
+    }
+
+    igc-dialog::part(footer) {
+        padding: rem(8px);
+        gap: rem(8px);
+        background: var-get($theme, 'content-background');
+        border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+    }
+
+    igc-focus-trap {
+        @include sizable();
+
+        --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+        border-radius: var-get($theme, 'border-radius');
+        background: var-get($theme, 'content-background');
+    }
+
+    igc-popover::part(container) {
+        box-shadow: var(--ig-elevation-3);
+        border-radius: var-get($theme, 'border-radius');
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(4px);
+        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+    }
+}
+
+:host(:not([readonly])) {
+    --affix-color: #{var-get($theme, 'input-prefix-color')};
+}
+
+:host(:not([readonly])) {
+    [part='calendar-icon'],
+    [part='calendar-icon-open'],
+    [part='clear-icon'] {
+        color: var(--affix-color);
+    }
+}
+
+:host(:not([readonly]):not([disabled])) {
+    ::part(filled) {
+        --affix-color: #{var-get($theme, 'input-prefix-color--filled')};
+    }
+}
+
+:host(:not([readonly])) {
+    igc-input:focus-within {
+        --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+
+        &::part(filled) {
+            --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+        }
+    }
+}
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::part(helper-text),
+    [part='label'],
+    igc-validator {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
+    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+}
 
 [part='separator'] {
     @include type-style('caption');
 
     color: var-get($theme, 'label-color');
+}
+
+igc-icon,
+::slotted(igc-icon) {
+    --component-size: var(--input-size);
 }

@@ -1,0 +1,36 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    igc-dialog[open]::part(base) {
+        border-radius: 0;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(5px);
+        padding-inline-start: 0;
+    }
+}
+
+:host([required]) {
+    ::part(label)::after {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::part(label)::after {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
+}

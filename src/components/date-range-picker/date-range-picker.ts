@@ -8,7 +8,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
   calendarRange,
@@ -183,7 +183,7 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
 
-@themes(all)
+@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -275,6 +275,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @queryAssignedElements({ slot: 'header-date' })
   private readonly _headerDateSlotItems!: HTMLElement[];
+
+  protected get _isIndigoTheme(): boolean {
+    return getThemeController(this)?.theme === 'indigo';
+  }
 
   // #endregion
 
@@ -1094,10 +1098,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-button
               slot="footer"
               @click=${this._dialogCancel}
-              variant="flat"
+              variant="${this._isIndigoTheme ? 'outlined' : 'flat'}"
               >${this.resourceStrings.cancel}</igc-button
             >
-            <igc-button slot="footer" @click=${this._dialogDone} variant="flat"
+            <igc-button
+              slot="footer"
+              @click=${this._dialogDone}
+              variant="${this._isIndigoTheme ? 'contained' : 'flat'}"
               >${this.resourceStrings.done}</igc-button
             >
           </igc-dialog>
