@@ -29,7 +29,6 @@ $theme: $material;
 
     igc-dialog::part(footer) {
         padding: rem(8px);
-        gap: rem(8px);
         background: var-get($theme, 'content-background');
         border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
     }
