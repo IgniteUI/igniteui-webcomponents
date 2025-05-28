@@ -145,7 +145,7 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-/** blazorElement */
+/* blazorElement */
 @themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
