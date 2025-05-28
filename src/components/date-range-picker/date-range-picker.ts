@@ -182,7 +182,7 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-/** blazorElement */
+/* blazorElement */
 
 @themes(all)
 @blazorAdditionalDependencies(
