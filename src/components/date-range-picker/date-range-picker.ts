@@ -1117,6 +1117,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._displayFormat!
     );
     const value = picker === 'start' ? this.value?.start : this.value?.end;
+    const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
+    const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
 
     return html`
       <igc-date-time-input
@@ -1139,9 +1141,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon(picker)}
-        <slot name=${`prefix-${picker}`} slot="prefix"></slot>
+        <slot name=${`prefix-${picker}`} slot=${ifDefined(prefix)}></slot>
         ${this._renderClearIcon(picker)}
-        <slot name=${`suffix-${picker}`} slot="suffix"></slot>
+        <slot name=${`suffix-${picker}`} slot=${ifDefined(suffix)}></slot>
       </igc-date-time-input>
     `;
   }
@@ -1160,6 +1162,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private _renderSingleInput(id: string) {
+    const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
+    const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
+
     return html`<igc-input
         id=${id}
         aria-haspopup="dialog"
@@ -1175,15 +1180,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon()}
-        <slot
-          name="prefix"
-          slot=${ifDefined(isEmpty(this._prefixes) ? undefined : 'prefix')}
-        ></slot>
+        <slot name="prefix" slot=${ifDefined(prefix)}></slot>
         ${this._renderClearIcon()}
-        <slot
-          name="suffix"
-          slot=${ifDefined(isEmpty(this._suffixes) ? undefined : 'suffix')}
-        ></slot>
+        <slot name="suffix" slot=${ifDefined(suffix)}></slot>
       </igc-input>
       ${this._renderHelperText()} ${this._renderPicker(id)}`;
   }
