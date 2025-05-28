@@ -171,30 +171,34 @@ export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
  * @remarks
  * By default, `unit` is set to 'day'.
  */
-export function* calendarRange(options: CalendarRangeParams) {
-  let low = toCalendarDay(options.start);
-  const unit = options.unit ?? 'day';
-  const high =
-    typeof options.end === 'number'
-      ? low.add(unit, options.end)
-      : toCalendarDay(options.end);
+export function* calendarRange(
+  options: CalendarRangeParams
+): Generator<CalendarDay, void, unknown> {
+  const { start, end, unit = 'day', inclusive = false } = options;
 
-  const reverse = high.lessThan(low);
-  const step = reverse ? -1 : 1;
+  let currentDate = toCalendarDay(start);
+  const endDate =
+    typeof end === 'number'
+      ? toCalendarDay(start).add(unit, end)
+      : toCalendarDay(end);
 
-  const shouldYield = () => {
-    return reverse
-      ? options.inclusive
-        ? low.greaterThanOrEqual(high)
-        : low.greaterThan(high)
-      : options.inclusive
-        ? low.lessThanOrEqual(high)
-        : low.lessThan(high);
+  const isReversed = endDate.lessThan(currentDate);
+  const step = isReversed ? -1 : 1;
+
+  const shouldContinue = () => {
+    if (inclusive) {
+      return isReversed
+        ? currentDate.greaterThanOrEqual(endDate)
+        : currentDate.lessThanOrEqual(endDate);
+    }
+    return isReversed
+      ? currentDate.greaterThan(endDate)
+      : currentDate.lessThan(endDate);
   };
 
-  while (shouldYield()) {
-    yield low;
-    low = low.add(unit, step);
+  while (shouldContinue()) {
+    yield currentDate;
+    currentDate = currentDate.add(unit, step);
   }
 }
 

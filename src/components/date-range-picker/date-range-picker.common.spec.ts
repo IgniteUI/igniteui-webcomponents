@@ -1,9 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type Sinon from 'sinon';
 import { spy } from 'sinon';
+import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
-import type IgcChipComponent from '../chip/chip.js';
+import IgcChipComponent from '../chip/chip.js';
 import {
   altKey,
   arrowDown,
@@ -20,6 +22,7 @@ import {
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcDateRangePickerComponent, {
+  type DateRangeValue,
   type CustomDateRange,
 } from './date-range-picker.js';
 import {
@@ -653,6 +656,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
     });
     describe('Predefined ranges', () => {
+      let eventSpy: Sinon.SinonSpy;
       const previousThreeDaysStart = CalendarDay.today.add('day', -3).native;
       const nextThreeDaysEnd = CalendarDay.today.add('day', 3).native;
 
@@ -673,61 +677,77 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         },
       ];
 
-      it('should not render the predefined ranges in the DOM when usePredefinedRanges is false and there are no custom ranges added', async () => {
-        picker.open = true;
-        await elementUpdated(picker);
+      beforeEach(async () => {
+        eventSpy = spy(picker, 'emitEvent');
+      });
 
-        const predefinedArea = picker.renderRoot.querySelector(
-          'igc-predefined-ranges-area'
+      afterEach(() => {
+        eventSpy.resetHistory();
+      });
+
+      function getEventArgs() {
+        return eventSpy.firstCall.lastArg.detail as DateRangeValue;
+      }
+
+      function getPredefinedArea() {
+        return picker.renderRoot.querySelector(
+          IgcPredefinedRangesAreaComponent.tagName
         );
-        expect(predefinedArea).to.be.null;
+      }
+
+      function getPopover() {
+        return picker.renderRoot.querySelector(IgcPopoverComponent.tagName);
+      }
+
+      function getDialog() {
+        return picker.renderRoot.querySelector(IgcDialogComponent.tagName);
+      }
+
+      function getDialogDoneButton() {
+        return picker.renderRoot.querySelector(
+          'igc-button[slot="footer"]:last-of-type'
+        ) as IgcButtonComponent;
+      }
+
+      function getRangeChips() {
+        return getPredefinedArea()?.renderRoot.querySelectorAll(
+          IgcChipComponent.tagName
+        )!;
+      }
+
+      it('should not render the predefined ranges in the DOM when usePredefinedRanges is false and there are no custom ranges added', async () => {
+        await picker.show();
+        expect(getPredefinedArea()).to.be.null;
       });
 
       it('should emit igcChange when predefined date is selected and should close the picker - dropdown mode', async () => {
-        const eventSpy = spy(picker, 'emitEvent');
-        const popover = picker.renderRoot.querySelector(
-          IgcPopoverComponent.tagName
-        );
+        const popover = getPopover();
 
         picker.usePredefinedRanges = true;
         picker.customRanges = customRanges;
+        await picker.show();
 
-        picker.open = true;
-        await elementUpdated(picker);
-
-        const predefinedArea = picker.renderRoot.querySelectorAll(
-          IgcPredefinedRangesAreaComponent.tagName
-        );
-        const allRanges = (predefinedArea[0] as any)._allRanges;
-
-        for (const range of allRanges) {
-          picker.open = true;
-          await elementUpdated(picker);
-          predefinedArea[0].dispatchEvent(
-            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
-          );
-          await elementUpdated(picker);
+        for (const chip of getRangeChips()) {
+          await picker.show();
+          simulateClick(chip);
+          await elementUpdated(chip);
 
           expect(eventSpy).calledWith('igcChange');
-          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
+          const range = getEventArgs();
 
+          expect(picker.activeDate).to.eql(range.start);
           checkSelectedRange(
             picker,
-            {
-              start: range.dateRange.start,
-              end: range.dateRange.end,
-            },
+            { start: range.start, end: range.end },
             false
           );
-          expect(popover?.hasAttribute('open')).to.equal(false);
+          expect(popover?.open).to.be.false;
           eventSpy.resetHistory();
         }
       });
 
       it('should emit igcChange on committing the new selection through predefined ranges - dialog mode', async () => {
-        const eventSpy = spy(picker, 'emitEvent');
         picker.mode = 'dialog';
-
         await elementUpdated(picker);
 
         picker.usePredefinedRanges = true;
@@ -736,84 +756,64 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         picker.open = true;
         await elementUpdated(picker);
 
-        let dialog = picker.renderRoot.querySelector(
-          IgcDialogComponent.tagName
-        );
-        const predefinedArea = picker.renderRoot.querySelectorAll(
-          IgcPredefinedRangesAreaComponent.tagName
-        );
-        const allRanges = (predefinedArea[0] as any)._allRanges;
+        const chipSpy = spy(getPredefinedArea()!, '_handleRangeSelect' as any);
 
-        for (const range of allRanges) {
-          picker.open = true;
-          dialog = picker.renderRoot.querySelector(IgcDialogComponent.tagName);
-          await elementUpdated(picker);
-          predefinedArea[0].dispatchEvent(
-            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
-          );
+        for (const chip of getRangeChips()) {
+          await picker.show();
+          simulateClick(chip);
           await elementUpdated(picker);
 
-          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
+          const range = chipSpy.firstCall.firstArg as DateRangeValue;
+
+          expect(picker.activeDate).to.eql(range.start);
           checkSelectedRange(
             picker,
             {
-              start: range.dateRange.start,
-              end: range.dateRange.end,
+              start: range.start,
+              end: range.end,
             },
             false
           );
-          expect(dialog?.hasAttribute('open')).to.equal(true);
 
-          const doneBtn = picker.shadowRoot!.querySelector(
-            'igc-button[slot="footer"]:last-of-type'
-          ) as HTMLButtonElement;
-          doneBtn?.click();
+          expect(getDialog()?.open).to.be.true;
+          simulateClick(getDialogDoneButton());
           await elementUpdated(picker);
 
           expect(eventSpy).calledWith('igcChange');
           expect(eventSpy).calledWith('igcClosing');
           expect(eventSpy).calledWith('igcClosed');
-          expect(dialog?.hasAttribute('open')).to.equal(false);
+
+          expect(getDialog()?.open).to.be.false;
+          chipSpy.resetHistory();
           eventSpy.resetHistory();
         }
       });
 
       it('should render only custom chips, when usePredefinedRanges is false and emit igcChange when custom date is selected', async () => {
-        const eventSpy = spy(picker, 'emitEvent');
-        const popover = picker.renderRoot.querySelector(
-          IgcPopoverComponent.tagName
-        );
+        const popover = getPopover();
 
         picker.usePredefinedRanges = false;
         picker.customRanges = customRanges;
-        picker.open = true;
-        await elementUpdated(picker);
+        await picker.show();
 
-        const predefinedArea = picker.renderRoot.querySelectorAll(
-          IgcPredefinedRangesAreaComponent.tagName
-        );
-        const allRanges = (predefinedArea[0] as any)._allRanges;
-
-        for (const range of allRanges) {
-          picker.open = true;
-          await elementUpdated(picker);
-          predefinedArea[0].dispatchEvent(
-            new CustomEvent('igcRangeSelect', { detail: range.dateRange })
-          );
+        for (const chip of getRangeChips()) {
+          await picker.show();
+          simulateClick(chip);
           await elementUpdated(picker);
 
           expect(eventSpy).calledWith('igcChange');
-          expect(picker.activeDate).to.deep.equal(range.dateRange.start);
+          const range = getEventArgs();
+          expect(picker.activeDate).to.eql(range.start);
 
           checkSelectedRange(
             picker,
             {
-              start: range.dateRange.start,
-              end: range.dateRange.end,
+              start: range.start,
+              end: range.end,
             },
             false
           );
-          expect(popover?.hasAttribute('open')).to.equal(false);
+          expect(popover?.open).to.be.false;
           eventSpy.resetHistory();
         }
       });

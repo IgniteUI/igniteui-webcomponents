@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -9,46 +9,12 @@ import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
 } from '../common/i18n/date-range-picker.resources.js';
-import type { CustomDateRange } from './date-range-picker.js';
+import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
 import { all } from './themes/themes.js';
 
-const PREDEFINED_RANGES = [
-  {
-    label: 'last7Days',
-    dateRange: {
-      start: CalendarDay.today.add('day', -7).native,
-      end: CalendarDay.today.native,
-    },
-  },
-  {
-    label: 'currentMonth',
-    dateRange: {
-      start: CalendarDay.today.set({ date: 1 }).native,
-      end: CalendarDay.today.set({ date: 1 }).add('month', 1).add('day', -1)
-        .native,
-    },
-  },
-  {
-    label: 'last30Days',
-    dateRange: {
-      start: CalendarDay.today.add('day', -29).native,
-      end: CalendarDay.today.native,
-    },
-  },
-  {
-    label: 'yearToDate',
-    dateRange: {
-      start: CalendarDay.today.set({
-        year: CalendarDay.today.year,
-        month: 0,
-        date: 1,
-      }).native,
-      end: CalendarDay.today.native,
-    },
-  },
-];
+/* blazorSuppress */
 /**
  * The predefined ranges area component is used within the `igc-date-range picker` element and it
  * displays a set of chips with predefined date ranges. The component allows users to quickly select
@@ -62,19 +28,20 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcPredefinedRangesAreaComponent, IgcChipComponent);
   }
 
-  private _predefinedRanges: CustomDateRange[] = PREDEFINED_RANGES;
+  @state()
+  private _predefinedRanges: CustomDateRange[] = [];
 
   /**
    * Whether the control will show chips with predefined ranges.
-   * @attr
+   * @attr use-predefined-ranges
    */
   @property({
-    reflect: true,
     type: Boolean,
+    reflect: true,
     attribute: 'use-predefined-ranges',
   })
   public usePredefinedRanges = false;
@@ -90,44 +57,31 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public resourceStrings: IgcDateRangePickerResourceStrings =
     IgcDateRangePickerResourceStringsEN;
 
-  private get _allRanges(): CustomDateRange[] {
-    return this.usePredefinedRanges
-      ? [...this._predefinedRanges, ...this.customRanges]
-      : [...this.customRanges];
-  }
-
-  private _handleRangeSelect(range: CustomDateRange) {
-    this.dispatchEvent(
-      new CustomEvent('igcRangeSelect', { detail: range.dateRange })
-    );
-  }
-
   @watch('resourceStrings')
-  protected _updatePredefinedRanges() {
-    this._predefinedRanges = PREDEFINED_RANGES.map((range) => {
-      const key = range.label as keyof IgcDateRangePickerResourceStrings;
-      const label =
-        this.resourceStrings[key] || IgcDateRangePickerResourceStringsEN[key];
+  protected _updatePredefinedRanges(): void {
+    this._predefinedRanges = getPredefinedRanges(this.resourceStrings);
+  }
 
-      return {
-        label,
-        dateRange: range.dateRange,
-      };
-    });
+  private _handleRangeSelect(range: DateRangeValue): void {
+    this.dispatchEvent(new CustomEvent('igcRangeSelect', { detail: range }));
+  }
+
+  protected *_renderDateRanges() {
+    const ranges = this.usePredefinedRanges
+      ? [...this._predefinedRanges, ...this.customRanges]
+      : this.customRanges;
+
+    for (const { label, dateRange } of ranges) {
+      yield html`
+        <igc-chip @click=${() => this._handleRangeSelect(dateRange)}>
+          ${label}
+        </igc-chip>
+      `;
+    }
   }
 
   protected override render() {
-    return html`
-      <div part="ranges">
-        ${this._allRanges.map(
-          (range) => html`
-            <igc-chip @click=${() => this._handleRangeSelect(range)}>
-              ${range.label}
-            </igc-chip>
-          `
-        )}
-      </div>
-    `;
+    return html`<div part="ranges">${this._renderDateRanges()}</div>`;
   }
 }
 
@@ -135,4 +89,57 @@ declare global {
   interface HTMLElementTagNameMap {
     'igc-predefined-ranges-area': IgcPredefinedRangesAreaComponent;
   }
+}
+
+type PredefinedRangeKey =
+  | 'last7Days'
+  | 'currentMonth'
+  | 'last30Days'
+  | 'yearToDate';
+
+function getPredefinedRanges(
+  resourceStrings: IgcDateRangePickerResourceStrings
+): CustomDateRange[] {
+  const today = CalendarDay.today;
+
+  const ranges: {
+    key: PredefinedRangeKey;
+    getDateRange: () => { start: Date; end: Date };
+  }[] = [
+    {
+      key: 'last7Days',
+      getDateRange: () => ({
+        start: today.add('day', -7).native,
+        end: today.native,
+      }),
+    },
+    {
+      key: 'currentMonth',
+      getDateRange: () => ({
+        start: today.set({ date: 1 }).native,
+        end: today.set({ date: 1 }).add('month', 1).add('day', -1).native,
+      }),
+    },
+    {
+      key: 'last30Days',
+      getDateRange: () => ({
+        start: today.add('day', -29).native,
+        end: today.native,
+      }),
+    },
+    {
+      key: 'yearToDate',
+      getDateRange: () => ({
+        start: today.set({ year: today.year, month: 0, date: 1 }).native,
+        end: today.native,
+      }),
+    },
+  ];
+
+  return ranges.map((range) => ({
+    label:
+      resourceStrings[range.key] ||
+      IgcDateRangePickerResourceStringsEN[range.key],
+    dateRange: range.getDateRange(),
+  }));
 }
