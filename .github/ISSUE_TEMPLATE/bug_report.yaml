@@ -19,6 +19,7 @@ body:
         - Button group
         - Calendar
         - Card
+        - Carousel
         - Chip
         - Checkbox / Switch
         - Combo
@@ -27,6 +28,7 @@ body:
         - Dialog
         - Dropdown
         - Expansion panel
+        - File input
         - Icon(s)
         - Icon button
         - Input
@@ -42,7 +44,9 @@ body:
         - Stepper
         - Tabs & Tab group
         - Textarea
+        - Tile Manager
         - Toast
+        - Tooltip
         - Tree
         - Theming & Styles
         - Other/unknown (please specify in the description)

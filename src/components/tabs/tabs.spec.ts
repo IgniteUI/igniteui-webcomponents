@@ -631,6 +631,7 @@ describe('Tabs component', () => {
 
   describe('issue-1140', () => {
     it('Tabs throw if a child tab is immediately appended', async () => {
+      // https://github.com/IgniteUI/igniteui-webcomponents/pull/1705#issuecomment-2912189331
       const tabs = document.createElement(IgcTabsComponent.tagName);
       const tab = document.createElement(IgcTabComponent.tagName);
       document.body.appendChild(tabs);

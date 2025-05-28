@@ -1,9 +1,0 @@
-@use 'styles/utilities' as *;
-
-:host([alignment='vertical']) {
-    gap: 0;
-}
-
-:host([alignment='horizontal']) {
-    column-gap: rem(16px);
-}
