@@ -110,6 +110,7 @@ $theme: $material;
     @include type-style('caption');
 
     color: var-get($theme, 'label-color');
+    height: var-get($theme, 'size');
 }
 
 igc-icon,

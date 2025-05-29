@@ -43,7 +43,7 @@
 [part='inputs'] {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-end;
     gap: rem(8px)
 }
 
@@ -57,4 +57,13 @@
         display: flex;
         gap: rem(8px);
     }
+}
+
+[part='separator'] {
+    display: flex;;
+    align-items: center;
+}
+
+igc-date-time-input {
+    width: 100%;
 }
