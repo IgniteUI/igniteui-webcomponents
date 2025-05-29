@@ -69,6 +69,7 @@ export interface IgcDatePickerComponentEventMap {
 
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
+/* blazorIndirectRender */
 /**
  * igc-date-picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
@@ -145,7 +146,6 @@ const formats = new Set(['short', 'medium', 'long', 'full']);
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-/* blazorElement */
 @themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'

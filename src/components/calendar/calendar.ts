@@ -56,6 +56,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
 
+/* blazorIndirectRender */
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -105,7 +106,6 @@ export const focusActiveDate = Symbol();
  * @csspart selected - Indicates selected state. Applies to date, month and year elements of the calendar.
  * @csspart current - Indicates current state. Applies to date, month and year elements of the calendar.
  */
-/* blazorElement */
 @themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
