@@ -193,8 +193,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
           </igc-button>
         </div>
         <div part="file-names">
-          ${this._fileNames ??
-          html`<slot name="file-missing-text">${emptyText}</slot>`}
+          <span>
+            ${this._fileNames ??
+            html`<slot name="file-missing-text">${emptyText}</slot>`}
+          </span>
         </div>
       </div>
     `;
