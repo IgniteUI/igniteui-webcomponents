@@ -10,7 +10,8 @@ import {
   createFormValueState,
   defaultFileListTransformer,
 } from '../common/mixins/forms/form-value.js';
-import { isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { isEmpty } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
@@ -206,7 +207,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return html`
       <input
         id=${this.inputId}
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         type="file"
         ?disabled=${this.disabled}
         ?required=${this.required}

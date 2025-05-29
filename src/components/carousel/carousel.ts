@@ -32,6 +32,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   asNumber,
   createCounter,
@@ -40,7 +41,6 @@ import {
   formatString,
   isLTR,
   last,
-  partNameMap,
   wrap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -740,14 +740,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private indicatorTemplate() {
-    const parts = partNameMap({
+    const parts = {
       indicators: true,
       start: this.indicatorsOrientation === 'start',
-    });
+    };
 
     return html`
       <igc-carousel-indicator-container>
-        <div ${ref(this._indicatorsContainerRef)} role="tablist" part=${parts}>
+        <div
+          ${ref(this._indicatorsContainerRef)}
+          role="tablist"
+          part=${partMap(parts)}
+        >
           <slot
             name="indicator"
             @slotchange=${this.handleIndicatorSlotChange}
@@ -763,11 +767,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private labelTemplate() {
-    const parts = partNameMap({
+    const parts = {
       label: true,
       indicators: true,
       start: this.indicatorsOrientation === 'start',
-    });
+    };
     const value = formatString(
       this.slidesLabelFormat,
       this.current + 1,
@@ -775,7 +779,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     );
 
     return html`
-      <div part=${parts}>
+      <div part=${partMap(parts)}>
         <span>${value}</span>
       </div>
     `;
