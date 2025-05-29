@@ -12,6 +12,7 @@ interface IgcBaseComboBoxEventMap {
   igcClosed: CustomEvent<void>;
 }
 
+/* blazorIndirectRender */
 export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
   declare public emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
