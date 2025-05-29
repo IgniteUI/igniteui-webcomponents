@@ -43,6 +43,7 @@ textarea {
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
     will-change: transform;
+    line-height: normal;
 }
 
 %label-filled {
