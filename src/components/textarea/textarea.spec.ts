@@ -121,6 +121,33 @@ describe('Textarea component', () => {
       expect(element.value).to.be.empty;
       expect(textArea.value).to.be.empty;
     });
+
+    it('issue #1686 - dynamic prefix/suffix slot manipulation', async () => {
+      element = await fixture(html`
+        <igc-textarea>
+          <span slot="prefix">Prefix</span>
+          <span slot="suffix">Suffix</span>
+        </igc-textarea>
+      `);
+
+      const prefix = element.querySelector<HTMLElement>('[slot="prefix"]')!;
+      const suffix = element.querySelector<HTMLElement>('[slot="suffix"]')!;
+
+      const prefixPart =
+        element.renderRoot.querySelector<HTMLElement>('[part="prefix"]')!;
+      const suffixPart =
+        element.renderRoot.querySelector<HTMLElement>('[part="suffix"]')!;
+
+      expect(prefixPart.hidden).to.be.false;
+      expect(suffixPart.hidden).to.be.false;
+
+      prefix.remove();
+      suffix.remove();
+      await elementUpdated(element);
+
+      expect(prefixPart.hidden).to.be.true;
+      expect(suffixPart.hidden).to.be.true;
+    });
   });
 
   describe('Events', () => {
