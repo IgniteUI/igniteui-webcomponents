@@ -8,7 +8,8 @@ import {
   type FormValue,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
-import { isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { isEmpty } from '../common/util.js';
 import type { InputType, RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
@@ -262,7 +263,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return html`
       <input
         id=${this.inputId}
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         type=${ifDefined(this.type)}
         pattern=${ifDefined(this.pattern)}

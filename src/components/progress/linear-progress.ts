@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import type { LinearProgressLabelAlign } from '../types.js';
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
@@ -55,18 +55,18 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public labelAlign: LinearProgressLabelAlign = 'top-start';
 
   protected override render() {
-    const parts = partNameMap({
+    const parts = {
       fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
       [this.variant]: true,
-    });
+    };
 
     return html`
       <div part="base" style=${styleMap(this._styleInfo)}>
         <div part="track">
-          <div part=${parts}></div>
-          <div part="${parts} secondary"></div>
+          <div part=${partMap(parts)}></div>
+          <div part=${partMap({ ...parts, secondary: true })}></div>
         </div>
         ${this.renderDefaultSlot()}
       </div>

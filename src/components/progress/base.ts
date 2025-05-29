@@ -7,13 +7,8 @@ import {
 } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators/watch.js';
-import {
-  asPercent,
-  clamp,
-  formatString,
-  isEmpty,
-  partNameMap,
-} from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { asPercent, clamp, formatString, isEmpty } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
@@ -167,15 +162,15 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderLabel() {
-    const parts = partNameMap({
+    const parts = {
       label: true,
       value: true,
       fraction: this._hasFraction,
-    });
+    };
 
     return this.labelFormat
-      ? html`<span part=${parts}>${this.renderLabelFormat()}</span>`
-      : html`<span part="${parts} counter"></span>`;
+      ? html`<span part=${partMap(parts)}>${this.renderLabelFormat()}</span>`
+      : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
   }
 
   protected renderLabelFormat() {

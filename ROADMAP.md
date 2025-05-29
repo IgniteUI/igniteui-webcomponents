@@ -2,7 +2,7 @@
 
 # Current Milestone
 
-## Milestone 17 (Due May, 2025)
+## Milestone 17 (Due Jun, 2025)
 
 1. Date range picker [1596](https://github.com/IgniteUI/igniteui-webcomponents/issues/1596)
 2. Tooltip component [1615](https://github.com/IgniteUI/igniteui-webcomponents/issues/1615)
@@ -11,6 +11,7 @@
 
 1. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
 2. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
+3. Chat UI component
 
 # Previous Milestone
 

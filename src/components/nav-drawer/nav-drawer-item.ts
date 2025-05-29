@@ -8,7 +8,7 @@ import {
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/item.common.css.js';
@@ -68,13 +68,8 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   }
 
   protected override render() {
-    const parts = partNameMap({
-      base: true,
-      mini: this._textLength < 1,
-    });
-
     return html`
-      <div part=${parts}>
+      <div part=${partMap({ base: true, mini: this._textLength < 1 })}>
         <span part="icon" .hidden="${this.navdrawerIcon.length === 0}">
           <slot name="icon"></slot>
         </span>
