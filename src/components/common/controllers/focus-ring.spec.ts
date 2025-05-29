@@ -7,7 +7,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement, css } from 'lit';
-import { partNameMap } from '../util.js';
+import { partMap } from '../part-map.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -37,7 +37,7 @@ describe('Focus ring controller', () => {
 
         protected override render() {
           return html`<button
-            part=${partNameMap({ focused: this.manager.focused })}
+            part=${partMap({ focused: this.manager.focused })}
           >
             Button
           </button>`;

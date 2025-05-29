@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';
@@ -41,7 +41,7 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   protected override render() {
     return html`
       <div
-        part=${partNameMap({
+        part=${partMap({
           base: true,
           focused: this._focusRingManager.focused,
         })}
