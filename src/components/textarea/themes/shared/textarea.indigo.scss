@@ -76,7 +76,6 @@ $theme: $indigo;
     transition: background .25s $out-cubic;
     overflow: hidden;
     padding-inline-start: 0;
-    top: rem(1px);
 
     &::after {
         content: '';
