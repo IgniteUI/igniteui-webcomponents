@@ -65,6 +65,7 @@ $theme: $fluent;
     margin-top: 0;
     height: auto;
     margin-block-end: rem(5px);
+    line-height: normal;
 }
 
 :host([invalid]) {

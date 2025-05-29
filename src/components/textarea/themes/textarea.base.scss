@@ -22,8 +22,6 @@ $base-scale-size: (
 
     [part~='label'] {
         @include ellipsis();
-    
-        line-height: normal;
     }
 }
 
@@ -69,7 +67,7 @@ textarea {
 
     &:not([type='*']) {
         /* resets typography styles */
-        line-height: normal; 
+        line-height: normal;
     }
 }
 
