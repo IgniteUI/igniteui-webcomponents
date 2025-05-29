@@ -170,7 +170,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
     return this.labelFormat
       ? html`<span part=${partMap(parts)}>${this.renderLabelFormat()}</span>`
-      : html`<span part="${partMap(parts)} counter"></span>`;
+      : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
   }
 
   protected renderLabelFormat() {

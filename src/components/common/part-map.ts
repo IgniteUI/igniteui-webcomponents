@@ -9,12 +9,11 @@ import {
 } from 'lit/directive.js';
 
 export interface PartMapInfo {
-  readonly [name: string]: string | boolean | number;
+  readonly [name: string]: boolean | null | undefined;
 }
 
 class PartMapDirective extends Directive {
   private _previousParts?: Set<string>;
-  private _staticParts?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -22,7 +21,7 @@ class PartMapDirective extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'part' ||
-      (partInfo.strings?.length as number) > 2
+      (partInfo.strings?.length as number) > 0
     ) {
       throw new Error(
         '`partMap() can only be used in the `part` attribute and must be the only part in the attribute.'
@@ -40,18 +39,14 @@ class PartMapDirective extends Directive {
     part: AttributePart,
     [partMapInfo]: DirectiveParameters<this>
   ) {
+    const partList = part.element.part;
+
     if (this._previousParts === undefined) {
       this._previousParts = new Set();
-      if (part.strings !== undefined) {
-        this._staticParts = new Set(
-          part.strings
-            .join(' ')
-            .split(/\s/)
-            .filter((s) => s !== '')
-        );
-      }
+
       for (const name in partMapInfo) {
-        if (partMapInfo[name] && !this._staticParts?.has(name)) {
+        if (partMapInfo[name]) {
+          partList.add(name);
           this._previousParts.add(name);
         }
       }
@@ -59,28 +54,18 @@ class PartMapDirective extends Directive {
       return this.render(partMapInfo);
     }
 
-    const partList = part.element.part;
-
     for (const name of this._previousParts) {
-      if (!(name in partMapInfo)) {
+      if (!(name in partMapInfo) || !partMapInfo[name]) {
         partList.remove(name);
-        this._previousParts!.delete(name);
+        this._previousParts.delete(name);
       }
     }
 
     for (const name in partMapInfo) {
       const value = !!partMapInfo[name];
-      if (
-        value !== this._previousParts.has(name) &&
-        !this._staticParts?.has(name)
-      ) {
-        if (value) {
-          partList.add(name);
-          this._previousParts.add(name);
-        } else {
-          partList.remove(name);
-          this._previousParts.delete(name);
-        }
+      if (value && !this._previousParts.has(name)) {
+        partList.add(name);
+        this._previousParts.add(name);
       }
     }
 

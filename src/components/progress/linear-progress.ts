@@ -66,7 +66,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       <div part="base" style=${styleMap(this._styleInfo)}>
         <div part="track">
           <div part=${partMap(parts)}></div>
-          <div part="${partMap(parts)} secondary"></div>
+          <div part=${partMap({ ...parts, secondary: true })}></div>
         </div>
         ${this.renderDefaultSlot()}
       </div>
