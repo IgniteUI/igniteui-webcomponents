@@ -30,7 +30,7 @@ $theme: $base;
 }
 
 :host(:focus-within),
-:host(:hover) {
+:host(:not([readonly]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }

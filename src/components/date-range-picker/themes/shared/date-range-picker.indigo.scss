@@ -32,6 +32,24 @@ $theme: $indigo;
     padding: rem(8px) rem(16px);
 }
 
+:host([readonly]) {
+    igc-input::part(container),
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not([readonly]):hover) {
+    igc-input[readonly]::part(container) {
+        background: var-get($theme, 'box-background-hover');
+        border-color: var-get($theme, 'hover-bottom-line-color');
+    }
+
+    igc-input[readonly]::part(filled) {
+        color: var-get($theme, 'filled-text-hover-color');
+    }
+}
+
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
     ::part(helper-text) {

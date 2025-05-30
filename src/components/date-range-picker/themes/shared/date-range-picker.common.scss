@@ -60,6 +60,15 @@ $theme: $material;
 :host(:not([readonly])) {
     --affix-color: #{var-get($theme, 'input-prefix-color')};
 
+    igc-date-time-input[readonly] {
+        --affix-color: #{var-get($theme, 'input-prefix-color')};
+
+        &::part(prefix),
+        &::part(suffix) {
+            color: var(--affix-color);
+        }
+    }
+
     [part='calendar-icon'],
     [part='calendar-icon-open'],
     [part='clear-icon'] {

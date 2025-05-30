@@ -28,6 +28,17 @@ $theme: $bootstrap;
     }
 }
 
+:host([readonly]) {
+    igc-input::part(container),
+    igc-input::part(prefix),
+    igc-input::part(suffix),
+    igc-date-time-input::part(container),
+    igc-date-time-input::part(prefix),
+    igc-date-time-input::part(suffix) {
+        background: var-get($theme, 'border-disabled-background');
+    }
+}
+
 [part='separator'] {
     @include type-style('body-1');
 }

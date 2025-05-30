@@ -24,6 +24,29 @@ $theme: $fluent;
     }
 }
 
+:host(:not([disabled])[readonly]) {
+    igc-input::part(prefix),
+    igc-input::part(suffix),
+    igc-date-time-input::part(prefix),
+    igc-date-time-input::part(suffix) {
+        background: transparent;
+    }
+}
+
+:host([readonly]:hover) {
+    igc-input::part(container),
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'border-color');
+    }
+}
+
+:host([readonly]:focus-within) {
+    igc-input::part(container),
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'focused-border-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     ::part(label)::after {
