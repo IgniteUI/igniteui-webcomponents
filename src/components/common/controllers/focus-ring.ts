@@ -50,6 +50,8 @@ class KeyboardFocusRingController implements ReactiveController {
   }
 }
 
+export type { KeyboardFocusRingController };
+
 /**
  * Adds a {@link KeyboardFocusRingController} responsible for managing keyboard focus state.
  */
