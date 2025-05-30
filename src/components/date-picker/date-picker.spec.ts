@@ -1,7 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import { getCalendarDOM, getDayViewDOM } from '../calendar/helpers.spec.js';
+import {
+  getCalendarDOM,
+  getDOMDate,
+  getDayViewDOM,
+} from '../calendar/helpers.spec.js';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
 import {
@@ -895,6 +899,43 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
+    });
+
+    it('issue 1710', async () => {
+      const activeDate = new CalendarDay({ year: 2025, month: 4, date: 29 });
+      const targetDate = activeDate.add('day', 2);
+
+      // Select the last date of May
+      picker.activeDate = activeDate.native;
+      await picker.show();
+
+      const calendarDOM = getCalendarDOM(calendar);
+      const lastOfMay = getDOMDate(targetDate, calendarDOM.views.days);
+
+      simulateClick(lastOfMay);
+      await elementUpdated(picker);
+
+      expect(checkDatesEqual(picker.value!, targetDate));
+
+      // Open the picker and switch to months view
+      await picker.show();
+
+      simulateClick(calendarDOM.navigation.months);
+      await elementUpdated(picker);
+
+      const monthElements = Array.from(
+        calendarDOM.views.months.renderRoot.querySelectorAll<HTMLElement>(
+          '[role="gridcell"]'
+        )
+      );
+
+      const monthNames = new Set(monthElements.map((each) => each.innerText));
+      const selectedMonths = monthElements.filter((each) =>
+        each.matches('[aria-selected="true"]')
+      );
+
+      expect(monthNames).lengthOf(12);
+      expect(selectedMonths).lengthOf(1);
     });
 
     describe('Readonly state', () => {
