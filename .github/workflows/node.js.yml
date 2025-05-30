@@ -29,8 +29,8 @@ jobs:
     - run: npm ci
     - run: npx playwright install --with-deps --only-shell chromium
     - run: npm run lint
-    - run: npm run check
     - run: npm run test
+    - run: npm run check
     - name: Publish to coveralls.io
       if: matrix.node-version == '20.x'
       uses: coverallsapp/github-action@v2
