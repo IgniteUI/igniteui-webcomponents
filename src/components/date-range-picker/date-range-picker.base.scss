@@ -28,7 +28,7 @@
 }
 
 :host([required]) {
-    ::part(label)::after {
+    igc-date-time-input::part(label)::after {
         content: '*';
     }
 }

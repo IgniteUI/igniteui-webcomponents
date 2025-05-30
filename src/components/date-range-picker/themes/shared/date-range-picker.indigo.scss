@@ -12,6 +12,7 @@ $theme: $indigo;
 
     igc-dialog::part(footer) {
         padding: rem(8px) rem(16px);
+        gap: rem(8px);
     }
 
     igc-focus-trap {
