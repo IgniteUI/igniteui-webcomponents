@@ -147,31 +147,6 @@ describe('Date range picker - two inputs', () => {
       checkSelectedRange(picker, expectedValue);
     });
 
-    it('should not modify value through selection or typing when readOnly is true', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
-      picker.readOnly = true;
-      await elementUpdated(picker);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
-
-      await picker.show();
-      await selectDates(today, tomorrow, calendar);
-
-      expect(picker.value).to.deep.equal({ start: null, end: null });
-      expect(calendar.values).to.deep.equal([]);
-      expect(eventSpy).not.to.be.called;
-
-      await picker.hide();
-
-      dateTimeInputs[0].focus();
-      simulateKeyboard(dateTimeInputs[0], 'ArrowDown');
-      await elementUpdated(picker);
-      expect(isFocused(dateTimeInputs[0])).to.be.true;
-      expect(dateTimeInputs[0].value).to.equal(null);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
-      expect(calendar.values).to.deep.equal([]);
-      expect(eventSpy).not.to.be.called;
-    });
-
     it('should modify value only through calendar selection and not input when nonEditable is true', async () => {
       const eventSpy = spy(picker, 'emitEvent');
       picker.nonEditable = true;
@@ -601,20 +576,6 @@ describe('Date range picker - two inputs', () => {
         expect(dateTimeInputs[1].value).to.be.null;
       });
 
-      it('should not clear the inputs via the clear icon when readOnly is true', async () => {
-        const eventSpy = spy(picker, 'emitEvent');
-        const testValue = { start: today.native, end: tomorrow.native };
-        picker.value = testValue;
-        picker.readOnly = true;
-        await elementUpdated(picker);
-
-        simulateClick(getIcon(picker, clearIcon));
-
-        expect(picker.value).to.deep.equal(testValue);
-        expect(eventSpy).not.called;
-        checkSelectedRange(picker, testValue);
-      });
-
       it('should emit igcInput and igcChange on input value change', async () => {
         const eventSpy = spy(picker, 'emitEvent');
 
@@ -813,6 +774,69 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, june3rd2025);
+      });
+    });
+    describe('Readonly state', () => {
+      beforeEach(async () => {
+        picker.readOnly = true;
+        await elementUpdated(picker);
+      });
+      it('should not modify value through selection or typing when readOnly is true', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        expect(picker.value).to.deep.equal({ start: null, end: null });
+
+        await picker.show();
+        await selectDates(today, tomorrow, calendar);
+
+        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(calendar.values).to.deep.equal([]);
+        expect(eventSpy).not.to.be.called;
+
+        await picker.hide();
+
+        dateTimeInputs[0].focus();
+        simulateKeyboard(dateTimeInputs[0], 'ArrowDown');
+        await elementUpdated(picker);
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+        expect(dateTimeInputs[0].value).to.equal(null);
+        expect(picker.value).to.deep.equal({ start: null, end: null });
+        expect(calendar.values).to.deep.equal([]);
+        expect(eventSpy).not.to.be.called;
+      });
+      it('should not clear the inputs via the clear icon when readOnly is true', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const testValue = { start: today.native, end: tomorrow.native };
+        picker.value = testValue;
+        await elementUpdated(picker);
+
+        simulateClick(getIcon(picker, clearIcon));
+
+        expect(picker.value).to.deep.equal(testValue);
+        expect(eventSpy).not.called;
+        checkSelectedRange(picker, testValue);
+      });
+      it('should not open the calendar on clicking the input - dropdown mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const nativeInput =
+          dateTimeInputs[0].renderRoot.querySelector('input')!;
+        simulateClick(nativeInput);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).not.called;
+      });
+      it('should not open the calendar on clicking the input - dialog mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        const nativeInput =
+          dateTimeInputs[0].renderRoot.querySelector('input')!;
+        simulateClick(nativeInput);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).not.called;
       });
     });
   });

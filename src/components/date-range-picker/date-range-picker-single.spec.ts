@@ -126,21 +126,6 @@ describe('Date range picker - single input', () => {
       checkSelectedRange(picker, expectedValue, false);
     });
 
-    it('should not modify value through selection when readOnly is true', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
-      picker.readOnly = true;
-      await elementUpdated(picker);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
-
-      await picker.show();
-
-      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
-      await selectDates(today, tomorrow, calendar);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
-      expect(calendar.values).to.deep.equal([]);
-      expect(eventSpy).not.to.be.called;
-    });
-
     it('should modify value only through calendar selection and not input', async () => {
       const eventSpy = spy(picker, 'emitEvent');
       // current implementation of DRP single input is not editable;
@@ -579,13 +564,17 @@ describe('Date range picker - single input', () => {
         expect(picker.value).to.deep.equal(null);
         expect(input.value).to.equal('');
       });
+    });
 
+    describe('Readonly state', () => {
+      const testValue = { start: today.native, end: tomorrow.native };
+      beforeEach(async () => {
+        picker.readOnly = true;
+        picker.value = testValue;
+        await elementUpdated(picker);
+      });
       it('should not clear the input(s) via the clear icon when readOnly is true', async () => {
         const eventSpy = spy(picker, 'emitEvent');
-        const testValue = { start: today.native, end: tomorrow.native };
-        picker.value = testValue;
-        picker.readOnly = true;
-        await elementUpdated(picker);
 
         simulateClick(getIcon(picker, clearIcon));
         await elementUpdated(picker);
@@ -593,6 +582,33 @@ describe('Date range picker - single input', () => {
         expect(picker.value).to.deep.equal(testValue);
         expect(eventSpy).not.called;
         checkSelectedRange(picker, testValue, false);
+      });
+      it('should not open the calendar on clicking the input - dropdown mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const igcInput = picker.renderRoot.querySelector(
+          IgcInputComponent.tagName
+        )!;
+        const nativeInput = igcInput.renderRoot.querySelector('input')!;
+        simulateClick(nativeInput);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).not.called;
+      });
+      it('should not open the calendar on clicking the input - dialog mode', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+        const igcInput = picker.renderRoot.querySelector(
+          IgcInputComponent.tagName
+        )!;
+        const nativeInput = igcInput.renderRoot.querySelector('input')!;
+
+        simulateClick(nativeInput);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(eventSpy).not.called;
       });
     });
   });

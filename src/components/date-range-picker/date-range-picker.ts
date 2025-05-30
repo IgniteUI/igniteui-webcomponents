@@ -1101,7 +1101,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?invalid=${live(this.invalid)}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
-        @click=${this._isDropDown ? nothing : this._handleInputClick}
+        @click=${this._isDropDown || this.readOnly
+          ? nothing
+          : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon(picker)}
@@ -1141,7 +1143,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .outlined=${this.outlined}
         ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}
-        @click=${this._isDropDown ? nothing : this._handleInputClick}
+        @click=${this._isDropDown || this.readOnly
+          ? nothing
+          : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon()}

@@ -588,6 +588,22 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         });
       });
       describe('Readonly state', () => {
+        it('should not modify value through selection when readOnly is true', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.readOnly = true;
+          await elementUpdated(picker);
+          expect(picker.value).to.deep.equal({ start: null, end: null });
+
+          await picker.show();
+
+          calendar = picker.renderRoot.querySelector(
+            IgcCalendarComponent.tagName
+          )!;
+          await selectDates(today, tomorrow, calendar);
+          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(calendar.values).to.deep.equal([]);
+          expect(eventSpy).not.to.be.called;
+        });
         describe('Dropdown mode', () => {
           beforeEach(async () => {
             picker.readOnly = true;
