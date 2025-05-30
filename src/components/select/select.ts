@@ -593,7 +593,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderToggleIcon() {
-    const parts = { 'toggle-icon': true, filled: this.value! };
+    const parts = { 'toggle-icon': true, filled: !!this.value };
     const iconHidden = this.open && !isEmpty(this._expandedIconSlot);
     const iconExpandedHidden = !iconHidden;
 
