@@ -633,6 +633,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     await this._calendar?.updateComplete;
     this._updateMaskedRangeValue();
     this._setCalendarRangeValues();
+    this._delegateInputsValidity();
   }
 
   @watch('mode')
@@ -1166,7 +1167,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
+  interface HtmlElementTagNameMap {
     'igc-date-range-picker': IgcDateRangePickerComponent;
   }
 }

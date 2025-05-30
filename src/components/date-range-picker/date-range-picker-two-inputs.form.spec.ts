@@ -7,8 +7,10 @@ import {
   createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateClick,
+  simulateInput,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -26,6 +28,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
 
   const today = CalendarDay.today;
   const tomorrow = today.add('day', 1);
+  const yesterday = today.add('day', -1);
 
   const spec = createFormAssociatedTestBed<IgcDateRangePickerComponent>(
     html`<igc-date-range-picker
@@ -428,8 +431,6 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
   describe('Validation message slots', () => {
     it('', () => {
       const now = CalendarDay.today;
-      const tomorrow = now.add('day', 1);
-      const yesterday = now.add('day', -1);
 
       const testParameters: ValidationContainerTestsParams<IgcDateRangePickerComponent>[] =
         [
@@ -466,5 +467,58 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
 
       runValidationContainerTests(IgcDateRangePickerComponent, testParameters);
     });
+  });
+  it('is correctly validated on switching between two and single inputs', async () => {
+    spec.setProperties({ useTwoInputs: false });
+    await elementUpdated(spec.element);
+
+    spec.setProperties({ value: null });
+    spec.setProperties({ required: true });
+    await elementUpdated(spec.element);
+
+    let singleInput = spec.element.renderRoot.querySelector(
+      IgcInputComponent.tagName
+    )!;
+    expect(singleInput.invalid).to.be.true;
+
+    spec.setProperties({ useTwoInputs: true });
+    await elementUpdated(spec.element);
+
+    const dti = spec.element.renderRoot.querySelectorAll(
+      IgcDateTimeInputComponent.tagName
+    );
+    const input = dti[0]!.shadowRoot!.querySelector(
+      'input'
+    ) as HTMLInputElement;
+    simulateInput(input, { value: '01/01/2025', inputType: 'insertText' });
+    // expect both inputs to be invalid as the date range is not complete
+    expect(dti[0]!.invalid).to.be.true;
+    expect(dti[1]!.invalid).to.be.true;
+
+    spec.setProperties({ useTwoInputs: false });
+    await elementUpdated(spec.element);
+
+    spec.setProperties({
+      disabledDates: [
+        {
+          type: DateRangeType.Between,
+          dateRange: [today.native, tomorrow.native],
+        },
+      ],
+    });
+    await elementUpdated(spec.element);
+
+    spec.setProperties({
+      value: {
+        start: today.add('day', -2).native,
+        end: tomorrow.add('day', 2).native,
+      },
+    });
+    await elementUpdated(spec.element);
+
+    singleInput = spec.element.renderRoot.querySelector(
+      IgcInputComponent.tagName
+    )!;
+    expect(singleInput.invalid).to.be.true;
   });
 });
