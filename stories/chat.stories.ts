@@ -13,15 +13,8 @@ import type {
   MessageActionsTemplate,
 } from '../src/components/chat/types.js';
 
-// Declare the type for ImportMeta to include env
-const env = {
-  VITE_SUPABASE_ANON_KEY:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtybnhzc2FycnBpZ3RvY3N2Z2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MDI4NjksImV4cCI6MjA2MzQ3ODg2OX0.CrZDDqfZSTyX_FGD7shO7on9EUsTk-Kf3SwJUHfPpig',
-  VITE_SUPABASE_URL: 'https://krnxssarrpigtocsvglo.supabase.co',
-};
-
-const supabaseUrl = env.VITE_SUPABASE_URL;
-const supabaseKey = env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 defineComponents(IgcChatComponent);
