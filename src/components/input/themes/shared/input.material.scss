@@ -459,7 +459,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'])[outlined]:active),
 :host(:not([type='search'])[outlined]:focus),
 :host(:not([type='search'])[outlined]:focus-within) {
     [part='suffix'] {
