@@ -31,27 +31,23 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSwitchComponent);
   }
 
   private static readonly increment = createCounter();
 
-  private inputId = `switch-${IgcSwitchComponent.increment()}`;
-  private labelId = `switch-label-${this.inputId}`;
+  private readonly _inputId = `switch-${IgcSwitchComponent.increment()}`;
+  private readonly _labelId = `switch-label-${this._inputId}`;
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
     return html`
-      <label
-        part=${partMap({ base: true, checked })}
-        for=${this.inputId}
-        @pointerdown=${this._kbFocus.reset}
-      >
+      <label part=${partMap({ base: true, checked })} for=${this._inputId}>
         <input
-          id=${this.inputId}
+          id=${this._inputId}
           type="checkbox"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
@@ -60,24 +56,23 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           .checked=${live(checked)}
           aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
-          @click=${this.handleClick}
-          @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
+          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          @click=${this._handleClick}
+          @focus=${this._handleFocus}
         />
         <span
           part=${partMap({
             control: true,
             checked,
-            focused: this._kbFocus.focused,
+            focused: this._focusRingManager.focused,
           })}
         >
           <span part=${partMap({ thumb: true, checked })}></span>
         </span>
         <span
-          .hidden=${this.hideLabel}
+          .hidden=${this._hideLabel}
           part=${partMap({ label: true, checked })}
-          id=${this.labelId}
+          id=${this._labelId}
         >
           <slot></slot>
         </span>
