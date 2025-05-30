@@ -78,6 +78,7 @@ export interface IgcDateRangePickerComponentEventMap {
   igcInput: CustomEvent<DateRangeValue | null>;
 }
 
+/* blazorIndirectRender */
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
  *
