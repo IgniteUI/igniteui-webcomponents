@@ -58,6 +58,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'disable-attachments' })
   public disableAttachments = false;
 
+  /**
+   * The accepted files that could be attached.
+   * Defines the file types as a list of comma-separated values that the file input should accept.
+   * @attr
+   */
+  @property({ type: String })
+  public acceptedFiles = '';
+
   @property({ type: String, attribute: 'header-text', reflect: true })
   public headerText = '';
 
@@ -147,6 +155,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
         </igc-chat-message-list>
         <igc-chat-input
           .disableAttachments=${this.disableAttachments}
+          .acceptedFiles=${this.acceptedFiles}
           @message-created=${this.handleSendMessage}
         ></igc-chat-input>
       </div>

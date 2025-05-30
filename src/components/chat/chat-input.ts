@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -40,8 +41,16 @@ export default class IgcChatInputComponent extends LitElement {
   @property({ type: Boolean, attribute: 'disable-attachments' })
   public disableAttachments = false;
 
+  @property({ type: String })
+  public acceptedFiles = '';
+
   @query('textarea')
   private textInputElement!: HTMLTextAreaElement;
+
+  @watch('acceptedFiles', { waitUntilFirstUpdate: true })
+  protected acceptedFilesChange(): void {
+    this.updateAcceptedTypesCache();
+  }
 
   @state()
   private inputValue = '';
@@ -49,10 +58,25 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private attachments: IgcMessageAttachment[] = [];
 
+  @state()
+  private dragClass = '';
+
+  // Cache for accepted file types
+  private _acceptedTypesCache: {
+    extensions: Set<string>;
+    mimeTypes: Set<string>;
+    wildcardTypes: Set<string>;
+  } | null = null;
+
   constructor() {
     super();
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
+  }
+
+  protected override firstUpdated() {
+    this.setupDragAndDrop();
+    this.updateAcceptedTypesCache();
   }
 
   private handleInput(e: Event) {
@@ -66,6 +90,69 @@ export default class IgcChatInputComponent extends LitElement {
       e.preventDefault();
       this.sendMessage();
     }
+  }
+
+  private setupDragAndDrop() {
+    const container = this.shadowRoot?.querySelector(
+      '.input-container'
+    ) as HTMLElement;
+    if (container) {
+      container.addEventListener('dragenter', this.handleDragEnter.bind(this));
+      container.addEventListener('dragover', this.handleDragOver.bind(this));
+      container.addEventListener('dragleave', this.handleDragLeave.bind(this));
+      container.addEventListener('drop', this.handleDrop.bind(this));
+    }
+  }
+
+  private handleDragEnter(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const files = Array.from(e.dataTransfer?.items || []).filter(
+      (item) => item.kind === 'file'
+    );
+    const hasValidFiles = files.some((item) =>
+      this.isFileTypeAccepted(item.getAsFile() as File, item.type)
+    );
+
+    this.dragClass = hasValidFiles ? 'dragging' : '';
+  }
+
+  private handleDragOver(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  private handleDragLeave(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if we're actually leaving the container
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (
+      x <= rect.left ||
+      x >= rect.right ||
+      y <= rect.top ||
+      y >= rect.bottom
+    ) {
+      this.dragClass = '';
+    }
+  }
+
+  private handleDrop(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.dragClass = '';
+
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length === 0) return;
+
+    const validFiles = files.filter((file) => this.isFileTypeAccepted(file));
+
+    this.attachFiles(validFiles);
   }
 
   private adjustTextareaHeight() {
@@ -102,8 +189,12 @@ export default class IgcChatInputComponent extends LitElement {
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
+    this.attachFiles(files);
+  }
+
+  private attachFiles(files: File[]) {
     const newAttachments: IgcMessageAttachment[] = [];
-    let count = 0;
+    let count = this.attachments.length;
     files.forEach((file) => {
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
@@ -118,17 +209,68 @@ export default class IgcChatInputComponent extends LitElement {
     this.attachments = [...this.attachments, ...newAttachments];
   }
 
+  private updateAcceptedTypesCache() {
+    if (!this.acceptedFiles) {
+      this._acceptedTypesCache = null;
+      return;
+    }
+
+    const types = this.acceptedFiles
+      .split(',')
+      .map((type) => type.trim().toLowerCase());
+    this._acceptedTypesCache = {
+      extensions: new Set(types.filter((t) => t.startsWith('.'))),
+      mimeTypes: new Set(
+        types.filter((t) => !t.startsWith('.') && !t.endsWith('/*'))
+      ),
+      wildcardTypes: new Set(
+        types.filter((t) => t.endsWith('/*')).map((t) => t.slice(0, -2))
+      ),
+    };
+  }
+
+  private isFileTypeAccepted(file: File, type = ''): boolean {
+    if (!this._acceptedTypesCache) return true;
+
+    if (file === null && type === '') return false;
+
+    const fileType =
+      file != null ? file.type.toLowerCase() : type.toLowerCase();
+    const fileExtension =
+      file != null
+        ? `.${file.name.split('.').pop()?.toLowerCase()}`
+        : `.${type.split('/').pop()?.toLowerCase()}`;
+
+    // Check file extension
+    if (this._acceptedTypesCache.extensions.has(fileExtension)) {
+      return true;
+    }
+
+    // Check exact MIME type
+    if (this._acceptedTypesCache.mimeTypes.has(fileType)) {
+      return true;
+    }
+
+    // Check wildcard MIME types
+    const [fileBaseType] = fileType.split('/');
+    return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
+  }
+
   private removeAttachment(index: number) {
     this.attachments = this.attachments.filter((_, i) => i !== index);
   }
 
   protected override render() {
     return html`
-      <div class="input-container">
+      <div class="input-container ${this.dragClass}">
         ${this.disableAttachments
           ? ''
           : html`
-              <igc-file-input multiple @igcChange=${this.handleFileUpload}>
+              <igc-file-input
+                multiple
+                .accept=${this.acceptedFiles}
+                @igcChange=${this.handleFileUpload}
+              >
                 <igc-icon
                   slot="file-selector-text"
                   name="attachment"

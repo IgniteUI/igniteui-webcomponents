@@ -21,6 +21,11 @@ igc-file-input::part(file-names){
     gap: 12px;
 }
 
+.input-container.dragging{
+    background-color: rgba(10, 132, 255, 0.1);
+    border: 2px dashed #0A84FF;
+}
+
 .input-wrapper {
     flex: 1;
     position: relative;

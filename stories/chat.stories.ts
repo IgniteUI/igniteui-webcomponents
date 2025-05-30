@@ -13,8 +13,15 @@ import type {
   MessageActionsTemplate,
 } from '../src/components/chat/types.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Declare the type for ImportMeta to include env
+const env = {
+  VITE_SUPABASE_ANON_KEY:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtybnhzc2FycnBpZ3RvY3N2Z2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MDI4NjksImV4cCI6MjA2MzQ3ODg2OX0.CrZDDqfZSTyX_FGD7shO7on9EUsTk-Kf3SwJUHfPpig',
+  VITE_SUPABASE_URL: 'https://krnxssarrpigtocsvglo.supabase.co',
+};
+
+const supabaseUrl = env.VITE_SUPABASE_URL;
+const supabaseKey = env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 defineComponents(IgcChatComponent);
@@ -44,6 +51,13 @@ const metadata: Meta<IgcChatComponent> = {
       type: 'boolean',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    acceptedFiles: {
+      type: 'string',
+      description:
+        'The accepted files that could be attached.\nDefines the file types as a list of comma-separated values that the file input should accept.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     headerText: {
       type: 'string',
@@ -76,6 +90,7 @@ const metadata: Meta<IgcChatComponent> = {
     hideUserName: false,
     disableAutoScroll: false,
     disableAttachments: false,
+    acceptedFiles: '',
     headerText: '',
   },
 };
@@ -87,6 +102,11 @@ interface IgcChatArgs {
   hideUserName: boolean;
   disableAutoScroll: boolean;
   disableAttachments: boolean;
+  /**
+   * The accepted files that could be attached.
+   * Defines the file types as a list of comma-separated values that the file input should accept.
+   */
+  acceptedFiles: string;
   headerText: string;
   attachmentTemplate: AttachmentTemplate;
   attachmentHeaderTemplate: AttachmentTemplate;
@@ -422,6 +442,7 @@ export const Basic: Story = {
       .headerText=${args.headerText}
       .disableAutoScroll=${args.disableAutoScroll}
       .disableAttachments=${args.disableAttachments}
+      .acceptedFiles=${args.acceptedFiles}
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
       @igcMessageCreated=${handleMessageSend}
