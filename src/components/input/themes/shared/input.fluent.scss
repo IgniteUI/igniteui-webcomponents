@@ -76,6 +76,25 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 }
 
+:host(:not([aria-haspopup='dialog'])[readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        background: transparent;
+    }
+}
+
+:host(:not([aria-haspopup='dialog'])[readonly]:hover) {
+    [part^='container'] {
+        border-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([aria-haspopup='dialog'])[readonly]:focus-within) {
+    [part^='container'] {
+        border-color: var-get($theme, 'focused-border-color');
+    }
+}
+
 :host(:hover) {
     [part^='container'] {
         border-color: var-get($theme, 'hover-border-color');

@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    background: var-get($theme, 'ranges-background');
+    border-top: rem(1px) solid var-get($theme, 'ranges-border');
+}

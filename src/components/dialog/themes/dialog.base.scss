@@ -35,6 +35,7 @@
 [part='footer'] {
     flex-wrap: nowrap;
     justify-content: flex-end;
+    gap: rem(8px);
 }
 
 [part~='titled'] {
@@ -58,8 +59,7 @@
     margin: 0;
 }
 
-slot[name='title'],
-slot[name='footer'] {
+slot[name='title'] {
     &::slotted(:last-child) {
         margin-inline-start: rem(8px);
     }

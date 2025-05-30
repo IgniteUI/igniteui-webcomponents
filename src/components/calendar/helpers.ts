@@ -6,6 +6,7 @@ import {
   last,
   modulo,
 } from '../common/util.js';
+import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import {
   CalendarDay,
   type CalendarRangeParams,
@@ -69,6 +70,33 @@ export function convertToDate(value?: Date | string | null): Date | null {
   }
 
   return isString(value) ? parseISODate(value) : isValidDate(value);
+}
+
+/**
+ * Converts the given value to a DateRangeValue object.
+ *
+ * If the value is already a valid DateRangeValue object, it is returned directly.
+ * If the value is a string, it is parsed to object and returned if it fields are valid dates.
+ * If the value is null or undefined, null is returned.
+ * If the parsing fails, null is returned.
+ */
+export function convertToDateRange(
+  value?: DateRangeValue | string | null
+): DateRangeValue | null {
+  if (!value) {
+    return null;
+  }
+
+  if (isString(value)) {
+    const obj = JSON.parse(value);
+    const start = convertToDate(obj.start);
+    const end = convertToDate(obj.end);
+    return {
+      start: start ? CalendarDay.from(start).native : null,
+      end: end ? CalendarDay.from(end).native : null,
+    };
+  }
+  return value;
 }
 
 /**
@@ -136,26 +164,41 @@ export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
 }
 
 /**
- * Returns a generator yielding day values between `start` and `end` (non-inclusive)
+ * Returns a generator yielding day values between `start` and `end` (non-inclusive by default)
  * by a given `unit` as a step.
+ * To include the end date set the `inclusive` option to true.
  *
  * @remarks
  * By default, `unit` is set to 'day'.
  */
-export function* calendarRange(options: CalendarRangeParams) {
-  let low = toCalendarDay(options.start);
-  const unit = options.unit ?? 'day';
-  const high =
-    typeof options.end === 'number'
-      ? low.add(unit, options.end)
-      : toCalendarDay(options.end);
+export function* calendarRange(
+  options: CalendarRangeParams
+): Generator<CalendarDay, void, unknown> {
+  const { start, end, unit = 'day', inclusive = false } = options;
 
-  const reverse = high.lessThan(low);
-  const step = reverse ? -1 : 1;
+  let currentDate = toCalendarDay(start);
+  const endDate =
+    typeof end === 'number'
+      ? toCalendarDay(start).add(unit, end)
+      : toCalendarDay(end);
 
-  while (!reverse ? low.lessThan(high) : low.greaterThan(high)) {
-    yield low;
-    low = low.add(unit, step);
+  const isReversed = endDate.lessThan(currentDate);
+  const step = isReversed ? -1 : 1;
+
+  const shouldContinue = () => {
+    if (inclusive) {
+      return isReversed
+        ? currentDate.greaterThanOrEqual(endDate)
+        : currentDate.lessThanOrEqual(endDate);
+    }
+    return isReversed
+      ? currentDate.greaterThan(endDate)
+      : currentDate.lessThan(endDate);
+  };
+
+  while (shouldContinue()) {
+    yield currentDate;
+    currentDate = currentDate.add(unit, step);
   }
 }
 

@@ -62,7 +62,8 @@ $theme: $bootstrap;
     border-end-end-radius: 0;
 }
 
-[part*='input prefixed suffixed'] {
+[part*='input prefixed suffixed'],
+[part*='input filled prefixed suffixed'] {
     border-radius: 0;
 }
 
@@ -158,6 +159,14 @@ $theme: $bootstrap;
 [part~='suffixed'] [part='suffix'] {
     ::slotted(*) {
         color: inherit;
+    }
+}
+
+:host(:not([aria-haspopup='dialog'])[readonly]) {
+    [part='prefix'],
+    [part='suffix'],
+    [part~='container'] {
+        background: var-get($theme, 'border-disabled-background');
     }
 }
 
