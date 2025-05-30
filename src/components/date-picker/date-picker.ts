@@ -654,9 +654,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   //#region Render methods
 
   private _renderClearIcon() {
-    return !this.value
-      ? nothing
-      : html`
+    return this.value
+      ? html`
           <span
             slot="suffix"
             part="clear-icon"
@@ -670,7 +669,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
               ></igc-icon>
             </slot>
           </span>
-        `;
+        `
+      : nothing;
   }
 
   private _renderCalendarIcon() {
@@ -844,10 +844,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const id = this.id || this._inputId;
 
     return html`
-      ${!this._isMaterialTheme ? this._renderLabel(id) : nothing}
-      ${this._renderInput(id)}${this._renderPicker(
-        id
-      )}${this._renderHelperText()}
+      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
+      ${this._renderInput(id)} ${this._renderPicker(id)}
+      ${this._renderHelperText()}
     `;
   }
 

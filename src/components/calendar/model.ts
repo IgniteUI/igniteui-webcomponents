@@ -44,6 +44,26 @@ export class CalendarDay {
     });
   }
 
+  /**
+   * Compares the date portion of two date objects.
+   *
+   * @returns
+   * ```
+   *  first === second // 0
+   *  first > second // 1
+   *  first < second // -1
+   * ```
+   */
+  public static compare(first: DayParameter, second: DayParameter) {
+    const a = toCalendarDay(first);
+    const b = toCalendarDay(second);
+
+    if (a.equalTo(b)) {
+      return 0;
+    }
+    return a.greaterThan(b) ? 1 : -1;
+  }
+
   constructor(args: CalendarDayParams) {
     this._date = new Date(args.year, args.month, args.date ?? 1);
   }

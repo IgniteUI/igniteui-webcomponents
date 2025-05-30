@@ -547,7 +547,7 @@ export abstract class DateTimeUtil {
    *
    * @param format The format to check and transform
    */
-  public static predefinedToDateDisplayFormat(format: string) {
+  public static predefinedToDateDisplayFormat(format?: string) {
     return format && DateTimeUtil.PREDEFINED_FORMATS.has(format)
       ? `${format}Date`
       : format;
