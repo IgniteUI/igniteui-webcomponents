@@ -63,14 +63,35 @@ $input-theme: input-theme.$material;
     }
 }
 
-[part='actions'] {
-    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
-    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
-}
+:host(:not([readonly])) {
+    --affix-color: #{var-get($theme, 'input-prefix-color')};
 
-igc-icon,
-::slotted(igc-icon) {
-    --component-size: var(--input-size);
+    igc-date-time-input[readonly] {
+        --affix-color: #{var-get($theme, 'input-prefix-color')};
+
+        &::part(prefix),
+        &::part(suffix) {
+            color: var(--affix-color);
+        }
+    }
+
+    [part='calendar-icon'],
+    [part='calendar-icon-open'],
+    [part='clear-icon'] {
+        color: var(--affix-color);
+    }
+
+    igc-input:focus-within {
+        --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+
+        &::part(filled) {
+            --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+        }
+    }
+
+    ::part(filled) {
+        --affix-color: #{var-get($theme, 'input-prefix-color--filled')};
+    }
 }
 
 :host(:not([disabled])[invalid]),
@@ -90,4 +111,14 @@ igc-icon,
     ::part(helper-text) {
         color: var-get($input-theme, 'disabled-text-color');
     }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
+    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+}
+
+igc-icon,
+::slotted(igc-icon) {
+    --component-size: var(--input-size);
 }

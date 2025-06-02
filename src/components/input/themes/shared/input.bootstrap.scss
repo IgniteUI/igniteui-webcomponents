@@ -162,7 +162,7 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([aria-haspopup='dialog'])[readonly]) {
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
     [part='prefix'],
     [part='suffix'],
     [part~='container'] {

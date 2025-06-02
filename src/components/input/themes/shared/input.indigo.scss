@@ -125,7 +125,8 @@ $transition-duration: .25s;
     }
 }
 
-:host(:not([readonly]):hover) {
+:host(:not([readonly]):hover),
+:host([readonly][role='combobox']:hover) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'filled-text-hover-color');
@@ -166,13 +167,15 @@ $transition-duration: .25s;
     }
 }
 
-:host(:not([aria-haspopup='dialog'])[readonly]) {
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
     [part^='container'] {
         border-color: var-get($theme, 'disabled-text-color');
     }
 }
 
-:host([invalid]) {
+:host([invalid]),
+:host([invalid]:hover),
+:host([invalid][readonly]) {
     [part^='container'] {
         caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');
