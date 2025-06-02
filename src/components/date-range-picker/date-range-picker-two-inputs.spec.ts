@@ -395,8 +395,16 @@ describe('Date range picker - two inputs', () => {
         const eventSpy = spy(picker, 'emitEvent');
 
         picker.mode = 'dialog';
-        const date1 = today.add('day', -2);
-        const date2 = today.add('day', 2);
+        const date1 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 10,
+        });
+        const date2 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 14,
+        });
         picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
@@ -427,8 +435,16 @@ describe('Date range picker - two inputs', () => {
         const eventSpy = spy(picker, 'emitEvent');
 
         picker.mode = 'dialog';
-        const date1 = today.add('day', -2);
-        const date2 = today.add('day', 2);
+        const date1 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 10,
+        });
+        const date2 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 14,
+        });
         picker.value = null;
         await elementUpdated(picker);
 
@@ -466,8 +482,16 @@ describe('Date range picker - two inputs', () => {
         const eventSpy = spy(picker, 'emitEvent');
 
         picker.mode = 'dialog';
-        const date1 = today.add('day', -3);
-        const date2 = today.add('day', 3);
+        const date1 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 10,
+        });
+        const date2 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 14,
+        });
         picker.value = { start: today.native, end: tomorrow.native };
         await elementUpdated(picker);
 
