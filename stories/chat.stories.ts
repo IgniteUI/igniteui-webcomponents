@@ -19,7 +19,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = import.meta.env.GOOGLE_GEN_AI_KEY;
+const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
