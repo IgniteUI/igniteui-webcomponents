@@ -17,6 +17,12 @@ import type {
 export interface IgcChatComponentEventMap {
   igcMessageCreated: CustomEvent<IgcMessage>;
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
+  igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
+  igcTypingChange: CustomEvent<boolean>;
+  igcInputFocus: CustomEvent<void>;
+  igcInputBlur: CustomEvent<void>;
+  igcInputChange: CustomEvent<string>;
+  igcMessageCopied: CustomEvent<IgcMessage>;
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
+import { GoogleGenAI, Modality } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 import {
   IgcChatComponent,
@@ -9,6 +10,7 @@ import {
 } from 'igniteui-webcomponents';
 import type {
   AttachmentTemplate,
+  IgcMessage,
   IgcMessageAttachment,
   MessageActionsTemplate,
 } from '../src/components/chat/types.js';
@@ -16,6 +18,10 @@ import type {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+const ai = new GoogleGenAI({
+  apiKey: 'AIzaSyAl9ce79kTYuovTP4ivV0u-mk_ZZ4cq0cM',
+});
 
 defineComponents(IgcChatComponent);
 
@@ -130,6 +136,8 @@ let messages: any[] = [
     timestamp: new Date(),
   },
 ];
+
+const ai_messages: any[] = [];
 
 let isResponseSent: boolean;
 
@@ -428,6 +436,51 @@ function generateAIResponse(message: string): string {
   return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
 }
 
+async function handleAIMessageSend(e: CustomEvent) {
+  const newMessage: IgcMessage = e.detail;
+  ai_messages.push(newMessage);
+  const chat = document.querySelector('igc-chat');
+  if (!chat) {
+    return;
+  }
+
+  let response: any;
+  let responseText = '';
+
+  if (newMessage.text.includes('image')) {
+    response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-preview-image-generation',
+      contents: newMessage.text,
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+    });
+    for (const part of response?.candidates?.[0]?.content?.parts || []) {
+      // Based on the part type, either show the text or save the image
+      if (part.text) {
+        responseText = part.text;
+      } else if (part.inlineData) {
+        const _imageData = part.inlineData.data;
+        // console.log(imageData);
+      }
+    }
+  } else {
+    response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: newMessage.text,
+    });
+    responseText = response.text;
+  }
+
+  const botResponse = {
+    id: Date.now().toString(),
+    text: responseText,
+    sender: 'bot',
+    timestamp: new Date(),
+  };
+  chat.messages = [...ai_messages, botResponse];
+}
+
 export const Basic: Story = {
   render: (args) => html`
     <igc-chat
@@ -463,6 +516,22 @@ export const Supabase: Story = {
       .hideAvatar=${args.hideAvatar}
       .hideUserName=${args.hideUserName}
       @igcMessageCreated=${handleMessageCreatedSupabase}
+      .messageActionsTemplate=${messageActionsTemplate}
+    >
+    </igc-chat>
+  `,
+};
+
+export const AI: Story = {
+  render: (args) => html`
+    <igc-chat
+      .headerText=${args.headerText}
+      .disableAutoScroll=${args.disableAutoScroll}
+      .disableAttachments=${args.disableAttachments}
+      .acceptedFiles=${args.acceptedFiles}
+      .hideAvatar=${args.hideAvatar}
+      .hideUserName=${args.hideUserName}
+      @igcMessageCreated=${handleAIMessageSend}
       .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>

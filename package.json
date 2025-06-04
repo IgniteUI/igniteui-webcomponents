@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.0",
+    "@google/genai": "^1.3.0",
     "@lit-labs/virtualizer": "^2.1.0",
     "@lit/context": "^1.1.5",
     "lit": "^3.3.0"
@@ -102,8 +103,8 @@
     "vite": "^6.3.5"
   },
   "peerDependencies": {
-    "marked": "^12.0.0",
-    "@supabase/supabase-js": "^2.49.4"
+    "@supabase/supabase-js": "^2.49.4",
+    "marked": "^12.0.0"
   },
   "browserslist": [
     "defaults"
