@@ -446,6 +446,14 @@ async function handleAIMessageSend(e: CustomEvent) {
 
   let response: any;
   let responseText = '';
+  const attachments: IgcMessageAttachment[] = [];
+  const botResponse: IgcMessage = {
+    id: Date.now().toString(),
+    text: responseText,
+    sender: 'bot',
+    timestamp: new Date(),
+  };
+  chat.messages = [...ai_messages, botResponse];
 
   if (newMessage.text.includes('image')) {
     response = await ai.models.generateContent({
@@ -455,29 +463,54 @@ async function handleAIMessageSend(e: CustomEvent) {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
       },
     });
+
     for (const part of response?.candidates?.[0]?.content?.parts || []) {
       // Based on the part type, either show the text or save the image
       if (part.text) {
         responseText = part.text;
       } else if (part.inlineData) {
         const _imageData = part.inlineData.data;
-        // console.log(imageData);
+        const byteCharacters = atob(_imageData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const type = part.inlineData.type || 'image/png';
+        const blob = new Blob([byteArray], { type: type });
+        const file = new File([blob], 'generated_image.png', {
+          type: type,
+        });
+        const attachment: IgcMessageAttachment = {
+          id: Date.now().toString(),
+          name: 'generated_image.png',
+          type: 'image',
+          url: URL.createObjectURL(file),
+          file: file,
+        };
+        attachments.push(attachment);
       }
     }
+
+    botResponse.text = responseText;
+    botResponse.attachments = attachments;
   } else {
-    response = await ai.models.generateContent({
+    response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash',
       contents: newMessage.text,
     });
-    responseText = response.text;
+
+    // console.log('AI response stream:', response);
+
+    const lastMessageIndex = chat.messages.length - 1;
+    for await (const chunk of response) {
+      chat.messages[lastMessageIndex] = {
+        ...chat.messages[lastMessageIndex],
+        text: `${chat.messages[lastMessageIndex].text} ${chunk.text}`,
+      };
+    }
   }
 
-  const botResponse = {
-    id: Date.now().toString(),
-    text: responseText,
-    sender: 'bot',
-    timestamp: new Date(),
-  };
   chat.messages = [...ai_messages, botResponse];
 }
 
