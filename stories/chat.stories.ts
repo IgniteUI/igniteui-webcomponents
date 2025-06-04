@@ -138,8 +138,6 @@ let messages: any[] = [
   },
 ];
 
-const ai_messages: any[] = [];
-
 let isResponseSent: boolean;
 
 const messageActionsTemplate = (msg: any) => {
@@ -439,7 +437,6 @@ function generateAIResponse(message: string): string {
 
 async function handleAIMessageSend(e: CustomEvent) {
   const newMessage: IgcMessage = e.detail;
-  ai_messages.push(newMessage);
   const chat = document.querySelector('igc-chat');
   if (!chat) {
     return;
@@ -454,7 +451,6 @@ async function handleAIMessageSend(e: CustomEvent) {
     sender: 'bot',
     timestamp: new Date(),
   };
-  chat.messages = [...ai_messages, botResponse];
 
   if (newMessage.text.includes('image')) {
     response = await ai.models.generateContent({
@@ -495,13 +491,13 @@ async function handleAIMessageSend(e: CustomEvent) {
 
     botResponse.text = responseText;
     botResponse.attachments = attachments;
+    chat.messages = [...chat.messages, botResponse];
   } else {
+    chat.messages = [...chat.messages, botResponse];
     response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash',
       contents: newMessage.text,
     });
-
-    // console.log('AI response stream:', response);
 
     const lastMessageIndex = chat.messages.length - 1;
     for await (const chunk of response) {
@@ -509,10 +505,9 @@ async function handleAIMessageSend(e: CustomEvent) {
         ...chat.messages[lastMessageIndex],
         text: `${chat.messages[lastMessageIndex].text} ${chunk.text}`,
       };
+      chat.messages = [...chat.messages];
     }
   }
-
-  chat.messages = [...ai_messages, botResponse];
 }
 
 export const Basic: Story = {
