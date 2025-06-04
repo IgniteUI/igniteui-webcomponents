@@ -16,6 +16,7 @@ import { styles as shared } from './light/date-range-picker.shared.css.js';
 import { styles as bootstrap } from './shared/date-range-picker.bootstrap.css.js';
 import { styles as fluent } from './shared/date-range-picker.fluent.css.js';
 import { styles as indigo } from './shared/date-range-picker.indigo.css.js';
+import { styles as material } from './shared/date-range-picker.material.css.js';
 
 const light = {
   shared: css`
@@ -25,7 +26,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -43,7 +44,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

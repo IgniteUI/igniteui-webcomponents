@@ -206,6 +206,23 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+    [part~='container'] {
+        background: var-get($theme, 'box-background-focus');
+    }
+}
+
+:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
+    [part~='container'] {
+        background: var-get($theme, 'box-background-focus');
+        border-bottom-color: var-get($theme, 'idle-bottom-line-color');
+
+        &::after {
+            background: var-get($theme, 'idle-bottom-line-color');
+        }
+    }
+}
+
 :host(:not([outlined]):hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-hover');
@@ -217,7 +234,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined]):focus-within) {
+:host(:not([outlined]):focus-within),
+:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'focused-bottom-line-color');
@@ -235,7 +253,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([outlined])[invalid]),
-:host(:not([outlined])[invalid]:focus-within) {
+:host(:not([outlined])[invalid]:focus-within),
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[invalid][readonly]:hover) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -272,7 +291,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([type='search']:hover),
+:host(:not([readonly])[type='search']:hover),
 :host([type='search']:focus-within) {
     [part^='container'] {
         box-shadow: var-get($theme, 'search-hover-elevation');
@@ -382,6 +401,24 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:hover) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:focus-within) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'focused-border-color');
+    }
+}
+
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
@@ -478,7 +515,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined][invalid]),
-:host(:not([type='search'])[outlined][invalid]:focus-within) {
+:host(:not([type='search'])[outlined][invalid]:focus-within),
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly][invalid]:hover) {
     [part='start'],
     [part='notch'],
     [part='filler'],

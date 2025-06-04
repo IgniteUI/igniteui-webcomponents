@@ -33,7 +33,7 @@ $theme: $indigo;
     padding: rem(8px) rem(16px);
 }
 
-:host([readonly]) {
+:host(:not([invalid])[readonly]) {
     igc-input::part(container),
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
@@ -43,11 +43,16 @@ $theme: $indigo;
 :host(:not([readonly]):hover) {
     igc-input[readonly]::part(container) {
         background: var-get($theme, 'box-background-hover');
-        border-color: var-get($theme, 'hover-bottom-line-color');
     }
 
     igc-input[readonly]::part(filled) {
         color: var-get($theme, 'filled-text-hover-color');
+    }
+}
+
+:host(:not([readonly], [invalid]):hover) {
+    igc-input[readonly]::part(container) {
+        border-color: var-get($theme, 'hover-bottom-line-color');
     }
 }
 
