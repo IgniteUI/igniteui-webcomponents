@@ -560,6 +560,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
                 var-get($theme, 'error-secondary-color');
         }
     }
+
+    [part~='filled'] + [part='notch'] {
+        border-top: $idle-border-width solid transparent !important;
+    }
 }
 
 :host([invalid]) {
