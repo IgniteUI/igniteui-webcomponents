@@ -212,7 +212,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
+:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'idle-bottom-line-color');
@@ -295,6 +295,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host([type='search']:focus-within) {
     [part^='container'] {
         box-shadow: var-get($theme, 'search-hover-elevation');
+        background: var-get($theme, 'search-background');
+    }
+}
+
+:host([readonly][type='search']:hover),
+:host([readonly][type='search']:focus-within) {
+    [part^='container'] {
         background: var-get($theme, 'search-background');
     }
 }
@@ -408,6 +415,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='filler'] {
         border-color: var-get($theme, 'border-color');
     }
+
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
+    }
 }
 
 :host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:focus-within) {
@@ -416,6 +427,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='end'],
     [part='filler'] {
         border-color: var-get($theme, 'focused-border-color');
+    }
+
+    [part='notch'] {
+        border-top: $idle-border-width solid transparent;
     }
 }
 
