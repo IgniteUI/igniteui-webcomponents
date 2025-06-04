@@ -2,10 +2,7 @@
 @use '../light/themes' as *;
 
 $theme: $fluent;
-$resting-border-width: rem(1px);
-$focused-border-width: rem(2px);
-$resting-height: calc(var-get($theme, 'size') - #{($resting-border-width * 2)});
-$focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
+$border-size: rem(1px);
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -16,6 +13,7 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     [part='suffix'] {
         font-size: rem(14px);
         cursor: default;
+        z-index: 0;
 
         ::slotted(*) {
             color: inherit;
@@ -56,17 +54,34 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 
     [part^='container'] {
         height: var-get($theme, 'size');
-        border-radius: var-get($theme, 'border-border-radius');
-        border: #{$resting-border-width} solid var-get($theme, 'border-color');
+        background: var-get($theme, 'border-background');
         transition: none;
         cursor: text;
         grid-template-columns: auto 1fr auto;
         overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+
+            // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
+            // defaults to the css color: prop the same way as border-color: do.
+            // We do this in order to have the shadow working correctly inside the Combo search
+            // We can't change the var-get($theme, 'border-color') in the combo search, but we can change the shadow
+            color: var-get($theme, 'border-color');
+            box-shadow: inset 0 0 0 $border-size;
+            border-radius: var-get($theme, 'border-border-radius');
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+        }
     }
 
     [part~='input'] {
         color: var-get($theme, 'idle-text-color');
-        height: $resting-height;
         background: initial;
         font-size: rem(14px);
         padding-inline: rem(8px);
@@ -78,26 +93,27 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 
 :host(:hover) {
     [part^='container'] {
-        border-color: var-get($theme, 'hover-border-color');
+        &::before {
+            // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
+            // defaults to the css color: prop the same way as border-color: do.
+            // We do this in order to have the shadow working correctly inside the Combo search
+            // We can't change the var-get($theme, 'hover-border-color') in the combo search, but we can change the shadow
+            color: var-get($theme, 'hover-border-color');
+            box-shadow: inset 0 0 0 $border-size;
+        }
     }
 }
 
 :host(:focus-within) {
     [part^='container'] {
-        border-color: var-get($theme, 'focused-border-color');
-        border-width: #{$focused-border-width};
-    }
-
-    [part~='input'] {
-        height: $focused-height;
-    }
-
-    [part='prefix'] {
-        margin-inline-start: rem(-1px);
-    }
-
-    [part='suffix'] {
-        margin-inline-end: rem(-1px);
+        &::before {
+            // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
+            // defaults to the css color: prop the same way as border-color: do.
+            // We do this in order to have the shadow working correctly inside the Combo search
+            // We can't change the var-get($theme, 'focused-border-color') in the combo search, but we can change the shadow
+            color: var-get($theme, 'focused-border-color');
+            box-shadow: inset 0 0 0 calc($border-size + #{rem(1px)}),
+        }
     }
 
     [name='prefix']::slotted(*),
@@ -134,16 +150,34 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 }
 
-:host([invalid]) {
+:host([invalid]:not(:disabled)),
+:host([invalid]:not([disabled])) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
+    [part~='container'] {
+        &::before {
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'error-secondary-color')
+        }
+    }
+}
+
+:host(:not(:disabled)[invalid]:focus-within),
+:host(:not([disabled])[invalid]:focus-within) {
     [part^='container'] {
-        border-color: var-get($theme, 'error-secondary-color');
+        &::before {
+            box-shadow: inset 0 0 0 calc($border-size + #{rem(1px)}) var-get($theme, 'error-secondary-color');
+        }
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
-    [part^='container'] {
-        border-color: var-get($theme, 'disabled-border-color');
+    [part~='container'] {
+        &::before {
+            box-shadow: inset 0 0 0 $border-size var-get($theme, 'disabled-border-color');
+        }
     }
 
     [part^='container'],
