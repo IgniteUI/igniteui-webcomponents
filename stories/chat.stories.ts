@@ -19,8 +19,9 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const googleGenAIKey = import.meta.env.GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
-  apiKey: 'AIzaSyAl9ce79kTYuovTP4ivV0u-mk_ZZ4cq0cM',
+  apiKey: googleGenAIKey,
 });
 
 defineComponents(IgcChatComponent);
