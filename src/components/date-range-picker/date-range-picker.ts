@@ -79,6 +79,7 @@ export interface IgcDateRangePickerComponentEventMap {
 }
 
 /* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * The igc-date-range-picker allows the user to select a range of dates.
  *
@@ -286,7 +287,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   /**
    * Renders chips with custom ranges based on the elements of the array.
    */
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   public customRanges: CustomDateRange[] = [];
 
   /**

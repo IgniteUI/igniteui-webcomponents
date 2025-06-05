@@ -61,7 +61,6 @@ export { default as IgcTileComponent } from './components/tile-manager/tile.js';
 export { default as IgcTileManagerComponent } from './components/tile-manager/tile-manager.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcToggleButtonComponent } from './components/button-group/toggle-button.js';
-export { default as IgcPredefinedRangesAreaComponent } from './components/date-range-picker/predefined-ranges-area.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
@@ -135,6 +134,10 @@ export { DateRangeType } from './components/calendar/types.js';
 export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
 export { DatePart } from './components/date-time-input/date-util.js';
 export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export type {
+  CustomDateRange,
+  DateRangeValue,
+} from './components/date-range-picker/date-range-picker.js';
 export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
