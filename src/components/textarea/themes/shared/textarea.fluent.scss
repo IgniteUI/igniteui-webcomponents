@@ -56,15 +56,19 @@ $theme: $fluent;
 }
 
 [part~='label'] {
+    @include type-style('subtitle-2') {
+        --ig-subtitle-2-line-height: #{rem(16px)};
+
+        margin-block: 0 rem(5px);
+    };
+
     display: block;
-    font-size: rem(14px);
-    font-weight: 600;
     position: static;
     transform: translateY(0);
     transform-origin: top left;
-    margin-top: 0;
     height: auto;
-    margin-block-end: rem(5px);
+
+
 }
 
 :host([invalid]) {

@@ -48,10 +48,13 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 
     [part='label'] {
-        @include type-style('subtitle-2');
+        @include type-style('subtitle-2') {
+            --ig-subtitle-2-line-height: #{rem(16px)};
+
+            margin-block: 0 rem(5px);
+        };
 
         color: var-get($theme, 'idle-secondary-color');
-        margin-block-end: rem(5px);
     }
 
     [part^='container'] {

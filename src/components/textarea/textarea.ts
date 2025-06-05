@@ -471,8 +471,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       <div
         part=${partMap({
           ...this._resolvePartNames(),
-          labelled: this.label,
-          placeholder: this.placeholder,
+          labelled: !!this.label,
+          placeholder: !!this.placeholder,
         })}
       >
         <div part="start">${this._renderPrefix()}</div>

@@ -241,14 +241,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override render() {
     const label = this.ariaLabel ? this.ariaLabel : undefined;
-    const labelledby = label ? undefined : this.titleId;
+    const labelledBy = label ? undefined : this.titleId;
     const backdropParts = {
       backdrop: true,
       animating: this.animating,
     };
     const baseParts = {
       base: true,
-      titled: this.titleElements.length > 0 || this.title,
+      titled: this.titleElements.length > 0 || !!this.title,
       footed: this.footerElements.length > 0 || !this.hideDefaultAction,
     };
 
@@ -261,7 +261,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
         aria-label=${ifDefined(label)}
-        aria-labelledby=${ifDefined(labelledby)}
+        aria-labelledby=${ifDefined(labelledBy)}
       >
         <header part="title" id=${this.titleId}>
           <slot name="title"><span>${this.title}</span></slot>
