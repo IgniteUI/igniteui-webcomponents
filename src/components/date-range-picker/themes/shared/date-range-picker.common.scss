@@ -1,9 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $material;
-$input-theme: input-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -25,12 +23,12 @@ $input-theme: input-theme.$material;
         box-shadow: var(--ig-elevation-24);
     }
 
-    igc-dialog::part(content),
-    igc-dialog::part(footer) {
+    igc-dialog::part(content) {
         padding: 0;
     }
 
     igc-dialog::part(footer) {
+        padding: rem(8px);
         background: var-get($theme, 'content-background');
         border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
     }
@@ -47,10 +45,6 @@ $input-theme: input-theme.$material;
     igc-popover::part(container) {
         box-shadow: var(--ig-elevation-3);
         border-radius: var-get($theme, 'border-radius');
-    }
-
-    [part~='label'] {
-        color: var-get($input-theme, 'idle-secondary-color');
     }
 
     ::part(helper-text) {
@@ -103,19 +97,29 @@ $input-theme: input-theme.$material;
 
 :host(:disabled),
 :host([disabled]) {
-    [part='label'],
-    igc-validator {
-        color: var-get($input-theme, 'disabled-text-color');
+    --affix-color: var-get($theme, 'disabled-text-color');
+
+    ::part(filled) {
+        --affix-color: var-get($theme, 'disabled-text-color');
     }
 
-    ::part(helper-text) {
-        color: var-get($input-theme, 'disabled-text-color');
+    ::part(helper-text),
+    [part='label'],
+    igc-validator {
+        color: var-get($theme, 'disabled-text-color');
     }
 }
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
     border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+}
+
+[part='separator'] {
+    @include type-style('caption');
+
+    color: var-get($theme, 'label-color');
+    height: var-get($theme, 'size');
 }
 
 igc-icon,

@@ -79,6 +79,25 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 }
 
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        background: transparent;
+    }
+}
+
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
+    [part^='container'] {
+        border-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
+    [part^='container'] {
+        border-color: var-get($theme, 'focused-border-color');
+    }
+}
+
 :host(:hover) {
     [part^='container'] {
         border-color: var-get($theme, 'hover-border-color');
@@ -131,13 +150,22 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
     }
 }
 
+:host([readonly][type='search']:focus-within) {
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
 :host([required]) {
     [part='label']::after {
         color: var-get($theme, 'error-secondary-color');
     }
 }
 
-:host([invalid]) {
+:host([invalid]),
+:host([invalid]:hover),
+:host([readonly][invalid]:hover),
+:host([readonly][invalid]:focus-within) {
     [part^='container'] {
         border-color: var-get($theme, 'error-secondary-color');
     }

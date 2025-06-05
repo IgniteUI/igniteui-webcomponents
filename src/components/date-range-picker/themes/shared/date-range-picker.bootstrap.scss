@@ -18,16 +18,6 @@ $theme: $bootstrap;
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
-    [part~='label'] {
-        @include type-style('body-1');
-
-        margin-bottom: rem(4px);
-
-        &:empty {
-            display: none;
-        }
-    }
-
     ::part(helper-text) {
         @include type-style('body-2');
 
@@ -39,11 +29,18 @@ $theme: $bootstrap;
 }
 
 :host([readonly]) {
+    igc-input::part(container),
+    igc-input::part(prefix),
+    igc-input::part(suffix),
     igc-date-time-input::part(container),
     igc-date-time-input::part(prefix),
     igc-date-time-input::part(suffix) {
         background: var-get($theme, 'border-disabled-background');
     }
+}
+
+[part='separator'] {
+    @include type-style('body-1');
 }
 
 [part='actions'] {
