@@ -254,8 +254,20 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @queryAssignedElements({ slot: 'prefix' })
   private readonly _prefixes!: HTMLElement[];
 
+  @queryAssignedElements({ slot: 'prefix-start' })
+  private readonly _startPrefixes!: HTMLElement[];
+
+  @queryAssignedElements({ slot: 'prefix-end' })
+  private readonly _endPrefixes!: HTMLElement[];
+
   @queryAssignedElements({ slot: 'suffix' })
   private readonly _suffixes!: HTMLElement[];
+
+  @queryAssignedElements({ slot: 'suffix-start' })
+  private readonly _startSuffixes!: HTMLElement[];
+
+  @queryAssignedElements({ slot: 'suffix-end' })
+  private readonly _endSuffixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'actions' })
   private readonly _actions!: HTMLElement[];
@@ -580,6 +592,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
+  }
+
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => this.requestUpdate());
+    return root;
   }
 
   protected override firstUpdated() {
@@ -1082,8 +1100,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       this._displayFormat!
     );
     const value = picker === 'start' ? this.value?.start : this.value?.end;
-    const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
-    const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
+
+    const prefixes =
+      picker === 'start' ? this._startPrefixes : this._endPrefixes;
+    const suffixes =
+      picker === 'start' ? this._startSuffixes : this._endSuffixes;
+    const prefix = isEmpty(prefixes) ? undefined : 'prefix';
+    const suffix = isEmpty(suffixes) ? undefined : 'suffix';
 
     return html`
       <igc-date-time-input

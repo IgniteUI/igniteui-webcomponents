@@ -628,8 +628,8 @@ export const Slots: Story = {
         ?keep-open-on-outside-click=${args.keepOpenOnOutsideClick}
         ?keep-open-on-select=${args.keepOpenOnSelect}
       >
-        <span slot="prefix-start">$</span>
-        <span slot="suffix-start">🦀</span>
+        <span slot="prefix">$</span>
+        <span slot="suffix">🦀</span>
 
         <span slot="calendar-icon-open-start">👩‍💻</span>
         <span slot="calendar-icon-start">👩‍💻</span>

@@ -914,6 +914,7 @@ describe('Date range picker - two inputs', () => {
           content: 'Custom title',
           prerequisite: () => {
             picker.mode = 'dialog';
+            picker.open = true;
           },
         },
         {
@@ -933,11 +934,13 @@ describe('Date range picker - two inputs', () => {
           slot: 'calendar-icon-start',
           tagName: 'span',
           content: '^',
+          prerequisite: async () => await picker.hide(),
         },
         {
           slot: 'calendar-icon-end',
           tagName: 'span',
           content: '^-end',
+          prerequisite: async () => await picker.hide(),
         },
         {
           slot: 'calendar-icon-open-start',
@@ -993,6 +996,10 @@ describe('Date range picker - two inputs', () => {
           testCase.content
         );
         expect(elements[0].tagName.toLowerCase()).to.equal(testCase.tagName);
+
+        const rendered = elements[0].getBoundingClientRect().width > 0;
+        expect(rendered, `Element for slot "${testCase.slot}" is not rendered`)
+          .to.be.true;
       }
     });
   });
