@@ -41,7 +41,7 @@ import {
   isEmpty,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import type { DatePart } from '../date-time-input/date-util.js';
+import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -67,8 +67,8 @@ export interface IgcDatePickerComponentEventMap {
   igcInput: CustomEvent<Date>;
 }
 
-const formats = new Set(['short', 'medium', 'long', 'full']);
-
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * igc-date-picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
@@ -656,9 +656,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   //#region Render methods
 
   private _renderClearIcon() {
-    return !this.value
-      ? nothing
-      : html`
+    return this.value
+      ? html`
           <span
             slot="suffix"
             part="clear-icon"
@@ -672,7 +671,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
               ></igc-icon>
             </slot>
           </span>
-        `;
+        `
+      : nothing;
   }
 
   private _renderCalendarIcon() {
@@ -799,9 +799,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderInput(id: string) {
-    const format = formats.has(this._displayFormat!)
-      ? `${this._displayFormat}Date`
-      : this._displayFormat;
+    const format = DateTimeUtil.predefinedToDateDisplayFormat(
+      this._displayFormat!
+    );
 
     // Dialog mode is always readonly, rest depends on configuration
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
@@ -846,10 +846,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     const id = this.id || this._inputId;
 
     return html`
-      ${!this._isMaterialTheme ? this._renderLabel(id) : nothing}
-      ${this._renderInput(id)}${this._renderPicker(
-        id
-      )}${this._renderHelperText()}
+      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
+      ${this._renderInput(id)} ${this._renderPicker(id)}
+      ${this._renderHelperText()}
     `;
   }
 
