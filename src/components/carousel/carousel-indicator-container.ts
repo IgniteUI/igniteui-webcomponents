@@ -22,17 +22,19 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCarouselIndicatorContainerComponent);
   }
 
-  private _kbFocus = addKeyboardFocusRing(this);
+  private readonly _focusRingManager = addKeyboardFocusRing(this);
 
-  private handleFocusOut(event: FocusEvent) {
+  private _handleFocusOut(event: FocusEvent): void {
     const target = event.relatedTarget as Element;
 
-    if (!target?.matches(IgcCarouselIndicatorComponent.tagName)) {
-      this._kbFocus.reset();
+    if (target?.matches(IgcCarouselIndicatorComponent.tagName)) {
+      // Stop the event from hitting the _focusRingManager handler redrawing
+      // the keyboard focus styles
+      event.stopPropagation();
     }
   }
 
@@ -41,10 +43,9 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
       <div
         part=${partMap({
           base: true,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
-        @click=${this._kbFocus.reset}
-        @focusout=${this.handleFocusOut}
+        @focusout=${this._handleFocusOut}
       >
         <slot></slot>
       </div>
