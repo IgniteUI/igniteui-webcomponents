@@ -503,7 +503,7 @@ async function handleAIMessageSend(e: CustomEvent) {
     for await (const chunk of response) {
       chat.messages[lastMessageIndex] = {
         ...chat.messages[lastMessageIndex],
-        text: `${chat.messages[lastMessageIndex].text} ${chunk.text}`,
+        text: `${chat.messages[lastMessageIndex].text}${chunk.text}`,
       };
       chat.messages = [...chat.messages];
     }
