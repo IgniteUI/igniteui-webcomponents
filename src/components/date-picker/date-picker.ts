@@ -69,6 +69,8 @@ export interface IgcDatePickerComponentEventMap {
 
 const formats = new Set(['short', 'medium', 'long', 'full']);
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * igc-date-picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
