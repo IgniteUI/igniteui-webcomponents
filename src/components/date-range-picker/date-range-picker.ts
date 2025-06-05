@@ -286,7 +286,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   /**
    * Renders chips with custom ranges based on the elements of the array.
    */
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   public customRanges: CustomDateRange[] = [];
 
   /**
