@@ -6,6 +6,16 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
  *
  * By default the class attaches a keyup event handler on the component host and will update its keyboard focus
  * state based on it.
+ *
+ * **Important Note:** This controller is designed for use with **atomic web components** that represent single,
+ * interactive elements (e.g., buttons, form fields, interactive icons). It helps these components correctly
+ * display a focus indicator *only* when keyboard navigation is occurring, improving accessibility without
+ * visual clutter during mouse or touch interactions.
+ *
+ * **Do not use this controller as a general-purpose shortcut for managing focus state in complex components or layouts.**
+ * Misusing it in this way can lead to incorrect focus ring behavior, accessibility issues, and make your
+ * application harder to maintain. For managing focus within larger, composite components, consider alternative
+ * strategies like ARIA attributes, managing `tabindex`, or a bespoke implementation if needed.
  */
 class KeyboardFocusRingController implements ReactiveController {
   private static readonly _events = [
@@ -24,7 +34,7 @@ class KeyboardFocusRingController implements ReactiveController {
     return this._isKeyboardFocused;
   }
 
-  constructor(readonly host: ReactiveControllerHost & HTMLElement) {
+  constructor(host: ReactiveControllerHost & HTMLElement) {
     this._host = host;
     host.addController(this);
   }
@@ -54,6 +64,9 @@ export type { KeyboardFocusRingController };
 
 /**
  * Adds a {@link KeyboardFocusRingController} responsible for managing keyboard focus state.
+ *
+ * This utility function is intended for use with **atomic web components** that require
+ * dynamic focus ring visibility based on keyboard interaction.
  */
 export function addKeyboardFocusRing(
   host: ReactiveControllerHost & HTMLElement

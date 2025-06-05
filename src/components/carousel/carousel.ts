@@ -12,7 +12,6 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { carouselContext } from '../common/context.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   type SwipeEvent,
   addGesturesController,
@@ -105,12 +104,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
-  private readonly _focusRingManager = addKeyboardFocusRing(this);
 
   private readonly _internals: ElementInternals;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
+  private _hasInnerFocus = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
@@ -328,6 +327,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
+    this.addEventListener('pointerdown', () => {
+      this._hasInnerFocus = false;
+    });
+
+    this.addEventListener('keyup', () => {
+      this._hasInnerFocus = true;
+    });
 
     addGesturesController(this, {
       ref: this._carouselSlidesContainerRef,
@@ -382,7 +388,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerEnter(): void {
     this._hasMouseStop = true;
-    if (this._focusRingManager.focused) {
+    if (this._hasInnerFocus) {
       return;
     }
     this.handlePauseOnInteraction();
@@ -390,14 +396,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerLeave(): void {
     this._hasMouseStop = false;
-    if (this._focusRingManager.focused) {
+    if (this._hasInnerFocus) {
       return;
     }
     this.handlePauseOnInteraction();
   }
 
   private handleFocusIn(): void {
-    if (this._focusRingManager.focused || this._hasMouseStop) {
+    if (this._hasInnerFocus || this._hasMouseStop) {
       return;
     }
     this.handlePauseOnInteraction();
@@ -410,8 +416,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return;
     }
 
-    if (this._focusRingManager.focused && !this._hasMouseStop) {
-      this.handlePauseOnInteraction();
+    if (this._hasInnerFocus) {
+      this._hasInnerFocus = false;
+
+      if (!this._hasMouseStop) {
+        this.handlePauseOnInteraction();
+      }
     }
   }
 
