@@ -178,7 +178,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
       <div
         part=${partMap({
           ...this.resolvePartNames('container'),
-          labelled: this.label,
+          labelled: !!this.label,
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
