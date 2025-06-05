@@ -120,21 +120,15 @@ export interface IgcDateRangePickerComponentEventMap {
  * @fires igcInput - Emitted when when the user types in the element.
  *
  * @csspart separator - The separator element between the two inputs.
+ * @csspart ranges - The wrapper that renders the custom and predefined ranges.
  * @csspart label - The label wrapper that renders content above the target input.
- * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart calendar-icon - The calendar icon wrapper for closed state.
+ * @csspart calendar-icon-open - The calendar icon wrapper for opened state.
+ * @csspart actions - The wrapper for the custom actions area.
+ * @csspart clear-icon - The clear icon wrapper.
  * @csspart input - The native input element.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
- * @csspart calendar-icon - The calendar icon wrapper for closed state.
- * @csspart calendar-icon-start - The calendar icon wrapper for closed state for the start input (two inputs).
- * @csspart calendar-icon-end - The calendar icon wrapper for closed state for the end input (two inputs).
- * @csspart calendar-icon-open - The calendar icon wrapper for opened state.
- * @csspart calendar-icon-open-start - The calendar icon wrapper for opened state for the start input (two inputs).
- * @csspart calendar-icon-open-end - The calendar icon wrapper for opened state for the end input (two inputs).
- * @csspart clear-icon - The clear icon wrapper (single input).
- * @csspart clear-icon-start - The clear icon wrapper for the start input (two inputs).
- * @csspart clear-icon-end - The clear icon wrapper for the end input (two inputs).
- * @csspart actions - The actions wrapper.
  * @csspart helper-text - The helper-text wrapper that renders content below the target input.
  * @csspart header - The calendar header element.
  * @csspart header-title - The calendar header title element.
