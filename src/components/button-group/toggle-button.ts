@@ -4,7 +4,7 @@ import { property, query } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
@@ -80,10 +80,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   protected override render() {
     return html`
       <button
-        part=${partNameMap({
-          toggle: true,
-          focused: this._kbFocus.focused,
-        })}
+        part=${partMap({ toggle: true, focused: this._kbFocus.focused })}
         type="button"
         ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}

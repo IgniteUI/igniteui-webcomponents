@@ -116,18 +116,20 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 }
 
 export function getItems<T extends HTMLElement>(root: Node, tagName: string) {
-  return iterNodes<T>(root, 'SHOW_ELEMENT', (item) => item.matches(tagName));
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName),
+  });
 }
 
 export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
   root: Node,
   tagName: string
 ) {
-  return iterNodes<T>(
-    root,
-    'SHOW_ELEMENT',
-    (item) => item.matches(tagName) && !item.disabled
-  );
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName) && !item.disabled,
+  });
 }
 
 export function getNextActiveItem<

@@ -5,7 +5,8 @@ import { live } from 'lit/directives/live.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { all } from './themes/checkbox-themes.js';
@@ -89,7 +90,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
     return html`
       <label
-        part=${partNameMap({
+        part=${partMap({
           base: true,
           checked,
           focused: this._kbFocus.focused,
@@ -113,14 +114,14 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked })}>
-          <span part=${partNameMap({ indicator: true, checked })}>
+        <span part=${partMap({ control: true, checked })}>
+          <span part=${partMap({ indicator: true, checked })}>
             ${this._isIndigo ? this.renderIndigo() : this.renderStandard()}
           </span>
         </span>
         <span
           .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
+          part=${partMap({ label: true, checked })}
           id=${this.labelId}
           ><slot></slot>
         </span>

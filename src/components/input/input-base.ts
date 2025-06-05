@@ -6,7 +6,8 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
@@ -175,9 +176,9 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   private renderMaterial() {
     return html`
       <div
-        part=${partNameMap({
+        part=${partMap({
           ...this.resolvePartNames('container'),
-          labelled: this.label,
+          labelled: !!this.label,
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
@@ -192,7 +193,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   private renderStandard() {
     return html`${this.renderLabel()}
-      <div part=${partNameMap(this.resolvePartNames('container'))}>
+      <div part=${partMap(this.resolvePartNames('container'))}>
         ${this.renderPrefix()} ${this.renderFileParts()} ${this.renderInput()}
         ${this.renderSuffix()}
       </div>
