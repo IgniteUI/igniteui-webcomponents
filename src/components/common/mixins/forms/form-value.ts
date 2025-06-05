@@ -1,4 +1,9 @@
-import { convertToDate, getDateFormValue } from '../../../calendar/helpers.js';
+import {
+  convertToDate,
+  convertToDateRange,
+  getDateFormValue,
+} from '../../../calendar/helpers.js';
+import type { DateRangeValue } from '../../../date-range-picker/date-range-picker.js';
 import { asNumber } from '../../util.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
@@ -76,6 +81,48 @@ export const defaultFileListTransformer: Partial<
 
     return data;
   },
+};
+
+/**
+ * Converts a DateDateRangeValue object to FormData with
+ * start and end Date values as ISO 8601 strings.
+ * The keys are prefixed with the host name
+ * and suffixed with 'start' or 'end' accordingly.
+ * In case the host does not have a name, it does not participate in form submission.
+ *
+ * If the date values are null or undefined, the form data values
+ * are empty strings ''.
+ */
+export function getDateRangeFormValue(
+  value: DateRangeValue | null,
+  host: IgcFormControl
+): FormValueType {
+  if (!host.name) {
+    return null;
+  }
+
+  const start = value?.start?.toISOString();
+  const end = value?.end?.toISOString();
+
+  const fd = new FormData();
+  const prefix = `${host.name}-`;
+
+  if (start) {
+    fd.append(`${prefix}start`, start);
+  }
+  if (end) {
+    fd.append(`${prefix}end`, end);
+  }
+
+  return fd;
+}
+
+export const defaultDateRangeTransformers: Partial<
+  FormValueTransformers<DateRangeValue | null>
+> = {
+  setValue: convertToDateRange,
+  setDefaultValue: convertToDateRange,
+  setFormValue: getDateRangeFormValue,
 };
 
 /* blazorSuppress */

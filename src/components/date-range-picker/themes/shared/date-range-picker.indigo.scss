@@ -1,0 +1,64 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host {
+    igc-dialog[open]::part(base) {
+        border-radius: rem(6px);
+        box-shadow: var(--ig-elevation-5);
+        border: rem(1px) solid var-get($theme, 'border-color');
+    }
+
+    igc-dialog::part(footer) {
+        padding: rem(8px) rem(16px);
+        gap: rem(8px);
+    }
+
+    igc-focus-trap {
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(15px), auto);
+        padding-inline-start: 0;
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
+    padding: rem(8px) rem(16px);
+}
+
+:host(:not([invalid])[readonly]) {
+    igc-input::part(container),
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not([readonly]):hover) {
+    igc-input[readonly]::part(container) {
+        background: var-get($theme, 'box-background-hover');
+    }
+
+    igc-input[readonly]::part(filled) {
+        color: var-get($theme, 'filled-text-hover-color');
+    }
+}
+
+:host(:not([readonly], [invalid]):hover) {
+    igc-input[readonly]::part(container) {
+        border-color: var-get($theme, 'hover-bottom-line-color');
+    }
+}
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+    }
+}

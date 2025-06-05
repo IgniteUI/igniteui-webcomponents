@@ -46,19 +46,22 @@ textarea {
 }
 
 %label-filled {
+    @include type-style('caption');
+
     transform: translateY(0);
     inset-block-start: calc(#{$input-top-padding} / 4);
-    font-size: rem(12px);
 }
 
 %label-outlined-filled {
+    @include type-style('caption') {
+        margin-block-end: auto;
+    };
+
     display: inline-block;
     position: relative;
     inset-block: 0;
     transform: translateY(-50%);
-    margin-block-end: auto;
     padding-inline-end: 0;
-    font-size: rem(12px);
 }
 
 :host(:not([outlined])) {
