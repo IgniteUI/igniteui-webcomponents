@@ -57,6 +57,10 @@
         --ig-theme: material;
     }
 
+    [part~='case-icon'] {
+        color: color(gray, 600);
+    }
+
     [part='case-icon active'] {
         color: color(primary, 500);
     }
