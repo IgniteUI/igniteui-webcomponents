@@ -138,6 +138,8 @@ let messages: any[] = [
   },
 ];
 
+const userMessages: any[] = [];
+
 let isResponseSent: boolean;
 
 const messageActionsTemplate = (msg: any) => {
@@ -452,10 +454,12 @@ async function handleAIMessageSend(e: CustomEvent) {
     timestamp: new Date(),
   };
 
+  userMessages.push({ role: 'user', parts: [{ text: newMessage.text }] });
+
   if (newMessage.text.includes('image')) {
     response = await ai.models.generateContent({
       model: 'gemini-2.0-flash-preview-image-generation',
-      contents: newMessage.text,
+      contents: userMessages,
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
       },
@@ -496,7 +500,10 @@ async function handleAIMessageSend(e: CustomEvent) {
     chat.messages = [...chat.messages, botResponse];
     response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash',
-      contents: newMessage.text,
+      contents: userMessages,
+      config: {
+        responseModalities: [Modality.TEXT],
+      },
     });
 
     const lastMessageIndex = chat.messages.length - 1;
