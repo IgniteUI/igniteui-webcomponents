@@ -28,13 +28,14 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     delegatesFocus: true,
   };
 
-  private _kbFocus = addKeyboardFocusRing(this);
+  protected readonly __internals: ElementInternals;
 
-  protected __internals: ElementInternals;
+  private readonly _focusRingManager = addKeyboardFocusRing(this);
+
   protected _disabled = false;
 
   @query('[part="base"]', true)
-  private _nativeButton!: HTMLButtonElement;
+  private readonly _nativeButton!: HTMLButtonElement;
 
   /* alternateName: displayType */
   /**
@@ -78,19 +79,19 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
    * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
-  public get disabled(): boolean {
-    return this._disabled;
-  }
-
   public set disabled(value: boolean) {
     this._disabled = value;
     this.toggleAttribute('disabled', Boolean(this._disabled));
   }
 
+  public get disabled(): boolean {
+    return this._disabled;
+  }
+
   /* blazorCSSuppress */
   /* alternateType: object */
   /** Returns the HTMLFormElement associated with this element. */
-  public get form() {
+  public get form(): HTMLFormElement | null {
     return this.__internals.form;
   }
 
@@ -101,38 +102,30 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   /* alternateName: focusComponent */
   /** Sets focus in the button. */
-  public override focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions): void {
     this._nativeButton.focus(options);
   }
 
   /** Simulates a mouse click on the element */
-  public override click() {
+  public override click(): void {
     this._nativeButton.click();
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the button. */
-  public override blur() {
+  public override blur(): void {
     this._nativeButton.blur();
   }
 
-  protected handleBlur() {
-    this._kbFocus.reset();
-  }
-
-  protected handleClick() {
-    this._kbFocus.reset();
-    switch (this.type) {
-      case 'submit':
-        return this.form?.requestSubmit();
-      case 'reset':
-        return this.form?.reset();
-      default:
-        return;
+  protected _handleClick(): void {
+    if (this.type === 'submit') {
+      this.form?.requestSubmit();
+    } else if (this.type === 'reset') {
+      this.form?.reset();
     }
   }
 
-  protected formDisabledCallback(state: boolean) {
+  protected formDisabledCallback(state: boolean): void {
     this._disabled = state;
     this.requestUpdate();
   }
@@ -140,12 +133,11 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private renderButton() {
     return html`
       <button
-        part=${partMap({ base: true, focused: this._kbFocus.focused })}
+        part=${partMap({ base: true, focused: this._focusRingManager.focused })}
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
-        @click=${this.handleClick}
-        @blur=${this.handleBlur}
+        @click=${this._handleClick}
       >
         ${this.renderContent()}
       </button>
@@ -155,7 +147,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private renderLinkButton() {
     return html`
       <a
-        part=${partMap({ base: true, focused: this._kbFocus.focused })}
+        part=${partMap({ base: true, focused: this._focusRingManager.focused })}
         role="button"
         aria-label=${ifDefined(this.ariaLabel ?? nothing)}
         aria-disabled=${this.disabled}
@@ -163,7 +155,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        @blur=${this.disabled ? nothing : this.handleBlur}
       >
         ${this.renderContent()}
       </a>
