@@ -30,14 +30,15 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-[part='actions'] {
-    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
-    padding: rem(8px) rem(16px);
-}
-
 :host(:focus-within) {
     [part='label'] {
         color: var-get($input-theme, 'focused-secondary-color');
+    }
+}
+
+:host(:not([invalid])[readonly]) {
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'disabled-text-color');
     }
 }
 
@@ -46,4 +47,9 @@ $input-theme: input-theme.$indigo;
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
+    padding: rem(8px) rem(16px);
 }

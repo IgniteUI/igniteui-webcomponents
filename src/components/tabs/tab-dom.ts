@@ -22,15 +22,15 @@ class TabsHelpers {
   /**
    * Returns the DOM container holding the tabs headers.
    */
-  public get container(): HTMLElement {
-    return this._container.value!;
+  public get container(): HTMLElement | undefined {
+    return this._container.value;
   }
 
   /**
    * Returns the selected indicator DOM element.
    */
-  public get indicator(): HTMLElement {
-    return this._indicator.value!;
+  public get indicator(): HTMLElement | undefined {
+    return this._indicator.value;
   }
 
   /**
@@ -82,7 +82,9 @@ class TabsHelpers {
   public setStyleProperties(): void {
     this._styleProperties = {
       '--_tabs-count': this._host.tabs.length.toString(),
-      '--_ig-tabs-width': `${this.container.getBoundingClientRect().width}px`,
+      '--_ig-tabs-width': this.container
+        ? `${this.container.getBoundingClientRect().width}px`
+        : '',
     };
     this._host.requestUpdate();
   }
@@ -91,13 +93,19 @@ class TabsHelpers {
    * Sets the type of the `scroll-snap-align` CSS property for the tabs header strip.
    */
   public setScrollSnap(type?: 'start' | 'end'): void {
-    this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
+    if (this.container) {
+      this.container.style.setProperty('--_ig-tab-snap', type || 'unset');
+    }
   }
 
   /**
    * Scrolls the tabs header strip in the given direction with `scroll-snap-align` set.
    */
   public scrollTabs(direction: 'start' | 'end'): void {
+    if (!this.container) {
+      return;
+    }
+
     const factor = isLTR(this._host) ? 1 : -1;
     const amount =
       direction === 'start'
@@ -113,6 +121,10 @@ class TabsHelpers {
    * Triggers an update cycle (rerender) of the `igc-tabs` component.
    */
   public setScrollButtonState(): void {
+    if (!this.container) {
+      return;
+    }
+
     const { scrollLeft, scrollWidth, clientWidth } = this.container;
 
     this._hasScrollButtons = scrollWidth > clientWidth;
@@ -128,6 +140,10 @@ class TabsHelpers {
    * Updates the indicator DOM element styles based on the current "active" tab.
    */
   public async setIndicator(active?: IgcTabComponent): Promise<void> {
+    if (!(this.container && this.indicator)) {
+      return;
+    }
+
     const styles = {
       visibility: active ? 'visible' : 'hidden',
     } satisfies Partial<CSSStyleDeclaration>;

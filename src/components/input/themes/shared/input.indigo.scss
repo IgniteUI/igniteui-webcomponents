@@ -119,20 +119,14 @@ $transition-duration: .25s;
     }
 }
 
-:host(:focus-within),
-:host(:hover) {
-    [part^='container'] {
-        background: var-get($theme, 'box-background-hover');
-    }
-}
-
 [part~='filled'] {
     [part~='input'] {
         color: var-get($theme, 'filled-text-color');
     }
 }
 
-:host(:hover) {
+:host(:not([readonly]):hover),
+:host([readonly][role='combobox']:hover) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'filled-text-hover-color');
@@ -140,6 +134,7 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
+        background: var-get($theme, 'box-background-hover');
         border-color: var-get($theme, 'hover-bottom-line-color');
     }
 }
@@ -153,6 +148,7 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
+        background: var-get($theme, 'box-background-hover');
         caret-color: var-get($theme, 'focused-bottom-line-color');
 
         &::after {
@@ -171,7 +167,15 @@ $transition-duration: .25s;
     }
 }
 
-:host([invalid]) {
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+    [part^='container'] {
+        border-color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host([invalid]),
+:host([invalid]:hover),
+:host([invalid][readonly]) {
     [part^='container'] {
         caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');

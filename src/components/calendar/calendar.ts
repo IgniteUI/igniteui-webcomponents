@@ -23,13 +23,13 @@ import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.j
 import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   clamp,
   findElementFromEventPath,
   first,
   formatString,
   last,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ContentOrientation } from '../types.js';
@@ -56,6 +56,8 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -427,15 +429,15 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected renderNavigationButtons() {
-    const parts = partNameMap({
+    const parts = {
       'navigation-button': true,
       vertical: this.orientation === 'vertical',
-    });
+    };
 
     return html`
       <div part="navigation-buttons">
         <button
-          part=${parts}
+          part=${partMap(parts)}
           aria-label=${this.previousButtonLabel}
           @click=${this.navigatePrevious}
         >
@@ -447,7 +449,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         </button>
 
         <button
-          part=${parts}
+          part=${partMap(parts)}
           aria-label=${this.nextButtonLabel}
           @click=${this.navigateNext}
         >

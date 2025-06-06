@@ -1,4 +1,4 @@
-import { DateTimeUtil } from '../date-time-input/date-util.js';
+import { CalendarDay } from '../calendar/model.js';
 import validatorMessages from './localization/validation-en.js';
 import {
   asNumber,
@@ -135,9 +135,7 @@ export const minDateValidator: Validator<{
   key: 'rangeUnderflow',
   message: ({ min }) => formatString(validatorMessages.min, min),
   isValid: ({ value, min }) =>
-    value && min
-      ? !DateTimeUtil.lessThanMinValue(value, min, false, true)
-      : true,
+    value && min ? CalendarDay.compare(value, min) >= 0 : true,
 };
 
 export const maxDateValidator: Validator<{
@@ -147,7 +145,5 @@ export const maxDateValidator: Validator<{
   key: 'rangeOverflow',
   message: ({ max }) => formatString(validatorMessages.max, max),
   isValid: ({ value, max }) =>
-    value && max
-      ? !DateTimeUtil.greaterThanMaxValue(value, max, false, true)
-      : true,
+    value && max ? CalendarDay.compare(value, max) <= 0 : true,
 };

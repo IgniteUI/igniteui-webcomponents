@@ -7,12 +7,11 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { carouselContext } from '../common/context.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   type SwipeEvent,
   addGesturesController,
@@ -32,6 +31,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   asNumber,
   createCounter,
@@ -40,7 +40,6 @@ import {
   formatString,
   isLTR,
   last,
-  partNameMap,
   wrap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -92,7 +91,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-carousel';
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcCarouselComponent,
       IgcCarouselIndicatorComponent,
@@ -104,23 +103,23 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private static readonly increment = createCounter();
-  private _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
-  private _carouselKeyboardInteractionFocus = addKeyboardFocusRing(this);
+  private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
-  private _internals: ElementInternals;
+  private readonly _internals: ElementInternals;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
+  private _hasInnerFocus = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
     initialValue: this,
   });
 
-  private _carouselSlidesContainerRef: Ref<HTMLDivElement> = createRef();
-  private _indicatorsContainerRef: Ref<HTMLDivElement> = createRef();
-  private _prevButtonRef: Ref<IgcButtonComponent> = createRef();
-  private _nextButtonRef: Ref<IgcButtonComponent> = createRef();
+  private readonly _carouselSlidesContainerRef = createRef<HTMLDivElement>();
+  private readonly _indicatorsContainerRef = createRef<HTMLDivElement>();
+  private readonly _prevButtonRef = createRef<IgcButtonComponent>();
+  private readonly _nextButtonRef = createRef<IgcButtonComponent>();
 
   private get hasProjectedIndicators(): boolean {
     return this._projectedIndicators.length > 0;
@@ -326,9 +325,15 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._internals.role = 'region';
     this._internals.ariaRoleDescription = 'carousel';
 
-    this.addEventListener('pointerdown', this.handlePointerDown);
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
+    this.addEventListener('pointerdown', () => {
+      this._hasInnerFocus = false;
+    });
+
+    this.addEventListener('keyup', () => {
+      this._hasInnerFocus = true;
+    });
 
     addGesturesController(this, {
       ref: this._carouselSlidesContainerRef,
@@ -381,15 +386,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.requestUpdate();
   }
 
-  private handlePointerDown(): void {
-    if (this._carouselKeyboardInteractionFocus.focused) {
-      this._carouselKeyboardInteractionFocus.reset();
-    }
-  }
-
   private handlePointerEnter(): void {
     this._hasMouseStop = true;
-    if (this._carouselKeyboardInteractionFocus.focused) {
+    if (this._hasInnerFocus) {
       return;
     }
     this.handlePauseOnInteraction();
@@ -397,14 +396,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerLeave(): void {
     this._hasMouseStop = false;
-    if (this._carouselKeyboardInteractionFocus.focused) {
+    if (this._hasInnerFocus) {
       return;
     }
     this.handlePauseOnInteraction();
   }
 
   private handleFocusIn(): void {
-    if (this._carouselKeyboardInteractionFocus.focused || this._hasMouseStop) {
+    if (this._hasInnerFocus || this._hasMouseStop) {
       return;
     }
     this.handlePauseOnInteraction();
@@ -417,8 +416,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return;
     }
 
-    if (this._carouselKeyboardInteractionFocus.focused) {
-      this._carouselKeyboardInteractionFocus.reset();
+    if (this._hasInnerFocus) {
+      this._hasInnerFocus = false;
 
       if (!this._hasMouseStop) {
         this.handlePauseOnInteraction();
@@ -740,14 +739,18 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private indicatorTemplate() {
-    const parts = partNameMap({
+    const parts = {
       indicators: true,
       start: this.indicatorsOrientation === 'start',
-    });
+    };
 
     return html`
       <igc-carousel-indicator-container>
-        <div ${ref(this._indicatorsContainerRef)} role="tablist" part=${parts}>
+        <div
+          ${ref(this._indicatorsContainerRef)}
+          role="tablist"
+          part=${partMap(parts)}
+        >
           <slot
             name="indicator"
             @slotchange=${this.handleIndicatorSlotChange}
@@ -763,11 +766,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private labelTemplate() {
-    const parts = partNameMap({
+    const parts = {
       label: true,
       indicators: true,
       start: this.indicatorsOrientation === 'start',
-    });
+    };
     const value = formatString(
       this.slidesLabelFormat,
       this.current + 1,
@@ -775,7 +778,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     );
 
     return html`
-      <div part=${parts}>
+      <div part=${partMap(parts)}>
         <span>${value}</span>
       </div>
     `;

@@ -27,6 +27,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   findElementFromEventPath,
   first,
@@ -35,7 +36,6 @@ import {
   isLTR,
   isString,
   last,
-  partNameMap,
   scrollIntoView,
   wrap,
 } from '../common/util.js';
@@ -389,6 +389,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Public API methods
 
   /** Selects the specified tab and displays the corresponding panel.  */
+  public select(id: string): void;
+  /* blazorSuppress (ref is reserved) */
+  public select(ref: IgcTabComponent): void;
+  /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent | string): void {
     const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
 
@@ -425,11 +429,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const part = partNameMap({
-      inner: true,
-      scrollable: this._domHelpers.hasScrollButtons,
-    });
-
     return html`
       <div
         ${ref(this._headerRef)}
@@ -437,7 +436,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         style=${styleMap(this._domHelpers.styleProperties)}
         @scroll=${this._handleScroll}
       >
-        <div part=${part}>
+        <div
+          part=${partMap({
+            inner: true,
+            scrollable: this._domHelpers.hasScrollButtons,
+          })}
+        >
           ${this._renderScrollButton('start')}
           <slot @click=${this._handleClick}></slot>
           ${this._renderScrollButton('end')}

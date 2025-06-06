@@ -6,8 +6,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Fixed
+  - #### Calendar & Date picker
+    - Incorrect date rollover for in certain scenarios [#1710](https://github.com/IgniteUI/igniteui-webcomponents/issues/1710)
+
+## [6.0.1] - 2025-05-28
+### Added
+- #### Radio group
+  - Slotted `<label>` elements have default styles based on the current theme [#1694](https://github.com/IgniteUI/igniteui-webcomponents/pull/1694)
+
+### Fixed
+- #### Chip
+  - Styling discrepancies [#1486](https://github.com/IgniteUI/igniteui-webcomponents/pull/1486)
 - #### DateTime Input
   - Ensure `igcChange` is emitted in case an incomplete mask value has been filled [#1695](https://github.com/IgniteUI/igniteui-webcomponents/issues/1695)
+- #### Input
+  - Browser default autofill background styles [#1697](https://github.com/IgniteUI/igniteui-webcomponents/pull/1697)
+- #### Textarea
+  - Dynamic prefix/suffix slot content state [#1686](https://github.com/IgniteUI/igniteui-webcomponents/issues/1686)
 
 ## [6.0.0] - 2025-04-29
 ### Changed
@@ -883,6 +898,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.0...6.0.1
 [6.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.1...6.0.0
 [5.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.3.0...5.4.0

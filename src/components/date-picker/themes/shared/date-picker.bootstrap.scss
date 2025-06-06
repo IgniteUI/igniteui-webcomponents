@@ -38,6 +38,14 @@ $theme: $bootstrap;
     }
 }
 
+:host([readonly]) {
+    igc-date-time-input::part(container),
+    igc-date-time-input::part(prefix),
+    igc-date-time-input::part(suffix) {
+        background: var-get($theme, 'border-disabled-background');
+    }
+}
+
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
 }
