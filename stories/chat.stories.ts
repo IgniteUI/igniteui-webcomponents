@@ -437,6 +437,23 @@ function generateAIResponse(message: string): string {
   return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
 }
 
+function fileToGenerativePart(buffer, mimeType) {
+  // Convert ArrayBuffer to base64 string in the browser
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64String = btoa(binary);
+
+  return {
+    inlineData: {
+      data: base64String,
+      mimeType,
+    },
+  };
+}
+
 async function handleAIMessageSend(e: CustomEvent) {
   const newMessage: IgcMessage = e.detail;
   const chat = document.querySelector('igc-chat');
@@ -455,6 +472,18 @@ async function handleAIMessageSend(e: CustomEvent) {
   };
 
   userMessages.push({ role: 'user', parts: [{ text: newMessage.text }] });
+
+  if (newMessage.attachments && newMessage.attachments.length > 0) {
+    for (const attachment of newMessage.attachments) {
+      if (attachment.file) {
+        const filePart = fileToGenerativePart(
+          await attachment.file.arrayBuffer(),
+          attachment.file.type
+        );
+        userMessages.push({ role: 'user', parts: [filePart] });
+      }
+    }
+  }
 
   if (newMessage.text.includes('image')) {
     response = await ai.models.generateContent({
