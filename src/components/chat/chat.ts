@@ -75,19 +75,19 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ type: String, attribute: 'header-text', reflect: true })
   public headerText = '';
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentHeaderTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentActionsTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentContentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public messageActionsTemplate?: MessageActionsTemplate;
 
   public override connectedCallback() {

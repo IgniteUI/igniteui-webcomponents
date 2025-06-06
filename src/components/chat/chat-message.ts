@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { renderMarkdown } from './markdown-util.js';
-import { IgcMessageAttachmentsComponent } from './message-attachments.js';
+import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import type {
   AttachmentTemplate,
@@ -34,19 +34,19 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public message: IgcMessage | undefined;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentHeaderTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentActionsTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentContentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public messageActionsTemplate?: MessageActionsTemplate;
 
   protected override render() {

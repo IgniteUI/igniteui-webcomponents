@@ -32,19 +32,19 @@ export default class IgcChatMessageListComponent extends LitElement {
   @property({ type: Boolean, attribute: 'disable-auto-scroll' })
   public disableAutoScroll = false;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentHeaderTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentActionsTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public attachmentContentTemplate?: AttachmentTemplate;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   public messageActionsTemplate?: MessageActionsTemplate;
 
   private formatDate(date: Date): string {

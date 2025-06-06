@@ -21,7 +21,7 @@ import {
  * @element igc-message-attachments
  *
  */
-export class IgcMessageAttachmentsComponent extends LitElement {
+export default class IgcMessageAttachmentsComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-message-attachments';
 
@@ -42,16 +42,16 @@ export class IgcMessageAttachmentsComponent extends LitElement {
   @property({ type: String })
   previewImage = '';
 
-  @property({ type: Function })
+  @property({ attribute: false })
   attachmentTemplate: AttachmentTemplate | undefined;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   attachmentHeaderTemplate: AttachmentTemplate | undefined;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   attachmentActionsTemplate: AttachmentTemplate | undefined;
 
-  @property({ type: Function })
+  @property({ attribute: false })
   attachmentContentTemplate: AttachmentTemplate | undefined;
 
   constructor() {
