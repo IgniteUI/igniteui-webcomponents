@@ -119,6 +119,12 @@ $transition-duration: .25s;
     }
 }
 
+:host(:hover) {
+    [part^='container'] {
+        background: var-get($theme, 'box-background-hover');
+    }
+}
+
 [part~='filled'] {
     [part~='input'] {
         color: var-get($theme, 'filled-text-color');
@@ -148,7 +154,7 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
-        background: var-get($theme, 'box-background-hover');
+        background: var-get($theme, 'box-background-focus');
         caret-color: var-get($theme, 'focused-bottom-line-color');
 
         &::after {
