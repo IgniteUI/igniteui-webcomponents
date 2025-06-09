@@ -119,6 +119,7 @@ $transition-duration: .25s;
     }
 }
 
+
 :host(:hover) {
     [part^='container'] {
         background: var-get($theme, 'box-background-hover');
