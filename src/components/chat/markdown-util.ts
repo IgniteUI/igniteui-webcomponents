@@ -4,9 +4,6 @@ import { marked } from 'marked';
 marked.setOptions({
   gfm: true,
   breaks: true,
-  sanitize: true,
-  smartLists: true,
-  smartypants: true,
 });
 
 const renderer = new marked.Renderer();
@@ -24,7 +21,7 @@ renderer.link = (href, title, text) => {
 export function renderMarkdown(text: string): TemplateResult {
   if (!text) return html``;
 
-  const rendered = marked(text, { renderer });
+  const rendered = marked(text, { renderer }).toString();
   const template = document.createElement('template');
   template.innerHTML = rendered;
 
