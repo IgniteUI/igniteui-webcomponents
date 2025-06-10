@@ -2,12 +2,12 @@
 @use '../light/themes' as *;
 
 $theme: $fluent;
-$border-size: rem(1px);
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
     --helper-text-top-spacer: rem(5px);
+    --input-border-size: #{rem(1px)};
 
     [part='prefix'],
     [part='suffix'] {
@@ -58,24 +58,25 @@ $border-size: rem(1px);
     [part^='container'] {
         height: var-get($theme, 'size');
         background: var-get($theme, 'border-background');
+        border: var(--input-border-size) solid transparent;
+        border-radius: var-get($theme, 'border-border-radius');
         transition: none;
         cursor: text;
         grid-template-columns: auto 1fr auto;
-        overflow: hidden;
 
         &::before {
             content: '';
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
+            inset: calc(var(--input-border-size) * -1);
+            width: calc(100% + (var(--input-border-size) * 2));
+            height: calc(100% + (var(--input-border-size) * 2));
 
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
             // defaults to the css color: prop the same way as border-color: do.
             // We do this in order to have the shadow working correctly inside the Combo search
             // We can't change the var-get($theme, 'border-color') in the combo search, but we can change the shadow
             color: var-get($theme, 'border-color');
-            box-shadow: inset 0 0 0 $border-size;
+            box-shadow: inset 0 0 0 var(--input-border-size);
             border-radius: var-get($theme, 'border-border-radius');
             user-select: none;
             pointer-events: none;
@@ -103,13 +104,17 @@ $border-size: rem(1px);
 
 :host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
     [part^='container'] {
-        border-color: var-get($theme, 'border-color');
+        &::before {
+            box-shadow: inset 0 0 0 var(--input-border-size);
+        }
     }
 }
 
 :host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
     [part^='container'] {
-        border-color: var-get($theme, 'focused-border-color');
+        &::before {
+            box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)});
+        }
     }
 }
 
@@ -121,7 +126,7 @@ $border-size: rem(1px);
             // We do this in order to have the shadow working correctly inside the Combo search
             // We can't change the var-get($theme, 'hover-border-color') in the combo search, but we can change the shadow
             color: var-get($theme, 'hover-border-color');
-            box-shadow: inset 0 0 0 $border-size;
+            box-shadow: inset 0 0 0 var(--input-border-size);
         }
     }
 }
@@ -134,7 +139,7 @@ $border-size: rem(1px);
             // We do this in order to have the shadow working correctly inside the Combo search
             // We can't change the var-get($theme, 'focused-border-color') in the combo search, but we can change the shadow
             color: var-get($theme, 'focused-border-color');
-            box-shadow: inset 0 0 0 calc($border-size + #{rem(1px)}),
+            box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)});
         }
     }
 
@@ -188,7 +193,16 @@ $border-size: rem(1px);
 
     [part~='container'] {
         &::before {
-            box-shadow: inset 0 0 0 $border-size var-get($theme, 'error-secondary-color')
+            box-shadow: inset 0 0 0 var(--input-border-size) var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
+:host([invalid]:focus-within),
+:host([readonly][invalid]:focus-within) {
+    [part~='container'] {
+        &::before {
+            box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)}) var-get($theme, 'error-secondary-color');
         }
     }
 }
@@ -197,7 +211,7 @@ $border-size: rem(1px);
 :host([disabled]) {
     [part~='container'] {
         &::before {
-            box-shadow: inset 0 0 0 $border-size var-get($theme, 'disabled-border-color');
+            box-shadow: inset 0 0 0 var(--input-border-size) var-get($theme, 'disabled-border-color');
         }
     }
 
