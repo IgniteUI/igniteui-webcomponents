@@ -6,7 +6,7 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultFileListTransformer,
 } from '../common/mixins/forms/form-value.js';
@@ -62,7 +62,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return fileValidators;
   }
 
-  protected override _formValue: FormValue<FileList | null>;
+  protected override readonly _formValue: FormValueOf<FileList | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultFileListTransformer,
+    });
 
   @state()
   private _hasActivation = false;
@@ -127,14 +131,6 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   /** Returns the selected files, if any; otherwise returns null. */
   public get files(): FileList | null {
     return this.input?.files ?? null;
-  }
-
-  constructor() {
-    super();
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultFileListTransformer,
-    });
   }
 
   protected override _restoreDefaultValue(): void {
