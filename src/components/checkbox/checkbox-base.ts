@@ -7,7 +7,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -40,7 +40,11 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   }
 
   protected readonly _focusRingManager = addKeyboardFocusRing(this);
-  protected override _formValue: FormValue<boolean>;
+  protected override readonly _formValue: FormValueOf<boolean> =
+    createFormValueState(this, {
+      initialValue: false,
+      transformers: defaultBooleanTransformers,
+    });
   protected _value!: string;
 
   @query('input', true)
@@ -89,15 +93,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
-
-  constructor() {
-    super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
-  }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
