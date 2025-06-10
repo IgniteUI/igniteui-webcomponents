@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
@@ -50,7 +50,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
-  protected override _formValue: FormValue<string>;
+  protected override readonly _formValue: FormValueOf<string> =
+    createFormValueState(this, { initialValue: '' });
 
   protected override get __validators() {
     return this.type !== 'number' ? stringValidators : numberValidators;
@@ -206,11 +207,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property({ type: Number })
   public override tabIndex = 0;
-
-  constructor() {
-    super();
-    this._formValue = createFormValueState(this, { initialValue: '' });
-  }
 
   /* blazorSuppress */
   /** Replaces the selected text in the input. */

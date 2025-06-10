@@ -18,7 +18,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -89,7 +89,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return radioValidators;
   }
 
-  protected override _formValue: FormValue<boolean>;
+  protected override readonly _formValue: FormValueOf<boolean> =
+    createFormValueState(this, {
+      initialValue: false,
+      transformers: defaultBooleanTransformers,
+    });
 
   private readonly _inputId = `radio-${IgcRadioComponent.increment()}`;
   private readonly _labelId = `radio-label-${this._inputId}`;
@@ -188,11 +192,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
 
     addKeybindings(this, {
       skip: () => this.disabled,
