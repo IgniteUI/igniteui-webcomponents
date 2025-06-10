@@ -118,7 +118,7 @@ $theme: $fluent;
     }
 }
 
-:host(:not([readonly]):hover) {
+:host(:not([readonly], :focus-within):hover) {
     [part^='container'] {
         &::before {
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
