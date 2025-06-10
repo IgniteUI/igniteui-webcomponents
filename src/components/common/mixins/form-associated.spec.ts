@@ -15,7 +15,7 @@ import {
   requiredValidator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
-import { type FormValue, createFormValueState } from './forms/form-value.js';
+import { type FormValueOf, createFormValueState } from './forms/form-value.js';
 import type {
   FormAssociatedElementInterface,
   FormRequiredInterface,
@@ -52,7 +52,8 @@ describe('Form associated mixin tests', () => {
           return [requiredValidator, minLengthValidator, maxLengthValidator];
         }
 
-        protected override _formValue: FormValue<string>;
+        protected override _formValue: FormValueOf<string> =
+          createFormValueState(this, { initialValue: '' });
 
         private _minLength!: number;
         private _maxLength!: number;
@@ -82,12 +83,6 @@ describe('Form associated mixin tests', () => {
 
         public get value() {
           return this._formValue.value;
-        }
-
-        constructor() {
-          super();
-
-          this._formValue = createFormValueState(this, { initialValue: '' });
         }
 
         public override connectedCallback() {
