@@ -18,7 +18,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
@@ -136,7 +136,14 @@ export default class IgcComboComponent<
     return comboValidators;
   }
 
-  protected override _formValue: FormValue<ComboValue<T>[]>;
+  protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
+    createFormValueState<ComboValue<T>[]>(this, {
+      initialValue: [],
+      transformers: {
+        setValue: asArray,
+        setDefaultValue: asArray,
+      },
+    });
   private _data: T[] = [];
 
   private _valueKey?: Keys<T>;
@@ -467,14 +474,6 @@ export default class IgcComboComponent<
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState<ComboValue<T>[]>(this, {
-      initialValue: [],
-      transformers: {
-        setValue: asArray,
-        setDefaultValue: asArray,
-      },
-    });
 
     this.addEventListener('blur', this._handleBlur);
 

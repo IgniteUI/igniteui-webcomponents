@@ -30,7 +30,7 @@ $theme: $base;
 }
 
 :host(:focus-within),
-:host(:hover) {
+:host(:not([readonly]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }
@@ -56,6 +56,13 @@ $theme: $base;
     }
 }
 /* stylelint-enable */
+
+:host(:not([role='combobox'])[readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
 
 :host([invalid]) {
     ::part(helper-text) {

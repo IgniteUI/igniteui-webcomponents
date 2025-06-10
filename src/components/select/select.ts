@@ -38,7 +38,7 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
@@ -128,7 +128,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  protected override _formValue: FormValue<string | undefined>;
+  protected override readonly _formValue: FormValueOf<string | undefined> =
+    createFormValueState<string | undefined>(this, {
+      initialValue: undefined,
+      transformers: {
+        setValue: (value) => value || undefined,
+        setDefaultValue: (value) => value || undefined,
+      },
+    });
 
   private _searchTerm = '';
   private _lastKeyTime = 0;
@@ -264,14 +271,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState<string | undefined>(this, {
-      initialValue: undefined,
-      transformers: {
-        setValue: (value) => value || undefined,
-        setDefaultValue: (value) => value || undefined,
-      },
-    });
 
     this._rootClickController.update({ hideCallback: this.handleClosing });
 
@@ -593,7 +592,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderToggleIcon() {
-    const parts = { 'toggle-icon': true, filled: this.value! };
+    const parts = { 'toggle-icon': true, filled: !!this.value };
     const iconHidden = this.open && !isEmpty(this._expandedIconSlot);
     const iconExpandedHidden = !iconHidden;
 
