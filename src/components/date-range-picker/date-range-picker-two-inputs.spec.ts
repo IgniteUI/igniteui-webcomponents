@@ -23,6 +23,7 @@ import {
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
 import {
   checkSelectedRange,
@@ -31,7 +32,9 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date range picker - two inputs', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: Array<IgcDateTimeInputComponent>;
