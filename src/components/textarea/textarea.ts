@@ -17,7 +17,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
@@ -97,7 +97,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return textAreaValidators;
   }
 
-  protected override readonly _formValue: FormValue<string>;
+  protected override readonly _formValue: FormValueOf<string> =
+    createFormValueState(this, { initialValue: '' });
 
   protected readonly _inputId = `textarea-${IgcTextareaComponent.increment()}`;
 
@@ -310,8 +311,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     createResizeObserverController(this, {
       callback: this._setAreaHeight,
     });
-
-    this._formValue = createFormValueState(this, { initialValue: '' });
 
     this.addEventListener('focus', this._handleFocus);
     this.addEventListener('blur', this._handleBlur);
