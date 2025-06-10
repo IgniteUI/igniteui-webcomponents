@@ -28,7 +28,7 @@ function checkRollover(original: CalendarDay, modified: CalendarDay) {
 
 /* blazorSuppress */
 export class CalendarDay {
-  private _date!: Date;
+  private readonly _date: Date;
 
   /** Constructs and returns the current day. */
   public static get today() {
@@ -77,11 +77,21 @@ export class CalendarDay {
    * Returns a new instance with values replaced.
    */
   public set(args: Partial<CalendarDayParams>) {
-    return new CalendarDay({
-      year: args.year ?? this.year,
-      month: args.month ?? this.month,
-      date: args.date ?? this.date,
-    });
+    const year = args.year ?? this.year;
+    const month = args.month ?? this.month;
+    const date = args.date ?? this.date;
+
+    const temp = new Date(year, month, date);
+
+    if (date > 0 && temp.getMonth() !== month) {
+      return new CalendarDay({
+        year,
+        month,
+        date: new Date(year, month + 1, 0).getDate(),
+      });
+    }
+
+    return new CalendarDay({ year, month, date });
   }
 
   public add(unit: DayInterval, value: number) {

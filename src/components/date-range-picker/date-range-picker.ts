@@ -32,7 +32,7 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateRangeTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -215,7 +215,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private static readonly _increment = createCounter();
 
   protected readonly _inputId = `date-range-picker-${IgcDateRangePickerComponent._increment()}`;
-  protected override _formValue: FormValue<DateRangeValue | null>;
+  protected override readonly _formValue: FormValueOf<DateRangeValue | null> =
+    createFormValueState(this, {
+      initialValue: {
+        start: null,
+        end: null,
+      },
+      transformers: defaultDateRangeTransformers,
+    });
 
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
@@ -569,13 +576,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   constructor() {
     super();
-    this._formValue = createFormValueState<DateRangeValue | null>(this, {
-      initialValue: {
-        start: null,
-        end: null,
-      },
-      transformers: defaultDateRangeTransformers,
-    });
 
     this._rootClickController.update({ hideCallback: this._handleClosing });
     this.addEventListener('focusin', this._handleFocusIn);

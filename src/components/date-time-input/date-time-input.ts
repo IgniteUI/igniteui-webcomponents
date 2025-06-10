@@ -2,7 +2,7 @@ import { property } from 'lit/decorators.js';
 import { convertToDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -56,7 +56,11 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     );
   }
 
-  protected override _formValue: FormValue<Date | null>;
+  protected override readonly _formValue: FormValueOf<Date | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
 
   protected override _datePartDeltas: DatePartDeltas = {
     date: 1,
@@ -106,15 +110,6 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     }
 
     return result;
-  }
-
-  constructor() {
-    super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
   }
 
   protected updateMask() {
