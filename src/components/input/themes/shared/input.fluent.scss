@@ -95,30 +95,7 @@ $theme: $fluent;
     }
 }
 
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
-    [part='prefix'],
-    [part='suffix'] {
-        background: transparent;
-    }
-}
-
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
-    [part^='container'] {
-        &::before {
-            box-shadow: inset 0 0 0 var(--input-border-size);
-        }
-    }
-}
-
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
-    [part^='container'] {
-        &::before {
-            box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)});
-        }
-    }
-}
-
-:host(:not([readonly], :focus-within):hover) {
+:host(:not([readonly], [invalid], :focus-within):hover) {
     [part^='container'] {
         &::before {
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
@@ -130,6 +107,30 @@ $theme: $fluent;
         }
     }
 }
+
+
+:host([aria-expanded][readonly]:not([invalid], :focus-within):hover) {
+    [part^='container'] {
+        &::before {
+            // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
+            // defaults to the css color: prop the same way as border-color: do.
+            // We do this in order to have the shadow working correctly inside the Combo search
+            // We can't change the var-get($theme, 'hover-border-color') in the combo search, but we can change the shadow
+            color: var-get($theme, 'hover-border-color');
+            box-shadow: inset 0 0 0 var(--input-border-size);
+        }
+    }
+}
+
+
+:host(:has([aria-expanded]):not(:focus-within):hover) {
+    [part^='container'] {
+        &::before {
+            color: var-get($theme, 'hover-border-color');
+        }
+    }
+}
+
 
 :host(:focus-within) {
     [part^='container'] {

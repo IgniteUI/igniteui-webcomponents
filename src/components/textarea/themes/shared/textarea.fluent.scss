@@ -55,7 +55,7 @@ $border-size: rem(1px);
 }
 
 
-:host(:not([readonly]):hover) {
+:host(:not([readonly], [invalid], :focus-within):hover) {
     [part~='container'] {
         &::before {
             box-shadow: inset 0 0 0 var(--textarea-border-size) var-get($theme, 'hover-border-color');
