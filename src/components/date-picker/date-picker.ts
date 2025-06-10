@@ -31,7 +31,7 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -194,7 +194,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _displayFormat?: string;
   private _inputFormat?: string;
 
-  protected override readonly _formValue: FormValue<Date | null>;
+  protected override readonly _formValue: FormValueOf<Date | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
 
   @query(IgcDateTimeInputComponent.tagName)
   private readonly _input!: IgcDateTimeInputComponent;
@@ -456,11 +460,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState<Date | null>(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
 
     this.addEventListener('focusin', this._handleFocusIn);
     this.addEventListener('focusout', this._handleFocusOut);

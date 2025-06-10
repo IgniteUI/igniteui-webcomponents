@@ -17,7 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -85,7 +85,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
-  protected override _formValue: FormValue<Date | null>;
+  protected override readonly _formValue: FormValueOf<Date | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
 
   protected _defaultMask!: string;
   private _oldValue: Date | null = null;
@@ -279,11 +283,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
 
     addKeybindings(this, {
       skip: () => this.readOnly,
