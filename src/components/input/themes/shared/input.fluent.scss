@@ -123,18 +123,6 @@ $theme: $fluent;
     }
 }
 
-
-:host(:has([aria-haspopup]):not(:focus-within):hover),
-:host(:has([aria-expanded]):not(:focus-within):hover) {
-    [part^='container'] {
-        &::before {
-            // The color: here represents the actual box-shadow color.
-            color: var-get($theme, 'hover-border-color');
-        }
-    }
-}
-
-
 :host(:focus-within) {
     [part^='container'] {
         &::before {
