@@ -11,7 +11,6 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -29,7 +28,6 @@ import {
   isEmpty,
   isLTR,
   last,
-  noop,
   wrap,
 } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -197,7 +195,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      .set(tabKey, noop, { preventDefault: false })
       .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this._navigate(-1))
