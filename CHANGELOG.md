@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - **Behavioral change**: Tooltip will not render an arrow indicator by default unless `with-arrow` is set.
   - **Breaking change**: Tooltip events will no longer return its `anchor` target in its `detail` property.
 
-    You cant still access it at `event.target.anchor`.
+    You can still access it at `event.target.anchor`.
 
 ### Deprecated
 - #### Tooltip
