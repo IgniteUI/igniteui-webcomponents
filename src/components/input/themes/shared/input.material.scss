@@ -41,10 +41,6 @@ $fs: rem(16px) !default;
     }
 }
 
-:host([outlined]) {
-    --label-position: calc((#{var-get($theme, 'size')} / 2) - (#{$idle-border-width}));
-}
-
 [part='prefix'],
 [part='suffix'] {
     ::slotted(*) {
@@ -390,6 +386,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host([outlined]) {
+    --label-position: calc((#{var-get($theme, 'size')} / 2) - (#{$idle-border-width}));
+
     [part='notch'] {
         border: {
             width: $idle-border-width;
