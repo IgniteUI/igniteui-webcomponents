@@ -198,6 +198,13 @@ $theme: $fluent;
     }
 }
 
+:host([readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        background: transparent;
+    }
+}
+
 :host([invalid]:focus-within),
 :host([readonly][invalid]:focus-within) {
     [part~='container'] {
