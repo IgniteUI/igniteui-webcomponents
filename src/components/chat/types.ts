@@ -12,10 +12,10 @@ export interface IgcMessage {
 
 export interface IgcMessageAttachment {
   id: string;
-  url: string;
   name: string;
-  type?: string;
+  url?: string;
   file?: File;
+  type?: string;
   thumbnail?: string;
 }
 

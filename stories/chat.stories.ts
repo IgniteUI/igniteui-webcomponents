@@ -9,10 +9,8 @@ import {
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import type {
-  AttachmentTemplate,
   IgcMessage,
   IgcMessageAttachment,
-  MessageActionsTemplate,
 } from '../src/components/chat/types.js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -108,11 +106,6 @@ interface IgcChatArgs {
    */
   acceptedFiles: string;
   headerText: string;
-  attachmentTemplate: AttachmentTemplate;
-  attachmentHeaderTemplate: AttachmentTemplate;
-  attachmentActionsTemplate: AttachmentTemplate;
-  attachmentContentTemplate: AttachmentTemplate;
-  messageActionsTemplate: MessageActionsTemplate;
 }
 type Story = StoryObj<IgcChatArgs>;
 
@@ -187,9 +180,9 @@ function handleMessageSend(e: CustomEvent) {
       ? [
           {
             id: 'random_img',
-            // type: newMessage.text.includes('file') ? 'file' : 'image',
-            url: 'https://picsum.photos/378/395',
             name: 'random.png',
+            url: 'https://picsum.photos/378/395',
+            type: 'image',
           },
         ]
       : [];
@@ -251,7 +244,7 @@ async function fetchMessages() {
 async function processMappedData(data: any) {
   for (const message of data) {
     for (const attachment of message.attachments) {
-      if (attachment.type.startsWith('image/')) {
+      if (attachment.type.startsWith('image')) {
         const file = await fetchAttachment(attachment.name);
         if (file) {
           attachment.file = file;
@@ -320,6 +313,7 @@ async function handleMessageCreatedSupabase(e: CustomEvent) {
     showResponse(chat, responseParts).then(() => {
       const lastMessageIndex = chat.messages.length - 1;
       const lastMessage = chat.messages[lastMessageIndex];
+      lastMessage.attachments = attachments;
       saveMessageToSupabase(lastMessage);
       isResponseSent = true;
       // TODO: add attachments (if any) to the response message

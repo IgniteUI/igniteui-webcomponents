@@ -63,8 +63,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  private openImagePreview(url: string) {
-    this.previewImage = url;
+  private openImagePreview(attachment: IgcMessageAttachment) {
+    this.previewImage = this.getURL(attachment);
   }
 
   private closeImagePreview() {
@@ -86,6 +86,30 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     );
   }
 
+  private getFile(attachment: IgcMessageAttachment): File | undefined {
+    if (attachment.file) {
+      return attachment.file;
+    }
+    if (attachment.url) {
+      const url = new URL(attachment.url);
+      const fileName = url.pathname.split('/').pop() || 'attachment';
+      return new File([], fileName, {
+        type: attachment.type || 'application/octet-stream',
+      });
+    }
+    return undefined;
+  }
+
+  private getURL(attachment: IgcMessageAttachment): string {
+    if (attachment.url) {
+      return attachment.url;
+    }
+    if (attachment.file) {
+      return URL.createObjectURL(attachment.file);
+    }
+    return '';
+  }
+
   protected override render() {
     return html`
       <div class="attachments-container">
@@ -95,7 +119,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
               (attachment) =>
                 html` <igc-expansion-panel
                   indicator-position="none"
-                  .open=${attachment.file?.type.startsWith('image/')}
+                  .open=${attachment.type === 'image' ||
+                  attachment.file?.type.startsWith('image/')}
                   @igcClosing=${(ev: CustomEvent) =>
                     this.handleToggle(ev, attachment)}
                   @igcOpening=${(ev: CustomEvent) =>
@@ -107,7 +132,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                         ? this.attachmentHeaderTemplate(this.attachments)
                         : html`
                             <slot name="attachment-icon">
-                              ${attachment.file?.type.startsWith('image/')
+                              ${attachment.type === 'image' ||
+                              attachment.file?.type.startsWith('image/')
                                 ? html`<igc-icon
                                     name="image"
                                     collection="material"
@@ -129,14 +155,15 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                         ? this.attachmentActionsTemplate(this.attachments)
                         : html`
                             <slot name="attachment-actions">
-                              ${attachment.file?.type.startsWith('image/')
+                              ${attachment.type === 'image' ||
+                              attachment.file?.type.startsWith('image/')
                                 ? html` <igc-icon-button
                                     name="preview"
                                     collection="material"
                                     variant="flat"
                                     class="small"
                                     @click=${() =>
-                                      this.openImagePreview(attachment.url)}
+                                      this.openImagePreview(attachment)}
                                   ></igc-icon-button>`
                                 : ''}
                               <igc-icon-button
@@ -154,10 +181,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     ? this.attachmentContentTemplate(this.attachments)
                     : html`
                         <slot name="attachment-content">
-                          ${attachment.file?.type.startsWith('image/')
+                          ${attachment.type === 'image' ||
+                          attachment.file?.type.startsWith('image/')
                             ? html` <img
                                 class="image-attachment"
-                                src=${attachment.url}
+                                src=${this.getURL(attachment)}
                                 alt=${attachment.name}
                               />`
                             : ''}
