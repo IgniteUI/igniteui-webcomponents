@@ -6,7 +6,6 @@ import { live } from 'lit/directives/live.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
-  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -23,7 +22,6 @@ import {
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { noop } from '../common/util.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -290,10 +288,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       skip: () => this.readOnly,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      // Skip default spin when in the context of a date picker
-      .set([altKey, arrowUp], noop)
-      .set([altKey, arrowDown], noop)
-
       .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
