@@ -5,6 +5,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   type FormValueOf,
   createFormValueState,
@@ -12,11 +14,20 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
-import { IgcInputBaseComponent } from '../input/input-base.js';
+import {
+  IgcInputBaseComponent,
+  type IgcInputComponentEventMap,
+} from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
+
+export interface IgcFileInputComponentEventMap
+  extends Omit<IgcInputComponentEventMap, 'igcChange' | 'igcInput'> {
+  igcCancel: CustomEvent<FileList>;
+  igcChange: CustomEvent<FileList>;
+}
 
 /* blazorSuppress */
 /**
@@ -45,9 +56,12 @@ import { fileValidators } from './validators.js';
  * @csspart helper-text - The helper text wrapper.
  */
 @themes(all)
-export default class IgcFileInputComponent extends IgcInputBaseComponent {
+export default class IgcFileInputComponent extends EventEmitterMixin<
+  IgcFileInputComponentEventMap,
+  AbstractConstructor<IgcInputBaseComponent>
+>(IgcInputBaseComponent) {
   public static readonly tagName = 'igc-file-input';
-  public static override styles = [...IgcInputBaseComponent.styles, styles];
+  public static styles = [...IgcInputBaseComponent.styles, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -152,7 +166,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     this._validate();
 
     this.requestUpdate();
-    this.emitEvent('igcChange', { detail: this.value });
+    this.emitEvent('igcChange', { detail: this.files! });
   }
 
   private _handleCancel(): void {
@@ -160,7 +174,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     this._validate();
 
     this.emitEvent('igcCancel', {
-      detail: this.value,
+      detail: this.files!,
     });
   }
 

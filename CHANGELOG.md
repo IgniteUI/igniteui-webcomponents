@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Date Range Picker
 
 ### Changed
+- #### File input
+  - **Breaking change**: `igcChange` & `igcCancel` events detail now returns the underlying component `files` property.
 - #### Tooltip
   - **Behavioral change**: Tooltip default `placement` is 'bottom' now.
   - **Behavioral change**: Tooltip will not render an arrow indicator by default unless `with-arrow` is set.
