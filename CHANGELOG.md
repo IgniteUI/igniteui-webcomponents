@@ -4,10 +4,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.1.0] - 2025-06-11
+### Added
+- Date Range Picker
+
+### Changed
+- #### Tooltip
+  - **Behavioral change**: Tooltip default `placement` is 'bottom' now.
+  - **Behavioral change**: Tooltip will not render an arrow indicator by default unless `with-arrow` is set.
+  - **Breaking change**: Tooltip events will no longer return its `anchor` target in its `detail` property.
+
+    You can still access it at `event.target.anchor`.
+
+### Deprecated
+- #### Tooltip
+  - `disableArrow` is deprecated. Use `withArrow | with-arrow` to render an arrow indicator.
+
 ### Fixed
-  - #### Calendar & Date picker
-    - Incorrect date rollover for in certain scenarios [#1710](https://github.com/IgniteUI/igniteui-webcomponents/issues/1710)
+- #### Calendar & Date Picker
+  - Incorrect date rollover for in certain scenarios [#1710](https://github.com/IgniteUI/igniteui-webcomponents/issues/1710)
+- #### Combo
+  - Case insensitive icon styles in themes [#1728](https://github.com/IgniteUI/igniteui-webcomponents/pull/1728)
+- #### Textarea
+  - Label height and component height override [#1715](https://github.com/IgniteUI/igniteui-webcomponents/pull/1715)
 
 ## [6.0.1] - 2025-05-28
 ### Added
@@ -898,6 +917,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.1...6.1.0
 [6.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.0...6.0.1
 [6.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.1...6.0.0
 [5.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.0...5.4.1
