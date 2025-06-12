@@ -1,0 +1,71 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host(:not([invalid])[outlined][readonly]:hover) {
+    igc-date-time-input::part(start),
+    igc-date-time-input::part(end),
+    igc-date-time-input::part(filler) {
+        border-color: var-get($theme, 'border-color');
+    }
+
+    igc-date-time-input::part(notch) {
+        border-bottom-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([invalid])[outlined][readonly]) {
+    igc-date-time-input:focus-within {
+        &::part(start),
+        &::part(end),
+        &::part(filler) {
+            border-color: var-get($theme, 'focused-border-color');
+        }
+
+        &::part(notch) {
+            border-bottom-color: var-get($theme, 'focused-border-color');
+        }
+    }
+}
+
+:host(:not([outlined],[disabled])[readonly]) {
+    igc-date-time-input::part(container) {
+        background: var-get($theme, 'box-background-focus');
+    }
+}
+
+:host(:not([outlined],[invalid])[readonly]) {
+    igc-date-time-input:hover {
+        &::part(container) {
+            border-bottom-color: var-get($theme, 'idle-bottom-line-color');
+
+            &::after {
+                background: var-get($theme, 'idle-bottom-line-color');
+            }
+        }
+    }
+
+    igc-date-time-input:focus-within {
+        &::part(container) {
+            border-bottom-color: var-get($theme, 'focused-bottom-line-color');
+
+            &::after {
+                background: var-get($theme, 'focused-bottom-line-color');
+            }
+        }
+    }
+}
+
+:host(:not([outlined])[readonly][invalid]) {
+    igc-date-time-input:hover,
+    igc-date-time-input:focus-within {
+        &::part(container) {
+            border-color: var-get($theme, 'error-secondary-color');
+
+            &::after {
+                border-color: var-get($theme, 'error-secondary-color');
+            }
+        }
+    }
+}

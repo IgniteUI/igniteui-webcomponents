@@ -6,7 +6,6 @@ import { live } from 'lit/directives/live.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
-  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -18,11 +17,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
-import { noop, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
@@ -86,7 +85,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
-  protected override _formValue: FormValue<Date | null>;
+  protected override readonly _formValue: FormValueOf<Date | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
 
   protected _defaultMask!: string;
   private _oldValue: Date | null = null;
@@ -281,19 +284,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
-
     addKeybindings(this, {
       skip: () => this.readOnly,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      // Skip default spin when in the context of a date picker
-      .set([altKey, arrowUp], noop)
-      .set([altKey, arrowDown], noop)
-
       .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
@@ -609,7 +603,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     const isEmptyMask = this.maskedValue === this.emptyMask;
-    const isSameValue = this._oldValue === this.value;
 
     this.focused = false;
 
@@ -625,6 +618,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     } else {
       this.updateMask();
     }
+
+    const isSameValue = this._oldValue === this.value;
 
     if (!(this.readOnly || isSameValue)) {
       this.emitEvent('igcChange', { detail: this.value });
@@ -649,7 +644,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return html`
       <input
         type="text"
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}

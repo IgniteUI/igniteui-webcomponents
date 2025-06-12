@@ -8,7 +8,7 @@ import { addAnimationController } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import type {
   StepperOrientation,
   StepperStepType,
@@ -126,7 +126,7 @@ export default class IgcStepComponent extends LitElement {
 
   /** @hidden @internal @private */
   @property({ attribute: false })
-  public titlePosition?: StepperTitlePosition;
+  public titlePosition: StepperTitlePosition = 'auto';
 
   /** @hidden @internal @private */
   @property({ attribute: false })
@@ -252,11 +252,11 @@ export default class IgcStepComponent extends LitElement {
       top: this.titlePosition === 'top',
       bottom:
         this.titlePosition === 'bottom' ||
-        (this.orientation === 'horizontal' && !this.titlePosition),
+        (this.orientation === 'horizontal' && this.titlePosition === 'auto'),
       start: this.titlePosition === 'start',
       end:
         this.titlePosition === 'end' ||
-        (this.orientation === 'vertical' && !this.titlePosition),
+        (this.orientation === 'vertical' && this.titlePosition === 'auto'),
     };
   }
 
@@ -287,7 +287,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderTitleAndSubtitle() {
     return html`
-      <div part="${partNameMap(this.textParts)}">
+      <div part=${partMap(this.textParts)}>
         <div part="title">
           <slot name="title"></slot>
         </div>
@@ -319,7 +319,7 @@ export default class IgcStepComponent extends LitElement {
         () => this.renderContent(),
         () => nothing
       )}
-      <div part="${partNameMap(this.headerContainerParts)}">
+      <div part=${partMap(this.headerContainerParts)}>
         <div
           part="header"
           tabindex="${this.active ? '0' : '-1'}"

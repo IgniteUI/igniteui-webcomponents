@@ -4,7 +4,8 @@ import { live } from 'lit/directives/live.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
 import { all } from './themes/switch-themes.js';
@@ -30,27 +31,23 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSwitchComponent);
   }
 
   private static readonly increment = createCounter();
 
-  private inputId = `switch-${IgcSwitchComponent.increment()}`;
-  private labelId = `switch-label-${this.inputId}`;
+  private readonly _inputId = `switch-${IgcSwitchComponent.increment()}`;
+  private readonly _labelId = `switch-label-${this._inputId}`;
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
     return html`
-      <label
-        part=${partNameMap({ base: true, checked })}
-        for=${this.inputId}
-        @pointerdown=${this._kbFocus.reset}
-      >
+      <label part=${partMap({ base: true, checked })} for=${this._inputId}>
         <input
-          id=${this.inputId}
+          id=${this._inputId}
           type="checkbox"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
@@ -59,24 +56,23 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           .checked=${live(checked)}
           aria-checked=${checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
-          @click=${this.handleClick}
-          @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
+          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          @click=${this._handleClick}
+          @focus=${this._handleFocus}
         />
         <span
-          part=${partNameMap({
+          part=${partMap({
             control: true,
             checked,
-            focused: this._kbFocus.focused,
+            focused: this._focusRingManager.focused,
           })}
         >
-          <span part=${partNameMap({ thumb: true, checked })}></span>
+          <span part=${partMap({ thumb: true, checked })}></span>
         </span>
         <span
-          .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
-          id=${this.labelId}
+          .hidden=${this._hideLabel}
+          part=${partMap({ label: true, checked })}
+          id=${this._labelId}
         >
           <slot></slot>
         </span>

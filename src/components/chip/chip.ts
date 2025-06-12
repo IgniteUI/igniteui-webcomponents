@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { themes } from '../../theming/theming-decorator.js';
@@ -7,6 +7,7 @@ import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
@@ -84,6 +85,18 @@ export default class IgcChipComponent extends EventEmitterMixin<
   @property({ reflect: true })
   public variant!: StyleVariant;
 
+  @queryAssignedElements({ slot: 'prefix' })
+  protected prefixes!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'start' })
+  protected contentStart!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'suffix' })
+  protected suffixes!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'end' })
+  protected contentEnd!: Array<HTMLElement>;
+
   constructor() {
     super();
 
@@ -115,12 +128,17 @@ export default class IgcChipComponent extends EventEmitterMixin<
     return html`
       <button
         part="base"
-        .disabled="${this.disabled}"
-        aria-selected="${this.selected ? 'true' : 'false'}"
-        aria-disabled="${this.disabled ? 'true' : 'false'}"
+        .disabled=${this.disabled}
+        aria-selected=${this.selected}
+        aria-disabled=${this.disabled}
         @click=${this.handleSelect}
       >
-        <span part="prefix">
+        <span
+          part="prefix"
+          .hidden=${isEmpty(this.prefixes) &&
+          isEmpty(this.contentStart) &&
+          !this.selected}
+        >
           ${this.selectable && this.selected
             ? html`<slot name="select">
                 <igc-icon name="selected" collection="default"></igc-icon>
@@ -130,7 +148,12 @@ export default class IgcChipComponent extends EventEmitterMixin<
           <slot name="prefix"></slot>
         </span>
         <slot></slot>
-        <span part="suffix">
+        <span
+          part="suffix"
+          .hidden=${isEmpty(this.suffixes) &&
+          isEmpty(this.contentEnd) &&
+          !this.removable}
+        >
           <slot name="end"></slot>
           <slot name="suffix"></slot>
           ${this.removable && !this.disabled

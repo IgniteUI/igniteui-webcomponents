@@ -1,7 +1,8 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
+import { asArray, findElementFromEventPath, isFunction } from '../util.js';
 
-import { findElementFromEventPath } from '../util.js';
+//#region Keys and modifiers
 
 /* Common keys */
 export const arrowLeft = 'ArrowLeft' as const;
@@ -23,9 +24,13 @@ export const ctrlKey = 'Ctrl' as const;
 export const metaKey = 'Meta' as const;
 export const shiftKey = 'Shift' as const;
 
+//#endregion
+
+//#region Types
+
 /* Types */
-export type KeyBindingHandler = (event: KeyboardEvent) => void;
-export type KeyBindingObserverCleanup = { unsubscribe: () => void };
+type KeyBindingHandler = (event: KeyboardEvent) => void;
+type KeyBindingObserverCleanup = { unsubscribe: () => void };
 
 /**
  * Whether the current event should be ignored by the controller.
@@ -35,10 +40,7 @@ export type KeyBindingObserverCleanup = { unsubscribe: () => void };
  *
  * When `true` is returned, the current event is ignored.
  */
-export type KeyBindingSkipCallback = (
-  node: Element,
-  event: KeyboardEvent
-) => boolean;
+type KeyBindingSkipCallback = (node: Element, event: KeyboardEvent) => boolean;
 
 /**
  * The event type which will trigger the bound handler.
@@ -48,13 +50,13 @@ export type KeyBindingSkipCallback = (
  * that after the handler is invoked the pressed state of the key is reset
  * in the controller.
  */
-export type KeyBindingTrigger = 'keydown' | 'keyup' | 'keydownRepeat';
+type KeyBindingTrigger = 'keydown' | 'keyup' | 'keydownRepeat';
 
 /**
  * Configuration object for the controller.
  * @ignore
  */
-export interface KeyBindingControllerOptions {
+interface KeyBindingControllerOptions {
   /**
    * By default, the controller listens for keypress events in the context of the host element.
    * If you pass a `ref`, you can limit the observation to a certain DOM part of the host scope.
@@ -97,7 +99,7 @@ export interface KeyBindingControllerOptions {
  * Configuration object for customizing the behavior of
  * the registered handler.
  */
-export interface KeyBindingOptions {
+interface KeyBindingOptions {
   /**
    * The event type(s) on which the handler will be invoked.
    *
@@ -118,75 +120,252 @@ interface KeyBinding {
   keys: string[];
   handler: KeyBindingHandler;
   options?: KeyBindingOptions;
-  modifiers?: string[];
+  modifiers: string[];
 }
 
-const Modifiers: Map<string, string> = new Map(
-  [altKey, ctrlKey, metaKey, shiftKey].map((key) => {
-    const mod = key.toLowerCase();
-    return key === ctrlKey ? ['control', mod] : [mod, mod];
-  })
-);
+//#endregion
 
-const defaultOptions: KeyBindingControllerOptions = {
-  skip: ['input', 'textarea', 'select'],
-};
+//#region Internal functions and constants
 
-function normalizeKeys(keys: string | string[]) {
-  return (Array.isArray(keys) ? keys : [keys]).map((key) => key.toLowerCase());
+const Modifiers: Map<string, string> = new Map([
+  [altKey.toLowerCase(), altKey.toLowerCase()],
+  [ctrlKey.toLowerCase(), ctrlKey.toLowerCase()],
+  [metaKey.toLowerCase(), metaKey.toLowerCase()],
+  [shiftKey.toLowerCase(), shiftKey.toLowerCase()],
+]);
+
+const ALL_MODIFIER_VALUES = Array.from(Modifiers.values()).sort();
+
+function normalizeKeys(keys: string | string[]): string[] {
+  return asArray(keys).map((key) => key.toLowerCase());
 }
 
-function isKeydown(event: Event) {
+function isKeydown(event: Event): boolean {
   return event.type === 'keydown';
 }
 
-function isKeyup(event: Event) {
+function isKeyup(event: Event): boolean {
   return event.type === 'keyup';
 }
 
-function isKeydownTrigger(triggers?: KeyBindingTrigger[]) {
+function isKeydownTrigger(triggers?: KeyBindingTrigger[]): boolean {
   return triggers
     ? triggers.includes('keydown') || isKeydownRepeatTrigger(triggers)
     : false;
 }
 
-function isKeyupTrigger(triggers?: KeyBindingTrigger[]) {
+function isKeyupTrigger(triggers?: KeyBindingTrigger[]): boolean {
   return triggers ? triggers.includes('keyup') : false;
 }
 
-function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]) {
+function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]): boolean {
   return triggers ? triggers.includes('keydownRepeat') : false;
 }
 
-export function parseKeys(keys: string | string[]) {
-  const parsed = normalizeKeys(keys);
-  return {
-    keys: parsed.filter((key) => !Modifiers.has(key)),
-    modifiers: parsed.filter((key) => Modifiers.has(key)),
-  };
+function createCombinationKey(keys: string[], modifiers: string[]): string {
+  const sortedKeys = keys.toSorted();
+  const sortedModifiers = ALL_MODIFIER_VALUES.filter((mod) =>
+    modifiers.includes(mod)
+  ).sort();
+
+  return sortedModifiers.concat(sortedKeys).join('+');
 }
 
-function createCombinationKey(keys: string[], modifiers: string[]) {
-  return Array.from(Modifiers.values())
-    .filter((mod) => modifiers.includes(mod))
-    .concat(keys)
-    .join('+');
-}
+//#endregion
 
 class KeyBindingController implements ReactiveController {
-  protected _host: ReactiveControllerHost & Element;
-  protected _ref?: Ref;
-  protected _observedElement?: Element;
-  protected _options?: KeyBindingControllerOptions;
-  private bindings = new Map<string, KeyBinding>();
-  private allowedKeys = new Set<string>();
-  private pressedKeys = new Set<string>();
+  //#region Private properties and state
 
-  protected get _element() {
+  private static readonly _defaultOptions: KeyBindingControllerOptions = {
+    skip: ['input', 'textarea', 'select'],
+  };
+
+  private readonly _host: ReactiveControllerHost & Element;
+  private readonly _ref?: Ref;
+
+  private readonly _bindings = new Map<string, KeyBinding>();
+  private readonly _allowedKeys = new Set<string>();
+  private readonly _pressedKeys = new Set<string>();
+
+  private readonly _options: KeyBindingControllerOptions;
+  private readonly _skipSelector: string | undefined;
+
+  private _observedElement?: Element;
+
+  private get _element(): Element {
     if (this._observedElement) {
       return this._observedElement;
     }
-    return this._ref ? this._ref.value : this._host;
+    return this._ref?.value || this._host;
+  }
+
+  //#endregion
+
+  constructor(
+    host: ReactiveControllerHost & Element,
+    options?: KeyBindingControllerOptions
+  ) {
+    this._host = host;
+    this._ref = options?.ref;
+    this._options = { ...KeyBindingController._defaultOptions, ...options };
+
+    if (Array.isArray(this._options.skip)) {
+      this._skipSelector = this._options.skip.join(',');
+    }
+
+    host.addController(this);
+  }
+
+  //#region Private API
+
+  /**
+   * Checks and executes any event modifiers that are present in the matched binding.
+   */
+  private _applyEventModifiers(
+    binding: KeyBinding,
+    event: KeyboardEvent
+  ): void {
+    if (binding.options?.preventDefault) {
+      event.preventDefault();
+    }
+
+    if (binding.options?.stopPropagation) {
+      event.stopPropagation();
+    }
+  }
+
+  private _bindingMatches(binding: KeyBinding, event: KeyboardEvent): boolean {
+    const triggers = binding.options?.triggers ?? ['keydown'];
+
+    if (isKeydown(event) && isKeydownTrigger(triggers)) {
+      return true;
+    }
+
+    if (isKeyup(event) && isKeyupTrigger(triggers)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private _shouldSkip(event: KeyboardEvent): boolean {
+    const skip = this._options?.skip;
+
+    if (!this._allowedKeys.has(event.key.toLowerCase())) {
+      return true;
+    }
+
+    if (!findElementFromEventPath((e) => e === this._element, event)) {
+      return true;
+    }
+
+    if (Array.isArray(skip)) {
+      if (!this._skipSelector) {
+        return false;
+      }
+
+      return Boolean(findElementFromEventPath(this._skipSelector, event));
+    }
+
+    if (isFunction(skip)) {
+      return skip.call(this._host, event.target as Element, event);
+    }
+
+    return false;
+  }
+
+  //#endregion
+
+  //#region Controller specific handlers
+
+  /** @internal */
+  public hostConnected(): void {
+    this._host.addEventListener('keyup', this);
+    this._host.addEventListener('keydown', this);
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._host.removeEventListener('keyup', this);
+    this._host.removeEventListener('keydown', this);
+  }
+
+  /** @internal */
+  public handleEvent(event: KeyboardEvent): void {
+    if (this._shouldSkip(event)) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+
+    if (!Modifiers.has(key)) {
+      this._pressedKeys.add(key);
+    }
+
+    const activeModifiers = ALL_MODIFIER_VALUES.filter(
+      (mod) => event[`${mod}Key` as keyof KeyboardEvent]
+    );
+
+    const combination = createCombinationKey(
+      Array.from(this._pressedKeys),
+      activeModifiers
+    );
+
+    const binding = this._bindings.get(combination);
+
+    if (binding && this._bindingMatches(binding, event)) {
+      this._applyEventModifiers(binding, event);
+      binding.handler.call(this._host, event);
+
+      if (isKeydownRepeatTrigger(binding.options?.triggers)) {
+        this._pressedKeys.delete(key);
+      }
+    }
+
+    if (isKeyup(event) && !Modifiers.has(key)) {
+      this._pressedKeys.delete(key);
+    }
+  }
+
+  //#endregion
+
+  //#region Public API
+
+  /**
+   * Registers a keybinding handler.
+   */
+  public set(
+    key: string | string[],
+    handler: KeyBindingHandler,
+    bindingOptions?: KeyBindingOptions
+  ) {
+    const { keys, modifiers } = parseKeys(key);
+    const combination = createCombinationKey(keys, modifiers);
+    const options = { ...this._options?.bindingDefaults, ...bindingOptions };
+
+    for (const each of [...keys, ...modifiers]) {
+      this._allowedKeys.add(each);
+    }
+
+    this._bindings.set(combination, { keys, handler, options, modifiers });
+
+    return this;
+  }
+
+  /**
+   * Register a handler function which is called when the target receives a key
+   * which "activates" it.
+   *
+   * In the browser context this is usually either an Enter and Space bar keypress.
+   */
+  public setActivateHandler(
+    handler: KeyBindingHandler,
+    options?: KeyBindingOptions
+  ) {
+    this.set(enterKey, handler, options);
+    this.set(spaceBar, handler, options);
+
+    return this;
   }
 
   /**
@@ -210,148 +389,16 @@ class KeyBindingController implements ReactiveController {
     };
   }
 
-  constructor(
-    host: ReactiveControllerHost & Element,
-    options?: KeyBindingControllerOptions
-  ) {
-    this._host = host;
-    this._ref = options?.ref;
-    this._options = { ...defaultOptions, ...options };
-    host.addController(this);
-  }
+  //#endregion
+}
 
-  /**
-   * Checks and executes any event modifiers that are present in the matched binding.
-   */
-  private eventModifiersMatch(binding: KeyBinding, event: KeyboardEvent) {
-    if (binding.options?.preventDefault) {
-      event.preventDefault();
-    }
-
-    if (binding.options?.stopPropagation) {
-      event.stopPropagation();
-    }
-  }
-
-  private bindingMatches(binding: KeyBinding, event: KeyboardEvent) {
-    const triggers = binding.options?.triggers ?? ['keydown'];
-
-    if (isKeydown(event) && isKeydownTrigger(triggers)) {
-      return true;
-    }
-
-    if (isKeyup(event) && isKeyupTrigger(triggers)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private shouldSkip(event: KeyboardEvent) {
-    const skip = this._options?.skip;
-
-    if (!this.allowedKeys.has(event.key.toLowerCase())) {
-      return true;
-    }
-
-    if (!findElementFromEventPath((e) => e === this._element, event)) {
-      return true;
-    }
-
-    if (!skip) {
-      return false;
-    }
-
-    return Array.isArray(skip)
-      ? findElementFromEventPath(skip.join(), event)
-      : skip.call(this._host, event.target as Element, event);
-  }
-
-  public handleEvent(event: KeyboardEvent) {
-    if (this.shouldSkip(event)) {
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-    if (!Modifiers.has(key)) {
-      this.pressedKeys.add(key);
-    }
-
-    const pendingKeys = Array.from(this.pressedKeys);
-    const modifiers = Array.from(Modifiers.values()).filter(
-      (mod) => event[`${mod}Key` as keyof KeyboardEvent]
-    );
-
-    const binding = this.bindings.get(
-      createCombinationKey(pendingKeys, modifiers)
-    );
-
-    if (binding && this.bindingMatches(binding, event)) {
-      this.eventModifiersMatch(binding, event);
-      binding.handler.call(this._host, event);
-
-      if (isKeydownRepeatTrigger(binding.options?.triggers)) {
-        this.pressedKeys.delete(key);
-      }
-    }
-
-    if (isKeyup(event) && !Modifiers.has(key)) {
-      this.pressedKeys.delete(key);
-    }
-  }
-
-  /**
-   * Registers a keybinding handler.
-   */
-  public set(
-    key: string | string[],
-    handler: KeyBindingHandler,
-    options?: KeyBindingOptions
-  ) {
-    const { keys, modifiers } = parseKeys(key);
-    const combination = createCombinationKey(keys, modifiers);
-    const _options = { ...this._options?.bindingDefaults, ...options };
-
-    for (const key of [...keys, ...modifiers]) {
-      this.allowedKeys.add(key);
-    }
-
-    this.bindings.set(combination, {
-      keys,
-      handler,
-      options: _options,
-      modifiers,
-    });
-
-    return this;
-  }
-
-  /**
-   * Register a handler function which is called when the target receives a key
-   * which "activates" it.
-   *
-   * In the browser context this is usually either an Enter and/or Space keypress.
-   */
-  public setActivateHandler(
-    handler: KeyBindingHandler,
-    options?: KeyBindingOptions
-  ) {
-    for (const key of [enterKey, spaceBar]) {
-      this.set(key, handler, options);
-    }
-
-    return this;
-  }
-
-  public hostConnected(): void {
-    this._host.addEventListener('keyup', this);
-    this._host.addEventListener('keydown', this);
-  }
-
-  public hostDisconnected(): void {
-    this._host.removeEventListener('keyup', this);
-    this._host.removeEventListener('keydown', this);
-  }
+/** @internal */
+export function parseKeys(keys: string | string[]) {
+  const normalizedKeys = normalizeKeys(keys);
+  return {
+    keys: normalizedKeys.filter((key) => !Modifiers.has(key)),
+    modifiers: normalizedKeys.filter((key) => Modifiers.has(key)),
+  };
 }
 
 /**
@@ -361,6 +408,16 @@ class KeyBindingController implements ReactiveController {
 export function addKeybindings(
   element: ReactiveControllerHost & Element,
   options?: KeyBindingControllerOptions
-) {
+): KeyBindingController {
   return new KeyBindingController(element, options);
 }
+
+export type {
+  KeyBindingHandler,
+  KeyBindingObserverCleanup,
+  KeyBindingSkipCallback,
+  KeyBindingTrigger,
+  KeyBindingControllerOptions,
+  KeyBindingOptions,
+  KeyBindingController,
+};

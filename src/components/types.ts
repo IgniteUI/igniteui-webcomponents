@@ -29,12 +29,12 @@ export type DividerType = 'solid' | 'dashed';
 export type ExpansionPanelIndicatorPosition = 'start' | 'end' | 'none';
 export type IconButtonVariant = 'contained' | 'flat' | 'outlined';
 export type InputType =
+  | 'text'
   | 'email'
   | 'number'
   | 'password'
   | 'search'
   | 'tel'
-  | 'text'
   | 'url';
 export type LinearProgressLabelAlign =
   | 'top-start'
@@ -49,7 +49,7 @@ export type SliderTickLabelRotation = 0 | 90 | -90;
 export type SliderTickOrientation = 'end' | 'mirror' | 'start';
 export type StepperOrientation = 'horizontal' | 'vertical';
 export type StepperStepType = 'full' | 'indicator' | 'title';
-export type StepperTitlePosition = 'bottom' | 'top' | 'end' | 'start';
+export type StepperTitlePosition = 'auto' | 'bottom' | 'top' | 'end' | 'start';
 export type StepperVerticalAnimation = 'grow' | 'fade' | 'none';
 export type TabsActivation = 'auto' | 'manual';
 export type TabsAlignment = 'start' | 'end' | 'center' | 'justify';

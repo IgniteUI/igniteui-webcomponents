@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+[part='ranges'] {
+    max-height: #{sizable(rem(84px), rem(96px), rem(108px))};
+}

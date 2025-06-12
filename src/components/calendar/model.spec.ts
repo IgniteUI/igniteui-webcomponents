@@ -127,20 +127,15 @@ describe('Calendar day model', () => {
       const nonLeapFebruary = leapFebruary.set({ year: 2023 });
       let { year, month, date } = nonLeapFebruary;
 
-      // Shift to first day of next month -> 2024/03/01
-      expect([year, month, date]).to.eql([2023, 2, 1]);
+      // Shift to last day of the current month -> 2023-02-28
+      expect([year, month, date]).to.eql([2023, 1, 28]);
 
-      const lastDayOfJuly = new CalendarDay({
-        year: 2024,
-        month: 6,
-        date: 31,
-      });
-
+      const lastDayOfJuly = new CalendarDay({ year: 2024, month: 6, date: 31 });
       const lastDayOfApril = lastDayOfJuly.set({ month: 3 });
       ({ year, month, date } = lastDayOfApril);
 
-      // April does not have 31 days so shift to first day of May
-      expect([year, month, date]).to.eql([2024, 4, 1]);
+      // April does not have 31 days so clamp to the last day of April
+      expect([year, month, date]).to.eql([2024, 3, 30]);
     });
   });
 

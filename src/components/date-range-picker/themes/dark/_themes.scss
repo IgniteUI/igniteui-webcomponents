@@ -1,0 +1,38 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/date-range-picker' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/input-group' as input-theme;
+@use 'components/calendar/themes/dark/themes' as calendar-theme;
+
+$material: map.merge(digest-schema($dark-material-date-range-picker), digest-schema(input-theme.$dark-material-input-group));
+$bootstrap: map.merge(digest-schema($dark-bootstrap-date-range-picker), digest-schema(input-theme.$dark-bootstrap-input-group));
+$fluent: map.merge(digest-schema($dark-fluent-date-range-picker), digest-schema(input-theme.$dark-fluent-input-group));
+$indigo: map.merge(digest-schema($dark-indigo-date-range-picker), digest-schema(input-theme.$dark-indigo-input-group));
+$material: map.merge($material, (
+    default-size: map.get(calendar-theme.$material, 'default-size'),
+    border-radius: map.get(calendar-theme.$material, 'border-radius'),
+    border-color: map.get(calendar-theme.$material, 'border-color'),
+    content-background: map.get(calendar-theme.$material, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$material, 'actions-divider-color'),
+));
+$bootstrap: map.merge($bootstrap, (
+    default-size: map.get(calendar-theme.$bootstrap, 'default-size'),
+    border-radius: map.get(calendar-theme.$bootstrap, 'border-radius'),
+    border-color: map.get(calendar-theme.$bootstrap, 'border-color'),
+    content-background: map.get(calendar-theme.$bootstrap, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$bootstrap, 'actions-divider-color'),
+));
+$fluent: map.merge($fluent, (
+    default-size: map.get(calendar-theme.$fluent, 'default-size'),
+    border-radius: map.get(calendar-theme.$fluent, 'border-radius'),
+    border-color: map.get(calendar-theme.$fluent, 'border-color'),
+    content-background: map.get(calendar-theme.$fluent, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$fluent, 'actions-divider-color'),
+));
+$indigo: map.merge($indigo, (
+    default-size: map.get(calendar-theme.$indigo, 'default-size'),
+    border-radius: map.get(calendar-theme.$indigo, 'border-radius'),
+    border-color: map.get(calendar-theme.$indigo, 'border-color'),
+    content-background: map.get(calendar-theme.$indigo, 'content-background'),
+    actions-divider-color: map.get(calendar-theme.$indigo, 'actions-divider-color'),
+));

@@ -31,13 +31,17 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
 } from '../common/mixins/forms/form-value.js';
-import { createCounter, findElementFromEventPath } from '../common/util.js';
+import {
+  createCounter,
+  findElementFromEventPath,
+  isEmpty,
+} from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import type { DatePart } from '../date-time-input/date-util.js';
+import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -63,8 +67,8 @@ export interface IgcDatePickerComponentEventMap {
   igcInput: CustomEvent<Date>;
 }
 
-const formats = new Set(['short', 'medium', 'long', 'full']);
-
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * igc-date-picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
@@ -159,15 +163,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     delegatesFocus: true,
   };
 
-  private static readonly increment = createCounter();
-  protected inputId = `date-picker-${IgcDatePickerComponent.increment()}`;
-
-  protected override get __validators() {
-    return datePickerValidators;
-  }
-
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcDatePickerComponent,
       IgcCalendarComponent,
@@ -180,6 +177,15 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     );
   }
 
+  //#region Private properties and state
+
+  private static readonly _increment = createCounter();
+  protected _inputId = `date-picker-${IgcDatePickerComponent._increment()}`;
+
+  protected override get __validators() {
+    return datePickerValidators;
+  }
+
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -188,33 +194,41 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _displayFormat?: string;
   private _inputFormat?: string;
 
-  private get isDropDown() {
-    return this.mode === 'dropdown';
-  }
+  protected override readonly _formValue: FormValueOf<Date | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultDateTimeTransformers,
+    });
 
   @query(IgcDateTimeInputComponent.tagName)
-  private _input!: IgcDateTimeInputComponent;
+  private readonly _input!: IgcDateTimeInputComponent;
 
   @query(IgcCalendarComponent.tagName)
-  private _calendar!: IgcCalendarComponent;
+  private readonly _calendar!: IgcCalendarComponent;
 
   @queryAssignedElements({ slot: 'prefix' })
-  private prefixes!: Array<HTMLElement>;
+  private readonly _prefixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'suffix' })
-  private suffixes!: Array<HTMLElement>;
+  private readonly _suffixes!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'actions' })
-  private actions!: Array<HTMLElement>;
+  private readonly _actions!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'header-date' })
-  private headerDateSlotItems!: Array<HTMLElement>;
+  private readonly _headerSlotItems!: HTMLElement[];
+
+  private get _isDropDown(): boolean {
+    return this.mode === 'dropdown';
+  }
 
   protected get _isMaterialTheme(): boolean {
     return getThemeController(this)?.theme === 'material';
   }
 
-  protected override _formValue: FormValue<Date | null>;
+  //#endregion
+
+  //#region Public properties and attributes
 
   /**
    * Sets the state of the datepicker dropdown.
@@ -286,7 +300,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: convertToDate })
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
-    this.setDateConstraints();
+    this._setDateConstraints();
     this._updateValidity();
   }
 
@@ -301,7 +315,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: convertToDate })
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
-    this.setDateConstraints();
+    this._setDateConstraints();
     this._updateValidity();
   }
 
@@ -341,7 +355,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ attribute: false })
   public set disabledDates(dates: DateRangeDescriptor[]) {
     this._disabledDates = dates;
-    this.setDateConstraints();
+    this._setDateConstraints();
     this._updateValidity();
   }
 
@@ -427,45 +441,176 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public resourceStrings: IgcCalendarResourceStrings =
     IgcCalendarResourceStringEN;
 
-  @watch('open')
-  protected openChange() {
-    this._rootClickController.update();
-  }
-
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
 
+  //#endregion
+
+  //#region Watchers
+
+  @watch('open')
+  protected _openChange(): void {
+    this._rootClickController.update();
+  }
+
+  //#endregion
+
+  //#region Life-cycle hooks
+
   constructor() {
     super();
 
-    this._formValue = createFormValueState<Date | null>(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
+    this.addEventListener('focusin', this._handleFocusIn);
+    this.addEventListener('focusout', this._handleFocusOut);
 
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
-
-    this._rootClickController.update({ hideCallback: this.handleClosing });
+    this._rootClickController.update({ hideCallback: this._handleClosing });
 
     addKeybindings(this, {
-      skip: () => this.disabled,
+      skip: () => this.disabled || this.readOnly,
       bindingDefaults: { preventDefault: true },
     })
       .set([altKey, arrowDown], this.handleAnchorClick)
-      .set([altKey, arrowUp], this.onEscapeKey)
-      .set(escapeKey, this.onEscapeKey);
+      .set([altKey, arrowUp], this._onEscapeKey)
+      .set(escapeKey, this._onEscapeKey);
   }
 
-  protected override createRenderRoot() {
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => this.requestUpdate());
     return root;
   }
 
+  //#endregion
+
+  //#region Private methods
+
+  private _setDateConstraints(): void {
+    const dates: DateRangeDescriptor[] = [];
+    if (this._min) {
+      dates.push({
+        type: DateRangeType.Before,
+        dateRange: [this._min],
+      });
+    }
+    if (this._max) {
+      dates.push({
+        type: DateRangeType.After,
+        dateRange: [this._max],
+      });
+    }
+    if (!isEmpty(this._disabledDates ?? [])) {
+      dates.push(...this.disabledDates);
+    }
+
+    this._dateConstraints = isEmpty(dates) ? undefined : dates;
+  }
+
+  private async _shouldCloseCalendarDropdown(): Promise<void> {
+    if (!this.keepOpenOnSelect && (await this._hide(true))) {
+      this._input.focus();
+      this._input.select();
+    }
+  }
+
+  //#endregion
+
+  //#region Event handlers
+
+  protected async _onEscapeKey(): Promise<void> {
+    if (await this._hide(true)) {
+      this._input.focus();
+    }
+  }
+
+  protected _handleFocusIn(): void {
+    this._dirty = true;
+  }
+
+  protected _handleFocusOut({ relatedTarget }: FocusEvent): void {
+    if (!this.contains(relatedTarget as Node)) {
+      this.checkValidity();
+    }
+  }
+
+  protected _handlerCalendarIconSlotPointerDown(event: PointerEvent) {
+    // This is where the delegateFocus of the underlying input is a chore.
+    // If we have a required validator we don't want the input to enter an invalid
+    // state right off the bat when opening the picker which will happen since focus is transferred to the calendar element.
+    // So we call preventDefault on the event in order to not focus the input and trigger its validation logic on blur.
+    event.preventDefault();
+  }
+
+  protected _handleInputClick(event: Event): void {
+    if (findElementFromEventPath('input', event)) {
+      // Open only if the click originates from the underlying input
+      this.handleAnchorClick();
+    }
+  }
+
+  protected override async handleAnchorClick(): Promise<void> {
+    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
+
+    super.handleAnchorClick();
+    await this.updateComplete;
+    this._calendar[focusActiveDate]();
+  }
+
+  protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
+    event.stopPropagation();
+    this.value = (event.target as IgcDateTimeInputComponent).value!;
+    this.emitEvent('igcChange', { detail: this.value });
+  }
+
+  protected async _handleCalendarChangeEvent(
+    event: CustomEvent<Date>
+  ): Promise<void> {
+    event.stopPropagation();
+
+    if (this.readOnly) {
+      // Wait till the calendar finishes updating and then restore the current value from the date-picker.
+      await this._calendar.updateComplete;
+      this._calendar.value = this.value;
+      return;
+    }
+
+    this.value = (event.target as IgcCalendarComponent).value!;
+    this.emitEvent('igcChange', { detail: this.value });
+
+    this._shouldCloseCalendarDropdown();
+  }
+
+  protected _handleInputEvent(event: CustomEvent<Date>): void {
+    event.stopPropagation();
+
+    if (this.nonEditable) {
+      event.preventDefault();
+      return;
+    }
+
+    this.value = (event.target as IgcDateTimeInputComponent).value!;
+    this.emitEvent('igcInput', { detail: this.value });
+  }
+
+  protected _handleClosing(): void {
+    this._hide(true);
+  }
+
+  protected _handleDialogClosing(event: Event): void {
+    event.stopPropagation();
+    this._hide(true);
+  }
+
+  protected _handleDialogClosed(event: Event): void {
+    event.stopPropagation();
+  }
+
+  //#endregion
+
+  //#region Public methods
+
   /** Clears the input part of the component of any user input */
-  public clear() {
+  public clear(): void {
     this.value = null;
     this._input?.clear();
   }
@@ -505,125 +650,18 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this.value = this._input.value;
   }
 
-  protected async onEscapeKey() {
-    if (await this._hide(true)) {
-      this._input.focus();
-    }
-  }
+  //#endregion
 
-  protected handleFocusIn() {
-    this._dirty = true;
-  }
+  //#region Render methods
 
-  protected handleFocusOut({ relatedTarget }: FocusEvent) {
-    if (!this.contains(relatedTarget as Node)) {
-      this.checkValidity();
-    }
-  }
-
-  protected handlerCalendarIconSlotPointerDown(event: PointerEvent) {
-    // This is where the delegateFocus of the underlying input is a chore.
-    // If we have a required validator we don't want the input to enter an invalid
-    // state right off the bat when opening the picker which will happen since focus is transferred to the calendar element.
-    // So we call preventDefault on the event in order to not focus the input and trigger its validation logic on blur.
-    event.preventDefault();
-  }
-
-  protected handleInputClick(event: Event) {
-    if (findElementFromEventPath('input', event)) {
-      // Open only if the click originates from the underlying input
-      this.handleAnchorClick();
-    }
-  }
-
-  protected override async handleAnchorClick() {
-    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
-
-    super.handleAnchorClick();
-    await this.updateComplete;
-    this._calendar[focusActiveDate]();
-  }
-
-  private async _shouldCloseCalendarDropdown() {
-    if (!this.keepOpenOnSelect && (await this._hide(true))) {
-      this._input.focus();
-      this._input.select();
-    }
-  }
-
-  protected handleInputChangeEvent(event: CustomEvent<Date>) {
-    event.stopPropagation();
-    this.value = (event.target as IgcDateTimeInputComponent).value!;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  protected async handleCalendarChangeEvent(event: CustomEvent<Date>) {
-    event.stopPropagation();
-
-    if (this.readOnly) {
-      // Wait till the calendar finishes updating and then restore the current value from the date-picker.
-      await this._calendar.updateComplete;
-      this._calendar.value = this.value;
-      return;
-    }
-
-    this.value = (event.target as IgcCalendarComponent).value!;
-    this.emitEvent('igcChange', { detail: this.value });
-
-    this._shouldCloseCalendarDropdown();
-  }
-
-  protected handleInputEvent(event: CustomEvent<Date>) {
-    event.stopPropagation();
-
-    if (this.nonEditable) {
-      event.preventDefault();
-      return;
-    }
-
-    this.value = (event.target as IgcDateTimeInputComponent).value!;
-    this.emitEvent('igcInput', { detail: this.value });
-  }
-
-  protected handleClosing() {
-    this._hide(true);
-  }
-
-  protected handleDialogClosing(event: Event) {
-    event.stopPropagation();
-    this._hide(true);
-  }
-
-  protected handleDialogClosed(event: Event) {
-    event.stopPropagation();
-  }
-
-  private setDateConstraints() {
-    const dates: DateRangeDescriptor[] = [];
-    if (this._min) {
-      dates.push({
-        type: DateRangeType.Before,
-        dateRange: [this._min],
-      });
-    }
-    if (this._max) {
-      dates.push({
-        type: DateRangeType.After,
-        dateRange: [this._max],
-      });
-    }
-    if (this._disabledDates?.length) {
-      dates.push(...this.disabledDates);
-    }
-
-    this._dateConstraints = dates.length ? dates : undefined;
-  }
-
-  private renderClearIcon() {
-    return !this.value
-      ? nothing
-      : html`
-          <span slot="suffix" part="clear-icon" @click=${this.clear}>
+  private _renderClearIcon() {
+    return this.value
+      ? html`
+          <span
+            slot="suffix"
+            part="clear-icon"
+            @click=${this.readOnly ? nothing : this.clear}
+          >
             <slot name="clear-icon">
               <igc-icon
                 name="input_clear"
@@ -632,10 +670,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
               ></igc-icon>
             </slot>
           </span>
-        `;
+        `
+      : nothing;
   }
 
-  private renderCalendarIcon() {
+  private _renderCalendarIcon() {
     const defaultIcon = html`
       <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
     `;
@@ -646,20 +685,20 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <span
         slot="prefix"
         part=${state}
-        @pointerdown=${this.handlerCalendarIconSlotPointerDown}
-        @click=${this.handleAnchorClick}
+        @pointerdown=${this._handlerCalendarIconSlotPointerDown}
+        @click=${this.readOnly ? nothing : this.handleAnchorClick}
       >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
     `;
   }
 
-  private renderCalendarSlots() {
-    if (this.isDropDown) {
+  private _renderCalendarSlots() {
+    if (this._isDropDown) {
       return nothing;
     }
 
-    const hasHeaderDate = this.headerDateSlotItems.length ? 'header-date' : '';
+    const hasHeaderDate = isEmpty(this._headerSlotItems) ? '' : 'header-date';
 
     return html`
       <slot name="title" slot="title">
@@ -669,8 +708,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     `;
   }
 
-  private renderCalendar(id: string) {
-    const hideHeader = this.isDropDown ? true : this.hideHeader;
+  private _renderCalendar(id: string) {
+    const hideHeader = this._isDropDown ? true : this.hideHeader;
 
     return html`
       <igc-calendar
@@ -689,39 +728,36 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .disabledDates=${this._dateConstraints!}
         .specialDates=${this.specialDates}
         .weekStart=${this.weekStart}
-        @igcChange=${this.handleCalendarChangeEvent}
+        @igcChange=${this._handleCalendarChangeEvent}
         exportparts="header, header-title, header-date, content: calendar-content, navigation, months-navigation,
         years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
         days-view, months-view, years-view, days-row, label: calendar-label, week-number, week-number-inner, date,
         date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
         month, month-inner, year, year-inner, selected, current"
       >
-        ${this.renderCalendarSlots()}
+        ${this._renderCalendarSlots()}
       </igc-calendar>
     `;
   }
 
-  protected renderActions() {
-    const slot = this.isDropDown || !this.actions.length ? undefined : 'footer';
+  protected _renderActions() {
+    const hasActions = !isEmpty(this._actions);
+    const slot = this._isDropDown || hasActions ? undefined : 'footer';
 
     // If in dialog mode use the dialog footer slot
     return html`
-      <div
-        part="actions"
-        ?hidden=${!this.actions.length}
-        slot=${ifDefined(slot)}
-      >
+      <div part="actions" ?hidden=${!hasActions} slot=${ifDefined(slot)}>
         <slot name="actions"></slot>
       </div>
     `;
   }
 
-  protected renderPicker(id: string) {
-    return this.isDropDown
+  protected _renderPicker(id: string) {
+    return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor=${id} flip shift>
             <igc-focus-trap ?disabled=${!this.open || this.disabled}>
-              ${this.renderCalendar(id)}${this.renderActions()}
+              ${this._renderCalendar(id)}${this._renderActions()}
             </igc-focus-trap>
           </igc-popover>
         `
@@ -732,37 +768,45 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
-            @igcClosing=${this.handleDialogClosing}
-            @igcClosed=${this.handleDialogClosed}
+            @igcClosing=${this._handleDialogClosing}
+            @igcClosed=${this._handleDialogClosed}
             exportparts="base: dialog-base, title, footer, overlay"
           >
-            ${this.renderCalendar(id)}${this.renderActions()}
+            ${this._renderCalendar(id)}${this._renderActions()}
           </igc-dialog>
         `;
   }
 
-  private renderLabel(id: string) {
+  private _renderLabel(id: string) {
+    const isDisabled = this._isDropDown || this.readOnly;
+
     return this.label
-      ? html`<label
-          part="label"
-          for=${id}
-          @click=${this.isDropDown ? nothing : this.handleAnchorClick}
-          >${this.label}</label
-        >`
+      ? html`
+          <label
+            part="label"
+            for=${id}
+            @click=${isDisabled ? nothing : this.handleAnchorClick}
+          >
+            ${this.label}
+          </label>
+        `
       : nothing;
   }
 
-  private renderHelperText(): TemplateResult {
+  private _renderHelperText(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
   }
 
-  protected renderInput(id: string) {
-    const format = formats.has(this._displayFormat!)
-      ? `${this._displayFormat}Date`
-      : this._displayFormat;
+  protected _renderInput(id: string) {
+    const format = DateTimeUtil.predefinedToDateDisplayFormat(
+      this._displayFormat!
+    );
 
     // Dialog mode is always readonly, rest depends on configuration
-    const readOnly = !this.isDropDown || this.readOnly || this.nonEditable;
+    const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
+
+    const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
+    const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
 
     return html`
       <igc-date-time-input
@@ -782,33 +826,32 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .min=${this.min}
         .max=${this.max}
         .invalid=${live(this.invalid)}
-        @igcChange=${this.handleInputChangeEvent}
-        @igcInput=${this.handleInputEvent}
-        @click=${this.isDropDown ? nothing : this.handleInputClick}
+        @igcChange=${this._handleInputChangeEvent}
+        @igcInput=${this._handleInputEvent}
+        @click=${this._isDropDown || this.readOnly
+          ? nothing
+          : this._handleInputClick}
         exportparts="input, label, prefix, suffix"
       >
-        ${this.renderCalendarIcon()}
-        <slot
-          name="prefix"
-          slot=${ifDefined(!this.prefixes.length ? undefined : 'prefix')}
-        ></slot>
-        ${this.renderClearIcon()}
-        <slot
-          name="suffix"
-          slot=${ifDefined(!this.suffixes.length ? undefined : 'suffix')}
-        ></slot>
+        ${this._renderCalendarIcon()}
+        <slot name="prefix" slot=${ifDefined(prefix)}></slot>
+        ${this._renderClearIcon()}
+        <slot name="suffix" slot=${ifDefined(suffix)}></slot>
       </igc-date-time-input>
     `;
   }
 
   protected override render() {
-    const id = this.id || this.inputId;
+    const id = this.id || this._inputId;
 
     return html`
-      ${!this._isMaterialTheme ? this.renderLabel(id) : nothing}
-      ${this.renderInput(id)}${this.renderPicker(id)}${this.renderHelperText()}
+      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
+      ${this._renderInput(id)} ${this._renderPicker(id)}
+      ${this._renderHelperText()}
     `;
   }
+
+  //#endregion
 }
 
 declare global {

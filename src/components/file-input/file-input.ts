@@ -6,17 +6,19 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultFileListTransformer,
 } from '../common/mixins/forms/form-value.js';
-import { isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { isEmpty } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
+/* blazorSuppress */
 /**
  * @element igc-file-input
  *
@@ -60,7 +62,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return fileValidators;
   }
 
-  protected override _formValue: FormValue<FileList | null>;
+  protected override readonly _formValue: FormValueOf<FileList | null> =
+    createFormValueState(this, {
+      initialValue: null,
+      transformers: defaultFileListTransformer,
+    });
 
   @state()
   private _hasActivation = false;
@@ -122,17 +128,9 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, attribute: false, noAccessor: true })
   public override readonly readOnly = false;
 
-  /** Returns the selected files when input type is 'file', otherwise returns null. */
+  /** Returns the selected files, if any; otherwise returns null. */
   public get files(): FileList | null {
     return this.input?.files ?? null;
-  }
-
-  constructor() {
-    super();
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultFileListTransformer,
-    });
   }
 
   protected override _restoreDefaultValue(): void {
@@ -192,8 +190,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
           </igc-button>
         </div>
         <div part="file-names">
-          ${this._fileNames ??
-          html`<slot name="file-missing-text">${emptyText}</slot>`}
+          <span>
+            ${this._fileNames ??
+            html`<slot name="file-missing-text">${emptyText}</slot>`}
+          </span>
         </div>
       </div>
     `;
@@ -203,7 +203,7 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return html`
       <input
         id=${this.inputId}
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         type="file"
         ?disabled=${this.disabled}
         ?required=${this.required}

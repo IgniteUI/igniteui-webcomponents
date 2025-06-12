@@ -14,16 +14,16 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
   asArray,
   equal,
   findElementFromEventPath,
   first,
   isEmpty,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -142,7 +142,15 @@ export default class IgcComboComponent<
   /** The combo virtualized dropdown list. */
   private _listRef = createRef<IgcComboListComponent>();
 
-  protected override _formValue: FormValue<ComboValue<T>[]>;
+  protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
+    createFormValueState<ComboValue<T>[]>(this, {
+      initialValue: [],
+      transformers: {
+        setValue: asArray,
+        setDefaultValue: asArray,
+      },
+    });
+
   private _data: T[] = [];
 
   private _valueKey?: Keys<T>;
@@ -469,14 +477,6 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    this._formValue = createFormValueState<ComboValue<T>[]>(this, {
-      initialValue: [],
-      transformers: {
-        setValue: asArray,
-        setDefaultValue: asArray,
-      },
-    });
-
     this.addEventListener('blur', this._handleBlur);
   }
 
@@ -744,7 +744,7 @@ export default class IgcComboComponent<
     return html`
       <igc-combo-item
         id=${id}
-        part=${partNameMap({ item: true, selected, active })}
+        part=${partMap({ item: true, selected, active })}
         aria-setsize=${this._state.dataState.length}
         aria-posinset=${position}
         exportparts="checkbox, checkbox-indicator, checked"
@@ -833,7 +833,7 @@ export default class IgcComboComponent<
     return html`
       <span
         slot="suffix"
-        part=${partNameMap({
+        part=${partMap({
           'toggle-icon': true,
           filled: !isEmpty(this.value),
         })}
@@ -924,7 +924,7 @@ export default class IgcComboComponent<
             slot=${this.caseSensitiveIcon && 'suffix'}
             name="case_sensitive"
             collection="default"
-            part=${partNameMap({
+            part=${partMap({
               'case-icon': true,
               active: this.filteringOptions.caseSensitive ?? false,
             })}

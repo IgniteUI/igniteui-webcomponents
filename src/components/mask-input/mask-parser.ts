@@ -1,23 +1,48 @@
+/** Options for the {@link MaskParser} */
 interface MaskOptions {
+  /**
+   * The mask format string (e.g., '00/00/0000' for dates, 'AAA-000' for custom IDs).
+   *
+   * Supported flags: a, A, C, L, 0, 9, #, &, ?.
+   *
+   * Use `'\'` to escape a flag character if it should be treated as a literal.
+   * @default 'CCCCCCCCCC'
+   */
   format: string;
+
+  /**
+   * The character used to prompt for input in unfilled mask positions.
+   * Must be a single character.
+   * @default '_'
+   */
   promptCharacter: string;
 }
 
-const FLAGS = new Set('aACL09#&?');
-const REGEX = new Map([
-  ['C', /(?!^$)/u], // Non-empty
-  ['&', /[^\p{Separator}]/u], // Whitespace
-  ['a', /[\p{Letter}\d\p{Separator}]/u], // Alphanumeric & whitespace
-  ['A', /[\p{Letter}\d]/u], // Alphanumeric
-  ['?', /[\p{Letter}\p{Separator}]/u], // Alpha & whitespace
-  ['L', /\p{Letter}/u], // Alpha
-  ['0', /\d/], // Numeric
-  ['9', /[\d\p{Separator}]/u], // Numeric & whitespace
-  ['#', /[\d\-+]/], // Numeric and sign
-]);
-const REQUIRED = new Set('0#LA&');
+/**
+ * Result type for the replace operation, containing the new masked value and the
+ * ideal cursor position.
+ */
+type MaskReplaceResult = {
+  value: string;
+  end: number;
+};
 
-const replaceIMENumbers = (string: string) => {
+const MASK_FLAGS = new Set('aACL09#&?');
+const MASK_REQUIRED_FLAGS = new Set('0#LA&');
+
+const MASK_PATTERNS = new Map([
+  ['C', /(?!^$)/u], // Non-empty (any character that is not an empty string)
+  ['&', /[^\p{Separator}]/u], // Any non-whitespace character (Unicode-aware)
+  ['a', /[\p{Letter}\p{Number}\p{Separator}]/u], // Alphanumeric and whitespace (Unicode-aware)
+  ['A', /[\p{Letter}\p{Number}]/u], // Alphanumeric (Unicode-aware)
+  ['?', /[\p{Letter}\p{Separator}]/u], // Alpha and whitespace (Unicode-aware)
+  ['L', /\p{Letter}/u], // Alphabetic (Unicode-aware)
+  ['0', /\p{Number}/u], // Numeric (0-9) (Unicode-aware)
+  ['9', /[\p{Number}\p{Separator}]/u], // Numeric and whitespace (Unicode-aware)
+  ['#', /[\p{Number}\-+]/u], // Numeric and sign characters (+, -)
+]);
+
+function replaceIMENumbers(string: string): string {
   return string.replace(
     /[０１２３４５６７８９]/g,
     (num) =>
@@ -34,220 +59,329 @@ const replaceIMENumbers = (string: string) => {
         '０': '0',
       })[num] as string
   );
+}
+
+function validate(char: string, flag: string): boolean {
+  return MASK_PATTERNS.get(flag)?.test(char) ?? false;
+}
+
+/** Default mask parser options */
+const MaskDefaultOptions: MaskOptions = {
+  format: 'CCCCCCCCCC',
+  promptCharacter: '_',
 };
 
+/**
+ * A class for parsing and applying masks to strings, typically for input fields.
+ * It handles mask definitions, literals, character validation, and cursor positioning.
+ */
 export class MaskParser {
-  protected options!: MaskOptions;
+  protected readonly _options: MaskOptions;
 
-  constructor(
-    options: MaskOptions = { format: 'CCCCCCCCCC', promptCharacter: '_' }
-  ) {
-    this.options = options;
-    this.parseMaskLiterals();
-  }
+  /** Stores literal characters and their original positions in the mask (e.g., '(', ')', '-'). */
+  protected readonly _literals = new Map<number, string>();
 
-  protected literals = new Map<number, string>();
+  /** A Set of positions where literals occur in the `_escapedMask`. */
+  protected _literalPositions = new Set<number>();
+
+  /** The mask format after processing escape characters */
   protected _escapedMask = '';
 
-  public get literalPositions() {
-    return Array.from(this.literals.keys());
+  /**
+   * Returns a set of the all the literal positions in the mask.
+   * These positions are fixed characters that are not part of the input.
+   */
+  public get literalPositions(): Set<number> {
+    return this._literalPositions;
   }
 
-  public get escapedMask() {
+  /**
+   * Returns the escaped mask string.
+   * This is the mask after processing any escape sequences.
+   */
+  public get escapedMask(): string {
     return this._escapedMask;
   }
 
-  public get mask() {
-    return this.options.format;
+  /**
+   * Gets the unescaped mask string (the original format string).
+   * If the mask has no escape sequences, then `mask === escapedMask`.
+   */
+  public get mask(): string {
+    return this._options.format;
   }
 
+  /**
+   * Sets the mask of the parser.
+   * When the mask is set, it triggers a re-parsing of the mask literals and escaped mask.
+   */
   public set mask(value: string) {
-    this.options.format = value || this.options.format;
-    this.parseMaskLiterals();
+    this._options.format = value || this._options.format;
+    this._parseMaskLiterals();
   }
 
-  public get prompt() {
-    return this.options.promptCharacter;
+  /**
+   * Gets the prompt character used for unfilled mask positions.
+   */
+  public get prompt(): string {
+    return this._options.promptCharacter;
   }
 
+  /**
+   * Sets the prompt character. Only the first character of the provided string is used.
+   */
   public set prompt(value: string) {
-    this.options.promptCharacter = value
+    this._options.promptCharacter = value
       ? value.substring(0, 1)
-      : this.options.promptCharacter;
+      : this._options.promptCharacter;
   }
 
-  protected parseMaskLiterals() {
-    this.literals.clear();
-    this._escapedMask = this.mask;
+  constructor(options?: MaskOptions) {
+    this._options = { ...MaskDefaultOptions, ...options };
+    this._parseMaskLiterals();
+  }
 
-    for (let i = 0, j = 0; i < this.mask.length; i++, j++) {
-      const [current, next] = [this.mask.charAt(i), this.mask.charAt(i + 1)];
+  /**
+   * Parses the mask format string to identify literal characters and
+   * create the escaped mask. This method is called whenever the mask format changes.
+   */
+  protected _parseMaskLiterals(): void {
+    const mask = this.mask;
+    const length = mask.length;
+    const escapedMaskChars: string[] = [];
 
-      if (current === '\\' && FLAGS.has(next)) {
-        this._escapedMask = this.replaceCharAt(this._escapedMask, j, '');
-        this.literals.set(j, next);
+    let currentPos = 0;
+
+    this._literals.clear();
+
+    for (let i = 0; i < length; i++) {
+      const [current, next] = [mask.charAt(i), mask.charAt(i + 1)];
+
+      if (current === '\\' && MASK_FLAGS.has(next)) {
+        // Escaped character - push next as a literal character and skip processing it
+        this._literals.set(currentPos, next);
+        escapedMaskChars.push(next);
         i++;
-      } else if (!FLAGS.has(current)) {
-        this.literals.set(j, current);
+      } else if (MASK_FLAGS.has(current)) {
+        // Regular flag character
+        escapedMaskChars.push(current);
+      } else {
+        // Literal character
+        this._literals.set(currentPos, current);
+        escapedMaskChars.push(current);
       }
-    }
-  }
 
-  protected isPromptChar(char: string) {
-    return char === this.prompt;
-  }
-
-  protected replaceCharAt(string: string, pos: number, char: string) {
-    return `${string.substring(0, pos)}${char}${string.substring(pos + 1)}`;
-  }
-
-  protected validate(char: string, maskedChar: string) {
-    const regex = REGEX.get(maskedChar);
-    return regex ? regex.test(char) : false;
-  }
-
-  protected getNonLiteralPositions(mask = '') {
-    const positions = this.literalPositions;
-    const result = [];
-    const iter = Array.from(mask).entries();
-
-    for (const [pos, _] of iter) {
-      if (!positions.includes(pos)) {
-        result.push(pos);
-      }
+      currentPos++;
     }
 
-    return result;
+    this._escapedMask = escapedMaskChars.join('');
+    this._literalPositions = new Set(this._literals.keys());
   }
 
-  protected getRequiredNonLiteralPositions(mask: string) {
-    const positions = this.literalPositions;
-    const result = [];
-    const iter = Array.from(mask).entries();
+  /**
+   * Gets an array of positions in the escaped mask that correspond to
+   * required input flags (e.g., '0', 'L') and are not literal characters.
+   *
+   * These positions must be filled for the masked string to be valid.
+   */
+  protected _getRequiredNonLiteralPositions(): number[] {
+    const literalPositions = this.literalPositions;
+    const escapedMask = this._escapedMask;
+    const length = escapedMask.length;
+    const result: number[] = [];
 
-    for (const [pos, char] of iter) {
-      if (REQUIRED.has(char) && !positions.includes(pos)) {
-        result.push(pos);
+    for (let i = 0; i < length; i++) {
+      const char = escapedMask[i];
+      if (MASK_REQUIRED_FLAGS.has(char) && !literalPositions.has(i)) {
+        result.push(i);
       }
     }
 
     return result;
   }
 
-  public getPreviousNonLiteralPosition(start: number) {
-    const positions = this.literalPositions;
+  /**
+   * Finds the closest non-literal position in the mask *before* the given start position.
+   * Useful for backward navigation (e.g., backspace).
+   *
+   * @remarks
+   * If no non-literal is found before `start`, return `start`.
+   */
+  public getPreviousNonLiteralPosition(start: number): number {
+    const literalPositions = this.literalPositions;
+
     for (let i = start; i > 0; i--) {
-      if (!positions.includes(i)) return i;
+      if (!literalPositions.has(i)) {
+        return i;
+      }
     }
+
     return start;
   }
 
-  public getNextNonLiteralPosition(start: number) {
-    const positions = this.literalPositions;
-    for (let i = start; i < this._escapedMask.length; i++) {
-      if (!positions.includes(i)) return i;
+  /**
+   * Finds the closest non-literal position in the mask *after* the given start position.
+   * Useful for forward navigation (e.g., arrow keys, delete key or initial cursor placement).
+   *
+   * @remarks
+   * If no non-literal is found after `start`, return `start`.
+   */
+  public getNextNonLiteralPosition(start: number): number {
+    const literalPositions = this.literalPositions;
+    const length = this._escapedMask.length;
+
+    for (let i = start; i < length; i++) {
+      if (!literalPositions.has(i)) {
+        return i;
+      }
     }
+
     return start;
   }
 
+  /**
+   * Replaces a segment of the masked string with new input, simulating typing or pasting.
+   * It handles clearing the selected range and inserting new characters according to the mask.
+   */
   public replace(
     maskString: string,
     value: string,
     start: number,
     end: number
-  ) {
-    let masked = maskString ?? '';
-    const chars = Array.from(replaceIMENumbers(value));
-    const positions = this.literalPositions;
-    const final = Math.min(end, masked.length);
-    let cursor = start;
+  ): MaskReplaceResult {
+    const literalPositions = this.literalPositions;
+    const escapedMask = this._escapedMask;
+    const length = this._escapedMask.length;
+    const prompt = this.prompt;
+    const endBoundary = Math.min(end, length);
 
-    for (let i = start; i < final || (chars.length && i < masked.length); i++) {
-      if (positions.includes(i)) {
-        if (chars[0] === masked[i]) {
-          cursor = i + 1;
-          chars.shift();
-        }
+    // Initialize the array for the masked string or get a fresh mask with prompts and/or literals
+    const maskedChars = Array.from(maskString || this.apply(''));
+
+    const inputChars = Array.from(replaceIMENumbers(value));
+    const inputLength = inputChars.length;
+
+    // Clear any non-literal positions from `start` to `endBoundary`
+    for (let i = start; i < endBoundary; i++) {
+      if (!literalPositions.has(i)) {
+        maskedChars[i] = prompt;
+      }
+    }
+
+    let cursor = start;
+    let inputIndex = 0;
+    let maskPosition = start;
+
+    // Iterate through the mask starting at `start` as long as there are input characters and mask positions available
+    // and start placing characters or skipping literals and invalid characters
+    for (; maskPosition < length && inputIndex < inputLength; maskPosition++) {
+      if (literalPositions.has(maskPosition)) {
+        cursor = maskPosition + 1;
         continue;
       }
 
-      if (
-        chars[0] &&
-        !this.validate(chars[0], this._escapedMask[i]) &&
-        !this.isPromptChar(chars[0])
-      ) {
-        break;
-      }
+      const char = inputChars[inputIndex];
 
-      let char = this.prompt;
-      if (chars.length) {
-        cursor = i + 1;
-        char = chars.shift() as string;
+      if (validate(char, escapedMask[maskPosition]) && char !== prompt) {
+        maskedChars[maskPosition] = char;
+        cursor = maskPosition + 1;
+        inputIndex++;
+      } else {
+        inputIndex++;
+        maskPosition--;
       }
-      masked = this.replaceCharAt(masked, i, char);
     }
 
-    return { value: masked, end: cursor };
+    // Move the cursor to the next non-literal position or the end of the mask
+    while (cursor < length && literalPositions.has(cursor)) {
+      cursor++;
+    }
+
+    return {
+      value: maskedChars.join(''),
+      end: cursor,
+    };
   }
 
-  public parse(masked = '') {
-    const positions = this.literalPositions;
-    const result = [];
-    const iter = Array.from(masked).entries();
+  /**
+   * Parses the masked string, extracting only the valid input characters.
+   * This effectively "unmasks" the string, removing prompts and literals.
+   */
+  public parse(masked = ''): string {
+    const literalPositions = this.literalPositions;
+    const prompt = this.prompt;
+    const length = masked.length;
 
-    for (const [pos, char] of iter) {
-      !positions.includes(pos) && !this.isPromptChar(char)
-        ? result.push(char)
-        : result.push('');
+    let result = '';
+
+    for (let i = 0; i < length; i++) {
+      const char = masked[i];
+      if (!literalPositions.has(i) && char !== prompt) {
+        result += char;
+      }
     }
 
-    return result.join('');
+    return result;
   }
 
-  public isValidString(input = '') {
-    const required = this.getRequiredNonLiteralPositions(this._escapedMask);
+  /**
+   * Checks if the masked string is valid, specifically if all required mask positions are filled
+   * with valid, non-prompt characters.
+   */
+  public isValidString(input = ''): boolean {
+    const prompt = this.prompt;
 
-    if (required.length > this.parse(input).length) {
-      return false;
-    }
-
-    return required.every((pos) => {
-      const char = input.charAt(pos);
+    return this._getRequiredNonLiteralPositions().every((position) => {
+      const char = input.charAt(position);
       return (
-        this.validate(char, this._escapedMask.charAt(pos)) &&
-        !this.isPromptChar(char)
+        validate(char, this._escapedMask.charAt(position)) && char !== prompt
       );
     });
   }
 
-  public apply(input = '') {
-    const output = new Array(this._escapedMask.length).fill(this.prompt);
+  /**
+   * Applies the mask format to an input string. This attempts to fit the input
+   * into the mask from left to right, filling valid positions and skipping invalid
+   * input characters.
+   */
+  public apply(input = ''): string {
+    const literals = this._literals;
+    const prompt = this.prompt;
+    const escapedMask = this._escapedMask;
+    const length = escapedMask.length;
+    const inputLength = input.length;
 
-    for (const [pos, char] of this.literals.entries()) {
-      output[pos] = char;
+    // Initialize the result array with prompt characters
+    const result = new Array(escapedMask.length).fill(prompt);
+
+    // Place all literal characters into the result array
+    for (const [position, literal] of literals.entries()) {
+      result[position] = literal;
     }
 
     if (!input) {
-      return output.join('');
+      return result.join('');
     }
 
-    const nonLiteralPositions = this.getNonLiteralPositions(this._escapedMask);
-    const values = nonLiteralPositions.map((pos, index) => {
-      const char = input.charAt(index);
-      return !this.validate(char, this._escapedMask.charAt(pos)) &&
-        !this.isPromptChar(char)
-        ? this.prompt
-        : char;
-    });
+    let inputIndex = 0;
 
-    if (values.length > nonLiteralPositions.length) {
-      values.splice(nonLiteralPositions.length);
+    // Iterate through the mask placing input characters skipping literals and invalid ones
+    for (let i = 0; i < length; i++) {
+      if (inputIndex >= inputLength) {
+        break;
+      }
+
+      if (literals.has(i)) {
+        continue;
+      }
+
+      if (validate(input.charAt(inputIndex), escapedMask.charAt(i))) {
+        result[i] = input.charAt(inputIndex);
+      }
+
+      inputIndex++;
     }
 
-    for (const [position, char] of values.entries()) {
-      output[nonLiteralPositions[position]] = char;
-    }
-
-    return output.join('');
+    return result.join('');
   }
 }

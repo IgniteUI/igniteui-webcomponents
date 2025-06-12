@@ -1,0 +1,16 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    ::slotted(label) {
+        color: var-get($theme, 'color');
+    }
+}
+
+:host(:state(disabled)) {
+    ::slotted(label) {
+        color: var-get($theme, 'disabled-color');
+    }
+}
