@@ -99,8 +99,8 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   /** Focuses the active date. */
-  public focusActiveDate() {
-    this.activeMonth.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeMonth.focus(options);
   }
 
   protected handleInteraction(event: Event) {

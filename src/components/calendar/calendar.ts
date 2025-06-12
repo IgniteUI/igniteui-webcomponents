@@ -253,19 +253,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /** @private @hidden @internal */
-  public async [focusActiveDate]() {
+  public async [focusActiveDate](options?: FocusOptions) {
     await this.updateComplete;
 
     if (this._isDayView) {
-      return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
+      return this.daysViews
+        .item(this.activeDaysViewIndex)
+        .focusActiveDate(options);
     }
 
     if (this._isMonthView) {
-      return this.monthsView.focusActiveDate();
+      return this.monthsView.focusActiveDate(options);
     }
 
     if (this._isYearView) {
-      return this.yearsView.focusActiveDate();
+      return this.yearsView.focusActiveDate(options);
     }
   }
 
