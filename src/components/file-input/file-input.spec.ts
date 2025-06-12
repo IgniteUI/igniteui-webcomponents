@@ -158,7 +158,7 @@ describe('File Input component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledWith('igcChange', {
-        detail: element.value,
+        detail: input.files,
       });
     });
 
@@ -169,7 +169,7 @@ describe('File Input component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledOnceWith('igcCancel', {
-        detail: element.value,
+        detail: input.files,
       });
     });
 
