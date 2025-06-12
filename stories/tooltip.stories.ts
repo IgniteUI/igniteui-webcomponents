@@ -45,10 +45,9 @@ const metadata: Meta<IgcTooltipComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    disableArrow: {
+    withArrow: {
       type: 'boolean',
-      description:
-        'Whether to disable the rendering of the arrow indicator for the tooltip.',
+      description: 'Whether to render an arrow indicator for the tooltip.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -77,7 +76,7 @@ const metadata: Meta<IgcTooltipComponent> = {
         'left-end',
       ],
       control: { type: 'select' },
-      table: { defaultValue: { summary: 'top' } },
+      table: { defaultValue: { summary: 'bottom' } },
     },
     anchor: {
       type: 'Element | string',
@@ -130,9 +129,9 @@ const metadata: Meta<IgcTooltipComponent> = {
   },
   args: {
     open: false,
-    disableArrow: false,
+    withArrow: false,
     offset: 6,
-    placement: 'top',
+    placement: 'bottom',
     showTriggers: 'pointerenter',
     hideTriggers: 'pointerleave, click',
     showDelay: 200,
@@ -147,8 +146,8 @@ export default metadata;
 interface IgcTooltipArgs {
   /** Whether the tooltip is showing. */
   open: boolean;
-  /** Whether to disable the rendering of the arrow indicator for the tooltip. */
-  disableArrow: boolean;
+  /** Whether to render an arrow indicator for the tooltip. */
+  withArrow: boolean;
   /** The offset of the tooltip from the anchor in pixels. */
   offset: number;
   /** Where to place the floating element relative to the parent anchor element. */
@@ -203,7 +202,7 @@ export const Basic: Story = {
 
     <igc-tooltip
       anchor="basic-tooltip"
-      .disableArrow=${args.disableArrow}
+      .withArrow=${args.withArrow}
       .offset=${args.offset}
       .hideDelay=${args.hideDelay}
       .showDelay=${args.showDelay}

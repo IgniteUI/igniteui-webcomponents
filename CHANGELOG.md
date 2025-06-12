@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.1.0] - 2025-06-11
+## [6.1.0] - 2025-06-12
 ### Added
 - Date Range Picker
 
 ### Changed
+- Updated the readonly styles of most form associated components across all themes to better signify when a component
+  is in a readonly state.
 - #### File input
   - **Breaking change**: `igcChange` & `igcCancel` events detail now returns the underlying component `files` property.
 - #### Tooltip
@@ -27,6 +29,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Incorrect date rollover for in certain scenarios [#1710](https://github.com/IgniteUI/igniteui-webcomponents/issues/1710)
 - #### Combo
   - Case insensitive icon styles in themes [#1728](https://github.com/IgniteUI/igniteui-webcomponents/pull/1728)
+- #### Input
+  - Replace border in fluent theme with a box-shadow [#1726](https://github.com/IgniteUI/igniteui-webcomponents/pull/1726)
+  - Focused state background color in Indigo theme [#1732](https://github.com/IgniteUI/igniteui-webcomponents/pull/1732)
 - #### Textarea
   - Label height and component height override [#1715](https://github.com/IgniteUI/igniteui-webcomponents/pull/1715)
 
