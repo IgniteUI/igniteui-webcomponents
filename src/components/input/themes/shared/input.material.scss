@@ -8,9 +8,7 @@ $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
 
 %label {
-    --label-position: #{sizable(18px, 22px, 26px)};
-
-    transform: translateY(calc(var(--label-position) * -1));
+    translate: 0 calc(var(--label-position) * -1);
 }
 
 %floated-styles {
@@ -70,11 +68,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     color: var-get($theme, 'idle-secondary-color');
     transition:
         transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        translate 150ms cubic-bezier(0.4, 0, 0.2, 1),
         color 150ms cubic-bezier(0.4, 0, 0.2, 1),
         font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
     text-overflow: ellipsis;
     overflow: hidden;
-    will-change: font-size, color, transform;
+    will-change: font-size, color, transform, translate;
 }
 
 [part^='container'] {
@@ -149,7 +148,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+            translate: 0;
             font-size: initial;
         }
     }
@@ -201,7 +200,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -247,7 +246,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -310,16 +309,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-top: rem(20px);
         padding-bottom: rem(6px);
     }
-
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
-    }
 }
 
 :host([outlined][type='search']:focus-within) {
     [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -392,6 +386,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host([outlined]) {
+    --label-position: calc((#{var-get($theme, 'size')} / 2) - (#{$idle-border-width}));
+
     [part='notch'] {
         border: {
             width: $idle-border-width;
@@ -436,7 +432,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+            translate: 0;
             font-size: initial;
         }
 
