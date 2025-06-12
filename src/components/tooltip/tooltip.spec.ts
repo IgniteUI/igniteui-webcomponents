@@ -75,20 +75,16 @@ describe('Tooltip', () => {
     it('is correctly initialized with its default component state', () => {
       expect(tooltip.dir).to.be.empty;
       expect(tooltip.open).to.be.false;
-      expect(tooltip.disableArrow).to.be.false;
+      expect(tooltip.disableArrow).to.be.true;
+      expect(tooltip.withArrow).to.be.false;
       expect(tooltip.offset).to.equal(6);
-      expect(tooltip.placement).to.equal('top');
+      expect(tooltip.placement).to.equal('bottom');
       expect(tooltip.anchor).to.be.undefined;
       expect(tooltip.showTriggers).to.equal('pointerenter');
       expect(tooltip.hideTriggers).to.equal('pointerleave,click');
       expect(tooltip.showDelay).to.equal(200);
       expect(tooltip.hideDelay).to.equal(300);
       expect(tooltip.message).to.equal('');
-    });
-
-    it('should render a default arrow', () => {
-      const arrow = tooltip.shadowRoot!.querySelector('#arrow');
-      expect(arrow).not.to.be.null;
     });
 
     it('is correctly rendered both in shown/hidden states', async () => {
@@ -103,7 +99,6 @@ describe('Tooltip', () => {
         >
           <div part="base">
             <slot></slot>
-            <div id="arrow"></div>
           </div>
         </igc-popover>`
       );
@@ -120,7 +115,6 @@ describe('Tooltip', () => {
         >
           <div part="base">
             <slot></slot>
-            <div id="arrow"></div>
           </div>
         </igc-popover>`
       );
@@ -212,29 +206,29 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.true;
     });
 
-    it('should show/hide the arrow via the `disableArrow` property', async () => {
-      expect(tooltip.disableArrow).to.be.false;
-      expect(tooltip.shadowRoot!.querySelector('#arrow')).to.exist;
+    it('should show/hide the arrow via the `withArrow` property', async () => {
+      expect(tooltip.withArrow).to.be.false;
+      expect(tooltip.renderRoot.querySelector('#arrow')).to.be.null;
 
-      tooltip.disableArrow = true;
+      tooltip.withArrow = true;
       await elementUpdated(tooltip);
 
-      expect(tooltip.disableArrow).to.be.true;
-      expect(tooltip.shadowRoot!.querySelector('#arrow')).to.be.null;
+      expect(tooltip.withArrow).to.be.true;
+      expect(tooltip.renderRoot.querySelector('#arrow')).not.to.be.null;
     });
 
-    it('should show/hide the arrow via the `disable-arrow` attribute', async () => {
+    it('should show/hide the arrow via the `with-arrow` attribute', async () => {
       const template = html`
         <div>
           <button>Hover</button>
-          <igc-tooltip disable-arrow>I am a tooltip</igc-tooltip>
+          <igc-tooltip with-arrow>I am a tooltip</igc-tooltip>
         </div>
       `;
       const container = await fixture(template);
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
 
-      expect(tooltip.disableArrow).to.be.true;
-      expect(tooltip.shadowRoot!.querySelector('#arrow')).to.be.null;
+      expect(tooltip.withArrow).to.be.true;
+      expect(tooltip.renderRoot.querySelector('#arrow')).not.to.be.null;
     });
 
     it('should provide content via the `message` property', async () => {
@@ -305,7 +299,6 @@ describe('Tooltip', () => {
                 name="input_clear"
               ></igc-icon>
             </slot>
-            <div id="arrow"></div>
           </div>
         </igc-popover>`
       );
@@ -534,15 +527,8 @@ describe('Tooltip', () => {
       await showComplete();
       expect(tooltip.open).to.be.true;
 
-      expect(eventSpy).calledWith('igcOpening', {
-        cancelable: true,
-        detail: defaultAnchor,
-      });
-
-      expect(eventSpy).calledWith('igcOpened', {
-        cancelable: false,
-        detail: defaultAnchor,
-      });
+      expect(eventSpy).calledWith('igcOpening', { cancelable: true });
+      expect(eventSpy).calledWith('igcOpened', { cancelable: false });
     });
   });
 
@@ -698,11 +684,11 @@ describe('Tooltip', () => {
       expect(eventSpy.callCount).to.equal(2);
       expect(eventSpy.firstCall).calledWith(
         state.open ? 'igcOpening' : 'igcClosing',
-        { cancelable: true, detail: anchor }
+        { cancelable: true }
       );
       expect(eventSpy.secondCall).calledWith(
         state.open ? 'igcOpened' : 'igcClosed',
-        { cancelable: false, detail: anchor }
+        { cancelable: false }
       );
     };
 
@@ -730,10 +716,7 @@ describe('Tooltip', () => {
       await showComplete(tooltip);
 
       expect(tooltip.open).to.be.false;
-      expect(eventSpy).calledOnceWith('igcOpening', {
-        cancelable: true,
-        detail: anchor,
-      });
+      expect(eventSpy).calledOnceWith('igcOpening', { cancelable: true });
 
       eventSpy.resetHistory();
 
@@ -749,10 +732,7 @@ describe('Tooltip', () => {
       await hideComplete(tooltip);
 
       expect(tooltip.open).to.be.true;
-      expect(eventSpy).calledOnceWith('igcClosing', {
-        cancelable: true,
-        detail: anchor,
-      });
+      expect(eventSpy).calledOnceWith('igcClosing', { cancelable: true });
     });
 
     it('fires `igcClosed` when tooltip is hidden via Escape key', async () => {
@@ -775,10 +755,7 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.false;
       expect(eventSpy.callCount).to.equal(1);
-      expect(eventSpy.firstCall).calledWith('igcClosed', {
-        cancelable: false,
-        detail: anchor,
-      });
+      expect(eventSpy.firstCall).calledWith('igcClosed', { cancelable: false });
     });
   });
 
