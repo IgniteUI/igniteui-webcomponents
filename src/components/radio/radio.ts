@@ -3,7 +3,7 @@ import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
@@ -67,7 +67,6 @@ export interface IgcRadioComponentEventMap {
  * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
-@themes(all)
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -190,6 +189,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => this.disabled,

@@ -2,7 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -34,7 +34,6 @@ export interface IgcChipComponentEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
-@themes(all)
 export default class IgcChipComponent extends EventEmitterMixin<
   IgcChipComponentEventMap,
   Constructor<LitElement>
@@ -99,6 +98,8 @@ export default class IgcChipComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       ref: this._removePartRef,

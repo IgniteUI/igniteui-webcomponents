@@ -8,7 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -38,7 +38,6 @@ import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
 
-@themes(all)
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = [styles, shared];
@@ -280,6 +279,9 @@ export class IgcSliderBaseComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
+
     this.addEventListener('pointerdown', this.pointerDown);
     this.addEventListener('pointermove', this.pointerMove);
     this.addEventListener('lostpointercapture', this.lostPointerCapture);

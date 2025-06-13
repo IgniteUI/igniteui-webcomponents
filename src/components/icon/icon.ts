@@ -2,7 +2,8 @@ import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import type { Theme } from '../../theming/types.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -24,7 +25,6 @@ import { all } from './themes/themes.js';
  *
  *
  */
-@themes(all, { exposeController: true })
 export default class IgcIconComponent extends LitElement {
   public static readonly tagName = 'igc-icon';
   public static override styles = [styles, shared];
@@ -64,11 +64,13 @@ export default class IgcIconComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all, {
+      themeChange: this._themeChangedCallback,
+    });
+
     this.__internals = this.attachInternals();
     this.__internals.role = 'img';
-
-    getThemeController(this)!.onThemeChanged = (theme) =>
-      getIconRegistry().setRefsByTheme(theme);
   }
 
   public override connectedCallback() {
@@ -87,6 +89,10 @@ export default class IgcIconComponent extends LitElement {
     if (prev !== curr) {
       this.getIcon();
     }
+  }
+
+  private _themeChangedCallback(theme: Theme) {
+    getIconRegistry().setRefsByTheme(theme);
   }
 
   private iconLoaded = (name: string, collection: string) => {

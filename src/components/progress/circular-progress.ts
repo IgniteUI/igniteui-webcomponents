@@ -1,7 +1,7 @@
 import { html, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { createCounter, isEmpty } from '../common/util.js';
@@ -34,7 +34,6 @@ import { all } from './themes/circular/themes.js';
  * @csspart info - The igc-circular-progress info state.
  * @csspart success - The igc-circular-progress success state.
  */
-@themes(all)
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = [styles, shared];
@@ -53,6 +52,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   @queryAssignedElements({ slot: 'gradient' })
   private _assignedGradients!: IgcCircularGradientComponent[];
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected renderSvg() {
     const gradients = !isEmpty(this._assignedGradients)

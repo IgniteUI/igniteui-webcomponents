@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { themes } from '../../../theming/theming-decorator.js';
+import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -49,7 +49,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
  */
 @blazorSuppressComponent
 @blazorIndirectRender
-@themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -133,6 +132,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       bindingDefaults: { preventDefault: true },

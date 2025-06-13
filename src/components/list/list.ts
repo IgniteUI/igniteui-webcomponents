@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
@@ -15,7 +15,6 @@ import { styles as shared } from './themes/shared/container/list.common.css.js';
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-@themes(all)
 export default class IgcListComponent extends LitElement {
   public static readonly tagName = 'igc-list';
   public static override styles = [styles, shared];
@@ -33,6 +32,8 @@ export default class IgcListComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this._internals = this.attachInternals();
     this._internals.role = 'list';

@@ -8,7 +8,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate, convertToDateRange } from '../calendar/helpers.js';
 import { CalendarDay } from '../calendar/model.js';
@@ -174,7 +174,6 @@ export interface IgcDateRangePickerComponentEventMap {
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
@@ -213,6 +212,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private static readonly _increment = createCounter();
 
   protected readonly _inputId = `date-range-picker-${IgcDateRangePickerComponent._increment()}`;
+
+  private readonly _themes = addThemingController(this, all);
+
   protected override readonly _formValue: FormValueOf<DateRangeValue | null> =
     createFormValueState(this, {
       initialValue: {
@@ -281,10 +283,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @queryAssignedElements({ slot: 'header-date' })
   private readonly _headerDateSlotItems!: HTMLElement[];
-
-  protected get _isIndigoTheme(): boolean {
-    return getThemeController(this)?.theme === 'indigo';
-  }
 
   // #endregion
 
@@ -1060,6 +1058,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected _renderPicker(id: string) {
+    const isIndigo = this._themes.theme === 'indigo';
+
     return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor=${id} flip shift>
@@ -1085,13 +1085,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
             <igc-button
               slot="footer"
               @click=${this._dialogCancel}
-              variant=${this._isIndigoTheme ? 'outlined' : 'flat'}
+              variant=${isIndigo ? 'outlined' : 'flat'}
               >${this.resourceStrings.cancel}</igc-button
             >
             <igc-button
               slot="footer"
               @click=${this._dialogDone}
-              variant=${this._isIndigoTheme ? 'contained' : 'flat'}
+              variant=${isIndigo ? 'contained' : 'flat'}
               >${this.resourceStrings.done}</igc-button
             >
           </igc-dialog>

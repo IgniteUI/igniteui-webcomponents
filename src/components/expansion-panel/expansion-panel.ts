@@ -4,7 +4,7 @@ import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   altKey,
@@ -52,7 +52,6 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-@themes(all)
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
@@ -99,6 +98,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       ref: this.headerRef,

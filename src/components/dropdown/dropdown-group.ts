@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
@@ -18,7 +18,6 @@ import { styles as shared } from './themes/shared/group/dropdown-group.common.cs
  *
  * @csspart label - The native label element.
  */
-@themes(all)
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
   public static override styles = [styles, shared];
@@ -40,6 +39,9 @@ export default class IgcDropdownGroupComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
+
     this._internals = this.attachInternals();
     this._internals.role = 'group';
   }

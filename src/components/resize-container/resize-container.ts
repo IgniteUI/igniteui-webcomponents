@@ -2,7 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { type Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -37,7 +37,6 @@ export interface IgcResizeContainerComponentEventMap {
  * @slot bottom-adorner - renders the bottom resize handle.
  *
  */
-@themes(all)
 export default class IgcResizeContainerComponent extends EventEmitterMixin<
   IgcResizeContainerComponentEventMap,
   Constructor<LitElement>
@@ -97,6 +96,8 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this._controller = addResizeController(this, {
       ref: [this._adorners.side, this._adorners.corner, this._adorners.bottom],

@@ -3,7 +3,7 @@ import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   type TileManagerContext,
   tileManagerContext,
@@ -39,7 +39,6 @@ import IgcTileComponent from './tile.js';
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
  *
  */
-@themes(all)
 export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
   public static override styles = [styles, shared];
@@ -207,6 +206,8 @@ export default class IgcTileManagerComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     createMutationController(this, {
       callback: this._observerCallback,

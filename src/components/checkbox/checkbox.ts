@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { createCounter } from '../common/util.js';
@@ -31,7 +31,6 @@ import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.j
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox indicator icon.
  */
-@themes(all, { exposeController: true })
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = [styles, shared];
@@ -42,6 +41,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   private static readonly increment = createCounter();
+
+  private readonly _themes = addThemingController(this, all);
+
   private readonly _inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
   private readonly _labelId = `checkbox-label-${this._inputId}`;
 
@@ -51,10 +53,6 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
    */
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
-
-  protected get _isIndigo(): boolean {
-    return getThemeController(this)?.theme === 'indigo';
-  }
 
   protected override _handleClick(event: PointerEvent): void {
     this.indeterminate = false;
@@ -114,7 +112,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         />
         <span part=${partMap({ control: true, checked })}>
           <span part=${partMap({ indicator: true, checked })}>
-            ${this._isIndigo ? this.renderIndigo() : this.renderStandard()}
+            ${this._themes.theme === 'indigo'
+              ? this.renderIndigo()
+              : this.renderStandard()}
           </span>
         </span>
         <span
