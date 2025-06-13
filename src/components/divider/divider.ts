@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { DividerType } from '../types.js';
 import { styles } from './themes/divider.base.css.js';
@@ -16,8 +16,6 @@ import { all } from './themes/themes.js';
  * @cssproperty --inset - Shrinks the divider by the given amount from the start. If `middle` is set it will shrink from both sides.
  *
  */
-
-@themes(all)
 export default class IgcDividerComponent extends LitElement {
   public static readonly tagName = 'igc-divider';
   public static override styles = [styles, shared];
@@ -65,8 +63,10 @@ export default class IgcDividerComponent extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
+    addThemingController(this, all);
+
+    this._internals = this.attachInternals();
     this._internals.role = 'separator';
     this._internals.ariaOrientation = this._vertical
       ? 'vertical'

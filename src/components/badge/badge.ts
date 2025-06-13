@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
@@ -19,7 +19,6 @@ import { all } from './themes/themes.js';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@themes(all)
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = [styles, shared];
@@ -54,6 +53,9 @@ export default class IgcBadgeComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
+
     this.__internals = this.attachInternals();
     this.__internals.role = 'status';
   }

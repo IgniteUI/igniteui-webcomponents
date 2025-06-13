@@ -5,7 +5,7 @@ import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -48,7 +48,6 @@ type TooltipStateOptions = {
  * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
  * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
-@themes(all)
 export default class IgcTooltipComponent extends EventEmitterMixin<
   IgcTooltipComponentEventMap,
   Constructor<LitElement>
@@ -274,6 +273,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this._internals = this.attachInternals();
     this._internals.role = 'tooltip';

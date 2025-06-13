@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { range } from 'lit/directives/range.js';
 
-import { themes } from '../../../theming/theming-decorator.js';
+import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -28,7 +28,6 @@ import type { IgcCalendarComponentEventMap } from '../types.js';
  */
 @blazorIndirectRender
 @blazorSuppressComponent
-@themes(all)
 export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
   Constructor<LitElement>
@@ -66,6 +65,8 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       bindingDefaults: { preventDefault: true },

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
@@ -26,7 +26,6 @@ import { styles as shared } from './themes/shared/item/list-item.common.css.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-@themes(all)
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
   public static override styles = [styles, shared];
@@ -47,8 +46,10 @@ export default class IgcListItemComponent extends LitElement {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
+    addThemingController(this, all);
+
+    this._internals = this.attachInternals();
     this._internals.role = 'listitem';
   }
 

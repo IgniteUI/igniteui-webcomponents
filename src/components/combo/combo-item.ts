@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
@@ -9,7 +9,6 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
 import { styles } from './themes/combo-item.base.css.js';
 
 /* blazorSuppress */
-@themes(all)
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = [styles, shared];
@@ -55,6 +54,8 @@ export default class IgcComboItemComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this._internals = this.attachInternals();
     this._internals.role = 'option';

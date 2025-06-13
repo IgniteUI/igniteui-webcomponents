@@ -9,7 +9,7 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
@@ -67,7 +67,6 @@ export interface IgcTabsComponentEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
  */
-@themes(all)
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsComponentEventMap,
   Constructor<LitElement>
@@ -161,6 +160,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       ref: this._headerRef,

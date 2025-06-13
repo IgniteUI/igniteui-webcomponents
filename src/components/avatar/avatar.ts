@@ -2,7 +2,7 @@ import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AvatarShape } from '../types.js';
@@ -23,7 +23,6 @@ import { all } from './themes/themes.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes(all)
 export default class IgcAvatarComponent extends LitElement {
   public static readonly tagName = 'igc-avatar';
   public static override styles = [styles, shared];
@@ -68,6 +67,8 @@ export default class IgcAvatarComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this.__internals = this.attachInternals();
     this.__internals.role = 'img';

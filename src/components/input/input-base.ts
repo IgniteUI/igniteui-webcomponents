@@ -1,7 +1,7 @@
 import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -27,7 +27,6 @@ export interface IgcInputComponentEventMap {
 }
 
 @blazorDeepImport
-@themes(all, { exposeController: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -40,6 +39,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   public static styles = [styles, shared];
   private static readonly increment = createCounter();
+
+  protected readonly _themes = addThemingController(this, all);
 
   protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
@@ -64,10 +65,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     selector: '[slot="suffix"]:not([hidden])',
   })
   protected suffixes!: Array<HTMLElement>;
-
-  protected get _isMaterial() {
-    return getThemeController(this)?.theme === 'material';
-  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -199,6 +196,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
+    return this._themes.theme === 'material'
+      ? this.renderMaterial()
+      : this.renderStandard();
   }
 }
