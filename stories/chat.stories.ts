@@ -1,0 +1,223 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { html } from 'lit';
+
+import { IgcChatComponent, defineComponents } from 'igniteui-webcomponents';
+
+defineComponents(IgcChatComponent);
+
+// region default
+const metadata: Meta<IgcChatComponent> = {
+  title: 'Chat',
+  component: 'igc-chat',
+  parameters: { docs: { description: { component: '' } } },
+  argTypes: {
+    hideAvatar: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideUserName: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideMetaData: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    disableAutoScroll: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    disableReactions: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    disableAttachments: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    disableEmojis: {
+      type: 'boolean',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    headerText: {
+      type: 'string',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+  },
+  args: {
+    hideAvatar: false,
+    hideUserName: false,
+    hideMetaData: false,
+    disableAutoScroll: false,
+    disableReactions: false,
+    disableAttachments: false,
+    disableEmojis: false,
+    headerText: '',
+  },
+};
+
+export default metadata;
+
+interface IgcChatArgs {
+  hideAvatar: boolean;
+  hideUserName: boolean;
+  hideMetaData: boolean;
+  disableAutoScroll: boolean;
+  disableReactions: boolean;
+  disableAttachments: boolean;
+  disableEmojis: boolean;
+  headerText: string;
+}
+type Story = StoryObj<IgcChatArgs>;
+
+// endregion
+
+const userJohn: any = {
+  id: 'user1',
+  name: 'John',
+  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+};
+
+const userRichard: any = {
+  id: 'user2',
+  name: 'Richard',
+  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
+};
+
+const userSam: any = {
+  id: 'user3',
+  name: 'Sam',
+  avatar: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+};
+
+const messages: any[] = [
+  {
+    id: '1',
+    text: 'Hey there! How are you doing today?',
+    sender: userRichard,
+    timestamp: new Date(2025, 4, 5),
+    status: 'read',
+  },
+  {
+    id: '2',
+    text: "I'm doing well, thanks for asking! How about you?",
+    sender: userJohn,
+    timestamp: new Date(Date.now() - 3500000),
+    status: 'read',
+  },
+  {
+    id: '3',
+    text: 'Pretty good! I was wondering if you wanted to grab coffee sometime this week?',
+    sender: userRichard,
+    timestamp: new Date(Date.now() - 3400000),
+    status: 'read',
+    reactions: [
+      {
+        id: 'red_heart',
+        users: ['user3'],
+      },
+    ],
+  },
+  {
+    id: '4',
+    text: 'Hi guys! I just joined the chat.',
+    sender: userSam,
+    timestamp: new Date(Date.now() - 3300000),
+    status: 'read',
+    attachments: [
+      {
+        id: 'men3_img',
+        type: 'image',
+        url: 'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+        name: 'men3.png',
+      },
+    ],
+  },
+];
+
+export const Basic: Story = {
+  render: (args) => html`
+    <igc-chat
+      .user=${userJohn}
+      .messages=${messages}
+      .headerText=${args.headerText}
+      .disableAutoScroll=${args.disableAutoScroll}
+      .disableReactions=${args.disableReactions}
+      .disableAttachments=${args.disableAttachments}
+      .disableEmojis=${args.disableEmojis}
+      .hideAvatar=${args.hideAvatar}
+      .hideUserName=${args.hideUserName}
+      .hideMetaData=${args.hideMetaData}
+    >
+    </igc-chat>
+  `,
+};
+
+function handleMessageEntered(e: CustomEvent) {
+  const newMessage = e.detail;
+  messages.push(newMessage);
+  const chatElements = document.querySelectorAll('igc-chat');
+  chatElements.forEach((chat) => {
+    chat.messages = [...messages];
+  });
+}
+
+function handleTypingChange(e: CustomEvent) {
+  const user = e.detail.user;
+  const isTyping = e.detail.isTyping;
+  const chatElements = document.querySelectorAll('igc-chat');
+  chatElements.forEach((chat) => {
+    if (!isTyping) {
+      chat.typingUsers = chat.typingUsers.filter((u) => u !== user);
+    } else if (isTyping && !chat.typingUsers.includes(user)) {
+      chat.typingUsers = [...chat.typingUsers, user];
+    }
+  });
+}
+
+export const SideBySide: Story = {
+  render: (args) => html`
+    <div style="display: flex; gap: 20px;">
+      <igc-chat
+        .user=${userJohn}
+        .messages=${messages}
+        @igcMessageSend=${handleMessageEntered}
+        @igcTypingChange=${handleTypingChange}
+        header-text="Richard, Sam"
+        .disableAutoScroll=${args.disableAutoScroll}
+        .disableReactions=${args.disableReactions}
+        .disableAttachments=${args.disableAttachments}
+        .disableEmojis=${args.disableEmojis}
+        .hideAvatar=${args.hideAvatar}
+        .hideUserName=${args.hideUserName}
+        .hideMetaData=${args.hideMetaData}
+        style="width: 50%;"
+      >
+      </igc-chat>
+      <igc-chat
+        .user=${userRichard}
+        .messages=${messages}
+        @igcMessageSend=${handleMessageEntered}
+        @igcTypingChange=${handleTypingChange}
+        header-text="John, Sam"
+        .disableAutoScroll=${args.disableAutoScroll}
+        .disableReactions=${args.disableReactions}
+        .disableAttachments=${args.disableAttachments}
+        .disableEmojis=${args.disableEmojis}
+        .hideAvatar=${args.hideAvatar}
+        .hideUserName=${args.hideUserName}
+        .hideMetaData=${args.hideMetaData}
+        style="width: 50%;"
+      >
+      </igc-chat>
+    </div>
+  `,
+};
