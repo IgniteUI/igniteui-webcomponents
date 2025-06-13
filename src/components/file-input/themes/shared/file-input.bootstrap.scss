@@ -12,16 +12,6 @@ $theme: $bootstrap;
 }
 
 [part~='file-selector-button'] igc-button {
-    --foreground: #{var-get($theme, 'input-prefix-color')};
-    --background: #{var-get($theme, 'input-prefix-background')};
-    --hover-foreground: var(--foreground);
-    --hover-background: var(--background);
-    --active-foreground: var(--foreground);
-    --active-background: var(--background);
-    --focus-visible-foreground: var(--foreground);
-    --focus-visible-background: var(--background);
-    --disabled-foreground: #{var-get($theme, 'disabled-text-color')};
-    --disabled-background: #{var-get($theme, 'border-disabled-background')};
 
     &::part(base) {
         font-size: var(--input-font);
@@ -85,14 +75,16 @@ $theme: $bootstrap;
 :host(:not([disabled])[invalid]) {
     --input-border-color: #{var-get($theme, 'error-secondary-color')};
 
-    [part~='container'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
-    }
-
     [part='prefix'],
     [part='suffix'],
     [part~='file-names'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled])[invalid]:focus-within) {
+    [part~='container'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 }
 
@@ -102,7 +94,6 @@ $theme: $bootstrap;
 
     [part~='file-names'] {
         color: var-get($theme, 'disabled-text-color');
-        background: var-get($theme, 'border-disabled-background');
         border-color: var-get($theme, 'disabled-border-color');
     }
 

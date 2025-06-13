@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../light/themes' as light;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme(diff(light.$base, $theme), 'ig');
+}
+
+:host(:is(igc-file-input)) {
+  [part~='file-names'] {
+      color: var(--ig-input-idle-text-color, #fff)
+  }
+}
