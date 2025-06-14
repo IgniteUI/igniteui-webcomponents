@@ -20,11 +20,16 @@ $theme-file-input: file-input.$base;
     }
 
     [part='file-names'] {
-        @include ellipsis();
-
-        align-content: center;
+        display: flex;
+        align-items: center;
+        max-height: var-get($theme, 'size');
+        height: 100%;
         grid-area: 1 / 3;
         background: var-get($theme-file-input, 'file-names-background')
+          
+        > span {
+            @include ellipsis();
+        }
     }
 
     [part~='container'] {
@@ -40,6 +45,11 @@ $theme-file-input: file-input.$base;
         grid-column: 2 / 4;
         appearance: none;
         opacity: 0;
+    }
+
+    [part~='container'],
+    [part~='input'] {
+        height: var-get($theme, 'size');
     }
 
     [part~='input']::file-selector-button {

@@ -7,13 +7,6 @@ import type { DateRangeValue } from '../../../date-range-picker/date-range-picke
 import { asNumber } from '../../util.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
-export function createFormValueState<T>(
-  host: IgcFormControl,
-  config: FormValueConfig<T>
-): FormValue<T> {
-  return new FormValue(host, config);
-}
-
 type FormValueTransformers<T> = {
   setValue: (value: T) => T;
   getValue: (value: T) => T;
@@ -171,3 +164,12 @@ export class FormValue<T> {
     return this._transformers.getValue(this._value);
   }
 }
+
+export function createFormValueState<T>(
+  host: IgcFormControl,
+  config: FormValueConfig<T>
+): FormValue<T> {
+  return new FormValue(host, config);
+}
+
+export type FormValueOf<T> = ReturnType<typeof createFormValueState<T>>;

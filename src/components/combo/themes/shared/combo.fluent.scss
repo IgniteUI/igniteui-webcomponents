@@ -27,10 +27,27 @@ $dropdown-theme: dropdown-theme.$fluent;
 
     igc-input::part(container) {
         background: transparent;
-        border-inline-start: 0;
-        border-inline-end-color: transparent;
-        border-block-start: 0;
         border-radius: 0;
+        border-inline: 0;
+        border-block-start: 0;
+
+        &::before {
+            inset-inline-start: 0;
+            width: calc(100% - var(--input-border-size));
+
+            // The shadow color is set by the color: prop set on the input-group [part=container]::before element
+            // Here we only change the shadow to look like border bottom
+            box-shadow: inset 0 calc(var(--input-border-size) * -1) 0 0;
+            border-radius: 0;
+        }
+    }
+
+    igc-input:focus-within::part(container) {
+        &::before {
+            // The shadow color is set by the color: prop set on the input-group [part=container]::before element
+            // Here we only change the shadow to look like border bottom
+            box-shadow: inset 0 calc((var(--input-border-size) + #{rem(1px)}) * -1) 0 0;
+        }
     }
 
     igc-input::part(start) {
@@ -77,23 +94,6 @@ $dropdown-theme: dropdown-theme.$fluent;
         igc-icon {
             color: inherit;
         }
-    }
-}
-
-:host([invalid]:focus-within) {
-    igc-input::part(input) {
-        height: calc(var(--size) - #{rem(4px)});
-    }
-
-    igc-input::part(suffix) {
-        height: var(--size);
-        margin-inline-end: rem(-1px);
-        margin-block-start: rem(-2px);
-    }
-
-    igc-input::part(prefix) {
-        margin-inline-start: rem(-1px);
-        margin-block-start: rem(-2px);
     }
 }
 

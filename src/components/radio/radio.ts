@@ -11,14 +11,13 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
+  type FormValueOf,
   createFormValueState,
   defaultBooleanTransformers,
 } from '../common/mixins/forms/form-value.js';
@@ -29,7 +28,6 @@ import {
   isEmpty,
   isLTR,
   last,
-  noop,
   wrap,
 } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -89,7 +87,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return radioValidators;
   }
 
-  protected override _formValue: FormValue<boolean>;
+  protected override readonly _formValue: FormValueOf<boolean> =
+    createFormValueState(this, {
+      initialValue: false,
+      transformers: defaultBooleanTransformers,
+    });
 
   private readonly _inputId = `radio-${IgcRadioComponent.increment()}`;
   private readonly _labelId = `radio-label-${this._inputId}`;
@@ -189,16 +191,10 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   constructor() {
     super();
 
-    this._formValue = createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
-
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      .set(tabKey, noop, { preventDefault: false })
       .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this._navigate(-1))
