@@ -12,7 +12,6 @@ $theme: $bootstrap;
 }
 
 [part~='file-selector-button'] igc-button {
-
     &::part(base) {
         font-size: var(--input-font);
         transition: border 0.15s ease-out;
