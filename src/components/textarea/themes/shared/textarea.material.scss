@@ -25,7 +25,7 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    padding-block-start: $input-top-padding;
+    margin-block-start: $input-top-padding;
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
