@@ -39,9 +39,9 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
+      type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
       description: 'The type attribute of the control.',
-      options: ['email', 'number', 'password', 'search', 'tel', 'text', 'url'],
+      options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
     },
@@ -164,7 +164,7 @@ interface IgcInputArgs {
   /** The value of the control. */
   value: string | Date;
   /** The type attribute of the control. */
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /**
    * The input mode attribute of the control.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)

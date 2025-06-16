@@ -79,8 +79,8 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     this.role = 'grid';
   }
 
-  public focusActiveDate() {
-    this.activeYear.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeYear.focus(options);
   }
 
   protected handleInteraction(event: Event) {
