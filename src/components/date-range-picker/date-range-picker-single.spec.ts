@@ -9,6 +9,8 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import {
+  altKey,
+  arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
@@ -819,6 +821,31 @@ describe('Date range picker - single input', () => {
 
         await elementUpdated(picker);
         expect(input.value).to.equal('01/01/2000 - 04/23/2025');
+      });
+
+      it('should toggle the calendar dropdown with alt + arrow down/up and keep it focused', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        input = getInput(picker);
+        input.focus();
+
+        expect(isFocused(input)).to.be.true;
+
+        simulateKeyboard(input, [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+        expect(isFocused(input)).to.be.false;
+        expect(eventSpy.firstCall).calledWith('igcOpening');
+        expect(eventSpy.lastCall).calledWith('igcOpened');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(input, [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(input)).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
       });
     });
 
