@@ -6,6 +6,7 @@ import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -65,7 +66,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'tooltip',
+      ariaAtomic: 'true',
+      ariaLive: 'polite',
+    },
+  });
 
   private readonly _controller = addTooltipController(this, {
     onShow: this._showOnInteraction,
@@ -272,15 +279,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public sticky = false;
 
-  constructor() {
-    super();
-
-    this._internals = this.attachInternals();
-    this._internals.role = 'tooltip';
-    this._internals.ariaAtomic = 'true';
-    this._internals.ariaLive = 'polite';
-  }
-
   protected override firstUpdated(): void {
     if (this.open) {
       this.updateComplete.then(() => {
@@ -296,7 +294,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     }
 
     if (changedProperties.has('sticky')) {
-      this._internals.role = this.sticky ? 'status' : 'tooltip';
+      this._internals.setARIA({ role: this.sticky ? 'status' : 'tooltip' });
     }
   }
 

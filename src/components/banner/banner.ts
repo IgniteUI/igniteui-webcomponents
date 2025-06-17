@@ -6,6 +6,7 @@ import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -46,13 +47,15 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcBannerComponent, IgcButtonComponent);
   }
 
-  private _internals: ElementInternals;
-  private _bannerRef: Ref<HTMLElement> = createRef();
-  private _animationPlayer = addAnimationController(this, this._bannerRef);
+  private readonly _bannerRef: Ref<HTMLElement> = createRef();
+  private readonly _animationPlayer = addAnimationController(
+    this,
+    this._bannerRef
+  );
 
   /**
    * Determines whether the banner is being shown/hidden.
@@ -63,10 +66,13 @@ export default class IgcBannerComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
-    this._internals.role = 'status';
-    this._internals.ariaLive = 'polite';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'status',
+        ariaLive: 'polite',
+      },
+    });
   }
 
   /** Shows the banner if not already shown. Returns `true` when the animation has completed. */

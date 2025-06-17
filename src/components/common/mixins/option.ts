@@ -1,8 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
+import { addInternalsController } from '../controllers/internals.js';
 
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
-  protected readonly _internals: ElementInternals;
+  protected readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'option' },
+  });
 
   protected _active = false;
   protected _disabled = false;
@@ -36,7 +39,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set disabled(value: boolean) {
     this._disabled = Boolean(value);
-    this._internals.ariaDisabled = `${this._disabled}`;
+    this._internals.setARIA({ ariaDisabled: `${this.disabled}` });
   }
 
   public get disabled(): boolean {
@@ -50,7 +53,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set selected(value: boolean) {
     this._selected = Boolean(value);
-    this._internals.ariaSelected = `${this._selected}`;
+    this._internals.setARIA({ ariaSelected: `${this._selected}` });
     this.active = this.selected;
   }
 
@@ -71,12 +74,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
 
   public get value(): string {
     return this._value ? this._value : this._contentSlotText;
-  }
-
-  constructor() {
-    super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'option';
   }
 
   /** @internal */

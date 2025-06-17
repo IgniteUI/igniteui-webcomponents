@@ -16,6 +16,7 @@ import {
   type SwipeEvent,
   addGesturesController,
 } from '../common/controllers/gestures.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import {
   addKeybindings,
   arrowLeft,
@@ -105,7 +106,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
   private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
-  private readonly _internals: ElementInternals;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
@@ -320,10 +320,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
-    this._internals.role = 'region';
-    this._internals.ariaRoleDescription = 'carousel';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'region',
+        ariaRoleDescription: 'carousel',
+      },
+    });
 
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);
