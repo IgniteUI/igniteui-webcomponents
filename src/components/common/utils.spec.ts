@@ -329,16 +329,17 @@ export function simulateKeyboard(
   times = 1
 ) {
   const { keys, modifiers } = parseKeys(key);
-  const eventOptions = modifiers.reduce(
-    (acc, m) => Object.assign(acc, { [`${m}Key`]: true }),
-    {}
-  );
+  const eventOptions: Record<string, boolean> = {};
 
-  for (const k of keys) {
+  for (const each of modifiers) {
+    eventOptions[`${each}Key`] = true;
+  }
+
+  for (const key of keys) {
     for (let i = 0; i < times; i++) {
       node.dispatchEvent(
         new KeyboardEvent('keydown', {
-          key: k,
+          key,
           bubbles: true,
           composed: true,
           ...eventOptions,
