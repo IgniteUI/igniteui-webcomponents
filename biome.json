@@ -1,22 +1,13 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "include": [
-      "src/**/*.ts",
-      "src/**/*.js",
-      "scripts/*.js",
-      "scripts/*.mjs",
-      "stories/*.ts"
-    ],
-    "ignore": ["dist/**/*"]
+    "includes": ["**/src/**/*.ts", "**/src/**/*.js", "**/stories/**/*.ts"]
   },
   "vcs": {
     "clientKind": "git",
     "useIgnoreFile": true
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "formatter": {
     "enabled": false
   },
@@ -33,19 +24,22 @@
         "noUnusedFunctionParameters": "error",
         "noUnusedImports": "error",
         "noUnusedPrivateClassMembers": "error",
-        "useImportExtensions": {
-          "options": {
-            "suggestedExtensions": {
-              "ts": { "component": "js", "module": "js" }
-            }
-          },
-          "level": "error"
-        }
+        "useImportExtensions": "error"
       },
       "style": {
         "noNamespace": "error",
         "useCollapsedElseIf": "error",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
       },
       "suspicious": {
         "noConsole": "error",
