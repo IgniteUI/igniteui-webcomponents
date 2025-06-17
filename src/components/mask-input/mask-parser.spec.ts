@@ -151,7 +151,7 @@ describe('Mask parser', () => {
     const value = 'ak47';
     parser.mask = '####';
     const result = parser.replace(parser.apply(), value, 0, value.length);
-    expect(result.value).to.equal('____');
+    expect(result.value).to.equal('47__');
   });
 
   it('replace (invalid end)', () => {

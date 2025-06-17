@@ -147,8 +147,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   /** Focuses the active date. */
-  public focusActiveDate() {
-    this.activeDay.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeDay.focus(options);
   }
 
   protected handleInteraction(event: Event) {

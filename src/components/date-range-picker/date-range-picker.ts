@@ -787,11 +787,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected override async handleAnchorClick() {
-    this._calendar.activeDate =
-      this._firstDefinedInRange ?? this._calendar.activeDate;
     super.handleAnchorClick();
+    this._setCalendarActiveDateAndViewIndex();
     await this.updateComplete;
-    this._calendar[focusActiveDate]();
+    this._calendar[focusActiveDate]({ preventScroll: true });
   }
 
   protected async _handleCalendarChangeEvent(event: CustomEvent<Date>) {
@@ -828,6 +827,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   protected _revertValue() {
     this.value = this._oldValue;
+  }
+
+  /**
+   * Sets the active date of the calendar based on current selection, if any,
+   * or its current active date and its active day view index to always be the first one.
+   */
+  private _setCalendarActiveDateAndViewIndex() {
+    const activeDaysViewIndex = 'activeDaysViewIndex';
+
+    this._calendar.activeDate =
+      this._firstDefinedInRange ?? this._calendar.activeDate;
+    this._calendar[activeDaysViewIndex] = 0;
   }
 
   private _getUpdatedDateRange(

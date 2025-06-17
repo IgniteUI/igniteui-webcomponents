@@ -33,23 +33,11 @@ $theme: $fluent;
     }
 }
 
-:host(:not([invalid])[readonly]:hover) {
-    igc-input::part(container),
-    igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'border-color');
-    }
-}
-
-:host(:not([invalid])[readonly]:focus-within) {
-    igc-input::part(container) {
-        border-color: var-get($theme, 'focused-border-color');
-    }
-}
-
-:host(:not([invalid])[readonly]) {
-    igc-date-time-input:focus-within {
-        &::part(container) {
-            border-color: var-get($theme, 'focused-border-color');
+:host(:not([readonly], [invalid], [disabled])) {
+    igc-input[readonly]:not(:focus):hover::part(container) {
+        &::before {
+            // This represents the shadow color
+            color: var-get($theme, 'hover-border-color');
         }
     }
 }

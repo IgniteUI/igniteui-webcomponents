@@ -3,7 +3,6 @@ import { eventOptions, property } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import {
   addKeybindings,
-  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
@@ -11,7 +10,6 @@ import {
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
 import { partMap } from '../common/part-map.js';
-import { noop } from '../common/util.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
@@ -182,10 +180,6 @@ export abstract class IgcDateTimeInputBaseComponent<
       skip: () => this.readOnly,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      // Skip default spin when in the context of a date picker
-      .set([altKey, arrowUp], noop)
-      .set([altKey, arrowDown], noop)
-
       .set([ctrlKey, ';'], this.setToday)
       .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this.keyboardSpin.bind(this, 'down'))

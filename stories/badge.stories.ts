@@ -71,7 +71,7 @@ function renderTabs(args: IgcBadgeArgs) {
   return ['primary', 'info', 'success', 'warning', 'danger'].map(
     (variant, idx) => html`
       <igc-tab>
-        <span>
+        <span slot="label">
           ${variant.toUpperCase()}
           <igc-badge
             variant=${variant as IgcBadgeArgs['variant']}

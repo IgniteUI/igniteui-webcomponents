@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import {
+  type KeyBindingController,
   type KeyBindingObserverCleanup,
   addKeybindings,
   arrowDown,
@@ -92,7 +93,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     );
   }
 
-  private _keyBindings: ReturnType<typeof addKeybindings>;
+  private _keyBindings: KeyBindingController;
 
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,

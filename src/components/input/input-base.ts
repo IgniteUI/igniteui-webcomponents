@@ -20,8 +20,6 @@ export interface IgcInputComponentEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  /* blazorSuppress */
-  igcCancel: CustomEvent<string>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
