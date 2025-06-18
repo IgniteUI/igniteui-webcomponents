@@ -22,9 +22,6 @@ $active-border-width: rem(2px) !default;
 
     [part='label'] {
         @include type-style('caption');
-
-        translate: 0 -50%;
-        align-self: start;
     }
 
     [part~='file-names'] {
@@ -62,6 +59,11 @@ $active-border-width: rem(2px) !default;
             right: none;
         }
     }
+
+    [part='label'] {
+        translate: 0 -50%;
+        align-self: start;
+    }
 }
 
 :host([outlined]:hover) {
@@ -92,12 +94,12 @@ $active-border-width: rem(2px) !default;
         grid-area: 1 / 3;
     }
 
-    [part='notch'] [part='label'] {
-        transform: translateY(-73%);
-    }
-
     [part~='labelled'] [part~='file-names'] {
         padding-top: rem(20px);
         padding-bottom: rem(6px);
+    }
+
+    [part='label'] {
+        translate: 0 -73%;
     }
 }

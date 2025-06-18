@@ -145,7 +145,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([readonly]):focus-within) {
     [part='label'] {
         @include type-style('caption');
+    }
+}
 
+:host([outlined]) {
+    &:has(input:placeholder-shown) {
+        [part='label'] {
+            align-self: start;
+        }
     }
 }
 
@@ -258,7 +265,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='notch'] [part='label'] {
+    [part='label'] {
         translate: 0 -73%;
     }
 }
