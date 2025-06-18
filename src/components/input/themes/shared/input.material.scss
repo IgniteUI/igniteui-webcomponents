@@ -8,7 +8,7 @@ $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
 
 %label {
-    translate: 0 calc(var(--label-position) * -1);
+    translate: 0 -50%;
 }
 
 %floated-styles {
@@ -50,8 +50,8 @@ $fs: rem(16px) !default;
 
 input:placeholder-shown + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
-    @extend %label;
     @include type-style('caption');
+    @extend %label;
 }
 
 [part~='input'] {
@@ -138,12 +138,25 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host(:focus-within) {
     [part='label'] {
-        @extend %label;
-        @include type-style('caption');
-
         color: var-get($theme, 'focused-secondary-color');
     }
 }
+
+:host(:not([readonly]):focus-within) {
+    [part='label'] {
+        @include type-style('caption');
+
+    }
+}
+
+:host([outlined]:not([readonly]):focus-within) {
+    [part='label'] {
+        @extend %label;
+
+        align-self: start;
+    }
+}
+
 
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
@@ -386,8 +399,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host([outlined]) {
-    --label-position: calc((#{var-get($theme, 'size')} / 2) - (#{$idle-border-width}));
-
     [part='notch'] {
         border: {
             width: $idle-border-width;
@@ -460,10 +471,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined]:focus-within) {
-    [part='label'] {
-        margin-block-start: calc(#{$active-border-width} / 2);
-    }
-
     [part='start'] {
         border: {
             color: var-get($theme, 'focused-border-color');

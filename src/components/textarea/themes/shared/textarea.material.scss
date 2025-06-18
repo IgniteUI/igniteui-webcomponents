@@ -31,6 +31,7 @@ textarea {
     position: relative;
     max-width: inherit;
     padding-inline: rem(4px);
+    border-bottom: rem(2px) solid transparent;
 }
 
 [part='label'] {
@@ -328,10 +329,6 @@ textarea {
                 end-radius: var-get($theme, 'border-border-radius');
             }
         }
-    }
-
-    textarea {
-        bottom: rem(2px);
     }
 }
 

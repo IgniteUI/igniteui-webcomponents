@@ -6,11 +6,6 @@ $theme: $material;
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 
-%label {
-    --label-position: #{sizable(18px, 22px, 26px)};
-
-    transform: translateY(calc(var(--label-position) * -1));
-}
 
 %floated-styles {
     border-top: $idle-border-width solid transparent;
@@ -26,8 +21,10 @@ $active-border-width: rem(2px) !default;
     }
 
     [part='label'] {
-        @extend %label;
         @include type-style('caption');
+
+        translate: 0 -50%;
+        align-self: start;
     }
 
     [part~='file-names'] {
