@@ -443,7 +443,7 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
     }
 
     for (const key of aKeys) {
-      if (!Object.prototype.hasOwnProperty.call(b, key)) {
+      if (!Object.hasOwn(b, key)) {
         return false;
       }
     }

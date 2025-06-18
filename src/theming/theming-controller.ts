@@ -1,20 +1,20 @@
 import {
+  adoptStyles,
+  css,
   type LitElement,
   type ReactiveController,
   type ReactiveControllerHost,
   type ReactiveElement,
-  adoptStyles,
-  css,
 } from 'lit';
 
 import { getTheme } from './config.js';
-import { CHANGED_THEME_EVENT, _themeChangedEmitter } from './theming-event.js';
+import { _themeChangedEmitter, CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
   Theme,
   ThemeChangedCallback,
   ThemeController,
-  ThemeVariant,
   Themes,
+  ThemeVariant,
 } from './types.js';
 
 class ThemingController implements ReactiveController, ThemeController {

@@ -1,8 +1,6 @@
 import { css } from 'lit';
 
 import type { Themes } from '../../../theming/types.js';
-import { styles as indigo } from './shared/tooltip.indigo.css.js';
-
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/tooltip.bootstrap.css.js';
 import { styles as fluentDark } from './dark/tooltip.fluent.css.js';
@@ -14,6 +12,7 @@ import { styles as fluentLight } from './light/tooltip.fluent.css.js';
 import { styles as indigoLight } from './light/tooltip.indigo.css.js';
 import { styles as materialLight } from './light/tooltip.material.css.js';
 import { styles as shared } from './light/tooltip.shared.css.js';
+import { styles as indigo } from './shared/tooltip.indigo.css.js';
 
 const light = {
   shared: css`

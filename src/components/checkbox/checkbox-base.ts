@@ -7,9 +7,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValueOf,
   createFormValueState,
   defaultBooleanTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { isEmpty } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';

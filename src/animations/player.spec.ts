@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement, css } from 'lit';
+import { css, LitElement } from 'lit';
 
 import { EaseOut } from './easings.js';
 import { addAnimationController } from './player.js';

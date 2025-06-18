@@ -1,7 +1,7 @@
 import {
+  isServer,
   type ReactiveController,
   type ReactiveControllerHost,
-  isServer,
 } from 'lit';
 
 type ResizeObserverControllerCallback = (

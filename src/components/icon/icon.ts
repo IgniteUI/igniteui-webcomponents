@@ -1,15 +1,16 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   getIconRegistry,
-  registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
   setIconRef as setIconRef_impl,
 } from './icon.registry.js';
 import type { IconMeta } from './registry/types.js';
@@ -30,11 +31,13 @@ export default class IgcIconComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcIconComponent);
   }
 
-  private __internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'img' },
+  });
 
   @state()
   private svg = '';
@@ -64,8 +67,6 @@ export default class IgcIconComponent extends LitElement {
 
   constructor() {
     super();
-    this.__internals = this.attachInternals();
-    this.__internals.role = 'img';
 
     getThemeController(this)!.onThemeChanged = (theme) =>
       getIconRegistry().setRefsByTheme(theme);
@@ -103,7 +104,7 @@ export default class IgcIconComponent extends LitElement {
     const { svg, title } = getIconRegistry().get(name, collection) ?? {};
 
     this.svg = svg ?? '';
-    this.__internals.ariaLabel = title ?? null;
+    this._internals.setARIA({ ariaLabel: title ?? null });
   }
 
   protected override render() {
