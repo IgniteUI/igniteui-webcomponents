@@ -1,0 +1,243 @@
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import IgcButtonComponent from '../button/button.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import IgcChatInputComponent from './chat-input.js';
+import IgcChatMessageListComponent from './chat-message-list.js';
+import { styles } from './themes/chat.base.css.js';
+import type {
+  IgcMessage,
+  IgcMessageAttachment,
+  IgcMessageReaction,
+  IgcUser,
+} from './types.js';
+
+export interface IgcChatComponentEventMap {
+  igcMessageSend: CustomEvent<IgcMessage>;
+  igcTypingChange: CustomEvent<IgcTypingChangeEventArgs>;
+  igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
+}
+
+export interface IgcTypingChangeEventArgs {
+  user: IgcUser;
+  isTyping: boolean;
+}
+
+/**
+ *
+ * @element igc-chat
+ *
+ */
+export default class IgcChatComponent extends EventEmitterMixin<
+  IgcChatComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
+  /** @private */
+  public static readonly tagName = 'igc-chat';
+
+  public static styles = styles;
+
+  /* blazorSuppress */
+  public static register() {
+    registerComponent(
+      IgcChatComponent,
+      IgcChatInputComponent,
+      IgcChatMessageListComponent,
+      IgcButtonComponent
+    );
+  }
+
+  @property({ attribute: false })
+  public user: IgcUser | undefined;
+
+  @property({ reflect: true, attribute: false })
+  public messages: IgcMessage[] = [];
+
+  @property({ reflect: true, attribute: false })
+  public typingUsers: IgcUser[] = [];
+
+  @property({ type: Boolean, attribute: 'hide-avatar' })
+  public hideAvatar = false;
+
+  @property({ type: Boolean, attribute: 'hide-user-name' })
+  public hideUserName = false;
+
+  @property({ type: Boolean, attribute: 'hide-meta-data' })
+  public hideMetaData = false;
+
+  @property({ type: Boolean, attribute: 'disable-auto-scroll' })
+  public disableAutoScroll = false;
+
+  @property({ type: Boolean, attribute: 'disable-reactions' })
+  public disableReactions = false;
+
+  @property({ type: Boolean, attribute: 'disable-attachments' })
+  public disableAttachments = false;
+
+  @property({ type: Boolean, attribute: 'disable-emojis' })
+  public disableEmojis = false;
+
+  @property({ type: String, attribute: 'header-text', reflect: true })
+  public headerText = '';
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(
+      'add-reaction',
+      this.handleAddReaction as EventListener
+    );
+    this.addEventListener(
+      'message-send',
+      this.handleSendMessage as EventListener
+    );
+    this.addEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
+    );
+  }
+
+  public override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      'message-send',
+      this.handleSendMessage as EventListener
+    );
+    this.removeEventListener(
+      'add-reaction',
+      this.handleAddReaction as EventListener
+    );
+    this.removeEventListener(
+      'attachment-click',
+      this.handleAttachmentClick as EventListener
+    );
+  }
+
+  private handleSendMessage(e: CustomEvent) {
+    const text = e.detail.text;
+    const attachments = e.detail.attachments || [];
+
+    if ((!text.trim() && attachments.length === 0) || !this.user) return;
+
+    const newMessage: IgcMessage = {
+      id: Date.now().toString(),
+      text,
+      sender: this.user,
+      timestamp: new Date(),
+      status: 'sent',
+      attachments,
+      reactions: [],
+    };
+
+    this.messages = [...this.messages, newMessage];
+    this.emitEvent('igcMessageSend', { detail: newMessage });
+  }
+
+  private handleTypingChange(e: CustomEvent) {
+    const isTyping = e.detail.isTyping;
+    const user = this.user;
+    if (!user) return;
+    const typingArgs = { user, isTyping };
+    this.emitEvent('igcTypingChange', { detail: typingArgs });
+  }
+
+  private handleAddReaction(e: CustomEvent) {
+    const { messageId, emojiId } = e.detail;
+
+    if (!messageId) return;
+
+    this.messages = this.messages.map((message) => {
+      if (message.id === messageId) {
+        const userReaction = message.reactions?.find(
+          (r) => this.user && r.users.includes(this.user.id)
+        );
+
+        if (userReaction) {
+          // Remove reaction
+          message.reactions?.forEach((r) => {
+            if (r.id === userReaction.id) {
+              r.users = (r.users ?? []).filter((id) => id !== this.user?.id);
+            }
+          });
+
+          message.reactions =
+            message.reactions?.filter((r) => r.users.length > 0) || [];
+        }
+
+        const existingReaction = message.reactions?.find(
+          (r) => r.id === emojiId
+        );
+
+        if (existingReaction && userReaction?.id !== emojiId) {
+          // Update existing reaction
+          message.reactions?.forEach((r) => {
+            if (r.id === emojiId) {
+              if (this.user) {
+                r.users.push(this.user.id);
+              }
+            }
+          });
+
+          message.reactions = [...(message.reactions || [])];
+        }
+
+        if (!existingReaction && userReaction?.id !== emojiId) {
+          // Create new reaction
+          const newReaction: IgcMessageReaction = {
+            id: emojiId,
+            users: this.user ? [this.user.id] : [],
+          };
+
+          message.reactions = [...(message.reactions || []), newReaction];
+        }
+      }
+
+      return { ...message };
+    });
+  }
+
+  private handleAttachmentClick(e: CustomEvent) {
+    const attachmentArgs = e.detail.attachment;
+    this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
+  }
+
+  protected override render() {
+    return html`
+      <div class="chat-container">
+        <div class="header" part="header">
+          <div class="info">
+            <slot name="prefix" part="prefix"></slot>
+            <slot name="title" part="title">${this.headerText}</slot>
+          </div>
+          <slot name="actions" class="actions">
+            <igc-button variant="flat">⋯</igc-button>
+          </slot>
+        </div>
+        <igc-chat-message-list
+          .messages=${this.messages}
+          .user=${this.user}
+          .typingUsers=${this.typingUsers}
+          .disableAutoScroll=${this.disableAutoScroll}
+          .disableReactions=${this.disableReactions}
+          .hideAvatar=${this.hideAvatar}
+          .hideUserName=${this.hideUserName}
+          .hideMetaData=${this.hideMetaData}
+        >
+        </igc-chat-message-list>
+        <igc-chat-input
+          .disableAttachments=${this.disableAttachments}
+          .disableEmojis=${this.disableEmojis}
+          @message-send=${this.handleSendMessage}
+          @typing-change=${this.handleTypingChange}
+        ></igc-chat-input>
+      </div>
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-chat': IgcChatComponent;
+  }
+}
