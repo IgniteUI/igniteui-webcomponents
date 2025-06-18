@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import {

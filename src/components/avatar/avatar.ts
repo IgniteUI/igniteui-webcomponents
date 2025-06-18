@@ -1,9 +1,8 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
@@ -29,35 +28,40 @@ export default class IgcAvatarComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcAvatarComponent);
   }
 
-  private __internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'image',
+      ariaLabel: 'avatar',
+    },
+  });
 
   @state()
-  private hasError = false;
+  private _hasError = false;
 
   /**
    * The image source to use.
    * @attr
    */
   @property()
-  public src!: string;
+  public src?: string;
 
   /**
    * Alternative text for the image.
    * @attr
    */
   @property()
-  public alt!: string;
+  public alt?: string;
 
   /**
    * Initials to use as a fallback when no image is available.
    * @attr
    */
   @property()
-  public initials!: string;
+  public initials?: string;
 
   /**
    * The shape of the avatar.
@@ -66,27 +70,20 @@ export default class IgcAvatarComponent extends LitElement {
   @property({ reflect: true })
   public shape: AvatarShape = 'square';
 
-  constructor() {
-    super();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('initials') || changedProperties.has('alt')) {
+      this._internals.setARIA({
+        ariaRoleDescription: this.alt ?? this.initials,
+      });
+    }
 
-    this.__internals = this.attachInternals();
-    this.__internals.role = 'img';
-    this.__internals.ariaLabel = 'avatar';
+    if (changedProperties.has('src')) {
+      this._hasError = false;
+    }
   }
 
-  @watch('initials')
-  @watch('alt')
-  protected roleDescriptionChange() {
-    this.__internals.ariaRoleDescription = this.alt ?? this.initials;
-  }
-
-  @watch('src')
-  protected handleErrorState() {
-    this.hasError = false;
-  }
-
-  protected handleError() {
-    this.hasError = true;
+  protected _handleError(): void {
+    this._hasError = true;
   }
 
   protected override render() {
@@ -95,13 +92,13 @@ export default class IgcAvatarComponent extends LitElement {
         ${this.initials
           ? html`<span part="initials">${this.initials}</span>`
           : html`<slot></slot>`}
-        ${this.src && !this.hasError
+        ${this.src && !this._hasError
           ? html`
               <img
                 part="image"
                 alt=${ifDefined(this.alt)}
                 src=${ifDefined(this.src)}
-                @error=${this.handleError}
+                @error=${this._handleError}
               />
             `
           : nothing}

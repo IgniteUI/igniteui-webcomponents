@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   queryAll,
@@ -13,9 +13,10 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { carouselContext } from '../common/context.js';
 import {
-  type SwipeEvent,
   addGesturesController,
+  type SwipeEvent,
 } from '../common/controllers/gestures.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import {
   addKeybindings,
   arrowLeft,
@@ -24,8 +25,8 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -47,8 +48,8 @@ import type {
   CarouselIndicatorsOrientation,
   HorizontalTransitionAnimation,
 } from '../types.js';
-import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
+import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
 import { all } from './themes/container.js';
@@ -105,7 +106,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
   private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
-  private readonly _internals: ElementInternals;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
@@ -320,10 +320,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
-    this._internals.role = 'region';
-    this._internals.ariaRoleDescription = 'carousel';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'region',
+        ariaRoleDescription: 'carousel',
+      },
+    });
 
     this.addEventListener('pointerenter', this.handlePointerEnter);
     this.addEventListener('pointerleave', this.handlePointerLeave);

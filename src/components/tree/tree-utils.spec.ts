@@ -1,7 +1,6 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-
-import type IgcTreeItemComponent from './tree-item.js';
 import type IgcTreeComponent from './tree.js';
+import type IgcTreeItemComponent from './tree-item.js';
 
 export const DIFF_OPTIONS = {
   ignoreAttributes: ['id', 'part', 'tabindex', 'role', 'size', 'style'],

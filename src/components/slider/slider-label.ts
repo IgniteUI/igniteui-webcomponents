@@ -1,4 +1,4 @@
-import { LitElement, css } from 'lit';
+import { css, LitElement } from 'lit';
 
 import { registerComponent } from '../common/definitions/register.js';
 

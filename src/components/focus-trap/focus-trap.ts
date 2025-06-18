@@ -1,4 +1,4 @@
-import { LitElement, css, html, nothing } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { registerComponent } from '../common/definitions/register.js';

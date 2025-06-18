@@ -11,8 +11,8 @@ import IgcIconButtonComponent from '../button/icon-button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
-import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
+import IgcTileManagerComponent from './tile-manager.js';
 
 describe('Tile Manager component', () => {
   before(() => {

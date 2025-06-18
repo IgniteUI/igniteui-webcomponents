@@ -6,8 +6,8 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValueOf,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';

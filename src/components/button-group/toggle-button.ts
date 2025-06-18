@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';

@@ -5,9 +5,8 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
-
 import { range } from 'lit/directives/range.js';
+import { spy } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
   arrowLeft,

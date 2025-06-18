@@ -17,9 +17,9 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
-  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
