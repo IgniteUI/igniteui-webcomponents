@@ -4,15 +4,15 @@ import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   runValidationContainerTests,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import type IgcInputComponent from '../input/input.js';
+import IgcComboComponent from './combo.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
 import type IgcComboListComponent from './combo-list.js';
-import IgcComboComponent from './combo.js';
 
 describe('Combo', () => {
   interface City {

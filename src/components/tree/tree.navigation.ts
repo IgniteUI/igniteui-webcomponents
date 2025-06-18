@@ -1,7 +1,7 @@
 import { isLTR } from '../common/util.js';
-import type IgcTreeItemComponent from './tree-item.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
+import type IgcTreeItemComponent from './tree-item.js';
 
 export const NAVIGATION_KEYS = new Set([
   'down',

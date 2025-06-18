@@ -1,11 +1,10 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 
 export interface IgcButtonEventMap {

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 
 export abstract class IgcBaseOptionLikeComponent extends LitElement {

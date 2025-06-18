@@ -3,10 +3,10 @@ import { CalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateClick,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {

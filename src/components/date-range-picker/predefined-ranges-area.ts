@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { CalendarDay } from '../calendar/model.js';

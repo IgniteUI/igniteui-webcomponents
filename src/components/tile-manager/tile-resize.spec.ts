@@ -5,10 +5,9 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { range } from 'lit/directives/range.js';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
-
-import { range } from 'lit/directives/range.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
@@ -22,8 +21,8 @@ import IgcResizeContainerComponent, {
   type IgcResizeContainerComponentEventMap,
 } from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
-import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
+import IgcTileManagerComponent from './tile-manager.js';
 
 describe('Tile resize', () => {
   before(() => {

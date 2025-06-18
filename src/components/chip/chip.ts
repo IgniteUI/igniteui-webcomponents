@@ -1,6 +1,6 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';

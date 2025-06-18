@@ -6,7 +6,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement, css } from 'lit';
+import { css, LitElement } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
 import { getCenterPoint, last } from '../util.js';
 import {
@@ -16,7 +16,7 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '../utils.spec.js';
-import { type DragCallbackParameters, addDragController } from './drag.js';
+import { addDragController, type DragCallbackParameters } from './drag.js';
 import { escapeKey } from './key-bindings.js';
 
 describe('Drag controller', () => {

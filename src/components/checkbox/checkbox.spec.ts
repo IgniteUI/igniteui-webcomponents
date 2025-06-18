@@ -8,10 +8,10 @@ import {
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcCheckboxComponent from './checkbox.js';
 
