@@ -1,10 +1,10 @@
 import { consume } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { carouselContext } from '../common/context.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, formatString } from '../common/util.js';
 import { animations } from './animations.js';
@@ -18,20 +18,25 @@ import { styles } from './themes/carousel-slide.base.css.js';
  *
  * @slot Default slot for the carousel slide.
  */
-
 export default class IgcCarouselSlideComponent extends LitElement {
   public static override styles = styles;
   public static readonly tagName = 'igc-carousel-slide';
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCarouselSlideComponent);
   }
 
   private static readonly increment = createCounter();
 
-  private _internals: ElementInternals;
-  private _animationPlayer = addAnimationController(this);
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'tabpanel',
+      ariaRoleDescription: 'slide',
+    },
+  });
+
+  private readonly _animationPlayer = addAnimationController(this);
 
   @consume({ context: carouselContext, subscribe: true })
   private _carousel?: IgcCarouselComponent;
@@ -93,20 +98,10 @@ export default class IgcCarouselSlideComponent extends LitElement {
     return event.type === 'finish';
   }
 
-  constructor() {
-    super();
-    this._internals = this.attachInternals();
-
-    this._internals.role = 'tabpanel';
-    this._internals.ariaRoleDescription = 'slide';
-  }
-
   protected override willUpdate(): void {
-    this._internals.ariaLabel = formatString(
-      this._labelFormat,
-      this._index + 1,
-      this._total
-    );
+    this._internals.setARIA({
+      ariaLabel: formatString(this._labelFormat, this._index + 1, this._total),
+    });
   }
 
   public override connectedCallback(): void {

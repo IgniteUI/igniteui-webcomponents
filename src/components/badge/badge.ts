@@ -1,8 +1,7 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
@@ -25,11 +24,13 @@ export default class IgcBadgeComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcBadgeComponent);
   }
 
-  private __internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'status' },
+  });
 
   /**
    * The type of badge.
@@ -52,15 +53,10 @@ export default class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape: BadgeShape = 'rounded';
 
-  constructor() {
-    super();
-    this.__internals = this.attachInternals();
-    this.__internals.role = 'status';
-  }
-
-  @watch('variant')
-  protected variantChange() {
-    this.__internals.ariaRoleDescription = `badge ${this.variant}`;
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('variant')) {
+      this._internals.setARIA({ ariaRoleDescription: `badge ${this.variant}` });
+    }
   }
 
   protected override render() {

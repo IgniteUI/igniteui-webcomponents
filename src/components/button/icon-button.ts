@@ -28,7 +28,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   protected static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcIconButtonComponent, IgcIconComponent);
   }
 
@@ -38,14 +38,14 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
    * @attr
    */
   @property()
-  public name!: string;
+  public name?: string;
 
   /**
    * The name of the icon collection.
    * @attr
    */
   @property()
-  public collection!: string;
+  public collection?: string;
 
   /**
    * Whether to flip the icon button. Useful for RTL layouts.
