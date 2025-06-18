@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, type PropertyValues, html } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { carouselContext } from '../common/context.js';

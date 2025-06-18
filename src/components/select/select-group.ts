@@ -1,11 +1,11 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
@@ -9,8 +9,8 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   getIconRegistry,
-  registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
   setIconRef as setIconRef_impl,
 } from './icon.registry.js';
 import type { IconMeta } from './registry/types.js';

@@ -1,18 +1,18 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { type IgcCheckboxComponent, defineComponents } from '../../index.js';
-import IgcTreeItemComponent from './tree-item.js';
-import {
-  PARTS,
-  TreeTestFunctions,
-  cascadeSelectionTree,
-  selectedItemsTree,
-  simpleTree,
-} from './tree-utils.spec.js';
+import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
+import IgcTreeItemComponent from './tree-item.js';
+import {
+  cascadeSelectionTree,
+  PARTS,
+  selectedItemsTree,
+  simpleTree,
+  TreeTestFunctions,
+} from './tree-utils.spec.js';
 
 describe('Tree Selection', () => {
   before(() => {

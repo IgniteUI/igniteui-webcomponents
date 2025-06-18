@@ -1,4 +1,4 @@
-import { LitElement, type PropertyValues, html, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseOut } from '../../animations/easings.js';
@@ -15,7 +15,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import { TooltipRegexes, addTooltipController } from './controller.js';
+import { addTooltipController, TooltipRegexes } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';

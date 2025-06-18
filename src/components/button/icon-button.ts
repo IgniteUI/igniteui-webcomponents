@@ -7,8 +7,8 @@ import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
-  registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
 } from '../icon/icon.registry.js';
 import type { IconButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';

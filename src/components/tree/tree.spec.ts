@@ -4,22 +4,22 @@ import { spy } from 'sinon';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { scrolledIntoView } from '../common/utils.spec.js';
+import IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
-  DIFF_OPTIONS,
-  PARTS,
-  SLOTS,
-  TreeTestFunctions,
   activeItemsTree,
+  DIFF_OPTIONS,
   disabledItemsTree,
   expandCollapseTree,
   navigationTree,
+  PARTS,
+  SLOTS,
   selectedItemsTree,
   simpleHierarchyTree,
   simpleTree,
+  TreeTestFunctions,
   wrappedItemsTree,
 } from './tree-utils.spec.js';
-import IgcTreeComponent from './tree.js';
 
 describe('Tree', () => {
   before(() => {

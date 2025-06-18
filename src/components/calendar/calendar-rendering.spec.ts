@@ -4,7 +4,7 @@ import type { TemplateResult } from 'lit';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import IgcCalendarComponent from './calendar.js';
-import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
+import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 

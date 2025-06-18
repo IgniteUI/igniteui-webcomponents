@@ -1,18 +1,18 @@
 import {
-  type Middleware,
-  type MiddlewareData,
-  type Placement,
   arrow,
   autoUpdate,
   computePosition,
   flip,
   inline,
   limitShift,
+  type Middleware,
+  type MiddlewareData,
   offset,
+  type Placement,
   shift,
   size,
 } from '@floating-ui/dom';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { watch } from '../common/decorators/watch.js';

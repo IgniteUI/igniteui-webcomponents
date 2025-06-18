@@ -1,4 +1,4 @@
-import { LitElement, type PropertyValues, html, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';

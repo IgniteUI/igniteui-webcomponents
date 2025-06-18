@@ -1,4 +1,4 @@
-import { LitElement, type PropertyValues, html } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { addInternalsController } from '../common/controllers/internals.js';
