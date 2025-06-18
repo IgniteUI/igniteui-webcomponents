@@ -8,8 +8,8 @@ import { partMap } from '../common/part-map.js';
 import { createCounter } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
-import { all } from './themes/switch-themes.js';
 import { styles } from './themes/switch.base.css.js';
+import { all } from './themes/switch-themes.js';
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.

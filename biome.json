@@ -7,7 +7,14 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "includes": ["src/**/*.ts", "/stories/**/*.ts", "!src/index.ts"],
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "formatter": {
     "enabled": false
   },
@@ -24,7 +31,10 @@
         "noUnusedFunctionParameters": "error",
         "noUnusedImports": "error",
         "noUnusedPrivateClassMembers": "error",
-        "useImportExtensions": "error"
+        "useImportExtensions": {
+          "level": "error",
+          "options": { "forceJsExtensions": true }
+        }
       },
       "style": {
         "noNamespace": "error",

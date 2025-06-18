@@ -27,8 +27,8 @@ import {
   simulatePointerMove,
 } from '../common/utils.spec.js';
 import IgcRangeSliderComponent from './range-slider.js';
-import type { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderComponent from './slider.js';
+import type { IgcSliderBaseComponent } from './slider-base.js';
 
 describe('Slider component', () => {
   describe('Regular', () => {

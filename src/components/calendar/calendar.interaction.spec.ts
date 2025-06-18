@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
+import { defineComponents, IgcCalendarComponent } from '../../index.js';
 import { first, last } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
@@ -11,7 +11,7 @@ import {
   getWeekDayNumber,
   isDateInRanges,
 } from './helpers.js';
-import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
+import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
