@@ -148,14 +148,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([outlined]) {
-    &:has(input:placeholder-shown) {
-        [part='label'] {
-            align-self: start;
-        }
-    }
-}
-
 :host([outlined]:not([readonly]):focus-within) {
     [part='label'] {
         @extend %label;
@@ -413,6 +405,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
             color: var-get($theme, 'border-color');
             left: none;
             right: none;
+        }
+    }
+
+    &:has(input:placeholder-shown) {
+        [part='label'] {
+            align-self: start;
         }
     }
 
