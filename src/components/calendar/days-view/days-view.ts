@@ -24,8 +24,8 @@ import {
   isPreviousMonth,
 } from '../helpers.js';
 import { CalendarDay, daysInWeek } from '../model.js';
-import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
+import { styles } from '../themes/days-view.base.css.js';
 import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {

@@ -1,11 +1,11 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 
 export interface IgcButtonEventMap {
@@ -28,8 +28,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     delegatesFocus: true,
   };
 
-  protected readonly __internals: ElementInternals;
-
+  protected readonly _internals = addInternalsController(this);
   private readonly _focusRingManager = addKeyboardFocusRing(this);
 
   protected _disabled = false;
@@ -50,14 +49,14 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public href!: string;
+  public href?: string;
 
   /**
    * Prompts to save the linked URL instead of navigating to it.
    * @attr
    */
   @property()
-  public download!: string;
+  public download?: string;
 
   /**
    * Where to display the linked URL, as the name for a browsing context.
@@ -72,7 +71,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public rel!: string;
+  public rel?: string;
 
   /**
    * The disabled state of the component
@@ -92,12 +91,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   /* alternateType: object */
   /** Returns the HTMLFormElement associated with this element. */
   public get form(): HTMLFormElement | null {
-    return this.__internals.form;
-  }
-
-  constructor() {
-    super();
-    this.__internals = this.attachInternals();
+    return this._internals.form;
   }
 
   /* alternateName: focusComponent */

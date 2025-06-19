@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { range } from 'lit/directives/range.js';
 
@@ -11,10 +11,10 @@ import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
 import { chunk } from '../../common/util.js';
-import { YEARS_PER_ROW, getViewElement, getYearRange } from '../helpers.js';
+import { getViewElement, getYearRange, YEARS_PER_ROW } from '../helpers.js';
 import { CalendarDay } from '../model.js';
-import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
+import { styles } from '../themes/year-month-view.base.css.js';
 import type { IgcCalendarComponentEventMap } from '../types.js';
 
 /**

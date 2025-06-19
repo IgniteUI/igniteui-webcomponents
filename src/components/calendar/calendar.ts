@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -36,12 +36,12 @@ import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import {
-  MONTHS_PER_ROW,
-  YEARS_PER_PAGE,
-  YEARS_PER_ROW,
   areSameMonth,
   getYearRange,
   isDateInRanges,
+  MONTHS_PER_ROW,
+  YEARS_PER_PAGE,
+  YEARS_PER_ROW,
 } from './helpers.js';
 import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';

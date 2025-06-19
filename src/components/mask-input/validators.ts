@@ -1,5 +1,5 @@
 import messages from '../common/localization/validation-en.js';
-import { type Validator, requiredValidator } from '../common/validators.js';
+import { requiredValidator, type Validator } from '../common/validators.js';
 import type IgcMaskInputComponent from './mask-input.js';
 
 export const maskValidators: Validator<IgcMaskInputComponent>[] = [

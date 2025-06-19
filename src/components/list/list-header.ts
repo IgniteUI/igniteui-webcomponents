@@ -1,6 +1,6 @@
-import { LitElement, html } from 'lit';
-
+import { html, LitElement } from 'lit';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/header.base.css.js';
 import { all } from './themes/header.js';
@@ -18,19 +18,18 @@ export default class IgcListHeaderComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcListHeaderComponent);
   }
-
-  private _internals: ElementInternals;
 
   constructor() {
     super();
 
     addThemingController(this, all);
 
-    this._internals = this.attachInternals();
-    this._internals.role = 'separator';
+    addInternalsController(this, {
+      initialARIA: { role: 'separator' },
+    });
   }
 
   protected override render() {

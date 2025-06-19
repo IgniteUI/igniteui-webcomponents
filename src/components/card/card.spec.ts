@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { IgcCardComponent, defineComponents } from '../../index.js';
+import { defineComponents, IgcCardComponent } from '../../index.js';
 
 describe('Card Component', () => {
   before(() => {

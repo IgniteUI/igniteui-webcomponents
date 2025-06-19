@@ -1,10 +1,11 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -26,11 +27,16 @@ export default class IgcSelectGroupComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSelectGroupComponent);
   }
 
-  private _internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'group',
+    },
+  });
+
   private controlledItems!: Array<IgcSelectItemComponent>;
 
   /** All child `igc-select-item`s. */
@@ -80,9 +86,6 @@ export default class IgcSelectGroupComponent extends LitElement {
         subtree: true,
       },
     });
-
-    this._internals = this.attachInternals();
-    this._internals.role = 'group';
   }
 
   protected override async firstUpdated() {
@@ -94,7 +97,7 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   @watch('disabled', { waitUntilFirstUpdate: true })
   protected disabledChange() {
-    this._internals.ariaDisabled = `${this.disabled}`;
+    this._internals.setARIA({ ariaDisabled: this.disabled.toString() });
 
     for (const item of this.controlledItems) {
       item.disabled = this.disabled;

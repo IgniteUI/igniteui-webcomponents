@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';

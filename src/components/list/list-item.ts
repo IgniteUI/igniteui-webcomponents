@@ -1,7 +1,8 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
@@ -31,7 +32,7 @@ export default class IgcListItemComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcListItemComponent);
   }
 
@@ -42,15 +43,16 @@ export default class IgcListItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
-  private _internals: ElementInternals;
-
   constructor() {
     super();
 
     addThemingController(this, all);
 
-    this._internals = this.attachInternals();
-    this._internals.role = 'listitem';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'listitem',
+      },
+    });
   }
 
   protected override render() {

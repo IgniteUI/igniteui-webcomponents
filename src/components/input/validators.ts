@@ -1,5 +1,4 @@
 import {
-  type Validator,
   emailValidator,
   maxLengthValidator,
   maxValidator,
@@ -9,6 +8,7 @@ import {
   requiredValidator,
   stepValidator,
   urlValidator,
+  type Validator,
 } from '../common/validators.js';
 import type IgcInputComponent from './input.js';
 

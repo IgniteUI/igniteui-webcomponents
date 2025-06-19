@@ -1,7 +1,7 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';

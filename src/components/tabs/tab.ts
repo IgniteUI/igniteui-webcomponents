@@ -1,12 +1,12 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
+import { all } from './themes/tab-themes.js';
 
 /**
  * A tab element slotted into an `igc-tabs` container.

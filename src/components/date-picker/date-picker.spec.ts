@@ -3,8 +3,8 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   getCalendarDOM,
-  getDOMDate,
   getDayViewDOM,
+  getDOMDate,
 } from '../calendar/helpers.spec.js';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';

@@ -1,6 +1,7 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
@@ -20,7 +21,7 @@ export default class IgcListComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcListComponent,
       IgcListItemComponent,
@@ -28,15 +29,16 @@ export default class IgcListComponent extends LitElement {
     );
   }
 
-  private _internals: ElementInternals;
-
   constructor() {
     super();
 
     addThemingController(this, all);
 
-    this._internals = this.attachInternals();
-    this._internals.role = 'list';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'list',
+      },
+    });
   }
 
   protected override render() {

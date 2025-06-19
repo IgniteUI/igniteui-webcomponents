@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -9,8 +9,8 @@ import {
   tileManagerContext,
 } from '../common/context.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';

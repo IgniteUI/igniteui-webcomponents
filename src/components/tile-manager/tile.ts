@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -15,8 +15,8 @@ import {
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import {
-  type DragCallbackParameters,
   addDragController,
+  type DragCallbackParameters,
 } from '../common/controllers/drag.js';
 import { addFullscreenController } from '../common/controllers/fullscreen.js';
 import { registerComponent } from '../common/definitions/register.js';

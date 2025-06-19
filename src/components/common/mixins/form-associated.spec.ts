@@ -9,13 +9,13 @@ import { LitElement } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { StaticValue } from 'lit/static-html.js';
 import {
-  type Validator,
   maxLengthValidator,
   minLengthValidator,
   requiredValidator,
+  type Validator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
-import { type FormValueOf, createFormValueState } from './forms/form-value.js';
+import { createFormValueState, type FormValueOf } from './forms/form-value.js';
 import type {
   FormAssociatedElementInterface,
   FormRequiredInterface,
