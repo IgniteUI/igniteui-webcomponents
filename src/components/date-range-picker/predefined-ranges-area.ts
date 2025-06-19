@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
 import { watch } from '../common/decorators/watch.js';
@@ -22,7 +22,6 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
  *
  * @element igc-predefined-ranges-area
  */
-@themes(all)
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
@@ -56,6 +55,11 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   @property({ attribute: false })
   public resourceStrings: IgcDateRangePickerResourceStrings =
     IgcDateRangePickerResourceStringsEN;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   @watch('resourceStrings')
   protected _updatePredefinedRanges(): void {

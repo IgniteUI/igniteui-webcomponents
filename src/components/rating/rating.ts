@@ -10,7 +10,7 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -72,7 +72,6 @@ export interface IgcRatingComponentEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -251,6 +250,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => !this.isInteractive,

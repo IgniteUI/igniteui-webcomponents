@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
@@ -16,7 +16,6 @@ import { styles as shared } from './themes/shared/indicator-container/indicator-
  *
  * @csspart base - The wrapping container of all carousel indicators.
  */
-@themes(all)
 export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator-container';
   public static override styles = [styles, shared];
@@ -27,6 +26,11 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   }
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   private _handleFocusOut(event: FocusEvent): void {
     const target = event.relatedTarget as Element;

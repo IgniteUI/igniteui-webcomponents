@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
@@ -25,7 +25,6 @@ import { all } from './themes/tab-themes.js';
  * @csspart tab-body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
 
-@themes(all)
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
   public static override styles = [styles, shared];
@@ -57,6 +56,11 @@ export default class IgcTabComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   /** @internal */
   public override connectedCallback(): void {

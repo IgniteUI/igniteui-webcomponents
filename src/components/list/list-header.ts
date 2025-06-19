@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/header.base.css.js';
@@ -13,7 +13,6 @@ import { styles as shared } from './themes/shared/header/list-header.common.css.
  *
  * @slot - Renders header list item's content.
  */
-@themes(all)
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
   public static override styles = [styles, shared];
@@ -25,6 +24,8 @@ export default class IgcListHeaderComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addInternalsController(this, {
       initialARIA: { role: 'separator' },

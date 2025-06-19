@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/card.header.base.css.js';
 import { all } from './themes/header.js';
@@ -16,14 +16,18 @@ import { styles as shared } from './themes/shared/header/card.header.common.css.
  *
  * @csspart header - The card header container
  */
-@themes(all)
 export default class IgcCardHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-card-header';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCardHeaderComponent);
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override render() {

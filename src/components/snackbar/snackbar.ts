@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
@@ -33,7 +33,6 @@ export interface IgcSnackbarComponentEventMap {
  * @csspart action - The default snackbar action button.
  * @csspart action-container - The area holding the actions.
  */
-@themes(all)
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarComponentEventMap,
   AbstractConstructor<IgcBaseAlertLikeComponent>
@@ -42,7 +41,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSnackbarComponent, IgcButtonComponent);
   }
 
@@ -57,6 +56,11 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'action-text' })
   public actionText!: string;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   private handleClick() {
     this.emitEvent('igcAction');

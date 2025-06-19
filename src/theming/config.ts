@@ -1,4 +1,4 @@
-import { isDefined } from '../components/common/util.js';
+import { isServer } from 'lit';
 import {
   CHANGE_THEME_EVENT,
   type ChangeThemeEventDetail,
@@ -12,8 +12,8 @@ let themeVariant: ThemeVariant;
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
  */
-function dispatchThemingEvent(detail: ChangeThemeEventDetail) {
-  if (isDefined(globalThis.dispatchEvent)) {
+function dispatchThemingEvent(detail: ChangeThemeEventDetail): void {
+  if (!isServer) {
     globalThis.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
   }
 }
@@ -26,34 +26,23 @@ function isOfTypeThemeVariant(variant: string): variant is ThemeVariant {
   return ['light', 'dark'].includes(variant);
 }
 
-export const getTheme: () => {
-  theme: Theme;
-  themeVariant: ThemeVariant;
-} = () => {
+export function getTheme() {
   if (!(theme && themeVariant)) {
-    const [_theme, _variant] =
-      Object.entries(getAllCssVariables()).filter(
-        ([v]) => v === 'igTheme' || v === 'igThemeVariant'
-      ) || [];
+    const cssVars = getAllCssVariables();
+    const foundTheme = cssVars.igTheme;
+    const foundVariant = cssVars.igThemeVariant;
 
-    theme =
-      _theme?.[1] && isOfTypeTheme(_theme[1])
-        ? (_theme[1] as Theme)
-        : 'bootstrap';
-
-    themeVariant =
-      _variant?.[1] && isOfTypeThemeVariant(_variant[1])
-        ? (_variant[1] as ThemeVariant)
-        : 'light';
+    theme = isOfTypeTheme(foundTheme) ? foundTheme : 'bootstrap';
+    themeVariant = isOfTypeThemeVariant(foundVariant) ? foundVariant : 'light';
   }
 
   return { theme, themeVariant };
-};
+}
 
-export const setTheme = (value: Theme, variant: ThemeVariant) => {
+export function setTheme(value: Theme, variant: ThemeVariant): void {
   theme = value;
   themeVariant = variant;
-};
+}
 
 /**
  * Allows the global configuration of the active theme.
@@ -65,10 +54,9 @@ export const setTheme = (value: Theme, variant: ThemeVariant) => {
  *  configureTheme('material', 'light');
  *  ```
  */
-export const configureTheme = (t: Theme, v: ThemeVariant = 'light') => {
+export function configureTheme(t: Theme, v: ThemeVariant = 'light'): void {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
     setTheme(t, v);
+    dispatchThemingEvent({ theme, themeVariant });
   }
-
-  dispatchThemingEvent({ theme, themeVariant });
-};
+}

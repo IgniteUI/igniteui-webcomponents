@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -22,7 +22,6 @@ import { all } from './themes/icon-button/themes.js';
  * @csspart base - The wrapping element of the icon button.
  * @csspart icon - The icon element of the icon button.
  */
-@themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = [styles, shared];
@@ -60,6 +59,11 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
    */
   @property({ reflect: true })
   public variant: IconButtonVariant = 'contained';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected renderContent() {
     return html`

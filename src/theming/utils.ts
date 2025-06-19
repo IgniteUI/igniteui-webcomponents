@@ -1,43 +1,45 @@
 import { isServer } from 'lit';
 
-import { isDefined } from '../components/common/util.js';
-
 function isStyleRule(rule: CSSRule): rule is CSSStyleRule {
-  return !!rule && 'style' in rule;
+  return rule != null && 'style' in rule;
 }
 
 function cssKeyToJsKey(key: string): string {
-  return key.replace('--', '').replace(/-./g, (x) => x.toUpperCase()[1]);
+  return key.replace(/^--|-./g, (match) => {
+    return match.startsWith('--') ? '' : match.charAt(1).toUpperCase();
+  });
 }
 
 function getAllCssVariableNames(): Set<string> {
   const cssVars = new Set<string>();
-
-  /* c8 ignore next 3 */
-  if (isServer || !isDefined(globalThis.document)) {
-    return cssVars;
-  }
-
-  // Filter out any external stylesheets which throw CORS errors
-  const styleSheets = Array.from(globalThis.document.styleSheets).filter(
-    (sheet) => {
-      try {
-        return sheet.cssRules;
-      } catch {
-        return false;
-      }
-    }
-  );
+  const styleSheets = Array.from(document.styleSheets);
 
   for (const sheet of styleSheets) {
-    const rules = Array.from(sheet.cssRules).filter(isStyleRule);
+    let rules: CSSRuleList | undefined;
 
-    for (const rule of rules) {
-      Array.from(rule.style).forEach((style) => {
-        if (style.startsWith('--')) {
-          cssVars.add(style);
+    // Potential CORS or access errors
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      continue;
+    }
+
+    if (!rules) {
+      continue;
+    }
+
+    for (const rule of Array.from(rules)) {
+      if (isStyleRule(rule)) {
+        const length = rule.style.length;
+
+        for (let i = 0; i < length; i++) {
+          const style = rule.style[i];
+
+          if (style.startsWith('--')) {
+            cssVars.add(style);
+          }
         }
-      });
+      }
     }
   }
 
@@ -50,13 +52,7 @@ function getElementCssVariables(
   pseudo?: string
 ): Record<string, string> {
   const cssVars: Record<string, string> = {};
-
-  /* c8 ignore next 3 */
-  if (!isDefined(globalThis.getComputedStyle)) {
-    return cssVars;
-  }
-
-  const styles = globalThis.getComputedStyle(element, pseudo);
+  const styles = getComputedStyle(element, pseudo);
 
   for (const key of allCssVars) {
     const value = styles.getPropertyValue(key);
@@ -71,10 +67,10 @@ function getElementCssVariables(
 
 export function getAllCssVariables(): Record<string, string> {
   /* c8 ignore next 2 */
-  return isServer || !isDefined(globalThis.document)
+  return isServer
     ? {}
     : getElementCssVariables(
         getAllCssVariableNames(),
-        globalThis.document.documentElement
+        document.documentElement
       );
 }

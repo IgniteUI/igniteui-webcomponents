@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import {
   createMutationController,
@@ -22,7 +22,6 @@ import IgcSelectItemComponent from './select-item.js';
  *
  * @csspart label - The native label element.
  */
-@themes(all)
 export default class IgcSelectGroupComponent extends LitElement {
   public static readonly tagName = 'igc-select-group';
   public static override styles = [styles, shared];
@@ -76,6 +75,8 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     createMutationController(this, {
       callback: this._observerCallback,

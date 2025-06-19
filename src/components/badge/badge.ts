@@ -1,6 +1,6 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
@@ -18,7 +18,6 @@ import { all } from './themes/themes.js';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@themes(all)
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = [styles, shared];
@@ -52,6 +51,11 @@ export default class IgcBadgeComponent extends LitElement {
    */
   @property({ reflect: true })
   public shape: BadgeShape = 'rounded';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('variant')) {
