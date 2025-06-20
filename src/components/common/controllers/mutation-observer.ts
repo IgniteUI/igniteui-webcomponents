@@ -1,9 +1,8 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-
 import { isElement } from '../util.js';
 
 /** @ignore */
-export interface MutationControllerConfig<T> {
+export interface MutationControllerConfig<T extends Node = Node> {
   /** The callback function to run when a mutation occurs. */
   callback: MutationControllerCallback<T>;
   /** The underlying mutation observer configuration parameters. */
@@ -20,7 +19,7 @@ export interface MutationControllerConfig<T> {
   filter?: MutationControllerFilter<T>;
 }
 
-type MutationControllerCallback<T> = (
+type MutationControllerCallback<T extends Node = Node> = (
   params: MutationControllerParams<T>
 ) => unknown;
 
@@ -28,19 +27,34 @@ type MutationControllerCallback<T> = (
  * Filter configuration to return elements that either match
  * an array of selector strings or a predicate function.
  */
-type MutationControllerFilter<T> = string[] | ((node: T) => boolean);
-type MutationDOMChange<T> = { target: Element; node: T };
+type MutationControllerFilter<T extends Node = Node> =
+  | string[]
+  | ((node: T) => boolean);
 
-type MutationChange<T> = {
+type MutationDOMChange<T extends Node = Node> = {
+  /** The parent of the added/removed element. */
+  target: Element;
+  /** The added/removed element. */
+  node: T;
+};
+
+type MutationAttributeChange<T extends Node = Node> = {
+  /** The host element of the changed attribute. */
+  node: T;
+  /** The changed attribute name. */
+  attributeName: string | null;
+};
+
+type MutationChange<T extends Node = Node> = {
   /** Elements that have attribute(s) changes. */
-  attributes: T[];
+  attributes: MutationAttributeChange<T>[];
   /** Elements that have been added. */
   added: MutationDOMChange<T>[];
   /** Elements that have been removed. */
   removed: MutationDOMChange<T>[];
 };
 
-export type MutationControllerParams<T> = {
+export type MutationControllerParams<T extends Node = Node> = {
   /** The original mutation records from the underlying observer. */
   records: MutationRecord[];
   /** The aggregated changes. */
@@ -49,25 +63,30 @@ export type MutationControllerParams<T> = {
   observer: MutationController<T>;
 };
 
-function mutationFilter<T>(nodes: T[], filter?: MutationControllerFilter<T>) {
-  if (!filter) {
+function applyNodeFilter<T extends Node = Node>(
+  nodes: T[],
+  predicate?: MutationControllerFilter<T>
+): T[] {
+  if (!predicate) {
     return nodes;
   }
 
-  return Array.isArray(filter)
-    ? nodes.filter((node) =>
-        filter.some((selector) => isElement(node) && node.matches(selector))
+  return Array.isArray(predicate)
+    ? nodes.filter(
+        (node) =>
+          isElement(node) &&
+          predicate.some((selector) => node.matches(selector))
       )
-    : nodes.filter((node) => filter(node));
+    : nodes.filter(predicate);
 }
 
-class MutationController<T> implements ReactiveController {
-  private _host: ReactiveControllerHost & Element;
-  private _observer: MutationObserver;
-  private _target: Element;
-  private _config: MutationObserverInit;
-  private _callback: MutationControllerCallback<T>;
-  private _filter?: MutationControllerFilter<T>;
+class MutationController<T extends Node = Node> implements ReactiveController {
+  private readonly _host: ReactiveControllerHost & Element;
+  private readonly _observer: MutationObserver;
+  private readonly _target: Element;
+  private readonly _config: MutationObserverInit;
+  private readonly _callback: MutationControllerCallback<T>;
+  private readonly _filter?: MutationControllerFilter<T>;
 
   constructor(
     host: ReactiveControllerHost & Element,
@@ -77,7 +96,7 @@ class MutationController<T> implements ReactiveController {
     this._callback = options.callback;
     this._config = options.config;
     this._target = options.target ?? this._host;
-    this._filter = options.filter ?? [];
+    this._filter = options.filter;
 
     this._observer = new MutationObserver((records) => {
       this.disconnect();
@@ -88,36 +107,47 @@ class MutationController<T> implements ReactiveController {
     host.addController(this);
   }
 
-  public hostConnected() {
+  /** @internal */
+  public hostConnected(): void {
     this.observe();
   }
 
-  public hostDisconnected() {
+  /** @internal */
+  public hostDisconnected(): void {
     this.disconnect();
   }
 
   private _process(records: MutationRecord[]): MutationControllerParams<T> {
+    const predicate = this._filter;
     const changes: MutationChange<T> = {
       attributes: [],
       added: [],
       removed: [],
     };
-    const filter = this._filter;
 
     for (const record of records) {
-      if (record.type === 'attributes') {
+      const { type, target, attributeName, addedNodes, removedNodes } = record;
+
+      if (type === 'attributes') {
         changes.attributes.push(
-          ...mutationFilter([record.target as T], filter)
+          ...applyNodeFilter([target as T], predicate).map((node) => ({
+            node,
+            attributeName,
+          }))
         );
-      } else if (record.type === 'childList') {
+      } else if (type === 'childList') {
         changes.added.push(
-          ...mutationFilter(Array.from(record.addedNodes) as T[], filter).map(
-            (node) => ({ target: record.target as Element, node })
-          )
+          ...applyNodeFilter([...addedNodes] as T[], predicate).map((node) => ({
+            target: target as Element,
+            node,
+          }))
         );
         changes.removed.push(
-          ...mutationFilter(Array.from(record.removedNodes) as T[], filter).map(
-            (node) => ({ target: record.target as Element, node })
+          ...applyNodeFilter([...removedNodes] as T[], predicate).map(
+            (node) => ({
+              target: target as Element,
+              node,
+            })
           )
         );
       }
@@ -130,12 +160,12 @@ class MutationController<T> implements ReactiveController {
    * Begin receiving notifications of changes to the DOM based
    * on the configured {@link MutationControllerConfig.target|target} and observer {@link MutationControllerConfig.config|options}.
    */
-  public observe() {
+  public observe(): void {
     this._observer.observe(this._target, this._config);
   }
 
   /** Stop watching for mutations. */
-  public disconnect() {
+  public disconnect(): void {
     this._observer.disconnect();
   }
 }
@@ -149,9 +179,9 @@ class MutationController<T> implements ReactiveController {
  * The mutation observer is disconnected before invoking the passed in callback and re-attached
  * after that in order to not loop itself in endless stream of changes.
  */
-export function createMutationController<T>(
+export function createMutationController<T extends Node = Node>(
   host: ReactiveControllerHost & Element,
   config: MutationControllerConfig<T>
-) {
+): MutationController<T> {
   return new MutationController(host, config);
 }
