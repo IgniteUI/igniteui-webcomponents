@@ -6,6 +6,7 @@ import type {
 import type { Ref } from 'lit/directives/ref.js';
 
 import { getDefaultLayer } from '../../resize-container/default-ghost.js';
+import { createAbortHandle } from '../abort-handler.js';
 import {
   findElementFromEventPath,
   getRoot,
@@ -105,13 +106,15 @@ const additionalEvents = [
 ] as const;
 
 class DragController implements ReactiveController {
-  private _host: ReactiveControllerHost & LitElement;
-  private _options: DragControllerConfiguration = {
+  private readonly _host: ReactiveControllerHost & LitElement;
+  private readonly _options: DragControllerConfiguration = {
     enabled: true,
     mode: 'deferred',
     snapToCursor: false,
     layer: getDefaultLayer,
   };
+
+  private readonly _abortHandle = createAbortHandle();
 
   private _state!: State;
 
@@ -206,16 +209,16 @@ class DragController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._host.addEventListener('dragstart', this);
-    this._host.addEventListener('touchstart', this, { passive: false });
-    this._host.addEventListener('pointerdown', this);
+    const { signal } = this._abortHandle;
+
+    this._host.addEventListener('dragstart', this, { signal });
+    this._host.addEventListener('touchstart', this, { passive: false, signal });
+    this._host.addEventListener('pointerdown', this, { signal });
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._host.removeEventListener('dragstart', this);
-    this._host.removeEventListener('touchstart', this);
-    this._host.removeEventListener('pointerdown', this);
+    this._abortHandle.abort();
     this._setDragCancelListener(false);
     this._removeGhost();
   }

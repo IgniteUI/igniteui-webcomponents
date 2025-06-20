@@ -1,5 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-
+import { createAbortHandle } from '../common/abort-handler.js';
 import { findElementFromEventPath } from '../common/util.js';
 import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
@@ -16,8 +16,10 @@ type State = {
 };
 
 class ResizeController implements ReactiveController {
-  private _host: ReactiveControllerHost & HTMLElement;
-  private _options: ResizeControllerConfiguration = {
+  private readonly _host: ReactiveControllerHost & HTMLElement;
+  private readonly _abortHandle = createAbortHandle();
+
+  private readonly _options: ResizeControllerConfiguration = {
     enabled: true,
     layer: getDefaultLayer,
   };
@@ -94,14 +96,14 @@ class ResizeController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._host.addEventListener('pointerdown', this);
-    this._host.addEventListener('touchstart', this, { passive: false });
+    const { signal } = this._abortHandle;
+    this._host.addEventListener('pointerdown', this, { signal });
+    this._host.addEventListener('touchstart', this, { passive: false, signal });
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._host.removeEventListener('pointerdown', this);
-    this._host.removeEventListener('touchstart', this);
+    this._abortHandle.abort();
     this._setResizeCancelListener(false);
     this._removeGhostElement();
   }

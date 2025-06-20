@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
 
 /**
  * A controller class which determines whether a focus ring should be shown to indicate keyboard focus.
@@ -25,6 +26,7 @@ class KeyboardFocusRingController implements ReactiveController {
   ] as const;
 
   private readonly _host: ReactiveControllerHost & HTMLElement;
+  private readonly _abortHandle = createAbortHandle();
   private _isKeyboardFocused = false;
 
   /**
@@ -41,16 +43,16 @@ class KeyboardFocusRingController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
+    const { signal } = this._abortHandle;
+
     for (const event of KeyboardFocusRingController._events) {
-      this._host.addEventListener(event, this, { passive: true });
+      this._host.addEventListener(event, this, { passive: true, signal });
     }
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    for (const event of KeyboardFocusRingController._events) {
-      this._host.removeEventListener(event, this);
-    }
+    this._abortHandle.abort();
   }
 
   /** @internal */
