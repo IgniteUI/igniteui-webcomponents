@@ -64,21 +64,21 @@ $theme-file-input: file-input.$base;
     [part~='filled'] 
     [part~='file-names'] {
         color: var-get($theme, 'filled-text-color');
-        background: var-get($theme-file-input, 'file-names-background--fill')
+        background: var-get($theme-file-input, 'file-names-background--filled')
     }
 
     [part~='container']:focus-within {
         [part~='file-names'] {
             color: var-get($theme, 'focused-text-color');
-            background: var-get($theme-file-input, 'file-names-background--focus')
+            background: var-get($theme-file-input, 'file-names-background--focused')
         }
     }
 
     [part~='file-selector-button'] igc-button {
         --foreground: #{var-get($theme-file-input, 'file-selector-button-foreground')};
-        --disabled-foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--disable')};
+        --disabled-foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--disabled')};
         --background: #{var-get($theme-file-input, 'file-selector-button-background')};
-        --disabled-background: #{var-get($theme-file-input, 'file-selector-button-background--disable')};
+        --disabled-background: #{var-get($theme-file-input, 'file-selector-button-background--disabled')};
         --hover-foreground: var(--foreground);
         --active-foreground: var(--foreground);
         --hover-background: var(--background);
@@ -87,14 +87,14 @@ $theme-file-input: file-input.$base;
   
     [part~='filled'] 
     [part~='file-selector-button'] igc-button {
-        --foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--fill')};
-        --background: #{var-get($theme-file-input, 'file-selector-button-background--fill')};
+        --foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--filled')};
+        --background: #{var-get($theme-file-input, 'file-selector-button-background--filled')};
     }
 
     [part~='container']:focus-within
     [part~='file-selector-button'] igc-button {
-        --foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--focus')};
-        --background: #{var-get($theme-file-input, 'file-selector-button-background--focus')};
+        --foreground: #{var-get($theme-file-input, 'file-selector-button-foreground--focused')};
+        --background: #{var-get($theme-file-input, 'file-selector-button-background--focused')};
     }
 }
 
@@ -109,6 +109,6 @@ $theme-file-input: file-input.$base;
 :host(:is(igc-file-input)[disabled]) {
     [part~='file-names'] {
         color: var-get($theme, 'disabled-text-color');
-        background: var-get($theme-file-input, 'file-names-background--disable')
+        background: var-get($theme-file-input, 'file-names-background--disabled')
     }
 }
