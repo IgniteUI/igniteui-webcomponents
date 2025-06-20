@@ -1,3 +1,5 @@
+import { isServer } from 'lit';
+
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
 export const clamp = (number: number, min: number, max: number) =>
@@ -280,6 +282,33 @@ export function addWeakEventListener(
   };
 
   element.addEventListener(event, wrapped, options);
+}
+
+type EventTypeOf<T extends keyof HTMLElementEventMap | keyof WindowEventMap> =
+  (HTMLElementEventMap & WindowEventMap)[T];
+
+/**
+ * Safely adds an event listener to an HTMLElement, automatically handling
+ * server-side rendering environments by doing nothing if `isServer` is true.
+ * This function also correctly binds the `handler`'s `this` context to the `target` element
+ * and ensures proper event type inference.
+ */
+export function addSafeEventListener<
+  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
+>(
+  target: HTMLElement,
+  eventName: E,
+  handler: (event: EventTypeOf<E>) => unknown,
+  options?: boolean | AddEventListenerOptions
+): void {
+  if (isServer) {
+    return;
+  }
+
+  const boundHandler = (event: Event) =>
+    handler.call(target, event as EventTypeOf<E>);
+
+  target.addEventListener(eventName, boundHandler, options);
 }
 
 /**

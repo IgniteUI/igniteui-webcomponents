@@ -38,6 +38,7 @@ import {
   type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import {
+  addSafeEventListener,
   asNumber,
   clamp,
   createCounter,
@@ -581,9 +582,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   constructor() {
     super();
 
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
+    addSafeEventListener(this, 'focusout', this._handleFocusOut);
+
     this._rootClickController.update({ hideCallback: this._handleClosing });
-    this.addEventListener('focusin', this._handleFocusIn);
-    this.addEventListener('focusout', this._handleFocusOut);
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,

@@ -42,7 +42,12 @@ import {
   type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { findElementFromEventPath, isEmpty, isString } from '../common/util.js';
+import {
+  addSafeEventListener,
+  findElementFromEventPath,
+  isEmpty,
+  isString,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
@@ -291,9 +296,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(spaceBar, this.onSpaceBarKey)
       .set(enterKey, this.onEnterKey);
 
-    this.addEventListener('keydown', this.handleSearch);
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    addSafeEventListener(this, 'keydown', this.handleSearch);
+    addSafeEventListener(this, 'focusin', this.handleFocusIn);
+    addSafeEventListener(this, 'focusout', this.handleFocusOut);
   }
 
   protected override createRenderRoot() {
