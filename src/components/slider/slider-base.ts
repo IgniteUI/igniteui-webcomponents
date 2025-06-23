@@ -23,6 +23,7 @@ import {
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { watch } from '../common/decorators/watch.js';
 import {
+  addSafeEventListener,
   asNumber,
   asPercent,
   clamp,
@@ -282,10 +283,10 @@ export class IgcSliderBaseComponent extends LitElement {
 
     addThemingController(this, all);
 
-    this.addEventListener('pointerdown', this.pointerDown);
-    this.addEventListener('pointermove', this.pointerMove);
-    this.addEventListener('lostpointercapture', this.lostPointerCapture);
-    this.addEventListener('keyup', this.handleKeyUp);
+    addSafeEventListener(this, 'pointerdown', this.pointerDown);
+    addSafeEventListener(this, 'pointermove', this.pointerMove);
+    addSafeEventListener(this, 'lostpointercapture', this.lostPointerCapture);
+    addSafeEventListener(this, 'keyup', this.handleKeyUp);
 
     addKeybindings(this, {
       skip: () => this.disabled,

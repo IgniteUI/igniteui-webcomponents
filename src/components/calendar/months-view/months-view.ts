@@ -12,7 +12,7 @@ import { createDateTimeFormatters } from '../../common/localization/intl-formatt
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
-import { chunk } from '../../common/util.js';
+import { addSafeEventListener, chunk } from '../../common/util.js';
 import { areSameMonth, getViewElement, MONTHS_PER_ROW } from '../helpers.js';
 import { CalendarDay } from '../model.js';
 import { all } from '../themes/year-month.js';
@@ -91,7 +91,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
       bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this.handleInteraction);
 
-    this.addEventListener('click', this.handleInteraction);
+    addSafeEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {

@@ -21,7 +21,12 @@ import {
   type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { asNumber, createCounter, isEmpty } from '../common/util.js';
+import {
+  addSafeEventListener,
+  asNumber,
+  createCounter,
+  isEmpty,
+} from '../common/util.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -309,8 +314,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       callback: this._setAreaHeight,
     });
 
-    this.addEventListener('focus', this._handleFocus);
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'focus', this._handleFocus);
+    addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

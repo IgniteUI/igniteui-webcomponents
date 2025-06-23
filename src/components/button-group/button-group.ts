@@ -62,7 +62,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
     const buttons = this.toggleButtons;
     const idx = buttons.indexOf(
-      added.length ? last(added).node : last(attributes)
+      added.length ? last(added).node : last(attributes).node
     );
 
     for (const [i, button] of buttons.entries()) {

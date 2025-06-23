@@ -7,6 +7,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { addSafeEventListener } from '../common/util.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
@@ -110,12 +111,13 @@ export default class IgcTreeComponent extends EventEmitterMixin<
 
     this.selectionService = new IgcTreeSelectionService(this);
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
+
+    addSafeEventListener(this, 'keydown', this.handleKeydown);
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('role', 'tree');
-    this.addEventListener('keydown', this.handleKeydown);
     // set init to true for all items which are rendered along with the tree
     this.items.forEach((i: IgcTreeItemComponent) => {
       i.init = true;

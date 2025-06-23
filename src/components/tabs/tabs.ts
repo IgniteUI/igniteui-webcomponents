@@ -238,8 +238,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     changes,
   }: MutationControllerParams<IgcTabComponent>): void {
     const selected = changes.attributes.find(
-      (tab) => this._tabs.includes(tab) && tab.selected
-    );
+      ({ node: tab }) => this._tabs.includes(tab) && tab.selected
+    )?.node;
     this._setSelectedTab(selected, false);
   }
 

@@ -34,6 +34,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   asNumber,
   createCounter,
   findElementFromEventPath,
@@ -162,7 +163,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return;
     }
     const idx = this.slides.indexOf(
-      added.length ? last(added).node : last(attributes)
+      added.length ? last(added).node : last(attributes).node
     );
 
     for (const [i, slide] of this.slides.entries()) {
@@ -328,13 +329,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addThemingController(this, all);
 
-    this.addEventListener('pointerenter', this.handlePointerEnter);
-    this.addEventListener('pointerleave', this.handlePointerLeave);
-    this.addEventListener('pointerdown', () => {
+    addSafeEventListener(this, 'pointerenter', this.handlePointerEnter);
+    addSafeEventListener(this, 'pointerleave', this.handlePointerLeave);
+    addSafeEventListener(this, 'pointerdown', () => {
       this._hasInnerFocus = false;
     });
-
-    this.addEventListener('keyup', () => {
+    addSafeEventListener(this, 'keyup', () => {
       this._hasInnerFocus = true;
     });
 
