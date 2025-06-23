@@ -1,4 +1,5 @@
 import type { ReactiveController } from 'lit';
+import { createAbortHandle } from '../common/abort-handler.js';
 import {
   addWeakEventListener,
   getElementByIdFromRoot,
@@ -18,8 +19,8 @@ class TooltipController implements ReactiveController {
   private readonly _host: IgcTooltipComponent;
   private readonly _options: TooltipCallbacks;
 
-  private _hostAbortController: AbortController | null = null;
-  private _anchorAbortController: AbortController | null = null;
+  private readonly _hostAbortHandle = createAbortHandle();
+  private readonly _anchorAbortHandle = createAbortHandle();
 
   private _showTriggers = new Set(['pointerenter']);
   private _hideTriggers = new Set(['pointerleave', 'click']);
@@ -52,7 +53,7 @@ class TooltipController implements ReactiveController {
         this.setAnchor(this._initialAnchor?.deref());
       }
 
-      this._removeTooltipListeners();
+      this._hostAbortHandle.abort();
       service.remove(this._host);
     }
   }
@@ -82,7 +83,7 @@ class TooltipController implements ReactiveController {
    */
   public set hideTriggers(value: string) {
     this._hideTriggers = parseTriggers(value);
-    this._removeAnchorListeners();
+    this._anchorAbortHandle.abort();
     this._addAnchorListeners();
   }
 
@@ -102,7 +103,7 @@ class TooltipController implements ReactiveController {
    */
   public set showTriggers(value: string) {
     this._showTriggers = parseTriggers(value);
-    this._removeAnchorListeners();
+    this._anchorAbortHandle.abort();
     this._addAnchorListeners();
   }
 
@@ -123,8 +124,7 @@ class TooltipController implements ReactiveController {
       return;
     }
 
-    this._anchorAbortController = new AbortController();
-    const signal = this._anchorAbortController.signal;
+    const { signal } = this._anchorAbortHandle;
 
     for (const each of this._showTriggers) {
       addWeakEventListener(anchor, each, this, { passive: true, signal });
@@ -135,23 +135,12 @@ class TooltipController implements ReactiveController {
     }
   }
 
-  private _removeAnchorListeners(): void {
-    this._anchorAbortController?.abort();
-    this._anchorAbortController = null;
-  }
-
   private _addTooltipListeners(): void {
-    this._hostAbortController = new AbortController();
-    const signal = this._hostAbortController.signal;
+    const { signal } = this._hostAbortHandle;
 
     for (const event of TooltipController._listeners) {
       this._host.addEventListener(event, this, { passive: true, signal });
     }
-  }
-
-  private _removeTooltipListeners(): void {
-    this._hostAbortController?.abort();
-    this._hostAbortController = null;
   }
 
   //#endregion
@@ -196,8 +185,8 @@ class TooltipController implements ReactiveController {
   //#endregion
 
   private _dispose(): void {
-    this._removeAnchorListeners();
-    this._removeTooltipListeners();
+    this._anchorAbortHandle.abort();
+    this._hostAbortHandle.abort();
     service.remove(this._host);
     this._anchor = null;
     this._initialAnchor = null;
@@ -224,7 +213,7 @@ class TooltipController implements ReactiveController {
     }
 
     if (this._anchor?.deref() !== this._initialAnchor?.deref()) {
-      this._removeAnchorListeners();
+      this._anchorAbortHandle.abort();
     }
 
     this._anchor = newAnchor ? new WeakRef(newAnchor) : null;
