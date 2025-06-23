@@ -1,14 +1,12 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
+import type IgcChatComponent from './chat.js';
 import { styles } from './themes/message-list.base.css.js';
-import type {
-  AttachmentTemplate,
-  IgcMessage,
-  MessageActionsTemplate,
-} from './types.js';
+import type { IgcMessage } from './types.js';
 
 /**
  *
@@ -21,31 +19,13 @@ export default class IgcChatMessageListComponent extends LitElement {
 
   public static override styles = styles;
 
+  @consume({ context: chatContext, subscribe: true })
+  private _chat?: IgcChatComponent;
+
   /* blazorSuppress */
   public static register() {
     registerComponent(IgcChatMessageListComponent, IgcChatMessageComponent);
   }
-
-  @property({ reflect: true, attribute: false })
-  public messages: IgcMessage[] = [];
-
-  @property({ type: Boolean, attribute: 'disable-auto-scroll' })
-  public disableAutoScroll = false;
-
-  @property({ attribute: false })
-  public attachmentTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentHeaderTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentActionsTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentContentTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public messageActionsTemplate?: MessageActionsTemplate;
 
   private formatDate(date: Date): string {
     const today = new Date();
@@ -96,19 +76,21 @@ export default class IgcChatMessageListComponent extends LitElement {
   }
 
   protected override updated() {
-    if (!this.disableAutoScroll) {
+    if (!this._chat?.options?.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
 
   protected override firstUpdated() {
-    if (!this.disableAutoScroll) {
+    if (!this._chat?.options?.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
 
   protected override render() {
-    const groupedMessages = this.groupMessagesByDate(this.messages);
+    const groupedMessages = this.groupMessagesByDate(
+      this._chat?.messages ?? []
+    );
 
     return html`
       <div class='message-container'></div>
@@ -121,14 +103,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                 group.messages,
                 (message) => message.id,
                 (message) => html`
-                  <igc-chat-message
-                    .message=${message}
-                    .attachmentTemplate=${this.attachmentTemplate}
-                    .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
-                    .attachmentActionsTemplate=${this.attachmentActionsTemplate}
-                    .attachmentContentTemplate=${this.attachmentContentTemplate}
-                    .messageActionsTemplate=${this.messageActionsTemplate}
-                  ></igc-chat-message>
+                  <igc-chat-message .message=${message}></igc-chat-message>
                 `
               )}
             `

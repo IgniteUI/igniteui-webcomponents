@@ -1,13 +1,15 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
+import type IgcChatComponent from './chat.js';
 import { styles } from './themes/message-attachments.base.css';
 import {
-  type AttachmentTemplate,
   type IgcMessageAttachment,
   closeIcon,
   fileIcon,
@@ -27,6 +29,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   public static override styles = styles;
 
+  @consume({ context: chatContext, subscribe: true })
+  private _chat?: IgcChatComponent;
+
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -41,18 +46,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   @property({ type: String })
   previewImage = '';
-
-  @property({ attribute: false })
-  attachmentTemplate: AttachmentTemplate | undefined;
-
-  @property({ attribute: false })
-  attachmentHeaderTemplate: AttachmentTemplate | undefined;
-
-  @property({ attribute: false })
-  attachmentActionsTemplate: AttachmentTemplate | undefined;
-
-  @property({ attribute: false })
-  attachmentContentTemplate: AttachmentTemplate | undefined;
 
   constructor() {
     super();
@@ -113,14 +106,15 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   protected override render() {
     return html`
       <div class="attachments-container">
-        ${this.attachmentTemplate
-          ? this.attachmentTemplate(this.attachments)
+        ${this._chat?.options?.templates?.attachmentTemplate
+          ? this._chat.options.templates.attachmentTemplate(this.attachments)
           : html` ${this.attachments.map(
               (attachment) =>
                 html` <igc-expansion-panel
                   indicator-position="none"
                   .open=${attachment.type === 'image' ||
-                  attachment.file?.type.startsWith('image/')}
+                  attachment.file?.type.startsWith('image/') ||
+                  this._chat?.options?.templates?.attachmentContentTemplate}
                   @igcClosing=${(ev: CustomEvent) =>
                     this.handleToggle(ev, attachment)}
                   @igcOpening=${(ev: CustomEvent) =>
@@ -128,8 +122,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 >
                   <div slot="title" class="attachment">
                     <div class="details">
-                      ${this.attachmentHeaderTemplate
-                        ? this.attachmentHeaderTemplate(this.attachments)
+                      ${this._chat?.options?.templates?.attachmentHeaderTemplate
+                        ? this._chat.options.templates.attachmentHeaderTemplate(
+                            this.attachments
+                          )
                         : html`
                             <slot name="attachment-icon">
                               ${attachment.type === 'image' ||
@@ -151,8 +147,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                           `}
                     </div>
                     <div class="actions">
-                      ${this.attachmentActionsTemplate
-                        ? this.attachmentActionsTemplate(this.attachments)
+                      ${this._chat?.options?.templates
+                        ?.attachmentActionsTemplate
+                        ? this._chat.options.templates.attachmentActionsTemplate(
+                            this.attachments
+                          )
                         : html`
                             <slot name="attachment-actions">
                               ${attachment.type === 'image' ||
@@ -177,8 +176,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     </div>
                   </div>
 
-                  ${this.attachmentContentTemplate
-                    ? this.attachmentContentTemplate(this.attachments)
+                  ${this._chat?.options?.templates?.attachmentContentTemplate
+                    ? this._chat.options.templates.attachmentContentTemplate(
+                        this.attachments
+                      )
                     : html`
                         <slot name="attachment-content">
                           ${attachment.type === 'image' ||

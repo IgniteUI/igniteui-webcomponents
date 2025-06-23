@@ -29,85 +29,11 @@ const metadata: Meta<IgcChatComponent> = {
   title: 'Chat',
   component: 'igc-chat',
   parameters: { docs: { description: { component: '' } } },
-  argTypes: {
-    hideAvatar: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    hideUserName: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    disableAutoScroll: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    disableAttachments: {
-      type: 'boolean',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    acceptedFiles: {
-      type: 'string',
-      description:
-        'The accepted files that could be attached.\nDefines the file types as a list of comma-separated values that the file input should accept.',
-      control: 'text',
-      table: { defaultValue: { summary: '' } },
-    },
-    headerText: {
-      type: 'string',
-      control: 'text',
-      table: { defaultValue: { summary: '' } },
-    },
-    attachmentTemplate: {
-      type: 'AttachmentTemplate',
-      control: 'AttachmentTemplate',
-    },
-    attachmentHeaderTemplate: {
-      type: 'AttachmentTemplate',
-      control: 'AttachmentTemplate',
-    },
-    attachmentActionsTemplate: {
-      type: 'AttachmentTemplate',
-      control: 'AttachmentTemplate',
-    },
-    attachmentContentTemplate: {
-      type: 'AttachmentTemplate',
-      control: 'AttachmentTemplate',
-    },
-    messageActionsTemplate: {
-      type: 'MessageActionsTemplate',
-      control: 'MessageActionsTemplate',
-    },
-  },
-  args: {
-    hideAvatar: false,
-    hideUserName: false,
-    disableAutoScroll: false,
-    disableAttachments: false,
-    acceptedFiles: '',
-    headerText: '',
-  },
 };
 
 export default metadata;
 
-interface IgcChatArgs {
-  hideAvatar: boolean;
-  hideUserName: boolean;
-  disableAutoScroll: boolean;
-  disableAttachments: boolean;
-  /**
-   * The accepted files that could be attached.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
-   */
-  acceptedFiles: string;
-  headerText: string;
-}
-type Story = StoryObj<IgcChatArgs>;
+type Story = StoryObj;
 
 // endregion
 
@@ -125,9 +51,23 @@ registerIconFromText('regenerate', regenerateIcon, 'material');
 let messages: any[] = [
   {
     id: '1',
-    text: "Hello! I'm an AI assistant created with Lit. How can I help you today?",
+    text: 'Hello! How can I help you today?',
     sender: 'bot',
-    timestamp: new Date(),
+    timestamp: new Date(Date.now() - 3600000),
+  },
+  {
+    id: '2',
+    text: 'Hello!',
+    sender: 'user',
+    timestamp: new Date(Date.now() - 3500000),
+    attachments: [
+      {
+        id: 'img1',
+        name: 'img1.png',
+        url: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+        type: 'image',
+      },
+    ],
   },
 ];
 
@@ -163,6 +103,18 @@ const messageActionsTemplate = (msg: any) => {
         `
       : ''
     : '';
+};
+
+const ai_chat_options = {
+  headerText: 'Chat',
+  templates: {
+    messageActionsTemplate: messageActionsTemplate,
+  },
+};
+
+const chat_options = {
+  disableAutoScroll: true,
+  disableAttachments: true,
 };
 
 function handleMessageSend(e: CustomEvent) {
@@ -541,17 +493,11 @@ async function handleAIMessageSend(e: CustomEvent) {
 }
 
 export const Basic: Story = {
-  render: (args) => html`
+  render: () => html`
     <igc-chat
       .messages=${messages}
-      .headerText=${args.headerText}
-      .disableAutoScroll=${args.disableAutoScroll}
-      .disableAttachments=${args.disableAttachments}
-      .acceptedFiles=${args.acceptedFiles}
-      .hideAvatar=${args.hideAvatar}
-      .hideUserName=${args.hideUserName}
+      .options=${chat_options}
       @igcMessageCreated=${handleMessageSend}
-      .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>
   `,
@@ -567,31 +513,16 @@ export const Supabase: Story = {
       }
     });
   },
-  render: (args) => html`
-    <igc-chat
-      .headerText=${args.headerText}
-      .disableAutoScroll=${args.disableAutoScroll}
-      .disableAttachments=${args.disableAttachments}
-      .hideAvatar=${args.hideAvatar}
-      .hideUserName=${args.hideUserName}
-      @igcMessageCreated=${handleMessageCreatedSupabase}
-      .messageActionsTemplate=${messageActionsTemplate}
-    >
-    </igc-chat>
+  render: () => html`
+    <igc-chat @igcMessageCreated=${handleMessageCreatedSupabase}> </igc-chat>
   `,
 };
 
 export const AI: Story = {
-  render: (args) => html`
+  render: () => html`
     <igc-chat
-      .headerText=${args.headerText}
-      .disableAutoScroll=${args.disableAutoScroll}
-      .disableAttachments=${args.disableAttachments}
-      .acceptedFiles=${args.acceptedFiles}
-      .hideAvatar=${args.hideAvatar}
-      .hideUserName=${args.hideUserName}
+      .options=${ai_chat_options}
       @igcMessageCreated=${handleAIMessageSend}
-      .messageActionsTemplate=${messageActionsTemplate}
     >
     </igc-chat>
   `,

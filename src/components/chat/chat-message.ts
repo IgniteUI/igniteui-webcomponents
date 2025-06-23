@@ -1,15 +1,14 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
+import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type IgcChatComponent from './chat.js';
 import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import type {
-  AttachmentTemplate,
-  IgcMessage,
-  MessageActionsTemplate,
-} from './types.js';
+import type { IgcMessage } from './types.js';
 
 /**
  *
@@ -21,6 +20,9 @@ export default class IgcChatMessageComponent extends LitElement {
   public static readonly tagName = 'igc-chat-message';
 
   public static override styles = styles;
+
+  @consume({ context: chatContext, subscribe: true })
+  private _chat?: IgcChatComponent;
 
   /* blazorSuppress */
   public static register() {
@@ -34,21 +36,6 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ reflect: true, attribute: false })
   public message: IgcMessage | undefined;
 
-  @property({ attribute: false })
-  public attachmentTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentHeaderTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentActionsTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentContentTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public messageActionsTemplate?: MessageActionsTemplate;
-
   protected override render() {
     const containerClass = `message-container ${this.message?.sender === 'user' ? 'sent' : ''}`;
 
@@ -61,15 +48,12 @@ export default class IgcChatMessageComponent extends LitElement {
           ${this.message?.attachments && this.message?.attachments.length > 0
             ? html`<igc-message-attachments
                 .attachments=${this.message?.attachments}
-                .attachmentTemplate=${this.attachmentTemplate}
-                .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
-                .attachmentActionsTemplate=${this.attachmentActionsTemplate}
-                .attachmentContentTemplate=${this.attachmentContentTemplate}
               >
               </igc-message-attachments>`
             : ''}
-          ${this.messageActionsTemplate && this.message
-            ? this.messageActionsTemplate(this.message)
+          ${this._chat?.options?.templates?.messageActionsTemplate &&
+          this.message
+            ? this._chat.options.templates.messageActionsTemplate(this.message)
             : ''}
         </div>
       </div>

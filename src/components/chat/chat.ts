@@ -1,6 +1,9 @@
+import { ContextProvider } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcButtonComponent from '../button/button.js';
+import { chatContext } from '../common/context.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -8,10 +11,9 @@ import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { styles } from './themes/chat.base.css.js';
 import type {
-  AttachmentTemplate,
+  IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
-  MessageActionsTemplate,
 } from './types.js';
 
 export interface IgcChatComponentEventMap {
@@ -49,46 +51,22 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
+  private _context = new ContextProvider(this, {
+    context: chatContext,
+    initialValue: this,
+  });
+
   @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
 
-  @property({ type: Boolean, attribute: 'hide-avatar' })
-  public hideAvatar = false;
-
-  @property({ type: Boolean, attribute: 'hide-user-name' })
-  public hideUserName = false;
-
-  @property({ type: Boolean, attribute: 'disable-auto-scroll' })
-  public disableAutoScroll = false;
-
-  @property({ type: Boolean, attribute: 'disable-attachments' })
-  public disableAttachments = false;
-
-  /**
-   * The accepted files that could be attached.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
-   * @attr
-   */
-  @property({ type: String })
-  public acceptedFiles = '';
-
-  @property({ type: String, attribute: 'header-text', reflect: true })
-  public headerText = '';
-
   @property({ attribute: false })
-  public attachmentTemplate?: AttachmentTemplate;
+  public options?: IgcChatOptions;
 
-  @property({ attribute: false })
-  public attachmentHeaderTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentActionsTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public attachmentContentTemplate?: AttachmentTemplate;
-
-  @property({ attribute: false })
-  public messageActionsTemplate?: MessageActionsTemplate;
+  @watch('options')
+  @watch('messages')
+  protected contextChanged() {
+    this._context.setValue(this, true);
+  }
 
   public override connectedCallback() {
     super.connectedCallback();
@@ -137,31 +115,24 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
   }
 
+  protected override firstUpdated() {
+    this._context.setValue(this, true);
+  }
+
   protected override render() {
     return html`
       <div class="chat-container">
         <div class="header" part="header">
           <div class="info">
             <slot name="prefix" part="prefix"></slot>
-            <slot name="title" part="title">${this.headerText}</slot>
+            <slot name="title" part="title">${this.options?.headerText}</slot>
           </div>
           <slot name="actions" class="actions">
             <igc-button variant="flat">⋯</igc-button>
           </slot>
         </div>
-        <igc-chat-message-list
-          .messages=${this.messages}
-          .disableAutoScroll=${this.disableAutoScroll}
-          .attachmentTemplate=${this.attachmentTemplate}
-          .attachmentHeaderTemplate=${this.attachmentHeaderTemplate}
-          .attachmentActionsTemplate=${this.attachmentActionsTemplate}
-          .attachmentContentTemplate=${this.attachmentContentTemplate}
-          .messageActionsTemplate=${this.messageActionsTemplate}
-        >
-        </igc-chat-message-list>
+        <igc-chat-message-list> </igc-chat-message-list>
         <igc-chat-input
-          .disableAttachments=${this.disableAttachments}
-          .acceptedFiles=${this.acceptedFiles}
           @message-created=${this.handleSendMessage}
         ></igc-chat-input>
       </div>

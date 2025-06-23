@@ -1,13 +1,16 @@
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
+import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
+import type IgcChatComponent from './chat.js';
 import { styles } from './themes/input.base.css.js';
 import {
   type IgcMessageAttachment,
@@ -26,6 +29,9 @@ export default class IgcChatInputComponent extends LitElement {
 
   public static override styles = styles;
 
+  @consume({ context: chatContext, subscribe: true })
+  private _chat?: IgcChatComponent;
+
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -37,12 +43,6 @@ export default class IgcChatInputComponent extends LitElement {
       IgcIconComponent
     );
   }
-
-  @property({ type: Boolean, attribute: 'disable-attachments' })
-  public disableAttachments = false;
-
-  @property({ type: String })
-  public acceptedFiles = '';
 
   @query('textarea')
   private textInputElement!: HTMLTextAreaElement;
@@ -210,12 +210,12 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private updateAcceptedTypesCache() {
-    if (!this.acceptedFiles) {
+    if (!this._chat?.options?.acceptedFiles) {
       this._acceptedTypesCache = null;
       return;
     }
 
-    const types = this.acceptedFiles
+    const types = this._chat?.options?.acceptedFiles
       .split(',')
       .map((type) => type.trim().toLowerCase());
     this._acceptedTypesCache = {
@@ -263,12 +263,12 @@ export default class IgcChatInputComponent extends LitElement {
   protected override render() {
     return html`
       <div class="input-container ${this.dragClass}">
-        ${this.disableAttachments
+        ${this._chat?.options?.disableAttachments
           ? ''
           : html`
               <igc-file-input
                 multiple
-                .accept=${this.acceptedFiles}
+                .accept=${this._chat?.options?.acceptedFiles}
                 @igcChange=${this.handleFileUpload}
               >
                 <igc-icon
