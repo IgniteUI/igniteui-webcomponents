@@ -4,10 +4,10 @@ import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { equal } from '../common/util.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   runValidationContainerTests,
   simulatePointerDown,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';

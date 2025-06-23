@@ -20,18 +20,18 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcInputComponent from '../input/input.js';
+import IgcSelectComponent from './select.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import type IgcSelectItemComponent from './select-item.js';
-import IgcSelectComponent from './select.js';
 
 type ItemState = {
   active?: boolean;

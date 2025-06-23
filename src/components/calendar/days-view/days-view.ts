@@ -12,7 +12,13 @@ import { createDateTimeFormatters } from '../../common/localization/intl-formatt
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
-import { chunk, first, last, take } from '../../common/util.js';
+import {
+  addSafeEventListener,
+  chunk,
+  first,
+  last,
+  take,
+} from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -24,8 +30,8 @@ import {
   isPreviousMonth,
 } from '../helpers.js';
 import { CalendarDay, daysInWeek } from '../model.js';
-import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
+import { styles } from '../themes/days-view.base.css.js';
 import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
@@ -138,7 +144,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this.handleInteraction);
 
-    this.addEventListener('click', this.handleInteraction);
+    addSafeEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {

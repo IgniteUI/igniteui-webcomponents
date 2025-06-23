@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
-import { IgcToggleButtonComponent, defineComponents } from '../../index.js';
+import { defineComponents, IgcToggleButtonComponent } from '../../index.js';
 
 describe('Toggle Button', () => {
   before(() => {

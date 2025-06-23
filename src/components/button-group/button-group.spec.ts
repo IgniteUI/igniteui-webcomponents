@@ -8,9 +8,9 @@ import {
 import { spy } from 'sinon';
 
 import {
+  defineComponents,
   IgcButtonGroupComponent,
   IgcToggleButtonComponent,
-  defineComponents,
 } from '../../index.js';
 
 describe('Button Group', () => {

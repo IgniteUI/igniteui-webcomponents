@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 
-import { IgcIconButtonComponent, defineComponents } from '../../index.js';
+import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
 describe('IconButton component', () => {
   before(() => {

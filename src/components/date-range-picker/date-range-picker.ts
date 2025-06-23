@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -32,11 +32,12 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValueOf,
   createFormValueState,
   defaultDateRangeTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import {
+  addSafeEventListener,
   asNumber,
   clamp,
   createCounter,
@@ -577,9 +578,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   constructor() {
     super();
 
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
+    addSafeEventListener(this, 'focusout', this._handleFocusOut);
+
     this._rootClickController.update({ hideCallback: this._handleClosing });
-    this.addEventListener('focusin', this._handleFocusIn);
-    this.addEventListener('focusout', this._handleFocusOut);
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,

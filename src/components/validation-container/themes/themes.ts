@@ -12,6 +12,7 @@ import { styles as fluentLight } from './light/validator.fluent.css.js';
 import { styles as indigoLight } from './light/validator.indigo.css.js';
 import { styles as materialLight } from './light/validator.material.css.js';
 import { styles as shared } from './light/validator.shared.css.js';
+
 const light = {
   shared: css`
     ${shared}

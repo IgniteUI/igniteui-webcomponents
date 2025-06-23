@@ -2,9 +2,9 @@ import { property } from 'lit/decorators.js';
 import { convertToDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValueOf,
   createFormValueState,
   defaultDateTimeTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';

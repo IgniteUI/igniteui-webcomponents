@@ -5,9 +5,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import {
-  type FormValueOf,
   createFormValueState,
   defaultNumberTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';

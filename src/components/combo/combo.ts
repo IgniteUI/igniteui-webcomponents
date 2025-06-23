@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -18,11 +18,12 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValueOf,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   asArray,
   equal,
   findElementFromEventPath,
@@ -475,8 +476,9 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'blur', this._handleBlur);
 
+    // TODO
     this.addEventListener(
       'keydown',
       this._navigation.navigateHost.bind(this._navigation)

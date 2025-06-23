@@ -1,4 +1,4 @@
-import { type TemplateResult, html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -27,22 +27,27 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  IgcBaseComboBoxLikeComponent,
   getActiveItems,
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  IgcBaseComboBoxLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValueOf,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { findElementFromEventPath, isEmpty, isString } from '../common/util.js';
+import {
+  addSafeEventListener,
+  findElementFromEventPath,
+  isEmpty,
+  isString,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
@@ -291,9 +296,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(spaceBar, this.onSpaceBarKey)
       .set(enterKey, this.onEnterKey);
 
-    this.addEventListener('keydown', this.handleSearch);
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    addSafeEventListener(this, 'keydown', this.handleSearch);
+    addSafeEventListener(this, 'focusin', this.handleFocusIn);
+    addSafeEventListener(this, 'focusout', this.handleFocusOut);
   }
 
   protected override createRenderRoot() {

@@ -1,8 +1,8 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
@@ -15,12 +15,16 @@ export default class IgcComboItemComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcComboItemComponent, IgcCheckboxComponent);
   }
 
-  private _internals: ElementInternals;
-  private _selected = false;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'option',
+      ariaSelected: 'false',
+    },
+  });
 
   @property({ attribute: false })
   public index!: number;
@@ -31,14 +35,7 @@ export default class IgcComboItemComponent extends LitElement {
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public set selected(value: boolean) {
-    this._selected = value;
-    this._internals.ariaSelected = this._selected.toString();
-  }
-
-  public get selected(): boolean {
-    return this._selected;
-  }
+  public selected = false;
 
   /**
    * Determines whether the item is active.
@@ -53,17 +50,15 @@ export default class IgcComboItemComponent extends LitElement {
   @property({ type: Boolean, attribute: 'hide-checkbox' })
   public hideCheckbox = false;
 
-  constructor() {
-    super();
-
-    this._internals = this.attachInternals();
-    this._internals.role = 'option';
-    this._internals.ariaSelected = 'false';
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
-    this.setAttribute('role', 'option');
+    this.role = 'option';
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('selected')) {
+      this._internals.setARIA({ ariaSelected: this.selected.toString() });
+    }
   }
 
   private renderCheckbox() {

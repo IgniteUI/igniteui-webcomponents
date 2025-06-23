@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -17,11 +17,16 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValueOf,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { asNumber, createCounter, isEmpty } from '../common/util.js';
+import {
+  addSafeEventListener,
+  asNumber,
+  createCounter,
+  isEmpty,
+} from '../common/util.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -312,8 +317,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       callback: this._setAreaHeight,
     });
 
-    this.addEventListener('focus', this._handleFocus);
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'focus', this._handleFocus);
+    addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

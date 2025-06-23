@@ -23,8 +23,8 @@ import IgcDialogComponent from '../dialog/dialog.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
-  type DateRangeValue,
   type CustomDateRange,
+  type DateRangeValue,
 } from './date-range-picker.js';
 import {
   checkSelectedRange,

@@ -1,11 +1,11 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
@@ -14,7 +14,11 @@ import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { findElementFromEventPath, isLTR } from '../common/util.js';
+import {
+  addSafeEventListener,
+  findElementFromEventPath,
+  isLTR,
+} from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
@@ -222,6 +226,14 @@ export default class IgcTreeItemComponent extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+
+    addSafeEventListener(this, 'click', this.itemClick);
+    addSafeEventListener(this, 'focus', this.onFocus);
+    addSafeEventListener(this, 'blur', this.onBlur);
+  }
+
   public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
@@ -230,9 +242,6 @@ export default class IgcTreeItemComponent extends LitElement {
     ) as IgcTreeItemComponent | null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this.setAttribute('role', 'treeitem');
-    this.addEventListener('blur', this.onBlur);
-    this.addEventListener('focus', this.onFocus);
-    this.addEventListener('click', this.itemClick);
     this.activeChange();
     // if the item is not added/moved runtime
     if (this.init) {

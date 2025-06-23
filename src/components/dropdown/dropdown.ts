@@ -3,8 +3,6 @@ import { property, query, state } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import {
-  type KeyBindingController,
-  type KeyBindingObserverCleanup,
   addKeybindings,
   arrowDown,
   arrowLeft,
@@ -14,6 +12,8 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  type KeyBindingController,
+  type KeyBindingObserverCleanup,
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
@@ -21,11 +21,11 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  IgcBaseComboBoxLikeComponent,
   getActiveItems,
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  IgcBaseComboBoxLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
