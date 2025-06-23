@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
+import { createAbortHandle } from '../abort-handler.js';
 
 const Events = [
   'pointerdown',
@@ -72,7 +73,9 @@ export class SwipeEvent extends Event {
 
 class GesturesController extends EventTarget implements ReactiveController {
   private readonly _host: ReactiveControllerHost & HTMLElement;
-  private _ref?: Ref<HTMLElement>;
+  private readonly _ref?: Ref<HTMLElement>;
+  private readonly _abortHandle = createAbortHandle();
+
   private _options: GesturesOptions = {
     thresholdDistance: 100,
     thresholdTime: 500,
@@ -90,7 +93,7 @@ class GesturesController extends EventTarget implements ReactiveController {
   }
 
   /** Get the current configuration object */
-  public get options() {
+  public get options(): GesturesOptions {
     return this._options;
   }
 
@@ -114,44 +117,50 @@ class GesturesController extends EventTarget implements ReactiveController {
     type: SwipeEvents,
     callback: (event: SwipeEvent) => void,
     options?: AddEventListenerOptions
-  ) {
+  ): this {
     const bound = callback.bind(this._host) as EventListener;
 
     this.addEventListener(type, bound, options);
     return this;
   }
 
-  public handleEvent(event: PointerEvent) {
+  /** @internal */
+  public handleEvent(event: PointerEvent): void {
     if (this._options.touchOnly && event.pointerType === 'mouse') {
       return;
     }
+
     switch (event.type) {
       case 'pointerdown':
-        return this._handlePointerDown(event);
+        this._handlePointerDown(event);
+        break;
       case 'pointermove':
-        return this._handlePointerMove(event);
+        this._handlePointerMove(event);
+        break;
       case 'lostpointercapture':
       case 'pointercancel':
-        return this._handleLostPointerCapture(event);
+        this._handleLostPointerCapture(event);
     }
   }
 
-  public async hostConnected() {
-    await this._host.updateComplete;
+  /** @internal */
+  public hostConnected(): void {
+    const { signal } = this._abortHandle;
 
-    for (const event of Events) {
-      this._element.addEventListener(event, this, { passive: true });
-    }
+    this._host.updateComplete.then(() => {
+      for (const event of Events) {
+        this._element.addEventListener(event, this, { passive: true, signal });
+      }
+    });
   }
 
-  public hostDisconnected() {
-    for (const event of Events) {
-      this._element.removeEventListener(event, this);
-    }
+  /** @internal */
+  public hostDisconnected(): void {
+    this._abortHandle.abort();
   }
 
   /** Updates the configuration of the controller */
-  public updateOptions(options: Omit<GesturesOptions, 'ref'>) {
+  public updateOptions(options: Omit<GesturesOptions, 'ref'>): void {
     Object.assign(this._options, options);
   }
 
