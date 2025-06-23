@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -25,6 +25,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
@@ -179,6 +180,7 @@ export interface IgcDateRangePickerComponentEventMap {
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcDateRangePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDateRangePickerComponentEventMap,
@@ -187,11 +189,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 ) {
   public static readonly tagName = 'igc-date-range-picker';
   public static styles = [styles, shared];
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   /* blazorSuppress */
   public static register(): void {
