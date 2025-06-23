@@ -23,6 +23,7 @@ import {
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   asArray,
   equal,
   findElementFromEventPath,
@@ -475,8 +476,9 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'blur', this._handleBlur);
 
+    // TODO
     this.addEventListener(
       'keydown',
       this._navigation.navigateHost.bind(this._navigation)
