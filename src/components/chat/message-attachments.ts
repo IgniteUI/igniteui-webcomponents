@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
@@ -8,11 +8,11 @@ import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcChatComponent from './chat.js';
-import { styles } from './themes/message-attachments.base.css';
+import { styles } from './themes/message-attachments.base.css.js';
 import {
-  type IgcMessageAttachment,
   closeIcon,
   fileIcon,
+  type IgcMessageAttachment,
   imageIcon,
   moreIcon,
   previewIcon,

@@ -360,7 +360,13 @@ function generateAIResponse(message: string): string {
     return "You're welcome! Let me know if you need anything else.";
   }
   if (lowerMessage.includes('code')) {
-    return "Here's an example of code formatting:\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n```";
+    return `Here's an example of code formatting:
+  \`\`\`javascript
+  function greet(name) {
+    return \`Hello, \${name}!\`;
+  }
+  console.log(greet('world'));
+  \`\`\``;
   }
   if (lowerMessage.includes('image') || lowerMessage.includes('picture')) {
     return "Here's an image!";
