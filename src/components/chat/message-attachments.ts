@@ -79,20 +79,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     );
   }
 
-  private getFile(attachment: IgcMessageAttachment): File | undefined {
-    if (attachment.file) {
-      return attachment.file;
-    }
-    if (attachment.url) {
-      const url = new URL(attachment.url);
-      const fileName = url.pathname.split('/').pop() || 'attachment';
-      return new File([], fileName, {
-        type: attachment.type || 'application/octet-stream',
-      });
-    }
-    return undefined;
-  }
-
   private getURL(attachment: IgcMessageAttachment): string {
     if (attachment.url) {
       return attachment.url;
