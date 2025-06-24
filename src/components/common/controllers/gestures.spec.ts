@@ -5,14 +5,14 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement, css } from 'lit';
+import { css, LitElement } from 'lit';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
 import {
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
 } from '../utils.spec.js';
-import { type SwipeEvent, addGesturesController } from './gestures.js';
+import { addGesturesController, type SwipeEvent } from './gestures.js';
 
 describe('Gestures controller', () => {
   let clock: SinonFakeTimers;

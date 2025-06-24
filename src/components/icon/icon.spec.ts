@@ -9,7 +9,6 @@ import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
-import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -17,6 +16,7 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { createIconDefaultMap } from './registry/default-map.js';
 import {
   ActionType,

@@ -5,9 +5,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import {
-  type FormValue,
   createFormValueState,
   defaultNumberTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
@@ -60,7 +60,11 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
   }
 
-  protected override _formValue: FormValue<number>;
+  protected override readonly _formValue: FormValueOf<number> =
+    createFormValueState(this, {
+      initialValue: 0,
+      transformers: defaultNumberTransformers,
+    });
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -80,15 +84,6 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 
   protected override get activeValue(): number {
     return this.value;
-  }
-
-  constructor() {
-    super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
   }
 
   protected override normalizeValue(): void {

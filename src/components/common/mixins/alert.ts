@@ -4,13 +4,13 @@ import { property } from 'lit/decorators.js';
 import type { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import type { AbsolutePosition } from '../../types.js';
+import { addInternalsController } from '../controllers/internals.js';
 import { watch } from '../decorators/watch.js';
 
 // It'd be better to have this as a mixin rather than a base class once the analyzer
 // knows how to resolve multiple mixin chains
 
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
-  private _internals: ElementInternals;
   protected _autoHideTimeout?: number;
 
   declare protected abstract _animationPlayer: ReturnType<
@@ -45,6 +45,17 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   @property({ reflect: true })
   public position: AbsolutePosition = 'bottom';
 
+  constructor() {
+    super();
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'status',
+        ariaLive: 'polite',
+      },
+    });
+  }
+
   @watch('displayTime', { waitUntilFirstUpdate: true })
   protected displayTimeChange() {
     this.setAutoHideTimer();
@@ -53,14 +64,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   @watch('keepOpen', { waitUntilFirstUpdate: true })
   protected keepOpenChange() {
     clearTimeout(this._autoHideTimeout);
-  }
-
-  constructor() {
-    super();
-    this._internals = this.attachInternals();
-
-    this._internals.role = 'status';
-    this._internals.ariaLive = 'polite';
   }
 
   private async toggleAnimation(state: 'open' | 'close') {

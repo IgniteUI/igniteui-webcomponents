@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import {
@@ -11,7 +11,7 @@ import {
   shiftKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { first, last } from '../common/util.js';
+import { addSafeEventListener, first, last } from '../common/util.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
@@ -52,7 +52,7 @@ export default class IgcAccordionComponent extends LitElement {
   constructor() {
     super();
 
-    this.addEventListener('igcOpening', this.handlePanelOpening);
+    addSafeEventListener(this, 'igcOpening' as any, this.handlePanelOpening);
 
     addKeybindings(this, {
       skip: this.skipKeybinding,

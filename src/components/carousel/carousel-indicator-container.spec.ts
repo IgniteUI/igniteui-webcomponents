@@ -8,8 +8,8 @@ import {
   simulateKeyboard,
   simulatePointerDown,
 } from '../common/utils.spec.js';
-import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
+import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 
 describe('Carousel Indicator Container', () => {
   before(() => {

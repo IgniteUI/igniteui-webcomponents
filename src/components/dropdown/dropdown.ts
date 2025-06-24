@@ -3,7 +3,6 @@ import { property, query, state } from 'lit/decorators.js';
 
 import { themes } from '../../theming/theming-decorator.js';
 import {
-  type KeyBindingObserverCleanup,
   addKeybindings,
   arrowDown,
   arrowLeft,
@@ -13,18 +12,21 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  type KeyBindingController,
+  type KeyBindingObserverCleanup,
   tabKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  IgcBaseComboBoxLikeComponent,
   getActiveItems,
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  IgcBaseComboBoxLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -92,11 +94,18 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     );
   }
 
-  private _keyBindings: ReturnType<typeof addKeybindings>;
+  private readonly _keyBindings: KeyBindingController;
 
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,
   });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this.handleClosing,
+    }
+  );
 
   @state()
   protected _selectedItem: IgcDropdownItemComponent | null = null;
@@ -199,8 +208,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-
-    this._rootClickController.update({ hideCallback: this.handleClosing });
 
     this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,

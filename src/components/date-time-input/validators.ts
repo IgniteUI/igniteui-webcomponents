@@ -1,8 +1,8 @@
 import {
-  type Validator,
   maxDateValidator,
   minDateValidator,
   requiredValidator,
+  type Validator,
 } from '../common/validators.js';
 import type IgcDateTimeInputComponent from './date-time-input.js';
 import { DateTimeUtil } from './date-util.js';

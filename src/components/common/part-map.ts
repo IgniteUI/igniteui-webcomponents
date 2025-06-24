@@ -3,9 +3,9 @@ import {
   type AttributePart,
   Directive,
   type DirectiveParameters,
+  directive,
   type PartInfo,
   PartType,
-  directive,
 } from 'lit/directive.js';
 
 export interface PartMapInfo {

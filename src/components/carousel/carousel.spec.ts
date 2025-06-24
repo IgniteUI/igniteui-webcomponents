@@ -27,9 +27,9 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '../common/utils.spec.js';
+import IgcCarouselComponent from './carousel.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
-import IgcCarouselComponent from './carousel.js';
 
 describe('Carousel', () => {
   before(() => {

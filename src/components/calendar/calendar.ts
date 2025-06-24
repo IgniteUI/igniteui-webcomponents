@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { themes } from '../../theming/theming-decorator.js';
@@ -36,12 +36,12 @@ import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import {
-  MONTHS_PER_ROW,
-  YEARS_PER_PAGE,
-  YEARS_PER_ROW,
   areSameMonth,
   getYearRange,
   isDateInRanges,
+  MONTHS_PER_ROW,
+  YEARS_PER_PAGE,
+  YEARS_PER_ROW,
 } from './helpers.js';
 import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
@@ -253,19 +253,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /** @private @hidden @internal */
-  public async [focusActiveDate]() {
+  public async [focusActiveDate](options?: FocusOptions) {
     await this.updateComplete;
 
     if (this._isDayView) {
-      return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
+      return this.daysViews
+        .item(this.activeDaysViewIndex)
+        .focusActiveDate(options);
     }
 
     if (this._isMonthView) {
-      return this.monthsView.focusActiveDate();
+      return this.monthsView.focusActiveDate(options);
     }
 
     if (this._isYearView) {
-      return this.yearsView.focusActiveDate();
+      return this.yearsView.focusActiveDate(options);
     }
   }
 

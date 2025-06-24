@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -11,17 +11,23 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { asNumber, createCounter, isEmpty } from '../common/util.js';
+import {
+  addSafeEventListener,
+  asNumber,
+  createCounter,
+  isEmpty,
+} from '../common/util.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -71,6 +77,7 @@ export interface IgcTextareaComponentEventMap {
  * @csspart helper-text - The helper text wrapper of the igc-textarea.
  */
 @themes(all, { exposeController: true })
+@shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -84,11 +91,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
 
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   //#region Private properties and state
 
   private static readonly increment = createCounter();
@@ -97,7 +99,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return textAreaValidators;
   }
 
-  protected override readonly _formValue: FormValue<string>;
+  protected override readonly _formValue: FormValueOf<string> =
+    createFormValueState(this, { initialValue: '' });
 
   protected readonly _inputId = `textarea-${IgcTextareaComponent.increment()}`;
 
@@ -311,10 +314,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       callback: this._setAreaHeight,
     });
 
-    this._formValue = createFormValueState(this, { initialValue: '' });
-
-    this.addEventListener('focus', this._handleFocus);
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'focus', this._handleFocus);
+    addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

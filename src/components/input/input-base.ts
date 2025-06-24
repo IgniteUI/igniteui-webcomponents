@@ -1,8 +1,9 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -19,8 +20,6 @@ export interface IgcInputComponentEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  /* blazorSuppress */
-  igcCancel: CustomEvent<string>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -30,16 +29,12 @@ export interface IgcInputComponentEventMap {
 
 @blazorDeepImport
 @themes(all, { exposeController: true })
+@shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
     LitElement
   )
 ) {
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   public static styles = [styles, shared];
   private static readonly increment = createCounter();
 

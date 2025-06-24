@@ -4,11 +4,11 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';

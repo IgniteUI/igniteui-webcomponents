@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -25,9 +25,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import {
-  type FormValue,
   createFormValueState,
   defaultNumberTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import {
   asNumber,
@@ -90,7 +90,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
-  protected override _formValue: FormValue<number>;
+  protected override readonly _formValue: FormValueOf<number> =
+    createFormValueState(this, {
+      initialValue: 0,
+      transformers: defaultNumberTransformers,
+    });
 
   private _max = 5;
   private _step = 1;
@@ -247,11 +251,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   constructor() {
     super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
 
     addKeybindings(this, {
       skip: () => !this.isInteractive,
