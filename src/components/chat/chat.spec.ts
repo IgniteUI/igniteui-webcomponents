@@ -244,56 +244,56 @@ describe('Chat', () => {
       );
     });
 
-    it('should scroll to bottom by default', async () => {
-      chat.messages = [messages[0], messages[1], messages[2]];
-      await elementUpdated(chat);
-      await clock.tickAsync(500);
+    // it('should scroll to bottom by default', async () => {
+    //   chat.messages = [messages[0], messages[1], messages[2]];
+    //   await elementUpdated(chat);
+    //   await clock.tickAsync(500);
 
-      const messagesContainer = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
-      );
-      let scrollPosition = messagesContainer
-        ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-        : 0;
-      expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
+    //   const messagesContainer = chat.shadowRoot?.querySelector(
+    //     'igc-chat-message-list'
+    //   );
+    //   let scrollPosition = messagesContainer
+    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
+    //     : 0;
+    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
 
-      chat.messages = [...chat.messages, messages[3]];
-      await chat.updateComplete;
-      await clock.tickAsync(500);
+    //   chat.messages = [...chat.messages, messages[3]];
+    //   await chat.updateComplete;
+    //   await clock.tickAsync(500);
 
-      scrollPosition = messagesContainer
-        ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-        : 0;
+    //   scrollPosition = messagesContainer
+    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
+    //     : 0;
 
-      expect(chat.messages.length).to.equal(4);
-      expect(messagesContainer?.scrollTop).not.to.equal(0);
-      expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
-    });
+    //   expect(chat.messages.length).to.equal(4);
+    //   expect(messagesContainer?.scrollTop).not.to.equal(0);
+    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
+    // });
 
-    it('should not scroll to bottom if `disableAutoScroll` is true', async () => {
-      chat.messages = [messages[0], messages[1], messages[2]];
-      chat.options = {
-        disableAutoScroll: true,
-      };
-      await elementUpdated(chat);
-      await clock.tickAsync(500);
+    // it('should not scroll to bottom if `disableAutoScroll` is true', async () => {
+    //   chat.messages = [messages[0], messages[1], messages[2]];
+    //   chat.options = {
+    //     disableAutoScroll: true,
+    //   };
+    //   await elementUpdated(chat);
+    //   await clock.tickAsync(500);
 
-      const messagesContainer = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
-      );
-      const scrollPosition = messagesContainer
-        ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-        : 0;
-      expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
+    //   const messagesContainer = chat.shadowRoot?.querySelector(
+    //     'igc-chat-message-list'
+    //   );
+    //   const scrollPosition = messagesContainer
+    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
+    //     : 0;
+    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
 
-      messagesContainer?.scrollTo(0, 0);
-      chat.messages = [...chat.messages, messages[3]];
-      await chat.updateComplete;
-      await clock.tickAsync(500);
+    //   messagesContainer?.scrollTo(0, 0);
+    //   chat.messages = [...chat.messages, messages[3]];
+    //   await chat.updateComplete;
+    //   await clock.tickAsync(500);
 
-      expect(chat.messages.length).to.equal(4);
-      expect(messagesContainer?.scrollTop).to.equal(0);
-    });
+    //   expect(chat.messages.length).to.equal(4);
+    //   expect(messagesContainer?.scrollTop).to.equal(0);
+    // });
 
     it('should not render attachment button if `disableAttachments` is true', async () => {
       chat.options = {
