@@ -3,6 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -27,16 +28,12 @@ export interface IgcInputComponentEventMap {
 }
 
 @blazorDeepImport
+@shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
     LitElement
   )
 ) {
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   public static styles = [styles, shared];
   private static readonly increment = createCounter();
 

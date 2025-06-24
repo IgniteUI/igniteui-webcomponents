@@ -12,6 +12,7 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { asNumber } from '../common/util.js';
@@ -39,14 +40,10 @@ import IgcTileComponent from './tile.js';
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
  *
  */
+@shadowOptions({ slotAssignment: 'manual' })
 export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
   public static override styles = [styles, shared];
-
-  public static override shadowRootOptions: ShadowRootInit = {
-    mode: 'open',
-    slotAssignment: 'manual',
-  };
 
   /* blazorSuppress */
   public static register() {

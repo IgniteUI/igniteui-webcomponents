@@ -11,6 +11,7 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -75,6 +76,7 @@ export interface IgcTextareaComponentEventMap {
  * @csspart suffix - The suffix wrapper of the igc-textarea.
  * @csspart helper-text - The helper text wrapper of the igc-textarea.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -87,11 +89,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public static register(): void {
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   //#region Private properties and state
 
