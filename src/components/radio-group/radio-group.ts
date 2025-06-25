@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { createMutationController } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -17,7 +17,6 @@ import { all } from './themes/themes.js';
  *
  * @slot - Default slot
  */
-@themes(all)
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
   public static override styles = [styles, shared];
@@ -108,6 +107,8 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     createMutationController(this, {
       callback: this._observerCallback,

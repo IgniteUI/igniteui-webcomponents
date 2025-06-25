@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -16,6 +16,7 @@ import {
   type KeyBindingObserverCleanup,
   tabKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
@@ -71,7 +72,6 @@ export interface IgcDropdownComponentEventMap {
  * @csspart base - The dropdown list wrapper container.
  * @csspart list - The dropdown list element.
  */
-@themes(all)
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
@@ -93,11 +93,18 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     );
   }
 
-  private _keyBindings: KeyBindingController;
+  private readonly _keyBindings: KeyBindingController;
 
   private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: this.handleClosing,
   });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this.handleClosing,
+    }
+  );
 
   @state()
   protected _selectedItem: IgcDropdownItemComponent | null = null;
@@ -201,7 +208,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    this._rootClickController.update({ hideCallback: this.handleClosing });
+    addThemingController(this, all);
 
     this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,

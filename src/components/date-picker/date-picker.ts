@@ -1,9 +1,9 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
@@ -19,7 +19,9 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -146,10 +148,10 @@ export interface IgcDatePickerComponentEventMap {
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatePickerComponentEventMap,
@@ -158,11 +160,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   /* blazorSuppress */
   public static register(): void {
@@ -183,6 +180,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private static readonly _increment = createCounter();
   protected _inputId = `date-picker-${IgcDatePickerComponent._increment()}`;
 
+  private readonly _themes = addThemingController(this, all);
+
   protected override get __validators() {
     return datePickerValidators;
   }
@@ -200,6 +199,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       initialValue: null,
       transformers: defaultDateTimeTransformers,
     });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this._handleClosing,
+    }
+  );
 
   @query(IgcDateTimeInputComponent.tagName)
   private readonly _input!: IgcDateTimeInputComponent;
@@ -221,10 +227,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private get _isDropDown(): boolean {
     return this.mode === 'dropdown';
-  }
-
-  protected get _isMaterialTheme(): boolean {
-    return getThemeController(this)?.theme === 'material';
   }
 
   //#endregion
@@ -464,8 +466,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
-
-    this._rootClickController.update({ hideCallback: this._handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
@@ -808,12 +808,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
     const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(this._isMaterialTheme ? this.label : undefined)}
+        label=${ifDefined(isMaterial ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -844,11 +845,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected override render() {
     const id = this.id || this._inputId;
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
-      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
-      ${this._renderInput(id)} ${this._renderPicker(id)}
-      ${this._renderHelperText()}
+      ${isMaterial ? nothing : this._renderLabel(id)} ${this._renderInput(id)}
+      ${this._renderPicker(id)} ${this._renderHelperText()}
     `;
   }
 

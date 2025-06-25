@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import type { LinearProgressLabelAlign } from '../types.js';
@@ -30,7 +30,6 @@ import { all } from './themes/linear/themes.js';
  * @csspart info - The igc-linear-progress indicator info state.
  * @csspart success - The igc-linear-progress indicator success state.
  */
-@themes(all)
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = [styles, shared];
@@ -53,6 +52,11 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
    */
   @property({ attribute: 'label-align', reflect: true })
   public labelAlign: LinearProgressLabelAlign = 'top-start';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected override render() {
     const parts = {

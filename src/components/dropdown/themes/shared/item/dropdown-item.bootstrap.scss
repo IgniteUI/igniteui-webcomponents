@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --item-icon: #{rem(18px)};
+
+    ::slotted(igc-icon) {
+        --size: var(--item-icon);
+    }
+}

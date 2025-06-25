@@ -2,7 +2,7 @@ import { html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -42,7 +42,6 @@ export interface IgcFileInputComponentEventMap
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
@@ -55,7 +54,6 @@ export interface IgcFileInputComponentEventMap
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(all)
 export default class IgcFileInputComponent extends EventEmitterMixin<
   IgcFileInputComponentEventMap,
   AbstractConstructor<IgcInputBaseComponent>
@@ -145,6 +143,11 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   /** Returns the selected files, if any; otherwise returns null. */
   public get files(): FileList | null {
     return this.input?.files ?? null;
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override _restoreDefaultValue(): void {

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.1] - 2025-06-25
+### Fixed
+- #### Dropdown
+  - Icon size in Bootstrap theme [#1755](https://github.com/IgniteUI/igniteui-webcomponents/pull/1755)
+- #### Input, File Input
+  - Label positioning and transition logic in Material theme [#1739](https://github.com/IgniteUI/igniteui-webcomponents/pull/1739) [#1753](https://github.com/IgniteUI/igniteui-webcomponents/pull/1753)
+
 ## [6.1.0] - 2025-06-12
 ### Added
 - Date Range Picker
@@ -924,6 +931,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.0...6.1.1
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.1...6.1.0
 [6.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.0...6.0.1
 [6.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.1...6.0.0

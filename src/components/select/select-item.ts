@@ -1,5 +1,5 @@
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
@@ -19,13 +19,12 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
  * @csspart content - The main content wrapper of the igc-select-item.
  * @csspart suffix - The suffix wrapper of the igc-select-item.
  */
-@themes(all)
 export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-select-item';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSelectItemComponent);
   }
 
@@ -39,8 +38,13 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
     this.tabIndex = this._active ? 0 : -1;
   }
 
-  public override get active() {
+  public override get active(): boolean {
     return this._active;
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 }
 
