@@ -42,7 +42,6 @@ export interface IgcFileInputComponentEventMap
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
