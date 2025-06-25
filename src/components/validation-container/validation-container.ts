@@ -1,7 +1,7 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { IgcFormControl } from '../common/mixins/forms/types.js';
 import { partMap } from '../common/part-map.js';
@@ -55,7 +55,6 @@ function hasProjectedValidation(
  * @csspart validation-message - The validation error message container
  * @csspart validation-icon - The validation error icon
  */
-@themes(all)
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
   public static override styles = [styles, shared];
@@ -112,6 +111,11 @@ export default class IgcValidationContainerComponent extends LitElement {
 
   public get target() {
     return this._target;
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override createRenderRoot() {

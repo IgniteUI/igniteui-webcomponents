@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -20,7 +20,6 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @csspart toggle - The native button element.
  */
-@themes(all)
 @shadowOptions({ delegatesFocus: true })
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = [styles, shared];
@@ -56,6 +55,11 @@ export default class IgcToggleButtonComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   /* alternateName: focusComponent */
   /** Sets focus on the button. */

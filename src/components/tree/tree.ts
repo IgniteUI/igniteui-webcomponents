@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -31,7 +31,6 @@ import IgcTreeItemComponent from './tree-item.js';
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends EventEmitterMixin<
   IgcTreeComponentEventMap,
@@ -107,6 +106,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
+
     this.selectionService = new IgcTreeSelectionService(this);
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
 

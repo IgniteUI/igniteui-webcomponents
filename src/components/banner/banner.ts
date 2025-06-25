@@ -4,7 +4,7 @@ import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -38,7 +38,6 @@ export interface IgcBannerComponentEventMap {
  * @csspart actions - The part that holds the banner action buttons.
  */
 
-@themes(all)
 export default class IgcBannerComponent extends EventEmitterMixin<
   IgcBannerComponentEventMap,
   Constructor<LitElement>
@@ -66,6 +65,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addInternalsController(this, {
       initialARIA: {
