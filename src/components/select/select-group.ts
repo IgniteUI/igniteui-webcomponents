@@ -56,7 +56,7 @@ export default class IgcSelectGroupComponent extends LitElement {
   private _observerCallback({
     changes: { attributes },
   }: MutationControllerParams<IgcSelectItemComponent>) {
-    for (const item of attributes) {
+    for (const { node: item } of attributes) {
       if (!this.disabled) {
         this.controlledItems = this.activeItems;
       }

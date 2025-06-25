@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
+import { createAbortHandle } from '../abort-handler.js';
 import { asArray, findElementFromEventPath, isFunction } from '../util.js';
 
 //#region Keys and modifiers
@@ -182,6 +183,7 @@ class KeyBindingController implements ReactiveController {
 
   private readonly _host: ReactiveControllerHost & Element;
   private readonly _ref?: Ref;
+  private readonly _abortHandle = createAbortHandle();
 
   private readonly _bindings = new Map<string, KeyBinding>();
   private readonly _allowedKeys = new Set<string>();
@@ -280,14 +282,14 @@ class KeyBindingController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._host.addEventListener('keyup', this);
-    this._host.addEventListener('keydown', this);
+    const { signal } = this._abortHandle;
+    this._host.addEventListener('keyup', this, { signal });
+    this._host.addEventListener('keydown', this, { signal });
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    this._host.removeEventListener('keyup', this);
-    this._host.removeEventListener('keydown', this);
+    this._abortHandle.abort();
   }
 
   /** @internal */

@@ -11,6 +11,7 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { getThemeController, themes } from '../../theming/theming-decorator.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -21,7 +22,12 @@ import {
   type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { asNumber, createCounter, isEmpty } from '../common/util.js';
+import {
+  addSafeEventListener,
+  asNumber,
+  createCounter,
+  isEmpty,
+} from '../common/util.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -71,6 +77,7 @@ export interface IgcTextareaComponentEventMap {
  * @csspart helper-text - The helper text wrapper of the igc-textarea.
  */
 @themes(all, { exposeController: true })
+@shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -83,11 +90,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public static register(): void {
     registerComponent(IgcTextareaComponent, IgcValidationContainerComponent);
   }
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   //#region Private properties and state
 
@@ -312,8 +314,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       callback: this._setAreaHeight,
     });
 
-    this.addEventListener('focus', this._handleFocus);
-    this.addEventListener('blur', this._handleBlur);
+    addSafeEventListener(this, 'focus', this._handleFocus);
+    addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
