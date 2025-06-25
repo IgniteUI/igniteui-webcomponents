@@ -9,6 +9,6 @@ $theme: $fluent;
 
 :host(:is(igc-file-input)) {
   [part~='file-names'] {
-      color: var(--ig-input-idle-text-color, #000)
+      color: var(--ig-file-names-foreground, #000)
   }
 }

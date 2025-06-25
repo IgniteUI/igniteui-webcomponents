@@ -63,13 +63,13 @@ $theme-file-input: file-input.$base;
 
     [part~='filled'] 
     [part~='file-names'] {
-        color: var-get($theme, 'filled-text-color');
+        color: var-get($theme-file-input, 'file-names-foreground--filled');
         background: var-get($theme-file-input, 'file-names-background--filled')
     }
 
     [part~='container']:focus-within {
         [part~='file-names'] {
-            color: var-get($theme, 'focused-text-color');
+            color: var-get($theme-file-input, 'file-names-foreground--focused');
             background: var-get($theme-file-input, 'file-names-background--focused')
         }
     }
@@ -108,7 +108,7 @@ $theme-file-input: file-input.$base;
 :host(:is(igc-file-input):disabled),
 :host(:is(igc-file-input)[disabled]) {
     [part~='file-names'] {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($theme-file-input, 'file-names-foreground--disabled');
         background: var-get($theme-file-input, 'file-names-background--disabled')
     }
 }
