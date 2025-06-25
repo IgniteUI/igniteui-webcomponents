@@ -101,12 +101,13 @@ const messageActionsTemplate = (msg: any) => {
             ></igc-icon-button>
           </div>
         `
-      : ''
-    : '';
+      : html``
+    : html``;
 };
 
 const ai_chat_options = {
   headerText: 'Chat',
+  suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
     messageActionsTemplate: messageActionsTemplate,
   },
@@ -413,6 +414,8 @@ async function handleAIMessageSend(e: CustomEvent) {
     return;
   }
 
+  chat.options = { ...ai_chat_options, suggestions: [] };
+
   let response: any;
   let responseText = '';
   const attachments: IgcMessageAttachment[] = [];
@@ -495,6 +498,7 @@ async function handleAIMessageSend(e: CustomEvent) {
       };
       chat.messages = [...chat.messages];
     }
+    chat.options = { ...ai_chat_options, suggestions: ['Thank you!'] };
   }
 }
 

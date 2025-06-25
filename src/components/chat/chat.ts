@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -98,21 +98,30 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
     if (!text.trim() && attachments.length === 0) return;
 
-    const newMessage: IgcMessage = {
-      id: Date.now().toString(),
-      text,
-      sender: 'user',
-      timestamp: new Date(),
-      attachments,
-    };
-
-    this.messages = [...this.messages, newMessage];
-    this.emitEvent('igcMessageCreated', { detail: newMessage });
+    this.addMessage({ text, attachments });
   }
 
   private handleAttachmentClick(e: CustomEvent) {
     const attachmentArgs = e.detail.attachment;
     this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
+  }
+
+  private addMessage(message: {
+    id?: string;
+    text: string;
+    sender?: string;
+    timestamp?: Date;
+    attachments?: IgcMessageAttachment[];
+  }) {
+    const newMessage: IgcMessage = {
+      id: message.id ?? Date.now().toString(),
+      text: message.text,
+      sender: message.sender ?? 'user',
+      timestamp: message.timestamp ?? new Date(),
+      attachments: message.attachments || [],
+    };
+    this.messages = [...this.messages, newMessage];
+    this.emitEvent('igcMessageCreated', { detail: newMessage });
   }
 
   protected override firstUpdated() {
@@ -132,6 +141,21 @@ export default class IgcChatComponent extends EventEmitterMixin<
           </slot>
         </div>
         <igc-chat-message-list> </igc-chat-message-list>
+        <div class="suggestions-container">
+          <slot name="suggestions" part="suggestions">
+            ${this.options?.suggestions?.map(
+              (suggestion) => html`
+                <slot name="suggestion" part="suggestion">
+                  <igc-chip
+                    @click=${() => this.addMessage({ text: suggestion })}
+                  >
+                    <span>${suggestion}</span>
+                  </igc-chip>
+                </slot>
+              `
+            )}
+          </slot>
+        </div>
         <igc-chat-input
           @message-created=${this.handleSendMessage}
         ></igc-chat-input>

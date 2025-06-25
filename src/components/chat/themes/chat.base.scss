@@ -76,3 +76,15 @@
   .action-button:hover {
     background-color: #E5E5EA;
   }
+
+  .suggestions-container {
+    display: flex;
+    justify-content: end;
+  
+    igc-chip::part(base) {
+      background-color: transparent;
+      border: 1px solid var(--ig-primary-500);
+      color: var(--ig-primary-500);
+    }
+
+  }

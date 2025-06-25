@@ -1,6 +1,6 @@
 import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { type SinonFakeTimers, useFakeTimers } from 'sinon';
+import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateClick, simulateFocus } from '../common/utils.spec.js';
 import IgcChatComponent from './chat.js';
@@ -129,6 +129,10 @@ describe('Chat', () => {
                     </div>
                     <igc-chat-message-list>
                     </igc-chat-message-list>
+                    <div class="suggestions-container">
+                        <slot name="suggestions" part="suggestions">
+                        </slot>
+                    </div>
                     <igc-chat-input>
                     </igc-chat-input>
                 </div>`
@@ -450,6 +454,38 @@ describe('Chat', () => {
         }
       });
     });
+
+    it('should render suggestions', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      await elementUpdated(chat);
+
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        '.suggestions-container'
+      );
+
+      expect(suggestionsContainer).dom.to.equal(
+        `<div class="suggestions-container">
+                    <slot name="suggestions" part="suggestions">
+                        <slot name="suggestion" part="suggestion">
+                            <igc-chip>
+                                <span>
+                                Suggestion 1
+                                </span>
+                            </igc-chip>
+                            </slot>
+                            <slot name="suggestion" part="suggestion">
+                            <igc-chip>
+                                <span>
+                                Suggestion 2
+                                </span>
+                            </igc-chip>
+                        </slot>
+                    </slot>
+                </div>`
+      );
+    });
   });
 
   describe('Slots', () => {
@@ -470,6 +506,7 @@ describe('Chat', () => {
     it('should slot header prefix', () => {});
     it('should slot header title', () => {});
     it('should slot header action buttons area', () => {});
+    it('should slot suggetions area', () => {});
   });
 
   describe('Templates', () => {
@@ -597,6 +634,7 @@ describe('Chat', () => {
   describe('Interactions', () => {
     describe('Click', () => {
       it('should update messages properly on send button click', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
         const sendButton = inputArea?.shadowRoot?.querySelector(
           'igc-icon-button[name="send-message"]'
@@ -610,11 +648,49 @@ describe('Chat', () => {
           simulateClick(sendButton);
           await elementUpdated(chat);
           await clock.tickAsync(500);
+
+          expect(eventSpy).calledWith('igcMessageCreated');
+          const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+          const args =
+            eventArgs && typeof eventArgs === 'object'
+              ? { ...eventArgs, text: 'Hello!', sender: 'user' }
+              : { text: 'Hello!', sender: 'user' };
+          expect(eventArgs).to.deep.equal(args);
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
         }
       });
+
+      it('should update messages properly on suggestion chip click', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
+        chat.options = {
+          suggestions: ['Suggestion 1', 'Suggestion 2'],
+        };
+        await elementUpdated(chat);
+
+        const suggestionChips = chat.shadowRoot
+          ?.querySelector('.suggestions-container')
+          ?.querySelectorAll('igc-chip');
+
+        expect(suggestionChips?.length).to.equal(2);
+        if (suggestionChips) {
+          simulateClick(suggestionChips[0]);
+          await elementUpdated(chat);
+
+          expect(eventSpy).calledWith('igcMessageCreated');
+          const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+          const args =
+            eventArgs && typeof eventArgs === 'object'
+              ? { ...eventArgs, text: 'Suggestion 1', sender: 'user' }
+              : { text: 'Suggestion 1', sender: 'user' };
+          expect(eventArgs).to.deep.equal(args);
+          expect(chat.messages.length).to.equal(1);
+          expect(chat.messages[0].text).to.equal('Suggestion 1');
+          expect(chat.messages[0].sender).to.equal('user');
+        }
+      });
+
       it('should remove attachement on chip remove button click', () => {});
     });
 
@@ -624,6 +700,7 @@ describe('Chat', () => {
 
     describe('Keyboard', () => {
       it('should update messages properly on `Enter` keypress when the textarea is focused', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
         const sendButton = inputArea?.shadowRoot?.querySelector(
           'igc-icon-button[name="send-message"]'
@@ -644,6 +721,14 @@ describe('Chat', () => {
           );
           await elementUpdated(chat);
           await clock.tickAsync(500);
+
+          expect(eventSpy).calledWith('igcMessageCreated');
+          const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+          const args =
+            eventArgs && typeof eventArgs === 'object'
+              ? { ...eventArgs, text: 'Hello!', sender: 'user' }
+              : { text: 'Hello!', sender: 'user' };
+          expect(eventArgs).to.deep.equal(args);
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
@@ -653,7 +738,6 @@ describe('Chat', () => {
   });
 
   describe('Events', () => {
-    it('emits igcMessageCreated', async () => {});
     it('emits igcAttachmentClick', async () => {});
     it('emits igcAttachmentChange', async () => {});
     it('emits igcTypingChange', async () => {});

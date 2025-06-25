@@ -36,6 +36,7 @@ export type IgcChatOptions = {
    */
   acceptedFiles?: string;
   headerText?: string;
+  suggestions?: string[];
   templates?: IgcChatTemplates;
 };
 
