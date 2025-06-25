@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -24,7 +24,9 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
@@ -179,6 +181,7 @@ export interface IgcDateRangePickerComponentEventMap {
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent, IgcChipComponent, IgcInputComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcDateRangePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDateRangePickerComponentEventMap,
@@ -187,11 +190,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 ) {
   public static readonly tagName = 'igc-date-range-picker';
   public static styles = [styles, shared];
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   /* blazorSuppress */
   public static register(): void {
@@ -222,6 +220,13 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       },
       transformers: defaultDateRangeTransformers,
     });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this._handleClosing,
+    }
+  );
 
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
@@ -584,8 +589,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
-
-    this._rootClickController.update({ hideCallback: this._handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,

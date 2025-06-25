@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -19,7 +19,9 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -150,6 +152,7 @@ export interface IgcDatePickerComponentEventMap {
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatePickerComponentEventMap,
@@ -158,11 +161,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   /* blazorSuppress */
   public static register(): void {
@@ -200,6 +198,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       initialValue: null,
       transformers: defaultDateTimeTransformers,
     });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this._handleClosing,
+    }
+  );
 
   @query(IgcDateTimeInputComponent.tagName)
   private readonly _input!: IgcDateTimeInputComponent;
@@ -464,8 +469,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
-
-    this._rootClickController.update({ hideCallback: this._handleClosing });
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,

@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
@@ -17,16 +18,12 @@ export interface IgcButtonEventMap {
 }
 
 @blazorDeepImport
+@shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   IgcButtonEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly formAssociated = true;
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   protected readonly _internals = addInternalsController(this);
   private readonly _focusRingManager = addKeyboardFocusRing(this);
