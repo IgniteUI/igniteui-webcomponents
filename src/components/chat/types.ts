@@ -30,6 +30,7 @@ export type IgcChatOptions = {
   hideUserName?: boolean;
   disableAutoScroll?: boolean;
   disableAttachments?: boolean;
+  isComposing?: boolean;
   /**
    * The accepted files that could be attached.
    * Defines the file types as a list of comma-separated values that the file input should accept.
@@ -46,6 +47,7 @@ export type IgcChatTemplates = {
   attachmentActionsTemplate?: AttachmentTemplate;
   attachmentContentTemplate?: AttachmentTemplate;
   messageActionsTemplate?: MessageActionsTemplate;
+  composingIndicatorTemplate?: TemplateResult;
 };
 
 export const attachmentIcon =

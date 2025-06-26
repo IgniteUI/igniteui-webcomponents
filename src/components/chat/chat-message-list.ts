@@ -1,10 +1,10 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcChatMessageComponent from './chat-message.js';
 import type IgcChatComponent from './chat.js';
+import IgcChatMessageComponent from './chat-message.js';
 import { styles } from './themes/message-list.base.css.js';
 import type { IgcMessage } from './types.js';
 
@@ -87,6 +87,16 @@ export default class IgcChatMessageListComponent extends LitElement {
     }
   }
 
+  protected *renderLoadingTemplate() {
+    yield html` ${this._chat?.options?.templates?.composingIndicatorTemplate
+      ? this._chat.options.templates.composingIndicatorTemplate
+      : html`<div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>`}`;
+  }
+
   protected override render() {
     const groupedMessages = this.groupMessagesByDate(
       this._chat?.messages ?? []
@@ -109,16 +119,7 @@ export default class IgcChatMessageListComponent extends LitElement {
             `
           )}
           ${
-            ''
-            // this.isAiResponding
-            //   ? html`
-            //       <div class="typing-indicator">
-            //         <div class="typing-dot"></div>
-            //         <div class="typing-dot"></div>
-            //         <div class="typing-dot"></div>
-            //       </div>
-            //     `
-            //   : ''
+            this._chat?.options?.isComposing ? this.renderLoadingTemplate() : ''
           }
         </div>
       </div>

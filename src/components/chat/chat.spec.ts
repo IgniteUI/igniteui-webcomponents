@@ -19,6 +19,8 @@ describe('Chat', () => {
       : html``;
   };
 
+  const composingIndicatorTemplate = html`<span>loading...</span>`;
+
   const attachmentTemplate = (attachments: any[]) => {
     return html`${attachments.map((attachment) => {
       return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
@@ -486,6 +488,34 @@ describe('Chat', () => {
                 </div>`
       );
     });
+
+    it('should render composing indicator if `isComposing` is true', async () => {
+      chat.messages = [messages[0]];
+      chat.options = {
+        isComposing: true,
+      };
+      await elementUpdated(chat);
+
+      const messageContainer = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list');
+
+      expect(chat.messages.length).to.equal(1);
+      expect(messageContainer).dom.to.equal(
+        `<div class="message-list">
+                <igc-chat-message>
+                </igc-chat-message>
+                <div class="typing-indicator">
+                    <div class="typing-dot">
+                    </div>
+                    <div class="typing-dot">
+                    </div>
+                    <div class="typing-dot">
+                    </div>
+                </div>
+            </div>`
+      );
+    });
   });
 
   describe('Slots', () => {
@@ -628,6 +658,29 @@ describe('Chat', () => {
           );
         }
       });
+    });
+
+    it('should render composingIndicatorTemplate', async () => {
+      chat.messages = [messages[0]];
+      chat.options = {
+        isComposing: true,
+        templates: {
+          composingIndicatorTemplate: composingIndicatorTemplate,
+        },
+      };
+      await elementUpdated(chat);
+      const messageContainer = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list');
+
+      expect(chat.messages.length).to.equal(1);
+      expect(messageContainer).dom.to.equal(
+        `<div class="message-list">
+                <igc-chat-message>
+                </igc-chat-message>
+                <span>loading...</span>
+            </div>`
+      );
     });
   });
 

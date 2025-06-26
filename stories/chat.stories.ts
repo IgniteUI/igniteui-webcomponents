@@ -105,11 +105,14 @@ const messageActionsTemplate = (msg: any) => {
     : html``;
 };
 
+const _composingIndicatorTemplate = html`<span>LOADING...</span>`;
+
 const ai_chat_options = {
   headerText: 'Chat',
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
     messageActionsTemplate: messageActionsTemplate,
+    //composingIndicatorTemplate: _composingIndicatorTemplate,
   },
 };
 
@@ -414,92 +417,94 @@ async function handleAIMessageSend(e: CustomEvent) {
     return;
   }
 
-  chat.options = { ...ai_chat_options, suggestions: [] };
+  chat.options = { ...ai_chat_options, suggestions: [], isComposing: true };
+  setTimeout(async () => {
+    chat.options = { ...ai_chat_options, suggestions: [], isComposing: false };
+    let response: any;
+    let responseText = '';
+    const attachments: IgcMessageAttachment[] = [];
+    const botResponse: IgcMessage = {
+      id: Date.now().toString(),
+      text: responseText,
+      sender: 'bot',
+      timestamp: new Date(),
+    };
 
-  let response: any;
-  let responseText = '';
-  const attachments: IgcMessageAttachment[] = [];
-  const botResponse: IgcMessage = {
-    id: Date.now().toString(),
-    text: responseText,
-    sender: 'bot',
-    timestamp: new Date(),
-  };
+    userMessages.push({ role: 'user', parts: [{ text: newMessage.text }] });
 
-  userMessages.push({ role: 'user', parts: [{ text: newMessage.text }] });
-
-  if (newMessage.attachments && newMessage.attachments.length > 0) {
-    for (const attachment of newMessage.attachments) {
-      if (attachment.file) {
-        const filePart = fileToGenerativePart(
-          await attachment.file.arrayBuffer(),
-          attachment.file.type
-        );
-        userMessages.push({ role: 'user', parts: [filePart] });
-      }
-    }
-  }
-
-  if (newMessage.text.includes('image')) {
-    response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-preview-image-generation',
-      contents: userMessages,
-      config: {
-        responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
-    });
-
-    for (const part of response?.candidates?.[0]?.content?.parts || []) {
-      // Based on the part type, either show the text or save the image
-      if (part.text) {
-        responseText = part.text;
-      } else if (part.inlineData) {
-        const _imageData = part.inlineData.data;
-        const byteCharacters = atob(_imageData);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+    if (newMessage.attachments && newMessage.attachments.length > 0) {
+      for (const attachment of newMessage.attachments) {
+        if (attachment.file) {
+          const filePart = fileToGenerativePart(
+            await attachment.file.arrayBuffer(),
+            attachment.file.type
+          );
+          userMessages.push({ role: 'user', parts: [filePart] });
         }
-        const byteArray = new Uint8Array(byteNumbers);
-        const type = part.inlineData.type || 'image/png';
-        const blob = new Blob([byteArray], { type: type });
-        const file = new File([blob], 'generated_image.png', {
-          type: type,
-        });
-        const attachment: IgcMessageAttachment = {
-          id: Date.now().toString(),
-          name: 'generated_image.png',
-          type: 'image',
-          url: URL.createObjectURL(file),
-          file: file,
-        };
-        attachments.push(attachment);
       }
     }
 
-    botResponse.text = responseText;
-    botResponse.attachments = attachments;
-    chat.messages = [...chat.messages, botResponse];
-  } else {
-    chat.messages = [...chat.messages, botResponse];
-    response = await ai.models.generateContentStream({
-      model: 'gemini-2.0-flash',
-      contents: userMessages,
-      config: {
-        responseModalities: [Modality.TEXT],
-      },
-    });
+    if (newMessage.text.includes('image')) {
+      response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-preview-image-generation',
+        contents: userMessages,
+        config: {
+          responseModalities: [Modality.TEXT, Modality.IMAGE],
+        },
+      });
 
-    const lastMessageIndex = chat.messages.length - 1;
-    for await (const chunk of response) {
-      chat.messages[lastMessageIndex] = {
-        ...chat.messages[lastMessageIndex],
-        text: `${chat.messages[lastMessageIndex].text}${chunk.text}`,
-      };
-      chat.messages = [...chat.messages];
+      for (const part of response?.candidates?.[0]?.content?.parts || []) {
+        // Based on the part type, either show the text or save the image
+        if (part.text) {
+          responseText = part.text;
+        } else if (part.inlineData) {
+          const _imageData = part.inlineData.data;
+          const byteCharacters = atob(_imageData);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const type = part.inlineData.type || 'image/png';
+          const blob = new Blob([byteArray], { type: type });
+          const file = new File([blob], 'generated_image.png', {
+            type: type,
+          });
+          const attachment: IgcMessageAttachment = {
+            id: Date.now().toString(),
+            name: 'generated_image.png',
+            type: 'image',
+            url: URL.createObjectURL(file),
+            file: file,
+          };
+          attachments.push(attachment);
+        }
+      }
+
+      botResponse.text = responseText;
+      botResponse.attachments = attachments;
+      chat.messages = [...chat.messages, botResponse];
+    } else {
+      chat.messages = [...chat.messages, botResponse];
+      response = await ai.models.generateContentStream({
+        model: 'gemini-2.0-flash',
+        contents: userMessages,
+        config: {
+          responseModalities: [Modality.TEXT],
+        },
+      });
+
+      const lastMessageIndex = chat.messages.length - 1;
+      for await (const chunk of response) {
+        chat.messages[lastMessageIndex] = {
+          ...chat.messages[lastMessageIndex],
+          text: `${chat.messages[lastMessageIndex].text}${chunk.text}`,
+        };
+        chat.messages = [...chat.messages];
+      }
+      chat.options = { ...ai_chat_options, suggestions: ['Thank you!'] };
     }
-    chat.options = { ...ai_chat_options, suggestions: ['Thank you!'] };
-  }
+  }, 2000);
 }
 
 export const Basic: Story = {
