@@ -10,11 +10,6 @@ $input-theme: input-theme.$indigo;
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
         box-shadow: var(--ig-elevation-5);
-        border: rem(1px) solid var-get($theme, 'border-color');
-    }
-
-    igc-focus-trap {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     [part~='label'] {
@@ -24,7 +19,7 @@ $input-theme: input-theme.$indigo;
     ::part(helper-text) {
         @include type-style('caption');
 
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
         padding-inline-start: 0;
     }
@@ -38,7 +33,7 @@ $input-theme: input-theme.$indigo;
 
 :host(:not([invalid])[readonly]) {
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'disabled-text-color');
+        border-color: var-get($input-theme, 'disabled-text-color');
     }
 }
 

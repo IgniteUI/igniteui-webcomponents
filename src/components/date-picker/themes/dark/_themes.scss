@@ -1,9 +1,8 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/calendar' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/dark/input-group' as input-theme;
 
-$material: map.merge(digest-schema($dark-material-calendar), digest-schema(input-theme.$dark-material-input-group));
-$bootstrap: map.merge(digest-schema($dark-bootstrap-calendar), digest-schema(input-theme.$dark-bootstrap-input-group));
-$fluent: map.merge(digest-schema($dark-fluent-calendar), digest-schema(input-theme.$dark-fluent-input-group));
-$indigo: map.merge(digest-schema($dark-indigo-calendar), digest-schema(input-theme.$dark-indigo-input-group));
+$material: digest-schema($dark-material-calendar);
+$bootstrap: digest-schema($dark-bootstrap-calendar);
+$fluent: digest-schema($dark-fluent-calendar);
+$indigo: digest-schema($dark-indigo-calendar);

@@ -4,4 +4,8 @@
 
 :host {
     @include css-vars-from-theme(diff(light.$base, $indigo), 'ig-datepicker');
+
+    igc-dialog[open]::part(base) {
+        box-shadow: var(--ig-elevation-7);
+    }
 }

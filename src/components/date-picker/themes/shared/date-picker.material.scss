@@ -1,17 +1,19 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $material;
+$input-theme: input-theme.$material;
 
 :host(:not([invalid])[outlined][readonly]:hover) {
     igc-date-time-input::part(start),
     igc-date-time-input::part(end),
     igc-date-time-input::part(filler) {
-        border-color: var-get($theme, 'border-color');
+        border-color: var-get($input-theme, 'border-color');
     }
 
     igc-date-time-input::part(notch) {
-        border-bottom-color: var-get($theme, 'border-color');
+        border-bottom-color: var-get($input-theme, 'border-color');
     }
 }
 
@@ -20,38 +22,38 @@ $theme: $material;
         &::part(start),
         &::part(end),
         &::part(filler) {
-            border-color: var-get($theme, 'focused-border-color');
+            border-color: var-get($input-theme, 'focused-border-color');
         }
 
         &::part(notch) {
-            border-bottom-color: var-get($theme, 'focused-border-color');
+            border-bottom-color: var-get($input-theme, 'focused-border-color');
         }
     }
 }
 
 :host(:not([outlined],[disabled])[readonly]) {
     igc-date-time-input::part(container) {
-        background: var-get($theme, 'box-background-focus');
+        background: var-get($input-theme, 'box-background-focus');
     }
 }
 
 :host(:not([outlined],[invalid])[readonly]) {
     igc-date-time-input:hover {
         &::part(container) {
-            border-bottom-color: var-get($theme, 'idle-bottom-line-color');
+            border-bottom-color: var-get($input-theme, 'idle-bottom-line-color');
 
             &::after {
-                background: var-get($theme, 'idle-bottom-line-color');
+                background: var-get($input-theme, 'idle-bottom-line-color');
             }
         }
     }
 
     igc-date-time-input:focus-within {
         &::part(container) {
-            border-bottom-color: var-get($theme, 'focused-bottom-line-color');
+            border-bottom-color: var-get($input-theme, 'focused-bottom-line-color');
 
             &::after {
-                background: var-get($theme, 'focused-bottom-line-color');
+                background: var-get($input-theme, 'focused-bottom-line-color');
             }
         }
     }
@@ -61,10 +63,10 @@ $theme: $material;
     igc-date-time-input:hover,
     igc-date-time-input:focus-within {
         &::part(container) {
-            border-color: var-get($theme, 'error-secondary-color');
+            border-color: var-get($input-theme, 'error-secondary-color');
 
             &::after {
-                border-color: var-get($theme, 'error-secondary-color');
+                border-color: var-get($input-theme, 'error-secondary-color');
             }
         }
     }

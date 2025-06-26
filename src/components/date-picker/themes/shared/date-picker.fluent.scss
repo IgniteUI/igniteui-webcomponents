@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $fluent;
+$input-theme: input-theme.$fluent;
 
 :host {
     igc-dialog[open]::part(base) {
@@ -15,7 +17,7 @@ $theme: $fluent;
     ::part(helper-text) {
         @include type-style('caption');
 
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: rem(5px);
         padding-inline-start: 0;
@@ -24,7 +26,7 @@ $theme: $fluent;
 
 :host([required]) {
     [part='label']::after {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
@@ -37,20 +39,20 @@ $theme: $fluent;
 
 :host(:not([invalid])[readonly]:hover) {
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'border-color');
+        border-color: var-get($input-theme, 'border-color');
     }
 }
 
 :host(:not([invalid])[readonly]:focus-within) {
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'focused-border-color');
+        border-color: var-get($input-theme, 'focused-border-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
     [part='label']::after {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 }
 
