@@ -5,7 +5,7 @@ import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
@@ -45,7 +45,6 @@ export interface IgcDialogComponentEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,
@@ -129,6 +128,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @watch('open', { waitUntilFirstUpdate: true })
   protected handleOpenState() {
     this.open ? this.dialog.showModal() : this.dialog.close();
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override createRenderRoot() {

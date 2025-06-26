@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { ButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
@@ -23,7 +23,6 @@ import { all } from './themes/button/themes.js';
  * @csspart prefix - The prefix container of the igc-button component.
  * @csspart suffix - The suffix container of the igc-button component.
  */
-@themes(all)
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
   protected static styles = [styles, shared];
@@ -39,6 +38,11 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
    */
   @property({ reflect: true })
   public variant: ButtonVariant = 'contained';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected renderContent() {
     return html`

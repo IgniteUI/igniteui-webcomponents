@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   altKey,
@@ -22,6 +22,7 @@ import {
   spaceBar,
   tabKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
@@ -107,7 +108,6 @@ export interface IgcSelectComponentEventMap {
  * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
  * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -132,6 +132,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       IgcSelectItemComponent
     );
   }
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this.handleClosing,
+    }
+  );
 
   protected override readonly _formValue: FormValueOf<string | undefined> =
     createFormValueState<string | undefined>(this, {
@@ -277,7 +284,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    this._rootClickController.update({ hideCallback: this.handleClosing });
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => this.disabled,

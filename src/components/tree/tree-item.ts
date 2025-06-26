@@ -9,7 +9,7 @@ import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -48,7 +48,6 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes(all)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = [styles, shared];
@@ -228,6 +227,8 @@ export default class IgcTreeItemComponent extends LitElement {
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addSafeEventListener(this, 'click', this.itemClick);
     addSafeEventListener(this, 'focus', this.onFocus);

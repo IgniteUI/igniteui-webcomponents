@@ -4,7 +4,7 @@ import { choose } from 'lit/directives/choose.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -107,7 +107,6 @@ export const focusActiveDate = Symbol();
  * @csspart selected - Indicates selected state. Applies to date, month and year elements of the calendar.
  * @csspart current - Indicates current state. Applies to date, month and year elements of the calendar.
  */
-@themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -412,6 +411,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: this.isNotFromCalendarView,
