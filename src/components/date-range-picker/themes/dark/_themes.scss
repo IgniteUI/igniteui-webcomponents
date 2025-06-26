@@ -15,6 +15,7 @@ $material: map.merge($material, (
     content-background: map.get(calendar-theme.$material, 'content-background'),
     actions-divider-color: map.get(calendar-theme.$material, 'actions-divider-color'),
 ));
+$material-calendar-border-color: map.get(calendar-theme.$material, 'border-color');
 $bootstrap: map.merge($bootstrap, (
     default-size: map.get(calendar-theme.$bootstrap, 'default-size'),
     border-radius: map.get(calendar-theme.$bootstrap, 'border-radius'),
@@ -22,6 +23,7 @@ $bootstrap: map.merge($bootstrap, (
     content-background: map.get(calendar-theme.$bootstrap, 'content-background'),
     actions-divider-color: map.get(calendar-theme.$bootstrap, 'actions-divider-color'),
 ));
+$bootstrap-calendar-border-color: map.get(calendar-theme.$bootstrap, 'border-color');
 $fluent: map.merge($fluent, (
     default-size: map.get(calendar-theme.$fluent, 'default-size'),
     border-radius: map.get(calendar-theme.$fluent, 'border-radius'),
@@ -29,6 +31,7 @@ $fluent: map.merge($fluent, (
     content-background: map.get(calendar-theme.$fluent, 'content-background'),
     actions-divider-color: map.get(calendar-theme.$fluent, 'actions-divider-color'),
 ));
+$fluent-calendar-border-color: map.get(calendar-theme.$fluent, 'border-color');
 $indigo: map.merge($indigo, (
     default-size: map.get(calendar-theme.$indigo, 'default-size'),
     border-radius: map.get(calendar-theme.$indigo, 'border-radius'),
@@ -36,3 +39,5 @@ $indigo: map.merge($indigo, (
     content-background: map.get(calendar-theme.$indigo, 'content-background'),
     actions-divider-color: map.get(calendar-theme.$indigo, 'actions-divider-color'),
 ));
+$indigo-calendar-border-color: map.get(calendar-theme.$indigo, 'border-color');
+
