@@ -5,6 +5,7 @@ $theme: $material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --calendar-border-color: #{$material-calendar-border-color};
 
     igc-dialog {
         box-shadow: none;
@@ -21,6 +22,7 @@ $theme: $material;
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-24);
+        border: rem(1px) solid var(--calendar-border-color);
     }
 
     igc-dialog::part(content) {
@@ -40,6 +42,7 @@ $theme: $material;
 
         border-radius: var-get($theme, 'border-radius');
         background: var-get($theme, 'content-background');
+        box-shadow: 0 0 0 rem(1px) var(--calendar-border-color);
     }
 
     igc-popover::part(container) {
