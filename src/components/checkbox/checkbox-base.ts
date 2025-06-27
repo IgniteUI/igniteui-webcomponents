@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
-
+import { property, query, state } from 'lit/decorators.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -11,7 +11,6 @@ import {
   defaultBooleanTransformers,
   type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
-import { isEmpty } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
@@ -39,6 +38,14 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     return checkBoxValidators;
   }
 
+  protected readonly _slots = addSlotController(this, {
+    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    onChange: () => {
+      this._hideLabel = !this._slots.hasAssignedNodes('[default]');
+    },
+    initial: true,
+  });
+
   protected readonly _focusRingManager = addKeyboardFocusRing(this);
   protected override readonly _formValue: FormValueOf<boolean> =
     createFormValueState(this, {
@@ -49,9 +56,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
-
-  @queryAssignedNodes({ flatten: true })
-  protected readonly _label!: Array<Node>;
 
   @state()
   protected _hideLabel = false;
@@ -93,17 +97,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
-
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    const root = super.createRenderRoot();
-    this._hideLabel = isEmpty(this._label);
-
-    root.addEventListener('slotchange', () => {
-      this._hideLabel = isEmpty(this._label);
-    });
-
-    return root;
-  }
 
   /** Simulates a click on the control. */
   public override click(): void {
