@@ -4,6 +4,8 @@
 $theme: $fluent;
 
 :host {
+    --calendar-border-color: #{$fluent-calendar-border-color};
+
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }

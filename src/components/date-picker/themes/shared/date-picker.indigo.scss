@@ -7,14 +7,11 @@ $theme: $indigo;
 $input-theme: input-theme.$indigo;
 
 :host {
+    --calendar-border-color: #{$indigo-calendar-border-color};
+
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
         box-shadow: var(--ig-elevation-5);
-        border: rem(1px) solid var-get($theme, 'border-color');
-    }
-
-    igc-focus-trap {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     [part~='label'] {
