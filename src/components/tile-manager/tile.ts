@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { startViewTransition } from '../../animations/player.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   type TileManagerContext,
@@ -93,7 +93,6 @@ export interface IgcTileComponentEventMap {
  * @csspart trigger - The part for the corner adorner of the encapsulated resize element in the tile.
  * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element in the tile.
  */
-@themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
   Constructor<LitElement>
@@ -365,6 +364,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   public get position(): number {
     return this._position;
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   /** @internal */

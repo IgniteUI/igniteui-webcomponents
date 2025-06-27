@@ -9,7 +9,7 @@ import {
 
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { carouselContext } from '../common/context.js';
 import {
@@ -83,8 +83,6 @@ export interface IgcCarouselComponentEventMap {
  * @csspart label - The label container of the carousel indicators.
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
-
-@themes(all)
 export default class IgcCarouselComponent extends EventEmitterMixin<
   IgcCarouselComponentEventMap,
   Constructor<LitElement>
@@ -328,6 +326,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ariaRoleDescription: 'carousel',
       },
     });
+
+    addThemingController(this, all);
 
     addSafeEventListener(this, 'pointerenter', this.handlePointerEnter);
     addSafeEventListener(this, 'pointerleave', this.handlePointerLeave);

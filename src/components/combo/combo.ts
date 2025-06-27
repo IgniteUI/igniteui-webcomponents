@@ -8,8 +8,8 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themes } from '../../theming/theming-decorator.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
@@ -106,7 +106,6 @@ import { comboValidators } from './validators.js';
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<
@@ -136,6 +135,18 @@ export default class IgcComboComponent<
   protected override get __validators() {
     return comboValidators;
   }
+
+  private readonly _rootClickController = addRootClickController(this, {
+    onHide: async () => {
+      if (!this.handleClosing()) {
+        return;
+      }
+      this.open = false;
+
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
+    },
+  });
 
   protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
     createFormValueState<ComboValue<T>[]>(this, {
@@ -461,21 +472,10 @@ export default class IgcComboComponent<
     this._rootClickController.update();
   }
 
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: async () => {
-      if (!this.handleClosing()) {
-        return;
-      }
-      this.open = false;
-
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    },
-  });
-
   constructor() {
     super();
 
+    addThemingController(this, all);
     addSafeEventListener(this, 'blur', this._handleBlur);
 
     // TODO
