@@ -1,13 +1,12 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
+import { property } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
@@ -18,14 +17,17 @@ export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
   igcSelect: CustomEvent<boolean>;
 }
+
 /**
  * Chips help people enter information, make selections, filter content, or trigger actions.
  *
  * @element igc-chip
  *
- * @slot - Renders the chip data.
- * @slot prefix - Renders content before the data of the chip.
- * @slot suffix - Renders content after the data of the chip.
+ * @slot - Renders content in the default slot of the chip.
+ * @slot prefix - Renders content at the start of the chip, before the default content.
+ * @slot suffix - Renders content at the end of the chip after the default content.
+ * @slot select - Content to render when the chip in selected state.
+ * @slot remove - Content to override the default remove chip icon.
  *
  * @fires igcRemove - Emits an event when the chip component is removed. Returns the removed chip component.
  * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
@@ -42,11 +44,15 @@ export default class IgcChipComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcChipComponent, IgcIconComponent);
   }
 
-  private _removePartRef: Ref<HTMLSlotElement> = createRef();
+  private readonly _removePartRef = createRef<HTMLSlotElement>();
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('prefix', 'suffix', 'start', 'end', 'select', 'remove'),
+  });
 
   /**
    * Sets the disabled state for the chip.
@@ -84,18 +90,6 @@ export default class IgcChipComponent extends EventEmitterMixin<
   @property({ reflect: true })
   public variant!: StyleVariant;
 
-  @queryAssignedElements({ slot: 'prefix' })
-  protected prefixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'start' })
-  protected contentStart!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'suffix' })
-  protected suffixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'end' })
-  protected contentEnd!: Array<HTMLElement>;
-
   constructor() {
     super();
 
@@ -104,75 +98,90 @@ export default class IgcChipComponent extends EventEmitterMixin<
     addKeybindings(this, {
       ref: this._removePartRef,
       bindingDefaults: { triggers: ['keyup'] },
-    }).setActivateHandler(this.handleRemove);
+    }).setActivateHandler(this._handleRemove);
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  protected handleSelect() {
+  protected _handleSelect(): void {
     if (this.selectable) {
       this.selected = !this.selected;
       this.emitEvent('igcSelect', { detail: this.selected });
     }
   }
 
-  protected handleRemove(e: Event) {
+  protected _handleRemove(event: Event): void {
+    event.stopPropagation();
     this.emitEvent('igcRemove');
-    e.stopPropagation();
+  }
+
+  protected _renderPrefix() {
+    const isVisible =
+      this._slots.hasAssignedElements('prefix') ||
+      this._slots.hasAssignedElements('start');
+
+    const selectSlot =
+      this.selectable && this.selected
+        ? html`
+            <slot name="select">
+              <igc-icon name="selected" collection="default"></igc-icon>
+            </slot>
+          `
+        : nothing;
+
+    return html`
+      <span part="prefix" ?hidden=${!isVisible && !this.selected}>
+        ${selectSlot}
+        <slot name="start"></slot>
+        <slot name="prefix"></slot>
+      </span>
+    `;
+  }
+
+  protected _renderSuffix() {
+    const isVisible =
+      this._slots.hasAssignedElements('suffix') ||
+      this._slots.hasAssignedElements('end');
+
+    const removeSlot =
+      this.removable && !this.disabled
+        ? html`
+            <slot
+              ${ref(this._removePartRef)}
+              name="remove"
+              @click=${this._handleRemove}
+            >
+              <igc-icon
+                name="remove"
+                collection="default"
+                tabindex="0"
+                role="button"
+                aria-label="Remove"
+              ></igc-icon>
+            </slot>
+          `
+        : nothing;
+
+    return html`
+      <span part="suffix" ?hidden=${!isVisible && !this.removable}>
+        <slot name="end"></slot>
+        <slot name="suffix"></slot>
+        ${removeSlot}
+      </span>
+    `;
   }
 
   protected override render() {
+    const ariaPressed = this.selectable ? this.selected.toString() : null;
+
     return html`
       <button
         part="base"
-        .disabled=${this.disabled}
-        aria-selected=${this.selected}
-        aria-disabled=${this.disabled}
-        @click=${this.handleSelect}
+        .ariaPressed=${ariaPressed}
+        ?disabled=${this.disabled}
+        @click=${this._handleSelect}
       >
-        <span
-          part="prefix"
-          .hidden=${isEmpty(this.prefixes) &&
-          isEmpty(this.contentStart) &&
-          !this.selected}
-        >
-          ${this.selectable && this.selected
-            ? html`<slot name="select">
-                <igc-icon name="selected" collection="default"></igc-icon>
-              </slot>`
-            : nothing}
-          <slot name="start"></slot>
-          <slot name="prefix"></slot>
-        </span>
+        ${this._renderPrefix()}
         <slot></slot>
-        <span
-          part="suffix"
-          .hidden=${isEmpty(this.suffixes) &&
-          isEmpty(this.contentEnd) &&
-          !this.removable}
-        >
-          <slot name="end"></slot>
-          <slot name="suffix"></slot>
-          ${this.removable && !this.disabled
-            ? html`<slot
-                ${ref(this._removePartRef)}
-                @click=${this.handleRemove}
-                name="remove"
-              >
-                <igc-icon
-                  name="remove"
-                  collection="default"
-                  tabindex="0"
-                  role="button"
-                  aria-label="remove"
-                ></igc-icon>
-              </slot>`
-            : nothing}
-        </span>
+        ${this._renderSuffix()}
       </button>
     `;
   }

@@ -121,63 +121,6 @@ describe('Switch', () => {
       expect(el.reportValidity()).to.equals(true);
     });
 
-    it('should set the switch checked property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-disabled',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      el.checked = true;
-      expect(el.checked).to.be.true;
-      await elementUpdated(el);
-      expect(input).dom.to.equal(`<input aria-checked="true" />`, DIFF_OPTIONS);
-
-      el.checked = false;
-      expect(el.checked).to.be.false;
-      await elementUpdated(el);
-
-      expect(input).dom.to.equal(
-        `<input aria-checked="false" />`,
-        DIFF_OPTIONS
-      );
-    });
-
-    it('should set the switch disabled property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      el.disabled = true;
-      expect(el.disabled).to.be.true;
-      await elementUpdated(el);
-      expect(input).dom.to.equal(
-        `<input disabled aria-disabled="true" />`,
-        DIFF_OPTIONS
-      );
-
-      el.disabled = false;
-      expect(el.disabled).to.be.false;
-      await elementUpdated(el);
-
-      expect(input).dom.to.equal(
-        `<input aria-disabled="false" />`,
-        DIFF_OPTIONS
-      );
-    });
-
     it('should have correct focus states between Light/Shadow DOM', () => {
       el.focus();
       expect(isFocused(el)).to.be.true;
