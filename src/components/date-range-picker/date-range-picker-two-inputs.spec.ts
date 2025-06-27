@@ -9,6 +9,7 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import {
+  altKey,
   arrowDown,
   arrowUp,
   escapeKey,
@@ -23,6 +24,7 @@ import {
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
 import {
   checkSelectedRange,
@@ -31,7 +33,9 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date range picker - two inputs', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: Array<IgcDateTimeInputComponent>;
@@ -798,6 +802,29 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, june3rd2025);
+      });
+      it('should toggle the calendar dropdown with alt + arrow down/up and keep it focused', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        dateTimeInputs[0].focus();
+
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+
+        simulateKeyboard(dateTimeInputs[0], [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+        expect(isFocused(dateTimeInputs[0])).to.be.false;
+        expect(eventSpy.firstCall).calledWith('igcOpening');
+        expect(eventSpy.lastCall).calledWith('igcOpened');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(dateTimeInputs[0], [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
       });
     });
     describe('Readonly state', () => {
