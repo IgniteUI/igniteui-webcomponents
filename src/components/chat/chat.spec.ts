@@ -104,14 +104,15 @@ describe('Chat', () => {
 
   describe('Initialization', () => {
     it('is correctly initialized with its default component state', () => {
+      expect(chat.currentUserId).to.equal('user');
       expect(chat.messages.length).to.equal(0);
       expect(chat.options).to.be.undefined;
     });
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat>                   
-                </igc-chat>`
+        `<igc-chat current-user-id="user">                   
+        </igc-chat>`
       );
 
       expect(chat).shadowDom.to.equal(
@@ -212,7 +213,7 @@ describe('Chat', () => {
       );
 
       expect(
-        messageContainer?.querySelector('igc-chat-message')
+        messageContainer?.querySelectorAll('igc-chat-message')[0]
       ).shadowDom.to.equal(
         `<div class="message-container ">
                     <div class="bubble">
@@ -222,6 +223,59 @@ describe('Chat', () => {
                     </div>
                 </div>`
       );
+
+      expect(
+        messageContainer?.querySelectorAll('igc-chat-message')[3]
+      ).shadowDom.to.equal(
+        `<div class="message-container sent">
+                    <div class="bubble">
+                        <div>
+                            <p>Thank you too!</p>
+                        </div>
+                    </div>
+                </div>`
+      );
+    });
+
+    it('should render messages from the current user correctly', async () => {
+      const initialMessages = [
+        messages[0],
+        messages[3],
+        {
+          id: '2',
+          text: 'Hello!',
+          sender: 'me',
+          timestamp: new Date(Date.now() - 3200000),
+        },
+      ];
+      chat = await fixture<IgcChatComponent>(
+        html`<igc-chat current-user-id="me" .messages=${initialMessages}>
+        </igc-chat>`
+      );
+
+      const messageContainer = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list');
+
+      expect(chat.messages.length).to.equal(3);
+
+      messageContainer
+        ?.querySelectorAll('igc-chat-message')
+        .forEach((messageElement, index) => {
+          if (index !== 2) {
+            expect(
+              messageElement.shadowRoot
+                ?.querySelector('.message-container')
+                ?.classList.contains('sent')
+            ).to.be.false;
+          } else {
+            expect(
+              messageElement.shadowRoot
+                ?.querySelector('.message-container')
+                ?.classList.contains('sent')
+            ).to.be.true;
+          }
+        });
     });
 
     it('should apply `headerText` correctly', async () => {

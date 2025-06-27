@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -37,7 +37,7 @@ export default class IgcChatMessageComponent extends LitElement {
   public message: IgcMessage | undefined;
 
   protected override render() {
-    const containerClass = `message-container ${this.message?.sender === 'user' ? 'sent' : ''}`;
+    const containerClass = `message-container ${this.message?.sender === this._chat?.currentUserId ? 'sent' : ''}`;
 
     return html`
       <div class=${containerClass}>

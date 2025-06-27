@@ -55,6 +55,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatContext,
     initialValue: this,
   });
+  @property({ type: String, reflect: true, attribute: 'current-user-id' })
+  public currentUserId = 'user';
 
   @property({ reflect: true, attribute: false })
   public messages: IgcMessage[] = [];
@@ -62,8 +64,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public options?: IgcChatOptions;
 
-  @watch('options')
+  @watch('currentUserId')
   @watch('messages')
+  @watch('options')
   protected contextChanged() {
     this._context.setValue(this, true);
   }
@@ -116,7 +119,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     const newMessage: IgcMessage = {
       id: message.id ?? Date.now().toString(),
       text: message.text,
-      sender: message.sender ?? 'user',
+      sender: message.sender ?? this.currentUserId,
       timestamp: message.timestamp ?? new Date(),
       attachments: message.attachments || [],
     };

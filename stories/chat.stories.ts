@@ -430,7 +430,10 @@ async function handleAIMessageSend(e: CustomEvent) {
       timestamp: new Date(),
     };
 
-    userMessages.push({ role: 'user', parts: [{ text: newMessage.text }] });
+    userMessages.push({
+      role: chat.currentUserId,
+      parts: [{ text: newMessage.text }],
+    });
 
     if (newMessage.attachments && newMessage.attachments.length > 0) {
       for (const attachment of newMessage.attachments) {
@@ -439,7 +442,7 @@ async function handleAIMessageSend(e: CustomEvent) {
             await attachment.file.arrayBuffer(),
             attachment.file.type
           );
-          userMessages.push({ role: 'user', parts: [filePart] });
+          userMessages.push({ role: chat.currentUserId, parts: [filePart] });
         }
       }
     }
