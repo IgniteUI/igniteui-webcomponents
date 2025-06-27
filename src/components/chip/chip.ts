@@ -17,14 +17,17 @@ export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
   igcSelect: CustomEvent<boolean>;
 }
+
 /**
  * Chips help people enter information, make selections, filter content, or trigger actions.
  *
  * @element igc-chip
  *
- * @slot - Renders the chip data.
- * @slot prefix - Renders content before the data of the chip.
- * @slot suffix - Renders content after the data of the chip.
+ * @slot - Renders content in the default slot of the chip.
+ * @slot prefix - Renders content at the start of the chip, before the default content.
+ * @slot suffix - Renders content at the end of the chip after the default content.
+ * @slot select - Content to render when the chip in selected state.
+ * @slot remove - Content to override the default remove chip icon.
  *
  * @fires igcRemove - Emits an event when the chip component is removed. Returns the removed chip component.
  * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
@@ -167,10 +170,12 @@ export default class IgcChipComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const ariaPressed = this.selectable ? this.selected.toString() : null;
+
     return html`
       <button
         part="base"
-        .ariaPressed=${this.selectable ? this.selected.toString() : null}
+        .ariaPressed=${ariaPressed}
         ?disabled=${this.disabled}
         @click=${this._handleSelect}
       >
