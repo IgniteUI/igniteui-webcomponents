@@ -68,7 +68,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this._setFormValue(this._value || 'on');
+      this._setFormValue(this._value);
     }
   }
 

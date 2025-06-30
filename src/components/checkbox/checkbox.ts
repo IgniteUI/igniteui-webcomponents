@@ -118,9 +118,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           </span>
         </span>
         <span
-          ?hidden=${this._hideLabel}
-          part=${partMap({ label: true, checked })}
           id=${this._labelId}
+          part=${partMap({ label: true, checked })}
+          ?hidden=${this._hideLabel}
           ><slot></slot>
         </span>
       </label>
