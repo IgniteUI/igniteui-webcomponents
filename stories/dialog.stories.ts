@@ -84,41 +84,47 @@ type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
 
-const openDialog = (id: string) =>
-  (document.getElementById(id) as IgcDialogComponent).show();
+function getDialog(id: string) {
+  return document.getElementById(id) as IgcDialogComponent;
+}
 
-const closeDialog = (id: string) =>
-  (document.getElementById(id) as IgcDialogComponent).hide();
+function openDialog(id: string) {
+  getDialog(id).show();
+}
+
+function closeDialog(id: string) {
+  getDialog(id).hide();
+}
 
 const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
 
-const Template = ({
-  keepOpenOnEscape,
-  closeOnOutsideClick,
-  title,
-  open,
-  hideDefaultAction,
-}: IgcDialogComponent) => {
-  return html`
+export const Basic: Story = {
+  args: {
+    title: 'Default dialog',
+  },
+  render: (args) => html`
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px; gap: 1rem"
     >
-      <igc-button @click=${() => openDialog('default')}
-        >Default dialog</igc-button
-      >
-      <igc-button @click=${() => openDialog('projected')}
-        >Projected content</igc-button
-      >
+      <igc-button @click=${() => openDialog('default')}>
+        Default dialog
+      </igc-button>
 
-      <igc-button @click=${() => openDialog('with-form')}>With Form</igc-button>
+      <igc-button @click=${() => openDialog('projected')}>
+        Projected content
+      </igc-button>
+
+      <igc-button @click=${() => openDialog('with-form')}>
+        With Form
+      </igc-button>
 
       <igc-dialog
         id="default"
-        ?keep-open-on-escape=${keepOpenOnEscape}
-        ?close-on-outside-click=${closeOnOutsideClick}
-        ?hide-default-action=${hideDefaultAction}
-        .open=${open}
-        title=${ifDefined(title)}
+        ?keep-open-on-escape=${args.keepOpenOnEscape}
+        ?close-on-outside-click=${args.closeOnOutsideClick}
+        ?hide-default-action=${args.hideDefaultAction}
+        ?open=${args.open}
+        title=${ifDefined(args.title)}
       >
         <span slot="message">
           Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus
@@ -130,64 +136,62 @@ const Template = ({
 
       <igc-dialog
         id="projected"
-        ?keep-open-on-escape=${keepOpenOnEscape}
-        ?close-on-outside-click=${closeOnOutsideClick}
+        ?keep-open-on-escape=${args.keepOpenOnEscape}
+        ?close-on-outside-click=${args.closeOnOutsideClick}
       >
         <h4 slot="title">Danger</h4>
-        <p>Doing this action is irrevocable?</p>
+        <p>Doing this action is irrevocable!</p>
         <igc-button
           slot="footer"
-          @click=${() => closeDialog('projected')}
           variant="flat"
-          >Cancel</igc-button
+          @click=${() => closeDialog('projected')}
         >
+          Cancel
+        </igc-button>
+
         <igc-button
           slot="footer"
-          @click=${() => closeDialog('projected')}
           variant="contained"
-          >OK</igc-button
+          @click=${() => closeDialog('projected')}
         >
+          OK
+        </igc-button>
       </igc-dialog>
 
       <igc-dialog
         id="with-form"
         hide-default-action
-        ?keep-open-on-escape=${keepOpenOnEscape}
-        ?close-on-outside-click=${closeOnOutsideClick}
+        ?keep-open-on-escape=${args.keepOpenOnEscape}
+        ?close-on-outside-click=${args.closeOnOutsideClick}
       >
         <h3 slot="title">Your credentials</h3>
-        <div>
-          <form method="dialog">
-            <div style="display: flex; flex-flow: column; gap: 1rem">
-              <igc-input name="username" outlined label="Username"></igc-input>
-              <igc-input
-                name="password"
-                outlined
-                label="Password"
-                type="password"
-              ></igc-input>
-              <igc-select
-                name="auth-method"
-                outlined
-                label="Authentication method"
-              >
-                ${authMethods.map(
-                  (each) =>
-                    html`<igc-select-item value=${each}
-                      >${each}</igc-select-item
-                    >`
-                )}
-              </igc-select>
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem">
-              <igc-button type="reset" variant="flat">Reset</igc-button>
-              <igc-button type="submit" variant="flat">Confirm</igc-button>
-            </div>
-          </form>
-        </div>
+        <form method="dialog">
+          <div style="display: flex; flex-flow: column; gap: 1rem">
+            <igc-input name="username" outlined label="Username"></igc-input>
+            <igc-input
+              name="password"
+              outlined
+              label="Password"
+              type="password"
+            ></igc-input>
+            <igc-select
+              name="auth-method"
+              outlined
+              label="Authentication method"
+            >
+              ${authMethods.map(
+                (each) =>
+                  html`<igc-select-item value=${each}>${each}</igc-select-item>`
+              )}
+            </igc-select>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1rem">
+            <igc-button type="reset" variant="flat">Reset</igc-button>
+            <igc-button type="submit" variant="flat">Confirm</igc-button>
+          </div>
+        </form>
       </igc-dialog>
     </div>
-  `;
+  `,
 };
-
-export const Basic: Story = Template.bind({});
