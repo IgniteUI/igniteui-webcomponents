@@ -23,7 +23,7 @@ const metadata: Meta<IgcDialogComponent> = {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
+        "Whether the dialog should be kept open when pressing the 'Escape' button.",
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -64,7 +64,7 @@ const metadata: Meta<IgcDialogComponent> = {
 export default metadata;
 
 interface IgcDialogArgs {
-  /** Whether the dialog should be kept open when pressing the 'ESCAPE' button. */
+  /** Whether the dialog should be kept open when pressing the 'Escape' button. */
   keepOpenOnEscape: boolean;
   /** Whether the dialog should be closed when clicking outside of it. */
   closeOnOutsideClick: boolean;

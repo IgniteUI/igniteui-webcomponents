@@ -188,6 +188,7 @@ function setSlots<const T extends readonly string[]>(...slots: T) {
 
 export { addSlotController, DefaultSlot, setSlots };
 export type {
+  InferSlotNames,
   SlotController,
   SlotQueryOptions,
   SlotChangeCallback,
