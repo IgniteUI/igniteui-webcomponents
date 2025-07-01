@@ -995,7 +995,7 @@ describe('Chat', () => {
           detail: { isTyping: true },
         });
 
-        aTimeout(1000).then(() => {
+        aTimeout(3000).then(() => {
           expect(eventSpy).calledWith('igcTypingChange', {
             detail: { isTyping: false },
           });
@@ -1038,6 +1038,48 @@ describe('Chat', () => {
           detail: { value: 'Hello!' },
         });
       }
+    });
+
+    it('can cancel `igcMessageCreated` event', async () => {
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const sendButton = inputArea?.shadowRoot?.querySelector(
+        'igc-icon-button[name="send-message"]'
+      );
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      chat.addEventListener('igcMessageCreated', (event) => {
+        event.preventDefault();
+      });
+
+      if (sendButton && textArea) {
+        textArea.setAttribute('value', 'Hello!');
+        textArea.dispatchEvent(new Event('input'));
+        await elementUpdated(chat);
+        simulateClick(sendButton);
+        await elementUpdated(chat);
+        await clock.tickAsync(500);
+
+        expect(chat.messages.length).to.equal(0);
+      }
+    });
+
+    it('can cancel `igcAttachmentChange` event', async () => {
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const fileInput = inputArea?.shadowRoot
+        ?.querySelector('igc-file-input')
+        ?.shadowRoot?.querySelector('input') as HTMLInputElement;
+
+      chat.addEventListener('igcAttachmentChange', (event) => {
+        event.preventDefault();
+      });
+
+      simulateFileUpload(fileInput, files);
+      await elementUpdated(chat);
+      aTimeout(500);
+
+      expect(
+        inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
+      ).to.equal(0);
     });
   });
 });

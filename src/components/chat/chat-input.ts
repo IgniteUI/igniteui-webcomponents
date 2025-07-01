@@ -1,6 +1,6 @@
 import { consume } from '@lit/context';
 import { html, LitElement } from 'lit';
-import { query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
@@ -56,10 +56,10 @@ export default class IgcChatInputComponent extends LitElement {
   private inputValue = '';
 
   @state()
-  private attachments: IgcMessageAttachment[] = [];
-
-  @state()
   private dragClass = '';
+
+  @property({ attribute: false })
+  public attachments: IgcMessageAttachment[] = [];
 
   // Cache for accepted file types
   private _acceptedTypesCache: {
@@ -142,6 +142,9 @@ export default class IgcChatInputComponent extends LitElement {
     );
 
     this.dragClass = hasValidFiles ? 'dragging' : '';
+
+    const dragEvent = new CustomEvent('drag-attachment');
+    this.dispatchEvent(dragEvent);
   }
 
   private handleDragOver(e: DragEvent) {
@@ -178,6 +181,9 @@ export default class IgcChatInputComponent extends LitElement {
 
     const validFiles = files.filter((file) => this.isFileTypeAccepted(file));
 
+    const dropEvent = new CustomEvent('drop-attachment');
+    this.dispatchEvent(dropEvent);
+
     this.attachFiles(validFiles);
   }
 
@@ -199,7 +205,6 @@ export default class IgcChatInputComponent extends LitElement {
 
     this.dispatchEvent(messageEvent);
     this.inputValue = '';
-    this.attachments = [];
 
     if (this.textInputElement) {
       this.textInputElement.style.height = 'auto';
@@ -232,11 +237,10 @@ export default class IgcChatInputComponent extends LitElement {
         thumbnail: isImage ? URL.createObjectURL(file) : undefined,
       });
     });
-    this.attachments = [...this.attachments, ...newAttachments];
-    const attachmentEvent = new CustomEvent('attachment-change', {
-      detail: this.attachments,
-    });
 
+    const attachmentEvent = new CustomEvent('attachment-change', {
+      detail: [...this.attachments, ...newAttachments],
+    });
     this.dispatchEvent(attachmentEvent);
   }
 
@@ -288,10 +292,8 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private removeAttachment(index: number) {
-    this.attachments = this.attachments.filter((_, i) => i !== index);
-
     const attachmentEvent = new CustomEvent('attachment-change', {
-      detail: this.attachments,
+      detail: this.attachments.filter((_, i) => i !== index),
     });
 
     this.dispatchEvent(attachmentEvent);

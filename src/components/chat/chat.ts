@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
@@ -20,9 +20,11 @@ export interface IgcChatComponentEventMap {
   igcMessageCreated: CustomEvent<IgcMessage>;
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
   igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
+  igcAttachmentDrag: CustomEvent<any>;
+  igcAttachmentDrop: CustomEvent<any>;
   igcTypingChange: CustomEvent<boolean>;
-  igcInputFocus: CustomEvent<void>;
-  igcInputBlur: CustomEvent<void>;
+  igcInputFocus: CustomEvent<any>;
+  igcInputBlur: CustomEvent<any>;
   igcInputChange: CustomEvent<string>;
   igcMessageCopied: CustomEvent<IgcMessage>;
 }
@@ -55,6 +57,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatContext,
     initialValue: this,
   });
+
+  @state()
+  private inputAttachments: IgcMessageAttachment[] = [];
+
   @property({ type: String, reflect: true, attribute: 'current-user-id' })
   public currentUserId = 'user';
 
@@ -101,6 +107,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this.emitEvent('igcAttachmentClick', { detail: attachmentArgs });
   }
 
+  private handleAttachmentChange(e: CustomEvent) {
+    const allowed = this.emitEvent('igcAttachmentChange', {
+      detail: e.detail,
+      cancelable: true,
+    });
+    if (allowed) {
+      this.inputAttachments = [...e.detail];
+    }
+  }
+
   private addMessage(message: {
     id?: string;
     text: string;
@@ -122,6 +138,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
     if (allowed) {
       this.messages = [...this.messages, newMessage];
+      this.inputAttachments = [];
     }
   }
 
@@ -158,6 +175,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           </slot>
         </div>
         <igc-chat-input
+          .attachments=${this.inputAttachments}
           @message-created=${this.handleSendMessage}
           @typing-change=${(e: CustomEvent) => {
             this.emitEvent('igcTypingChange', { detail: e.detail });
@@ -165,9 +183,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
           @input-change=${(e: CustomEvent) => {
             this.emitEvent('igcInputChange', { detail: e.detail });
           }}
-          @attachment-change=${(e: CustomEvent) => {
-            this.emitEvent('igcAttachmentChange', { detail: e.detail });
-          }}
+          @attachment-change=${this.handleAttachmentChange}
+          @drop-attachment=${() => this.emitEvent('igcAttachmentDrop')}
+          @drag-attachment=${() => this.emitEvent('igcAttachmentDrag')}
           @focus-input=${() => {
             this.emitEvent('igcInputFocus');
           }}
