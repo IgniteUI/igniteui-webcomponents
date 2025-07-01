@@ -24,7 +24,7 @@ $theme: $indigo;
 
 }
 
-:host(:hover) {
+:host(:not([readonly], :focus-within):hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-hover');
 
@@ -38,7 +38,8 @@ $theme: $indigo;
     }
 }
 
-:host(:focus-within) {
+:host(:focus-within),
+:host([readonly]:focus-within) {
     [part~='label'] {
         color: var-get($theme, 'focused-secondary-color');
     }
@@ -133,6 +134,12 @@ textarea {
 [part~='prefixed'] [part~='prefix'],
 [part~='suffixed'] [part~='suffix'] {
     height: calc(100% - #{rem(1px)});
+}
+
+:host([readonly]) {
+    [part~='container']::after {
+        border-block-end-color: var-get($theme, 'disabled-text-color');
+    }
 }
 
 :host([invalid]:not(:disabled)),
