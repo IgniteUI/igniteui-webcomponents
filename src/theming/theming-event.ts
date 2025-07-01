@@ -9,7 +9,8 @@ class ThemeChangedEmitter extends EventTarget {
     }
   }
 
-  public handleEvent() {
+  /** @internal */
+  public handleEvent(): void {
     this.dispatchEvent(new CustomEvent(CHANGED_THEME_EVENT));
   }
 }

@@ -3,7 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
@@ -148,7 +148,6 @@ export interface IgcDatePickerComponentEventMap {
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
@@ -180,6 +179,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private static readonly _increment = createCounter();
   protected _inputId = `date-picker-${IgcDatePickerComponent._increment()}`;
+
+  private readonly _themes = addThemingController(this, all);
 
   protected override get __validators() {
     return datePickerValidators;
@@ -226,10 +227,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private get _isDropDown(): boolean {
     return this.mode === 'dropdown';
-  }
-
-  protected get _isMaterialTheme(): boolean {
-    return getThemeController(this)?.theme === 'material';
   }
 
   //#endregion
@@ -811,12 +808,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
     const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(this._isMaterialTheme ? this.label : undefined)}
+        label=${ifDefined(isMaterial ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -847,11 +845,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected override render() {
     const id = this.id || this._inputId;
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
-      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
-      ${this._renderInput(id)} ${this._renderPicker(id)}
-      ${this._renderHelperText()}
+      ${isMaterial ? nothing : this._renderLabel(id)} ${this._renderInput(id)}
+      ${this._renderPicker(id)} ${this._renderHelperText()}
     `;
   }
 

@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -72,7 +72,6 @@ export interface IgcDropdownComponentEventMap {
  * @csspart base - The dropdown list wrapper container.
  * @csspart list - The dropdown list element.
  */
-@themes(all)
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
@@ -208,6 +207,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,

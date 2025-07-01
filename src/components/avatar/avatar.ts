@@ -1,7 +1,7 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AvatarShape } from '../types.js';
@@ -22,7 +22,6 @@ import { all } from './themes/themes.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes(all)
 export default class IgcAvatarComponent extends LitElement {
   public static readonly tagName = 'igc-avatar';
   public static override styles = [styles, shared];
@@ -69,6 +68,11 @@ export default class IgcAvatarComponent extends LitElement {
    */
   @property({ reflect: true })
   public shape: AvatarShape = 'square';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('initials') || changedProperties.has('alt')) {
