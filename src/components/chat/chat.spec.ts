@@ -2,7 +2,13 @@ import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateFocus } from '../common/utils.spec.js';
+import {
+  simulateBlur,
+  simulateClick,
+  simulateFocus,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
+import { simulateFileUpload } from '../file-input/file-input.spec.js';
 import IgcChatComponent from './chat.js';
 
 describe('Chat', () => {
@@ -88,6 +94,11 @@ describe('Chat', () => {
       sender: 'user',
       timestamp: new Date(Date.now() - 3300000),
     },
+  ];
+
+  const files = [
+    new File(['test content'], 'test.txt', { type: 'text/plain' }),
+    new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
   let chat: IgcChatComponent;
@@ -387,6 +398,89 @@ describe('Chat', () => {
                     </div>
                     <div>
                     </div>`
+      );
+    });
+
+    it('should update the file-input accepted prop based on the `acceptedFiles`', async () => {
+      chat.options = {
+        acceptedFiles: 'image/*',
+      };
+      await elementUpdated(chat);
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const element = inputArea?.shadowRoot?.querySelector('igc-file-input');
+      if (element) {
+        expect(element.accept).to.equal('image/*');
+
+        chat.options = {
+          acceptedFiles: '',
+        };
+        await elementUpdated(chat);
+
+        expect(element.accept).to.be.empty;
+      }
+    });
+
+    it('should render attachments chips correctly', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const fileInput = inputArea?.shadowRoot
+        ?.querySelector('igc-file-input')
+        ?.shadowRoot?.querySelector('input') as HTMLInputElement;
+      simulateFileUpload(fileInput, files);
+      await elementUpdated(chat);
+
+      expect(eventSpy).calledWith('igcAttachmentChange');
+      const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+      const args = Array.isArray(eventArgs)
+        ? eventArgs.map((file: File, index) => ({ ...file, ...files[index] }))
+        : [];
+      expect(eventArgs).to.deep.equal(args);
+
+      expect(inputArea).shadowDom.to.equal(
+        `<div class="input-container">
+            <igc-file-input multiple="">
+              <igc-icon
+                collection="material"
+                name="attachment"
+                slot="file-selector-text"
+              >
+              </igc-icon>
+            </igc-file-input>
+            <div class="input-wrapper">
+              <igc-textarea
+                class="text-input"
+                placeholder="Type a message..."
+                rows="1"
+              >
+              </igc-textarea>
+            </div>
+            <div class="buttons-container">
+              <igc-icon-button
+                class="small"
+                collection="material"
+                name="send-message"
+                type="button"
+                variant="contained"
+              >
+              </igc-icon-button>
+            </div>
+            </div>
+            <div>
+            <div class="attachment-wrapper">
+              <igc-chip removable="">
+                <span class="attachment-name">
+                  test.txt
+                </span>
+              </igc-chip>
+            </div>
+            <div class="attachment-wrapper">
+              <igc-chip removable="">
+                <span class="attachment-name">
+                  image.png
+                </span>
+              </igc-chip>
+            </div>
+        </div>`
       );
     });
 
@@ -757,7 +851,7 @@ describe('Chat', () => {
           await clock.tickAsync(500);
 
           expect(eventSpy).calledWith('igcMessageCreated');
-          const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+          const eventArgs = eventSpy.getCall(1).args[1]?.detail;
           const args =
             eventArgs && typeof eventArgs === 'object'
               ? { ...eventArgs, text: 'Hello!', sender: 'user' }
@@ -798,7 +892,29 @@ describe('Chat', () => {
         }
       });
 
-      it('should remove attachement on chip remove button click', () => {});
+      it('should remove attachement on chip remove button click', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
+        const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+        const fileInput = inputArea?.shadowRoot
+          ?.querySelector('igc-file-input')
+          ?.shadowRoot?.querySelector('input') as HTMLInputElement;
+        simulateFileUpload(fileInput, files);
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const removeFileButton = inputArea?.shadowRoot
+          ?.querySelectorAll('igc-chip')[0]
+          ?.shadowRoot?.querySelector('igc-icon') as HTMLElement;
+        simulateClick(removeFileButton);
+        await elementUpdated(chat);
+
+        expect(eventSpy).calledTwice;
+        expect(eventSpy.alwaysCalledWith('igcAttachmentChange')).to.be.true;
+        const eventArgs = eventSpy.getCall(1).args[1]?.detail;
+        const argsArr = Array.isArray(eventArgs) ? [...eventArgs] : [];
+        expect(argsArr.length).to.equal(1);
+        expect(argsArr[0].name).to.equal(files[1].name);
+      });
     });
 
     describe('Drag &Drop', () => {
@@ -830,7 +946,7 @@ describe('Chat', () => {
           await clock.tickAsync(500);
 
           expect(eventSpy).calledWith('igcMessageCreated');
-          const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+          const eventArgs = eventSpy.getCall(2).args[1]?.detail;
           const args =
             eventArgs && typeof eventArgs === 'object'
               ? { ...eventArgs, text: 'Hello!', sender: 'user' }
@@ -845,11 +961,83 @@ describe('Chat', () => {
   });
 
   describe('Events', () => {
-    it('emits igcAttachmentClick', async () => {});
-    it('emits igcAttachmentChange', async () => {});
-    it('emits igcTypingChange', async () => {});
-    it('emits igcInputFocus', async () => {});
-    it('emits igcInputBlur', async () => {});
-    it('emits igcInputChange', async () => {});
+    it('emits igcAttachmentClick', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [messages[1]];
+      await elementUpdated(chat);
+      await aTimeout(500);
+
+      const messageElement = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelector('igc-chat-message');
+
+      const attachmentHeader = messageElement?.shadowRoot
+        ?.querySelector('igc-message-attachments')
+        ?.shadowRoot?.querySelector('igc-expansion-panel')
+        ?.shadowRoot?.querySelector(`div[part='header']`) as HTMLElement;
+
+      simulateClick(attachmentHeader);
+      expect(eventSpy).calledWith('igcAttachmentClick', {
+        detail: { ...messages[1].attachments[0] },
+      });
+    });
+
+    it('emits igcTypingChange', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      if (textArea) {
+        simulateFocus(textArea);
+        simulateKeyboard(textArea, 'a');
+        expect(eventSpy).calledWith('igcTypingChange', {
+          detail: { isTyping: true },
+        });
+
+        aTimeout(1000).then(() => {
+          expect(eventSpy).calledWith('igcTypingChange', {
+            detail: { isTyping: false },
+          });
+        });
+      }
+    });
+
+    it('emits igcInputFocus', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      if (textArea) {
+        simulateFocus(textArea);
+        expect(eventSpy).calledWith('igcInputFocus');
+      }
+    });
+
+    it('emits igcInputBlur', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      if (textArea) {
+        simulateBlur(textArea);
+        expect(eventSpy).calledWith('igcInputBlur');
+      }
+    });
+
+    it('emits igcInputChange', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      if (textArea) {
+        textArea.setAttribute('value', 'Hello!');
+        textArea.dispatchEvent(new Event('input'));
+        await elementUpdated(chat);
+        expect(eventSpy).calledWith('igcInputChange', {
+          detail: { value: 'Hello!' },
+        });
+      }
+    });
   });
 });

@@ -74,10 +74,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.addEventListener(
-      'message-created',
-      this.handleSendMessage as EventListener
-    );
-    this.addEventListener(
       'attachment-click',
       this.handleAttachmentClick as EventListener
     );
@@ -85,10 +81,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   public override disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener(
-      'message-created',
-      this.handleSendMessage as EventListener
-    );
     this.removeEventListener(
       'attachment-click',
       this.handleAttachmentClick as EventListener
@@ -123,8 +115,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
       timestamp: message.timestamp ?? new Date(),
       attachments: message.attachments || [],
     };
-    this.messages = [...this.messages, newMessage];
-    this.emitEvent('igcMessageCreated', { detail: newMessage });
+    const allowed = this.emitEvent('igcMessageCreated', {
+      detail: newMessage,
+      cancelable: true,
+    });
+
+    if (allowed) {
+      this.messages = [...this.messages, newMessage];
+    }
   }
 
   protected override firstUpdated() {
@@ -161,6 +159,21 @@ export default class IgcChatComponent extends EventEmitterMixin<
         </div>
         <igc-chat-input
           @message-created=${this.handleSendMessage}
+          @typing-change=${(e: CustomEvent) => {
+            this.emitEvent('igcTypingChange', { detail: e.detail });
+          }}
+          @input-change=${(e: CustomEvent) => {
+            this.emitEvent('igcInputChange', { detail: e.detail });
+          }}
+          @attachment-change=${(e: CustomEvent) => {
+            this.emitEvent('igcAttachmentChange', { detail: e.detail });
+          }}
+          @focus-input=${() => {
+            this.emitEvent('igcInputFocus');
+          }}
+          @blur-input=${() => {
+            this.emitEvent('igcInputBlur');
+          }}
         ></igc-chat-input>
       </div>
     `;

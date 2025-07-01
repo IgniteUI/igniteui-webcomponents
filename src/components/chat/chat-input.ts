@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -13,8 +13,8 @@ import IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import { styles } from './themes/input.base.css.js';
 import {
-  type IgcMessageAttachment,
   attachmentIcon,
+  type IgcMessageAttachment,
   sendButtonIcon,
 } from './types.js';
 
@@ -83,13 +83,39 @@ export default class IgcChatInputComponent extends LitElement {
     const target = e.target as HTMLTextAreaElement;
     this.inputValue = target.value;
     this.adjustTextareaHeight();
+    const inputEvent = new CustomEvent('input-change', {
+      detail: { value: this.inputValue },
+    });
+    this.dispatchEvent(inputEvent);
   }
 
   private handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
+    } else {
+      const typingEvent = new CustomEvent('typing-change', {
+        detail: { isTyping: true },
+      });
+      this.dispatchEvent(typingEvent);
+      // wait 3 seconds and dispatch a stop-typing event
+      setTimeout(() => {
+        const stopTypingEvent = new CustomEvent('typing-change', {
+          detail: { isTyping: false },
+        });
+        this.dispatchEvent(stopTypingEvent);
+      }, 3000);
     }
+  }
+
+  private handleFocus() {
+    const focusEvent = new CustomEvent('focus-input');
+    this.dispatchEvent(focusEvent);
+  }
+
+  private handleBlur() {
+    const blurEvent = new CustomEvent('blur-input');
+    this.dispatchEvent(blurEvent);
   }
 
   private setupDragAndDrop() {
@@ -207,6 +233,11 @@ export default class IgcChatInputComponent extends LitElement {
       });
     });
     this.attachments = [...this.attachments, ...newAttachments];
+    const attachmentEvent = new CustomEvent('attachment-change', {
+      detail: this.attachments,
+    });
+
+    this.dispatchEvent(attachmentEvent);
   }
 
   private updateAcceptedTypesCache() {
@@ -258,6 +289,12 @@ export default class IgcChatInputComponent extends LitElement {
 
   private removeAttachment(index: number) {
     this.attachments = this.attachments.filter((_, i) => i !== index);
+
+    const attachmentEvent = new CustomEvent('attachment-change', {
+      detail: this.attachments,
+    });
+
+    this.dispatchEvent(attachmentEvent);
   }
 
   protected override render() {
@@ -287,6 +324,8 @@ export default class IgcChatInputComponent extends LitElement {
             .value=${this.inputValue}
             @input=${this.handleInput}
             @keydown=${this.handleKeyDown}
+            @focus=${this.handleFocus}
+            @blur=${this.handleBlur}
           ></igc-textarea>
         </div>
 
