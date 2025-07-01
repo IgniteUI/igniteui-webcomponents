@@ -917,8 +917,43 @@ describe('Chat', () => {
       });
     });
 
-    describe('Drag &Drop', () => {
-      it('should be able to drop files base on the types listed in `acceptedFiles`', () => {});
+    describe('Drag & Drop', () => {
+      beforeEach(async () => {
+        const options = {
+          acceptedFiles: '.txt',
+        };
+        chat = await fixture<IgcChatComponent>(
+          html`<igc-chat .options=${options}> </igc-chat>`
+        );
+      });
+
+      it('should be able to drop files based on the types listed in `acceptedFiles`', async () => {
+        const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+        const dropZone =
+          inputArea?.shadowRoot?.querySelector('.input-container');
+
+        if (dropZone) {
+          const mockDataTransfer = {
+            files: files,
+          } as unknown as DataTransfer;
+
+          const dropEvent = new DragEvent('drop', {
+            bubbles: true,
+            cancelable: true,
+          });
+          Object.defineProperty(dropEvent, 'dataTransfer', {
+            value: mockDataTransfer,
+          });
+
+          dropZone.dispatchEvent(dropEvent);
+          await elementUpdated(chat);
+
+          const attachments =
+            inputArea?.shadowRoot?.querySelectorAll('igc-chip');
+          expect(attachments?.length).to.equal(1);
+          expect(attachments?.[0]?.textContent?.trim()).to.equal('test.txt');
+        }
+      });
     });
 
     describe('Keyboard', () => {
