@@ -927,15 +927,32 @@ describe('Chat', () => {
         );
       });
 
-      it('should be able to drop files based on the types listed in `acceptedFiles`', async () => {
-        const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      it('should be able to drag & drop files based on the types listed in `acceptedFiles`', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
+        const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
         const dropZone =
           inputArea?.shadowRoot?.querySelector('.input-container');
 
         if (dropZone) {
-          const mockDataTransfer = {
-            files: files,
-          } as unknown as DataTransfer;
+          const mockDataTransfer = new DataTransfer();
+          files.forEach((file) => {
+            mockDataTransfer.items.add(file);
+          });
+
+          const dragEnterEvent = new DragEvent('dragenter', {
+            bubbles: true,
+            cancelable: true,
+          });
+
+          Object.defineProperty(dragEnterEvent, 'dataTransfer', {
+            value: mockDataTransfer,
+          });
+
+          dropZone?.dispatchEvent(dragEnterEvent);
+          await elementUpdated(chat);
+
+          expect(eventSpy.callCount).to.equal(1);
+          expect(eventSpy).calledWith('igcAttachmentDrag');
 
           const dropEvent = new DragEvent('drop', {
             bubbles: true,
@@ -948,6 +965,7 @@ describe('Chat', () => {
           dropZone.dispatchEvent(dropEvent);
           await elementUpdated(chat);
 
+          expect(eventSpy).calledWith('igcAttachmentDrop');
           const attachments =
             inputArea?.shadowRoot?.querySelectorAll('igc-chip');
           expect(attachments?.length).to.equal(1);
