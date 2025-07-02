@@ -123,6 +123,11 @@ textarea {
     textarea {
         background: var-get($theme, 'border-disabled-background');
     }
+
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
 }
 
 :host([invalid]:not(:disabled)),
