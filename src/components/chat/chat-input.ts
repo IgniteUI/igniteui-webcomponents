@@ -24,7 +24,6 @@ import {
  *
  */
 export default class IgcChatInputComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-chat-input';
 
   public static override styles = styles;
@@ -299,24 +298,62 @@ export default class IgcChatInputComponent extends LitElement {
     this.dispatchEvent(attachmentEvent);
   }
 
+  private renderFileUploadArea() {
+    return html` ${this._chat?.options?.disableAttachments
+      ? ''
+      : html`
+          <igc-file-input
+            multiple
+            .accept=${this._chat?.options?.acceptedFiles}
+            @igcChange=${this.handleFileUpload}
+          >
+            <igc-icon
+              slot="file-selector-text"
+              name="attachment"
+              collection="material"
+            ></igc-icon>
+          </igc-file-input>
+        `}`;
+  }
+
+  private renderTextarea() {
+    return html``;
+  }
+
+  private renderActionsArea() {
+    return html` <div class="buttons-container">
+      <igc-icon-button
+        name="send-message"
+        collection="material"
+        variant="contained"
+        class="small"
+        ?disabled=${!this.inputValue.trim() && this.attachments.length === 0}
+        @click=${this.sendMessage}
+      ></igc-icon-button>
+    </div>`;
+  }
+
+  private renderAttachmentsArea() {
+    return html` <div>
+      ${this.attachments?.map(
+        (attachment, index) => html`
+          <div class="attachment-wrapper">
+            <igc-chip
+              removable
+              @igcRemove=${() => this.removeAttachment(index)}
+            >
+              <span class="attachment-name">${attachment.name}</span>
+            </igc-chip>
+          </div>
+        `
+      )}
+    </div>`;
+  }
+
   protected override render() {
     return html`
       <div class="input-container ${this.dragClass}">
-        ${this._chat?.options?.disableAttachments
-          ? ''
-          : html`
-              <igc-file-input
-                multiple
-                .accept=${this._chat?.options?.acceptedFiles}
-                @igcChange=${this.handleFileUpload}
-              >
-                <igc-icon
-                  slot="file-selector-text"
-                  name="attachment"
-                  collection="material"
-                ></igc-icon>
-              </igc-file-input>
-            `}
+        ${this.renderFileUploadArea()}
 
         <div class="input-wrapper">
           <igc-textarea
@@ -331,32 +368,9 @@ export default class IgcChatInputComponent extends LitElement {
           ></igc-textarea>
         </div>
 
-        <div class="buttons-container">
-          <igc-icon-button
-            name="send-message"
-            collection="material"
-            variant="contained"
-            class="small"
-            ?disabled=${!this.inputValue.trim() &&
-            this.attachments.length === 0}
-            @click=${this.sendMessage}
-          ></igc-icon-button>
-        </div>
+        ${this.renderActionsArea()}
       </div>
-      <div>
-        ${this.attachments?.map(
-          (attachment, index) => html`
-            <div class="attachment-wrapper">
-              <igc-chip
-                removable
-                @igcRemove=${() => this.removeAttachment(index)}
-              >
-                <span class="attachment-name">${attachment.name}</span>
-              </igc-chip>
-            </div>
-          `
-        )}
-      </div>
+      ${this.renderAttachmentsArea()}
     `;
   }
 }

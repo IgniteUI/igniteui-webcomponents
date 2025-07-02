@@ -115,7 +115,6 @@ describe('Chat', () => {
 
   describe('Initialization', () => {
     it('is correctly initialized with its default component state', () => {
-      expect(chat.currentUserId).to.equal('user');
       expect(chat.messages.length).to.equal(0);
       expect(chat.options).to.be.undefined;
     });
@@ -928,6 +927,7 @@ describe('Chat', () => {
       });
 
       it('should be able to drop files based on the types listed in `acceptedFiles`', async () => {
+        const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
         const dropZone =
           inputArea?.shadowRoot?.querySelector('.input-container');
@@ -952,6 +952,8 @@ describe('Chat', () => {
             inputArea?.shadowRoot?.querySelectorAll('igc-chip');
           expect(attachments?.length).to.equal(1);
           expect(attachments?.[0]?.textContent?.trim()).to.equal('test.txt');
+          expect(eventSpy).calledWith('igcAttachmentDrop');
+          expect(eventSpy).calledWith('igcAttachmentChange');
         }
       });
     });

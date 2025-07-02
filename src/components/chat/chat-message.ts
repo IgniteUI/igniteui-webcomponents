@@ -16,7 +16,6 @@ import type { IgcMessage } from './types.js';
  *
  */
 export default class IgcChatMessageComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-chat-message';
 
   public static override styles = styles;
