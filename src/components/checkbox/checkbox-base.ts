@@ -40,9 +40,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
 
   protected readonly _slots = addSlotController(this, {
     slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
-    onChange: () => {
-      this._hideLabel = !this._slots.hasAssignedNodes('[default]');
-    },
+    onChange: this._handleSlotChange,
     initial: true,
   });
 
@@ -68,7 +66,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this._setFormValue(this._value);
+      this._setFormValue(this._value || 'on');
     }
   }
 
@@ -113,6 +111,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   /** Removes focus from the control. */
   public override blur(): void {
     this._input.blur();
+  }
+
+  protected _handleSlotChange(): void {
+    this._hideLabel = !this._slots.hasAssignedNodes('[default]');
   }
 
   protected _handleClick(event: PointerEvent): void {
