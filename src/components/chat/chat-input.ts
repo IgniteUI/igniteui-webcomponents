@@ -316,10 +316,6 @@ export default class IgcChatInputComponent extends LitElement {
         `}`;
   }
 
-  private renderTextarea() {
-    return html``;
-  }
-
   private renderActionsArea() {
     return html` <div class="buttons-container">
       <igc-icon-button
