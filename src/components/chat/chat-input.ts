@@ -43,8 +43,8 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
-  @query('textarea')
-  private textInputElement!: HTMLTextAreaElement;
+  @query(IgcTextareaComponent.tagName)
+  private textInputElement!: IgcTextareaComponent;
 
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
@@ -209,9 +209,9 @@ export default class IgcChatInputComponent extends LitElement {
       this.textInputElement.style.height = 'auto';
     }
 
-    setTimeout(() => {
+    this.updateComplete.then(() => {
       this.textInputElement?.focus();
-    }, 0);
+    });
   }
 
   private handleFileUpload(e: Event) {
