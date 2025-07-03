@@ -4,4 +4,6 @@
 
 :host {
     @include css-vars-from-theme(diff(light.$base, $bootstrap), 'ig-daterangepicker');
+
+    --calendar-border-color: #{$bootstrap-calendar-border-color};
 }
