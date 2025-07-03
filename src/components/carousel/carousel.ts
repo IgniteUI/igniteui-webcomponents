@@ -108,7 +108,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasMouseStop = false;
-  private _hasInnerFocus = false;
+  private _hasKeyboardFocus = false;
+  private _hasMouseFocus = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
@@ -332,10 +333,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     addSafeEventListener(this, 'pointerenter', this.handlePointerEnter);
     addSafeEventListener(this, 'pointerleave', this.handlePointerLeave);
     addSafeEventListener(this, 'pointerdown', () => {
-      this._hasInnerFocus = false;
+      this._hasKeyboardFocus = false;
     });
     addSafeEventListener(this, 'keyup', () => {
-      this._hasInnerFocus = true;
+      this._hasKeyboardFocus = true;
     });
 
     addGesturesController(this, {
@@ -391,7 +392,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerEnter(): void {
     this._hasMouseStop = true;
-    if (this._hasInnerFocus) {
+    if (this._hasKeyboardFocus || this._hasMouseFocus) {
       return;
     }
     this.handlePauseOnInteraction();
@@ -399,14 +400,15 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handlePointerLeave(): void {
     this._hasMouseStop = false;
-    if (this._hasInnerFocus) {
+    if (this._hasKeyboardFocus || this._hasMouseFocus) {
       return;
     }
     this.handlePauseOnInteraction();
   }
 
   private handleFocusIn(): void {
-    if (this._hasInnerFocus || this._hasMouseStop) {
+    if (this._hasKeyboardFocus || this._hasMouseStop || this._hasMouseFocus) {
+      this._hasMouseFocus = !this._hasKeyboardFocus && this._hasMouseStop;
       return;
     }
     this.handlePauseOnInteraction();
@@ -419,8 +421,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       return;
     }
 
-    if (this._hasInnerFocus) {
-      this._hasInnerFocus = false;
+    if (this._hasKeyboardFocus || this._hasMouseFocus) {
+      this._hasKeyboardFocus = this._hasMouseFocus = false;
 
       if (!this._hasMouseStop) {
         this.handlePauseOnInteraction();

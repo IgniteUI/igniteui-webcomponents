@@ -745,6 +745,54 @@ describe('Carousel', () => {
         expect(eventSpy.secondCall).calledWith('igcPlaying');
       });
 
+      it('should pause when focusing an interactive element - issue #1731', async () => {
+        carousel.interval = 200;
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(199);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(carousel.current).to.equal(0);
+
+        // hover carousel
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(1);
+
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(carousel.current).to.equal(0);
+
+        // focus on next button/focusable element
+        nextButton.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        await elementUpdated(carousel);
+
+        // hover out of the carousel
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(200);
+
+        // an interactive element is focused
+        // -> should not start rotation on pointerleave
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(carousel.current).to.equal(0);
+
+        nextButton.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(200);
+
+        // the interactive element loses focus
+        // -> should start rotation
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(carousel.current).to.equal(2);
+      });
+
       it('should not pause on interaction if `disablePauseOnInteraction` is true', async () => {
         const eventSpy = spy(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
