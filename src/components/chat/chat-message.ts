@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -16,7 +16,6 @@ import type { IgcMessage } from './types.js';
  *
  */
 export default class IgcChatMessageComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-chat-message';
 
   public static override styles = styles;

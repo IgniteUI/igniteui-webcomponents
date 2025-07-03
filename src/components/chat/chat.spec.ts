@@ -115,7 +115,6 @@ describe('Chat', () => {
 
   describe('Initialization', () => {
     it('is correctly initialized with its default component state', () => {
-      expect(chat.currentUserId).to.equal('user');
       expect(chat.messages.length).to.equal(0);
       expect(chat.options).to.be.undefined;
     });
@@ -970,6 +969,8 @@ describe('Chat', () => {
             inputArea?.shadowRoot?.querySelectorAll('igc-chip');
           expect(attachments?.length).to.equal(1);
           expect(attachments?.[0]?.textContent?.trim()).to.equal('test.txt');
+          expect(eventSpy).calledWith('igcAttachmentDrop');
+          expect(eventSpy).calledWith('igcAttachmentChange');
         }
       });
     });

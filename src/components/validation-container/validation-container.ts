@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { LitElement, type TemplateResult, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -11,6 +11,7 @@ import { styles as shared } from './themes/shared/validator.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
+/** Configuration for the validation container. */
 interface ValidationContainerConfig {
   /** The id attribute for the validation container. */
   id?: string;
@@ -22,29 +23,39 @@ interface ValidationContainerConfig {
   hasHelperText?: boolean;
 }
 
-function getValidationSlots(element: IgcValidationContainerComponent) {
+const VALIDATION_SLOTS_SELECTOR = 'slot:not([name="helper-text"])';
+const ALL_SLOTS_SELECTOR = 'slot';
+
+function getValidationSlots(
+  element: IgcValidationContainerComponent
+): NodeListOf<HTMLSlotElement> {
   return element.renderRoot.querySelectorAll<HTMLSlotElement>(
-    "slot:not([name='helper-text'])"
+    VALIDATION_SLOTS_SELECTOR
   );
 }
 
-function hasProjection(element: IgcValidationContainerComponent) {
-  return Array.from(
-    element.renderRoot.querySelectorAll<HTMLSlotElement>('slot')
-  ).every((slot) => isEmpty(slot.assignedElements({ flatten: true })));
+function hasProjection(element: IgcValidationContainerComponent): boolean {
+  const allSlots =
+    element.renderRoot.querySelectorAll<HTMLSlotElement>(ALL_SLOTS_SELECTOR);
+  return Array.from(allSlots).every((slot) =>
+    isEmpty(slot.assignedElements({ flatten: true }))
+  );
 }
 
 function hasProjectedValidation(
   element: IgcValidationContainerComponent,
   slotName?: string
-) {
-  const config: AssignedNodesOptions = { flatten: true };
+): boolean {
   const slots = Array.from(getValidationSlots(element));
-  return slotName
-    ? slots
-        .filter((slot) => slot.name === slotName)
-        .some((slot) => slot.assignedElements(config).length > 0)
-    : slots.some((slot) => slot.assignedElements(config).length > 0);
+  const config: AssignedNodesOptions = { flatten: true };
+
+  if (slotName) {
+    return slots
+      .filter((slot) => slot.name === slotName)
+      .some((slot) => !isEmpty(slot.assignedElements(config)));
+  }
+
+  return slots.some((slot) => !isEmpty(slot.assignedElements(config)));
 }
 
 /* blazorSuppress */
@@ -60,7 +71,7 @@ export default class IgcValidationContainerComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcValidationContainerComponent, IgcIconComponent);
   }
 
@@ -71,21 +82,26 @@ export default class IgcValidationContainerComponent extends LitElement {
       hasHelperText: true,
     }
   ): TemplateResult {
-    const { renderValidationSlots } = IgcValidationContainerComponent.prototype;
     const helperText = config.hasHelperText
       ? html`<slot name="helper-text" slot="helper-text"></slot>`
-      : null;
+      : nothing;
+
+    const validationSlots =
+      IgcValidationContainerComponent.prototype._renderValidationSlots(
+        host.validity,
+        true
+      );
 
     return html`
       <igc-validator
         id=${ifDefined(config.id)}
         part=${ifDefined(config.part)}
         slot=${ifDefined(config.slot)}
-        .target=${host}
         ?invalid=${host.invalid}
+        .target=${host}
         exportparts="helper-text validation-message validation-icon"
       >
-        ${helperText}${renderValidationSlots(host.validity, true)}
+        ${helperText}${validationSlots}
       </igc-validator>
     `;
   }
@@ -109,7 +125,7 @@ export default class IgcValidationContainerComponent extends LitElement {
     this._target.addEventListener('invalid', this);
   }
 
-  public get target() {
+  public get target(): IgcFormControl {
     return this._target;
   }
 
@@ -118,73 +134,87 @@ export default class IgcValidationContainerComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  protected override createRenderRoot() {
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', this);
     return root;
   }
 
-  public handleEvent({ type }: Event) {
-    const isInvalid = type === 'invalid';
-    const isSlotChange = type === 'slotchange';
-
-    if (isInvalid || isSlotChange) {
-      this.invalid = isInvalid ? true : this.invalid;
-      this._hasSlottedContent = hasProjectedValidation(this);
+  /** @internal */
+  public handleEvent(event: Event): void {
+    switch (event.type) {
+      case 'invalid':
+        if (!this.invalid) {
+          this.invalid = true;
+        }
+        break;
+      case 'slotchange': {
+        const newHasSlottedContent = hasProjectedValidation(this);
+        if (this._hasSlottedContent !== newHasSlottedContent) {
+          this._hasSlottedContent = newHasSlottedContent;
+        }
+        break;
+      }
     }
 
     this.requestUpdate();
   }
 
-  protected renderValidationMessage(slotName: string) {
-    const icon = hasProjectedValidation(this, slotName)
+  protected _renderValidationMessage(slotName: string): TemplateResult {
+    const hasProjectedIcon = hasProjectedValidation(this, slotName);
+    const parts = { 'validation-message': true, empty: !hasProjectedIcon };
+    const icon = hasProjectedIcon
       ? html`
           <igc-icon
             aria-hidden="true"
             name="error"
-            collection="default"
             part="validation-icon"
           ></igc-icon>
         `
-      : null;
+      : nothing;
 
     return html`
-      <div part=${partMap({ 'validation-message': true, empty: !icon })}>
+      <div part=${partMap(parts)}>
         ${icon}
         <slot name=${slotName}></slot>
       </div>
     `;
   }
 
-  protected *renderValidationSlots(validity: ValidityState, projected = false) {
-    for (const key in validity) {
-      if (key === 'valid' && !validity[key]) {
-        yield projected
-          ? html`<slot name="invalid" slot="invalid"></slot>`
-          : this.renderValidationMessage('invalid');
-      } else if (validity[key as keyof ValidityState]) {
-        const name = toKebabCase(key);
+  protected *_renderValidationSlots(
+    validity: ValidityState,
+    projected = false
+  ): Generator<TemplateResult> {
+    if (!validity.valid) {
+      yield projected
+        ? html`<slot name="invalid" slot="invalid"></slot>`
+        : this._renderValidationMessage('invalid');
+    }
 
+    for (const key in validity) {
+      if (key !== 'valid' && validity[key as keyof ValidityState]) {
+        const name = toKebabCase(key);
         yield projected
           ? html`<slot name=${name} slot=${name}></slot>`
-          : this.renderValidationMessage(name);
+          : this._renderValidationMessage(name);
       }
     }
   }
 
-  protected renderHelper() {
+  protected _renderHelper(): TemplateResult | typeof nothing {
     return this.invalid && this._hasSlottedContent
       ? nothing
       : html`<slot name="helper-text"></slot>`;
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
+    const slots = this.invalid
+      ? this._renderValidationSlots(this.target.validity)
+      : nothing;
+
     return html`
       <div part=${partMap({ 'helper-text': true, empty: hasProjection(this) })}>
-        ${this.invalid
-          ? this.renderValidationSlots(this.target.validity)
-          : nothing}
-        ${this.renderHelper()}
+        ${slots}${this._renderHelper()}
       </div>
     `;
   }

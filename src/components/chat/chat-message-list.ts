@@ -1,10 +1,10 @@
 import { consume } from '@lit/context';
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type IgcChatComponent from './chat.js';
 import IgcChatMessageComponent from './chat-message.js';
+import type IgcChatComponent from './chat.js';
 import { styles } from './themes/message-list.base.css.js';
 import type { IgcMessage } from './types.js';
 
@@ -14,7 +14,6 @@ import type { IgcMessage } from './types.js';
  *
  */
 export default class IgcChatMessageListComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-chat-message-list';
 
   public static override styles = styles;

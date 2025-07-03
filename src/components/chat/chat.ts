@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -38,7 +38,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   IgcChatComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
   public static readonly tagName = 'igc-chat';
 
   public static styles = styles;
@@ -77,17 +76,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this, true);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
+  constructor() {
+    super();
     this.addEventListener(
-      'attachment-click',
-      this.handleAttachmentClick as EventListener
-    );
-  }
-
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener(
       'attachment-click',
       this.handleAttachmentClick as EventListener
     );
@@ -142,6 +133,56 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
+  private renderHeader() {
+    return html` <div class="header" part="header">
+      <div class="info">
+        <slot name="prefix" part="prefix"></slot>
+        <slot name="title" part="title">${this.options?.headerText}</slot>
+      </div>
+      <slot name="actions" class="actions">
+        <igc-button variant="flat">⋯</igc-button>
+      </slot>
+    </div>`;
+  }
+
+  private renderSuggestions() {
+    return html` <div class="suggestions-container">
+      <slot name="suggestions" part="suggestions">
+        ${this.options?.suggestions?.map(
+          (suggestion) => html`
+            <slot name="suggestion" part="suggestion">
+              <igc-chip @click=${() => this.addMessage({ text: suggestion })}>
+                <span>${suggestion}</span>
+              </igc-chip>
+            </slot>
+          `
+        )}
+      </slot>
+    </div>`;
+  }
+
+  private renderInputArea() {
+    return html` <igc-chat-input
+      .attachments=${this.inputAttachments}
+      @message-created=${this.handleSendMessage}
+      @typing-change=${(e: CustomEvent) => {
+        this.emitEvent('igcTypingChange', { detail: e.detail });
+      }}
+      @input-change=${(e: CustomEvent) => {
+        this.emitEvent('igcInputChange', { detail: e.detail });
+      }}
+      @attachment-change=${this.handleAttachmentChange}
+      @drop-attachment=${() => this.emitEvent('igcAttachmentDrop')}
+      @drag-attachment=${() => this.emitEvent('igcAttachmentDrag')}
+      @focus-input=${() => {
+        this.emitEvent('igcInputFocus');
+      }}
+      @blur-input=${() => {
+        this.emitEvent('igcInputBlur');
+      }}
+    ></igc-chat-input>`;
+  }
+
   protected override firstUpdated() {
     this._context.setValue(this, true);
   }
@@ -149,50 +190,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div class="chat-container">
-        <div class="header" part="header">
-          <div class="info">
-            <slot name="prefix" part="prefix"></slot>
-            <slot name="title" part="title">${this.options?.headerText}</slot>
-          </div>
-          <slot name="actions" class="actions">
-            <igc-button variant="flat">⋯</igc-button>
-          </slot>
-        </div>
+        ${this.renderHeader()}
         <igc-chat-message-list> </igc-chat-message-list>
-        <div class="suggestions-container">
-          <slot name="suggestions" part="suggestions">
-            ${this.options?.suggestions?.map(
-              (suggestion) => html`
-                <slot name="suggestion" part="suggestion">
-                  <igc-chip
-                    @click=${() => this.addMessage({ text: suggestion })}
-                  >
-                    <span>${suggestion}</span>
-                  </igc-chip>
-                </slot>
-              `
-            )}
-          </slot>
-        </div>
-        <igc-chat-input
-          .attachments=${this.inputAttachments}
-          @message-created=${this.handleSendMessage}
-          @typing-change=${(e: CustomEvent) => {
-            this.emitEvent('igcTypingChange', { detail: e.detail });
-          }}
-          @input-change=${(e: CustomEvent) => {
-            this.emitEvent('igcInputChange', { detail: e.detail });
-          }}
-          @attachment-change=${this.handleAttachmentChange}
-          @drop-attachment=${() => this.emitEvent('igcAttachmentDrop')}
-          @drag-attachment=${() => this.emitEvent('igcAttachmentDrag')}
-          @focus-input=${() => {
-            this.emitEvent('igcInputFocus');
-          }}
-          @blur-input=${() => {
-            this.emitEvent('igcInputBlur');
-          }}
-        ></igc-chat-input>
+        ${this.renderSuggestions()} ${this.renderInputArea()}
       </div>
     `;
   }
