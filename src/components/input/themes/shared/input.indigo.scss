@@ -167,7 +167,7 @@ $transition-duration: .25s;
     }
 }
 
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+:host(:not([aria-haspopup='dialog'],[role='combobox'],[disabled])[readonly]) {
     [part^='container'] {
         border-color: var-get($theme, 'disabled-text-color');
     }

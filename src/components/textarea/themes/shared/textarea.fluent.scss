@@ -71,6 +71,13 @@ $border-size: rem(1px);
     }
 }
 
+:host([readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        background: transparent;
+    }
+}
+
 :host([invalid]) {
     [part~='label'] {
         color: var-get($theme, 'idle-text-color');
