@@ -1,12 +1,13 @@
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as *;
+@use '../light/themes' as file-input;
 
 $theme: $indigo;
+$theme-file-input: file-input.$indigo;
 
 [part='file-names'] {
     @include type-style('body-2');
 
-    color: var-get($theme, 'idle-text-color');
     font-size: rem(12px);
     line-height: rem(16px);
 }
