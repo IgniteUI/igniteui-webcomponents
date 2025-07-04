@@ -21,7 +21,7 @@ export default class IgcSliderLabelComponent extends LitElement {
   `;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSliderLabelComponent);
   }
 
