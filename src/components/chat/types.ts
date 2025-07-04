@@ -25,6 +25,7 @@ export type AttachmentTemplate = (
 export type MessageActionsTemplate = (message: IgcMessage) => TemplateResult;
 
 export type IgcChatOptions = {
+  currentUserId?: string;
   hideAvatar?: boolean;
   hideTimestamp?: boolean;
   hideUserName?: boolean;

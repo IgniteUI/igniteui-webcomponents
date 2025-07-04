@@ -121,7 +121,7 @@ describe('Chat', () => {
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat current-user-id="user">                   
+        `<igc-chat>                   
         </igc-chat>`
       );
 
@@ -258,8 +258,13 @@ describe('Chat', () => {
           timestamp: new Date(Date.now() - 3200000),
         },
       ];
+
+      const options = {
+        currentUserId: 'me',
+      };
+
       chat = await fixture<IgcChatComponent>(
-        html`<igc-chat current-user-id="me" .messages=${initialMessages}>
+        html`<igc-chat .messages=${initialMessages} .options=${options}>
         </igc-chat>`
       );
 
