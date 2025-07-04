@@ -37,7 +37,6 @@ $theme-file-input: file-input.$bootstrap;
     font-size: var(--input-font);
     padding-inline: pad-inline(8px, 12px, 16px);
     padding-block: pad-block(4px, 6px, 8px);
-    color: var-get($theme-file-input, 'file-names-foreground');
     border: 1px solid var-get($theme, 'border-color');
     border-start-end-radius: var-get($theme, 'border-border-radius');
     border-end-end-radius: var-get($theme, 'border-border-radius');

@@ -6,9 +6,3 @@ $theme: $material;
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig');
 }
-
-:host(:is(igc-file-input)) {
-  [part~='file-names'] {
-      color: var(--ig-file-names-foreground, #000)
-  }
-}
