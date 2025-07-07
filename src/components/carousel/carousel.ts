@@ -105,11 +105,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
   private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
+  private _paused = false;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
-  private _hasMouseStop = false;
-  private _hasKeyboardFocus = false;
-  private _hasMouseFocus = false;
+  private _hasPointerInteraction = false;
+  private _hasInnerFocus = false;
 
   private _context = new ContextProvider(this, {
     context: carouselContext,
@@ -151,9 +151,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   @state()
   private _playing = false;
-
-  @state()
-  private _paused = false;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -330,14 +327,13 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addThemingController(this, all);
 
-    addSafeEventListener(this, 'pointerenter', this.handlePointerEnter);
-    addSafeEventListener(this, 'pointerleave', this.handlePointerLeave);
+    addSafeEventListener(this, 'pointerenter', this.handlePointerInteraction);
+    addSafeEventListener(this, 'pointerleave', this.handlePointerInteraction);
     addSafeEventListener(this, 'pointerdown', () => {
-      this._hasKeyboardFocus = false;
+      this._hasInnerFocus = false;
     });
-    addSafeEventListener(this, 'keyup', () => {
-      this._hasKeyboardFocus = true;
-    });
+    addSafeEventListener(this, 'focusin', this.handleFocusInteraction);
+    addSafeEventListener(this, 'focusout', this.handleFocusInteraction);
 
     addGesturesController(this, {
       ref: this._carouselSlidesContainerRef,
@@ -390,43 +386,27 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.requestUpdate();
   }
 
-  private handlePointerEnter(): void {
-    this._hasMouseStop = true;
-    if (this._hasKeyboardFocus || this._hasMouseFocus) {
-      return;
+  private handlePointerInteraction(event: PointerEvent): void {
+    this._hasPointerInteraction = event.type === 'pointerenter';
+
+    if (!this._hasInnerFocus) {
+      this.handlePauseOnInteraction();
     }
-    this.handlePauseOnInteraction();
   }
 
-  private handlePointerLeave(): void {
-    this._hasMouseStop = false;
-    if (this._hasKeyboardFocus || this._hasMouseFocus) {
-      return;
-    }
-    this.handlePauseOnInteraction();
-  }
-
-  private handleFocusIn(): void {
-    if (this._hasKeyboardFocus || this._hasMouseStop || this._hasMouseFocus) {
-      this._hasMouseFocus = !this._hasKeyboardFocus && this._hasMouseStop;
-      return;
-    }
-    this.handlePauseOnInteraction();
-  }
-
-  private handleFocusOut(event: FocusEvent): void {
+  private handleFocusInteraction(event: FocusEvent): void {
+    // focusin - element that lost focus
+    // focusout - element that gained focus
     const node = event.relatedTarget as Node;
 
-    if (this.contains(node) || this.renderRoot.contains(node)) {
+    if (this.contains(node)) {
       return;
     }
 
-    if (this._hasKeyboardFocus || this._hasMouseFocus) {
-      this._hasKeyboardFocus = this._hasMouseFocus = false;
+    this._hasInnerFocus = event.type === 'focusin';
 
-      if (!this._hasMouseStop) {
-        this.handlePauseOnInteraction();
-      }
+    if (!this._hasPointerInteraction) {
+      this.handlePauseOnInteraction();
     }
   }
 
@@ -791,7 +771,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
+      <section>
         ${this.hideNavigation ? nothing : this.navigationTemplate()}
         ${this.hideIndicators || this.showIndicatorsLabel
           ? nothing
@@ -802,7 +782,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         <div
           ${ref(this._carouselSlidesContainerRef)}
           id=${this._carouselId}
-          aria-live=${this.interval && this.isPlaying ? 'off' : 'polite'}
+          aria-live=${this.interval && this._playing ? 'off' : 'polite'}
         >
           <slot @slotchange=${this.handleSlotChange}></slot>
         </div>

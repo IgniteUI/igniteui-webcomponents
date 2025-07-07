@@ -16,7 +16,6 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
@@ -713,18 +712,18 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // focus with keyboard
-        simulateKeyboard(prevButton, tabKey);
+        // focus a focusable element
+        carousel.dispatchEvent(new FocusEvent('focusin'));
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
-        // keyboard focus/interaction is present
+        // element focus/interaction is present
         // -> should not start rotation on pointerleave
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // loose keyboard focus
+        // loose focus
         carousel.dispatchEvent(new PointerEvent('pointerdown'));
         await elementUpdated(carousel);
 
@@ -765,8 +764,8 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
-        // focus on next button/focusable element
-        nextButton.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        // focus a focusable element
+        carousel.dispatchEvent(new FocusEvent('focusin'));
         await elementUpdated(carousel);
 
         // hover out of the carousel
@@ -781,7 +780,7 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
-        nextButton.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+        carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
         await clock.tickAsync(200);
