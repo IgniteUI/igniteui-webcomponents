@@ -723,8 +723,12 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
+        // hover carousel
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
         // loose focus
-        carousel.dispatchEvent(new PointerEvent('pointerdown'));
+        carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
         expect(carousel.isPlaying).to.be.false;
@@ -780,6 +784,7 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
+        // loose focus
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 

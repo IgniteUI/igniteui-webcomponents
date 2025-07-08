@@ -329,9 +329,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addSafeEventListener(this, 'pointerenter', this.handlePointerInteraction);
     addSafeEventListener(this, 'pointerleave', this.handlePointerInteraction);
-    addSafeEventListener(this, 'pointerdown', () => {
-      this._hasInnerFocus = false;
-    });
     addSafeEventListener(this, 'focusin', this.handleFocusInteraction);
     addSafeEventListener(this, 'focusout', this.handleFocusInteraction);
 
