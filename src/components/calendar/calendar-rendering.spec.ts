@@ -140,14 +140,16 @@ describe('Calendar Rendering', () => {
       expect(last.children.item(6)?.part.contains('hidden')).to.be.true;
     });
 
-    it('should change orientation', async () => {
+    it('should set vertical orientation part', async () => {
       calendar.orientation = 'vertical';
       await elementUpdated(calendar);
 
-      const verticalContent = calendar.shadowRoot?.querySelector(
-        '[part=content-vertical]'
-      );
-      expect(verticalContent).to.exist;
+      const contentEl = calendar.shadowRoot?.querySelector('[part~="content"]');
+      expect(contentEl).to.exist;
+
+      const partAttr = contentEl?.getAttribute('part') || '';
+      const parts = partAttr.split(/\s+/);
+      expect(parts).to.include('content-vertical');
     });
 
     it('successfully enables and disables `hideHeader`', async () => {
