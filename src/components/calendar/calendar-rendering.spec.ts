@@ -141,14 +141,13 @@ describe('Calendar Rendering', () => {
     });
 
     it('should change orientation', async () => {
-      const dom = getCalendarDOM(calendar);
-
       calendar.orientation = 'vertical';
       await elementUpdated(calendar);
 
-      expect(
-        getComputedStyle(dom.content).getPropertyValue('flex-direction')
-      ).to.equal('column');
+      const verticalContent = calendar.shadowRoot?.querySelector(
+        '[part=content-vertical]'
+      );
+      expect(verticalContent).to.exist;
     });
 
     it('successfully enables and disables `hideHeader`', async () => {
