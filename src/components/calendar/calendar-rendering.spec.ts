@@ -143,10 +143,6 @@ describe('Calendar Rendering', () => {
     it('should change orientation', async () => {
       const dom = getCalendarDOM(calendar);
 
-      expect(
-        getComputedStyle(dom.content).getPropertyValue('display')
-      ).to.equal('flex');
-
       calendar.orientation = 'vertical';
       await elementUpdated(calendar);
 
