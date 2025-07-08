@@ -609,7 +609,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             @igcActiveDateChange=${this.activeDateChanged}
             @igcRangePreviewDateChange=${this.rangePreviewDateChanged}
             part="days-view"
-            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, current-vertical, weekend, range, special, disabled, single, preview"
+            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, content-vertical, weekend, range, special, disabled, single, preview"
             .active=${this.activeDaysViewIndex === idx}
             .activeDate=${date.native}
             .disabledDates=${this.disabledDates}
