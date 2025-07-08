@@ -46,7 +46,14 @@ textarea {
     }
 }
 
-:host(:hover),
+:host([readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not([readonly]):hover),
 :host(:focus) {
     textarea {
         &::placeholder {
