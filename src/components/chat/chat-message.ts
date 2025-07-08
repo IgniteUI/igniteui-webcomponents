@@ -1,4 +1,5 @@
 import { consume } from '@lit/context';
+import DOMPurify from 'dompurify';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
@@ -35,6 +36,10 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
+  private sanitizeMessageText(text: string): string {
+    return DOMPurify.sanitize(text);
+  }
+
   protected override render() {
     const containerClass = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
 
@@ -42,7 +47,9 @@ export default class IgcChatMessageComponent extends LitElement {
       <div class=${containerClass}>
         <div class="bubble">
           ${this.message?.text.trim()
-            ? html`<div>${renderMarkdown(this.message?.text)}</div>`
+            ? html`<div>
+                ${renderMarkdown(this.sanitizeMessageText(this.message?.text))}
+              </div>`
             : nothing}
           ${this.message?.attachments && this.message?.attachments.length > 0
             ? html`<igc-message-attachments
