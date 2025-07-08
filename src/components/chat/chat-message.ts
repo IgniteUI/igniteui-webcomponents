@@ -42,21 +42,25 @@ export default class IgcChatMessageComponent extends LitElement {
 
   protected override render() {
     const containerClass = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
+    const sanitizedMessageText = this.sanitizeMessageText(
+      this.message?.text.trim() || ''
+    );
 
     return html`
       <div class=${containerClass}>
         <div class="bubble">
-          ${this.message?.text.trim()
-            ? html`<div>
-                ${renderMarkdown(this.sanitizeMessageText(this.message?.text))}
-              </div>`
-            : nothing}
-          ${this.message?.attachments && this.message?.attachments.length > 0
-            ? html`<igc-message-attachments
-                .attachments=${this.message?.attachments}
-              >
-              </igc-message-attachments>`
-            : nothing}
+          ${this._chatState?.options?.templates?.messageTemplate && this.message
+            ? this._chatState.options.templates.messageTemplate(this.message)
+            : html` ${sanitizedMessageText
+                ? html`<div>${renderMarkdown(sanitizedMessageText)}</div>`
+                : nothing}
+              ${this.message?.attachments &&
+              this.message?.attachments.length > 0
+                ? html`<igc-message-attachments
+                    .attachments=${this.message?.attachments}
+                  >
+                  </igc-message-attachments>`
+                : nothing}`}
           ${this._chatState?.options?.templates?.messageActionsTemplate &&
           this.message
             ? this._chatState.options.templates.messageActionsTemplate(
