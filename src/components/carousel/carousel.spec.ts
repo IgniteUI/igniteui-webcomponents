@@ -16,7 +16,6 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
@@ -713,19 +712,23 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // focus with keyboard
-        simulateKeyboard(prevButton, tabKey);
+        // focus a focusable element
+        carousel.dispatchEvent(new FocusEvent('focusin'));
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
-        // keyboard focus/interaction is present
+        // element focus/interaction is present
         // -> should not start rotation on pointerleave
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // loose keyboard focus
-        carousel.dispatchEvent(new PointerEvent('pointerdown'));
+        // hover carousel
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        // loose focus
+        carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
         expect(carousel.isPlaying).to.be.false;
@@ -743,6 +746,55 @@ describe('Carousel', () => {
         expect(eventSpy.callCount).to.equal(2);
         expect(eventSpy.firstCall).calledWith('igcPaused');
         expect(eventSpy.secondCall).calledWith('igcPlaying');
+      });
+
+      it('should pause when focusing an interactive element - issue #1731', async () => {
+        carousel.interval = 200;
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(199);
+
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(carousel.current).to.equal(0);
+
+        // hover carousel
+        carousel.dispatchEvent(new PointerEvent('pointerenter'));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(1);
+
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(carousel.current).to.equal(0);
+
+        // focus a focusable element
+        carousel.dispatchEvent(new FocusEvent('focusin'));
+        await elementUpdated(carousel);
+
+        // hover out of the carousel
+        carousel.dispatchEvent(new PointerEvent('pointerleave'));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(200);
+
+        // an interactive element is focused
+        // -> should not start rotation on pointerleave
+        expect(carousel.isPlaying).to.be.false;
+        expect(carousel.isPaused).to.be.true;
+        expect(carousel.current).to.equal(0);
+
+        // loose focus
+        carousel.dispatchEvent(new FocusEvent('focusout'));
+        await elementUpdated(carousel);
+
+        await clock.tickAsync(200);
+
+        // the interactive element loses focus
+        // -> should start rotation
+        expect(carousel.isPlaying).to.be.true;
+        expect(carousel.isPaused).to.be.false;
+        expect(carousel.current).to.equal(2);
       });
 
       it('should not pause on interaction if `disablePauseOnInteraction` is true', async () => {
