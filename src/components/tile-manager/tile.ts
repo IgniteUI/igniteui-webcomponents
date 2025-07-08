@@ -368,12 +368,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this.style.viewTransitionName || `tile-transition-${this.id}`;
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
   private _setDragState(state = true) {
     this._isDragging = state;
     this._tileContent.style.opacity = state ? '0' : '';
