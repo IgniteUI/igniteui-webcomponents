@@ -198,7 +198,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    * is being shown.
    * @attr orientation
    */
-  @property({ reflect: true, attribute: 'orientation' })
+  @property()
   public orientation: ContentOrientation = 'horizontal';
 
   /**
