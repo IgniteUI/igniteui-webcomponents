@@ -431,7 +431,7 @@ async function handleAIMessageSend(e: CustomEvent) {
     };
 
     userMessages.push({
-      role: chat.currentUserId,
+      role: 'user',
       parts: [{ text: newMessage.text }],
     });
 
@@ -442,7 +442,7 @@ async function handleAIMessageSend(e: CustomEvent) {
             await attachment.file.arrayBuffer(),
             attachment.file.type
           );
-          userMessages.push({ role: chat.currentUserId, parts: [filePart] });
+          userMessages.push({ role: 'user', parts: [filePart] });
         }
       }
     }

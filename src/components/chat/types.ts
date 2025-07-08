@@ -22,7 +22,7 @@ export interface IgcMessageAttachment {
 export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
 ) => TemplateResult;
-export type MessageActionsTemplate = (message: IgcMessage) => TemplateResult;
+export type MessageTemplate = (message: IgcMessage) => TemplateResult;
 
 export type IgcChatOptions = {
   currentUserId?: string;
@@ -47,7 +47,8 @@ export type IgcChatTemplates = {
   attachmentHeaderTemplate?: AttachmentTemplate;
   attachmentActionsTemplate?: AttachmentTemplate;
   attachmentContentTemplate?: AttachmentTemplate;
-  messageActionsTemplate?: MessageActionsTemplate;
+  messageTemplate?: MessageTemplate;
+  messageActionsTemplate?: MessageTemplate;
   composingIndicatorTemplate?: TemplateResult;
 };
 

@@ -17,6 +17,14 @@ describe('Chat', () => {
   });
 
   const createChatComponent = () => html`<igc-chat></igc-chat>`;
+
+  const messageTemplate = (msg: any) => {
+    return html`<div>
+      <h5>${msg.sender === 'user' ? 'You' : 'Bot'}:</h5>
+      <p>${msg.text}</p>
+    </div> `;
+  };
+
   const messageActionsTemplate = (msg: any) => {
     return msg.sender !== 'user' && msg.text.trim()
       ? html`<div style="float: right">
@@ -766,6 +774,32 @@ describe('Chat', () => {
         const content = attachments?.shadowRoot?.querySelector('p');
         expect(content).dom.to.equal(
           `<p>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</p>`
+        );
+      });
+    });
+
+    it('should render messageTemplate', async () => {
+      chat.options = {
+        templates: {
+          messageTemplate: messageTemplate,
+        },
+      };
+      await elementUpdated(chat);
+      await aTimeout(500);
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+      messageElements?.forEach((messageElement, index) => {
+        const messsageContainer =
+          messageElement.shadowRoot?.querySelector('.bubble');
+        expect(messsageContainer).dom.to.equal(
+          `<div class="bubble">
+                <div>
+                    <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
+                    <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
+                </div>
+            </div>`
         );
       });
     });
