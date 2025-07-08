@@ -1,10 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { startViewTransition } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -19,17 +14,12 @@ import {
   type DragCallbackParameters,
 } from '../common/controllers/drag.js';
 import { addFullscreenController } from '../common/controllers/fullscreen.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import {
-  asNumber,
-  createCounter,
-  findElementFromEventPath,
-  isEmpty,
-  isLTR,
-} from '../common/util.js';
+import { asNumber, findElementFromEventPath, isLTR } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
@@ -59,6 +49,17 @@ export interface IgcTileComponentEventMap {
   igcTileResizeEnd: CustomEvent<IgcTileComponent>;
   igcTileResizeCancel: CustomEvent<IgcTileComponent>;
 }
+
+let nextId = 1;
+const Slots = setSlots(
+  'title',
+  'maximize-action',
+  'fullscreen-action',
+  'actions',
+  'side-adorner',
+  'corner-adorner',
+  'bottom-adorner'
+);
 
 /**
  * The tile component is used within the `igc-tile-manager` as a container
@@ -101,7 +102,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcTileComponent,
       IgcIconButtonComponent,
@@ -110,9 +111,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  private static readonly increment = createCounter();
+  private readonly _slots = addSlotController(this, { slots: Slots });
 
-  private _dragController = addDragController(this, {
+  private readonly _dragController = addDragController(this, {
     skip: this._skipDrag,
     matchTarget: this._match,
     ghost: this._createDragGhost,
@@ -122,26 +123,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
     cancel: this._handleDragCancel,
   });
 
-  private _fullscreenController = addFullscreenController(this, {
+  private readonly _fullscreenController = addFullscreenController(this, {
     enter: this._emitFullScreenEvent,
     exit: this._emitFullScreenEvent,
   });
+
+  private readonly _resizeState = createTileResizeState();
+  private readonly _dragStack = createTileDragStack();
 
   private _colSpan = 1;
   private _rowSpan = 1;
   private _colStart: number | null = null;
   private _rowStart: number | null = null;
   private _position = -1;
-  private _resizeState = createTileResizeState();
-  private _dragStack = createTileDragStack();
-
-  private _customAdorners = new Map<string, boolean>(
-    Object.entries({
-      side: false,
-      corner: false,
-      bottom: false,
-    })
-  );
 
   // Tile manager context properties and helpers
 
@@ -159,7 +153,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   };
 
-  private _context = createAsyncContext(
+  private readonly _context = createAsyncContext(
     this,
     tileManagerContext,
     this._setDragConfiguration
@@ -184,16 +178,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.resizeMode ?? 'none';
   }
 
-  protected _headerRef = createRef<HTMLElement>();
-
-  @queryAssignedElements({ slot: 'title' })
-  private _titleElements!: HTMLElement[];
-
-  @queryAssignedElements({ slot: 'actions' })
-  private _actionsElements!: HTMLElement[];
+  protected readonly _headerRef = createRef<HTMLElement>();
 
   @query(IgcResizeContainerComponent.tagName)
-  protected _resizeContainer?: IgcResizeContainerComponent;
+  protected readonly _resizeContainer?: IgcResizeContainerComponent;
 
   @query('[part~="base"]', true)
   public _tileContent!: HTMLElement;
@@ -374,7 +362,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `tile-${IgcTileComponent.increment()}`;
+    this.id = this.id || `tile-${nextId++}`;
 
     this.style.viewTransitionName =
       this.style.viewTransitionName || `tile-transition-${this.id}`;
@@ -632,11 +620,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderHeader() {
+    const hasNoContent = !(
+      this._slots.hasAssignedElements('title') &&
+      this._slots.hasAssignedElements('actions')
+    );
+
     const hideHeader =
-      isEmpty(this._titleElements) &&
-      isEmpty(this._actionsElements) &&
-      this.disableMaximize &&
-      this.disableFullscreen;
+      hasNoContent && this.disableMaximize && this.disableFullscreen;
 
     const hasMaximizeSlot = !(this.disableMaximize || this.fullscreen);
     const hasFullscreenSlot = !this.disableFullscreen;
@@ -692,14 +682,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _renderAdornerSlot(name: AdornerType) {
-    return html`
-      <slot
-        @slotchange=${() => this._customAdorners.set(name, true)}
-        name="${name}-adorner"
-        slot="${name}-adorner"
-      >
-      </slot>
-    `;
+    return html`<slot name="${name}-adorner" slot="${name}-adorner"></slot>`;
   }
 
   protected override render() {
@@ -711,9 +694,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <igc-resize
             part=${partMap({
               resize: true,
-              'side-adorner': this._customAdorners.get('side')!,
-              'corner-adorner': this._customAdorners.get('corner')!,
-              'bottom-adorner': this._customAdorners.get('bottom')!,
+              'side-adorner': this._slots.hasAssignedElements('side-adorner'),
+              'corner-adorner':
+                this._slots.hasAssignedElements('corner-adorner'),
+              'bottom-adorner':
+                this._slots.hasAssignedElements('bottom-adorner'),
             })}
             exportparts="trigger-side, trigger, trigger-bottom"
             mode="deferred"
