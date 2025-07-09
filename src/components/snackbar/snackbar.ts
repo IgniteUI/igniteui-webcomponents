@@ -1,7 +1,6 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -45,10 +44,11 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     registerComponent(IgcSnackbarComponent, IgcButtonComponent);
   }
 
-  protected contentRef: Ref<HTMLElement> = createRef();
-  protected override _animationPlayer: ReturnType<
-    typeof addAnimationController
-  > = addAnimationController(this, this.contentRef);
+  protected readonly _contentRef = createRef<HTMLElement>();
+  protected override readonly _player = addAnimationController(
+    this,
+    this._contentRef
+  );
 
   /**
    * The snackbar action button.
@@ -62,18 +62,18 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     addThemingController(this, all);
   }
 
-  private handleClick() {
+  private _handleClick(): void {
     this.emitEvent('igcAction');
   }
 
   protected override render() {
     return html`
-      <div ${ref(this.contentRef)} part="base" .inert=${!this.open}>
+      <div ${ref(this._contentRef)} part="base" .inert=${!this.open}>
         <span part="message">
           <slot></slot>
         </span>
 
-        <slot name="action" part="action-container" @click=${this.handleClick}>
+        <slot name="action" part="action-container" @click=${this._handleClick}>
           ${this.actionText
             ? html`<igc-button type="button" part="action" variant="flat">
                 ${this.actionText}
