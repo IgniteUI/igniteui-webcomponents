@@ -662,13 +662,14 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const direction = this._isDayView && this.orientation === 'horizontal';
-
-    const part = direction ? 'content' : 'content content-vertical';
+    const parts = {
+      content: true,
+      'content-vertical': this._isDayView && this.orientation === 'vertical',
+    };
 
     return html`
       ${this.renderHeader()}
-      <div ${ref(this.contentRef)} part="${part}">
+      <div ${ref(this.contentRef)} part=${partMap(parts)}>
         ${choose(this.activeView, [
           ['days', () => this.renderDaysView()],
           ['months', () => this.renderMonthView()],
