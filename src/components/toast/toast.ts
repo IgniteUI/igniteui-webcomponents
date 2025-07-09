@@ -1,5 +1,4 @@
 import { html } from 'lit';
-
 import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -19,9 +18,7 @@ export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles, shared];
 
-  protected override _animationPlayer: ReturnType<
-    typeof addAnimationController
-  > = addAnimationController(this);
+  protected override readonly _player = addAnimationController(this);
 
   /* blazorSuppress */
   public static register(): void {
