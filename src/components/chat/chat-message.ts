@@ -45,6 +45,8 @@ export default class IgcChatMessageComponent extends LitElement {
     const sanitizedMessageText = this.sanitizeMessageText(
       this.message?.text.trim() || ''
     );
+    const renderer =
+      this._chatState?.options?.markdownRenderer || renderMarkdown;
 
     return html`
       <div class=${containerClass}>
@@ -52,7 +54,7 @@ export default class IgcChatMessageComponent extends LitElement {
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
             : html` ${sanitizedMessageText
-                ? html`<div>${renderMarkdown(sanitizedMessageText)}</div>`
+                ? html`<div>${renderer(sanitizedMessageText)}</div>`
                 : nothing}
               ${this.message?.attachments &&
               this.message?.attachments.length > 0

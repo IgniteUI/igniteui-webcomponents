@@ -106,6 +106,8 @@ const messageActionsTemplate = (msg: any) => {
 };
 
 const _composingIndicatorTemplate = html`<span>LOADING...</span>`;
+const _customRenderer = (text: string) =>
+  html`<span>${text.toUpperCase()}</span>`;
 
 const ai_chat_options = {
   headerText: 'Chat',
@@ -114,6 +116,7 @@ const ai_chat_options = {
     messageActionsTemplate: messageActionsTemplate,
     //composingIndicatorTemplate: _composingIndicatorTemplate,
   },
+  // markdownRenderer: _customRenderer
 };
 
 const chat_options = {

@@ -23,6 +23,7 @@ export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
 ) => TemplateResult;
 export type MessageTemplate = (message: IgcMessage) => TemplateResult;
+export type MarkdownRenderer = (text: string) => TemplateResult;
 
 export type IgcChatOptions = {
   currentUserId?: string;
@@ -40,6 +41,7 @@ export type IgcChatOptions = {
   headerText?: string;
   suggestions?: string[];
   templates?: IgcChatTemplates;
+  markdownRenderer?: MarkdownRenderer;
 };
 
 export type IgcChatTemplates = {
