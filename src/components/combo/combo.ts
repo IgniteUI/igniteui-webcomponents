@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -8,8 +8,8 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themes } from '../../theming/theming-decorator.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
@@ -18,16 +18,17 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   asArray,
   equal,
   findElementFromEventPath,
   first,
   isEmpty,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -105,7 +106,6 @@ import { comboValidators } from './validators.js';
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<
@@ -136,7 +136,26 @@ export default class IgcComboComponent<
     return comboValidators;
   }
 
-  protected override _formValue: FormValue<ComboValue<T>[]>;
+  private readonly _rootClickController = addRootClickController(this, {
+    onHide: async () => {
+      if (!this.handleClosing()) {
+        return;
+      }
+      this.open = false;
+
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
+    },
+  });
+
+  protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
+    createFormValueState<ComboValue<T>[]>(this, {
+      initialValue: [],
+      transformers: {
+        setValue: asArray,
+        setDefaultValue: asArray,
+      },
+    });
   private _data: T[] = [];
 
   private _valueKey?: Keys<T>;
@@ -453,31 +472,13 @@ export default class IgcComboComponent<
     this._rootClickController.update();
   }
 
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: async () => {
-      if (!this.handleClosing()) {
-        return;
-      }
-      this.open = false;
-
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    },
-  });
-
   constructor() {
     super();
 
-    this._formValue = createFormValueState<ComboValue<T>[]>(this, {
-      initialValue: [],
-      transformers: {
-        setValue: asArray,
-        setDefaultValue: asArray,
-      },
-    });
+    addThemingController(this, all);
+    addSafeEventListener(this, 'blur', this._handleBlur);
 
-    this.addEventListener('blur', this._handleBlur);
-
+    // TODO
     this.addEventListener(
       'keydown',
       this._navigation.navigateHost.bind(this._navigation)
@@ -748,7 +749,7 @@ export default class IgcComboComponent<
     return html`
       <igc-combo-item
         id=${id}
-        part=${partNameMap({ item: true, selected, active })}
+        part=${partMap({ item: true, selected, active })}
         aria-setsize=${this._state.dataState.length}
         aria-posinset=${position}
         exportparts="checkbox, checkbox-indicator, checked"
@@ -856,7 +857,7 @@ export default class IgcComboComponent<
     return html`
       <span
         slot="suffix"
-        part=${partNameMap({
+        part=${partMap({
           'toggle-icon': true,
           filled: !isEmpty(this.value),
         })}
@@ -947,7 +948,7 @@ export default class IgcComboComponent<
             slot=${this.caseSensitiveIcon && 'suffix'}
             name="case_sensitive"
             collection="default"
-            part=${partNameMap({
+            part=${partMap({
               'case-icon': true,
               active: this.filteringOptions.caseSensitive ?? false,
             })}

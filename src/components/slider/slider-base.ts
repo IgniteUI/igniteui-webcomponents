@@ -1,4 +1,4 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -8,7 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -23,6 +23,7 @@ import {
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { watch } from '../common/decorators/watch.js';
 import {
+  addSafeEventListener,
   asNumber,
   asPercent,
   clamp,
@@ -38,7 +39,6 @@ import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
 
-@themes(all)
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = [styles, shared];
@@ -280,10 +280,13 @@ export class IgcSliderBaseComponent extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener('pointerdown', this.pointerDown);
-    this.addEventListener('pointermove', this.pointerMove);
-    this.addEventListener('lostpointercapture', this.lostPointerCapture);
-    this.addEventListener('keyup', this.handleKeyUp);
+
+    addThemingController(this, all);
+
+    addSafeEventListener(this, 'pointerdown', this.pointerDown);
+    addSafeEventListener(this, 'pointermove', this.pointerMove);
+    addSafeEventListener(this, 'lostpointercapture', this.lostPointerCapture);
+    addSafeEventListener(this, 'keyup', this.handleKeyUp);
 
     addKeybindings(this, {
       skip: () => this.disabled,
@@ -571,7 +574,7 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
         aria-label=${ifDefined(ariaLabel)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.disabled}
         @pointerenter=${this.showThumbLabels}
         @pointerleave=${this.hideThumbLabels}
         @focus=${this.handleThumbFocus}

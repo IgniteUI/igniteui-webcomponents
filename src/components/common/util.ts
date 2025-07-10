@@ -1,14 +1,4 @@
-export interface PartNameInfo {
-  readonly [name: string]: string | boolean | number;
-}
-
-export const partNameMap = (partNameInfo: PartNameInfo) => {
-  return Object.keys(partNameInfo)
-    .filter((key) => partNameInfo[key])
-    .join(' ');
-};
-
-export function noop() {}
+import { isServer } from 'lit';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
@@ -110,36 +100,40 @@ export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
 }
 
-export function* iterNodes<T = Node>(
+export type IterNodesOptions<T = Node> = {
+  show?: keyof typeof NodeFilter;
+  filter?: (node: T) => boolean;
+};
+
+function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
+  return {
+    acceptNode: (node: T): number =>
+      !predicate || predicate(node)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_SKIP,
+  };
+}
+
+export function* iterNodes<T extends Node>(
   root: Node,
-  whatToShow?: keyof typeof NodeFilter,
-  filter?: (node: T) => boolean
+  options?: IterNodesOptions<T>
 ): Generator<T> {
   if (!isDefined(globalThis.document)) {
     return;
   }
 
-  const iter = globalThis.document.createTreeWalker(
-    root,
-    NodeFilter[whatToShow ?? 'SHOW_ALL']
-  );
+  const whatToShow = options?.show
+    ? NodeFilter[options.show]
+    : NodeFilter.SHOW_ALL;
 
-  let node = iter.nextNode() as T;
+  const nodeFilter = options?.filter
+    ? createNodeFilter(options.filter)
+    : undefined;
 
-  while (node) {
-    if (filter) {
-      if (filter(node)) {
-        yield node;
-      }
-    } else {
-      yield node;
-    }
+  const treeWalker = document.createTreeWalker(root, whatToShow, nodeFilter);
 
-    if (isElement(node) && node.shadowRoot && node.shadowRoot.mode === 'open') {
-      yield* iterNodes(node.shadowRoot, whatToShow, filter);
-    }
-
-    node = iter.nextNode() as T;
+  while (treeWalker.nextNode()) {
+    yield treeWalker.currentNode as T;
   }
 }
 
@@ -288,6 +282,33 @@ export function addWeakEventListener(
   };
 
   element.addEventListener(event, wrapped, options);
+}
+
+type EventTypeOf<T extends keyof HTMLElementEventMap | keyof WindowEventMap> =
+  (HTMLElementEventMap & WindowEventMap)[T];
+
+/**
+ * Safely adds an event listener to an HTMLElement, automatically handling
+ * server-side rendering environments by doing nothing if `isServer` is true.
+ * This function also correctly binds the `handler`'s `this` context to the `target` element
+ * and ensures proper event type inference.
+ */
+export function addSafeEventListener<
+  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
+>(
+  target: HTMLElement,
+  eventName: E,
+  handler: (event: EventTypeOf<E>) => unknown,
+  options?: boolean | AddEventListenerOptions
+): void {
+  if (isServer) {
+    return;
+  }
+
+  const boundHandler = (event: Event) =>
+    handler.call(target, event as EventTypeOf<E>);
+
+  target.addEventListener(eventName, boundHandler, options);
 }
 
 /**
@@ -451,7 +472,7 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
     }
 
     for (const key of aKeys) {
-      if (!Object.prototype.hasOwnProperty.call(b, key)) {
+      if (!Object.hasOwn(b, key)) {
         return false;
       }
     }

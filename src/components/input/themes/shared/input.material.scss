@@ -8,9 +8,7 @@ $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
 
 %label {
-    --label-position: #{sizable(18px, 22px, 26px)};
-
-    transform: translateY(calc(var(--label-position) * -1));
+    translate: 0 -50%;
 }
 
 %floated-styles {
@@ -52,8 +50,8 @@ $fs: rem(16px) !default;
 
 input:placeholder-shown + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
-    @extend %label;
     @include type-style('caption');
+    @extend %label;
 }
 
 [part~='input'] {
@@ -70,12 +68,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     color: var-get($theme, 'idle-secondary-color');
     transition:
         transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        translate 150ms cubic-bezier(0.4, 0, 0.2, 1),
         color 150ms cubic-bezier(0.4, 0, 0.2, 1),
         font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    line-height: normal;
     text-overflow: ellipsis;
     overflow: hidden;
-    will-change: font-size, color, transform;
+    will-change: font-size, color, transform, translate;
 }
 
 [part^='container'] {
@@ -140,17 +138,29 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host(:focus-within) {
     [part='label'] {
-        @extend %label;
-        @include type-style('caption');
-
         color: var-get($theme, 'focused-secondary-color');
     }
 }
 
+:host(:not([readonly]):focus-within) {
+    [part='label'] {
+        @include type-style('caption');
+    }
+}
+
+:host([outlined]:not([readonly]):focus-within) {
+    [part='label'] {
+        @extend %label;
+
+        align-self: start;
+    }
+}
+
+
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+            translate: 0;
             font-size: initial;
         }
     }
@@ -202,7 +212,24 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
+    }
+}
+
+:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+    [part~='container'] {
+        background: var-get($theme, 'box-background-focus');
+    }
+}
+
+:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
+    [part~='container'] {
+        background: var-get($theme, 'box-background-focus');
+        border-bottom-color: var-get($theme, 'idle-bottom-line-color');
+
+        &::after {
+            background: var-get($theme, 'idle-bottom-line-color');
+        }
     }
 }
 
@@ -217,7 +244,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined]):focus-within) {
+:host(:not([outlined]):focus-within),
+:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'focused-bottom-line-color');
@@ -229,13 +257,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+    [part='label'] {
+        translate: 0 -73%;
     }
 }
 
 :host(:not([outlined])[invalid]),
-:host(:not([outlined])[invalid]:focus-within) {
+:host(:not([outlined])[invalid]:focus-within),
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[invalid][readonly]:hover) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -272,10 +301,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([type='search']:hover),
+:host(:not([readonly])[type='search']:hover),
 :host([type='search']:focus-within) {
     [part^='container'] {
         box-shadow: var-get($theme, 'search-hover-elevation');
+        background: var-get($theme, 'search-background');
+    }
+}
+
+:host([readonly][type='search']:hover),
+:host([readonly][type='search']:focus-within) {
+    [part^='container'] {
         background: var-get($theme, 'search-background');
     }
 }
@@ -285,16 +321,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-top: rem(20px);
         padding-bottom: rem(6px);
     }
-
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
-    }
 }
 
 :host([outlined][type='search']:focus-within) {
     [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -377,15 +408,51 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
+    &:has(input:placeholder-shown) {
+        [part='label'] {
+            align-self: start;
+        }
+    }
+
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+
+        [part='label'] {
+            align-self: start;
+        }
+    }
+}
+
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:hover) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'border-color');
+    }
+
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
+    }
+}
+
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:focus-within) {
+    [part='notch'],
+    [part='start'],
+    [part='end'],
+    [part='filler'] {
+        border-color: var-get($theme, 'focused-border-color');
+    }
+
+    [part='notch'] {
+        border-top: $idle-border-width solid transparent;
     }
 }
 
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+            translate: 0;
             font-size: initial;
         }
 
@@ -413,10 +480,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined]:focus-within) {
-    [part='label'] {
-        margin-block-start: calc(#{$active-border-width} / 2);
-    }
-
     [part='start'] {
         border: {
             color: var-get($theme, 'focused-border-color');
@@ -459,7 +522,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'])[outlined]:active),
 :host(:not([type='search'])[outlined]:focus),
 :host(:not([type='search'])[outlined]:focus-within) {
     [part='suffix'] {
@@ -479,7 +541,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined][invalid]),
-:host(:not([type='search'])[outlined][invalid]:focus-within) {
+:host(:not([type='search'])[outlined][invalid]:focus-within),
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly][invalid]:hover) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -507,6 +570,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
             top: $active-border-width solid
                 var-get($theme, 'error-secondary-color');
         }
+    }
+
+    [part~='filled'] + [part='notch'] {
+        border-top: $idle-border-width solid transparent !important;
     }
 }
 

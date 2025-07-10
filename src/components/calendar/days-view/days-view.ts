@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { themes } from '../../../theming/theming-decorator.js';
+import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -11,7 +11,14 @@ import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resource
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, first, last, partNameMap, take } from '../../common/util.js';
+import { partMap } from '../../common/part-map.js';
+import {
+  addSafeEventListener,
+  chunk,
+  first,
+  last,
+  take,
+} from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -23,8 +30,8 @@ import {
   isPreviousMonth,
 } from '../helpers.js';
 import { CalendarDay, daysInWeek } from '../model.js';
-import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
+import { styles } from '../themes/days-view.base.css.js';
 import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
@@ -48,7 +55,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
  */
 @blazorSuppressComponent
 @blazorIndirectRender
-@themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -133,11 +139,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this.handleInteraction);
 
-    this.addEventListener('click', this.handleInteraction);
+    addSafeEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {
@@ -146,8 +154,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   /** Focuses the active date. */
-  public focusActiveDate() {
-    this.activeDay.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeDay.focus(options);
   }
 
   protected handleInteraction(event: Event) {
@@ -382,7 +390,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const inactive = !areSameMonth(day, this._activeDate);
 
     return {
-      date: true,
       disabled: disabled || hidden,
       first: this.isFirstInRange(day),
       last: this.isLastInRange(day),
@@ -403,13 +410,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const { changePreview, clearPreview } = this.getDayHandlers(day);
 
     const props = this.getDayProperties(day, today);
-    const parts = partNameMap(props);
 
     return html`
-      <span part=${parts}>
+      <span part=${partMap({ date: true, ...props })}>
         <span
           role="gridcell"
-          part=${parts.replace('date', 'date-inner')}
+          part=${partMap({ 'date-inner': true, ...props })}
           aria-label=${ariaLabel}
           aria-disabled=${props.disabled}
           aria-selected=${props.selected}
@@ -438,8 +444,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   protected renderWeekNumber(start: CalendarDay, last: boolean) {
     return html`
-      <span role="rowheader" part=${partNameMap({ 'week-number': true, last })}>
-        <span part=${partNameMap({ 'week-number-inner': true, last })}>
+      <span role="rowheader" part=${partMap({ 'week-number': true, last })}>
+        <span part=${partMap({ 'week-number-inner': true, last })}>
           ${start.week}
         </span>
       </span>

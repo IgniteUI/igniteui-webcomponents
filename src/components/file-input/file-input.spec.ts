@@ -1,13 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
-
 import type { TemplateResult } from 'lit';
+import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   runValidationContainerTests,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcFileInputComponent from './file-input.js';
 
@@ -158,7 +157,7 @@ describe('File Input component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledWith('igcChange', {
-        detail: element.value,
+        detail: input.files,
       });
     });
 
@@ -169,7 +168,7 @@ describe('File Input component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledOnceWith('igcCancel', {
-        detail: element.value,
+        detail: input.files,
       });
     });
 

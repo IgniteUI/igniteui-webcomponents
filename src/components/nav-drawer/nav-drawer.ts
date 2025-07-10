@@ -1,9 +1,10 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { isEmpty } from '../common/util.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -24,7 +25,6 @@ import { styles as shared } from './themes/shared/container/nav-drawer.common.cs
  * @csspart main - The main container of the igc-navigation-drawer.
  * @csspart mini - The mini container of the igc-navigation-drawer.
  */
-@themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = [styles, shared];
@@ -54,6 +54,11 @@ export default class IgcNavDrawerComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
@@ -99,11 +104,6 @@ export default class IgcNavDrawerComponent extends LitElement {
   }
 
   protected override render() {
-    const parts = partNameMap({
-      mini: true,
-      hidden: isEmpty(this._miniSlotElements),
-    });
-
     return html`
       <div part="overlay" @click=${this.hide}></div>
 
@@ -113,7 +113,9 @@ export default class IgcNavDrawerComponent extends LitElement {
         </div>
       </div>
 
-      <div part=${parts}>
+      <div
+        part=${partMap({ mini: true, hidden: isEmpty(this._miniSlotElements) })}
+      >
         <slot name="mini"></slot>
       </div>
     `;

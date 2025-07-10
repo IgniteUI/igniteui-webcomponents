@@ -62,7 +62,8 @@ $theme: $bootstrap;
     border-end-end-radius: 0;
 }
 
-[part*='input prefixed suffixed'] {
+[part*='input prefixed suffixed'],
+[part*='input filled prefixed suffixed'] {
     border-radius: 0;
 }
 
@@ -161,10 +162,22 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+    [part='prefix'],
+    [part='suffix'],
+    [part~='container'] {
+        background: var-get($theme, 'border-disabled-background');
+    }
+}
+
+:host(:not([disabled])[invalid]) {
     [part~='input'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled])[invalid]:focus-within) {
+    [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 }

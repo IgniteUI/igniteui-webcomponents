@@ -4,6 +4,7 @@ export type CalendarRangeParams = {
   start: DayParameter;
   end: DayParameter | number;
   unit?: DayInterval;
+  inclusive?: boolean;
 };
 
 type DayInterval = 'year' | 'quarter' | 'month' | 'week' | 'day';
@@ -27,7 +28,7 @@ function checkRollover(original: CalendarDay, modified: CalendarDay) {
 
 /* blazorSuppress */
 export class CalendarDay {
-  private _date!: Date;
+  private readonly _date: Date;
 
   /** Constructs and returns the current day. */
   public static get today() {
@@ -43,6 +44,26 @@ export class CalendarDay {
     });
   }
 
+  /**
+   * Compares the date portion of two date objects.
+   *
+   * @returns
+   * ```
+   *  first === second // 0
+   *  first > second // 1
+   *  first < second // -1
+   * ```
+   */
+  public static compare(first: DayParameter, second: DayParameter) {
+    const a = toCalendarDay(first);
+    const b = toCalendarDay(second);
+
+    if (a.equalTo(b)) {
+      return 0;
+    }
+    return a.greaterThan(b) ? 1 : -1;
+  }
+
   constructor(args: CalendarDayParams) {
     this._date = new Date(args.year, args.month, args.date ?? 1);
   }
@@ -56,11 +77,21 @@ export class CalendarDay {
    * Returns a new instance with values replaced.
    */
   public set(args: Partial<CalendarDayParams>) {
-    return new CalendarDay({
-      year: args.year ?? this.year,
-      month: args.month ?? this.month,
-      date: args.date ?? this.date,
-    });
+    const year = args.year ?? this.year;
+    const month = args.month ?? this.month;
+    const date = args.date ?? this.date;
+
+    const temp = new Date(year, month, date);
+
+    if (date > 0 && temp.getMonth() !== month) {
+      return new CalendarDay({
+        year,
+        month,
+        date: new Date(year, month + 1, 0).getDate(),
+      });
+    }
+
+    return new CalendarDay({ year, month, date });
   }
 
   public add(unit: DayInterval, value: number) {
@@ -142,8 +173,16 @@ export class CalendarDay {
     return this.timestamp > toCalendarDay(value).timestamp;
   }
 
+  public greaterThanOrEqual(value: DayParameter) {
+    return this.timestamp >= toCalendarDay(value).timestamp;
+  }
+
   public lessThan(value: DayParameter) {
     return this.timestamp < toCalendarDay(value).timestamp;
+  }
+
+  public lessThanOrEqual(value: DayParameter) {
+    return this.timestamp <= toCalendarDay(value).timestamp;
   }
 
   public toString() {

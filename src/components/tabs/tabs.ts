@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   eventOptions,
   property,
@@ -9,7 +9,7 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
@@ -19,14 +19,15 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
-import { createResizeController } from '../common/controllers/resize-observer.js';
+import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   findElementFromEventPath,
   first,
@@ -35,16 +36,15 @@ import {
   isLTR,
   isString,
   last,
-  partNameMap,
   scrollIntoView,
   wrap,
 } from '../common/util.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
-import { createTabHelpers, getTabHeader } from './tab-dom.js';
 import IgcTabComponent from './tab.js';
+import { createTabHelpers, getTabHeader } from './tab-dom.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
+import { all } from './themes/tabs-themes.js';
 
 export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -67,7 +67,6 @@ export interface IgcTabsComponentEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
  */
-@themes(all)
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsComponentEventMap,
   Constructor<LitElement>
@@ -86,7 +85,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Private state & properties
 
-  private readonly _resizeController = createResizeController(this, {
+  private readonly _resizeController = createResizeObserverController(this, {
     callback: this._resizeCallback,
     options: { box: 'border-box' },
     target: null,
@@ -161,6 +160,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     addKeybindings(this, {
       ref: this._headerRef,
@@ -237,8 +238,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     changes,
   }: MutationControllerParams<IgcTabComponent>): void {
     const selected = changes.attributes.find(
-      (tab) => this._tabs.includes(tab) && tab.selected
-    );
+      ({ node: tab }) => this._tabs.includes(tab) && tab.selected
+    )?.node;
     this._setSelectedTab(selected, false);
   }
 
@@ -389,6 +390,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Public API methods
 
   /** Selects the specified tab and displays the corresponding panel.  */
+  public select(id: string): void;
+  /* blazorSuppress (ref is reserved) */
+  public select(ref: IgcTabComponent): void;
+  /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent | string): void {
     const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
 
@@ -425,11 +430,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const part = partNameMap({
-      inner: true,
-      scrollable: this._domHelpers.hasScrollButtons,
-    });
-
     return html`
       <div
         ${ref(this._headerRef)}
@@ -437,7 +437,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         style=${styleMap(this._domHelpers.styleProperties)}
         @scroll=${this._handleScroll}
       >
-        <div part=${part}>
+        <div
+          part=${partMap({
+            inner: true,
+            scrollable: this._domHelpers.hasScrollButtons,
+          })}
+        >
           ${this._renderScrollButton('start')}
           <slot @click=${this._handleClick}></slot>
           ${this._renderScrollButton('end')}

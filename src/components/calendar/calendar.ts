@@ -1,10 +1,8 @@
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
-
-import { themes } from '../../theming/theming-decorator.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -23,25 +21,25 @@ import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.j
 import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   clamp,
   findElementFromEventPath,
   first,
   formatString,
   last,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import {
-  MONTHS_PER_ROW,
-  YEARS_PER_PAGE,
-  YEARS_PER_ROW,
   areSameMonth,
   getYearRange,
   isDateInRanges,
+  MONTHS_PER_ROW,
+  YEARS_PER_PAGE,
+  YEARS_PER_ROW,
 } from './helpers.js';
 import { CalendarDay } from './model.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
@@ -56,6 +54,8 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -72,6 +72,7 @@ export const focusActiveDate = Symbol();
  * @csspart header-title - The header title element of the calendar.
  * @csspart header-date - The header date element of the calendar.
  * @csspart content - The content element which contains the views and navigation elements of the calendar.
+ * @csspart content-vertical - The content element which contains the views and navigation elements of the calendar in vertical orientation.
  * @csspart navigation - The navigation container element of the calendar.
  * @csspart months-navigation - The months navigation button element of the calendar.
  * @csspart years-navigation - The years navigation button element of the calendar.
@@ -105,7 +106,6 @@ export const focusActiveDate = Symbol();
  * @csspart selected - Indicates selected state. Applies to date, month and year elements of the calendar.
  * @csspart current - Indicates current state. Applies to date, month and year elements of the calendar.
  */
-@themes(all)
 export default class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -251,19 +251,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /** @private @hidden @internal */
-  public async [focusActiveDate]() {
+  public async [focusActiveDate](options?: FocusOptions) {
     await this.updateComplete;
 
     if (this._isDayView) {
-      return this.daysViews.item(this.activeDaysViewIndex).focusActiveDate();
+      return this.daysViews
+        .item(this.activeDaysViewIndex)
+        .focusActiveDate(options);
     }
 
     if (this._isMonthView) {
-      return this.monthsView.focusActiveDate();
+      return this.monthsView.focusActiveDate(options);
     }
 
     if (this._isYearView) {
-      return this.yearsView.focusActiveDate();
+      return this.yearsView.focusActiveDate(options);
     }
   }
 
@@ -409,6 +411,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       skip: this.isNotFromCalendarView,
       ref: this.contentRef,
@@ -427,15 +431,15 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected renderNavigationButtons() {
-    const parts = partNameMap({
+    const parts = {
       'navigation-button': true,
       vertical: this.orientation === 'vertical',
-    });
+    };
 
     return html`
       <div part="navigation-buttons">
         <button
-          part=${parts}
+          part=${partMap(parts)}
           aria-label=${this.previousButtonLabel}
           @click=${this.navigatePrevious}
         >
@@ -447,7 +451,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         </button>
 
         <button
-          part=${parts}
+          part=${partMap(parts)}
           aria-label=${this.nextButtonLabel}
           @click=${this.navigateNext}
         >
@@ -605,7 +609,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             @igcActiveDateChange=${this.activeDateChanged}
             @igcRangePreviewDateChange=${this.rangePreviewDateChanged}
             part="days-view"
-            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
+            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, content-vertical, weekend, range, special, disabled, single, preview"
             .active=${this.activeDaysViewIndex === idx}
             .activeDate=${date.native}
             .disabledDates=${this.disabledDates}
@@ -658,17 +662,14 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const direction = this._isDayView && this.orientation === 'horizontal';
-
-    const styles = {
-      display: 'flex',
-      flexGrow: 1,
-      flexDirection: direction ? 'row' : 'column',
+    const parts = {
+      content: true,
+      'content-vertical': this._isDayView && this.orientation === 'vertical',
     };
 
     return html`
       ${this.renderHeader()}
-      <div ${ref(this.contentRef)} part="content" style=${styleMap(styles)}>
+      <div ${ref(this.contentRef)} part=${partMap(parts)}>
         ${choose(this.activeView, [
           ['days', () => this.renderDaysView()],
           ['months', () => this.renderMonthView()],

@@ -5,18 +5,16 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
-
 import type { TemplateResult } from 'lit';
+import { spy } from 'sinon';
 import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateInput,
-  simulateScroll,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcTextareaComponent from './textarea.js';
 
@@ -122,6 +120,33 @@ describe('Textarea component', () => {
       expect(element.value).to.be.empty;
       expect(textArea.value).to.be.empty;
     });
+
+    it('issue #1686 - dynamic prefix/suffix slot manipulation', async () => {
+      element = await fixture(html`
+        <igc-textarea>
+          <span slot="prefix">Prefix</span>
+          <span slot="suffix">Suffix</span>
+        </igc-textarea>
+      `);
+
+      const prefix = element.querySelector<HTMLElement>('[slot="prefix"]')!;
+      const suffix = element.querySelector<HTMLElement>('[slot="suffix"]')!;
+
+      const prefixPart =
+        element.renderRoot.querySelector<HTMLElement>('[part="prefix"]')!;
+      const suffixPart =
+        element.renderRoot.querySelector<HTMLElement>('[part="suffix"]')!;
+
+      expect(prefixPart.hidden).to.be.false;
+      expect(suffixPart.hidden).to.be.false;
+
+      prefix.remove();
+      suffix.remove();
+      await elementUpdated(element);
+
+      expect(prefixPart.hidden).to.be.true;
+      expect(suffixPart.hidden).to.be.true;
+    });
   });
 
   describe('Events', () => {
@@ -209,17 +234,20 @@ describe('Textarea component', () => {
       element.appendChild(text);
       await elementUpdated(element);
 
-      await simulateScroll(element, { top: yDelta, left: xDelta });
+      element.scrollTo({ top: yDelta, left: xDelta });
       expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta,
         yDelta,
       ]);
 
-      await simulateScroll(element, { top: yDelta * 2, left: xDelta * 2 });
+      element.scrollTo({ top: yDelta * 2, left: xDelta * 2 });
       expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([
         xDelta * 2,
         yDelta * 2,
       ]);
+
+      element.scrollTo(0, 0);
+      expect([textArea.scrollLeft, textArea.scrollTop]).to.eql([0, 0]);
     });
   });
 

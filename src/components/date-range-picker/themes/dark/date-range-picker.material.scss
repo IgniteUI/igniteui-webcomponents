@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../light/themes' as light;
+
+:host {
+    @include css-vars-from-theme(diff(light.$base, $material), 'ig-daterangepicker');
+
+    --calendar-border-color: #{$material-calendar-border-color};
+}

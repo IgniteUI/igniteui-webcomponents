@@ -1,17 +1,20 @@
 import {
+  isServer,
   type ReactiveController,
   type ReactiveControllerHost,
-  isServer,
 } from 'lit';
 
-type ResizeControllerCallback = (
+type ResizeObserverControllerCallback = (
   ...args: Parameters<ResizeObserverCallback>
 ) => unknown;
 
-/** Configuration for initializing a resize controller. */
-export interface ResizeControllerConfig {
+/**
+ * Configuration for initializing a resize controller.
+ * @ignore
+ */
+export interface ResizeObserverControllerConfig {
   /** The callback function to run when a resize mutation is triggered. */
-  callback: ResizeControllerCallback;
+  callback: ResizeObserverControllerCallback;
   /** Configuration options passed to the underlying ResizeObserver. */
   options?: ResizeObserverOptions;
   /**
@@ -23,15 +26,15 @@ export interface ResizeControllerConfig {
   target?: Element | null;
 }
 
-class ResizeController implements ReactiveController {
+class ResizeObserverController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & Element;
   private readonly _targets = new Set<Element>();
   private readonly _observer!: ResizeObserver;
-  private readonly _config: ResizeControllerConfig;
+  private readonly _config: ResizeObserverControllerConfig;
 
   constructor(
     host: ReactiveControllerHost & Element,
-    config: ResizeControllerConfig
+    config: ResizeObserverControllerConfig
   ) {
     this._host = host;
     this._config = config;
@@ -80,11 +83,11 @@ class ResizeController implements ReactiveController {
 
 /**
  * Creates a new resize controller bound to the given `host`
- * with {@link ResizeControllerConfig | `config`}.
+ * with {@link ResizeObserverControllerConfig | `config`}.
  */
-export function createResizeController(
+export function createResizeObserverController(
   host: ReactiveControllerHost & Element,
-  config: ResizeControllerConfig
-): ResizeController {
-  return new ResizeController(host, config);
+  config: ResizeObserverControllerConfig
+): ResizeObserverController {
+  return new ResizeObserverController(host, config);
 }

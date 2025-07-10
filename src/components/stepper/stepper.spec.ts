@@ -3,15 +3,15 @@ import { spy } from 'sinon';
 
 import { defineComponents } from '../../index.js';
 import IgcStepComponent from './step.js';
+import IgcStepperComponent from './stepper.js';
 import {
+  linearModeStepper,
   PARTS,
   SLOTS,
   StepperTestFunctions,
-  linearModeStepper,
   simpleStepper,
   stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
-import IgcStepperComponent from './stepper.js';
 
 describe('Stepper', () => {
   before(() => {

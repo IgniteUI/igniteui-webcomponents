@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import {
   property,
   queryAssignedElements,
@@ -6,9 +6,9 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/item.common.css.js';
@@ -25,7 +25,6 @@ import { styles as shared } from './themes/shared/item/item.common.css.js';
  * @csspart icon - The icon container.
  * @csspart content - The content container.
  */
-@themes(all)
 export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
   public static override styles = [styles, shared];
@@ -58,6 +57,11 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedNodes({ slot: 'icon', flatten: true })
   protected navdrawerIcon!: Array<Node>;
 
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => {
@@ -68,13 +72,8 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   }
 
   protected override render() {
-    const parts = partNameMap({
-      base: true,
-      mini: this._textLength < 1,
-    });
-
     return html`
-      <div part=${parts}>
+      <div part=${partMap({ base: true, mini: this._textLength < 1 })}>
         <span part="icon" .hidden="${this.navdrawerIcon.length === 0}">
           <slot name="icon"></slot>
         </span>

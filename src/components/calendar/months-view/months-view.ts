@@ -1,8 +1,8 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { range } from 'lit/directives/range.js';
 
-import { themes } from '../../../theming/theming-decorator.js';
+import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -11,11 +11,12 @@ import { registerComponent } from '../../common/definitions/register.js';
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { chunk, partNameMap } from '../../common/util.js';
-import { MONTHS_PER_ROW, areSameMonth, getViewElement } from '../helpers.js';
+import { partMap } from '../../common/part-map.js';
+import { addSafeEventListener, chunk } from '../../common/util.js';
+import { areSameMonth, getViewElement, MONTHS_PER_ROW } from '../helpers.js';
 import { CalendarDay } from '../model.js';
-import { styles } from '../themes/year-month-view.base.css.js';
 import { all } from '../themes/year-month.js';
+import { styles } from '../themes/year-month-view.base.css.js';
 import type { IgcCalendarComponentEventMap } from '../types.js';
 
 /**
@@ -29,7 +30,6 @@ import type { IgcCalendarComponentEventMap } from '../types.js';
  */
 @blazorIndirectRender
 @blazorSuppressComponent
-@themes(all)
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarComponentEventMap,
   Constructor<LitElement>
@@ -85,11 +85,13 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this.handleInteraction);
 
-    this.addEventListener('click', this.handleInteraction);
+    addSafeEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {
@@ -98,8 +100,8 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   /** Focuses the active date. */
-  public focusActiveDate() {
-    this.activeMonth.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeMonth.focus(options);
   }
 
   protected handleInteraction(event: Event) {
@@ -119,14 +121,12 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     const current = areSameMonth(now, entry);
     const selected = this._value.month === entry.month;
 
-    const parts = { selected, current };
-
     return html`
-      <span part=${partNameMap({ month: true, ...parts })}>
+      <span part=${partMap({ month: true, selected, current })}>
         <span
           role="gridcell"
           data-value=${entry.month}
-          part=${partNameMap({ 'month-inner': true, ...parts })}
+          part=${partMap({ 'month-inner': true, selected, current })}
           aria-selected=${selected}
           aria-label=${ariaLabel}
           tabindex=${active ? 0 : -1}

@@ -1,9 +1,9 @@
-import { LitElement, type TemplateResult, html } from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
@@ -11,25 +11,23 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
   createFormValueState,
   defaultBooleanTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
   createCounter,
   isDefined,
   isEmpty,
   isLTR,
   last,
-  noop,
-  partNameMap,
   wrap,
 } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -69,7 +67,6 @@ export interface IgcRadioComponentEventMap {
  * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
-@themes(all)
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -79,7 +76,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcRadioComponent, IgcValidationContainerComponent);
   }
 
@@ -89,22 +86,26 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return radioValidators;
   }
 
-  protected override _formValue: FormValue<boolean>;
+  protected override readonly _formValue: FormValueOf<boolean> =
+    createFormValueState(this, {
+      initialValue: false,
+      transformers: defaultBooleanTransformers,
+    });
 
-  private inputId = `radio-${IgcRadioComponent.increment()}`;
-  private labelId = `radio-label-${this.inputId}`;
-  private _kbFocus = addKeyboardFocusRing(this);
+  private readonly _inputId = `radio-${IgcRadioComponent.increment()}`;
+  private readonly _labelId = `radio-label-${this._inputId}`;
+  private readonly _focusRingManager = addKeyboardFocusRing(this);
 
   protected _value!: string;
 
   @query('input', true)
-  protected input!: HTMLInputElement;
+  protected readonly _input!: HTMLInputElement;
 
   @queryAssignedNodes({ flatten: true })
-  protected label!: Array<Node>;
+  protected readonly _label!: Array<Node>;
 
   @state()
-  protected hideLabel = false;
+  protected _hideLabel = false;
 
   @state()
   private _tabIndex = 0;
@@ -189,33 +190,29 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   constructor() {
     super();
 
-    this._formValue = createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
-      .set(tabKey, noop, { preventDefault: false })
-      .set(arrowLeft, () => this.navigate(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))
-      .set(arrowUp, () => this.navigate(-1))
-      .set(arrowDown, () => this.navigate(1));
+      .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this._navigate(-1))
+      .set(arrowDown, () => this._navigate(1));
   }
 
-  protected override createRenderRoot() {
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
-    this.hideLabel = isEmpty(this.label);
+    this._hideLabel = isEmpty(this._label);
 
     root.addEventListener('slotchange', () => {
-      this.hideLabel = isEmpty(this.label);
+      this._hideLabel = isEmpty(this._label);
     });
     return root;
   }
 
-  protected override async firstUpdated() {
+  protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
     if (this.checked && this === last(this._checkedRadios)) {
@@ -236,27 +233,27 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /** Simulates a click on the radio control. */
-  public override click() {
-    this.input.click();
+  public override click(): void {
+    this._input.click();
   }
 
   /* alternateName: focusComponent */
   /** Sets focus on the radio control. */
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
+  public override focus(options?: FocusOptions): void {
+    this._input.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the radio control. */
-  public override blur() {
-    this.input.blur();
+  public override blur(): void {
+    this._input.blur();
   }
 
-  private _checkValidity() {
+  private _checkValidity(): boolean {
     return super.checkValidity();
   }
 
-  private _reportValidity() {
+  private _reportValidity(): boolean {
     return super.reportValidity();
   }
 
@@ -288,19 +285,19 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  private _updateCheckedState() {
+  private _updateCheckedState(): void {
     for (const radio of this._siblings) {
       radio.checked = false;
     }
   }
 
-  protected override formResetCallback() {
+  protected override formResetCallback(): void {
     super.formResetCallback();
     this._resetTabIndexes();
   }
 
   /** Called after a form reset callback to restore default keyboard navigation. */
-  private _resetTabIndexes() {
+  private _resetTabIndexes(): void {
     const radios = this._radios;
 
     if (isEmpty(this._checkedRadios)) {
@@ -314,7 +311,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  protected handleClick(event: PointerEvent) {
+  protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
 
     if (this.checked) {
@@ -322,7 +319,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
 
     this.checked = true;
-    this.input.focus();
+    this._input.focus();
     this.emitEvent('igcChange', {
       detail: {
         checked: this.checked,
@@ -331,11 +328,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected handleBlur() {
-    this._kbFocus.reset();
-  }
-
-  protected navigate(idx: number) {
+  protected _navigate(idx: number): void {
     const active = this._active;
     const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[next];
@@ -347,7 +340,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected renderValidatorContainer(): TemplateResult {
+  protected _renderValidatorContainer(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
   }
 
@@ -357,16 +350,15 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     return html`
       <label
-        part=${partNameMap({
+        part=${partMap({
           base: true,
           checked,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
-        for=${this.inputId}
-        @pointerdown=${this._kbFocus.reset}
+        for=${this._inputId}
       >
         <input
-          id=${this.inputId}
+          id=${this._inputId}
           type="radio"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
@@ -374,27 +366,26 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           .disabled=${this.disabled}
           .checked=${live(checked)}
           tabindex=${this._tabIndex}
-          aria-checked=${checked ? 'true' : 'false'}
-          aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
-          @click=${this.handleClick}
-          @blur=${this.handleBlur}
+          aria-checked=${checked}
+          aria-disabled=${this.disabled}
+          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          @click=${this._handleClick}
         />
-        <span part=${partNameMap({ control: true, checked })}>
+        <span part=${partMap({ control: true, checked })}>
           <span
             .hidden=${this.disabled}
-            part=${partNameMap({ ripple: true, checked })}
+            part=${partMap({ ripple: true, checked })}
           ></span>
         </span>
         <span
-          .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
-          id=${this.labelId}
+          .hidden=${this._hideLabel}
+          part=${partMap({ label: true, checked })}
+          id=${this._labelId}
         >
           <slot></slot>
         </span>
       </label>
-      ${this.renderValidatorContainer()}
+      ${this._renderValidatorContainer()}
     `;
   }
 }

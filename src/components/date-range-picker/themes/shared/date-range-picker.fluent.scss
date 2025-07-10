@@ -1,0 +1,56 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    --calendar-border-color: #{$fluent-calendar-border-color};
+
+    igc-dialog[open]::part(base) {
+        border-radius: 0;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+
+        color: var-get($theme, 'helper-text-color');
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: rem(5px);
+        padding-inline-start: 0;
+    }
+}
+
+:host([required]) {
+    ::part(label)::after {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled])[readonly]) {
+    igc-input::part(prefix),
+    igc-input::part(suffix),
+    igc-date-time-input::part(prefix),
+    igc-date-time-input::part(suffix) {
+        background: transparent;
+    }
+}
+
+:host(:not([readonly], [invalid], [disabled])) {
+    igc-input[readonly]:not(:focus):hover::part(container) {
+        &::before {
+            // This represents the shadow color
+            color: var-get($theme, 'hover-border-color');
+        }
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::part(label)::after {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
+}

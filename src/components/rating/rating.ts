@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -10,7 +10,7 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -25,9 +25,9 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import {
-  type FormValue,
   createFormValueState,
   defaultNumberTransformers,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
 import {
   asNumber,
@@ -72,7 +72,6 @@ export interface IgcRatingComponentEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -90,7 +89,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
-  protected override _formValue: FormValue<number>;
+  protected override readonly _formValue: FormValueOf<number> =
+    createFormValueState(this, {
+      initialValue: 0,
+      transformers: defaultNumberTransformers,
+    });
 
   private _max = 5;
   private _step = 1;
@@ -248,10 +251,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   constructor() {
     super();
 
-    this._formValue = createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => !this.isInteractive,

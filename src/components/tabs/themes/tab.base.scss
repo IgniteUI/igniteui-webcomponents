@@ -21,7 +21,7 @@
     position: relative;
     z-index: map.get($tabs-z-index, 'header');
     grid-row: 1;
-    word-break: break-word;
+    overflow-wrap: anywhere;
     transition:
         background-color $transition,
         color $transition;

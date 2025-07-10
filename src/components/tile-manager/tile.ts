@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { startViewTransition } from '../../animations/player.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   type TileManagerContext,
@@ -15,20 +15,20 @@ import {
 } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import {
-  type DragCallbackParameters,
   addDragController,
+  type DragCallbackParameters,
 } from '../common/controllers/drag.js';
 import { addFullscreenController } from '../common/controllers/fullscreen.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   asNumber,
   createCounter,
   findElementFromEventPath,
   isEmpty,
   isLTR,
-  partNameMap,
 } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
@@ -93,7 +93,6 @@ export interface IgcTileComponentEventMap {
  * @csspart trigger - The part for the corner adorner of the encapsulated resize element in the tile.
  * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element in the tile.
  */
-@themes(all)
 export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
   Constructor<LitElement>
@@ -365,6 +364,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   public get position(): number {
     return this._position;
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   /** @internal */
@@ -666,7 +670,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderContent() {
-    const parts = partNameMap({
+    const parts = {
       base: true,
       draggable: this._tileManager?.dragMode !== 'none',
       fullscreen: this.fullscreen,
@@ -675,10 +679,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
         !this.disableResize && this._tileManager?.resizeMode !== 'none',
       resizing: this._isResizing,
       maximized: this.maximized,
-    });
+    };
 
     return html`
-      <div part=${parts}>
+      <div part=${partMap(parts)}>
         ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>
@@ -705,7 +709,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       ? this._renderContent()
       : html`
           <igc-resize
-            part=${partNameMap({
+            part=${partMap({
               resize: true,
               'side-adorner': this._customAdorners.get('side')!,
               'corner-adorner': this._customAdorners.get('corner')!,

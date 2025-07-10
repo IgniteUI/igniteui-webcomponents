@@ -1,10 +1,11 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
@@ -19,25 +20,20 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @csspart toggle - The native button element.
  */
-@themes(all)
+@shadowOptions({ delegatesFocus: true })
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = [styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
-  public static override shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcToggleButtonComponent);
   }
 
-  private _kbFocus = addKeyboardFocusRing(this);
+  private readonly _focusRingManager = addKeyboardFocusRing(this);
 
   @query('[part="toggle"]', true)
-  private _nativeButton!: HTMLButtonElement;
+  private readonly _nativeButton!: HTMLButtonElement;
 
   /**
    * The value attribute of the control.
@@ -60,37 +56,40 @@ export default class IgcToggleButtonComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   /* alternateName: focusComponent */
   /** Sets focus on the button. */
-  public override focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions): void {
     this._nativeButton.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the button. */
-  public override blur() {
+  public override blur(): void {
     this._nativeButton.blur();
   }
 
   /** Simulates a mouse click on the element. */
-  public override click() {
+  public override click(): void {
     this._nativeButton.click();
   }
 
   protected override render() {
     return html`
       <button
-        part=${partNameMap({
+        part=${partMap({
           toggle: true,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
         type="button"
         ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
-        @click=${this._kbFocus.reset}
-        @blur=${this._kbFocus.reset}
       >
         <slot></slot>
       </button>

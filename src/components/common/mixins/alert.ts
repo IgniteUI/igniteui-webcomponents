@@ -1,21 +1,17 @@
-import { LitElement } from 'lit';
+import { LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-
-import type { addAnimationController } from '../../../animations/player.js';
+import type { AnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import type { AbsolutePosition } from '../../types.js';
-import { watch } from '../decorators/watch.js';
+import { addInternalsController } from '../controllers/internals.js';
 
 // It'd be better to have this as a mixin rather than a base class once the analyzer
 // knows how to resolve multiple mixin chains
 
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
-  private _internals: ElementInternals;
-  protected _autoHideTimeout?: number;
+  declare protected abstract readonly _player: AnimationController;
 
-  declare protected abstract _animationPlayer: ReturnType<
-    typeof addAnimationController
-  >;
+  protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
 
   /**
    * Whether the component is in shown state.
@@ -45,36 +41,44 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   @property({ reflect: true })
   public position: AbsolutePosition = 'bottom';
 
-  @watch('displayTime', { waitUntilFirstUpdate: true })
-  protected displayTimeChange() {
-    this.setAutoHideTimer();
-  }
-
-  @watch('keepOpen', { waitUntilFirstUpdate: true })
-  protected keepOpenChange() {
-    clearTimeout(this._autoHideTimeout);
-  }
-
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
-    this._internals.role = 'status';
-    this._internals.ariaLive = 'polite';
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'status',
+        ariaLive: 'polite',
+      },
+    });
   }
 
-  private async toggleAnimation(state: 'open' | 'close') {
-    const animation = state === 'open' ? fadeIn : fadeOut;
+  protected override updated(props: PropertyValues<this>): void {
+    if (props.has('displayTime')) {
+      this._setAutoHideTimer();
+    }
 
-    const [_, event] = await Promise.all([
-      this._animationPlayer.stopAll(),
-      this._animationPlayer.play(animation()),
-    ]);
-
-    return event.type === 'finish';
+    if (props.has('keepOpen')) {
+      clearTimeout(this._autoHideTimeout);
+    }
   }
 
-  private setAutoHideTimer() {
+  private async _setOpenState(open: boolean): Promise<boolean> {
+    let state: boolean;
+
+    if (open) {
+      this.open = open;
+      state = await this._player.playExclusive(fadeIn());
+      this._setAutoHideTimer();
+    } else {
+      clearTimeout(this._autoHideTimeout);
+      state = await this._player.playExclusive(fadeOut());
+      this.open = open;
+    }
+
+    return state;
+  }
+
+  private _setAutoHideTimer(): void {
     clearTimeout(this._autoHideTimeout);
     if (this.open && this.displayTime > 0 && !this.keepOpen) {
       this._autoHideTimeout = setTimeout(() => this.hide(), this.displayTime);
@@ -83,26 +87,12 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   /** Opens the component. */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
-
-    this.open = true;
-    await this.toggleAnimation('open');
-    this.setAutoHideTimer();
-    return true;
+    return this.open ? false : this._setOpenState(true);
   }
 
   /** Closes the component. */
   public async hide(): Promise<boolean> {
-    if (!this.open) {
-      return false;
-    }
-
-    clearTimeout(this._autoHideTimeout);
-    await this.toggleAnimation('close');
-    this.open = false;
-    return true;
+    return this.open ? this._setOpenState(false) : false;
   }
 
   /** Toggles the open state of the component. */

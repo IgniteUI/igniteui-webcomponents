@@ -1,19 +1,21 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   type TileManagerContext,
   tileManagerContext,
 } from '../common/context.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { asNumber, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { asNumber } from '../common/util.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';
@@ -38,15 +40,10 @@ import IgcTileComponent from './tile.js';
  * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
  *
  */
-@themes(all)
+@shadowOptions({ slotAssignment: 'manual' })
 export default class IgcTileManagerComponent extends LitElement {
   public static readonly tagName = 'igc-tile-manager';
   public static override styles = [styles, shared];
-
-  public static override shadowRootOptions: ShadowRootInit = {
-    mode: 'open',
-    slotAssignment: 'manual',
-  };
 
   /* blazorSuppress */
   public static register() {
@@ -207,6 +204,8 @@ export default class IgcTileManagerComponent extends LitElement {
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     createMutationController(this, {
       callback: this._observerCallback,
       filter: [IgcTileComponent.tagName],
@@ -274,16 +273,16 @@ export default class IgcTileManagerComponent extends LitElement {
   // #region Rendering
 
   protected override render() {
-    const parts = partNameMap({
+    const parts = {
       base: true,
       'maximized-tile': this.tiles.some((tile) => tile.maximized),
-    });
+    };
 
     return html`
       <div
         ${ref(this._grid)}
         style=${styleMap(this._internalStyles)}
-        part=${parts}
+        part=${partMap(parts)}
       >
         <slot></slot>
       </div>

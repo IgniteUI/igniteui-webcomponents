@@ -1,8 +1,8 @@
-import { LitElement, html } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
+import { html, LitElement } from 'lit';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';
@@ -16,35 +16,40 @@ import { styles as shared } from './themes/shared/indicator-container/indicator-
  *
  * @csspart base - The wrapping container of all carousel indicators.
  */
-@themes(all)
 export default class IgcCarouselIndicatorContainerComponent extends LitElement {
   public static readonly tagName = 'igc-carousel-indicator-container';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCarouselIndicatorContainerComponent);
   }
 
-  private _kbFocus = addKeyboardFocusRing(this);
+  private readonly _focusRingManager = addKeyboardFocusRing(this);
 
-  private handleFocusOut(event: FocusEvent) {
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
+  private _handleFocusOut(event: FocusEvent): void {
     const target = event.relatedTarget as Element;
 
-    if (!target?.matches(IgcCarouselIndicatorComponent.tagName)) {
-      this._kbFocus.reset();
+    if (target?.matches(IgcCarouselIndicatorComponent.tagName)) {
+      // Stop the event from hitting the _focusRingManager handler redrawing
+      // the keyboard focus styles
+      event.stopPropagation();
     }
   }
 
   protected override render() {
     return html`
       <div
-        part=${partNameMap({
+        part=${partMap({
           base: true,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
-        @click=${this._kbFocus.reset}
-        @focusout=${this.handleFocusOut}
+        @focusout=${this._handleFocusOut}
       >
         <slot></slot>
       </div>

@@ -6,10 +6,11 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
-import { isEmpty, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { isEmpty } from '../common/util.js';
 import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
@@ -54,7 +55,14 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     return maskValidators;
   }
 
-  protected override _formValue: FormValue<string>;
+  protected override readonly _formValue: FormValueOf<string> =
+    createFormValueState(this, {
+      initialValue: '',
+      transformers: {
+        setFormValue: (value) =>
+          this._isRawMode ? value || null : this.maskedValue || null,
+      },
+    });
 
   protected get _isRawMode() {
     return this.valueMode === 'raw';
@@ -111,18 +119,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     if (this.value) {
       this.maskedValue = this.parser.apply(this._formValue.value);
     }
-  }
-
-  constructor() {
-    super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: '',
-      transformers: {
-        setFormValue: (value) =>
-          this._isRawMode ? value || null : this.maskedValue || null,
-      },
-    });
   }
 
   @watch('prompt')
@@ -215,7 +211,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     return html`
       <input
         type="text"
-        part=${partNameMap(this.resolvePartNames('input'))}
+        part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}

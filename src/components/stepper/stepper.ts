@@ -1,7 +1,7 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -35,10 +35,7 @@ import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
  * @fires igcActiveStepChanging - Emitted when the active step is about to change.
  * @fires igcActiveStepChanged - Emitted when the active step is changed.
  */
-@themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
-})
+
 export default class IgcStepperComponent extends EventEmitterMixin<
   IgcStepperComponentEventMap,
   Constructor<LitElement>
@@ -206,6 +203,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, {
+      light: { bootstrap, fluent, indigo },
+      dark: { bootstrap, fluent, indigo },
+    });
 
     this.addEventListener('stepActiveChanged', (event: any) => {
       event.stopPropagation();

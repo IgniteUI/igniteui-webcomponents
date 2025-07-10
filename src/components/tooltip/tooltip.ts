@@ -1,12 +1,12 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -15,16 +15,16 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import { TooltipRegexes, addTooltipController } from './controller.js';
+import { addTooltipController, TooltipRegexes } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
 
 export interface IgcTooltipComponentEventMap {
-  igcOpening: CustomEvent<Element | null>;
-  igcOpened: CustomEvent<Element | null>;
-  igcClosing: CustomEvent<Element | null>;
-  igcClosed: CustomEvent<Element | null>;
+  igcOpening: CustomEvent<void>;
+  igcOpened: CustomEvent<void>;
+  igcClosing: CustomEvent<void>;
+  igcClosed: CustomEvent<void>;
 }
 
 type TooltipStateOptions = {
@@ -49,7 +49,6 @@ type TooltipStateOptions = {
  * @fires igcClosing - Emitted before the tooltip begins to close. Can be canceled to prevent closing.
  * @fires igcClosed - Emitted after the tooltip has been fully removed from view.
  */
-@themes(all)
 export default class IgcTooltipComponent extends EventEmitterMixin<
   IgcTooltipComponentEventMap,
   Constructor<LitElement>
@@ -66,7 +65,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'tooltip',
+      ariaAtomic: 'true',
+      ariaLive: 'polite',
+    },
+  });
 
   private readonly _controller = addTooltipController(this, {
     onShow: this._showOnInteraction,
@@ -139,11 +144,30 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   /**
    * Whether to disable the rendering of the arrow indicator for the tooltip.
    *
+   * @deprecated since 6.1.0. Use `with-arrow` to control the behavior of the tooltip arrow.
    * @attr disable-arrow
    * @default false
    */
-  @property({ attribute: 'disable-arrow', type: Boolean, reflect: true })
-  public disableArrow = false;
+  @property({ type: Boolean, attribute: 'disable-arrow' })
+  public set disableArrow(value: boolean) {
+    this.withArrow = !value;
+  }
+
+  /**
+   * @deprecated since 6.1.0. Use `with-arrow` to control the behavior of the tooltip arrow.
+   */
+  public get disableArrow(): boolean {
+    return !this.withArrow;
+  }
+
+  /**
+   * Whether to render an arrow indicator for the tooltip.
+   *
+   * @attr with-arrow
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'with-arrow' })
+  public withArrow = false;
 
   /**
    * The offset of the tooltip from the anchor in pixels.
@@ -158,13 +182,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Where to place the floating element relative to the parent anchor element.
    *
    * @attr placement
-   * @default top
+   * @default bottom
    */
   @property()
-  public placement: PopoverPlacement = 'top';
+  public placement: PopoverPlacement = 'bottom';
 
   /**
    * An element instance or an IDREF to use as the anchor for the tooltip.
+   *
+   * @remarks
+   * Trying to bind to an IDREF that does not exist in the current DOM root at will not work.
+   * In such scenarios, it is better to get a DOM reference and pass it to the tooltip instance.
    *
    * @attr anchor
    */
@@ -252,11 +280,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-
-    this._internals = this.attachInternals();
-    this._internals.role = 'tooltip';
-    this._internals.ariaAtomic = 'true';
-    this._internals.ariaLive = 'polite';
+    addThemingController(this, all);
   }
 
   protected override firstUpdated(): void {
@@ -268,20 +292,19 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     }
   }
 
-  @watch('anchor')
-  protected _onAnchorChange(): void {
-    this._controller.resolveAnchor(this.anchor);
-  }
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('anchor')) {
+      this._controller.resolveAnchor(this.anchor);
+    }
 
-  @watch('sticky')
-  protected _onStickyChange(): void {
-    this._internals.role = this.sticky ? 'status' : 'tooltip';
+    if (changedProperties.has('sticky')) {
+      this._internals.setARIA({ role: this.sticky ? 'status' : 'tooltip' });
+    }
   }
 
   private _emitEvent(name: keyof IgcTooltipComponentEventMap): boolean {
     return this.emitEvent(name, {
       cancelable: name === 'igcOpening' || name === 'igcClosing',
-      detail: this._controller.anchor,
     });
   }
 
@@ -412,7 +435,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .placement=${this.placement}
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
-        .arrow=${this.disableArrow ? null : this._arrowElement}
+        .arrow=${this.withArrow ? this._arrowElement : null}
         .arrowOffset=${this._arrowOffset}
         .shiftPadding=${8}
         ?open=${this.open}
@@ -432,7 +455,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
                 </slot>
               `
             : nothing}
-          ${this.disableArrow ? nothing : html`<div id="arrow"></div>`}
+          ${this.withArrow ? html`<div id="arrow"></div>` : nothing}
         </div>
       </igc-popover>
     `;

@@ -1,7 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-
-import { addRootClickHandler } from '../controllers/root-click.js';
+import type { RootClickController } from '../controllers/root-click.js';
 import { iterNodes } from '../util.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
 
@@ -12,6 +11,7 @@ interface IgcBaseComboBoxEventMap {
   igcClosed: CustomEvent<void>;
 }
 
+/* blazorIndirectRender */
 export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
   declare public emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
@@ -21,7 +21,7 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
     eventInitDict?: CustomEventInit<D>
   ) => boolean;
 
-  protected _rootClickController = addRootClickHandler(this);
+  protected abstract _rootClickController: RootClickController;
 
   /**
    * Whether the component dropdown should be kept open on selection.
@@ -115,18 +115,20 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 }
 
 export function getItems<T extends HTMLElement>(root: Node, tagName: string) {
-  return iterNodes<T>(root, 'SHOW_ELEMENT', (item) => item.matches(tagName));
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName),
+  });
 }
 
 export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
   root: Node,
   tagName: string
 ) {
-  return iterNodes<T>(
-    root,
-    'SHOW_ELEMENT',
-    (item) => item.matches(tagName) && !item.disabled
-  );
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName) && !item.disabled,
+  });
 }
 
 export function getNextActiveItem<

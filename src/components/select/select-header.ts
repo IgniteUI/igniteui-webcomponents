@@ -1,6 +1,6 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from '../dropdown/themes/dropdown-header.base.css.js';
 import { all } from '../dropdown/themes/header.js';
@@ -13,14 +13,18 @@ import { styles as shared } from '../dropdown/themes/shared/header/dropdown-head
  *
  * @slot - Renders the header.
  */
-@themes(all)
 export default class IgcSelectHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-select-header';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSelectHeaderComponent);
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override render() {

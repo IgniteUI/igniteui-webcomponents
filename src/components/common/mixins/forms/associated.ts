@@ -1,6 +1,6 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { isFunction, isString } from '../../util.js';
+import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
 import type { FormValue } from './form-value.js';
@@ -93,7 +93,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     constructor(...args: any[]) {
       super(args);
       this.__internals = this.attachInternals();
-      this.addEventListener('invalid', this._handleInvalid);
+
+      addSafeEventListener(this, 'invalid', this._handleInvalid);
     }
 
     public override connectedCallback(): void {

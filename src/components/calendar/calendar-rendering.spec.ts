@@ -4,7 +4,7 @@ import type { TemplateResult } from 'lit';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import IgcCalendarComponent from './calendar.js';
-import { getCalendarDOM, getDOMDate, getDayViewDOM } from './helpers.spec.js';
+import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
@@ -140,19 +140,13 @@ describe('Calendar Rendering', () => {
       expect(last.children.item(6)?.part.contains('hidden')).to.be.true;
     });
 
-    it('should change orientation', async () => {
-      const dom = getCalendarDOM(calendar);
-
-      expect(
-        getComputedStyle(dom.content).getPropertyValue('flex-direction')
-      ).to.equal('row');
-
+    it('should set vertical orientation part', async () => {
       calendar.orientation = 'vertical';
       await elementUpdated(calendar);
 
-      expect(
-        getComputedStyle(dom.content).getPropertyValue('flex-direction')
-      ).to.equal('column');
+      const dom = getCalendarDOM(calendar);
+      expect(dom.content).to.exist;
+      expect(dom.content.part.contains('content-vertical')).to.be.true;
     });
 
     it('successfully enables and disables `hideHeader`', async () => {

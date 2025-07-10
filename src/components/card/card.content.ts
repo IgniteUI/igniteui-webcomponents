@@ -1,6 +1,6 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/card.content.base.css.js';
 import { all } from './themes/content.js';
@@ -11,14 +11,18 @@ import { styles as shared } from './themes/shared/content/card.content.common.cs
  *
  * @slot - Renders the card text content
  */
-@themes(all)
 export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCardContentComponent);
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override render() {

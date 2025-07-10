@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
+import { type CalendarDay, toCalendarDay } from '../calendar/model.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
 import type { IgniteComponent } from './definitions/register.js';
@@ -145,6 +146,18 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   public assertSubmitHasValues(value: unknown, msg?: string): void {
     expect(this.submit().getAll(this.element.name), msg).to.eql(value);
   }
+
+  /**
+   * Whether the form is submitted and contains the given 'key'-'value' pair
+   * in its form data.
+   */
+  public assertSubmitHasKeyValue = (
+    key: string,
+    value: unknown,
+    msg?: string
+  ) => {
+    expect(this.submit().get(key), msg).to.eql(value);
+  };
 
   /**
    * Whether the form fails to submit.
@@ -316,16 +329,17 @@ export function simulateKeyboard(
   times = 1
 ) {
   const { keys, modifiers } = parseKeys(key);
-  const eventOptions = modifiers.reduce(
-    (acc, m) => Object.assign(acc, { [`${m}Key`]: true }),
-    {}
-  );
+  const eventOptions: Record<string, boolean> = {};
 
-  for (const k of keys) {
+  for (const each of modifiers) {
+    eventOptions[`${each}Key`] = true;
+  }
+
+  for (const key of keys) {
     for (let i = 0; i < times; i++) {
       node.dispatchEvent(
         new KeyboardEvent('keydown', {
-          key: k,
+          key,
           bubbles: true,
           composed: true,
           ...eventOptions,
@@ -521,4 +535,11 @@ export function compareStyles(
   return Object.entries(values).every(
     ([key, value]) => computed.getPropertyValue(toKebabCase(key)) === value
   );
+}
+
+/**
+ * Compares two date values
+ */
+export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
+  expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
 }

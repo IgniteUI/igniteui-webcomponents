@@ -47,9 +47,12 @@ export function getDayViewDOM(element: IgcDaysViewComponent) {
       get disabled() {
         return Array.from(
           root.querySelectorAll<HTMLElement>(
-            'span[part*="date-inner disabled"]'
+            'span[part~="date-inner"][part~="disabled"]'
           )
         );
+      },
+      get current() {
+        return root.querySelector('span[part~="current"]')!;
       },
     },
   };
@@ -73,7 +76,7 @@ export function getCalendarDOM(element: IgcCalendarComponent) {
       },
     },
     get content() {
-      return root.querySelector<HTMLElement>('[part="content"]')!;
+      return root.querySelector<HTMLElement>('[part~="content"]')!;
     },
     views: {
       get days() {

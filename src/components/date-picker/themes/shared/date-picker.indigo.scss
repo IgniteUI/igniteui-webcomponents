@@ -7,14 +7,11 @@ $theme: $indigo;
 $input-theme: input-theme.$indigo;
 
 :host {
+    --calendar-border-color: #{$indigo-calendar-border-color};
+
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
         box-shadow: var(--ig-elevation-5);
-        border: rem(1px) solid var-get($theme, 'border-color');
-    }
-
-    igc-focus-trap {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     [part~='label'] {
@@ -30,14 +27,15 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-[part='actions'] {
-    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
-    padding: rem(8px) rem(16px);
-}
-
 :host(:focus-within) {
     [part='label'] {
         color: var-get($input-theme, 'focused-secondary-color');
+    }
+}
+
+:host(:not([invalid])[readonly]) {
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'disabled-text-color');
     }
 }
 
@@ -46,4 +44,9 @@ $input-theme: input-theme.$indigo;
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
+    padding: rem(8px) rem(16px);
 }

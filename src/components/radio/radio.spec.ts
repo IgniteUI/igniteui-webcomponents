@@ -4,11 +4,11 @@ import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateClick,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import IgcRadioComponent from './radio.js';
 

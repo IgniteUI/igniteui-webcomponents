@@ -4,6 +4,8 @@
 $theme: $fluent;
 
 :host {
+    --calendar-border-color: #{$fluent-calendar-border-color};
+
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }
@@ -22,13 +24,28 @@ $theme: $fluent;
     }
 }
 
-[part='actions'] {
-    min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
-}
-
 :host([required]) {
     [part='label']::after {
         color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled])[readonly]) {
+    igc-date-time-input::part(prefix),
+    igc-date-time-input::part(suffix) {
+        background: transparent;
+    }
+}
+
+:host(:not([invalid])[readonly]:hover) {
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([invalid])[readonly]:focus-within) {
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'focused-border-color');
     }
 }
 
@@ -37,4 +54,8 @@ $theme: $fluent;
     [part='label']::after {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+[part='actions'] {
+    min-height: #{sizable(rem(40px), rem(48px), rem(54px))};
 }

@@ -1,22 +1,22 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import {
   createCounter,
   isEmpty,
   numberInRangeInclusive,
-  partNameMap,
 } from '../common/util.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
@@ -45,7 +45,6 @@ export interface IgcDialogComponentEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,
@@ -129,6 +128,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @watch('open', { waitUntilFirstUpdate: true })
   protected handleOpenState() {
     this.open ? this.dialog.showModal() : this.dialog.close();
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override createRenderRoot() {
@@ -241,27 +245,27 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override render() {
     const label = this.ariaLabel ? this.ariaLabel : undefined;
-    const labelledby = label ? undefined : this.titleId;
-    const backdropParts = partNameMap({
+    const labelledBy = label ? undefined : this.titleId;
+    const backdropParts = {
       backdrop: true,
       animating: this.animating,
-    });
-    const baseParts = partNameMap({
+    };
+    const baseParts = {
       base: true,
-      titled: this.titleElements.length > 0 || this.title,
+      titled: this.titleElements.length > 0 || !!this.title,
       footed: this.footerElements.length > 0 || !this.hideDefaultAction,
-    });
+    };
 
     return html`
-      <div part=${backdropParts} aria-hidden=${!this.open}></div>
+      <div part=${partMap(backdropParts)} aria-hidden=${!this.open}></div>
       <dialog
         ${ref(this.dialogRef)}
-        part=${baseParts}
+        part=${partMap(baseParts)}
         role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
         aria-label=${ifDefined(label)}
-        aria-labelledby=${ifDefined(labelledby)}
+        aria-labelledby=${ifDefined(labelledBy)}
       >
         <header part="title" id=${this.titleId}>
           <slot name="title"><span>${this.title}</span></slot>

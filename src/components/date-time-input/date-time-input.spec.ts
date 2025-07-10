@@ -12,13 +12,13 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
   runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
+  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
@@ -173,6 +173,24 @@ describe('Date Time Input component', () => {
 
       expect(isFocused(el)).to.be.true;
       expect(input.value).to.equal('22-07-2024');
+    });
+
+    it('should emit igcChange on blur after an incomplete mask has been parsed - issue #1695', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.focus();
+      await elementUpdated(el);
+
+      simulateInput(input, {
+        value: '0',
+        inputType: 'insertText',
+      });
+      await elementUpdated(el);
+
+      el.blur();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcChange');
+      expect(input.value).to.deep.equal('01/01/2000');
     });
 
     it('should correctly switch between different pre-defined date formats', async () => {

@@ -1,7 +1,7 @@
 import { isEmpty } from '../common/util.js';
-import type IgcTreeItemComponent from './tree-item.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
+import type IgcTreeItemComponent from './tree-item.js';
 
 /* blazorSuppress */
 export class IgcTreeSelectionService {

@@ -1,8 +1,11 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
+import { addInternalsController } from '../controllers/internals.js';
 
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
-  protected _internals: ElementInternals;
+  protected readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'option' },
+  });
 
   protected _active = false;
   protected _disabled = false;
@@ -10,9 +13,9 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected _value!: string;
 
   @queryAssignedNodes({ flatten: true })
-  protected _content!: Array<Element>;
+  protected readonly _content!: Array<Element>;
 
-  protected get _contentSlotText() {
+  protected get _contentSlotText(): string {
     return this._content.map((node) => node.textContent).join('');
   }
 
@@ -25,7 +28,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     this._active = Boolean(value);
   }
 
-  public get active() {
+  public get active(): boolean {
     return this._active;
   }
 
@@ -36,10 +39,10 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set disabled(value: boolean) {
     this._disabled = Boolean(value);
-    this._internals.ariaDisabled = `${this._disabled}`;
+    this._internals.setARIA({ ariaDisabled: `${this.disabled}` });
   }
 
-  public get disabled() {
+  public get disabled(): boolean {
     return this._disabled;
   }
 
@@ -50,11 +53,11 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set selected(value: boolean) {
     this._selected = Boolean(value);
-    this._internals.ariaSelected = `${this._selected}`;
+    this._internals.setARIA({ ariaSelected: `${this._selected}` });
     this.active = this.selected;
   }
 
-  public get selected() {
+  public get selected(): boolean {
     return this._selected;
   }
 
@@ -73,12 +76,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
     return this._value ? this._value : this._contentSlotText;
   }
 
-  constructor() {
-    super();
-    this._internals = this.attachInternals();
-    this._internals.role = 'option';
-  }
-
+  /** @internal */
   public override connectedCallback(): void {
     // R.K. Workaround for Axe accessibility unit tests.
     // I guess it does not support ElementInternals ARIAMixin state yet

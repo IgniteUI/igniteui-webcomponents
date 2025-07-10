@@ -1,15 +1,16 @@
-import { type TemplateResult, html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { all } from './themes/checkbox-themes.js';
 import { styles } from './themes/checkbox.base.css.js';
+import { all } from './themes/checkbox-themes.js';
 import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
 
 /**
@@ -30,19 +31,21 @@ import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.j
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox indicator icon.
  */
-@themes(all, { exposeController: true })
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCheckboxComponent, IgcValidationContainerComponent);
   }
 
   private static readonly increment = createCounter();
-  private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
-  private labelId = `checkbox-label-${this.inputId}`;
+
+  private readonly _themes = addThemingController(this, all);
+
+  private readonly _inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
+  private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**
    * Draws the checkbox in indeterminate state.
@@ -51,13 +54,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 
-  protected get _isIndigo(): boolean {
-    return getThemeController(this)?.theme === 'indigo';
-  }
-
-  protected override handleClick(event: PointerEvent) {
+  protected override _handleClick(event: PointerEvent): void {
     this.indeterminate = false;
-    super.handleClick(event);
+    super._handleClick(event);
   }
 
   protected renderValidatorContainer(): TemplateResult {
@@ -89,16 +88,15 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
     return html`
       <label
-        part=${partNameMap({
+        part=${partMap({
           base: true,
           checked,
-          focused: this._kbFocus.focused,
+          focused: this._focusRingManager.focused,
         })}
-        for=${this.inputId}
-        @pointerdown=${this._kbFocus.reset}
+        for=${this._inputId}
       >
         <input
-          id=${this.inputId}
+          id=${this._inputId}
           type="checkbox"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
@@ -108,20 +106,21 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           .indeterminate=${live(this.indeterminate)}
           aria-checked=${this.indeterminate && !checked ? 'mixed' : checked}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
-          @click=${this.handleClick}
-          @blur=${this.handleBlur}
-          @focus=${this.handleFocus}
+          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          @click=${this._handleClick}
+          @focus=${this._handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked })}>
-          <span part=${partNameMap({ indicator: true, checked })}>
-            ${this._isIndigo ? this.renderIndigo() : this.renderStandard()}
+        <span part=${partMap({ control: true, checked })}>
+          <span part=${partMap({ indicator: true, checked })}>
+            ${this._themes.theme === 'indigo'
+              ? this.renderIndigo()
+              : this.renderStandard()}
           </span>
         </span>
         <span
-          .hidden=${this.hideLabel}
-          part=${partNameMap({ label: true, checked })}
-          id=${this.labelId}
+          .hidden=${this._hideLabel}
+          part=${partMap({ label: true, checked })}
+          id=${this._labelId}
           ><slot></slot>
         </span>
       </label>

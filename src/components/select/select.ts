@@ -1,4 +1,4 @@
-import { type TemplateResult, html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   altKey,
@@ -22,30 +22,32 @@ import {
   spaceBar,
   tabKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  IgcBaseComboBoxLikeComponent,
   getActiveItems,
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  IgcBaseComboBoxLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  type FormValue,
   createFormValueState,
+  type FormValueOf,
 } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   findElementFromEventPath,
   isEmpty,
   isString,
-  partNameMap,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
@@ -106,7 +108,6 @@ export interface IgcSelectComponentEventMap {
  * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
  * @csspart helper-text - The helper text wrapper of the igc-select.
  */
-@themes(all)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -132,7 +133,21 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     );
   }
 
-  protected override _formValue: FormValue<string | undefined>;
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this.handleClosing,
+    }
+  );
+
+  protected override readonly _formValue: FormValueOf<string | undefined> =
+    createFormValueState<string | undefined>(this, {
+      initialValue: undefined,
+      transformers: {
+        setValue: (value) => value || undefined,
+        setDefaultValue: (value) => value || undefined,
+      },
+    });
 
   private _searchTerm = '';
   private _lastKeyTime = 0;
@@ -269,15 +284,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    this._formValue = createFormValueState<string | undefined>(this, {
-      initialValue: undefined,
-      transformers: {
-        setValue: (value) => value || undefined,
-        setDefaultValue: (value) => value || undefined,
-      },
-    });
-
-    this._rootClickController.update({ hideCallback: this.handleClosing });
+    addThemingController(this, all);
 
     addKeybindings(this, {
       skip: () => this.disabled,
@@ -296,9 +303,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(spaceBar, this.onSpaceBarKey)
       .set(enterKey, this.onEnterKey);
 
-    this.addEventListener('keydown', this.handleSearch);
-    this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('focusout', this.handleFocusOut);
+    addSafeEventListener(this, 'keydown', this.handleSearch);
+    addSafeEventListener(this, 'focusin', this.handleFocusIn);
+    addSafeEventListener(this, 'focusout', this.handleFocusOut);
   }
 
   protected override createRenderRoot() {
@@ -597,12 +604,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected renderToggleIcon() {
-    const parts = partNameMap({ 'toggle-icon': true, filled: this.value! });
+    const parts = { 'toggle-icon': true, filled: !!this.value };
     const iconHidden = this.open && !isEmpty(this._expandedIconSlot);
     const iconExpandedHidden = !iconHidden;
 
     return html`
-      <span slot="suffix" part=${parts} aria-hidden="true">
+      <span slot="suffix" part=${partMap(parts)} aria-hidden="true">
         <slot name="toggle-icon" ?hidden=${iconHidden}>
           <igc-icon
             name=${this.open ? 'input_collapse' : 'input_expand'}

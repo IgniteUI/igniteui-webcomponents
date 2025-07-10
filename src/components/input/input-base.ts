@@ -1,12 +1,14 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { createCounter } from '../common/util.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
@@ -18,8 +20,6 @@ export interface IgcInputComponentEventMap {
   igcInput: CustomEvent<string>;
   /* blazorSuppress */
   igcChange: CustomEvent<string>;
-  /* blazorSuppress */
-  igcCancel: CustomEvent<string>;
   // For analyzer meta only:
   /* skipWCPrefix */
   focus: FocusEvent;
@@ -28,19 +28,16 @@ export interface IgcInputComponentEventMap {
 }
 
 @blazorDeepImport
-@themes(all, { exposeController: true })
+@shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcInputComponentEventMap, Constructor<LitElement>>(
     LitElement
   )
 ) {
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   public static styles = [styles, shared];
   private static readonly increment = createCounter();
+
+  protected readonly _themes = addThemingController(this, all);
 
   protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
@@ -65,10 +62,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     selector: '[slot="suffix"]:not([hidden])',
   })
   protected suffixes!: Array<HTMLElement>;
-
-  protected get _isMaterial() {
-    return getThemeController(this)?.theme === 'material';
-  }
 
   /**
    * Whether the control will have outlined appearance.
@@ -175,9 +168,9 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   private renderMaterial() {
     return html`
       <div
-        part=${partNameMap({
+        part=${partMap({
           ...this.resolvePartNames('container'),
-          labelled: this.label,
+          labelled: !!this.label,
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
@@ -192,7 +185,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   private renderStandard() {
     return html`${this.renderLabel()}
-      <div part=${partNameMap(this.resolvePartNames('container'))}>
+      <div part=${partMap(this.resolvePartNames('container'))}>
         ${this.renderPrefix()} ${this.renderFileParts()} ${this.renderInput()}
         ${this.renderSuffix()}
       </div>
@@ -200,6 +193,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return this._isMaterial ? this.renderMaterial() : this.renderStandard();
+    return this._themes.theme === 'material'
+      ? this.renderMaterial()
+      : this.renderStandard();
   }
 }

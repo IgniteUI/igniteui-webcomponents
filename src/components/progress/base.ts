@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -6,18 +6,20 @@ import {
   state,
 } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { watch } from '../common/decorators/watch.js';
-import {
-  asPercent,
-  clamp,
-  formatString,
-  isEmpty,
-  partNameMap,
-} from '../common/util.js';
+import { partMap } from '../common/part-map.js';
+import { asPercent, clamp, formatString, isEmpty } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
-  private readonly __internals: ElementInternals;
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'progressbar',
+      ariaValueMin: '0',
+      ariaValueNow: '0',
+    },
+  });
 
   @queryAssignedElements()
   protected _assignedElements!: HTMLElement[];
@@ -122,17 +124,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  constructor() {
-    super();
-    this.__internals = this.attachInternals();
-
-    Object.assign(this.__internals, {
-      role: 'progressbar',
-      ariaValueMin: '0',
-      ariaValueNow: '0',
-    });
-  }
-
   protected override createRenderRoot() {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => this.requestUpdate());
@@ -146,7 +137,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   private _updateARIA() {
     const text = this.labelFormat ? this.renderLabelFormat() : `${this.value}%`;
 
-    Object.assign(this.__internals, {
+    this._internals.setARIA({
       ariaValueMax: this.max.toString(),
       ariaValueNow: this.indeterminate ? null : this.value.toString(),
       ariaValueText: this.indeterminate ? null : text,
@@ -167,15 +158,15 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderLabel() {
-    const parts = partNameMap({
+    const parts = {
       label: true,
       value: true,
       fraction: this._hasFraction,
-    });
+    };
 
     return this.labelFormat
-      ? html`<span part=${parts}>${this.renderLabelFormat()}</span>`
-      : html`<span part="${parts} counter"></span>`;
+      ? html`<span part=${partMap(parts)}>${this.renderLabelFormat()}</span>`
+      : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
   }
 
   protected renderLabelFormat() {
