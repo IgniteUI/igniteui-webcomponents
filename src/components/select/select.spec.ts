@@ -1,11 +1,5 @@
-import {
-  aTimeout,
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { spy, useFakeTimers } from 'sinon';
 
 import {
   altKey,
@@ -875,16 +869,20 @@ describe('Select', () => {
     });
 
     it('resumes search after default timeout', async () => {
+      const clock = useFakeTimers({ now: 0, toFake: ['Date'] });
+
       simulateKeyboard(select, 'null'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem).to.be.null;
 
-      await aTimeout(501);
+      await clock.tickAsync(501);
+
       simulateKeyboard(select, 'impl'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem?.value).to.equal('implementation');
+      clock.restore();
     });
 
     it('activates the correct item when searching with character keys (open state)', async () => {

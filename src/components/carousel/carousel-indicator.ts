@@ -35,7 +35,7 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   });
 
   @consume({ context: carouselContext, subscribe: true })
-  private _carousel?: IgcCarouselComponent;
+  private readonly _carousel?: IgcCarouselComponent;
 
   protected get _labelFormat(): string {
     return this._carousel ? this._carousel.indicatorsLabelFormat : '';
