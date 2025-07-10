@@ -569,8 +569,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       const indicator = this._projectedIndicators[idx];
       indicator.active = slide.active;
       indicator.index = idx;
+    }
 
-      this.setAttribute('aria-controls', slide.id);
+    if (this._activeSlide) {
+      this.setAttribute('aria-controls', this._activeSlide.id);
     }
   }
 
