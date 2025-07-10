@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - #### Carousel
   - Pause automatic rotation on pointer-initiated focus [#1731](https://github.com/IgniteUI/igniteui-webcomponents/issues/1731)
+  - Ensure `igcSlideChanged` event is emitted when a slide is changed [#1772](https://github.com/IgniteUI/igniteui-webcomponents/issues/1772)
 
 ## [6.1.1] - 2025-06-25
 ### Fixed
