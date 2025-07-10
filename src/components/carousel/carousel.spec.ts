@@ -7,7 +7,7 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 
-import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
 import IgcButtonComponent from '../button/button.js';
 import {
   arrowLeft,
@@ -88,12 +88,6 @@ describe('Carousel', () => {
         IgcCarouselIndicatorComponent.tagName
       )
     );
-
-    clock = useFakeTimers({ toFake: ['setInterval'] });
-  });
-
-  afterEach(() => {
-    clock.restore();
   });
 
   describe('Initialization', () => {
@@ -556,6 +550,26 @@ describe('Carousel', () => {
           detail: 0,
         });
       });
+
+      it('should properly call `igcSlideChanged` event', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
+
+        stub(carousel, 'select')
+          .onFirstCall()
+          .resolves(true)
+          .onSecondCall()
+          .resolves(false);
+
+        // select second indicator
+        simulateClick(defaultIndicators[1]);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        // select second indicator again
+        simulateClick(defaultIndicators[1]);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(eventSpy.callCount).to.equal(1);
+      });
     });
 
     describe('Keyboard', () => {
@@ -643,6 +657,12 @@ describe('Carousel', () => {
     });
 
     describe('Automatic rotation', () => {
+      beforeEach(async () => {
+        clock = useFakeTimers({ toFake: ['setInterval'] });
+      });
+
+      afterEach(() => clock.restore());
+
       it('should automatically change slides', async () => {
         expect(carousel.current).to.equal(0);
 
@@ -653,6 +673,21 @@ describe('Carousel', () => {
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
+      });
+
+      it('should properly call `igcSlideChanged` event', async () => {
+        const eventSpy = spy(carousel, 'emitEvent');
+
+        carousel.disableLoop = true;
+        carousel.interval = 100;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        await clock.tickAsync(300);
+
+        expect(carousel.current).to.equal(2);
+        expect(eventSpy.callCount).to.equal(2);
       });
 
       it('should pause/play on pointerenter/pointerleave', async () => {
@@ -1020,6 +1055,88 @@ describe('Carousel', () => {
         await slideChangeComplete(slides[0], slides[2]);
 
         expect(carousel.current).to.equal(0);
+      });
+
+      it('should properly call `igcSlideChanged` event', async () => {
+        carousel = await fixture<IgcCarouselComponent>(
+          html`<igc-carousel>
+            <igc-carousel-slide>
+              <span>1</span>
+            </igc-carousel-slide>
+            <igc-carousel-slide>
+              <span>2</span>
+            </igc-carousel-slide>
+          </igc-carousel>`
+        );
+
+        carouselSlidesContainer = carousel.shadowRoot?.querySelector(
+          'div[aria-live="polite"]'
+        ) as Element;
+
+        const eventSpy = spy(carousel, 'emitEvent');
+
+        const prevStub = stub(carousel, 'prev');
+        const nextStub = stub(carousel, 'next');
+
+        prevStub.resolves(false);
+        nextStub.onFirstCall().resolves(true).onSecondCall().resolves(false);
+
+        carousel.disableLoop = true;
+        await elementUpdated(carousel);
+
+        expect(carousel.current).to.equal(0);
+
+        // swipe right - disabled
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[2]);
+
+        // swipe left
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        // swipe left - disabled
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { x: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        expect(eventSpy.callCount).to.equal(1);
+
+        eventSpy.resetHistory();
+        prevStub.resetHistory();
+        nextStub.resetHistory();
+
+        prevStub.resolves(false);
+        nextStub.onFirstCall().resolves(true).onSecondCall().resolves(false);
+
+        carousel.vertical = true;
+        await elementUpdated(carousel);
+
+        expect(eventSpy.callCount).to.equal(0);
+
+        // swipe down - disabled
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: 100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[2], slides[0]);
+
+        // swipe up
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[2], slides[1]);
+
+        // swipe up - disabled
+        simulatePointerDown(carouselSlidesContainer);
+        simulatePointerMove(carouselSlidesContainer, {}, { y: -100 }, 10);
+        simulateLostPointerCapture(carouselSlidesContainer);
+        await slideChangeComplete(slides[1], slides[0]);
+
+        expect(eventSpy.callCount).to.equal(1);
       });
     });
   });

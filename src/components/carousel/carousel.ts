@@ -496,19 +496,20 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private _handleHorizontalSwipe({ data: { direction } }: SwipeEvent): void {
     if (!this.vertical) {
-      this._handleInteraction(async () => {
+      const callback = () => {
         if (isLTR(this)) {
-          direction === 'left' ? await this.next() : await this.prev();
-        } else {
-          direction === 'left' ? await this.prev() : await this.next();
+          return direction === 'left' ? this.next : this.prev;
         }
-      });
+        return direction === 'left' ? this.prev : this.next;
+      };
+
+      this._handleInteraction(callback());
     }
   }
 
   //#endregion
 
-  //#endregion Internal API
+  //#region Internal API
 
   private _handleNavigationInteractionNext(): void {
     this._handleInteraction(this.next);
@@ -519,14 +520,15 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private async _handleInteraction(
-    callback: () => Promise<unknown>
+    callback: () => Promise<boolean>
   ): Promise<void> {
     if (this.interval) {
       this._resetInterval();
     }
 
-    await callback.call(this);
-    this.emitEvent('igcSlideChanged', { detail: this.current });
+    if (await callback.call(this)) {
+      this.emitEvent('igcSlideChanged', { detail: this.current });
+    }
 
     if (this.interval) {
       this._restartInterval();
@@ -584,8 +586,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     if (asNumber(this.interval) > 0) {
       this._lastInterval = setInterval(() => {
-        if (this.isPlaying && this.total) {
-          this.next();
+        if (
+          this.isPlaying &&
+          this.total &&
+          !(this.disableLoop && this._nextIndex === 0)
+        ) {
+          this.select(this.slides[this._nextIndex], 'next');
           this.emitEvent('igcSlideChanged', { detail: this.current });
         } else {
           this.pause();
