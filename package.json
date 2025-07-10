@@ -104,9 +104,11 @@
     "vite": "^7.0.0"
   },
   "peerDependencies": {
+    "@google/genai": "^1.3.0",
     "@supabase/supabase-js": "^2.49.4",
     "marked": "^12.0.0",
-    "@google/genai": "^1.3.0"
+    "highlight.js": "^11.11.1",
+    "marked-highlight": "^2.2.2"
   },
   "browserslist": [
     "defaults"
