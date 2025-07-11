@@ -1,5 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@import 'highlight.js/scss/github.scss';
 
 :host {
     display: block;
@@ -35,7 +36,7 @@
   }
 
   .message-container pre {
-    background-color: black;
+    // background-color: black;
     padding: 8px;
     border-radius: 4px;
     overflow-x: auto;
@@ -102,3 +103,14 @@
     }
   }
 
+/* Styles for pre and code from highlight.js theme will apply */
+pre {
+  margin: 1em 0;
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+code {
+  font-family: monospace;
+  font-size: 0.9em;
+}
