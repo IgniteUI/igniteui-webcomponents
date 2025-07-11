@@ -73,6 +73,31 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
+   * The chat message that is still unsend.
+   */
+  @property({ reflect: true, attribute: false })
+  public set draftMessage(value: {
+    text: string;
+    attachments?: IgcMessageAttachment[];
+  }) {
+    if (this._chatState) {
+      this._chatState.inputValue = value.text;
+      this._chatState.inputAttachments = value.attachments || [];
+      this.requestUpdate();
+    }
+  }
+
+  public get draftMessage(): {
+    text: string;
+    attachments?: IgcMessageAttachment[];
+  } {
+    return {
+      text: this._chatState?.inputValue,
+      attachments: this._chatState?.inputAttachments,
+    };
+  }
+
+  /**
    * Controls the chat configuration and how it will be displayed.
    */
 
@@ -85,8 +110,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
-  @watch('currentUserId')
   @watch('messages')
+  @watch('draftMessage')
   @watch('options')
   protected contextChanged() {
     this._context.setValue(this._chatState, true);

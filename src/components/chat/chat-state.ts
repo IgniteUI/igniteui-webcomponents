@@ -117,6 +117,7 @@ export class ChatState {
 
     if (allowed) {
       this.messages = [...this.messages, newMessage];
+      this.inputValue = '';
       this.inputAttachments = [];
     }
   }
@@ -129,7 +130,6 @@ export class ChatState {
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
         id: Date.now().toString() + count++,
-        // type: isImage ? 'image' : 'file',
         url: URL.createObjectURL(file),
         name: file.name,
         file: file,
