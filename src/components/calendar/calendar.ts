@@ -2,8 +2,6 @@ import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
@@ -74,6 +72,7 @@ export const focusActiveDate = Symbol();
  * @csspart header-title - The header title element of the calendar.
  * @csspart header-date - The header date element of the calendar.
  * @csspart content - The content element which contains the views and navigation elements of the calendar.
+ * @csspart content-vertical - The content element which contains the views and navigation elements of the calendar in vertical orientation.
  * @csspart navigation - The navigation container element of the calendar.
  * @csspart months-navigation - The months navigation button element of the calendar.
  * @csspart years-navigation - The years navigation button element of the calendar.
@@ -610,7 +609,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             @igcActiveDateChange=${this.activeDateChanged}
             @igcRangePreviewDateChange=${this.rangePreviewDateChanged}
             part="days-view"
-            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
+            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, content-vertical, weekend, range, special, disabled, single, preview"
             .active=${this.activeDaysViewIndex === idx}
             .activeDate=${date.native}
             .disabledDates=${this.disabledDates}
@@ -663,17 +662,14 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    const direction = this._isDayView && this.orientation === 'horizontal';
-
-    const styles = {
-      display: 'flex',
-      flexGrow: 1,
-      flexDirection: direction ? 'row' : 'column',
+    const parts = {
+      content: true,
+      'content-vertical': this._isDayView && this.orientation === 'vertical',
     };
 
     return html`
       ${this.renderHeader()}
-      <div ${ref(this.contentRef)} part="content" style=${styleMap(styles)}>
+      <div ${ref(this.contentRef)} part=${partMap(parts)}>
         ${choose(this.activeView, [
           ['days', () => this.renderDaysView()],
           ['months', () => this.renderMonthView()],

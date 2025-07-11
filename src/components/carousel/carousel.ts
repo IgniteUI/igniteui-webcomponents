@@ -105,9 +105,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
   private readonly _carouselId = `igc-carousel-${IgcCarouselComponent.increment()}`;
 
+  private _paused = false;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;
-  private _hasMouseStop = false;
+  private _hasPointerInteraction = false;
   private _hasInnerFocus = false;
 
   private _context = new ContextProvider(this, {
@@ -150,9 +151,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   @state()
   private _playing = false;
-
-  @state()
-  private _paused = false;
 
   private _observerCallback({
     changes: { added, attributes },
@@ -329,14 +327,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addThemingController(this, all);
 
-    addSafeEventListener(this, 'pointerenter', this.handlePointerEnter);
-    addSafeEventListener(this, 'pointerleave', this.handlePointerLeave);
-    addSafeEventListener(this, 'pointerdown', () => {
-      this._hasInnerFocus = false;
-    });
-    addSafeEventListener(this, 'keyup', () => {
-      this._hasInnerFocus = true;
-    });
+    addSafeEventListener(this, 'pointerenter', this.handlePointerInteraction);
+    addSafeEventListener(this, 'pointerleave', this.handlePointerInteraction);
+    addSafeEventListener(this, 'focusin', this.handleFocusInteraction);
+    addSafeEventListener(this, 'focusout', this.handleFocusInteraction);
 
     addGesturesController(this, {
       ref: this._carouselSlidesContainerRef,
@@ -389,42 +383,27 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this.requestUpdate();
   }
 
-  private handlePointerEnter(): void {
-    this._hasMouseStop = true;
-    if (this._hasInnerFocus) {
-      return;
+  private handlePointerInteraction(event: PointerEvent): void {
+    this._hasPointerInteraction = event.type === 'pointerenter';
+
+    if (!this._hasInnerFocus) {
+      this.handlePauseOnInteraction();
     }
-    this.handlePauseOnInteraction();
   }
 
-  private handlePointerLeave(): void {
-    this._hasMouseStop = false;
-    if (this._hasInnerFocus) {
-      return;
-    }
-    this.handlePauseOnInteraction();
-  }
-
-  private handleFocusIn(): void {
-    if (this._hasInnerFocus || this._hasMouseStop) {
-      return;
-    }
-    this.handlePauseOnInteraction();
-  }
-
-  private handleFocusOut(event: FocusEvent): void {
+  private handleFocusInteraction(event: FocusEvent): void {
+    // focusin - element that lost focus
+    // focusout - element that gained focus
     const node = event.relatedTarget as Node;
 
-    if (this.contains(node) || this.renderRoot.contains(node)) {
+    if (this.contains(node)) {
       return;
     }
 
-    if (this._hasInnerFocus) {
-      this._hasInnerFocus = false;
+    this._hasInnerFocus = event.type === 'focusin';
 
-      if (!this._hasMouseStop) {
-        this.handlePauseOnInteraction();
-      }
+    if (!this._hasPointerInteraction) {
+      this.handlePauseOnInteraction();
     }
   }
 
@@ -472,13 +451,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   private handleHorizontalSwipe({ data: { direction } }: SwipeEvent) {
     if (!this.vertical) {
-      this.handleInteraction(async () => {
+      const callback = () => {
         if (isLTR(this)) {
-          direction === 'left' ? await this.next() : await this.prev();
-        } else {
-          direction === 'left' ? await this.prev() : await this.next();
+          return direction === 'left' ? this.next : this.prev;
         }
-      });
+        return direction === 'left' ? this.prev : this.next;
+      };
+
+      this.handleInteraction(callback());
     }
   }
 
@@ -506,14 +486,15 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private async handleInteraction(
-    callback: () => Promise<unknown>
+    callback: () => Promise<boolean>
   ): Promise<void> {
     if (this.interval) {
       this.resetInterval();
     }
 
-    await callback.call(this);
-    this.emitEvent('igcSlideChanged', { detail: this.current });
+    if (await callback.call(this)) {
+      this.emitEvent('igcSlideChanged', { detail: this.current });
+    }
 
     if (this.interval) {
       this.restartInterval();
@@ -559,8 +540,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     if (asNumber(this.interval) > 0) {
       this._lastInterval = setInterval(() => {
-        if (this.isPlaying && this.total) {
-          this.next();
+        if (
+          this.isPlaying &&
+          this.total &&
+          !(this.disableLoop && this.nextIndex === 0)
+        ) {
+          this.select(this.slides[this.nextIndex], 'next');
           this.emitEvent('igcSlideChanged', { detail: this.current });
         } else {
           this.pause();
@@ -789,7 +774,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <section @focusin=${this.handleFocusIn} @focusout=${this.handleFocusOut}>
+      <section>
         ${this.hideNavigation ? nothing : this.navigationTemplate()}
         ${this.hideIndicators || this.showIndicatorsLabel
           ? nothing
@@ -800,7 +785,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         <div
           ${ref(this._carouselSlidesContainerRef)}
           id=${this._carouselId}
-          aria-live=${this.interval && this.isPlaying ? 'off' : 'polite'}
+          aria-live=${this.interval && this._playing ? 'off' : 'polite'}
         >
           <slot @slotchange=${this.handleSlotChange}></slot>
         </div>
