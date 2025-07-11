@@ -117,15 +117,34 @@ textarea {
     }
 }
 
+:host([readonly]) {
+    [part~='prefix'],
+    [part~='suffix'],
+    textarea {
+        background: var-get($theme, 'border-disabled-background');
+    }
+
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
 :host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
     textarea {
         border: rem(1px) solid var-get($theme, 'error-secondary-color');
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host([invalid]:not(:disabled):focus-within),
+:host([invalid]:not([disabled])):focus-within {
+    textarea {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 }
 

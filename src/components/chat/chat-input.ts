@@ -1,6 +1,6 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { html, LitElement, nothing } from 'lit';
+import { query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
@@ -10,13 +10,9 @@ import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
-import type IgcChatComponent from './chat.js';
+import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
-import {
-  type IgcMessageAttachment,
-  attachmentIcon,
-  sendButtonIcon,
-} from './types.js';
+import { attachmentIcon, sendButtonIcon } from './types.js';
 
 /**
  *
@@ -29,7 +25,7 @@ export default class IgcChatInputComponent extends LitElement {
   public static override styles = styles;
 
   @consume({ context: chatContext, subscribe: true })
-  private _chat?: IgcChatComponent;
+  private _chatState?: ChatState;
 
   /* blazorSuppress */
   public static register() {
@@ -48,7 +44,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
-    this.updateAcceptedTypesCache();
+    this._chatState?.updateAcceptedTypesCache();
   }
 
   @state()
@@ -56,16 +52,6 @@ export default class IgcChatInputComponent extends LitElement {
 
   @state()
   private dragClass = '';
-
-  @property({ attribute: false })
-  public attachments: IgcMessageAttachment[] = [];
-
-  // Cache for accepted file types
-  private _acceptedTypesCache: {
-    extensions: Set<string>;
-    mimeTypes: Set<string>;
-    wildcardTypes: Set<string>;
-  } | null = null;
 
   constructor() {
     super();
@@ -75,17 +61,14 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override firstUpdated() {
     this.setupDragAndDrop();
-    this.updateAcceptedTypesCache();
+    this._chatState?.updateAcceptedTypesCache();
   }
 
   private handleInput(e: Event) {
     const target = e.target as HTMLTextAreaElement;
     this.inputValue = target.value;
+    this._chatState?.handleInputChange(this.inputValue);
     this.adjustTextareaHeight();
-    const inputEvent = new CustomEvent('input-change', {
-      detail: { value: this.inputValue },
-    });
-    this.dispatchEvent(inputEvent);
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -93,28 +76,25 @@ export default class IgcChatInputComponent extends LitElement {
       e.preventDefault();
       this.sendMessage();
     } else {
-      const typingEvent = new CustomEvent('typing-change', {
+      this._chatState?.emitEvent('igcTypingChange', {
         detail: { isTyping: true },
       });
-      this.dispatchEvent(typingEvent);
+
       // wait 3 seconds and dispatch a stop-typing event
       setTimeout(() => {
-        const stopTypingEvent = new CustomEvent('typing-change', {
+        this._chatState?.emitEvent('igcTypingChange', {
           detail: { isTyping: false },
         });
-        this.dispatchEvent(stopTypingEvent);
       }, 3000);
     }
   }
 
   private handleFocus() {
-    const focusEvent = new CustomEvent('focus-input');
-    this.dispatchEvent(focusEvent);
+    this._chatState?.emitEvent('igcInputFocus');
   }
 
   private handleBlur() {
-    const blurEvent = new CustomEvent('blur-input');
-    this.dispatchEvent(blurEvent);
+    this._chatState?.emitEvent('igcInputBlur');
   }
 
   private setupDragAndDrop() {
@@ -137,13 +117,12 @@ export default class IgcChatInputComponent extends LitElement {
       (item) => item.kind === 'file'
     );
     const hasValidFiles = files.some((item) =>
-      this.isFileTypeAccepted(item.getAsFile() as File, item.type)
+      this._chatState?.isFileTypeAccepted(item.getAsFile() as File, item.type)
     );
 
     this.dragClass = hasValidFiles ? 'dragging' : '';
 
-    const dragEvent = new CustomEvent('drag-attachment');
-    this.dispatchEvent(dragEvent);
+    this._chatState?.emitEvent('igcAttachmentDrag');
   }
 
   private handleDragOver(e: DragEvent) {
@@ -178,12 +157,14 @@ export default class IgcChatInputComponent extends LitElement {
     const files = Array.from(e.dataTransfer?.files || []);
     if (files.length === 0) return;
 
-    const validFiles = files.filter((file) => this.isFileTypeAccepted(file));
+    const validFiles = files.filter((file) =>
+      this._chatState?.isFileTypeAccepted(file)
+    );
 
-    const dropEvent = new CustomEvent('drop-attachment');
-    this.dispatchEvent(dropEvent);
+    this._chatState?.emitEvent('igcAttachmentDrop');
 
-    this.attachFiles(validFiles);
+    this._chatState?.attachFiles(validFiles);
+    this.requestUpdate();
   }
 
   private adjustTextareaHeight() {
@@ -196,13 +177,16 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private sendMessage() {
-    if (!this.inputValue.trim() && this.attachments.length === 0) return;
+    if (
+      !this.inputValue.trim() &&
+      this._chatState?.inputAttachments.length === 0
+    )
+      return;
 
-    const messageEvent = new CustomEvent('message-created', {
-      detail: { text: this.inputValue, attachments: this.attachments },
+    this._chatState?.addMessage({
+      text: this.inputValue,
+      attachments: this._chatState?.inputAttachments,
     });
-
-    this.dispatchEvent(messageEvent);
     this.inputValue = '';
 
     if (this.textInputElement) {
@@ -219,92 +203,22 @@ export default class IgcChatInputComponent extends LitElement {
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
-    this.attachFiles(files);
-  }
-
-  private attachFiles(files: File[]) {
-    const newAttachments: IgcMessageAttachment[] = [];
-    let count = this.attachments.length;
-    files.forEach((file) => {
-      const isImage = file.type.startsWith('image/');
-      newAttachments.push({
-        id: Date.now().toString() + count++,
-        // type: isImage ? 'image' : 'file',
-        url: URL.createObjectURL(file),
-        name: file.name,
-        file: file,
-        thumbnail: isImage ? URL.createObjectURL(file) : undefined,
-      });
-    });
-
-    const attachmentEvent = new CustomEvent('attachment-change', {
-      detail: [...this.attachments, ...newAttachments],
-    });
-    this.dispatchEvent(attachmentEvent);
-  }
-
-  private updateAcceptedTypesCache() {
-    if (!this._chat?.options?.acceptedFiles) {
-      this._acceptedTypesCache = null;
-      return;
-    }
-
-    const types = this._chat?.options?.acceptedFiles
-      .split(',')
-      .map((type) => type.trim().toLowerCase());
-    this._acceptedTypesCache = {
-      extensions: new Set(types.filter((t) => t.startsWith('.'))),
-      mimeTypes: new Set(
-        types.filter((t) => !t.startsWith('.') && !t.endsWith('/*'))
-      ),
-      wildcardTypes: new Set(
-        types.filter((t) => t.endsWith('/*')).map((t) => t.slice(0, -2))
-      ),
-    };
-  }
-
-  private isFileTypeAccepted(file: File, type = ''): boolean {
-    if (!this._acceptedTypesCache) return true;
-
-    if (file === null && type === '') return false;
-
-    const fileType =
-      file != null ? file.type.toLowerCase() : type.toLowerCase();
-    const fileExtension =
-      file != null
-        ? `.${file.name.split('.').pop()?.toLowerCase()}`
-        : `.${type.split('/').pop()?.toLowerCase()}`;
-
-    // Check file extension
-    if (this._acceptedTypesCache.extensions.has(fileExtension)) {
-      return true;
-    }
-
-    // Check exact MIME type
-    if (this._acceptedTypesCache.mimeTypes.has(fileType)) {
-      return true;
-    }
-
-    // Check wildcard MIME types
-    const [fileBaseType] = fileType.split('/');
-    return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
+    this._chatState?.attachFiles(files);
+    this.requestUpdate();
   }
 
   private removeAttachment(index: number) {
-    const attachmentEvent = new CustomEvent('attachment-change', {
-      detail: this.attachments.filter((_, i) => i !== index),
-    });
-
-    this.dispatchEvent(attachmentEvent);
+    this._chatState?.removeAttachment(index);
+    this.requestUpdate();
   }
 
   private renderFileUploadArea() {
-    return html` ${this._chat?.options?.disableAttachments
-      ? ''
+    return html`${this._chatState?.options?.disableAttachments
+      ? nothing
       : html`
           <igc-file-input
             multiple
-            .accept=${this._chat?.options?.acceptedFiles}
+            .accept=${this._chatState?.options?.acceptedFiles}
             @igcChange=${this.handleFileUpload}
           >
             <igc-icon
@@ -317,21 +231,22 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private renderActionsArea() {
-    return html` <div class="buttons-container">
+    return html`<div class="buttons-container">
       <igc-icon-button
         name="send-message"
         collection="material"
         variant="contained"
         class="small"
-        ?disabled=${!this.inputValue.trim() && this.attachments.length === 0}
+        ?disabled=${!this.inputValue.trim() &&
+        this._chatState?.inputAttachments.length === 0}
         @click=${this.sendMessage}
       ></igc-icon-button>
     </div>`;
   }
 
   private renderAttachmentsArea() {
-    return html` <div>
-      ${this.attachments?.map(
+    return html`<div>
+      ${this._chatState?.inputAttachments?.map(
         (attachment, index) => html`
           <div class="attachment-wrapper">
             <igc-chip
