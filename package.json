@@ -103,6 +103,12 @@
     "typescript": "^5.8.3",
     "vite": "^7.0.3"
   },
+  "peerDependencies": {
+    "@google/genai": "^1.3.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "dompurify": "^3.2.6",
+    "marked": "^12.0.0"
+  },
   "browserslist": [
     "defaults"
   ],
