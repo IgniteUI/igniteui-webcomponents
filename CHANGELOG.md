@@ -4,11 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.1.2] - 2025-07-14
+### Added
+- #### File input
+  - Exposed CSS variables for styling most of the Shadow DOM parts [#1747](https://github.com/IgniteUI/igniteui-webcomponents/pull/1747)
+
 ### Fixed
+- #### Calendar
+  - Vertical mode container paddings [#1775](https://github.com/IgniteUI/igniteui-webcomponents/pull/1775)
 - #### Carousel
   - Pause automatic rotation on pointer-initiated focus [#1731](https://github.com/IgniteUI/igniteui-webcomponents/issues/1731)
   - Ensure `igcSlideChanged` event is emitted when a slide is changed [#1772](https://github.com/IgniteUI/igniteui-webcomponents/issues/1772)
+- #### Date picker
+  - Styling issues [#1765](https://github.com/IgniteUI/igniteui-webcomponents/pull/1765)
+- #### Date range picker
+  - CSS borders and elevation [#1764](https://github.com/IgniteUI/igniteui-webcomponents/pull/1764)
+- #### File input
+  - Bootstrap invalid box-shadow styles [#1747](https://github.com/IgniteUI/igniteui-webcomponents/pull/1747)
+- #### Stepper
+  - Error when setting linear property in deferred rendering scenarios [#1672](https://github.com/IgniteUI/igniteui-webcomponents/pull/1672)
+- #### Textarea
+  - Readonly state styles [#1768](https://github.com/IgniteUI/igniteui-webcomponents/pull/1768)
 
 ## [6.1.1] - 2025-06-25
 ### Fixed
@@ -937,6 +953,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.1...6.1.2
 [6.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.0...6.1.1
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.1...6.1.0
 [6.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.0...6.0.1
