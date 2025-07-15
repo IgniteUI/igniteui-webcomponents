@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -9,6 +9,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
+import { registerHlLanguages } from './markdown-util.js';
 import { styles } from './themes/chat.base.css.js';
 import type {
   IgcChatOptions,
@@ -185,6 +186,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._context.setValue(this, true);
+    this.options?.languages && registerHlLanguages(this.options.languages);
   }
 
   protected override render() {

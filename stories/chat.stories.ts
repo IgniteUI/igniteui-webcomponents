@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-
 import { GoogleGenAI, Modality } from '@google/genai';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { createClient } from '@supabase/supabase-js';
+import javascript from 'highlight.js/lib/languages/javascript';
 import {
-  IgcChatComponent,
   defineComponents,
+  IgcChatComponent,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import type {
   IgcMessage,
   IgcMessageAttachment,
@@ -119,6 +119,7 @@ const ai_chat_options = {
 const chat_options = {
   disableAutoScroll: true,
   disableAttachments: true,
+  languages: { javascript: javascript },
 };
 
 function handleMessageSend(e: CustomEvent) {
