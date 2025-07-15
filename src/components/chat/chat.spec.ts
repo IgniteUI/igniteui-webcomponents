@@ -17,6 +17,14 @@ describe('Chat', () => {
   });
 
   const createChatComponent = () => html`<igc-chat></igc-chat>`;
+
+  const messageTemplate = (msg: any) => {
+    return html`<div>
+      <h5>${msg.sender === 'user' ? 'You' : 'Bot'}:</h5>
+      <p>${msg.text}</p>
+    </div> `;
+  };
+
   const messageActionsTemplate = (msg: any) => {
     return msg.sender !== 'user' && msg.text.trim()
       ? html`<div style="float: right">
@@ -121,7 +129,7 @@ describe('Chat', () => {
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat current-user-id="user">                   
+        `<igc-chat>                   
         </igc-chat>`
       );
 
@@ -247,6 +255,38 @@ describe('Chat', () => {
       );
     });
 
+    it('should sanitize message content', async () => {
+      const rawMessages = [
+        {
+          id: '1',
+          text: '<script>alert("XSS")</script> Hello!',
+          sender: 'bot',
+          timestamp: new Date(Date.now() - 3600000),
+        },
+      ];
+      chat = await fixture<IgcChatComponent>(
+        html`<igc-chat .messages=${rawMessages}> </igc-chat>`
+      );
+
+      const messageContainer = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list');
+
+      expect(chat.messages.length).to.equal(1);
+
+      expect(
+        messageContainer?.querySelectorAll('igc-chat-message')[0]
+      ).shadowDom.to.equal(
+        `<div class="message-container ">
+                    <div class="bubble">
+                        <div>
+                            <p>Hello!</p>
+                        </div>
+                    </div>
+                </div>`
+      );
+    });
+
     it('should render messages from the current user correctly', async () => {
       const initialMessages = [
         messages[0],
@@ -258,8 +298,13 @@ describe('Chat', () => {
           timestamp: new Date(Date.now() - 3200000),
         },
       ];
+
+      const options = {
+        currentUserId: 'me',
+      };
+
       chat = await fixture<IgcChatComponent>(
-        html`<igc-chat current-user-id="me" .messages=${initialMessages}>
+        html`<igc-chat .messages=${initialMessages} .options=${options}>
         </igc-chat>`
       );
 
@@ -683,7 +728,7 @@ describe('Chat', () => {
     it('should slot header prefix', () => {});
     it('should slot header title', () => {});
     it('should slot header action buttons area', () => {});
-    it('should slot suggetions area', () => {});
+    it('should slot suggestions area', () => {});
   });
 
   describe('Templates', () => {
@@ -721,6 +766,7 @@ describe('Chat', () => {
         );
       });
     });
+
     it('should render attachmentHeaderTemplate, attachmentActionsTemplate, attachmentContentTemplate', async () => {
       chat.options = {
         templates: {
@@ -761,6 +807,32 @@ describe('Chat', () => {
         const content = attachments?.shadowRoot?.querySelector('p');
         expect(content).dom.to.equal(
           `<p>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</p>`
+        );
+      });
+    });
+
+    it('should render messageTemplate', async () => {
+      chat.options = {
+        templates: {
+          messageTemplate: messageTemplate,
+        },
+      };
+      await elementUpdated(chat);
+      await aTimeout(500);
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+      messageElements?.forEach((messageElement, index) => {
+        const messsageContainer =
+          messageElement.shadowRoot?.querySelector('.bubble');
+        expect(messsageContainer).dom.to.equal(
+          `<div class="bubble">
+                <div>
+                    <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
+                    <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
+                </div>
+            </div>`
         );
       });
     });
@@ -891,7 +963,7 @@ describe('Chat', () => {
         }
       });
 
-      it('should remove attachement on chip remove button click', async () => {
+      it('should remove attachment on chip remove button click', async () => {
         const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
         const fileInput = inputArea?.shadowRoot

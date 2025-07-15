@@ -160,5 +160,5 @@ export type {
   IgcMessage,
   IgcMessageAttachment,
   AttachmentTemplate,
-  MessageActionsTemplate,
+  MessageTemplate,
 } from './components/chat/types.js';

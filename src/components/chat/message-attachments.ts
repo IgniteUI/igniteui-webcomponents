@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
@@ -7,12 +7,12 @@ import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
-import type IgcChatComponent from './chat.js';
+import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import {
-  type IgcMessageAttachment,
   closeIcon,
   fileIcon,
+  type IgcMessageAttachment,
   imageIcon,
   moreIcon,
   previewIcon,
@@ -29,7 +29,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   public static override styles = styles;
 
   @consume({ context: chatContext, subscribe: true })
-  private _chat?: IgcChatComponent;
+  private _chatState?: ChatState;
 
   /* blazorSuppress */
   public static register() {
@@ -40,10 +40,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       IgcExpansionPanelComponent
     );
   }
-  @property({ type: Array })
+  @property({ attribute: false })
   attachments: IgcMessageAttachment[] = [];
 
-  @property({ type: String })
+  @property({ attribute: false })
   previewImage = '';
 
   constructor() {
@@ -64,18 +64,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private handleToggle(e: CustomEvent, attachment: IgcMessageAttachment) {
-    this.handleAttachmentClick(attachment);
+    this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
     e.preventDefault();
-  }
-
-  private handleAttachmentClick(attachment: IgcMessageAttachment) {
-    this.dispatchEvent(
-      new CustomEvent('attachment-click', {
-        detail: { attachment },
-        bubbles: true,
-        composed: true,
-      })
-    );
   }
 
   private getURL(attachment: IgcMessageAttachment): string {
@@ -89,9 +79,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
-    return html` <div class="details">
-      ${this._chat?.options?.templates?.attachmentHeaderTemplate
-        ? this._chat.options.templates.attachmentHeaderTemplate(
+    return html`<div class="details">
+      ${this._chatState?.options?.templates?.attachmentHeaderTemplate
+        ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.attachments
           )
         : html`
@@ -117,9 +107,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentHeaderActions(attachment: IgcMessageAttachment) {
-    return html` <div class="actions">
-      ${this._chat?.options?.templates?.attachmentActionsTemplate
-        ? this._chat.options.templates.attachmentActionsTemplate(
+    return html`<div class="actions">
+      ${this._chatState?.options?.templates?.attachmentActionsTemplate
+        ? this._chatState.options.templates.attachmentActionsTemplate(
             this.attachments
           )
         : html`
@@ -133,7 +123,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     class="small"
                     @click=${() => this.openImagePreview(attachment)}
                   ></igc-icon-button>`
-                : ''}
+                : nothing}
               <igc-icon-button
                 name="more"
                 collection="material"
@@ -146,8 +136,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentContent(attachment: IgcMessageAttachment) {
-    return html` ${this._chat?.options?.templates?.attachmentContentTemplate
-      ? this._chat.options.templates.attachmentContentTemplate(this.attachments)
+    return html` ${this._chatState?.options?.templates
+      ?.attachmentContentTemplate
+      ? this._chatState.options.templates.attachmentContentTemplate(
+          this.attachments
+        )
       : html`
           <slot name="attachment-content">
             ${attachment.type === 'image' ||
@@ -157,19 +150,19 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                   src=${this.getURL(attachment)}
                   alt=${attachment.name}
                 />`
-              : ''}
+              : nothing}
           </slot>
         `}`;
   }
 
   private renderDefaultAttachmentsTemplate() {
-    return html` ${this.attachments.map(
+    return html`${this.attachments.map(
       (attachment) =>
-        html` <igc-expansion-panel
+        html`<igc-expansion-panel
           indicator-position="none"
           .open=${attachment.type === 'image' ||
           attachment.file?.type.startsWith('image/') ||
-          this._chat?.options?.templates?.attachmentContentTemplate}
+          this._chatState?.options?.templates?.attachmentContentTemplate}
           @igcClosing=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
           @igcOpening=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
         >
@@ -197,14 +190,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             ></igc-icon-button>
           </div>
         `
-      : ''}`;
+      : nothing}`;
   }
 
   protected override render() {
     return html`
       <div class="attachments-container">
-        ${this._chat?.options?.templates?.attachmentTemplate
-          ? this._chat.options.templates.attachmentTemplate(this.attachments)
+        ${this._chatState?.options?.templates?.attachmentTemplate
+          ? this._chatState.options.templates.attachmentTemplate(
+              this.attachments
+            )
           : this.renderDefaultAttachmentsTemplate()}
       </div>
 

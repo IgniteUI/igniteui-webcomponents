@@ -1,10 +1,10 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
-import type IgcChatComponent from './chat.js';
+import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-list.base.css.js';
 import type { IgcMessage } from './types.js';
 
@@ -19,7 +19,7 @@ export default class IgcChatMessageListComponent extends LitElement {
   public static override styles = styles;
 
   @consume({ context: chatContext, subscribe: true })
-  private _chat?: IgcChatComponent;
+  private _chatState?: ChatState;
 
   /* blazorSuppress */
   public static register() {
@@ -75,20 +75,20 @@ export default class IgcChatMessageListComponent extends LitElement {
   }
 
   protected override updated() {
-    if (!this._chat?.options?.disableAutoScroll) {
+    if (!this._chatState?.options?.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
 
   protected override firstUpdated() {
-    if (!this._chat?.options?.disableAutoScroll) {
+    if (!this._chatState?.options?.disableAutoScroll) {
       this.scrollToBottom();
     }
   }
 
   protected *renderLoadingTemplate() {
-    yield html` ${this._chat?.options?.templates?.composingIndicatorTemplate
-      ? this._chat.options.templates.composingIndicatorTemplate
+    yield html`${this._chatState?.options?.templates?.composingIndicatorTemplate
+      ? this._chatState.options.templates.composingIndicatorTemplate
       : html`<div class="typing-indicator">
           <div class="typing-dot"></div>
           <div class="typing-dot"></div>
@@ -98,7 +98,7 @@ export default class IgcChatMessageListComponent extends LitElement {
 
   protected override render() {
     const groupedMessages = this.groupMessagesByDate(
-      this._chat?.messages ?? []
+      this._chatState?.messages ?? []
     );
 
     return html`
@@ -118,7 +118,9 @@ export default class IgcChatMessageListComponent extends LitElement {
             `
           )}
           ${
-            this._chat?.options?.isComposing ? this.renderLoadingTemplate() : ''
+            this._chatState?.options?.isComposing
+              ? this.renderLoadingTemplate()
+              : nothing
           }
         </div>
       </div>
