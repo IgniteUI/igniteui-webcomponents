@@ -8,7 +8,12 @@ import {
 import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
-import { escapeKey } from '../common/controllers/key-bindings.js';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   isFocused,
@@ -134,7 +139,7 @@ describe('Date range picker - single input', () => {
       await elementUpdated(picker);
 
       input.focus();
-      simulateKeyboard(input, 'ArrowDown');
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(picker);
 
       expect(isFocused(input)).to.be.true;
@@ -587,6 +592,47 @@ describe('Date range picker - single input', () => {
         expect(picker.open).to.be.false;
         expect(picker.value).to.deep.equal(null);
         expect(input.value).to.equal('');
+      });
+
+      it('should toggle the calendar with keyboard combinations and keep focus', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        const input = picker.renderRoot!.querySelector(
+          IgcInputComponent.tagName
+        )!;
+        input.focus();
+
+        expect(isFocused(input)).to.be.true;
+
+        simulateKeyboard(input, [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+        expect(isFocused(input)).to.be.false;
+        expect(eventSpy.firstCall).calledWith('igcOpening');
+        expect(eventSpy.lastCall).calledWith('igcOpened');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(input, [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(input)).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(input, [altKey, arrowDown]);
+        await elementUpdated(picker);
+        eventSpy.resetHistory();
+
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+        await elementUpdated(input);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(input)).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
       });
     });
 
