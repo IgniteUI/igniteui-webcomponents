@@ -1,12 +1,7 @@
 import { html, LitElement } from 'lit';
-import {
-  property,
-  queryAssignedElements,
-  queryAssignedNodes,
-  state,
-} from 'lit/decorators.js';
-
+import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { styles } from './themes/item.base.css.js';
@@ -30,9 +25,17 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcNavDrawerItemComponent);
   }
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('content', 'icon'),
+    onChange: this._handleSlotChange,
+  });
+
+  @state()
+  private _hasContent = true;
 
   /**
    * Determines whether the drawer is disabled.
@@ -48,33 +51,21 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
-  @state()
-  private _textLength!: number;
-
-  @queryAssignedElements({ slot: 'content' })
-  private _text!: Array<HTMLElement>;
-
-  @queryAssignedNodes({ slot: 'icon', flatten: true })
-  protected navdrawerIcon!: Array<Node>;
-
   constructor() {
     super();
     addThemingController(this, all);
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => {
-      this._textLength = this._text.length;
-    });
-
-    return root;
+  protected _handleSlotChange(): void {
+    this._hasContent = this._slots.hasAssignedElements('content');
   }
 
   protected override render() {
+    const hasNoIcon = !this._slots.hasAssignedNodes('icon', true);
+
     return html`
-      <div part=${partMap({ base: true, mini: this._textLength < 1 })}>
-        <span part="icon" .hidden="${this.navdrawerIcon.length === 0}">
+      <div part=${partMap({ base: true, mini: !this._hasContent })}>
+        <span part="icon" ?hidden=${hasNoIcon}>
           <slot name="icon"></slot>
         </span>
         <span part="content">

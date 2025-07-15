@@ -1,6 +1,5 @@
 import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { registerComponent } from '../common/definitions/register.js';
 
 /**
@@ -16,7 +15,7 @@ export default class IgcCircularGradientComponent extends LitElement {
   public static readonly tagName = 'igc-circular-gradient';
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCircularGradientComponent);
   }
 
