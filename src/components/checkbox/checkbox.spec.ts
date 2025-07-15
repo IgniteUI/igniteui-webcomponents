@@ -1,11 +1,6 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
+import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
@@ -38,49 +33,82 @@ describe('Checkbox', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      element = await createCheckboxComponent();
-      input = element.renderRoot.querySelector('input') as HTMLInputElement;
+      element = await fixture(html`<igc-checkbox>${label}</igc-checkbox>`);
+      input = element.renderRoot.querySelector('input')!;
     });
 
     it('should initialize checkbox component with default values', async () => {
       expect(input.id).to.equal('checkbox-1');
       expect(element.name).to.be.undefined;
-      expect(input.name).to.equal('');
+      expect(input.name).to.be.empty;
       expect(element.value).to.be.undefined;
       expect(input.value).to.equal('on');
-      expect(element.checked).to.equal(false);
-      expect(input.checked).to.equal(false);
-      expect(element.indeterminate).to.equal(false);
-      expect(input.indeterminate).to.equal(false);
-      expect(element.invalid).to.equal(false);
-      expect(element.disabled).to.equal(false);
-      expect(input.disabled).to.equal(false);
+      expect(element.checked).to.be.false;
+      expect(input.checked).to.be.false;
+      expect(element.indeterminate).to.be.false;
+      expect(input.indeterminate).to.be.false;
+      expect(element.invalid).to.be.false;
+      expect(element.disabled).to.be.false;
+      expect(input.disabled).to.be.false;
       expect(element.labelPosition).to.equal('after');
     });
 
     it('should render a checkbox component successfully', async () => {
       await expect(element).shadowDom.to.be.accessible();
+      await expect(element).to.be.accessible();
+    });
+
+    it('should render the correct SVG in indigo theme', async () => {
+      /**
+       * In Indigo theme the svg structure goes like this:
+       *
+       * <svg>
+       *  <rect></rect>
+       *  <path></path>
+       * </svg>
+       *
+       * while in the other themes it is:
+       *
+       * <svg>
+       *  <path></path>
+       * </svg>
+       */
+
+      const root = element.renderRoot;
+
+      // Bootstrap, Fluent, Material
+      expect(root.querySelector('svg > rect')).to.be.null;
+
+      configureTheme('indigo');
+      await elementUpdated(element);
+
+      // Indigo
+      expect(root.querySelector('svg > rect')).to.be.not.null;
+
+      // Reset back to Bootstrap
+      configureTheme('bootstrap');
     });
 
     it('should set the checkbox name property correctly', async () => {
       const name = 'fruit';
 
       element.name = name;
-      expect(element.name).to.equal(name);
-
       await elementUpdated(element);
+
       expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
     });
 
     it('should set the checkbox label position correctly', async () => {
       element.labelPosition = 'before';
       await elementUpdated(element);
+
       expect(element).dom.to.equal(
         `<igc-checkbox label-position="before">${label}</igc-checkbox>`
       );
 
       element.labelPosition = 'after';
       await elementUpdated(element);
+
       expect(element).dom.to.equal(
         `<igc-checkbox label-position="after">${label}</igc-checkbox>`
       );
@@ -90,104 +118,33 @@ describe('Checkbox', () => {
       const value = 'apple';
 
       element.value = value;
-      expect(element.value).to.equal(value);
-
       await elementUpdated(element);
+
       expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
     });
 
-    it('should set the checkbox invalid property correctly', async () => {
+    it('should set the checkbox invalid property correctly', () => {
       element.invalid = true;
-      await elementUpdated(element);
       expect(element).dom.to.equal(
         `<igc-checkbox invalid label-position="after">${label}</igc-checkbox>`
       );
 
       element.invalid = false;
-      await elementUpdated(element);
       expect(element).dom.to.equal(
         `<igc-checkbox label-position="after">${label}</igc-checkbox>`
       );
     });
 
-    it('should correctly report validity status', async () => {
-      element = await fixture<IgcCheckboxComponent>(
-        html`<igc-checkbox required></igc-checkbox>`
-      );
-      expect(element.reportValidity()).to.equals(false);
-
-      element = await fixture<IgcCheckboxComponent>(
-        html`<igc-checkbox required checked></igc-checkbox>`
-      );
-      expect(element.reportValidity()).to.equals(true);
-
-      element = await fixture<IgcCheckboxComponent>(
-        html`<igc-checkbox></igc-checkbox>`
-      );
-      expect(element.reportValidity()).to.equals(true);
-    });
-
-    it('should set the checkbox checked property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-disabled',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
+    it('should correctly report validity status', () => {
+      element.required = true;
+      expect(element.reportValidity()).to.be.false;
 
       element.checked = true;
-      expect(element.checked).to.be.true;
-      await elementUpdated(element);
-      expect(input).dom.to.equal(`<input aria-checked="true" />`, DIFF_OPTIONS);
+      expect(element.reportValidity()).to.be.true;
 
       element.checked = false;
-      expect(element.checked).to.be.false;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal(
-        `<input aria-checked="false" />`,
-        DIFF_OPTIONS
-      );
-    });
-
-    it('should set the checkbox indeterminate property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-disabled',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      element.indeterminate = true;
-      expect(element.indeterminate).to.be.true;
-      await elementUpdated(element);
-      expect(input).dom.to.equal(
-        `<input aria-checked="mixed" />`,
-        DIFF_OPTIONS
-      );
-
-      element.indeterminate = false;
-      expect(element.indeterminate).to.be.false;
-      await elementUpdated(element);
-      expect(input).dom.to.equal(
-        `<input aria-checked="false" />`,
-        DIFF_OPTIONS
-      );
-
-      element.indeterminate = true;
-      expect(element.indeterminate).to.be.true;
-      element.checked = true;
-      expect(element.checked).to.be.true;
-      await elementUpdated(element);
-      expect(input).dom.to.equal(`<input aria-checked="true" />`, DIFF_OPTIONS);
+      element.required = false;
+      expect(element.reportValidity()).to.be.true;
     });
 
     it('should set the checkbox disabled property correctly', async () => {
@@ -203,21 +160,14 @@ describe('Checkbox', () => {
       };
 
       element.disabled = true;
-      expect(element.disabled).to.be.true;
       await elementUpdated(element);
-      expect(input).dom.to.equal(
-        `<input disabled aria-disabled="true" />`,
-        DIFF_OPTIONS
-      );
+
+      expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
 
       element.disabled = false;
-      expect(element.disabled).to.be.false;
       await elementUpdated(element);
 
-      expect(input).dom.to.equal(
-        `<input aria-disabled="false" />`,
-        DIFF_OPTIONS
-      );
+      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
     it('should have correct focus states between Light/Shadow DOM', () => {
@@ -249,20 +199,14 @@ describe('Checkbox', () => {
         detail: { checked: true, value: undefined },
       });
     });
-
-    const createCheckboxComponent = (
-      template = `<igc-checkbox>${label}</igc-checkbox>`
-    ) => {
-      return fixture<IgcCheckboxComponent>(html`${unsafeStatic(template)}`);
-    };
   });
 
   describe('Form integration', () => {
-    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
-      html`<igc-checkbox name="checkbox"
-        >I have reviewed ToC and I agree</igc-checkbox
-      >`
-    );
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(html`
+      <igc-checkbox name="checkbox">
+        I have reviewed ToC and I agree
+      </igc-checkbox>
+    `);
 
     beforeEach(async () => {
       await spec.setup(IgcCheckboxComponent.tagName);
@@ -349,11 +293,11 @@ describe('Checkbox', () => {
   });
 
   describe('Synchronous validation', () => {
-    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
-      html`<igc-checkbox required name="checkbox"
-        >I have reviewed ToC and I agree</igc-checkbox
-      >`
-    );
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(html`
+      <igc-checkbox required name="checkbox">
+        I have reviewed ToC and I agree
+      </igc-checkbox>
+    `);
 
     beforeEach(async () => {
       await spec.setup(IgcCheckboxComponent.tagName);
@@ -372,13 +316,9 @@ describe('Checkbox', () => {
   });
 
   describe('Initial checked state is submitted', () => {
-    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(
-      html`<igc-checkbox
-        name="checkbox"
-        value="checked"
-        checked
-      ></igc-checkbox>`
-    );
+    const spec = createFormAssociatedTestBed<IgcCheckboxComponent>(html`
+      <igc-checkbox name="checkbox" value="checked" checked></igc-checkbox>
+    `);
 
     beforeEach(async () => await spec.setup(IgcCheckboxComponent.tagName));
 

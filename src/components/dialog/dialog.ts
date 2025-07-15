@@ -1,23 +1,17 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
+import { property, state } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import {
-  createCounter,
-  isEmpty,
-  numberInRangeInclusive,
-} from '../common/util.js';
+import { numberInRangeInclusive } from '../common/util.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
@@ -27,25 +21,27 @@ export interface IgcDialogComponentEventMap {
   igcClosed: CustomEvent<void>;
 }
 
+let nextId = 1;
+
+/* blazorAdditionalDependency: IgcButtonComponent */
 /**
  * Represents a Dialog component.
  *
  * @element igc-dialog
  *
- * @fires igcClosing - Emitter just before the dialog is closed.
+ * @fires igcClosing - Emitter just before the dialog is closed. Cancelable.
  * @fires igcClosed - Emitted after closing the dialog.
  *
- * @slot - Renders content inside the default slot.
- * @slot title - Renders the title of the dialog header.
+ * @slot - Renders content inside the default slot of the dialog.
+ * @slot title - Renders content in the title slot of the dialog header.
  * @slot message - Renders the message content of the dialog.
- * @slot footer - Renders the dialog footer.
+ * @slot footer - Renders content in the dialog footer.
  *
  * @csspart base - The base wrapper of the dialog.
- * @csspart title - The title container.
- * @csspart footer - The footer container.
- * @csspart overlay - The overlay.
+ * @csspart title - The title container of the dialog.
+ * @csspart footer - The footer container of the dialog.
+ * @csspart overlay - The backdrop overlay of the dialog.
  */
-@blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,
   Constructor<LitElement>
@@ -54,37 +50,37 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcDialogComponent, IgcButtonComponent);
   }
 
-  private static readonly increment = createCounter();
-  private titleId = `title-${IgcDialogComponent.increment()}`;
+  //#region Private state and properties
 
-  private dialogRef: Ref<HTMLDialogElement> = createRef();
-  private animationPlayer = addAnimationController(this, this.dialogRef);
+  private readonly _titleId = `title-${nextId++}`;
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('title', 'message', 'footer'),
+  });
+
+  private readonly _dialogRef = createRef<HTMLDialogElement>();
+  private readonly _player = addAnimationController(this, this._dialogRef);
 
   /**
    * Backdrop animation helper.
    */
   @state()
-  private animating = false;
+  private _animating = false;
 
-  private get dialog() {
-    return this.dialogRef.value!;
+  private get _dialog(): HTMLDialogElement {
+    return this._dialogRef.value!;
   }
 
-  @queryAssignedElements({ slot: 'title' })
-  private titleElements!: Array<HTMLElement>;
+  //#endregion
 
-  @queryAssignedElements({ slot: 'message' })
-  private messageElements!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'footer' })
-  private footerElements!: Array<HTMLElement>;
+  //#region Public properties
 
   /**
-   * Whether the dialog should be kept open when pressing the 'ESCAPE' button.
+   * Whether the dialog should be kept open when pressing the 'Escape' button.
    * @attr keep-open-on-escape
    */
   @property({ type: Boolean, attribute: 'keep-open-on-escape' })
@@ -125,48 +121,39 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public returnValue!: string;
 
-  @watch('open', { waitUntilFirstUpdate: true })
-  protected handleOpenState() {
-    this.open ? this.dialog.showModal() : this.dialog.close();
-  }
+  //#endregion
+
+  //#region Internal API
 
   constructor() {
     super();
     addThemingController(this, all);
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  protected override firstUpdated() {
+  protected override firstUpdated(): void {
     if (this.open) {
-      this.dialog.showModal();
+      this._dialog.showModal();
     }
   }
 
-  private async toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? fadeIn : fadeOut;
-
-    const [_, event] = await Promise.all([
-      this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation()),
-    ]);
-
-    return event.type === 'finish';
+  @watch('open', { waitUntilFirstUpdate: true })
+  protected _handleOpenState(): void {
+    this.open ? this._dialog.showModal() : this._dialog.close();
   }
 
-  private async _hide(emitEvent = false) {
-    if (!this.open || (emitEvent && !this.emitClosing())) {
+  private _emitClosing(): boolean {
+    return this.emitEvent('igcClosing', { cancelable: true });
+  }
+
+  private async _hide(emitEvent = false): Promise<boolean> {
+    if (!this.open || (emitEvent && !this._emitClosing())) {
       return false;
     }
 
-    this.animating = true;
-    await this.toggleAnimation('close');
+    this._animating = true;
+    await this._player.playExclusive(fadeOut());
     this.open = false;
-    this.animating = false;
+    this._animating = false;
 
     if (emitEvent) {
       await this.updateComplete;
@@ -176,6 +163,44 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return true;
   }
 
+  protected _handleFormSubmit(event: SubmitEvent): void {
+    const form = event.target as HTMLFormElement;
+
+    if (form.method === 'dialog') {
+      if (hasSubmitter(event.submitter)) {
+        this.returnValue = event.submitter.value ?? '';
+      }
+
+      if (!event.defaultPrevented) {
+        this._hide(true);
+      }
+    }
+  }
+
+  private _handleCancel(event: Event): void {
+    event.preventDefault();
+
+    if (!this.keepOpenOnEscape) {
+      this._hide(true);
+    }
+  }
+
+  private _handleClick({ clientX, clientY, target }: PointerEvent): void {
+    if (this.closeOnOutsideClick && this._dialog === target) {
+      const rect = this._dialog.getBoundingClientRect();
+      const inX = numberInRangeInclusive(clientX, rect.left, rect.right);
+      const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
+
+      if (!(inX && inY)) {
+        this._hide(true);
+      }
+    }
+  }
+
+  //#endregion
+
+  //#region Public API
+
   /** Opens the dialog. */
   public async show(): Promise<boolean> {
     if (this.open) {
@@ -183,7 +208,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
 
     this.open = true;
-    await this.toggleAnimation('open');
+    await this._player.playExclusive(fadeIn());
     return true;
   }
 
@@ -197,99 +222,88 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this.open ? this.hide() : this.show();
   }
 
-  private handleCancel(event: Event) {
-    event.preventDefault();
+  //#endregion
 
-    if (!this.keepOpenOnEscape) {
-      this._hide(true);
-    }
+  //#region Render methods
+
+  protected _renderBackdrop() {
+    return html`
+      <div
+        aria-hidden=${!this.open}
+        part=${partMap({ backdrop: true, animating: this._animating })}
+      ></div>
+    `;
   }
 
-  private handleClick({ clientX, clientY, target }: PointerEvent) {
-    if (this.closeOnOutsideClick && this.dialog === target) {
-      const rect = this.dialog.getBoundingClientRect();
-      const inX = numberInRangeInclusive(clientX, rect.left, rect.right);
-      const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
-
-      if (!(inX && inY)) {
-        this._hide(true);
-      }
-    }
+  protected _renderHeader() {
+    return html`
+      <header part="title" id=${this._titleId}>
+        <slot name="title">
+          <span>${this.title}</span>
+        </slot>
+      </header>
+    `;
   }
 
-  private emitClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
+  protected _renderContent() {
+    const hasMessage = this._slots.hasAssignedElements('message');
+    return html`
+      <section part="content">
+        <slot name="message" ?hidden=${!hasMessage}></slot>
+        <slot @submit=${this._handleFormSubmit}></slot>
+      </section>
+    `;
   }
 
-  protected formSubmitHandler = (e: SubmitEvent) => {
-    if (e.submitter) {
-      this.returnValue = (e.submitter as any)?.value ?? '';
-    }
-
-    if (!e.defaultPrevented) {
-      this._hide(true);
-    }
-  };
-
-  private handleContentChange() {
-    // Setup submit handling for forms
-    const forms = this.querySelectorAll<HTMLFormElement>(
-      'form[method="dialog"]'
-    );
-
-    for (const form of forms) {
-      form.removeEventListener('submit', this.formSubmitHandler);
-      form.addEventListener('submit', this.formSubmitHandler);
-    }
+  protected _renderFooter() {
+    return html`
+      <footer part="footer">
+        <slot name="footer">
+          ${this.hideDefaultAction
+            ? nothing
+            : html`
+                <igc-button variant="flat" @click=${() => this._hide(true)}>
+                  OK
+                </igc-button>
+              `}
+        </slot>
+      </footer>
+    `;
   }
 
   protected override render() {
-    const label = this.ariaLabel ? this.ariaLabel : undefined;
-    const labelledBy = label ? undefined : this.titleId;
-    const backdropParts = {
-      backdrop: true,
-      animating: this.animating,
-    };
-    const baseParts = {
-      base: true,
-      titled: this.titleElements.length > 0 || !!this.title,
-      footed: this.footerElements.length > 0 || !this.hideDefaultAction,
-    };
+    const hasTitle = this._slots.hasAssignedElements('title') || !!this.title;
+    const hasFooter =
+      this._slots.hasAssignedElements('footer') || !this.hideDefaultAction;
+    const labelledBy = this.ariaLabel ?? this._titleId;
 
     return html`
-      <div part=${partMap(backdropParts)} aria-hidden=${!this.open}></div>
+      ${this._renderBackdrop()}
       <dialog
-        ${ref(this.dialogRef)}
-        part=${partMap(baseParts)}
+        ${ref(this._dialogRef)}
+        part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
-        @click=${this.handleClick}
-        @cancel=${this.handleCancel}
-        aria-label=${ifDefined(label)}
-        aria-labelledby=${ifDefined(labelledBy)}
+        aria-label=${this.ariaLabel || nothing}
+        aria-labelledby=${labelledBy || nothing}
+        @click=${this._handleClick}
+        @cancel=${this._handleCancel}
       >
-        <header part="title" id=${this.titleId}>
-          <slot name="title"><span>${this.title}</span></slot>
-        </header>
-        <section part="content">
-          <slot name="message" .hidden=${isEmpty(this.messageElements)}></slot>
-          <slot @slotchange=${this.handleContentChange}></slot>
-        </section>
-        <footer part="footer">
-          <slot name="footer">
-            ${this.hideDefaultAction
-              ? nothing
-              : html`<igc-button variant="flat" @click=${() => this._hide(true)}
-                  >OK</igc-button
-                >`}
-          </slot>
-        </footer>
+        ${this._renderHeader()} ${this._renderContent()} ${this._renderFooter()}
       </dialog>
     `;
   }
+
+  //#endregion
 }
 
 declare global {
   interface HTMLElementTagNameMap {
     'igc-dialog': IgcDialogComponent;
   }
+}
+
+function hasSubmitter(
+  submitter: SubmitEvent['submitter']
+): submitter is HTMLButtonElement | HTMLInputElement {
+  return submitter != null;
 }
