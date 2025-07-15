@@ -53,6 +53,17 @@ $theme: $indigo;
     }
 }
 
+:host(:not([disabled], [readonly])[invalid]) {
+    igc-input::part(container) {
+        caret-color: initial;
+        border-color: var-get($theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
     ::part(helper-text) {

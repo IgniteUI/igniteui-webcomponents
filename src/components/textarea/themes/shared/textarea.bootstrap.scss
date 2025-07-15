@@ -130,8 +130,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host([invalid]:not(:disabled, [readonly])),
+:host([invalid]:not([disabled], [readonly])) {
     textarea {
         border: rem(1px) solid var-get($theme, 'error-secondary-color');
     }
@@ -141,8 +141,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled):focus-within),
-:host([invalid]:not([disabled])):focus-within {
+:host([invalid]:not(:disabled, [readonly]):focus-within),
+:host([invalid]:not([disabled], [readonly])):focus-within {
     textarea {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }

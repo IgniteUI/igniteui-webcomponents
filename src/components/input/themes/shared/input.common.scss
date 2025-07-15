@@ -64,7 +64,7 @@ $theme: $base;
     }
 }
 
-:host([invalid]) {
+:host([invalid]:not([disabled], [readonly])) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }

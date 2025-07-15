@@ -170,13 +170,17 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled], [readonly])[invalid]),
+:host(:not([disabled])[role='combobox'][invalid]),
+:host(:not([disabled], [readonly])[aria-haspopup='dialog'][invalid]) {
     [part~='input'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
 }
 
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not([disabled], [readonly])[invalid]:focus-within),
+:host(:not([disabled])[role='combobox'][invalid]:focus-within),
+:host(:not([disabled], [readonly])[aria-haspopup='dialog'][invalid]:focus-within) {
     [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }

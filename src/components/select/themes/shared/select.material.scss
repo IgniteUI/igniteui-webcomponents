@@ -116,6 +116,20 @@ $active-border-width: rem(2px) !default;
     igc-input[readonly]:not([disabled])::part(label) {
         color: $error-color;
     }
+
+    igc-input::part(filler) {
+        border: {
+            width: $active-border-width;
+            color: $error-color;
+        }
+    }
+
+    igc-input::part(notch) {
+        border-bottom: {
+            width: $active-border-width;
+            color: $error-color;
+        }
+    }
 }
 
 :host(:not([outlined]):focus-within) {

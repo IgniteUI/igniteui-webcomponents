@@ -33,6 +33,18 @@ $theme: $bootstrap;
     }
 }
 
+:host(:not([disabled], [readonly])[invalid]) {
+    igc-input::part(input) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled], [readonly])[invalid]:focus-within) {
+    igc-input::part(input) {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+}
+
 [part='separator'] {
     @include type-style('body-1');
 }

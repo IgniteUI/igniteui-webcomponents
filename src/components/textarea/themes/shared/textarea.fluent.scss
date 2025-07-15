@@ -78,7 +78,8 @@ $border-size: rem(1px);
     }
 }
 
-:host([invalid]) {
+:host([invalid]:not(:disabled)),
+:host([invalid]:not([disabled])) {
     [part~='label'] {
         color: var-get($theme, 'idle-text-color');
     }
@@ -99,8 +100,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host([invalid]:not(:disabled, [readonly])),
+:host([invalid]:not([disabled], [readonly])) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -112,8 +113,8 @@ textarea {
     }
 }
 
-:host(:not(:disabled)[invalid]:focus-within),
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not(:disabled, [readonly])[invalid]:focus-within),
+:host(:not([disabled], [readonly])[invalid]:focus-within) {
     [part^='container'] {
         &::before {
             box-shadow: inset 0 0 0 calc(var(--textarea-border-size) + #{rem(1px)}) var-get($theme, 'error-secondary-color');
