@@ -149,7 +149,7 @@ describe('Date range picker - single input', () => {
 
       input = getInput(picker);
       input.focus();
-      simulateKeyboard(input, 'ArrowDown');
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(picker);
 
       expect(isFocused(input)).to.be.true;
@@ -823,7 +823,7 @@ describe('Date range picker - single input', () => {
         expect(input.value).to.equal('01/01/2000 - 04/23/2025');
       });
 
-      it('should toggle the calendar dropdown with alt + arrow down/up and keep it focused', async () => {
+      it('should toggle the calendar with keyboard combinations and keep focus', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         input = getInput(picker);
         input.focus();
@@ -841,6 +841,20 @@ describe('Date range picker - single input', () => {
 
         simulateKeyboard(input, [altKey, arrowUp]);
         await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(input)).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(input, [altKey, arrowDown]);
+        await elementUpdated(picker);
+        eventSpy.resetHistory();
+
+        simulateKeyboard(picker, escapeKey);
+        await elementUpdated(picker);
+        await elementUpdated(input);
 
         expect(picker.open).to.be.false;
         expect(isFocused(input)).to.be.true;

@@ -1,7 +1,9 @@
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as *;
+@use '../light/themes' as file-input;
 
 $theme: $bootstrap;
+$theme-file-input: file-input.$bootstrap;
 
 :host(:focus-within) {
     --border-color: #{var-get($theme, 'focused-border-color')};
@@ -12,17 +14,6 @@ $theme: $bootstrap;
 }
 
 [part~='file-selector-button'] igc-button {
-    --foreground: #{var-get($theme, 'input-prefix-color')};
-    --background: #{var-get($theme, 'input-prefix-background')};
-    --hover-foreground: var(--foreground);
-    --hover-background: var(--background);
-    --active-foreground: var(--foreground);
-    --active-background: var(--background);
-    --focus-visible-foreground: var(--foreground);
-    --focus-visible-background: var(--background);
-    --disabled-foreground: #{var-get($theme, 'disabled-text-color')};
-    --disabled-background: #{var-get($theme, 'border-disabled-background')};
-
     &::part(base) {
         font-size: var(--input-font);
         transition: border 0.15s ease-out;
@@ -46,7 +37,6 @@ $theme: $bootstrap;
     font-size: var(--input-font);
     padding-inline: pad-inline(8px, 12px, 16px);
     padding-block: pad-block(4px, 6px, 8px);
-    color: var-get($theme, 'idle-text-color');
     border: 1px solid var-get($theme, 'border-color');
     border-start-end-radius: var-get($theme, 'border-border-radius');
     border-end-end-radius: var-get($theme, 'border-border-radius');
@@ -85,14 +75,16 @@ $theme: $bootstrap;
 :host(:not([disabled])[invalid]) {
     --input-border-color: #{var-get($theme, 'error-secondary-color')};
 
-    [part~='container'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
-    }
-
     [part='prefix'],
     [part='suffix'],
     [part~='file-names'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled])[invalid]:focus-within) {
+    [part~='container'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 }
 
@@ -101,8 +93,7 @@ $theme: $bootstrap;
     --input-border-color: #{var-get($theme, 'disabled-border-color')};
 
     [part~='file-names'] {
-        color: var-get($theme, 'disabled-text-color');
-        background: var-get($theme, 'border-disabled-background');
+        color: var-get($theme-file-input, 'file-names-foreground--disabled');
         border-color: var-get($theme, 'disabled-border-color');
     }
 

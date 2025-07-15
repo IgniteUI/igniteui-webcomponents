@@ -110,3 +110,5 @@ export function startViewTransition(
 
   return { transition: document.startViewTransition(callback) };
 }
+
+export type { AnimationController };

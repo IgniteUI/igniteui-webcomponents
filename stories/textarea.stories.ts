@@ -261,13 +261,16 @@ export const Default: Story = {
       ?invalid=${args.invalid}
       ?validate-only=${args.validateOnly}
       ?spellcheck=${args.spellcheck}
-    ></igc-textarea>
+    >
+      <igc-icon name="source-code" aria-hidden="true" slot="prefix"></igc-icon>
+      <igc-icon name="source-code" aria-hidden="true" slot="suffix"></igc-icon>
+    </igc-textarea>
   `,
 };
 
 export const ProjectContent: Story = {
   render: (
-    { rows, resize, required, disabled, outlined },
+    { rows, resize, required, disabled, outlined, readOnly },
     { globals: { direction } }
   ) => {
     return html`
@@ -276,6 +279,7 @@ export const ProjectContent: Story = {
         dir=${direction}
         spellcheck="false"
         .outlined=${outlined}
+        ?readonly=${readOnly}
         autofocus
         label="Leave your comment"
         .rows=${rows}
