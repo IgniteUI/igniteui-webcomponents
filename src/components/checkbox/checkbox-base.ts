@@ -41,7 +41,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected readonly _slots = addSlotController(this, {
     slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
     onChange: this._handleSlotChange,
-    initial: true,
   });
 
   protected readonly _focusRingManager = addKeyboardFocusRing(this);
@@ -56,7 +55,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected readonly _input!: HTMLInputElement;
 
   @state()
-  protected _hideLabel = false;
+  protected _hideLabel = true;
 
   /**
    * The value attribute of the control.

@@ -85,7 +85,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   private readonly _slots = addSlotController(this, {
     slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
     onChange: this._handleSlotChange,
-    initial: true,
   });
 
   protected override readonly _formValue: FormValueOf<boolean> =
@@ -103,7 +102,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected readonly _label!: Array<Node>;
 
   @state()
-  protected _hideLabel = false;
+  protected _hideLabel = true;
 
   @state()
   private _tabIndex = 0;
