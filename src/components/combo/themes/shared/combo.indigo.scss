@@ -94,8 +94,20 @@ $dropdown-theme: dropdown-theme.$indigo;
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
+    igc-input[readonly]::part(container) {
+        border-color: var-get($theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
+    }
+
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
+    }
+
+    ::part(validation-icon) {
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
@@ -103,7 +115,6 @@ $dropdown-theme: dropdown-theme.$indigo;
 :host([disabled]) {
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
-
     igc-input::part(input)::selection {
         background: transparent;
     }

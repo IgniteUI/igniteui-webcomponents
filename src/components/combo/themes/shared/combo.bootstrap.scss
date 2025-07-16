@@ -100,6 +100,18 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     }
 }
 
+:host([invalid]) {
+    igc-input[readonly]:not([disabled])::part(input) {
+        border-color: var-get($input-theme, 'error-secondary-color');
+    }
+
+    igc-input[readonly]:not([disabled]):focus-within {
+        &::part(input) {
+            box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'error-shadow-color');
+        }
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),

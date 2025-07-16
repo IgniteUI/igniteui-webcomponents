@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use 'components/dropdown/themes/light/themes' as dropdown-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $fluent;
 $dropdown-theme: dropdown-theme.$fluent;
+$input-theme: input-theme.$fluent;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -93,6 +95,20 @@ $dropdown-theme: dropdown-theme.$fluent;
 
         igc-icon {
             color: inherit;
+        }
+    }
+}
+
+:host([invalid]) {
+    igc-input[readonly]:not([disabled])::part(container) {
+        &::before {
+            box-shadow: inset 0 0 0 var(--input-border-size) var-get($theme, 'error-secondary-color');
+        }
+    }
+
+    igc-input[readonly]:not([disabled]):focus-within::part(container) {
+        &::before {
+            box-shadow: inset 0 0 0 calc((var(--input-border-size) + #{rem(1px)}))  var-get($input-theme, 'error-secondary-color');
         }
     }
 }

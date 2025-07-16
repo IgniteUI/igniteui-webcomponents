@@ -12,7 +12,7 @@ $fs: rem(16px) !default;
 }
 
 %floated-styles {
-    border-top: $idle-border-width solid transparent;
+    border-top: $idle-border-width solid transparent !important;
 }
 
 %suffix-preffix {

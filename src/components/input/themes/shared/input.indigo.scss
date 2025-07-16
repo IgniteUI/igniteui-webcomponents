@@ -173,9 +173,9 @@ $transition-duration: .25s;
     }
 }
 
-:host([invalid]),
-:host([invalid]:hover),
-:host([invalid][readonly]) {
+:host(:not([disabled])[invalid]),
+:host(:not([disabled])[invalid]:hover),
+:host(:not([disabled])[invalid][readonly]) {
     [part^='container'] {
         caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');

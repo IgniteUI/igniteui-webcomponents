@@ -49,18 +49,19 @@ $input-theme: input-theme.$fluent;
     }
 }
 
+:host([invalid]) {
+    igc-input[readonly]:not([disabled])::part(container) {
+        &::before {
+            box-shadow: inset 0 0 0 var(--input-border-size) var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
 :host([invalid]:focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
         &::before {
             box-shadow: inset 0 0 0 calc((var(--input-border-size) + #{rem(1px)}))  var-get($input-theme, 'error-secondary-color');
         }
-    }
-}
-
-:host([invalid]:not([disabled])),
-:host([invalid]:not(:disabled)) {
-    ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
 
