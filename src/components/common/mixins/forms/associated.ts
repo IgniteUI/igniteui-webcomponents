@@ -1,15 +1,30 @@
 import type { LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
 import type { FormValue } from './form-value.js';
-import type {
-  FormAssociatedCheckboxElementInterface,
-  FormAssociatedElementInterface,
-  FormRestoreMode,
-  FormValueType,
+import {
+  type FormAssociatedCheckboxElementInterface,
+  type FormAssociatedElementInterface,
+  type FormRestoreMode,
+  type FormValueType,
+  InternalInvalidEvent,
+  InternalResetEvent,
 } from './types.js';
+
+const eventOptions = {
+  bubbles: false,
+  composed: false,
+};
+
+function emitFormInvalidEvent(host: LitElement): void {
+  host.dispatchEvent(new CustomEvent(InternalInvalidEvent, eventOptions));
+}
+
+function emitFormResetEvent(host: LitElement): void {
+  host.dispatchEvent(new CustomEvent(InternalResetEvent, eventOptions));
+}
 
 function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
@@ -20,8 +35,24 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected _disabled = false;
     protected _invalid = false;
-    protected _dirty = false;
     protected _pristine = true;
+
+    @state()
+    private _isFormSubmit = false;
+
+    @state()
+    private _touched = false;
+
+    @state()
+    private _isInternalValidation = false;
+
+    private get _shouldApplyStyles(): boolean {
+      return (
+        this._invalid &&
+        (this._touched || this._isFormSubmit) &&
+        !this._isInternalValidation
+      );
+    }
 
     protected get __validators(): Validator[] {
       return [];
@@ -55,13 +86,12 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * @default false
      */
     @property({ type: Boolean, reflect: true })
-    public set invalid(value: boolean) {
-      this._invalid = value;
-      this.toggleAttribute('invalid', Boolean(this._invalid));
+    public set invalid(_: boolean) {
+      this._setInvalidStyles();
     }
 
     public get invalid(): boolean {
-      return this._invalid;
+      return this._shouldApplyStyles;
     }
 
     /** Returns the HTMLFormElement associated with this element. */
@@ -97,26 +127,52 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       addSafeEventListener(this, 'invalid', this._handleInvalid);
     }
 
+    /** @internal */
     public override connectedCallback(): void {
       super.connectedCallback();
-      this._dirty = false;
+      this._pristine = true;
+      this._touched = false;
       this._updateValidity();
+      this._setInvalidStyles();
     }
 
-    private _handleInvalid(event: Event) {
+    private _setInvalidStyles(): void {
+      this.toggleAttribute('invalid', this._shouldApplyStyles);
+      this.requestUpdate();
+    }
+
+    private _handleInvalid(event: Event): void {
       event.preventDefault();
-      this.invalid = true;
+      this._invalid = true;
+
+      if (this._isInternalValidation) {
+        this._isInternalValidation = false;
+      } else {
+        this._isFormSubmit = true;
+        emitFormInvalidEvent(this);
+      }
+
+      this._setInvalidStyles();
+      this._isFormSubmit = false;
     }
 
-    private _setInvalidState(): void {
-      if (this._dirty || !this._pristine) {
-        this.invalid = !this.checkValidity();
+    protected _handleBlur(): void {
+      if (!this._touched) {
+        this._touched = true;
+      }
+      this._validate();
+    }
+
+    protected _setTouchedState(): void {
+      if (!this._touched) {
+        this._touched = true;
       }
     }
 
     private __runValidators() {
       const validity: ValidityStateFlags = {};
       let message = '';
+      let isInvalid = false;
 
       for (const validator of this.__validators) {
         const isValid = validator.isValid(this);
@@ -124,11 +180,14 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         validity[validator.key] = !isValid;
 
         if (!isValid) {
+          isInvalid = true;
           message = isFunction(validator.message)
             ? validator.message(this)
             : validator.message;
         }
       }
+
+      this._invalid = isInvalid;
 
       return { validity, message };
     }
@@ -145,13 +204,12 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected _validate(message?: string): void {
       this._updateValidity(message);
-      this._setInvalidState();
     }
 
     /**
      * Executes the component validators and updates the internal validity state.
      */
-    protected _updateValidity(error?: string) {
+    protected _updateValidity(error?: string): void {
       let { validity, message } = this.__runValidators();
       const hasCustomError = this.validity.customError;
 
@@ -178,11 +236,15 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       this.__internals.setValidity(validity, message);
+      this._isInternalValidation = true;
+      this._invalid = !this.__internals.checkValidity();
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
       this._pristine = false;
       this.__internals.setFormValue(value, state);
+      this._updateValidity();
+      this._setInvalidStyles();
     }
 
     protected formAssociatedCallback(_form: HTMLFormElement): void {}
@@ -195,8 +257,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected formResetCallback(): void {
       this._restoreDefaultValue();
       this._pristine = true;
-      this._dirty = false;
-      this.invalid = false;
+      this._touched = false;
+      this._invalid = false;
+      this._setInvalidStyles();
+      emitFormResetEvent(this);
     }
 
     /* c8 ignore next 4 */
@@ -206,16 +270,17 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     ): void {}
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
-    public reportValidity() {
+    public reportValidity(): boolean {
       const state = this.__internals.reportValidity();
-      this.invalid = !state;
+      this._invalid = !state;
       return state;
     }
 
     /** Checks for validity of the control and emits the invalid event if it invalid. */
-    public checkValidity() {
+    public checkValidity(): boolean {
+      this._isInternalValidation = true;
       const state = this.__internals.checkValidity();
-      this.invalid = !state;
+      this._invalid = !state;
       return state;
     }
 
@@ -223,7 +288,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * Sets a custom validation message for the control.
      * As long as `message` is not empty, the control is considered invalid.
      */
-    public setCustomValidity(message: string) {
+    public setCustomValidity(message: string): void {
       this._updateValidity(message);
     }
   }
@@ -250,7 +315,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       }
     }
 
-    public get defaultValue() {
+    public get defaultValue(): unknown {
       return this._formValue.defaultValue;
     }
 

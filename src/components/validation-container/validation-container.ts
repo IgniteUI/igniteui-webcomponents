@@ -3,8 +3,13 @@ import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { IgcFormControl } from '../common/mixins/forms/types.js';
+import {
+  type IgcFormControl,
+  InternalInvalidEvent,
+  InternalResetEvent,
+} from '../common/mixins/forms/types.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -107,6 +112,8 @@ export default class IgcValidationContainerComponent extends LitElement {
     `;
   }
 
+  private readonly _abortHandle = createAbortHandle();
+
   private _target!: IgcFormControl;
 
   @state()
@@ -121,9 +128,12 @@ export default class IgcValidationContainerComponent extends LitElement {
       return;
     }
 
-    this._target?.removeEventListener('invalid', this);
+    this._abortHandle.abort();
+    const { signal } = this._abortHandle;
+
     this._target = value;
-    this._target.addEventListener('invalid', this);
+    this._target.addEventListener(InternalInvalidEvent, this, { signal });
+    this._target.addEventListener(InternalResetEvent, this, { signal });
   }
 
   public get target(): IgcFormControl {
@@ -144,10 +154,11 @@ export default class IgcValidationContainerComponent extends LitElement {
   /** @internal */
   public handleEvent(event: Event): void {
     switch (event.type) {
-      case 'invalid':
-        if (!this.invalid) {
-          this.invalid = true;
-        }
+      case InternalInvalidEvent:
+        this.invalid = true;
+        break;
+      case InternalResetEvent:
+        this.invalid = false;
         break;
       case 'slotchange': {
         const newHasSlottedContent = hasProjectedValidation(this);
