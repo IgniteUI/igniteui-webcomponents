@@ -119,13 +119,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected _handleClick(event: PointerEvent): void {
     event.stopPropagation();
 
+    this._setTouchedState();
     this.checked = !this.checked;
     this.emitEvent('igcChange', {
       detail: { checked: this.checked, value: this.value },
     });
-  }
-
-  protected _handleFocus(): void {
-    this._dirty = true;
   }
 }
