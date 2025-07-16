@@ -238,21 +238,15 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   private handleInput() {
+    this._setTouchedState();
     this.value = this.input.value;
     this.emitEvent('igcInput', { detail: this.value });
   }
 
   private handleChange() {
+    this._setTouchedState();
     this.value = this.input.value;
     this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  protected handleFocus(): void {
-    this._dirty = true;
-  }
-
-  protected handleBlur(): void {
-    this._validate();
   }
 
   protected renderInput() {
@@ -277,14 +271,12 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
         step=${ifDefined(this.step)}
-        aria-invalid=${this.invalid ? 'true' : 'false'}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
         @change=${this.handleChange}
         @input=${this.handleInput}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
+        @blur=${this._handleBlur}
       />
     `;
   }
