@@ -1,5 +1,6 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
+import { state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -20,6 +21,9 @@ export default class IgcChatMessageListComponent extends LitElement {
 
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
+
+  @state()
+  private _activeMessageId = '';
 
   /* blazorSuppress */
   public static register() {
@@ -74,6 +78,50 @@ export default class IgcChatMessageListComponent extends LitElement {
     });
   }
 
+  private scrollToMessage(messageId: string) {
+    const messageElement = this.shadowRoot?.querySelector(
+      `#message-${messageId}`
+    );
+    messageElement?.scrollIntoView();
+  }
+
+  private handleFocusIn() {
+    if (!this._chatState?.messages || this._chatState.messages.length === 0) {
+      return;
+    }
+    const lastMessage = this._chatState.sortedMessagesIds?.pop() ?? '';
+    this._activeMessageId = lastMessage !== '' ? `message-${lastMessage}` : '';
+  }
+
+  private handleFocusOut() {
+    this._activeMessageId = '';
+  }
+
+  private handleKeyDown(e: KeyboardEvent) {
+    if (!this._chatState?.messages || this._chatState.messages.length === 0) {
+      return;
+    }
+
+    const currentIndex = this._chatState?.sortedMessagesIds.findIndex(
+      (id) => `message-${id}` === this._activeMessageId
+    );
+
+    if (e.key === 'ArrowUp' && currentIndex > 0) {
+      const previousMessageId =
+        this._chatState.sortedMessagesIds[currentIndex - 1];
+      this._activeMessageId = `message-${previousMessageId}`;
+      this.scrollToMessage(previousMessageId);
+    }
+    if (
+      e.key === 'ArrowDown' &&
+      currentIndex < this._chatState?.messages.length - 1
+    ) {
+      const nextMessageId = this._chatState.sortedMessagesIds[currentIndex + 1];
+      this._activeMessageId = `message-${nextMessageId}`;
+      this.scrollToMessage(nextMessageId);
+    }
+  }
+
   protected override updated() {
     if (!this._chatState?.options?.disableAutoScroll) {
       this.scrollToBottom();
@@ -102,7 +150,13 @@ export default class IgcChatMessageListComponent extends LitElement {
     );
 
     return html`
-      <div class='message-container'></div>
+      <div
+        class='message-container'
+        aria-activedescendant=${this._activeMessageId}
+        tabindex='0'
+        @focusin=${this.handleFocusIn}
+        @focusout=${this.handleFocusOut}
+        @keydown=${this.handleKeyDown}></div>
         <div class="message-list">
           ${repeat(
             groupedMessages,
@@ -111,9 +165,19 @@ export default class IgcChatMessageListComponent extends LitElement {
               ${repeat(
                 group.messages,
                 (message) => message.id,
-                (message) => html`
-                  <igc-chat-message .message=${message}></igc-chat-message>
-                `
+                (message) => {
+                  const messageId = `message-${message.id}`;
+                  return html`
+                    <igc-chat-message
+                      id=${messageId}
+                      class=${this._activeMessageId === messageId
+                        ? 'active'
+                        : ''}
+                      .message=${message}
+                    >
+                    </igc-chat-message>
+                  `;
+                }
               )}
             `
           )}

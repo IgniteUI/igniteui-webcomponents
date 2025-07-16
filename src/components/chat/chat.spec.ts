@@ -201,7 +201,7 @@ describe('Chat', () => {
       );
 
       expect(messageList).shadowDom.to.equal(
-        `<div class="message-container">
+        `<div aria-activedescendant="" class="message-container" tabindex="0">
                 </div>
                 <div class="message-list">
                 </div>`
@@ -256,13 +256,13 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(4);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                    <igc-chat-message>
+                    <igc-chat-message id="message-1">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-2">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-3">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-4">
                     </igc-chat-message>
                 </div>`
       );
@@ -633,6 +633,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="preview"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -641,6 +642,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="more"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -686,6 +688,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="more"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -748,7 +751,7 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message>
+                <igc-chat-message id="message-1">
                 </igc-chat-message>
                 <div class="typing-indicator">
                     <div class="typing-dot">
@@ -948,7 +951,7 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message>
+                <igc-chat-message id="message-1">
                 </igc-chat-message>
                 <span>loading...</span>
             </div>`

@@ -138,7 +138,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
           (suggestion) => html`
             <slot name="suggestion" part="suggestion">
               <igc-chip
-                @click=${() => this._chatState.addMessage({ text: suggestion })}
+                @click=${() =>
+                  this._chatState?.handleSuggestionClick(suggestion)}
               >
                 <span>${suggestion}</span>
               </igc-chip>

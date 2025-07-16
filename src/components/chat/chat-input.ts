@@ -61,7 +61,10 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override firstUpdated() {
     this.setupDragAndDrop();
-    this._chatState?.updateAcceptedTypesCache();
+    if (this._chatState) {
+      this._chatState.updateAcceptedTypesCache();
+      this._chatState.textArea = this.textInputElement;
+    }
   }
 
   protected override updated() {

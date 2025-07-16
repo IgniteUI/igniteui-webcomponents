@@ -121,6 +121,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     collection="material"
                     variant="flat"
                     class="small"
+                    tabIndex="-1"
                     @click=${() => this.openImagePreview(attachment)}
                   ></igc-icon-button>`
                 : nothing}
@@ -129,6 +130,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 collection="material"
                 variant="flat"
                 class="small"
+                tabIndex="-1"
               ></igc-icon-button>
             </slot>
           `}
@@ -186,6 +188,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
               collection="material"
               variant="contained"
               class="small"
+              tabIndex="-1"
               @click=${this.closeImagePreview}
             ></igc-icon-button>
           </div>

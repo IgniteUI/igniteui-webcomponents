@@ -77,7 +77,7 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const messageActionsTemplate = (msg: any) => {
+const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
       ? html`
@@ -135,7 +135,7 @@ const ai_chat_options = {
   headerText: 'Chat',
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
-    messageActionsTemplate: messageActionsTemplate,
+    // messageActionsTemplate: messageActionsTemplate,
     //composingIndicatorTemplate: _composingIndicatorTemplate,
     // textInputTemplate: _textInputTemplate,
     // textAreaActionsTemplate: _textAreaActionsTemplate,
