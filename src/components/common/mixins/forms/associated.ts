@@ -290,6 +290,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      */
     public setCustomValidity(message: string): void {
       this._updateValidity(message);
+      this._isInternalValidation = message === '';
+      this._setInvalidStyles();
     }
   }
   return BaseFormAssociatedElement as Constructor<BaseFormAssociatedElement> &
