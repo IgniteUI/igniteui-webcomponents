@@ -1,15 +1,16 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 

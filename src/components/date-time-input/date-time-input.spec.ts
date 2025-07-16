@@ -1,6 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
@@ -14,12 +13,14 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';

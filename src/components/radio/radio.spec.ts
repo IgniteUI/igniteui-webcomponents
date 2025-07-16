@@ -1,15 +1,16 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateClick,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {

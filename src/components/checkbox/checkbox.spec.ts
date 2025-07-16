@@ -5,9 +5,11 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+} from '../common/utils.spec.js';
+import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/utils.spec.js';
+} from '../common/validity-helpers.spec.js';
 import IgcCheckboxComponent from './checkbox.js';
 
 describe('Checkbox', () => {

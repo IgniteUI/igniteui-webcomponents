@@ -1,6 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy, useFakeTimers } from 'sinon';
-
 import {
   altKey,
   arrowDown,
@@ -16,12 +15,14 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectComponent from './select.js';
 import IgcSelectHeaderComponent from './select-header.js';

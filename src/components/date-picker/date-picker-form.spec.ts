@@ -5,10 +5,12 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { equal } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
-  runValidationContainerTests,
   simulatePointerDown,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 

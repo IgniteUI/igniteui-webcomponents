@@ -1,13 +1,12 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
+import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
-  createFormAssociatedTestBed,
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/utils.spec.js';
+} from '../common/validity-helpers.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import type IgcComboHeaderComponent from './combo-header.js';
