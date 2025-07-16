@@ -22,6 +22,7 @@ import {
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectComponent from './select.js';
@@ -465,78 +466,70 @@ describe('Select', () => {
     });
 
     it('reports validity when required', async () => {
-      const validity = spy(select, 'reportValidity');
-
       select.value = '';
       select.required = true;
       await elementUpdated(select);
 
       select.reportValidity();
-      expect(validity).to.have.returned(false);
-      expect(select.invalid).to.be.true;
+      ValidityHelpers.isValid(select).to.be.false;
+      ValidityHelpers.hasInvalidStyles(select).to.be.true;
 
       select.value = Items[0].value;
       select.reportValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('reports validity when not required', async () => {
-      const validity = spy(select, 'reportValidity');
-
       select.value = '';
       select.required = false;
       await elementUpdated(select);
 
       select.reportValidity();
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.reportValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('checks validity when required', async () => {
-      const validity = spy(select, 'checkValidity');
-
       select.value = '';
       select.required = true;
       await elementUpdated(select);
 
       select.checkValidity();
-      expect(validity).to.have.returned(false);
-      expect(select.invalid).to.be.true;
+      ValidityHelpers.isValid(select).to.be.false;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.checkValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('checks validity when not required', async () => {
-      const validity = spy(select, 'checkValidity');
-
       select.value = '';
       select.required = false;
       await elementUpdated(select);
 
       select.checkValidity();
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.checkValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('`focus()`', async () => {
