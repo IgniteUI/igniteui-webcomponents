@@ -10,6 +10,7 @@ import {
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
@@ -154,13 +155,13 @@ describe('Masked input', () => {
       await elementUpdated(element);
 
       expect(element.reportValidity()).to.be.false;
-      expect(element.invalid).to.be.true;
+      ValidityHelpers.hasInvalidStyles(element).to.be.true;
 
       element.required = false;
       await elementUpdated(element);
 
       expect(element.reportValidity()).to.be.true;
-      expect(element.invalid).to.be.false;
+      ValidityHelpers.isValid(element).to.be.true;
 
       // Disabled inputs are always valid
       element.required = true;
@@ -168,6 +169,7 @@ describe('Masked input', () => {
       await elementUpdated(element);
 
       expect(element.reportValidity()).to.be.true;
+      ValidityHelpers.hasInvalidStyles(element).to.be.false;
     });
 
     it('valid/invalid state based on mask pattern', async () => {
@@ -205,13 +207,15 @@ describe('Masked input', () => {
       element.reportValidity();
       await elementUpdated(element);
 
-      expect(element.invalid).to.be.true;
+      ValidityHelpers.isValid(element).to.be.false;
+      ValidityHelpers.hasInvalidStyles(element).to.be.true;
 
       element.setCustomValidity('');
       element.reportValidity();
       await elementUpdated(element);
 
-      expect(element.invalid).to.be.false;
+      ValidityHelpers.isValid(element).to.be.true;
+      ValidityHelpers.hasInvalidStyles(element).to.be.false;
     });
 
     it('setRangeText() method', async () => {
