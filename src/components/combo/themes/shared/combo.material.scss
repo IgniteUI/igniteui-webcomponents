@@ -102,6 +102,34 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
+:host([outlined][invalid]),
+:host([outlined][invalid]:focus-within) {
+    igc-input[readonly]:not([disabled])::part(start),
+    igc-input[readonly]:not([disabled])::part(notch),
+    igc-input[readonly]:not([disabled])::part(filler),
+    igc-input[readonly]:not([disabled])::part(end) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([outlined],[disabled])[invalid]),
+:host(:not([outlined],[disabled])[invalid]:focus-within) {
+    igc-input[readonly]::part(container) {
+        border-bottom-color: var-get($input-theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($input-theme, 'error-secondary-color');
+        }
+    }
+}
+
+:host(:not(:disabled)[invalid]),
+:host(:not([disabled])[invalid]) {
+    ::part(label) {
+        color: var-get($input-theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     ::slotted([slot='prefix']),
