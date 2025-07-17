@@ -61,6 +61,31 @@ describe('Chat', () => {
     })}`;
   };
 
+  const textInputTemplate = (text: string) =>
+    html`<igc-input
+      placeholder="Type text here..."
+      .value=${text}
+    ></igc-input>`;
+
+  const fileUploadTemplate = html`<igc-button>Upload</igc-button>`;
+
+  const textAreaActionsTemplate = html`<igc-button>Send</igc-button>`;
+
+  const textAreaAttachmentsTemplate = (attachments: any[]) => {
+    return html`<div>
+      ${attachments.map(
+        (attachment) =>
+          html`<a
+            href=${attachment.file
+              ? URL.createObjectURL(attachment.file)
+              : attachment.url}
+            target="_blank"
+            >${attachment.name}</a
+          >`
+      )}
+    </div>`;
+  };
+
   const messages: any[] = [
     {
       id: '1',
@@ -103,6 +128,18 @@ describe('Chat', () => {
       timestamp: new Date(Date.now() - 3300000),
     },
   ];
+
+  const draftMessage = {
+    text: 'Draft message',
+    attachments: [
+      {
+        id: 'img1',
+        name: 'img1.png',
+        url: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+        type: 'image',
+      },
+    ],
+  };
 
   const files = [
     new File(['test content'], 'test.txt', { type: 'text/plain' }),
@@ -164,7 +201,7 @@ describe('Chat', () => {
       );
 
       expect(messageList).shadowDom.to.equal(
-        `<div class="message-container">
+        `<div aria-activedescendant="" class="message-container" tabindex="0">
                 </div>
                 <div class="message-list">
                 </div>`
@@ -219,13 +256,13 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(4);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                    <igc-chat-message>
+                    <igc-chat-message id="message-1">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-2">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-3">
                     </igc-chat-message>
-                    <igc-chat-message>
+                    <igc-chat-message id="message-4">
                     </igc-chat-message>
                 </div>`
       );
@@ -331,6 +368,22 @@ describe('Chat', () => {
             ).to.be.true;
           }
         });
+    });
+
+    it('should render the message in `draftMessage` correctly', async () => {
+      chat = await fixture<IgcChatComponent>(
+        html`<igc-chat .draftMessage=${draftMessage}></igc-chat>`
+      );
+
+      const textArea = chat.shadowRoot
+        ?.querySelector('igc-chat-input')
+        ?.shadowRoot?.querySelector('igc-textarea');
+      const attachmentsArea = chat.shadowRoot
+        ?.querySelector('igc-chat-input')
+        ?.shadowRoot?.querySelectorAll('igc-chip');
+
+      expect(textArea?.value).to.equal(draftMessage.text);
+      expect(attachmentsArea?.length).to.equal(draftMessage.attachments.length);
     });
 
     it('should apply `headerText` correctly', async () => {
@@ -580,6 +633,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="preview"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -588,6 +642,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="more"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -633,6 +688,7 @@ describe('Chat', () => {
                                         class="small"
                                         collection="material"
                                         name="more"
+                                        tabindex="-1"
                                         type="button"
                                         variant="flat"
                                     >
@@ -695,7 +751,7 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message>
+                <igc-chat-message id="message-1">
                 </igc-chat-message>
                 <div class="typing-indicator">
                     <div class="typing-dot">
@@ -895,10 +951,47 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message>
+                <igc-chat-message id="message-1">
                 </igc-chat-message>
                 <span>loading...</span>
             </div>`
+      );
+    });
+
+    it('should render text area templates', async () => {
+      chat.draftMessage = draftMessage;
+      chat.options = {
+        templates: {
+          textInputTemplate: textInputTemplate,
+          fileUploadTemplate: fileUploadTemplate,
+          textAreaActionsTemplate: textAreaActionsTemplate,
+          textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
+        },
+      };
+      await elementUpdated(chat);
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+
+      expect(inputArea).shadowDom.to.equal(
+        `<div class="input-container">
+            <igc-button type="button" variant="contained">Upload</igc-button>
+            <div class="input-wrapper">
+                <igc-input placeholder="Type text here...">
+            </div>
+            <div class="buttons-container">
+                <igc-button type="button" variant="contained">Send</igc-button>
+            </div>
+          </div>
+          <div>
+            <div>
+              <a href=${draftMessage.attachments[0].url} target="_blank">
+                ${draftMessage.attachments[0].name}
+              </a>
+            </div>
+          </div>`
+      );
+
+      expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
+        draftMessage.text
       );
     });
   });

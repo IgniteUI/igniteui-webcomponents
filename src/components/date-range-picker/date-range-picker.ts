@@ -761,7 +761,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       if (!this._isDropDown) {
         this._revertValue();
       }
-      this._inputs[0]?.focus();
+      this.useTwoInputs ? this._inputs[0].focus() : this._input.focus();
     }
   }
 

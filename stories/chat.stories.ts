@@ -71,11 +71,13 @@ let messages: any[] = [
   },
 ];
 
+const draftMessage = { text: 'Hi' };
+
 const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const messageActionsTemplate = (msg: any) => {
+const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
       ? html`
@@ -106,6 +108,26 @@ const messageActionsTemplate = (msg: any) => {
 };
 
 const _composingIndicatorTemplate = html`<span>LOADING...</span>`;
+const _textInputTemplate = (text: string) =>
+  html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
+const _textAreaActionsTemplate = html`<igc-button
+  @click=${handleCustomSendClick}
+  >Send</igc-button
+>`;
+const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
+  return html`<div>
+    ${attachments.map(
+      (attachment) =>
+        html`<a
+          href=${attachment.file
+            ? URL.createObjectURL(attachment.file)
+            : attachment.url}
+          target="_blank"
+          >${attachment.name}</a
+        >`
+    )}
+  </div>`;
+};
 const _customRenderer = (text: string) =>
   html`<span>${text.toUpperCase()}</span>`;
 
@@ -113,8 +135,11 @@ const ai_chat_options = {
   headerText: 'Chat',
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
-    messageActionsTemplate: messageActionsTemplate,
+    // messageActionsTemplate: messageActionsTemplate,
     //composingIndicatorTemplate: _composingIndicatorTemplate,
+    // textInputTemplate: _textInputTemplate,
+    // textAreaActionsTemplate: _textAreaActionsTemplate,
+    // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
   },
   // markdownRenderer: _customRenderer
 };
@@ -123,6 +148,22 @@ const chat_options = {
   disableAutoScroll: true,
   disableAttachments: true,
 };
+
+function handleCustomSendClick() {
+  const chat = document.querySelector('igc-chat');
+  if (!chat) {
+    return;
+  }
+  const newMessage: IgcMessage = {
+    id: Date.now().toString(),
+    text: chat.draftMessage.text,
+    sender: 'user',
+    attachments: chat.draftMessage.attachments || [],
+    timestamp: new Date(),
+  };
+  chat.messages = [...chat.messages, newMessage];
+  chat.draftMessage = { text: '', attachments: [] };
+}
 
 function handleMessageSend(e: CustomEvent) {
   const newMessage = e.detail;
@@ -542,6 +583,7 @@ export const Supabase: Story = {
 export const AI: Story = {
   render: () => html`
     <igc-chat
+      .draftMessage=${draftMessage}
       .options=${ai_chat_options}
       @igcMessageCreated=${handleAIMessageSend}
     >

@@ -61,7 +61,14 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override firstUpdated() {
     this.setupDragAndDrop();
-    this._chatState?.updateAcceptedTypesCache();
+    if (this._chatState) {
+      this._chatState.updateAcceptedTypesCache();
+      this._chatState.textArea = this.textInputElement;
+    }
+  }
+
+  protected override updated() {
+    this.inputValue = this._chatState?.inputValue || '';
   }
 
   private handleInput(e: Event) {
@@ -212,8 +219,8 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
-  private renderFileUploadArea() {
-    return html`${this._chatState?.options?.disableAttachments
+  protected *renderDefaultFileUploadTemplate() {
+    yield html`${this._chatState?.options?.disableAttachments
       ? nothing
       : html`
           <igc-file-input
@@ -230,34 +237,46 @@ export default class IgcChatInputComponent extends LitElement {
         `}`;
   }
 
+  private renderFileUploadArea() {
+    return html` ${this._chatState?.options?.templates?.fileUploadTemplate
+      ? this._chatState?.options?.templates?.fileUploadTemplate
+      : this.renderDefaultFileUploadTemplate()}`;
+  }
+
   private renderActionsArea() {
     return html`<div class="buttons-container">
-      <igc-icon-button
-        name="send-message"
-        collection="material"
-        variant="contained"
-        class="small"
-        ?disabled=${!this.inputValue.trim() &&
-        this._chatState?.inputAttachments.length === 0}
-        @click=${this.sendMessage}
-      ></igc-icon-button>
+      ${this._chatState?.options?.templates?.textAreaActionsTemplate
+        ? this._chatState?.options?.templates?.textAreaActionsTemplate
+        : html` <igc-icon-button
+            name="send-message"
+            collection="material"
+            variant="contained"
+            class="small"
+            ?disabled=${!this.inputValue.trim() &&
+            this._chatState?.inputAttachments.length === 0}
+            @click=${this.sendMessage}
+          ></igc-icon-button>`}
     </div>`;
   }
 
   private renderAttachmentsArea() {
     return html`<div>
-      ${this._chatState?.inputAttachments?.map(
-        (attachment, index) => html`
-          <div class="attachment-wrapper">
-            <igc-chip
-              removable
-              @igcRemove=${() => this.removeAttachment(index)}
-            >
-              <span class="attachment-name">${attachment.name}</span>
-            </igc-chip>
-          </div>
-        `
-      )}
+      ${this._chatState?.options?.templates?.textAreaAttachmentsTemplate
+        ? this._chatState.options.templates.textAreaAttachmentsTemplate(
+            this._chatState?.inputAttachments
+          )
+        : html`${this._chatState?.inputAttachments?.map(
+            (attachment, index) => html`
+              <div class="attachment-wrapper">
+                <igc-chip
+                  removable
+                  @igcRemove=${() => this.removeAttachment(index)}
+                >
+                  <span class="attachment-name">${attachment.name}</span>
+                </igc-chip>
+              </div>
+            `
+          )} `}
     </div>`;
   }
 
@@ -267,17 +286,21 @@ export default class IgcChatInputComponent extends LitElement {
         ${this.renderFileUploadArea()}
 
         <div class="input-wrapper">
-          <igc-textarea
-            class="text-input"
-            placeholder="Type a message..."
-            resize="auto"
-            rows="1"
-            .value=${this.inputValue}
-            @input=${this.handleInput}
-            @keydown=${this.handleKeyDown}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          ></igc-textarea>
+          ${this._chatState?.options?.templates?.textInputTemplate
+            ? this._chatState.options.templates.textInputTemplate(
+                this._chatState?.inputValue
+              )
+            : html` <igc-textarea
+                class="text-input"
+                placeholder="Type a message..."
+                resize="auto"
+                rows="1"
+                .value=${this.inputValue}
+                @input=${this.handleInput}
+                @keydown=${this.handleKeyDown}
+                @focus=${this.handleFocus}
+                @blur=${this.handleBlur}
+              ></igc-textarea>`}
         </div>
 
         ${this.renderActionsArea()}

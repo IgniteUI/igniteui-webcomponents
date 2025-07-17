@@ -52,6 +52,10 @@ export type IgcChatTemplates = {
   messageTemplate?: MessageTemplate;
   messageActionsTemplate?: MessageTemplate;
   composingIndicatorTemplate?: TemplateResult;
+  textInputTemplate?: (text: string) => TemplateResult;
+  fileUploadTemplate?: TemplateResult;
+  textAreaActionsTemplate?: TemplateResult;
+  textAreaAttachmentsTemplate?: AttachmentTemplate;
 };
 
 export const attachmentIcon =

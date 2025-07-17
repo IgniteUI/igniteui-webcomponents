@@ -1,3 +1,4 @@
+import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import type {
@@ -9,7 +10,9 @@ import type {
 export class ChatState {
   //#region Internal properties and state
   private readonly _host: IgcChatComponent;
+  private _textArea: IgcTextareaComponent | null = null;
   private _messages: IgcMessage[] = [];
+  private _sortedMessages: IgcMessage[] = [];
   private _options?: IgcChatOptions;
   private _inputAttachments: IgcMessageAttachment[] = [];
   private _inputValue = '';
@@ -24,6 +27,10 @@ export class ChatState {
 
   //#region Public properties
 
+  public get sortedMessagesIds(): string[] {
+    return this._sortedMessages.map((m) => m.id);
+  }
+
   /** Chat message list. */
   public get messages(): IgcMessage[] {
     return this._messages;
@@ -32,6 +39,9 @@ export class ChatState {
   /** Sets the chat message list. */
   public set messages(value: IgcMessage[]) {
     this._messages = value;
+    this._sortedMessages = value.slice().sort((a, b) => {
+      return a.timestamp.getTime() - b.timestamp.getTime();
+    });
     this._host.requestUpdate();
   }
 
@@ -49,6 +59,16 @@ export class ChatState {
   /** Gets the current user id. */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
+  }
+
+  /** Gets the textarea component. */
+  public get textArea(): IgcTextareaComponent | null {
+    return this._textArea;
+  }
+
+  /** Sets the textarea component. */
+  public set textArea(value: IgcTextareaComponent) {
+    this._textArea = value;
   }
 
   /** Input attachments. */
@@ -117,6 +137,7 @@ export class ChatState {
 
     if (allowed) {
       this.messages = [...this.messages, newMessage];
+      this.inputValue = '';
       this.inputAttachments = [];
     }
   }
@@ -129,7 +150,6 @@ export class ChatState {
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
         id: Date.now().toString() + count++,
-        // type: isImage ? 'image' : 'file',
         url: URL.createObjectURL(file),
         name: file.name,
         file: file,
@@ -156,6 +176,14 @@ export class ChatState {
       this.inputAttachments = this.inputAttachments.filter(
         (_, i) => i !== index
       );
+    }
+  }
+
+  /** Send message and focus back the text area when a suggestion is selected */
+  public handleSuggestionClick(suggestion: string): void {
+    this.addMessage({ text: suggestion });
+    if (this.textArea) {
+      this.textArea.focus();
     }
   }
 

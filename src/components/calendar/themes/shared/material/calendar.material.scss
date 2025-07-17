@@ -18,7 +18,7 @@ $theme: $material;
     }
 }
 
-:host(igc-calendar:not([orientation='vertical'])) {
+[part~='content']:not([part~='content-vertical']) {
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
