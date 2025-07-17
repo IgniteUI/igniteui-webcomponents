@@ -32,6 +32,15 @@ igc-file-input::part(file-names){
     border-radius: 24px;
     overflow: hidden;
     transition: box-shadow 0.2s;
+
+    igc-textarea {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    igc-textarea::part(input) {
+        max-height: 115px;
+    }
 }
 
 .buttons-container {
@@ -70,10 +79,6 @@ igc-file-input::part(file-names){
     resize: none;
     max-height: 120px;
     font-family: inherit;
-}
-
-.input-wrapper:focus-within {
-    box-shadow: 0 0 0 2px #0A84FF;
 }
 
 .attachment-button,

@@ -270,6 +270,7 @@ export default class IgcChatInputComponent extends LitElement {
           <igc-textarea
             class="text-input"
             placeholder="Type a message..."
+            resize="auto"
             rows="1"
             .value=${this.inputValue}
             @input=${this.handleInput}
