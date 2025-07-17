@@ -6,6 +6,7 @@ import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import type IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
@@ -593,13 +594,13 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.false;
-      expect(combo.invalid).to.be.true;
+      ValidityHelpers.isValid(combo).to.be.false;
 
       combo.select();
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
     });
 
     it('reports validity when not required', async () => {
@@ -607,13 +608,13 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
 
       combo.deselect();
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
     });
 
     it('opens the list of options when Down or Alt+Down keys are pressed', async () => {
