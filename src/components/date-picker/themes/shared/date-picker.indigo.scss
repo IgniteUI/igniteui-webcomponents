@@ -33,7 +33,7 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-:host(:not([invalid])[readonly]) {
+:host([readonly]) {
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
     }

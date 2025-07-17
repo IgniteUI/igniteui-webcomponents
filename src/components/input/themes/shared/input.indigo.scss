@@ -173,9 +173,10 @@ $transition-duration: .25s;
     }
 }
 
-:host([invalid]),
-:host([invalid]:hover),
-:host([invalid][readonly]) {
+:host(:not([disabled], [readonly])[invalid]),
+:host(:not([disabled], [readonly])[invalid]:hover),
+:host(:not([disabled])[role='combobox'][invalid]),
+:host(:not([disabled], [readonly])[aria-haspopup='dialog'][invalid]) {
     [part^='container'] {
         caret-color: initial;
         border-color: var-get($theme, 'error-secondary-color');

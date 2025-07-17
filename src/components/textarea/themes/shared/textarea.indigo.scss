@@ -142,8 +142,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host([invalid]:not(:disabled, [readonly])),
+:host([invalid]:not([disabled], [readonly])) {
     ::part(validation-icon) {
         color: #{var-get($theme, 'error-secondary-color')};
     }

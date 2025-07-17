@@ -3,7 +3,7 @@
 
 $theme: $material;
 
-:host(:not([invalid])[outlined][readonly]:hover) {
+:host([outlined][readonly]:hover) {
     igc-input::part(start),
     igc-input::part(end),
     igc-input::part(filler),
@@ -19,7 +19,7 @@ $theme: $material;
     }
 }
 
-:host(:not([invalid])[outlined][readonly]:focus-within) {
+:host([outlined][readonly]:focus-within) {
     igc-input::part(start),
     igc-input::part(end),
     igc-input::part(filler) {
@@ -31,7 +31,7 @@ $theme: $material;
     }
 }
 
-:host(:not([invalid])[outlined][readonly]) {
+:host([outlined][readonly]) {
     igc-date-time-input:focus-within {
         &::part(start),
         &::part(end),
@@ -45,6 +45,18 @@ $theme: $material;
     }
 }
 
+:host(:not([disabled],[readonly])[outlined][invalid]) {
+    igc-input::part(start),
+    igc-input::part(end),
+    igc-input::part(filler) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    &::part(notch) {
+        border-bottom-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:not([outlined],[disabled])[readonly]) {
     igc-input::part(container),
     igc-date-time-input::part(container) {
@@ -52,7 +64,7 @@ $theme: $material;
     }
 }
 
-:host(:not([outlined],[invalid])[readonly]:hover) {
+:host(:not([outlined])[readonly]:hover) {
     igc-input::part(container) {
         border-bottom-color: var-get($theme, 'idle-bottom-line-color');
 
@@ -62,7 +74,7 @@ $theme: $material;
     }
 }
 
-:host(:not([outlined],[invalid])[readonly]:focus-within) {
+:host(:not([outlined])[readonly]:focus-within) {
     igc-input::part(container) {
         border-bottom-color: var-get($theme, 'focused-bottom-line-color');
 
@@ -72,7 +84,7 @@ $theme: $material;
     }
 }
 
-:host(:not([outlined],[invalid])[readonly]) {
+:host(:not([outlined])[readonly]) {
     igc-date-time-input:hover {
         &::part(container) {
             border-bottom-color: var-get($theme, 'idle-bottom-line-color');
@@ -94,26 +106,18 @@ $theme: $material;
     }
 }
 
-:host(:not([outlined])[invalid][readonly]:hover),
-:host(:not([outlined])[invalid][readonly]:focus-within) {
+:host(:not([disabled],[readonly])[invalid]) {
+    igc-input::part(label) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled],[readonly],[outlined])[invalid]) {
     igc-input::part(container) {
         border-color: var-get($theme, 'error-secondary-color');
 
         &::after {
-            border-color: var-get($theme, 'error-secondary-color');
-        }
-    }
-}
-
-:host(:not([outlined])[readonly][invalid]) {
-    igc-date-time-input:hover,
-    igc-date-time-input:focus-within {
-        &::part(container) {
-            border-color: var-get($theme, 'error-secondary-color');
-
-            &::after {
-                border-color: var-get($theme, 'error-secondary-color');
-            }
+            background: var-get($theme, 'error-secondary-color');
         }
     }
 }

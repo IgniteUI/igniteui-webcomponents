@@ -30,7 +30,7 @@ $theme: $indigo;
     padding: rem(8px) rem(16px);
 }
 
-:host(:not([invalid])[readonly]) {
+:host([readonly]) {
     igc-input::part(container),
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
@@ -50,6 +50,17 @@ $theme: $indigo;
 :host(:not([readonly], [invalid]):hover) {
     igc-input[readonly]::part(container) {
         border-color: var-get($theme, 'hover-bottom-line-color');
+    }
+}
+
+:host(:not([disabled], [readonly])[invalid]) {
+    igc-input::part(container) {
+        caret-color: initial;
+        border-color: var-get($theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
     }
 }
 

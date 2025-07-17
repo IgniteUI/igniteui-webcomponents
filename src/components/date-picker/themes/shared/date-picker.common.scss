@@ -97,8 +97,8 @@ $input-theme: input-theme.$material;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled], [readonly])[invalid]),
+:host(:not(:disabled, [readonly])[invalid]) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
