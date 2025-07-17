@@ -2,7 +2,6 @@ import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
@@ -464,7 +463,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, {
@@ -524,13 +522,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected _handleFocusIn(): void {
-    this._dirty = true;
-  }
-
   protected _handleFocusOut({ relatedTarget }: FocusEvent): void {
     if (!this.contains(relatedTarget as Node)) {
-      this.checkValidity();
+      this._handleBlur();
     }
   }
 
@@ -559,6 +553,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
+
+    this._setTouchedState();
     this.value = (event.target as IgcDateTimeInputComponent).value!;
     this.emitEvent('igcChange', { detail: this.value });
   }
@@ -567,6 +563,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     event: CustomEvent<Date>
   ): Promise<void> {
     event.stopPropagation();
+
+    this._setTouchedState();
 
     if (this.readOnly) {
       // Wait till the calendar finishes updating and then restore the current value from the date-picker.
@@ -583,6 +581,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
+
+    this._setTouchedState();
 
     if (this.nonEditable) {
       event.preventDefault();

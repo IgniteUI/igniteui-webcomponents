@@ -10,6 +10,7 @@ import {
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
@@ -164,6 +165,7 @@ describe('igc-datepicker form integration', () => {
         },
       ];
 
+      ValidityHelpers.setTouchedState(spec.element);
       spec.setProperties({ disabledDates, value: new Date(2024, 1, 26) });
 
       expect(spec.element.invalid).to.be.true;
