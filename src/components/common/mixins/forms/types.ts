@@ -1,4 +1,5 @@
 import type { LitElement } from 'lit';
+import type { ElementInternalsController } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
@@ -9,10 +10,10 @@ export type IgcFormControl = LitElement &
 declare class BaseFormAssociatedElement {
   public static readonly formAssociated: boolean;
 
-  private __internals: ElementInternals;
+  private readonly __internals: ElementInternalsController;
+  protected readonly _formValue: unknown;
 
   // Properties
-  protected _formValue: unknown;
   protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;

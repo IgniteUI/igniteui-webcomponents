@@ -1,5 +1,6 @@
 import type { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { addInternalsController } from '../../controllers/internals.js';
 import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -12,6 +13,8 @@ import {
   InternalInvalidEvent,
   InternalResetEvent,
 } from './types.js';
+
+const INVALID_STATE = 'ig-invalid';
 
 const eventOptions = {
   bubbles: false,
@@ -30,8 +33,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
     public static readonly formAssociated = true;
 
-    private __internals: ElementInternals;
-    protected _formValue!: FormValue<unknown>;
+    private readonly __internals = addInternalsController(this);
+    protected readonly _formValue!: FormValue<unknown>;
 
     protected _disabled = false;
     protected _invalid = false;
@@ -122,8 +125,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     constructor(...args: any[]) {
       super(args);
-      this.__internals = this.attachInternals();
-
       addSafeEventListener(this, 'invalid', this._handleInvalid);
     }
 
@@ -137,6 +138,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     private _setInvalidStyles(): void {
+      this.__internals.setState(INVALID_STATE, this._shouldApplyStyles);
       this.toggleAttribute('invalid', this._shouldApplyStyles);
       this.requestUpdate();
     }
@@ -157,9 +159,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     protected _handleBlur(): void {
-      if (!this._touched) {
-        this._touched = true;
-      }
+      this._setTouchedState();
       this._validate();
     }
 
