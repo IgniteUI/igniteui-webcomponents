@@ -223,6 +223,7 @@ describe('Chat', () => {
                         <igc-textarea
                         class="text-input"
                         placeholder="Type a message..."
+                        resize="auto"
                         rows="1"
                         >
                         </igc-textarea>
@@ -477,6 +478,7 @@ describe('Chat', () => {
                         <igc-textarea
                         class="text-input"
                         placeholder="Type a message..."
+                        resize="auto"
                         rows="1"
                         >
                         </igc-textarea>
@@ -547,6 +549,7 @@ describe('Chat', () => {
               <igc-textarea
                 class="text-input"
                 placeholder="Type a message..."
+                resize="auto"
                 rows="1"
               >
               </igc-textarea>
