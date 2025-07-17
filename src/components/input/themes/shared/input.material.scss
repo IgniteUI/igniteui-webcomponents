@@ -459,13 +459,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
         input:not(:placeholder-shown) + [part='notch'] {
             border-width: $active-border-width;
+            border-color: var-get($theme, 'focused-border-color');
         }
-    }
-}
-
-:host(:not([type='search'],[invalid])[readonly][outlined]:focus-within) {
-    input:not(:placeholder-shown) + [part='notch'] {
-        border-color: var-get($theme, 'focused-border-color');
     }
 }
 

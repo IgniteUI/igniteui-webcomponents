@@ -30,7 +30,7 @@ $theme: $indigo;
     padding: rem(8px) rem(16px);
 }
 
-:host(:not([invalid])[readonly]) {
+:host([readonly]) {
     igc-input::part(container),
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
