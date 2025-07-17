@@ -18,6 +18,10 @@ export interface IgcMessageAttachment {
   type?: string;
   thumbnail?: string;
 }
+export interface ICodeHighlighter {
+  languages: string[];
+  themes: string[];
+}
 
 export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
@@ -41,7 +45,9 @@ export type IgcChatOptions = {
   headerText?: string;
   suggestions?: string[];
   templates?: IgcChatTemplates;
+  supportsMarkdown: boolean;
   markdownRenderer?: MarkdownRenderer;
+  highlighter?: ICodeHighlighter;
 };
 
 export type IgcChatTemplates = {

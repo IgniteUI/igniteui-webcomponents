@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import { GoogleGenAI, Modality } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 import {
   IgcChatComponent,
   defineComponents,
@@ -13,11 +13,11 @@ import type {
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+// const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = ''; //createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
+const googleGenAIKey = ''; // import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
@@ -147,6 +147,12 @@ const ai_chat_options = {
 const chat_options = {
   disableAutoScroll: true,
   disableAttachments: true,
+  supportsMarkdown: true,
+  // markdownRenderer: _customRenderer,
+  highlighter: {
+    languages: ['javasctipt'],
+    themes: ['min-dark'],
+  },
 };
 
 function handleCustomSendClick() {
