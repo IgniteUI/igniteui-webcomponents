@@ -1,5 +1,4 @@
 import { consume } from '@lit/context';
-import DOMPurify from 'dompurify';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
@@ -36,16 +35,12 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
-  private sanitizeMessageText(text: string): string {
-    return DOMPurify.sanitize(text);
-  }
-
   @state()
   private _renderedMarkdown: TemplateResult | null = null;
 
   @watch('message')
   async processMarkdown() {
-    const text = this.sanitizeMessageText(this.message?.text.trim() || '');
+    const text = this.message?.text.trim() || '';
 
     if (this._chatState?.options?.supportsMarkdown !== true) {
       this._renderedMarkdown = html`${text}`;

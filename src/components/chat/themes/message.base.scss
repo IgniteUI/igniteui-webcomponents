@@ -35,18 +35,16 @@
   }
 
   .message-container pre {
-    // background-color: black;
-    padding: 8px;
     border-radius: 4px;
     overflow-x: auto;
-    margin: 8px 0;
+    margin: 0;
   }
 
   .message-container code {
     font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.9em;
-    padding: 2px 4px;
     border-radius: 4px;
+    margin: 0;
   }
 
   .bubble {

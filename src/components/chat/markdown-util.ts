@@ -21,6 +21,8 @@ const languageModules: Record<string, () => Promise<any>> = {
   javascript: () => import('@shikijs/langs/javascript'),
   typescript: () => import('@shikijs/langs/typescript'),
   json: () => import('@shikijs/langs/json'),
+  scss: () => import('@shikijs/langs/scss'),
+  html: () => import('@shikijs/langs/html'),
   markdown: () => import('@shikijs/langs/markdown'),
   // etc.
 };

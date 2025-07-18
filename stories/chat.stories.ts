@@ -17,7 +17,7 @@ import type {
 // const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = ''; //createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = ''; // import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
+const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
@@ -141,7 +141,12 @@ const ai_chat_options = {
     // textAreaActionsTemplate: _textAreaActionsTemplate,
     // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
   },
-  // markdownRenderer: _customRenderer
+  supportsMarkdown: true,
+  // markdownRenderer: _customRenderer,
+  highlighter: {
+    languages: ['javascript', 'html', 'typescript', 'scss'],
+    themes: ['github-light'],
+  },
 };
 
 const chat_options = {
@@ -150,8 +155,8 @@ const chat_options = {
   supportsMarkdown: true,
   // markdownRenderer: _customRenderer,
   highlighter: {
-    languages: ['javasctipt'],
-    themes: ['min-dark'],
+    languages: ['javascript', 'html', 'typescript', 'scss'],
+    themes: ['github-light'],
   },
 };
 
