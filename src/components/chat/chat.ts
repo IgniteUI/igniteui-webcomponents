@@ -150,8 +150,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
     </div>`;
   }
 
-  protected override firstUpdated() {
+  protected override async firstUpdated() {
     this._context.setValue(this._chatState, true);
+    if (!this._chatState.options?.highlighter) return;
+
+    const { configureMarkdownHighlighter } = await import('./markdown-util.js');
+    await configureMarkdownHighlighter(this._chatState.options.highlighter);
+    this.requestUpdate();
   }
 
   protected override render() {
