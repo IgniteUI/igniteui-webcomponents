@@ -1,8 +1,16 @@
-import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  nextFrame,
+} from '@open-wc/testing';
 import { html } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { arrowDown, arrowUp } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
+  isFocused,
   simulateBlur,
   simulateClick,
   simulateFocus,
@@ -1027,6 +1035,8 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
+          // The focus should be on the input area after send button is clicked
+          expect(isFocused(textArea)).to.be.true;
         }
       });
 
@@ -1056,6 +1066,12 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Suggestion 1');
           expect(chat.messages[0].sender).to.equal('user');
+          // The focus should be on the input area after suggestion click
+          const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+          const textArea = inputArea?.shadowRoot?.querySelector(
+            'igc-textarea'
+          ) as HTMLElement;
+          expect(isFocused(textArea)).to.be.true;
         }
       });
 
@@ -1177,8 +1193,77 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
+
+          // The focus should be on the input area after message is sent
+          expect(isFocused(textArea)).to.be.true;
         }
       });
+
+      it('should activates the recent message when the message list is focused', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector('.message-container') as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
+
+        const messageElements =
+          messageContainer?.querySelectorAll('igc-chat-message');
+        messageElements?.forEach((message, index) => {
+          if (index === messages.length - 1) {
+            expect(message.classList.contains('active')).to.be.true;
+          } else {
+            expect(message.classList.contains('active')).to.be.false;
+          }
+        });
+      });
+    });
+
+    it('should activates the next/previous message on `ArrowDown`/`ArrowUp`', async () => {
+      chat.messages = messages;
+      await elementUpdated(chat);
+      await aTimeout(500);
+
+      const messageContainer = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-container') as HTMLElement;
+      messageContainer.focus();
+      await elementUpdated(chat);
+      await nextFrame();
+      await nextFrame();
+
+      // Activates the previous message on `ArrowUp`
+      messageContainer.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: arrowUp,
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      await nextFrame();
+      expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+        'message-3'
+      );
+
+      // Activates the next message on `ArrowDown`
+      messageContainer.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: arrowDown,
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      await nextFrame();
+      expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+        'message-4'
+      );
     });
   });
 
