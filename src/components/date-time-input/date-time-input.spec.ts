@@ -1,6 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
@@ -14,12 +13,15 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';
@@ -839,12 +841,12 @@ describe('Date Time Input component', () => {
       el.value = new Date(2020, 1, 3);
       await elementUpdated(el);
       expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
+      ValidityHelpers.isValid(el).to.be.false;
 
       el.value = new Date(2021, 2, 3);
       await elementUpdated(el);
       expect(el.checkValidity()).to.be.true;
-      expect(el.invalid).to.be.false;
+      ValidityHelpers.isValid(el).to.be.true;
     });
 
     it('should respect max attribute', async () => {
@@ -853,11 +855,11 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(el.checkValidity()).to.be.false;
-      expect(el.invalid).to.be.true;
+      ValidityHelpers.isValid(el).to.be.false;
 
       el.value = new Date(2020, 1, 3);
       expect(el.checkValidity()).to.be.true;
-      expect(el.invalid).to.be.false;
+      ValidityHelpers.isValid(el).to.be.true;
     });
 
     it('valid/invalid state with required', async () => {

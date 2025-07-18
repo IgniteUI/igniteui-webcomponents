@@ -375,6 +375,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override handleInput() {
+    this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
@@ -625,7 +626,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.emitEvent('igcChange', { detail: this.value });
     }
 
-    this.checkValidity();
+    super._handleBlur();
   }
 
   protected navigateParts(delta: number) {

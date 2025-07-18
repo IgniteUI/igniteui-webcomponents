@@ -108,7 +108,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
           aria-describedby=${describedBy}
           @click=${this._handleClick}
-          @focus=${this._handleFocus}
+          @blur=${this._handleBlur}
         />
         <span part=${partMap({ control: true, checked })}>
           <span part=${partMap({ indicator: true, checked })}>

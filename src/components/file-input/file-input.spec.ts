@@ -3,11 +3,11 @@ import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
+import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
-  createFormAssociatedTestBed,
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/utils.spec.js';
+} from '../common/validity-helpers.spec.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {

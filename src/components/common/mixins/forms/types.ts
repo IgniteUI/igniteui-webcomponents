@@ -1,4 +1,5 @@
 import type { LitElement } from 'lit';
+import type { ElementInternalsController } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
@@ -9,11 +10,10 @@ export type IgcFormControl = LitElement &
 declare class BaseFormAssociatedElement {
   public static readonly formAssociated: boolean;
 
-  private __internals: ElementInternals;
+  private readonly __internals: ElementInternalsController;
+  protected readonly _formValue: unknown;
 
   // Properties
-  protected _formValue: unknown;
-  protected _dirty: boolean;
   protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;
@@ -60,6 +60,12 @@ declare class BaseFormAssociatedElement {
 
   // Methods
 
+  // TODO: Explain
+  protected _handleBlur(): void;
+
+  // TODO: Explain
+  protected _setTouchedState(): void;
+
   /**
    * Sets the default value of the component.
    * Called in `attributeChangedCallback`(i.e. when the `value` attribute of the control is set).
@@ -71,6 +77,7 @@ declare class BaseFormAssociatedElement {
    */
   protected _restoreDefaultValue(): void;
 
+  // TODO: Change docs based on the new behavior
   /**
    * Executes the {@link BaseFormAssociatedElement._updateValidity | `_updateValidity()`} hook and then applies
    * the {@link BaseFormAssociatedElement.invalid | `invalid`} attribute on the control and the associated styles
@@ -78,6 +85,7 @@ declare class BaseFormAssociatedElement {
    */
   protected _validate(message?: string): void;
 
+  // TODO: Drop
   /**
    * Executes the component's validators and updates the internal validity state.
    */
@@ -160,3 +168,6 @@ export declare class FormRequiredInterface {
   public set required(value: boolean);
   public get required(): boolean;
 }
+
+export const InternalInvalidEvent = 'igc-form-internal-invalid';
+export const InternalResetEvent = 'igc-form-internal-reset';

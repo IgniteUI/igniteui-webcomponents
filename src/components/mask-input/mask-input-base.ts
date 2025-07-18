@@ -57,6 +57,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     const value = this.input.value;
     const { start, end } = this.selection;
     const deleteEnd = this.parser.getNextNonLiteralPosition(end) + 1;
+    this._setTouchedState();
 
     switch (inputType) {
       case 'deleteContentForward':

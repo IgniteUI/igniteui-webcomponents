@@ -58,7 +58,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           .checked=${live(checked)}
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
           @click=${this._handleClick}
-          @focus=${this._handleFocus}
+          @blur=${this._handleBlur}
         />
         <span
           part=${partMap({

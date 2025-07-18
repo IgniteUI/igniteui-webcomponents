@@ -622,6 +622,7 @@ export default class IgcComboComponent<
   }
 
   protected async handleMainInput({ detail }: CustomEvent<string>) {
+    this._setTouchedState();
     this._show();
     this._state.searchTerm = detail;
 
@@ -638,12 +639,12 @@ export default class IgcComboComponent<
     this.clearSingleSelection();
   }
 
-  private _handleBlur() {
+  protected override _handleBlur() {
     if (this._selection.isEmpty) {
       this._displayValue = '';
       this.resetSearchTerm();
     }
-    this.checkValidity();
+    super._handleBlur();
   }
 
   protected handleSearchInput({ detail }: CustomEvent<string>) {
@@ -836,6 +837,7 @@ export default class IgcComboComponent<
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
+    this._setTouchedState();
     this._navigation.navigateMainInput(e, this._list);
   }
 
