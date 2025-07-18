@@ -1,4 +1,5 @@
 import type { TemplateResult } from 'lit';
+import type { HlLanguages } from './markdown-util.js';
 
 // export type IgcMessageAttachmentType = 'image' | 'file';
 
@@ -41,6 +42,7 @@ export type IgcChatOptions = {
   headerText?: string;
   suggestions?: string[];
   templates?: IgcChatTemplates;
+  languages?: HlLanguages;
   markdownRenderer?: MarkdownRenderer;
 };
 
