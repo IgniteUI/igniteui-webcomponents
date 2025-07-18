@@ -105,7 +105,7 @@ export default class IgcValidationContainerComponent extends LitElement {
         slot=${ifDefined(config.slot)}
         ?invalid=${host.invalid}
         .target=${host}
-        exportparts="helper-text validation-message validation-icon"
+        exportparts="helper-text, validation-message, validation-icon"
       >
         ${helperText}${validationSlots}
       </igc-validator>
