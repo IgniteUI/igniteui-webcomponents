@@ -274,7 +274,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
-    this._validate();
   }
 
   public get value(): Date | null {

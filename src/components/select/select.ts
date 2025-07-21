@@ -532,7 +532,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string): void {
     this._formValue.setValueAndFormState(value!);
-    this._validate();
   }
 
   private _clearSelectedItem(): void {

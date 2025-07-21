@@ -100,7 +100,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(value);
     this.updateMaskedValue();
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   /**

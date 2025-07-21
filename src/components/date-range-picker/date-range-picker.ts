@@ -297,11 +297,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
-    const converted = convertToDateRange(value);
-
-    this._formValue.setValueAndFormState(converted);
-    this._validate();
-
+    this._formValue.setValueAndFormState(convertToDateRange(value));
     this._setCalendarRangeValues();
     this._updateMaskedRangeValue();
   }

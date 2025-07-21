@@ -81,7 +81,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get checked(): boolean {

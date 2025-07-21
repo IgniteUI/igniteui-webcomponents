@@ -167,7 +167,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     this._hasActivation = false;
     this._setTouchedState();
     this._formValue.setValueAndFormState(this.files);
-    this._validate();
 
     this.requestUpdate();
     this.emitEvent('igcChange', { detail: this.files! });

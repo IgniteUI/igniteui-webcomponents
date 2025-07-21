@@ -164,7 +164,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public set checked(value: boolean) {
     this._formValue.setValueAndFormState(value);
     this._tabIndex = this.checked ? 0 : -1;
-    this._validate();
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
     }

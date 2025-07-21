@@ -139,7 +139,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
     this.updateMask();
-    this._validate();
   }
 
   /**
@@ -299,7 +298,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this._validate();
     if (this.value) {
       this.updateMask();
     }

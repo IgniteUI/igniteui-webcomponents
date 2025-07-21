@@ -234,7 +234,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string) {
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get value(): string {
