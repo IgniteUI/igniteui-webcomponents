@@ -135,7 +135,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(value);
     this.updateMaskedValue();
     this._formValue.setValueAndFormState(value);
-    this._updateValidity();
   }
 
   protected async updateInput(string: string, range: MaskRange) {
@@ -148,7 +147,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
     this.maskedValue = value;
     this._formValue.setValueAndFormState(this.parser.parse(value));
-    this._validate();
     this.requestUpdate();
 
     if (range.start !== this.mask.length) {

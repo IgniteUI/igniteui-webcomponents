@@ -6,7 +6,6 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
@@ -498,7 +497,7 @@ export default class IgcComboComponent<
     this._formValue.value = this._formValue.defaultValue;
     this._updateSelection();
     this.updateValue(true);
-    this._updateValidity();
+    this._validate();
   }
 
   protected override _setDefaultValue(current: string | null): void {
@@ -776,6 +775,7 @@ export default class IgcComboComponent<
   }
 
   protected itemClickHandler(event: PointerEvent) {
+    this._setTouchedState();
     const target = findElementFromEventPath<IgcComboItemComponent>(
       IgcComboItemComponent.tagName,
       event
@@ -902,7 +902,7 @@ export default class IgcComboComponent<
         role="combobox"
         aria-controls="dropdown"
         aria-owns="dropdown"
-        aria-expanded=${this.open ? 'true' : 'false'}
+        aria-expanded=${this.open}
         aria-describedby="combo-helper-text"
         aria-disabled=${this.disabled}
         exportparts="container: input, input: native-input, label, prefix, suffix"
@@ -915,7 +915,7 @@ export default class IgcComboComponent<
         .value=${this._displayValue}
         .disabled=${this.disabled}
         .required=${this.required}
-        .invalid=${live(this.invalid)}
+        .invalid=${this.invalid}
         .outlined=${this.outlined}
         .autofocus=${this.autofocus}
         ?readonly=${!this.singleSelect}

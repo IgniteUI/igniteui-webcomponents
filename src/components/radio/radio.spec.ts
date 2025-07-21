@@ -221,7 +221,7 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
       // checkValidity - all radios from the group should have invalid styles applied
-      expect(first(radios).checkValidity()).to.be.false;
+      expect(first(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
       // Set a checked radio - valid state, invalid styles should not be applied

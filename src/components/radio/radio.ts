@@ -1,5 +1,5 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -97,9 +97,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
-
-  @queryAssignedNodes({ flatten: true })
-  protected readonly _label!: Array<Node>;
 
   @state()
   protected _hideLabel = true;
@@ -208,7 +205,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         radio.defaultChecked = false;
       }
     } else {
-      this._updateValidity();
+      this._validate();
     }
   }
 

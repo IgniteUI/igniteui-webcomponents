@@ -149,7 +149,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ converter: convertToDate })
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get min(): Date | null {
@@ -163,7 +163,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ converter: convertToDate })
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get max(): Date | null {
@@ -299,7 +299,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this._updateValidity();
+    this._validate();
     if (this.value) {
       this.updateMask();
     }

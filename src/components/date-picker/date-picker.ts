@@ -1,7 +1,6 @@
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
@@ -303,7 +302,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get min(): Date | null {
@@ -318,7 +317,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get max(): Date | null {
@@ -358,7 +357,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set disabledDates(dates: DateRangeDescriptor[]) {
     this._disabledDates = dates;
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get disabledDates() {
@@ -827,7 +826,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .placeholder=${this.placeholder}
         .min=${this.min}
         .max=${this.max}
-        .invalid=${live(this.invalid)}
+        .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @click=${this._isDropDown || this.readOnly

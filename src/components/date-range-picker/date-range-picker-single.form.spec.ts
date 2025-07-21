@@ -9,6 +9,7 @@ import {
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
@@ -310,6 +311,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
           dateRange: [minDate, maxDate],
         },
       ];
+
+      ValidityHelpers.setTouchedState(spec.element);
 
       // both values within disabled range
       spec.setProperties({

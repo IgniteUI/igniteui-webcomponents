@@ -334,7 +334,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this.focus();
     }
 
-    this._updateValidity();
+    this._validate();
   }
 
   //#endregion
