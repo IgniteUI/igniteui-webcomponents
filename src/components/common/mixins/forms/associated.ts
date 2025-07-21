@@ -1,5 +1,5 @@
 import type { LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
@@ -33,33 +33,41 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
     public static readonly formAssociated = true;
 
+    //#region Internal state and properties
+
     private readonly __internals = addInternalsController(this);
     protected readonly _formValue!: FormValue<unknown>;
+
+    private _isFormSubmit = false;
+    private _isInternalValidation = false;
+    private _touched = false;
+    private _isExternalInvalid = false;
+
+    private get _hasUserInteraction(): boolean {
+      return this._touched || this._isFormSubmit;
+    }
+
+    private get _shouldApplyStyles(): boolean {
+      if (this._isExternalInvalid) {
+        return true;
+      }
+
+      return (
+        this._invalid && this._hasUserInteraction && !this._isInternalValidation
+      );
+    }
 
     protected _disabled = false;
     protected _invalid = false;
     protected _pristine = true;
 
-    @state()
-    private _isFormSubmit = false;
-
-    @state()
-    private _touched = false;
-
-    @state()
-    private _isInternalValidation = false;
-
-    private get _shouldApplyStyles(): boolean {
-      return (
-        this._invalid &&
-        (this._touched || this._isFormSubmit) &&
-        !this._isInternalValidation
-      );
-    }
-
     protected get __validators(): Validator[] {
       return [];
     }
+
+    //#endregion
+
+    //#region Public properties and attributes
 
     /**
      * The name attribute of the control.
@@ -89,12 +97,13 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * @default false
      */
     @property({ type: Boolean, reflect: true })
-    public set invalid(_: boolean) {
+    public set invalid(value: boolean) {
+      this._isExternalInvalid = value;
       this._setInvalidStyles();
     }
 
     public get invalid(): boolean {
-      return this._shouldApplyStyles;
+      return this._isExternalInvalid || this._shouldApplyStyles;
     }
 
     /** Returns the HTMLFormElement associated with this element. */
@@ -123,6 +132,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return this.__internals.willValidate;
     }
 
+    //#endregion
+
+    //#region Life-cycle hooks
+
     constructor(...args: any[]) {
       super(args);
       addSafeEventListener(this, 'invalid', this._handleInvalid);
@@ -133,17 +146,14 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       super.connectedCallback();
       this._pristine = true;
       this._touched = false;
-      this._updateValidity();
-      this._setInvalidStyles();
+      this._validate();
     }
 
-    private _setInvalidStyles(): void {
-      this.__internals.setState(INVALID_STATE, this._shouldApplyStyles);
-      this.toggleAttribute('invalid', this._shouldApplyStyles);
-      this.requestUpdate();
-    }
+    //#endregion
 
-    private _handleInvalid(event: Event): void {
+    //#region Form value and validation states
+
+    private async _handleInvalid(event: Event): Promise<void> {
       event.preventDefault();
       this._invalid = true;
 
@@ -155,7 +165,73 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       this._setInvalidStyles();
-      this._isFormSubmit = false;
+
+      if (this._isFormSubmit) {
+        this.requestUpdate();
+        await this.updateComplete;
+        this._isFormSubmit = false;
+      }
+    }
+
+    private _setInvalidStyles(): void {
+      this.__internals.setState(INVALID_STATE, this._shouldApplyStyles);
+    }
+
+    private __runValidators() {
+      const validity: ValidityStateFlags = {};
+      let message = '';
+      let validationFailed = false;
+
+      for (const validator of this.__validators) {
+        const isValid = validator.isValid(this);
+
+        validity[validator.key] = !isValid;
+
+        if (!isValid) {
+          validationFailed = true;
+          message = isFunction(validator.message)
+            ? validator.message(this)
+            : validator.message;
+        }
+      }
+
+      this._invalid = validationFailed;
+
+      return { validity, message };
+    }
+
+    /**
+     * Executes the component validators and updates the internal validity state.
+     */
+    protected _validate(userMessage?: string): void {
+      let { validity, message } = this.__runValidators();
+      const hasCustomError = this.validity.customError;
+
+      // valueMissing has precedence over the other validators aside from customError
+      if (validity.valueMissing) {
+        validity = {
+          valueMissing: true,
+          customError: hasCustomError,
+        };
+      }
+
+      if (hasCustomError && userMessage === undefined) {
+        // Internal validation cycle after the user has called setCustomValidity()
+        // with some message. Keep the customError flag and the passed in message.
+        validity.customError = true;
+        message = this.validationMessage;
+      } else if (hasCustomError && userMessage === '') {
+        // setCustomValidity with an empty message.
+        validity.customError = false;
+      } else if (userMessage && userMessage !== '') {
+        // setCustomValidity with a message.
+        validity.customError = true;
+        message = userMessage;
+      }
+
+      this.__internals.setValidity(validity, message);
+      this._isInternalValidation = true;
+      this._invalid = !this.__internals.checkValidity();
     }
 
     protected _handleBlur(): void {
@@ -169,83 +245,24 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
     }
 
-    private __runValidators() {
-      const validity: ValidityStateFlags = {};
-      let message = '';
-      let isInvalid = false;
-
-      for (const validator of this.__validators) {
-        const isValid = validator.isValid(this);
-
-        validity[validator.key] = !isValid;
-
-        if (!isValid) {
-          isInvalid = true;
-          message = isFunction(validator.message)
-            ? validator.message(this)
-            : validator.message;
-        }
-      }
-
-      this._invalid = isInvalid;
-
-      return { validity, message };
-    }
-
     protected _setDefaultValue(current: string | null): void {
       this._formValue.defaultValue = current;
     }
 
     protected _restoreDefaultValue(): void {
+      const value = this._formValue.value;
       this._formValue.setValueAndFormState(this._formValue.defaultValue);
-      this._updateValidity();
-      this.requestUpdate();
-    }
-
-    protected _validate(message?: string): void {
-      this._updateValidity(message);
-    }
-
-    /**
-     * Executes the component validators and updates the internal validity state.
-     */
-    protected _updateValidity(error?: string): void {
-      let { validity, message } = this.__runValidators();
-      const hasCustomError = this.validity.customError;
-
-      // valueMissing has precedence over the other validators aside from customError
-      if (validity.valueMissing) {
-        validity = {
-          valueMissing: true,
-          customError: hasCustomError,
-        };
-      }
-
-      if (hasCustomError && error === undefined) {
-        // Internal validation cycle after the user has called setCustomValidity()
-        // with some message. Keep the customError flag and the passed in message.
-        validity.customError = true;
-        message = this.validationMessage;
-      } else if (hasCustomError && error === '') {
-        // setCustomValidity with an empty message.
-        validity.customError = false;
-      } else if (error && error !== '') {
-        // setCustomValidity with a message.
-        validity.customError = true;
-        message = error;
-      }
-
-      this.__internals.setValidity(validity, message);
-      this._isInternalValidation = true;
-      this._invalid = !this.__internals.checkValidity();
+      this.requestUpdate('value', value);
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
       this._pristine = false;
       this.__internals.setFormValue(value, state);
-      this._updateValidity();
+      this._validate();
       this._setInvalidStyles();
     }
+
+    //#region Form associated callback hooks
 
     protected formAssociatedCallback(_form: HTMLFormElement): void {}
 
@@ -269,6 +286,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       _mode: FormRestoreMode
     ): void {}
 
+    //#endregion
+
+    //#region Public API
+
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity(): boolean {
       const state = this.__internals.reportValidity();
@@ -289,10 +310,13 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * As long as `message` is not empty, the control is considered invalid.
      */
     public setCustomValidity(message: string): void {
-      this._updateValidity(message);
+      this._validate(message);
       this._isInternalValidation = message === '';
       this._setInvalidStyles();
+      this.requestUpdate();
     }
+
+    //#endregion
   }
   return BaseFormAssociatedElement as Constructor<BaseFormAssociatedElement> &
     T;

@@ -38,7 +38,7 @@ export const ValidityHelpers = {
    * See {@link ValidityHelpers.isValid | isValid} documentation for when this is applied.
    */
   hasInvalidStyles: (host: IgcFormControl): Chai.Assertion => {
-    return expect(host.hasAttribute('invalid'));
+    return expect(host.matches(':state(ig-invalid)'));
   },
   /**
    * Whether the given slots exist inside the validation container of the
