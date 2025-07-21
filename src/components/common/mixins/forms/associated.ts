@@ -165,9 +165,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       this._setInvalidStyles();
+      this.requestUpdate();
 
       if (this._isFormSubmit) {
-        this.requestUpdate();
         await this.updateComplete;
         this._isFormSubmit = false;
       }
