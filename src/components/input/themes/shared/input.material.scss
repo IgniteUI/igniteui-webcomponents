@@ -159,7 +159,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -451,12 +451,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host(:not([type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
+            align-self: center;
         }
 
-        input:not(:placeholder-shown) + [part='notch'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
@@ -563,7 +564,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[readonly][outlined][invalid]:focus-within) {
-    input:not(:placeholder-shown) + [part='notch'] {
+    input:has(:not(:placeholder-shown)) + [part='notch'] {
         border: {
             width: $active-border-width;
             color: var-get($theme, 'error-secondary-color');
