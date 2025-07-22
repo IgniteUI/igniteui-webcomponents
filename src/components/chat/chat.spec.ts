@@ -179,31 +179,31 @@ describe('Chat', () => {
       );
 
       expect(chat).shadowDom.to.equal(
-        `<div part="chat-container">
-          <div part="header">
-              <div part="info">
-                  <slot name="prefix" part="prefix">
-                  </slot>
-                  <slot name="title" part="title">
-                  </slot>
-              </div>
-              <slot name="actions" part="actions">
-                  <igc-button type="button" variant="flat">
-                  ⋯
-                  </igc-button>
-              </slot>
-          </div>
-          <div part="empty-state">
-           <slot name="empty-state">
-           </slot>
-          </div>
-          <div aria-label="Suggestions" part="suggestions-container" role="list">
-              <slot name="suggestions" part="suggestions">
-              </slot>
-          </div>
-          <igc-chat-input>
-          </igc-chat-input>
-      </div>`
+        ` <div part="chat-container">
+                    <div part="header" part="header">
+                        <div part="info">
+                            <slot name="prefix" part="prefix">
+                            </slot>
+                            <slot name="title" part="title">
+                            </slot>
+                        </div>
+                        <slot part="actions" name="actions">
+                            <igc-button type="button" variant="flat">
+                            ⋯
+                            </igc-button>
+                        </slot>
+                    </div>
+                    <div part="empty-state">
+                      <slot name="empty-state">
+                      </slot>
+                    </div>
+                    <div aria-label="Suggestions" part="suggestions-container" role="list">
+                        <slot name="suggestions" part="suggestions">
+                        </slot>
+                    </div>
+                    <igc-chat-input>
+                    </igc-chat-input>
+                </div>`
       );
 
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
@@ -259,36 +259,21 @@ describe('Chat', () => {
 
       expect(messageList).shadowDom.to.equal(
         `<div aria-activedescendant="" aria-label="Message list" part="message-container" role="group" tabindex="0">
-            </div>
-            <div part="message-list">
-                  <igc-chat-message
-                    id="message-1"
-                    part="message-item "
-                    role="option"
-                  >
-                  </igc-chat-message>
-                  <igc-chat-message
-                    id="message-2"
-                    part="message-item "
-                    role="option"
-                  >
-                  </igc-chat-message>
-                  <igc-chat-message
-                    id="message-3"
-                    part="message-item "
-                    role="option"
-                  >
-                  </igc-chat-message>
-                  <igc-chat-message
-                    id="message-4"
-                    part="message-item "
-                    role="option"
-                  >
-                  </igc-chat-message>
-            </div>`
+                  </div>
+                  <div part="message-list">
+                   <igc-chat-message id="message-1" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-2" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-3" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-4" part="message-item " role="option">
+                    </igc-chat-message>
+                  </div>`
       );
 
       expect(chat.messages.length).to.equal(4);
+
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[0]
       ).shadowDom.to.equal(
