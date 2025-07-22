@@ -27,7 +27,6 @@ export interface IgcChatComponentEventMap {
   igcInputFocus: CustomEvent<any>;
   igcInputBlur: CustomEvent<any>;
   igcInputChange: CustomEvent<string>;
-  igcMessageCopied: CustomEvent<IgcMessage>;
 }
 
 /**
@@ -132,11 +131,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderSuggestions() {
-    return html` <div class="suggestions-container">
+    return html` <div
+      class="suggestions-container"
+      role="list"
+      aria-label="Suggestions"
+    >
       <slot name="suggestions" part="suggestions">
         ${this._chatState.options?.suggestions?.map(
           (suggestion) => html`
-            <slot name="suggestion" part="suggestion">
+            <slot name="suggestion" part="suggestion" role="listitem">
               <igc-chip
                 @click=${() =>
                   this._chatState?.handleSuggestionClick(suggestion)}

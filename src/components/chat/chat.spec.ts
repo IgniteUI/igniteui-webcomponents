@@ -195,7 +195,7 @@ describe('Chat', () => {
                     </div>
                     <igc-chat-message-list>
                     </igc-chat-message-list>
-                    <div class="suggestions-container">
+                    <div aria-label="Suggestions" class="suggestions-container" role="list">
                         <slot name="suggestions" part="suggestions">
                         </slot>
                     </div>
@@ -209,7 +209,7 @@ describe('Chat', () => {
       );
 
       expect(messageList).shadowDom.to.equal(
-        `<div aria-activedescendant="" class="message-container" tabindex="0">
+        `<div aria-activedescendant="" aria-label="Message list" class="message-container" role="group" tabindex="0">
                 </div>
                 <div class="message-list">
                 </div>`
@@ -238,17 +238,18 @@ describe('Chat', () => {
                     </div>
                     <div class="buttons-container">
                         <igc-icon-button
-                        class="small"
-                        collection="material"
-                        disabled=""
-                        name="send-message"
-                        type="button"
-                            variant="contained"
+                          aria-label="Send message"
+                          class="small"
+                          collection="material"
+                          disabled=""
+                          name="send-message"
+                          type="button"
+                          variant="contained"
                         >
                         </igc-icon-button>
                         </div>
                     </div>
-                    <div>
+                    <div aria-label="Attachments" role="list">
                     </div>`
       );
     });
@@ -265,13 +266,13 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(4);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                    <igc-chat-message id="message-1">
+                    <igc-chat-message id="message-1" role="option">
                     </igc-chat-message>
-                    <igc-chat-message id="message-2">
+                    <igc-chat-message id="message-2" role="option">
                     </igc-chat-message>
-                    <igc-chat-message id="message-3">
+                    <igc-chat-message id="message-3" role="option">
                     </igc-chat-message>
-                    <igc-chat-message id="message-4">
+                    <igc-chat-message id="message-4" role="option">
                     </igc-chat-message>
                 </div>`
       );
@@ -493,17 +494,18 @@ describe('Chat', () => {
                     </div>
                     <div class="buttons-container">
                         <igc-icon-button
-                        class="small"
-                        collection="material"
-                        disabled=""
-                        name="send-message"
-                        type="button"
-                            variant="contained"
+                          aria-label="Send message"
+                          class="small"
+                          collection="material"
+                          disabled=""
+                          name="send-message"
+                          type="button"
+                          variant="contained"
                         >
                         </igc-icon-button>
                         </div>
                     </div>
-                    <div>
+                    <div aria-label="Attachments" role="list">
                     </div>`
       );
     });
@@ -564,6 +566,7 @@ describe('Chat', () => {
             </div>
             <div class="buttons-container">
               <igc-icon-button
+                aria-label="Send message"
                 class="small"
                 collection="material"
                 name="send-message"
@@ -573,15 +576,15 @@ describe('Chat', () => {
               </igc-icon-button>
             </div>
             </div>
-            <div>
-            <div class="attachment-wrapper">
+            <div aria-label="Attachments" role="list">
+            <div class="attachment-wrapper" role="listitem">
               <igc-chip removable="">
                 <span class="attachment-name">
                   test.txt
                 </span>
               </igc-chip>
             </div>
-            <div class="attachment-wrapper">
+            <div class="attachment-wrapper" role="listitem">
               <igc-chip removable="">
                 <span class="attachment-name">
                   image.png
@@ -727,16 +730,16 @@ describe('Chat', () => {
       );
 
       expect(suggestionsContainer).dom.to.equal(
-        `<div class="suggestions-container">
+        `<div aria-label="Suggestions" class="suggestions-container" role="list">
                     <slot name="suggestions" part="suggestions">
-                        <slot name="suggestion" part="suggestion">
+                        <slot name="suggestion" part="suggestion" role="listitem">
                             <igc-chip>
                                 <span>
                                 Suggestion 1
                                 </span>
                             </igc-chip>
                             </slot>
-                            <slot name="suggestion" part="suggestion">
+                            <slot name="suggestion" part="suggestion" role="listitem">
                             <igc-chip>
                                 <span>
                                 Suggestion 2
@@ -762,7 +765,7 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message id="message-1">
+                <igc-chat-message id="message-1" role="option">
                 </igc-chat-message>
                 <div class="typing-indicator">
                     <div class="typing-dot">
@@ -962,7 +965,7 @@ describe('Chat', () => {
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
         `<div class="message-list">
-                <igc-chat-message id="message-1">
+                <igc-chat-message id="message-1" role="option">
                 </igc-chat-message>
                 <span>loading...</span>
             </div>`
@@ -992,7 +995,7 @@ describe('Chat', () => {
                 <igc-button type="button" variant="contained">Send</igc-button>
             </div>
           </div>
-          <div>
+          <div aria-label="Attachments" role="list">
             <div>
               <a href=${draftMessage.attachments[0].url} target="_blank">
                 ${draftMessage.attachments[0].name}

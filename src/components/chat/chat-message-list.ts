@@ -153,6 +153,8 @@ export default class IgcChatMessageListComponent extends LitElement {
       <div
         class='message-container'
         aria-activedescendant=${this._activeMessageId}
+        role="group"
+        aria-label="Message list"
         tabindex='0'
         @focusin=${this.handleFocusIn}
         @focusout=${this.handleFocusOut}
@@ -170,6 +172,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                   return html`
                     <igc-chat-message
                       id=${messageId}
+                      role="option"
                       class=${this._activeMessageId === messageId
                         ? 'active'
                         : ''}

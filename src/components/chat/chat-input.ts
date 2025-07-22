@@ -248,6 +248,7 @@ export default class IgcChatInputComponent extends LitElement {
       ${this._chatState?.options?.templates?.textAreaActionsTemplate
         ? this._chatState?.options?.templates?.textAreaActionsTemplate
         : html` <igc-icon-button
+            aria-label="Send message"
             name="send-message"
             collection="material"
             variant="contained"
@@ -260,14 +261,14 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private renderAttachmentsArea() {
-    return html`<div>
+    return html`<div role="list" aria-label="Attachments">
       ${this._chatState?.options?.templates?.textAreaAttachmentsTemplate
         ? this._chatState.options.templates.textAreaAttachmentsTemplate(
             this._chatState?.inputAttachments
           )
         : html`${this._chatState?.inputAttachments?.map(
             (attachment, index) => html`
-              <div class="attachment-wrapper">
+              <div class="attachment-wrapper" role="listitem">
                 <igc-chip
                   removable
                   @igcRemove=${() => this.removeAttachment(index)}
