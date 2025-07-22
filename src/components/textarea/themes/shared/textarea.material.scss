@@ -31,6 +31,7 @@ textarea {
     position: relative;
     max-width: inherit;
     padding-inline: rem(4px);
+    z-index: 1;
 }
 
 [part='label'] {
@@ -80,11 +81,14 @@ textarea {
             border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
             transition: all 0.25s $out-cubic;
         }
+
+        textarea {
+            margin-block-end: rem(2px);
+        }
     }
 
     [part~='container']:not([part~='suffixed']) {
         textarea {
-            margin-block-end: rem(2px);
             grid-area: 1 / 2 / span 1 / span 3;
         }
     }
