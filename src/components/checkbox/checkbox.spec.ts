@@ -125,22 +125,6 @@ describe('Checkbox', () => {
       expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
     });
 
-    it('should set the checkbox invalid property correctly', async () => {
-      element.invalid = true;
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-checkbox invalid label-position="after">${label}</igc-checkbox>`
-      );
-
-      element.invalid = false;
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-checkbox label-position="after">${label}</igc-checkbox>`
-      );
-    });
-
     it('should correctly report validity status', () => {
       element.required = true;
       expect(element.reportValidity()).to.be.false;

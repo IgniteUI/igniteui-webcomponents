@@ -76,20 +76,6 @@ describe('Radio Component', () => {
       );
     });
 
-    it('sets invalid properly', async () => {
-      radio.invalid = true;
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio invalid label-position="after">${label}</igc-radio>`
-      );
-
-      radio.invalid = false;
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio label-position="after">${label}</igc-radio>`
-      );
-    });
-
     it('sets the name property successfully', async () => {
       const name = 'fruit';
 

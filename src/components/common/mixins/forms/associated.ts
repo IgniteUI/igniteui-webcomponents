@@ -96,7 +96,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * @attr
      * @default false
      */
-    @property({ type: Boolean, reflect: true })
+    @property({ type: Boolean })
     public set invalid(value: boolean) {
       this._isExternalInvalid = value;
       this._setInvalidStyles();
