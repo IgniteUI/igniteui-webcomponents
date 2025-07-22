@@ -161,7 +161,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return html`
       <div class="chat-container">
         ${this.renderHeader()}
-        <igc-chat-message-list> </igc-chat-message-list>
+        ${this.messages.length === 0
+          ? html`<div class="empty-state">
+              <slot name="empty-state"> </slot>
+            </div>`
+          : html`<igc-chat-message-list> </igc-chat-message-list>`}
         ${this.renderSuggestions()}
         <igc-chat-input></igc-chat-input>
       </div>

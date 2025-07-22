@@ -798,6 +798,7 @@ describe('Chat', () => {
     it('should slot header prefix', () => {});
     it('should slot header title', () => {});
     it('should slot header action buttons area', () => {});
+    it('should slot message list area when there are no messages', () => {});
     it('should slot suggestions area', () => {});
   });
 
