@@ -8,7 +8,8 @@ $theme: $fluent;
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-radio');
 }
 
-:host(:not([disabled])[invalid]:hover) {
+:host(:not([disabled]):state(ig-invalid):hover),
+:host(:not(:disabled):state(ig-invalid):hover) {
     [part='control'] {
         &::before {
             background: color(error, 500);
@@ -16,7 +17,8 @@ $theme: $fluent;
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part='focused'] [part='control'] {
         &::before {
             background: color(error, 500);
