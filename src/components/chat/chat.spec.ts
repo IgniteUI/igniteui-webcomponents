@@ -193,25 +193,16 @@ describe('Chat', () => {
                             </igc-button>
                         </slot>
                     </div>
-                    <igc-chat-message-list>
-                    </igc-chat-message-list>
+                    <div class="empty-state">
+                      <slot name="empty-state">
+                      </slot>
+                    </div>
                     <div aria-label="Suggestions" class="suggestions-container" role="list">
                         <slot name="suggestions" part="suggestions">
                         </slot>
                     </div>
                     <igc-chat-input>
                     </igc-chat-input>
-                </div>`
-      );
-
-      const messageList = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
-      );
-
-      expect(messageList).shadowDom.to.equal(
-        `<div aria-activedescendant="" aria-label="Message list" class="message-container" role="group" tabindex="0">
-                </div>
-                <div class="message-list">
                 </div>`
       );
 
@@ -259,14 +250,17 @@ describe('Chat', () => {
         html`<igc-chat .messages=${messages}> </igc-chat>`
       );
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+      const messageList = chat.shadowRoot?.querySelector(
+        'igc-chat-message-list'
+      );
+      const messageContainer =
+        messageList?.shadowRoot?.querySelector('.message-list');
 
-      expect(chat.messages.length).to.equal(4);
-      expect(messageContainer).dom.to.equal(
-        `<div class="message-list">
-                    <igc-chat-message id="message-1" role="option">
+      expect(messageList).shadowDom.to.equal(
+        `<div aria-activedescendant="" aria-label="Message list" class="message-container" role="group" tabindex="0">
+                  </div>
+                  <div class="message-list">
+                   <igc-chat-message id="message-1" role="option">
                     </igc-chat-message>
                     <igc-chat-message id="message-2" role="option">
                     </igc-chat-message>
@@ -274,8 +268,10 @@ describe('Chat', () => {
                     </igc-chat-message>
                     <igc-chat-message id="message-4" role="option">
                     </igc-chat-message>
-                </div>`
+                  </div>`
       );
+
+      expect(chat.messages.length).to.equal(4);
 
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[0]
