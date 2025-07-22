@@ -30,7 +30,7 @@ $theme: $indigo;
     padding: rem(8px) rem(16px);
 }
 
-:host(:not([invalid])[readonly]) {
+:host([readonly]) {
     igc-input::part(container),
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
@@ -38,23 +38,31 @@ $theme: $indigo;
 }
 
 :host(:not([readonly]):hover) {
-    igc-input[readonly]::part(container) {
+    igc-input[readonly]::part(container),
+    igc-date-time-input:hover::part(container) {
         background: var-get($theme, 'box-background-hover');
+        border-color: var-get($theme, 'hover-bottom-line-color');
     }
 
-    igc-input[readonly]::part(filled) {
+    igc-input[readonly]::part(filled),
+    igc-date-time-input:hover::part(filled) {
         color: var-get($theme, 'filled-text-hover-color');
     }
 }
 
-:host(:not([readonly], [invalid]):hover) {
-    igc-input[readonly]::part(container) {
-        border-color: var-get($theme, 'hover-bottom-line-color');
-    }
-}
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid):hover),
+:host(:not(:disabled,[readonly]):state(ig-invalid):hover) {
+    igc-input::part(container),
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'error-secondary-color');
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
+    }
+
     ::part(helper-text) {
         color: var-get($theme, 'helper-text-color');
     }

@@ -100,10 +100,10 @@ $theme: $material;
 
 :host(:disabled),
 :host([disabled]) {
-    --affix-color: var-get($theme, 'disabled-text-color');
+    --affix-color: #{var-get($theme, 'disabled-text-color')};
 
     ::part(filled) {
-        --affix-color: var-get($theme, 'disabled-text-color');
+        --affix-color: #{var-get($theme, 'disabled-text-color')};
     }
 
     ::part(helper-text),
