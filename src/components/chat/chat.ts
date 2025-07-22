@@ -117,14 +117,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderHeader() {
-    return html` <div class="header" part="header">
-      <div class="info">
+    return html` <div part="header">
+      <div part="info">
         <slot name="prefix" part="prefix"></slot>
         <slot name="title" part="title"
           >${this._chatState.options?.headerText}</slot
         >
       </div>
-      <slot name="actions" class="actions">
+      <slot name="actions" part="actions">
         <igc-button variant="flat">⋯</igc-button>
       </slot>
     </div>`;
@@ -132,7 +132,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private renderSuggestions() {
     return html` <div
-      class="suggestions-container"
+      part="suggestions-container"
       role="list"
       aria-label="Suggestions"
     >
@@ -159,10 +159,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div class="chat-container">
+      <div part="chat-container">
         ${this.renderHeader()}
         ${this.messages.length === 0
-          ? html`<div class="empty-state">
+          ? html`<div part="empty-state">
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}

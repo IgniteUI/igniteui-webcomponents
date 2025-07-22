@@ -49,8 +49,8 @@ export default class IgcChatMessageComponent extends LitElement {
       this._chatState?.options?.markdownRenderer || renderMarkdown;
 
     return html`
-      <div class=${containerClass}>
-        <div class="bubble">
+      <div part=${containerClass}>
+        <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
             : html` ${sanitizedMessageText

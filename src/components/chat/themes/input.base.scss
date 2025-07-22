@@ -7,48 +7,48 @@
     border-top: 1px solid #E5E5EA;
 }
 
-igc-file-input{
+igc-file-input {
     width: fit-content;
 }
 
-igc-file-input::part(file-names){
+igc-file-input::part(file-names) {
     display: none;
 }
 
-.input-container {
+::part(input-container) {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.input-container.dragging{
+::part(input-container).dragging {
     background-color: black;
     border: 2px dashed #0A84FF;
 }
 
-.input-wrapper {
+::part(input-wrapper) {
     flex: 1;
     position: relative;
     border-radius: 24px;
     overflow: hidden;
     transition: box-shadow 0.2s;
-
-    igc-textarea {
-        padding-top: 3px;
-        padding-bottom: 3px;
-    }
-
-    igc-textarea::part(input) {
-        max-height: 115px;
-    }
 }
 
-.buttons-container {
+::part(input-wrapper) igc-textarea {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+::part(input-wrapper) igc-textarea::part(input) {
+    max-height: 115px;
+}
+
+::part(buttons-container) {
     display: flex;
     align-items: center;
 }
 
-.input-button {
+::part(input-button) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,12 +64,12 @@ igc-file-input::part(file-names){
     transition: all 0.2s ease;
 }
 
-.input-button:hover {
+::part(input-button):hover {
     color: #0A84FF;
     background-color: #a1a1a1;
 }
 
-.text-input {
+::part(text-input) {
     width: 100%;
     border: none;
     padding: 12px 16px;
@@ -81,8 +81,8 @@ igc-file-input::part(file-names){
     font-family: inherit;
 }
 
-.attachment-button,
-.send-button {
+::part(attachment-button),
+::part(send-button) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -96,38 +96,38 @@ igc-file-input::part(file-names){
     transition: white 0.2s;
 }
 
-.attachment-button:hover,
-.send-button:hover {
+::part(attachment-button):hover,
+::part(send-button):hover {
     background-color: #8E8E93;
 }
 
-.attachment-wrapper {
+::part(attachment-wrapper) {
     max-width: 200px;
     margin-right: 5px;
     float: left;
-
-    igc-chip {
-        border: 1px solid #E5E5EA;
-        border-radius: 5px;
-    }
 }
 
-.attachment-name {
+::part(attachment-wrapper) igc-chip {
+    border: 1px solid #E5E5EA;
+    border-radius: 5px;
+}
+
+::part(attachment-name) {
     font-size: small;
     font-style: italic;
     margin: 0 5px;
 }
 
-.send-button {
+::part(send-button) {
     background-color: #0A84FF;
     color: white;
 }
 
-.send-button:hover {
+::part(send-button):hover {
     background-color: #5AC8FA;
 }
 
-.send-button:disabled {
+::part(send-button):disabled {
     background-color: #C7C7CC;
     cursor: not-allowed;
 }

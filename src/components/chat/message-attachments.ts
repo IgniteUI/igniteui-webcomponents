@@ -79,7 +79,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
-    return html`<div class="details">
+    return html`<div part="details">
       ${this._chatState?.options?.templates?.attachmentHeaderTemplate
         ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.attachments
@@ -91,23 +91,23 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 ? html`<igc-icon
                     name="image"
                     collection="material"
-                    class="medium"
+                    part="attachment-icon"
                   ></igc-icon>`
                 : html`<igc-icon
                     name="file"
                     collection="material"
-                    class="medium"
+                    part="attachment-icon"
                   ></igc-icon>`}
             </slot>
             <slot name="attachment-name">
-              <span class="file-name">${attachment.name}</span>
+              <span part="file-name">${attachment.name}</span>
             </slot>
           `}
     </div>`;
   }
 
   private renderAttachmentHeaderActions(attachment: IgcMessageAttachment) {
-    return html`<div class="actions">
+    return html`<div part="actions">
       ${this._chatState?.options?.templates?.attachmentActionsTemplate
         ? this._chatState.options.templates.attachmentActionsTemplate(
             this.attachments
@@ -120,7 +120,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     name="preview"
                     collection="material"
                     variant="flat"
-                    class="small"
+                    part="attachment-preview-button"
                     tabIndex="-1"
                     @click=${() => this.openImagePreview(attachment)}
                   ></igc-icon-button>`
@@ -129,7 +129,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 name="more"
                 collection="material"
                 variant="flat"
-                class="small"
+                part="attachment-more-button"
                 tabIndex="-1"
               ></igc-icon-button>
             </slot>
@@ -148,7 +148,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             ${attachment.type === 'image' ||
             attachment.file?.type.startsWith('image/')
               ? html` <img
-                  class="image-attachment"
+                  part="image-attachment"
                   src=${this.getURL(attachment)}
                   alt=${attachment.name}
                 />`
@@ -168,7 +168,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
           @igcClosing=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
           @igcOpening=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
         >
-          <div slot="title" class="attachment">
+          <div slot="title" part="attachment">
             ${this.renderAttachmentHeaderText(attachment)}
             ${this.renderAttachmentHeaderActions(attachment)}
           </div>
@@ -181,13 +181,13 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   private renderImagePreview() {
     return html` ${this.previewImage
       ? html`
-          <div class="image-overlay" @click=${this.closeImagePreview}>
-            <img class="overlay-image" src=${this.previewImage} />
+          <div part="image-overlay" @click=${this.closeImagePreview}>
+            <img part="overlay-image" src=${this.previewImage} />
             <igc-icon-button
               name="close"
               collection="material"
               variant="contained"
-              class="small"
+              part="close-preview-button"
               tabIndex="-1"
               @click=${this.closeImagePreview}
             ></igc-icon-button>
@@ -198,7 +198,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div class="attachments-container">
+      <div part="attachments-container">
         ${this._chatState?.options?.templates?.attachmentTemplate
           ? this._chatState.options.templates.attachmentTemplate(
               this.attachments

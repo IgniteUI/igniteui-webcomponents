@@ -244,15 +244,15 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private renderActionsArea() {
-    return html`<div class="buttons-container">
+    return html`<div part="buttons-container">
       ${this._chatState?.options?.templates?.textAreaActionsTemplate
         ? this._chatState?.options?.templates?.textAreaActionsTemplate
         : html` <igc-icon-button
+            part="send-button"
             aria-label="Send message"
             name="send-message"
             collection="material"
             variant="contained"
-            class="small"
             ?disabled=${!this.inputValue.trim() &&
             this._chatState?.inputAttachments.length === 0}
             @click=${this.sendMessage}
@@ -268,12 +268,12 @@ export default class IgcChatInputComponent extends LitElement {
           )
         : html`${this._chatState?.inputAttachments?.map(
             (attachment, index) => html`
-              <div class="attachment-wrapper" role="listitem">
+              <div part="attachment-wrapper" role="listitem">
                 <igc-chip
                   removable
                   @igcRemove=${() => this.removeAttachment(index)}
                 >
-                  <span class="attachment-name">${attachment.name}</span>
+                  <span part="attachment-name">${attachment.name}</span>
                 </igc-chip>
               </div>
             `
@@ -283,16 +283,16 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div class="input-container ${this.dragClass}">
+      <div part="input-container" class="${this.dragClass}">
         ${this.renderFileUploadArea()}
 
-        <div class="input-wrapper">
+        <div part="input-wrapper">
           ${this._chatState?.options?.templates?.textInputTemplate
             ? this._chatState.options.templates.textInputTemplate(
                 this._chatState?.inputValue
               )
             : html` <igc-textarea
-                class="text-input"
+                part="text-input"
                 placeholder="Type a message..."
                 resize="auto"
                 rows="1"

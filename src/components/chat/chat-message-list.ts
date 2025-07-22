@@ -137,10 +137,10 @@ export default class IgcChatMessageListComponent extends LitElement {
   protected *renderLoadingTemplate() {
     yield html`${this._chatState?.options?.templates?.composingIndicatorTemplate
       ? this._chatState.options.templates.composingIndicatorTemplate
-      : html`<div class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
+      : html`<div part="typing-indicator">
+          <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
         </div>`}`;
   }
 
@@ -151,7 +151,7 @@ export default class IgcChatMessageListComponent extends LitElement {
 
     return html`
       <div
-        class='message-container'
+        part="message-container"
         aria-activedescendant=${this._activeMessageId}
         role="group"
         aria-label="Message list"
@@ -159,7 +159,7 @@ export default class IgcChatMessageListComponent extends LitElement {
         @focusin=${this.handleFocusIn}
         @focusout=${this.handleFocusOut}
         @keydown=${this.handleKeyDown}></div>
-        <div class="message-list">
+        <div part="message-list">
           ${repeat(
             groupedMessages,
             (group) => group.date,
@@ -173,9 +173,9 @@ export default class IgcChatMessageListComponent extends LitElement {
                     <igc-chat-message
                       id=${messageId}
                       role="option"
-                      class=${this._activeMessageId === messageId
+                      part="message-item ${this._activeMessageId === messageId
                         ? 'active'
-                        : ''}
+                        : ''}"
                       .message=${message}
                     >
                     </igc-chat-message>
