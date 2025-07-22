@@ -37,18 +37,6 @@ $theme: $fluent;
     }
 }
 
-:host(:not([invalid])[readonly]:hover) {
-    igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'border-color');
-    }
-}
-
-:host(:not([invalid])[readonly]:focus-within) {
-    igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'focused-border-color');
-    }
-}
-
 :host(:disabled),
 :host([disabled]) {
     [part='label']::after {

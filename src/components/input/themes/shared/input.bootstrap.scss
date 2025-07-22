@@ -170,13 +170,15 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part~='input'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
 }
 
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not([disabled],[readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled])[role='combobox']:state(ig-invalid):focus-within) {
     [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }

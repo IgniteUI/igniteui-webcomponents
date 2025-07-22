@@ -121,8 +121,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host(:not(:disabled,[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
     [part~='container'] {
         &::after {
             border-block-end-color: var-get($theme, 'error-secondary-color');
@@ -130,10 +130,6 @@ textarea {
     }
 
     [part~='label'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-
-    ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
 }
@@ -184,7 +180,7 @@ textarea {
     }
 }
 
-:host([invalid]:not([outlined]):focus-within) {
+:host(:not([outlined],[readonly]):state(ig-invalid):focus-within) {
     [part~='container'] {
         &::after {
             border-block-end-color: var-get($theme, 'error-secondary-color');
@@ -396,20 +392,6 @@ textarea {
     }
 }
 
-:host(:not(:disabled)[readonly][outlined][invalid]:focus-within),
-:host(:not([disabled])[readonly][outlined][invalid]:focus-within) {
-    [part='notch'] {
-        border-block-start-color: var-get($theme, 'error-secondary-color');
-    }
-
-    [part~='container'][part~='filled'],
-    [part~='container'][part~='placeholder'] {
-        [part='notch'] {
-            border-block-start-color: transparent;
-        }
-    }
-}
-
 :host([outlined]:focus-within) {
     [part='filler'],
     [part='notch'] {
@@ -461,10 +443,10 @@ textarea {
     }
 }
 
-:host([invalid][outlined]:not(:disabled)),
-:host([invalid][outlined]:not(:disabled):focus-within),
-:host([invalid][outlined]:not([disabled])),
-:host([invalid][outlined]:not([disabled]):focus-within) {
+:host(:state(ig-invalid)[outlined]:not(:disabled,[readonly])),
+:host(:state(ig-invalid)[outlined]:not(:disabled,[readonly]):focus-within),
+:host(:state(ig-invalid)[outlined]:not([disabled],[readonly])),
+:host(:state(ig-invalid)[outlined]:not([disabled],[readonly]):focus-within) {
     [part='start'],
     [part='filler'],
     [part='end'],
@@ -473,8 +455,8 @@ textarea {
     }
 }
 
-:host([invalid][outlined]:not([disabled]):focus-within),
-:host([invalid][outlined]:not([disabled])) [part~='placeholder'] {
+:host(:state(ig-invalid)[outlined]:not([disabled],[readonly]):focus-within),
+:host(:state(ig-invalid)[outlined]:not([disabled],[readonly])) [part~='placeholder'] {
     [part='notch'] {
         border-block-start-color: transparent;
     }

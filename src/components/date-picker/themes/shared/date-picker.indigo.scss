@@ -33,14 +33,14 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-:host(:not([invalid])[readonly]) {
+:host([readonly]) {
     igc-date-time-input::part(container) {
         border-color: var-get($theme, 'disabled-text-color');
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }

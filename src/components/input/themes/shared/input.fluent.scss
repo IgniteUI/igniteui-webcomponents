@@ -95,7 +95,7 @@ $theme: $fluent;
     }
 }
 
-:host(:not([readonly], [invalid], :focus-within):hover) {
+:host(:not([readonly], :focus-within):hover) {
     [part^='container'] {
         &::before {
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
@@ -108,7 +108,7 @@ $theme: $fluent;
     }
 }
 
-:host([aria-expanded][readonly]:not([invalid], :focus-within):hover) {
+:host([aria-expanded][readonly]:not(:focus-within):hover) {
     [part^='container'] {
         &::before {
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
@@ -121,7 +121,7 @@ $theme: $fluent;
     }
 }
 
-:host([aria-haspopup]:not([readonly], [invalid], :focus-within):hover) {
+:host([aria-haspopup]:not([readonly], :focus-within):hover) {
     [part^='container'] {
         &::before {
             color: var-get($theme, 'hover-border-color');
@@ -189,10 +189,10 @@ $theme: $fluent;
     }
 }
 
-:host([invalid]),
-:host([invalid]:hover),
-:host([readonly][invalid]:hover),
-:host([readonly][invalid]:focus-within) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid):hover),
+:host(:not([disabled])[role='combobox']:state(ig-invalid)),
+:host(:not([disabled])[role='combobox']:state(ig-invalid):hover) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -204,8 +204,8 @@ $theme: $fluent;
     }
 }
 
-:host([invalid]:focus-within),
-:host([readonly][invalid]:focus-within) {
+:host(:not([disabled],[readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled])[role='combobox']:state(ig-invalid):focus-within) {
     [part~='container'] {
         &::before {
             box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)}) var-get($theme, 'error-secondary-color');
