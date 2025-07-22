@@ -1,37 +1,45 @@
 import hljs from 'highlight.js/lib/core';
 import { html, type TemplateResult } from 'lit';
-import { marked } from 'marked';
+import { Marked, Renderer } from 'marked';
 import { markedHighlight } from 'marked-highlight';
+import type { HlLanguages } from './types.js';
 
-const renderer = new marked.Renderer();
-
-// Customize link rendering
+const localMarkedInstance = new Marked();
+const renderer = new Renderer();
 renderer.link = (href, title, text) => {
   return `<a href="${href}" target="_blank" rel="noopener noreferrer" ${title ? `title="${title}"` : ''}>${text}</a>`;
 };
 
-marked.use(
-  markedHighlight({
-    langPrefix: 'hljs language-',
-    highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      try {
-        return hljs.highlight(code, { language }).value;
-      } catch (_e) {
-        return code;
-      }
-    },
-  })
-);
+localMarkedInstance.setOptions({
+  gfm: true, // GitHub Flavored Markdown
+  breaks: true, // Enable GFM line breaks
+  renderer,
+});
 
-export function renderMarkdown(text: string): TemplateResult {
+export function renderMarkdown(text: string): string | TemplateResult {
   if (!text) return html``;
 
-  const rendered = marked.parse(text).toString();
+  const rendered = localMarkedInstance.parse(text).toString();
   const template = document.createElement('template');
   template.innerHTML = rendered;
 
   return html`${template.content}`;
+}
+
+export function configureDefaultHighlighter() {
+  localMarkedInstance.use(
+    markedHighlight({
+      langPrefix: 'hljs language-',
+      highlight(code, lang) {
+        const language = hljs.getLanguage(lang);
+        if (!language) {
+          return code; // If no language is found, return the code as is
+        }
+
+        return hljs.highlight(code, { language: lang }).value;
+      },
+    })
+  );
 }
 
 export function registerHlLanguages(languages: HlLanguages) {
@@ -51,5 +59,3 @@ export function registerHlLanguages(languages: HlLanguages) {
   }
   return registerHlLanguages;
 }
-
-export type HlLanguages = { [key: string]: any };

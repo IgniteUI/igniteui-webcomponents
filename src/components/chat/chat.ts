@@ -10,7 +10,6 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { createChatState } from './chat-state.js';
-import { registerHlLanguages } from './markdown-util.js';
 import { styles } from './themes/chat.base.css.js';
 import type {
   IgcChatOptions,
@@ -125,9 +124,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     </div>`;
   }
 
-  protected override firstUpdated() {
+  protected override async firstUpdated() {
     this._context.setValue(this._chatState, true);
-    this.options?.languages && registerHlLanguages(this.options.languages);
+    await this._chatState.updateRendererConfig(
+      this._chatState.options?.rendererConfig
+    );
   }
 
   protected override render() {
