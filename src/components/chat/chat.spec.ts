@@ -7,7 +7,12 @@ import {
 } from '@open-wc/testing';
 import { html } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-import { arrowDown, arrowUp } from '../common/controllers/key-bindings.js';
+import {
+  arrowDown,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   isFocused,
@@ -170,6 +175,7 @@ describe('Chat', () => {
     it('is correctly initialized with its default component state', () => {
       expect(chat.messages.length).to.equal(0);
       expect(chat.options).to.be.undefined;
+      expect(chat.draftMessage).to.deep.equal({ text: '', attachments: [] });
     });
 
     it('is rendered correctly', () => {
@@ -364,13 +370,13 @@ describe('Chat', () => {
           if (index !== 2) {
             expect(
               messageElement.shadowRoot
-                ?.querySelector('.message-container')
+                ?.querySelector(`div[part='message-container']`)
                 ?.classList.contains('sent')
             ).to.be.false;
           } else {
             expect(
               messageElement.shadowRoot
-                ?.querySelector('.message-container')
+                ?.querySelector(`div[part='message-container']`)
                 ?.classList.contains('sent')
             ).to.be.true;
           }
@@ -449,6 +455,38 @@ describe('Chat', () => {
           </slot>
       </div>`
       );
+    });
+
+    it('should enable/disable the send button properly', async () => {
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const sendButton =
+        inputArea?.shadowRoot?.querySelector('igc-icon-button');
+
+      expect(sendButton?.disabled).to.be.true;
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      // When there is a text in the text area, the send button should be enabled
+      textArea?.setAttribute('value', 'Hello!');
+      textArea?.dispatchEvent(new Event('input'));
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.false;
+
+      // When there is no text in the text area, the send button should be disabled
+      textArea?.setAttribute('value', '');
+      textArea?.dispatchEvent(new Event('input'));
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.true;
+
+      // When there are attachments, the send button should be enabled regardless of the text area content
+      const fileInput = inputArea?.shadowRoot
+        ?.querySelector('igc-file-input')
+        ?.shadowRoot?.querySelector('input') as HTMLInputElement;
+      simulateFileUpload(fileInput, files);
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.false;
     });
 
     it('should not render attachment button if `disableAttachments` is true', async () => {
@@ -1180,48 +1218,90 @@ describe('Chat', () => {
           }
         });
       });
-    });
 
-    it('should activates the next/previous message on `ArrowDown`/`ArrowUp`', async () => {
-      chat.messages = messages;
-      await elementUpdated(chat);
-      await aTimeout(500);
+      it('should activates the next/previous message on `ArrowDown`/`ArrowUp`', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(
-          `div[part='message-container']`
-        ) as HTMLElement;
-      messageContainer.focus();
-      await elementUpdated(chat);
-      await nextFrame();
-      await nextFrame();
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector(
+            `div[part='message-container']`
+          ) as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+        await nextFrame();
+        await nextFrame();
 
-      // Activates the previous message on `ArrowUp`
-      messageContainer.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: arrowUp,
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-      await nextFrame();
-      expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
-        'message-3'
-      );
+        // Activates the previous message on `ArrowUp`
+        messageContainer.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: arrowUp,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        await nextFrame();
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-3'
+        );
 
-      // Activates the next message on `ArrowDown`
-      messageContainer.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: arrowDown,
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-      await nextFrame();
-      expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
-        'message-4'
-      );
+        // Activates the next message on `ArrowDown`
+        messageContainer.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: arrowDown,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        await nextFrame();
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
+      });
+
+      it('should activates the first/last message on `Home`/`End`', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector(
+            `div[part='message-container']`
+          ) as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+        await nextFrame();
+        await nextFrame();
+
+        // Activates the first message on `Home`
+        messageContainer.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: homeKey,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        await nextFrame();
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-1'
+        );
+
+        // Activates the last message on `End`
+        messageContainer.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: endKey,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+        await nextFrame();
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
+      });
     });
   });
 
