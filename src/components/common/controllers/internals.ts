@@ -23,7 +23,7 @@ class ElementInternalsController {
    * Gets the closest ancestor `<form>` element or `null`.
    *
    * @remarks
-   * The host element must be form associated, that is should have
+   * The host element must be form associated, that is, it should have
    * `static formAssociated = true` in order to return the parent form.
    */
   public get form(): HTMLFormElement | null {
@@ -35,7 +35,7 @@ class ElementInternalsController {
    * the element can be in, with respect to constraint validation.
    *
    * @remarks
-   * The host element must be form associated, that is should have
+   * The host element must be form associated, that is, it should have
    * `static formAssociated = true`.
    */
   public get validity(): ValidityState {
@@ -46,7 +46,7 @@ class ElementInternalsController {
    * Returns a string containing the validation message of this element.
    *
    * @remarks
-   * The host element must be form associated, that is should have
+   * The host element must be form associated, that is, it should have
    * `static formAssociated = true`.
    */
   public get validationMessage(): string {
@@ -58,7 +58,7 @@ class ElementInternalsController {
    * which is a candidate for constraint validation.
    *
    * @remarks
-   * The host element must be form associated, that is should have
+   * The host element must be form associated, that is, it should have
    * `static formAssociated = true`.
    */
   public get willValidate(): boolean {
@@ -96,18 +96,51 @@ class ElementInternalsController {
       : this._internals.states.delete(state);
   }
 
+  /**
+   * Sets both the state and submission value of internals's target element to value.
+   *
+   * If value is null, the element won't participate in form submission.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
   public setFormValue(value: FormValueType, state?: FormValueType): void {
     this._internals.setFormValue(value, state);
   }
 
+  /**
+   * Sets the internal validity state of the host element as well as the validation
+   * message.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
   public setValidity(flags?: ValidityStateFlags, message?: string): void {
     this._internals.setValidity(flags, message);
   }
 
+  /**
+   * Checks the internal validity of the host element and fires an `invalid` event if
+   * the host element fails validation constraints.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
   public checkValidity(): boolean {
     return this._internals.checkValidity();
   }
 
+  /**
+   * Checks the internal validity of the host element and fires an `invalid` event if
+   * the host element fails validation constraints.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
   public reportValidity(): boolean {
     return this._internals.reportValidity();
   }

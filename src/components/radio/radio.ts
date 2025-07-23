@@ -281,6 +281,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override formResetCallback(): void {
     super.formResetCallback();
     this._resetTabIndexes();
+    this.updateComplete.then(() => this._validate());
   }
 
   /** Called after a form reset callback to restore default keyboard navigation. */
@@ -300,6 +301,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
+    this._setTouchedState();
 
     if (this.checked) {
       return;
@@ -320,6 +322,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[next];
 
+    this._setTouchedState();
     radio.focus();
     radio.checked = true;
     radio.emitEvent('igcChange', {
