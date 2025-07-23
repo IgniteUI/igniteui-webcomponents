@@ -136,7 +136,9 @@ export class ChatState {
     });
 
     if (allowed) {
-      this.messages = [...this.messages, newMessage];
+      if (!this.messages.some((msg) => msg.id === newMessage.id)) {
+        this.messages = [...this.messages, newMessage];
+      }
       this.inputValue = '';
       this.inputAttachments = [];
     }
