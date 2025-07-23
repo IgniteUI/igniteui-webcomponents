@@ -638,26 +638,6 @@ describe('Chat', () => {
                                     </slot>
                                 </div>
                                 <div class="actions">
-                                    <slot name="attachment-actions">
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="preview"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="more"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    </slot>
                                 </div>
                                 </div>
                                 <slot name="attachment-content">
@@ -693,17 +673,6 @@ describe('Chat', () => {
                                     </slot>
                                 </div>
                                 <div class="actions">
-                                    <slot name="attachment-actions">
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="more"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    </slot>
                                 </div>
                                 </div>
                                 <slot name="attachment-content">
