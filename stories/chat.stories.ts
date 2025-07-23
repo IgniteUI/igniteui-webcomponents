@@ -1,23 +1,22 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-
 import { GoogleGenAI, Modality } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import javascript from 'highlight.js/lib/languages/javascript';
 import {
-  IgcChatComponent,
   defineComponents,
+  IgcChatComponent,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import type {
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// const supabaseUrl = ''; // import.meta.env.VITE_SUPABASE_URL;
+// const supabaseKey = ''; //import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = ''; //createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
+const googleGenAIKey = ''; //import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
@@ -147,6 +146,13 @@ const ai_chat_options = {
 const chat_options = {
   disableAutoScroll: true,
   disableAttachments: true,
+  rendererConfig: {
+    type: 'markdown',
+    markdown: {
+      languages: { javascript: javascript },
+    },
+    // renderFn: _customRenderer,
+  },
 };
 
 function handleCustomSendClick() {
