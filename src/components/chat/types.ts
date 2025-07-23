@@ -53,7 +53,6 @@ export type IgcChatTemplates = {
   messageActionsTemplate?: MessageTemplate;
   composingIndicatorTemplate?: TemplateResult;
   textInputTemplate?: (text: string) => TemplateResult;
-  fileUploadTemplate?: TemplateResult;
   textAreaActionsTemplate?: TemplateResult;
   textAreaAttachmentsTemplate?: AttachmentTemplate;
 };

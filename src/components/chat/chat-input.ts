@@ -237,26 +237,25 @@ export default class IgcChatInputComponent extends LitElement {
         `}`;
   }
 
-  private renderFileUploadArea() {
-    return html` ${this._chatState?.options?.templates?.fileUploadTemplate
-      ? this._chatState?.options?.templates?.fileUploadTemplate
-      : this.renderDefaultFileUploadTemplate()}`;
+  protected *renderDefaultSendButtonTemplate() {
+    yield html` <igc-icon-button
+      aria-label="Send message"
+      part="send-button"
+      name="send-message"
+      collection="material"
+      variant="contained"
+      ?disabled=${!this.inputValue.trim() &&
+      this._chatState?.inputAttachments.length === 0}
+      @click=${this.sendMessage}
+    ></igc-icon-button>`;
   }
 
   private renderActionsArea() {
     return html`<div part="buttons-container">
       ${this._chatState?.options?.templates?.textAreaActionsTemplate
         ? this._chatState?.options?.templates?.textAreaActionsTemplate
-        : html` <igc-icon-button
-            part="send-button"
-            aria-label="Send message"
-            name="send-message"
-            collection="material"
-            variant="contained"
-            ?disabled=${!this.inputValue.trim() &&
-            this._chatState?.inputAttachments.length === 0}
-            @click=${this.sendMessage}
-          ></igc-icon-button>`}
+        : html` ${this.renderDefaultFileUploadTemplate()}
+          ${this.renderDefaultSendButtonTemplate()}`}
     </div>`;
   }
 
@@ -283,8 +282,8 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="input-container" class="${this.dragClass}">
-        ${this.renderFileUploadArea()}
+      <div class="input-container ${this.dragClass}">
+        ${this.renderAttachmentsArea()}
 
         <div part="input-wrapper">
           ${this._chatState?.options?.templates?.textInputTemplate
@@ -303,10 +302,8 @@ export default class IgcChatInputComponent extends LitElement {
                 @blur=${this.handleBlur}
               ></igc-textarea>`}
         </div>
-
         ${this.renderActionsArea()}
       </div>
-      ${this.renderAttachmentsArea()}
     `;
   }
 }

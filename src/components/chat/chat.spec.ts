@@ -80,9 +80,10 @@ describe('Chat', () => {
       .value=${text}
     ></igc-input>`;
 
-  const fileUploadTemplate = html`<igc-button>Upload</igc-button>`;
-
-  const textAreaActionsTemplate = html`<igc-button>Send</igc-button>`;
+  const textAreaActionsTemplate = html`<div>
+    <igc-button>Upload</igc-button>
+    <igc-button>Send</igc-button>
+  </div>`;
 
   const textAreaAttachmentsTemplate = (attachments: any[]) => {
     return html`<div>
@@ -194,9 +195,6 @@ describe('Chat', () => {
                             </slot>
                         </div>
                         <slot part="actions" name="actions">
-                            <igc-button type="button" variant="flat">
-                            ⋯
-                            </igc-button>
                         </slot>
                     </div>
                     <div part="empty-state">
@@ -215,39 +213,39 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container">
-          <igc-file-input multiple="">
-              <igc-icon
-              collection="material"
-              name="attachment"
-              slot="file-selector-text"
-              >
-              </igc-icon>
-          </igc-file-input>
-          <div part="input-wrapper">
-              <igc-textarea
-              part="text-input"
-              placeholder="Type a message..."
-              resize="auto"
-              rows="1"
-              >
-              </igc-textarea>
-          </div>
-          <div part="buttons-container">
-              <igc-icon-button
-                aria-label="Send message"
-                part="send-button"
-                collection="material"
-                disabled=""
-                name="send-message"
-                type="button"
-                variant="contained"
-              >
-              </igc-icon-button>
-          </div>
-      </div>
-      <div aria-label="Attachments" role="list">
-      </div>`
+        `<div class="input-container">
+                    <div aria-label="Attachments" role="list">
+                    </div>
+                    <div part="input-wrapper">
+                        <igc-textarea
+                        part="text-input"
+                        placeholder="Type a message..."
+                        resize="auto"
+                        rows="1"
+                        >
+                        </igc-textarea>
+                    </div>
+                    <div part="buttons-container">
+                        <igc-file-input multiple="">
+                            <igc-icon
+                            collection="material"
+                            name="attachment"
+                            slot="file-selector-text"
+                            >
+                            </igc-icon>
+                        </igc-file-input>
+                        <igc-icon-button
+                          aria-label="Send message"
+                          part="send-button"
+                          collection="material"
+                          disabled=""
+                          name="send-message"
+                          type="button"
+                          variant="contained"
+                        >
+                        </igc-icon-button>
+                        </div>
+                    </div>`
       );
     });
 
@@ -417,9 +415,6 @@ describe('Chat', () => {
                         </slot>
                     </div>
                     <slot part="actions" name="actions">
-                        <igc-button type="button" variant="flat">
-                        ⋯
-                        </igc-button>
                     </slot>
                 </div>`
       );
@@ -498,7 +493,9 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container">
+        `<div class="input-container">
+                    <div aria-label="Attachments" role="list">
+                    </div>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -520,8 +517,6 @@ describe('Chat', () => {
                         >
                         </igc-icon-button>
                         </div>
-                    </div>
-                    <div aria-label="Attachments" role="list">
                     </div>`
       );
     });
@@ -562,15 +557,23 @@ describe('Chat', () => {
       expect(eventArgs).to.deep.equal(args);
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container">
-            <igc-file-input multiple="">
-              <igc-icon
-                collection="material"
-                name="attachment"
-                slot="file-selector-text"
-              >
-              </igc-icon>
-            </igc-file-input>
+        `<div class="input-container">
+            <div aria-label="Attachments" role="list">
+              <div part="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span part="attachment-name">
+                    test.txt
+                  </span>
+                </igc-chip>
+              </div>
+              <div part="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span part="attachment-name">
+                    image.png
+                  </span>
+                </igc-chip>
+              </div>
+            </div>
             <div part="input-wrapper">
               <igc-textarea
                 part="text-input"
@@ -581,6 +584,14 @@ describe('Chat', () => {
               </igc-textarea>
             </div>
             <div part="buttons-container">
+              <igc-file-input multiple="">
+                <igc-icon
+                  collection="material"
+                  name="attachment"
+                  slot="file-selector-text"
+                >
+                </igc-icon>
+              </igc-file-input>
               <igc-icon-button
                 aria-label="Send message"
                 part="send-button"
@@ -591,23 +602,7 @@ describe('Chat', () => {
               >
               </igc-icon-button>
             </div>
-            </div>
-            <div aria-label="Attachments" role="list">
-            <div part="attachment-wrapper" role="listitem">
-              <igc-chip removable="">
-                <span part="attachment-name">
-                  test.txt
-                </span>
-              </igc-chip>
-            </div>
-            <div part="attachment-wrapper" role="listitem">
-              <igc-chip removable="">
-                <span part="attachment-name">
-                  image.png
-                </span>
-              </igc-chip>
-            </div>
-        </div>`
+            </div>`
       );
     });
 
@@ -963,7 +958,6 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           textInputTemplate: textInputTemplate,
-          fileUploadTemplate: fileUploadTemplate,
           textAreaActionsTemplate: textAreaActionsTemplate,
           textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
         },
@@ -972,22 +966,25 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container">
-            <igc-button type="button" variant="contained">Upload</igc-button>
+        `<div class="input-container">
+          <div aria-label="Attachments" role="list">
+              <div>
+                <a href=${draftMessage.attachments[0].url} target="_blank">
+                  ${draftMessage.attachments[0].name}
+                </a>
+              </div>
+            </div>
             <div part="input-wrapper">
                 <igc-input placeholder="Type text here...">
             </div>
             <div part="buttons-container">
+              <div>
+                <igc-button type="button" variant="contained">Upload</igc-button>
                 <igc-button type="button" variant="contained">Send</igc-button>
+              </div>
             </div>
           </div>
-          <div aria-label="Attachments" role="list">
-            <div>
-              <a href=${draftMessage.attachments[0].url} target="_blank">
-                ${draftMessage.attachments[0].name}
-              </a>
-            </div>
-          </div>`
+          `
       );
 
       expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
