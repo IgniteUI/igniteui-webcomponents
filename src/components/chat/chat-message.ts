@@ -1,6 +1,5 @@
 import { consume } from '@lit/context';
-import DOMPurify from 'dompurify';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -9,7 +8,7 @@ import type { ChatState } from './chat-state.js';
 import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import type { IgcMessage } from './types.js';
+import type { IgcMessage, IgcRendererConfig } from './types.js';
 
 /**
  *
@@ -36,26 +35,39 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
-  private sanitizeMessageText(text: string): string {
-    return DOMPurify.sanitize(text);
+  private renderDefaultMarkdown(text: string): string | TemplateResult {
+    return renderMarkdown(text);
+  }
+
+  private renderCustomMarkdown(
+    text: string,
+    rendererConfig: IgcRendererConfig
+  ): string | TemplateResult {
+    if (rendererConfig?.renderFn) {
+      return rendererConfig.renderFn(text) as TemplateResult;
+    }
+    return this.renderDefaultMarkdown(text);
   }
 
   protected override render() {
     const containerClass = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
-    const sanitizedMessageText = this.sanitizeMessageText(
-      this.message?.text.trim() || ''
-    );
-    const renderer =
-      this._chatState?.options?.markdownRenderer || renderMarkdown;
+    const sanitizedMessageText = this.message?.text.trim() || '';
+    const rendererConfig = this._chatState?.options?.rendererConfig!;
+    const isPlainText = rendererConfig?.type === 'plain';
 
     return html`
       <div class=${containerClass}>
         <div class="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
-            : html` ${sanitizedMessageText
-                ? html`<div>${renderer(sanitizedMessageText)}</div>`
-                : nothing}
+            : html` ${!isPlainText
+                ? html`<div>
+                    ${this.renderCustomMarkdown(
+                      sanitizedMessageText,
+                      rendererConfig
+                    )}
+                  </div>`
+                : html`<div>${sanitizedMessageText}</div>`}
               ${this.message?.attachments &&
               this.message?.attachments.length > 0
                 ? html`<igc-message-attachments

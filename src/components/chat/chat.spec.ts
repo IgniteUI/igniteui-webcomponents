@@ -174,7 +174,7 @@ describe('Chat', () => {
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat>                   
+        `<igc-chat>
         </igc-chat>`
       );
 
@@ -401,7 +401,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector('.header');
 
       expect(headerArea).dom.to.equal(
-        `<div class="header" part="header"> 
+        `<div class="header" part="header">
                     <div class="info">
                         <slot name="prefix" part="prefix">
                         </slot>
@@ -1356,6 +1356,94 @@ describe('Chat', () => {
       expect(
         inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
       ).to.equal(0);
+    });
+  });
+
+  describe.only('Renderer configuration', () => {
+    const markdownMessage = {
+      id: 'message-3', // Example message with markdown
+      text: `
+        \`\`\`javascript
+  function greet(name) {
+    return \`Hello, \${name}!\`;
+  }
+  console.log(greet('world'));
+  \`\`\`;`,
+      sender: 'user',
+      attachments: [],
+      timestamp: new Date(),
+    };
+
+    beforeEach(async () => {
+      chat.messages = [markdownMessage];
+      await elementUpdated(chat);
+      await aTimeout(500);
+    });
+
+    it('should render message as plain text by default', async () => {
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+
+      expect(messageElements?.[0].textContent?.trim()).to.equal(
+        markdownMessage.text
+      );
+      expect(
+        messageElements?.[0].shadowRoot?.querySelector('.bubble')
+      ).dom.to.equal(
+        `<div class="bubble">
+          <div>
+              <p>${markdownMessage.text}</p>
+          </div>
+        </div>`
+      );
+    });
+
+    // --- Test Case 2: Markdown with Default Renderer (Marked.js, no highlighting) ---
+    it('should render markdown using default renderer when enabled', async () => {
+      chat.options = {
+        rendererConfig: {
+          type: 'markdown',
+        },
+      };
+
+      await elementUpdated(chat);
+      await aTimeout(500);
+
+      const mdRenderer = spy(chat.messages[0] as any, 'renderDefaultMarkdown');
+      expect(mdRenderer).to.have.been.calledOnce;
+    });
+
+    // --- Test Case 5: Markdown with Custom Renderer ---
+    it('should use a custom markdown renderer if provided', async () => {
+      const _customRenderer = (text: string) =>
+        html`<span>${text.toUpperCase()}</span>`;
+      chat.options = {
+        rendererConfig: {
+          type: 'custom',
+          renderFn: _customRenderer,
+        },
+      };
+      await elementUpdated(chat);
+
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+
+      expect(messageElements?.[0].textContent?.trim()).to.equal(
+        markdownMessage.text
+      );
+      expect(
+        messageElements?.[0].shadowRoot?.querySelector('.bubble')
+      ).dom.to.equal(
+        `<div class="bubble">
+          <div>
+              <p>${markdownMessage.text.toUpperCase()}</p>
+          </div>
+        </div>`
+      );
     });
   });
 });
