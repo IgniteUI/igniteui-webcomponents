@@ -159,7 +159,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -409,15 +409,15 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
-    &:has(input:placeholder-shown) {
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
+
         [part='label'] {
             align-self: start;
         }
     }
 
-    [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
-
+    [part~='container']:has(input:placeholder-shown) {
         [part='label'] {
             align-self: start;
         }
@@ -452,12 +452,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host(:not(:state(ig-invalid),[type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
+            align-self: center;
         }
 
-        input:not(:placeholder-shown) + [part='notch'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
