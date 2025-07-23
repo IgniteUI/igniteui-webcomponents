@@ -65,10 +65,13 @@ class TilesState {
       }
     } else {
       const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
+
       tile.position =
         positionedTiles.length > 1
           ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
-          : this._nextEmptyPosition++;
+          : this._nextEmptyPosition;
+
+      this._nextEmptyPosition += 1;
     }
   }
 
