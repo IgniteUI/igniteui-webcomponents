@@ -3,6 +3,12 @@ import { html, LitElement, nothing } from 'lit';
 import { state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
+import {
+  arrowDown,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import type { ChatState } from './chat-state.js';
@@ -105,21 +111,34 @@ export default class IgcChatMessageListComponent extends LitElement {
     const currentIndex = this._chatState?.sortedMessagesIds.findIndex(
       (id) => `message-${id}` === this._activeMessageId
     );
+    let activeMessageId = '';
 
-    if (e.key === 'ArrowUp' && currentIndex > 0) {
-      const previousMessageId =
-        this._chatState.sortedMessagesIds[currentIndex - 1];
-      this._activeMessageId = `message-${previousMessageId}`;
-      this.scrollToMessage(previousMessageId);
+    switch (e.key) {
+      case homeKey:
+        activeMessageId = this._chatState.sortedMessagesIds[0];
+        break;
+      case endKey:
+        activeMessageId =
+          this._chatState.sortedMessagesIds[
+            this._chatState.sortedMessagesIds.length - 1
+          ];
+        break;
+      case arrowUp:
+        if (currentIndex > 0) {
+          activeMessageId = this._chatState.sortedMessagesIds[currentIndex - 1];
+        }
+        break;
+      case arrowDown:
+        if (currentIndex < this._chatState?.messages.length - 1) {
+          activeMessageId = this._chatState.sortedMessagesIds[currentIndex + 1];
+        }
+        break;
+      default:
+        return; // Exit if the key is not one of the specified keys
     }
-    if (
-      e.key === 'ArrowDown' &&
-      currentIndex < this._chatState?.messages.length - 1
-    ) {
-      const nextMessageId = this._chatState.sortedMessagesIds[currentIndex + 1];
-      this._activeMessageId = `message-${nextMessageId}`;
-      this.scrollToMessage(nextMessageId);
-    }
+
+    this._activeMessageId = `message-${activeMessageId}`;
+    this.scrollToMessage(activeMessageId);
   }
 
   protected override updated() {
