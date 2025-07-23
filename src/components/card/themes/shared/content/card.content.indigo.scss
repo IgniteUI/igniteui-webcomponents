@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+
+:host {
+     ::slotted(igc-avatar) {
+        --ig-size: 3;
+    }
+}
