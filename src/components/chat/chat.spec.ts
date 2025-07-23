@@ -80,9 +80,10 @@ describe('Chat', () => {
       .value=${text}
     ></igc-input>`;
 
-  const fileUploadTemplate = html`<igc-button>Upload</igc-button>`;
-
-  const textAreaActionsTemplate = html`<igc-button>Send</igc-button>`;
+  const textAreaActionsTemplate = html`<div>
+    <igc-button>Upload</igc-button>
+    <igc-button>Send</igc-button>
+  </div>`;
 
   const textAreaAttachmentsTemplate = (attachments: any[]) => {
     return html`<div>
@@ -194,9 +195,6 @@ describe('Chat', () => {
                             </slot>
                         </div>
                         <slot class="actions" name="actions">
-                            <igc-button type="button" variant="flat">
-                            ⋯
-                            </igc-button>
                         </slot>
                     </div>
                     <div class="empty-state">
@@ -216,14 +214,8 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div class="input-container">
-                    <igc-file-input multiple="">
-                        <igc-icon
-                        collection="material"
-                        name="attachment"
-                        slot="file-selector-text"
-                        >
-                        </igc-icon>
-                    </igc-file-input>
+                    <div aria-label="Attachments" role="list">
+                    </div>
                     <div class="input-wrapper">
                         <igc-textarea
                         class="text-input"
@@ -234,6 +226,14 @@ describe('Chat', () => {
                         </igc-textarea>
                     </div>
                     <div class="buttons-container">
+                        <igc-file-input multiple="">
+                            <igc-icon
+                            collection="material"
+                            name="attachment"
+                            slot="file-selector-text"
+                            >
+                            </igc-icon>
+                        </igc-file-input>
                         <igc-icon-button
                           aria-label="Send message"
                           class="small"
@@ -245,8 +245,6 @@ describe('Chat', () => {
                         >
                         </igc-icon-button>
                         </div>
-                    </div>
-                    <div aria-label="Attachments" role="list">
                     </div>`
       );
     });
@@ -416,9 +414,6 @@ describe('Chat', () => {
                         </slot>
                     </div>
                     <slot class="actions" name="actions">
-                        <igc-button type="button" variant="flat">
-                        ⋯
-                        </igc-button>
                     </slot>
                 </div>`
       );
@@ -517,6 +512,8 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div class="input-container">
+                    <div aria-label="Attachments" role="list">
+                    </div>
                     <div class="input-wrapper">
                         <igc-textarea
                         class="text-input"
@@ -538,8 +535,6 @@ describe('Chat', () => {
                         >
                         </igc-icon-button>
                         </div>
-                    </div>
-                    <div aria-label="Attachments" role="list">
                     </div>`
       );
     });
@@ -581,14 +576,22 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div class="input-container">
-            <igc-file-input multiple="">
-              <igc-icon
-                collection="material"
-                name="attachment"
-                slot="file-selector-text"
-              >
-              </igc-icon>
-            </igc-file-input>
+            <div aria-label="Attachments" role="list">
+              <div class="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span class="attachment-name">
+                    test.txt
+                  </span>
+                </igc-chip>
+              </div>
+              <div class="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span class="attachment-name">
+                    image.png
+                  </span>
+                </igc-chip>
+              </div>
+            </div>
             <div class="input-wrapper">
               <igc-textarea
                 class="text-input"
@@ -599,6 +602,14 @@ describe('Chat', () => {
               </igc-textarea>
             </div>
             <div class="buttons-container">
+              <igc-file-input multiple="">
+                <igc-icon
+                  collection="material"
+                  name="attachment"
+                  slot="file-selector-text"
+                >
+                </igc-icon>
+              </igc-file-input>
               <igc-icon-button
                 aria-label="Send message"
                 class="small"
@@ -609,23 +620,7 @@ describe('Chat', () => {
               >
               </igc-icon-button>
             </div>
-            </div>
-            <div aria-label="Attachments" role="list">
-            <div class="attachment-wrapper" role="listitem">
-              <igc-chip removable="">
-                <span class="attachment-name">
-                  test.txt
-                </span>
-              </igc-chip>
-            </div>
-            <div class="attachment-wrapper" role="listitem">
-              <igc-chip removable="">
-                <span class="attachment-name">
-                  image.png
-                </span>
-              </igc-chip>
-            </div>
-        </div>`
+            </div>`
       );
     });
 
@@ -981,7 +976,6 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           textInputTemplate: textInputTemplate,
-          fileUploadTemplate: fileUploadTemplate,
           textAreaActionsTemplate: textAreaActionsTemplate,
           textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
         },
@@ -991,21 +985,24 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div class="input-container">
-            <igc-button type="button" variant="contained">Upload</igc-button>
+          <div aria-label="Attachments" role="list">
+              <div>
+                <a href=${draftMessage.attachments[0].url} target="_blank">
+                  ${draftMessage.attachments[0].name}
+                </a>
+              </div>
+            </div>
             <div class="input-wrapper">
                 <igc-input placeholder="Type text here...">
             </div>
             <div class="buttons-container">
+              <div>
+                <igc-button type="button" variant="contained">Upload</igc-button>
                 <igc-button type="button" variant="contained">Send</igc-button>
+              </div>
             </div>
           </div>
-          <div aria-label="Attachments" role="list">
-            <div>
-              <a href=${draftMessage.attachments[0].url} target="_blank">
-                ${draftMessage.attachments[0].name}
-              </a>
-            </div>
-          </div>`
+          `
       );
 
       expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
