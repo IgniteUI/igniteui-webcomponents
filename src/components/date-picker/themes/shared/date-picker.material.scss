@@ -56,3 +56,34 @@ $theme: $material;
         }
     }
 }
+
+:host(:not([outlined],[disabled],[readonly]):state(ig-invalid)) {
+    igc-date-time-input::part(label) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
+    igc-date-time-input::part(container),
+    igc-date-time-input:focus-within::part(container) {
+        border-color: var-get($theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
+:host(:not([disabled],[readonly])[outlined]:state(ig-invalid)) {
+    igc-date-time-input::part(label) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
+    igc-date-time-input::part(start),
+    igc-date-time-input::part(end),
+    igc-date-time-input::part(filler) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    &::part(notch) {
+        border-bottom-color: var-get($theme, 'error-secondary-color');
+    }
+}
