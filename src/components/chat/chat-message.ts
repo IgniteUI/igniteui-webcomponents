@@ -67,7 +67,7 @@ export default class IgcChatMessageComponent extends LitElement {
                       rendererConfig
                     )}
                   </div>`
-                : html`<div>${sanitizedMessageText}</div>`}
+                : nothing}
               ${this.message?.attachments &&
               this.message?.attachments.length > 0
                 ? html`<igc-message-attachments
