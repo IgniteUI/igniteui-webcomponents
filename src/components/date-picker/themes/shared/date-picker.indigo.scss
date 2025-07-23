@@ -44,6 +44,14 @@ $input-theme: input-theme.$indigo;
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }
+
+    igc-date-time-input::part(container) {
+        border-color: var-get($theme, 'error-secondary-color');
+
+        &::after {
+            background: var-get($theme, 'error-secondary-color');
+        }
+    }
 }
 
 [part='actions'] {
