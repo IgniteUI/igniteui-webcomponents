@@ -55,14 +55,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  private openImagePreview(attachment: IgcMessageAttachment) {
-    this.previewImage = this.getURL(attachment);
-  }
-
-  private closeImagePreview() {
-    this.previewImage = '';
-  }
-
   private handleToggle(e: CustomEvent, attachment: IgcMessageAttachment) {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
     e.preventDefault();
@@ -106,34 +98,13 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     </div>`;
   }
 
-  private renderAttachmentHeaderActions(attachment: IgcMessageAttachment) {
+  private renderAttachmentHeaderActions() {
     return html`<div part="actions">
       ${this._chatState?.options?.templates?.attachmentActionsTemplate
         ? this._chatState.options.templates.attachmentActionsTemplate(
             this.attachments
           )
-        : html`
-            <slot name="attachment-actions">
-              ${attachment.type === 'image' ||
-              attachment.file?.type.startsWith('image/')
-                ? html` <igc-icon-button
-                    name="preview"
-                    collection="material"
-                    variant="flat"
-                    part="attachment-preview-button"
-                    tabIndex="-1"
-                    @click=${() => this.openImagePreview(attachment)}
-                  ></igc-icon-button>`
-                : nothing}
-              <igc-icon-button
-                name="more"
-                collection="material"
-                variant="flat"
-                part="attachment-more-button"
-                tabIndex="-1"
-              ></igc-icon-button>
-            </slot>
-          `}
+        : nothing}
     </div>`;
   }
 
@@ -170,30 +141,12 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         >
           <div slot="title" part="attachment">
             ${this.renderAttachmentHeaderText(attachment)}
-            ${this.renderAttachmentHeaderActions(attachment)}
+            ${this.renderAttachmentHeaderActions()}
           </div>
 
           ${this.renderAttachmentContent(attachment)}
         </igc-expansion-panel>`
     )}`;
-  }
-
-  private renderImagePreview() {
-    return html` ${this.previewImage
-      ? html`
-          <div part="image-overlay" @click=${this.closeImagePreview}>
-            <img part="overlay-image" src=${this.previewImage} />
-            <igc-icon-button
-              name="close"
-              collection="material"
-              variant="contained"
-              part="close-preview-button"
-              tabIndex="-1"
-              @click=${this.closeImagePreview}
-            ></igc-icon-button>
-          </div>
-        `
-      : nothing}`;
   }
 
   protected override render() {
@@ -205,8 +158,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             )
           : this.renderDefaultAttachmentsTemplate()}
       </div>
-
-      ${this.renderImagePreview()}
     `;
   }
 }
