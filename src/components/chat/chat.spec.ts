@@ -214,7 +214,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <div aria-label="Attachments" role="list">
+                    <div aria-label="Attachments" part="attachments" role="list">
                     </div>
                     <div part="input-wrapper">
                         <igc-textarea
@@ -494,7 +494,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <div aria-label="Attachments" role="list">
+                    <div aria-label="Attachments" part="attachments" role="list">
                     </div>
                     <div part="input-wrapper">
                         <igc-textarea
@@ -558,7 +558,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-            <div aria-label="Attachments" role="list">
+            <div aria-label="Attachments" part="attachments" role="list">
               <div part="attachment-wrapper" role="listitem">
                 <igc-chip removable="">
                   <span part="attachment-name">
@@ -967,7 +967,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-          <div aria-label="Attachments" role="list">
+          <div aria-label="Attachments" part="attachments" role="list">
               <div>
                 <a href=${draftMessage.attachments[0].url} target="_blank">
                   ${draftMessage.attachments[0].name}
