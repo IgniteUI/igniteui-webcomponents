@@ -4,6 +4,7 @@ import { state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
 import {
+  addKeybindings,
   arrowDown,
   arrowUp,
   endKey,
@@ -60,6 +61,15 @@ export default class IgcChatMessageListComponent extends LitElement {
   /* blazorSuppress */
   public static register() {
     registerComponent(IgcChatMessageListComponent, IgcChatMessageComponent);
+  }
+
+  constructor() {
+    super();
+    addKeybindings(this)
+      .set(homeKey, this.navigateToMessage)
+      .set(endKey, this.navigateToMessage)
+      .set(arrowUp, this.navigateToMessage)
+      .set(arrowDown, this.navigateToMessage);
   }
 
   /**
@@ -167,7 +177,7 @@ export default class IgcChatMessageListComponent extends LitElement {
    * @param e KeyboardEvent from user input
    * @private
    */
-  private handleKeyDown(e: KeyboardEvent) {
+  private navigateToMessage(e: KeyboardEvent) {
     if (!this._chatState?.messages || this._chatState.messages.length === 0) {
       return;
     }
@@ -178,21 +188,21 @@ export default class IgcChatMessageListComponent extends LitElement {
     let activeMessageId = '';
 
     switch (e.key) {
-      case homeKey:
+      case 'home':
         activeMessageId = this._chatState.sortedMessagesIds[0];
         break;
-      case endKey:
+      case 'end':
         activeMessageId =
           this._chatState.sortedMessagesIds[
             this._chatState.sortedMessagesIds.length - 1
           ];
         break;
-      case arrowUp:
+      case 'arrowup':
         if (currentIndex > 0) {
           activeMessageId = this._chatState.sortedMessagesIds[currentIndex - 1];
         }
         break;
-      case arrowDown:
+      case 'arrowdown':
         if (currentIndex < this._chatState?.messages.length - 1) {
           activeMessageId = this._chatState.sortedMessagesIds[currentIndex + 1];
         }
@@ -258,8 +268,7 @@ export default class IgcChatMessageListComponent extends LitElement {
         tabindex="0"
         @focusin=${this.handleFocusIn}
         @focusout=${this.handleFocusOut}
-        @keydown=${this.handleKeyDown}
-      >
+      ></div>
         <div part="message-list">
           ${repeat(
             groupedMessages,
@@ -285,9 +294,11 @@ export default class IgcChatMessageListComponent extends LitElement {
               )}
             `
           )}
-          ${this._chatState?.options?.isComposing
-            ? this.renderLoadingTemplate()
-            : nothing}
+          ${
+            this._chatState?.options?.isComposing
+              ? this.renderLoadingTemplate()
+              : nothing
+          }
         </div>
       </div>
     `;
