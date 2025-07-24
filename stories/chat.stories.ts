@@ -145,7 +145,7 @@ const ai_chat_options = {
 };
 
 const chat_options = {
-  disableAutoScroll: true,
+  disableAutoScroll: false,
   disableAttachments: true,
 };
 

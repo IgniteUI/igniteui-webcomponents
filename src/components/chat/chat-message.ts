@@ -9,6 +9,7 @@ import type { ChatState } from './chat-state.js';
 import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
+import { styles as shared } from './themes/shared/chat-message.common.css.js';
 import type { IgcMessage } from './types.js';
 
 /**
@@ -19,7 +20,7 @@ import type { IgcMessage } from './types.js';
 export default class IgcChatMessageComponent extends LitElement {
   public static readonly tagName = 'igc-chat-message';
 
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
@@ -49,8 +50,8 @@ export default class IgcChatMessageComponent extends LitElement {
       this._chatState?.options?.markdownRenderer || renderMarkdown;
 
     return html`
-      <div class=${containerClass}>
-        <div class="bubble">
+      <div part=${containerClass}>
+        <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
             : html` ${sanitizedMessageText
