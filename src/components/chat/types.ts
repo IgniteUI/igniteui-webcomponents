@@ -41,6 +41,23 @@ export type IgcChatOptions = {
   headerText?: string;
   suggestions?: string[];
   templates?: IgcChatTemplates;
+  /**
+   * Configuration object for rendering chat messages.
+   *
+   * Allows selecting between plain text, markdown, or a custom rendering function.
+   *
+   * @property {('plain' | 'markdown' | 'custom')} type - The rendering mode:
+   * - `'plain'`: Render message as plain text.
+   * - `'markdown'`: Render message using the default markdown parser (`marked`).
+   * - `'custom'`: Use a custom rendering function via `renderFn`.
+   *
+   * @property {Object} [markdown] - Options specific to markdown rendering.
+   * @property {boolean} [markdown.disableDefaultHighlighter=false] - If true, disables the default `highlight.js` highlighter when using markdown.
+   * @property {HlLanguages} [markdown.languages] - Optional map of custom languages to register with `highlight.js`.
+   *
+   * @property {(message: string) => string | TemplateResult} [renderFn] - Custom rendering function used when `type` is set to `'custom'`.
+   * This function should return a raw HTML string or a Lit `TemplateResult`.
+   */
   rendererConfig?: IgcRendererConfig;
 };
 
