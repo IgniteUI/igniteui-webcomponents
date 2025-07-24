@@ -2,58 +2,213 @@ import type { TemplateResult } from 'lit';
 
 // export type IgcMessageAttachmentType = 'image' | 'file';
 
+/**
+ * Represents a single chat message in the conversation.
+ */
 export interface IgcMessage {
+  /**
+   * A unique identifier for the message.
+   */
   id: string;
+
+  /**
+   * The textual content of the message.
+   */
   text: string;
+
+  /**
+   * The identifier or name of the sender of the message.
+   */
   sender: string;
+
+  /**
+   * The timestamp indicating when the message was sent.
+   */
   timestamp: Date;
+
+  /**
+   * Optional list of attachments associated with the message,
+   * such as images, files, or links.
+   */
   attachments?: IgcMessageAttachment[];
 }
 
+/**
+ * Represents an attachment associated with a chat message.
+ */
 export interface IgcMessageAttachment {
+  /**
+   * A unique identifier for the attachment.
+   */
   id: string;
+
+  /**
+   * The display name of the attachment (e.g. file name).
+   */
   name: string;
+
+  /**
+   * The URL from which the attachment can be downloaded or viewed.
+   * Typically used for attachments stored on a server or CDN.
+   */
   url?: string;
+
+  /**
+   * The actual File object, if the attachment was provided locally (e.g. via upload).
+   */
   file?: File;
+
+  /**
+   * The MIME type or a custom type identifier for the attachment (e.g. "image/png", "pdf", "audio").
+   */
   type?: string;
+
+  /**
+   * Optional URL to a thumbnail preview of the attachment (e.g. for images or videos).
+   */
   thumbnail?: string;
 }
 
+/**
+ * A function type used to render a group of attachments in a chat message.
+ *
+ * This allows consumers to customize how message attachments are displayed
+ * (e.g. rendering thumbnails, file icons, or download links).
+ *
+ * @param {IgcMessageAttachment[]} attachments - The list of attachments to render.
+ * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered attachments.
+ */
 export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
 ) => TemplateResult;
-export type MessageTemplate = (message: IgcMessage) => TemplateResult;
-export type MarkdownRenderer = (text: string) => TemplateResult;
 
+/**
+ * A function type used to render a single chat message.
+ *
+ * This allows consumers to fully customize the display of a message,
+ * including its text, sender info, timestamp, and any attachments.
+ *
+ * @param {IgcMessage} message - The chat message to render.
+ * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered message.
+ */
+export type MessageTemplate = (message: IgcMessage) => TemplateResult;
+
+// export type MarkdownRenderer = (text: string) => TemplateResult;
+
+/**
+ * Configuration options for customizing the behavior and appearance of the chat component.
+ */
 export type IgcChatOptions = {
+  /**
+   * The ID of the current user. Used to differentiate between incoming and outgoing messages.
+   */
   currentUserId?: string;
+  /**
+   * Whether to hide user avatars in the message list.
+   * Defaults to `false`.
+   */
   hideAvatar?: boolean;
+  /**
+   * Whether to hide message timestamps.
+   * Defaults to `false`.
+   */
   hideTimestamp?: boolean;
+  /**
+   * Whether to hide sender usernames in the message list.
+   * Defaults to `false`.
+   */
   hideUserName?: boolean;
+  /**
+   * If `true`, prevents the chat from automatically scrolling to the latest message.
+   */
   disableAutoScroll?: boolean;
+  /**
+   * If `true`, disables the ability to upload and send attachments.
+   * Defaults to `false`.
+   */
   disableAttachments?: boolean;
+  /**
+   * Indicates whether the other user is currently typing or composing a message.
+   */
   isComposing?: boolean;
   /**
    * The accepted files that could be attached.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
+   * Defines the file types as a list of comma-separated values (e.g. "image/*,.pdf") that the file input should accept.
    */
   acceptedFiles?: string;
+  /**
+   * Optional header text to display at the top of the chat component.
+   */
   headerText?: string;
+  /**
+   * Suggested text snippets or quick replies that can be shown as user-selectable options.
+   */
   suggestions?: string[];
+  /**
+   * A set of template override functions used to customize rendering of messages, attachments, etc.
+   */
   templates?: IgcChatTemplates;
-  markdownRenderer?: MarkdownRenderer;
 };
 
+/**
+ * A collection of template functions used to customize different parts of the chat component.
+ * Each template allows you to override the rendering of a specific part of the component.
+ */
 export type IgcChatTemplates = {
+  /**
+   * Template for rendering an attachment in a message.
+   */
   attachmentTemplate?: AttachmentTemplate;
+
+  /**
+   * Template for rendering a custom header above the attachment in a message.
+   */
   attachmentHeaderTemplate?: AttachmentTemplate;
+
+  /**
+   * Template for rendering custom action buttons or controls related to an attachment
+   * (e.g. download, preview, delete).
+   */
   attachmentActionsTemplate?: AttachmentTemplate;
+
+  /**
+   * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
+   */
   attachmentContentTemplate?: AttachmentTemplate;
+
+  /**
+   * Template for rendering a single chat message.
+   * Use this to customize message layout, formatting, or metadata.
+   */
   messageTemplate?: MessageTemplate;
+
+  /**
+   * Template for rendering message-specific actions such as edit, delete, reply, etc.
+   */
   messageActionsTemplate?: MessageTemplate;
+
+  /**
+   * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
+   */
   composingIndicatorTemplate?: TemplateResult;
+
+  /**
+   * Template for customizing the text input element (usually a `<textarea>` or `<input>`).
+   *
+   * @param text - The current value of the text input.
+   * @returns A Lit `TemplateResult` representing the rendered input.
+   */
   textInputTemplate?: (text: string) => TemplateResult;
+
+  /**
+   * Template for rendering additional controls in the message input area,
+   * such as send buttons, emoji pickers, or voice recorders.
+   */
   textAreaActionsTemplate?: TemplateResult;
+
+  /**
+   * Template for rendering attachments that are currently queued for sending (in the input area).
+   */
   textAreaAttachmentsTemplate?: AttachmentTemplate;
 };
 
