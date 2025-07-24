@@ -17,8 +17,8 @@ $theme: $base;
     stroke: var-get($theme, 'tick-color');
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }

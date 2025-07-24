@@ -87,22 +87,6 @@ describe('Switch', () => {
       expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
     });
 
-    it('should set the switch invalid property correctly', async () => {
-      element.invalid = true;
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-switch invalid label-position="after">${label}</igc-switch>`
-      );
-
-      element.invalid = false;
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-switch label-position="after">${label}</igc-switch>`
-      );
-    });
-
     it('should correctly report validity status', () => {
       element.required = true;
       expect(element.reportValidity()).to.be.false;

@@ -5,9 +5,11 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+} from '../common/utils.spec.js';
+import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/utils.spec.js';
+} from '../common/validity-helpers.spec.js';
 import IgcCheckboxComponent from './checkbox.js';
 
 describe('Checkbox', () => {
@@ -121,18 +123,6 @@ describe('Checkbox', () => {
       await elementUpdated(element);
 
       expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
-    });
-
-    it('should set the checkbox invalid property correctly', () => {
-      element.invalid = true;
-      expect(element).dom.to.equal(
-        `<igc-checkbox invalid label-position="after">${label}</igc-checkbox>`
-      );
-
-      element.invalid = false;
-      expect(element).dom.to.equal(
-        `<igc-checkbox label-position="after">${label}</igc-checkbox>`
-      );
     });
 
     it('should correctly report validity status', () => {

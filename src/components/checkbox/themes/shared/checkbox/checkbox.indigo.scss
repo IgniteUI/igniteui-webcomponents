@@ -125,8 +125,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='label'] {
         color: var-get($theme, 'label-color');
     }
@@ -145,10 +145,17 @@ $error-color-hover: var-get($theme, 'error-color-hover');
             background: $error-color;
         }
     }
+
+    [part='base focused'] {
+        [part~='control'],
+        [part='control checked'] {
+            box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
+        }
+    }
 }
 
-:host(:not([disabled])[invalid][indeterminate]),
-:host(:not(:disabled)[invalid][indeterminate]) {
+:host(:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='control'] {
         border-color: $error-color;
 
@@ -156,12 +163,18 @@ $error-color-hover: var-get($theme, 'error-color-hover');
             background: $error-color;
         }
     }
+
+    [part='base focused'] {
+        [part~='control'] {
+            box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
+        }
+    }
 }
 
-:host(:hover:not([disabled])[invalid]),
-:host(:hover:not(:disabled)[invalid]),
-:host(:hover:not([disabled])[invalid][indeterminate]),
-:host(:hover:not(:disabled)[invalid][indeterminate]) {
+:host(:hover:not([disabled]):state(ig-invalid)),
+:host(:hover:not(:disabled):state(ig-invalid)),
+:host(:hover:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:hover:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='label'] {
         color: var-get($theme, 'label-color-hover');
     }
@@ -180,8 +193,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host(:hover:not([disabled])[invalid][indeterminate]),
-:host(:hover:not(:disabled)[invalid][indeterminate]) {
+:host(:hover:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:hover:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='control'] {
         &::after {
             background: $error-color-hover;
@@ -189,25 +202,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host(:focus-visible:not([disabled])[invalid]),
-:host(:focus-visible:not(:disabled)[invalid]) {
-    [part~='control'],
-    [part='control checked'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
-    }
-}
-
-:host(:focus-visible:not([disabled])[invalid][indeterminate]),
-:host(:focus-visible:not(:disabled)[invalid][indeterminate]) {
-    [part~='control'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
-    }
-}
-
 :host([disabled]),
-:host(:disabled),
-:host([disabled][invalid]),
-:host(:disabled[invalid]) {
+:host(:disabled) {
     [part~='control'] {
         &::after {
             border-color: $disabled-color;

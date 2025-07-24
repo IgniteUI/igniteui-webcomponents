@@ -62,6 +62,13 @@ textarea {
     }
 }
 
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     color: var-get($theme, 'disabled-text-color');

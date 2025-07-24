@@ -278,6 +278,7 @@ export const Validation: Story = {
     <form @submit=${formSubmitHandler}>
       <fieldset>
         <igc-input
+          name="min-length-value"
           label="Validate without validation slots and helper text"
           minlength="3"
         >
@@ -286,14 +287,21 @@ export const Validation: Story = {
       </fieldset>
 
       <fieldset>
-        <igc-input label="Username" required>
+        <igc-input name="username" label="Username" required autocomplete="off">
           <p slot="helper-text">The username you will use in the platform</p>
           <p slot="value-missing">The username is required!</p>
         </igc-input>
       </fieldset>
 
       <fieldset>
-        <igc-input id="customError" label="Email" type="email" required>
+        <igc-input
+          name="email"
+          id="customError"
+          label="Email"
+          type="email"
+          required
+          autocomplete="off"
+        >
           <p slot="helper-text">
             A valid email for restoring credentials
             <strong>(not show in your profile)!</strong>
@@ -305,6 +313,8 @@ export const Validation: Story = {
 
       <fieldset>
         <igc-input
+          name="password"
+          autocomplete="off"
           label="Password"
           type="password"
           required
