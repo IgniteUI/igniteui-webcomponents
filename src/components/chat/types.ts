@@ -76,11 +76,34 @@ export type IgcChatTemplates = {
 };
 
 export type IgcRendererConfig = {
+  /**
+   * The rendering mode for messages:
+   * - `'plain'`: Render message as plain text (default).
+   * - `'markdown'`: Render message using the default markdown parser.
+   * - `'custom'`: Use a custom rendering function defined in `renderFn`.
+   */
   type: 'plain' | 'markdown' | 'custom';
+  /**
+   * Options for markdown rendering. Only used if `type` is `'markdown'`.
+   */
   markdown?: {
+    /**
+     * Disables the default `highlight.js` syntax highlighter.
+     * If true, code blocks will not be highlighted.
+     * Defaults to `false`.
+     */
     disableDefaultHighlighter?: boolean;
+    /**
+     * A map of language definitions to register with `highlight.js`.
+     * Useful for registering only the languages you need.
+     */
     languages?: HlLanguages;
   };
+  /**
+   * Custom rendering function used when `type` is `'custom'`.
+   * This function receives the raw message string and should return
+   * either a safe HTML string or a Lit `TemplateResult`.
+   */
   renderFn?: (message: string) => string | TemplateResult;
 };
 
