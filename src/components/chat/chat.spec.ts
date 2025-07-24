@@ -181,7 +181,7 @@ describe('Chat', () => {
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat>                   
+        `<igc-chat>
         </igc-chat>`
       );
 
@@ -405,7 +405,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector('.header');
 
       expect(headerArea).dom.to.equal(
-        `<div class="header" part="header"> 
+        `<div class="header" part="header">
                     <div class="info">
                         <slot name="prefix" part="prefix">
                         </slot>
@@ -1431,6 +1431,89 @@ describe('Chat', () => {
       expect(
         inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
       ).to.equal(0);
+    });
+  });
+
+  describe('Renderer configuration', () => {
+    const markdownMessage = {
+      id: 'message-3', // Example message with markdown
+      text: `
+  \`\`\`javascript
+  function greet(name) {
+    return \`Hello, \${name}!\`;
+  }
+  console.log(greet('world'));
+  \`\`\`;`,
+      sender: 'user',
+      attachments: [],
+      timestamp: new Date(),
+    };
+
+    beforeEach(async () => {
+      chat.messages = [markdownMessage];
+      await elementUpdated(chat);
+      await aTimeout(500);
+    });
+
+    it('should render message as plain text by default', async () => {
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+
+      expect(messageElements?.[0].shadowRoot?.textContent?.trim()).to.equal(
+        "function greet(name) {\n    return `Hello, ${name}!`;\n  }\n  console.log(greet('world'));\n  ```;"
+      );
+    });
+
+    it('should render markdown using default renderer when enabled', async () => {
+      chat.options = {
+        rendererConfig: {
+          type: 'markdown',
+        },
+      };
+
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+      const mdRenderer = spy(
+        messageElements?.[0] as any,
+        'renderDefaultMarkdown'
+      );
+
+      await elementUpdated(chat);
+
+      expect(mdRenderer).to.have.been.calledOnce;
+    });
+
+    it('should use a custom markdown renderer if provided', async () => {
+      const _customRenderer = (text: string) =>
+        html`<span>${text.toUpperCase()}</span>`;
+      chat.options = {
+        rendererConfig: {
+          type: 'custom',
+          renderFn: _customRenderer,
+        },
+      };
+
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector('.message-list')
+        ?.querySelectorAll('igc-chat-message');
+      const mdCustomRenderer = spy(
+        messageElements?.[0] as any,
+        'renderCustomMarkdown'
+      );
+      const mdDefaultRenderer = spy(
+        messageElements?.[0] as any,
+        'renderDefaultMarkdown'
+      );
+
+      await elementUpdated(chat);
+
+      expect(mdCustomRenderer).to.have.been.calledOnce;
+      expect(mdDefaultRenderer).not.to.have.been.called;
     });
   });
 });
