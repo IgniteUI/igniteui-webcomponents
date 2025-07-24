@@ -20,22 +20,110 @@ import type {
   IgcMessageAttachment,
 } from './types.js';
 
+/**
+ * Defines the custom events dispatched by the `<igc-chat>` component.
+ */
 export interface IgcChatComponentEventMap {
+  /**
+   * Dispatched when a new chat message is created (sent).
+   *
+   * @event igcMessageCreated
+   * @type {CustomEvent<IgcMessage>}
+   * @detail The message that was created.
+   */
   igcMessageCreated: CustomEvent<IgcMessage>;
+
+  /**
+   * Dispatched when a chat message attachment is clicked.
+   *
+   * @event igcAttachmentClick
+   * @type {CustomEvent<IgcMessageAttachment>}
+   * @detail The attachment that was clicked.
+   */
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
+
+  /**
+   * Dispatched when an attachment is changed (e.g., updated or removed).
+   *
+   * @event igcAttachmentChange
+   * @type {CustomEvent<IgcMessageAttachment>}
+   * @detail The attachment that was changed.
+   */
   igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
+
+  /**
+   * Dispatched during an attachment drag operation.
+   *
+   * @event igcAttachmentDrag
+   * @type {CustomEvent<any>}
+   * @detail The drag event payload.
+   */
   igcAttachmentDrag: CustomEvent<any>;
+
+  /**
+   * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+   *
+   * @event igcAttachmentDrop
+   * @type {CustomEvent<any>}
+   * @detail The drop event payload.
+   */
   igcAttachmentDrop: CustomEvent<any>;
+
+  /**
+   * Dispatched when the typing status changes (e.g., user starts or stops typing).
+   *
+   * @event igcTypingChange
+   * @type {CustomEvent<boolean>}
+   * @detail `true` if typing started, `false` if stopped.
+   */
   igcTypingChange: CustomEvent<boolean>;
+
+  /**
+   * Dispatched when the chat input field gains focus.
+   *
+   * @event igcInputFocus
+   * @type {CustomEvent<any>}
+   * @detail Focus event payload.
+   */
   igcInputFocus: CustomEvent<any>;
+
+  /**
+   * Dispatched when the chat input field loses focus.
+   *
+   * @event igcInputBlur
+   * @type {CustomEvent<any>}
+   * @detail Blur event payload.
+   */
   igcInputBlur: CustomEvent<any>;
+
+  /**
+   * Dispatched when the content of the chat input changes.
+   *
+   * @event igcInputChange
+   * @type {CustomEvent<string>}
+   * @detail The current text value of the input.
+   */
   igcInputChange: CustomEvent<string>;
 }
 
 /**
+ * A chat UI component for displaying messages, attachments, and input interaction.
+ *
+ * This component is part of the Ignite UI Web Components suite.
  *
  * @element igc-chat
+ * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
+ * @slot title - Slot for overriding the chat title content.
+ * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
+ * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
+ * @slot suggestion - Slot for rendering a single suggestion item.
+ * @slot empty-state - Slot shown when there are no messages.
  *
+ * @csspart header - Styles the header container.
+ * @csspart prefix - Styles the element before the title (e.g., avatar).
+ * @csspart title - Styles the chat header title.
+ * @csspart suggestions - Styles the suggestion container.
+ * @csspart suggestion - Styles each suggestion item.
  */
 export default class IgcChatComponent extends EventEmitterMixin<
   IgcChatComponentEventMap,
@@ -46,6 +134,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
+  /**
+   * Registers the chat component and its child components.
+   * Should be called once before using the component.
+   *
+   * @example
+   * IgcChatComponent.register();
+   */
   public static register() {
     registerComponent(
       IgcChatComponent,
@@ -69,6 +164,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   /**
    * The list of chat messages currently displayed.
+   * Use this property to set or update the message history.
    */
   @property({ reflect: true, attribute: false })
   public set messages(value: IgcMessage[]) {
@@ -80,7 +176,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
-   * The chat message that is still unsend.
+   * The chat message currently being composed but not yet sent.
+   * Includes the draft text and any attachments.
    */
   @property({ reflect: true, attribute: false })
   public set draftMessage(value: {
@@ -105,9 +202,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
-   * Controls the chat configuration and how it will be displayed.
+   * Controls the chat behavior and appearance through a configuration object.
+   * Use this to toggle UI options, provide suggestions, templates, etc.
    */
-
   @property({ attribute: false })
   public set options(value: IgcChatOptions) {
     this._chatState.options = value;
@@ -181,6 +278,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
 declare global {
   interface HTMLElementTagNameMap {
+    /** The `<igc-chat>` custom element. */
     'igc-chat': IgcChatComponent;
   }
 }

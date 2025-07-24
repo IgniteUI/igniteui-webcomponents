@@ -148,6 +148,7 @@ export type IgcChatOptions = {
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
   templates?: IgcChatTemplates;
+  markdownRenderer?: (text: string) => TemplateResult; //TODO: Remove when highlighter is implemented
 };
 
 /**

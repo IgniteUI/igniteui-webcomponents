@@ -20,9 +20,25 @@ import {
 } from './types.js';
 
 /**
+ * A component that renders message attachments within a chat.
+ *
+ * Displays attachments such as images or files, supporting custom templates
+ * and default rendering using expansion panels.
  *
  * @element igc-message-attachments
  *
+ * @slot attachment-icon - Slot to override the attachment icon (image or file).
+ * @slot attachment-name - Slot to override the displayed attachment name.
+ * @slot attachment-content - Slot to override the content shown inside the attachment panel.
+ *
+ * @csspart attachments-container - Container wrapping all attachments.
+ * @csspart attachment - Wrapper for a single attachment header.
+ * @csspart attachment-icon - Icon part representing the attachment type.
+ * @csspart file-name - Part representing the attachment's file name.
+ * @csspart actions - Container for header action buttons.
+ * @csspart image-attachment - Part for the image element inside an image attachment.
+ *
+ * @fires igcAttachmentClick - Fired when an attachment header is toggled (clicked).
  */
 export default class IgcMessageAttachmentsComponent extends LitElement {
   public static readonly tagName = 'igc-message-attachments';
@@ -41,9 +57,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       IgcExpansionPanelComponent
     );
   }
+
+  /**
+   * The array of attachments to render.
+   */
   @property({ attribute: false })
   attachments: IgcMessageAttachment[] = [];
 
+  /**
+   * The preview image URL for the attachments.
+   */
   @property({ attribute: false })
   previewImage = '';
 
