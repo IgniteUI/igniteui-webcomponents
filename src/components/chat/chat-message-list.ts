@@ -269,7 +269,7 @@ export default class IgcChatMessageListComponent extends LitElement {
         tabindex="0"
         @focusin=${this.handleFocusIn}
         @focusout=${this.handleFocusOut}
-      >
+      ></div>
         <div part="message-list">
           ${repeat(
             groupedMessages,
@@ -295,9 +295,11 @@ export default class IgcChatMessageListComponent extends LitElement {
               )}
             `
           )}
-          ${this._chatState?.options?.isComposing
-            ? this.renderLoadingTemplate()
-            : nothing}
+          ${
+            this._chatState?.options?.isComposing
+              ? this.renderLoadingTemplate()
+              : nothing
+          }
         </div>
       </div>
     `;

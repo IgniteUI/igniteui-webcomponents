@@ -239,6 +239,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
       role="list"
       aria-label="Suggestions"
     >
+      <slot name="suggestions-header"> </slot>
       <slot name="suggestions" part="suggestions">
         ${this._chatState.options?.suggestions?.map(
           (suggestion) => html`
