@@ -476,6 +476,7 @@ export default class IgcComboComponent<
 
     addThemingController(this, all);
     addSafeEventListener(this, 'blur', this._handleBlur);
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
 
     // TODO
     this.addEventListener(
@@ -636,6 +637,10 @@ export default class IgcComboComponent<
 
     // clear the selection upon typing
     this.clearSingleSelection();
+  }
+
+  protected _handleFocusIn() {
+    this._setTouchedState();
   }
 
   protected override _handleBlur() {

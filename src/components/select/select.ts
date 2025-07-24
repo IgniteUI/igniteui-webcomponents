@@ -314,6 +314,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(enterKey, this._handleEnter);
 
     addSafeEventListener(this, 'keydown', this._handleSearch);
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
   }
 
@@ -428,6 +429,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   //#endregion
 
   //#region Event listeners
+
+  private _handleFocusIn(): void {
+    this._setTouchedState();
+  }
 
   private _handleFocusOut({ relatedTarget }: FocusEvent): void {
     if (this.contains(relatedTarget as Node)) {
