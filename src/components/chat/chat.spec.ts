@@ -1232,27 +1232,15 @@ describe('Chat', () => {
         await nextFrame();
 
         // Activates the previous message on `ArrowUp`
-        messageContainer.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: arrowUp,
-            bubbles: true,
-            cancelable: true,
-          })
-        );
-        await nextFrame();
+        simulateKeyboard(messageContainer, arrowUp);
+        await elementUpdated(chat);
         expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
           'message-3'
         );
 
         // Activates the next message on `ArrowDown`
-        messageContainer.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: arrowDown,
-            bubbles: true,
-            cancelable: true,
-          })
-        );
-        await nextFrame();
+        simulateKeyboard(messageContainer, arrowDown);
+        await elementUpdated(chat);
         expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
           'message-4'
         );
@@ -1274,27 +1262,15 @@ describe('Chat', () => {
         await nextFrame();
 
         // Activates the first message on `Home`
-        messageContainer.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: homeKey,
-            bubbles: true,
-            cancelable: true,
-          })
-        );
-        await nextFrame();
+        simulateKeyboard(messageContainer, homeKey);
+        await elementUpdated(chat);
         expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
           'message-1'
         );
 
         // Activates the last message on `End`
-        messageContainer.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: endKey,
-            bubbles: true,
-            cancelable: true,
-          })
-        );
-        await nextFrame();
+        simulateKeyboard(messageContainer, endKey);
+        await elementUpdated(chat);
         expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
           'message-4'
         );
