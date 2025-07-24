@@ -1,6 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
@@ -11,6 +12,8 @@ import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { createChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
+import { styles as shared } from './themes/shared/chat.common.css.js';
+import { all } from './themes/themes.js';
 import type {
   IgcChatOptions,
   IgcMessage,
@@ -40,7 +43,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-chat';
 
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -58,6 +61,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatContext,
     initialValue: this._chatState,
   });
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   /**
    * The list of chat messages currently displayed.
@@ -117,20 +125,20 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderHeader() {
-    return html` <div class="header" part="header">
-      <div class="info">
+    return html` <div part="header">
+      <div part="info">
         <slot name="prefix" part="prefix"></slot>
         <slot name="title" part="title"
           >${this._chatState.options?.headerText}</slot
         >
       </div>
-      <slot name="actions" class="actions"> </slot>
+      <slot name="actions" part="actions"></slot>
     </div>`;
   }
 
   private renderSuggestions() {
     return html` <div
-      class="suggestions-container"
+      part="suggestions-container"
       role="list"
       aria-label="Suggestions"
     >
@@ -157,10 +165,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div class="chat-container">
+      <div part="chat-container">
         ${this.renderHeader()}
         ${this.messages.length === 0
-          ? html`<div class="empty-state">
+          ? html`<div part="empty-state">
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}
