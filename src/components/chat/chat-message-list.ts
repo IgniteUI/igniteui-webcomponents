@@ -268,8 +268,9 @@ export default class IgcChatMessageListComponent extends LitElement {
         aria-label="Message list"
         tabindex="0"
         @focusin=${this.handleFocusIn}
-        @focusout=${this.handleFocusOut}></div>
-        <div class="message-list">
+        @focusout=${this.handleFocusOut}
+      >
+        <div part="message-list">
           ${repeat(
             groupedMessages,
             (group) => group.date,
@@ -294,11 +295,9 @@ export default class IgcChatMessageListComponent extends LitElement {
               )}
             `
           )}
-          ${
-            this._chatState?.options?.isComposing
-              ? this.renderLoadingTemplate()
-              : nothing
-          }
+          ${this._chatState?.options?.isComposing
+            ? this.renderLoadingTemplate()
+            : nothing}
         </div>
       </div>
     `;
