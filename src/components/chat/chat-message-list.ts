@@ -21,7 +21,6 @@ import type { IgcMessage } from './types.js';
  * @element igc-chat-message-list
  *
  * This component:
- * - Groups messages by date, labeling groups as "Today", "Yesterday", or the date string.
  * - Renders messages using the `<igc-chat-message>` component.
  * - Supports keyboard navigation between messages (Home, End, ArrowUp, ArrowDown).
  * - Manages focus highlighting on active messages.

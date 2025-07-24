@@ -15,9 +15,33 @@ import { styles } from './themes/input.base.css.js';
 import { attachmentIcon, sendButtonIcon } from './types.js';
 
 /**
+ * A web component that provides the input area for the `igc-chat` interface.
+ *
+ * It supports:
+ * - Text input with automatic resizing
+ * - Sending messages on Enter key (with Shift+Enter for newlines)
+ * - File attachments via file picker or drag-and-drop
+ * - Customizable templates for send button, attachments, and text input
+ * - Emits various chat-related events (typing, input focus/blur, attachment drop, etc.)
  *
  * @element igc-chat-input
  *
+ * @slot - Default unnamed slot for rendering inside the component
+ * @fires igcTypingChange - Fired when the user starts/stops typing
+ * @fires igcInputFocus - Fired when the input area receives focus
+ * @fires igcInputBlur - Fired when the input area loses focus
+ * @fires igcAttachmentDrag - Fired when dragging a file over the input
+ * @fires igcAttachmentDrop - Fired when a file is dropped into the input
+ * @fires igcChange - Fired when file input changes (delegated from `<igc-file-input>`)
+ *
+ * @csspart input-container - Container for the input section
+ * @csspart input-wrapper - Wrapper around the text input
+ * @csspart text-input - The `<igc-textarea>` component
+ * @csspart buttons-container - Container for file upload/send buttons
+ * @csspart send-button - The send icon button
+ * @csspart attachments - Container for rendering attachments
+ * @csspart attachment-wrapper - Wrapper for individual attachment
+ * @csspart attachment-name - Display name of an attachment
  */
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
