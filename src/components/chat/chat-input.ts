@@ -75,6 +75,9 @@ export default class IgcChatInputComponent extends LitElement {
   private inputValue = '';
 
   @state()
+  private inputPlaceholder = '';
+
+  @state()
   private dragClass = '';
 
   constructor() {
@@ -98,7 +101,7 @@ export default class IgcChatInputComponent extends LitElement {
   public get defaultTextArea(): TemplateResult {
     return html` <igc-textarea
       part="text-input"
-      placeholder="Type a message..."
+      .placeholder=${this.inputPlaceholder}
       resize="auto"
       rows="1"
       .value=${this.inputValue}
@@ -154,6 +157,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override updated() {
     this.inputValue = this._chatState?.inputValue || '';
+    this.inputPlaceholder = this._chatState?.options?.inputPlaceholder || '';
   }
 
   private handleInput(e: Event) {

@@ -126,6 +126,11 @@ export type IgcChatOptions = {
    */
   headerText?: string;
   /**
+   * Optional placeholder text for the chat input area.
+   * Provides a hint to the user about what they can type (e.g. "Type a message...").
+   */
+  inputPlaceholder?: string;
+  /**
    * Suggested text snippets or quick replies that can be shown as user-selectable options.
    */
   suggestions?: string[];

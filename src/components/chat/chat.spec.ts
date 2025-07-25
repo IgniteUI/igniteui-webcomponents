@@ -213,7 +213,6 @@ describe('Chat', () => {
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
-                        placeholder="Type a message..."
                         resize="auto"
                         rows="1"
                         >
@@ -414,6 +413,18 @@ describe('Chat', () => {
       );
     });
 
+    it('should apply `inputPlaceholder` correctly', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+      };
+      await elementUpdated(chat);
+
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+
+      expect(textArea?.placeholder).to.equal('Type message here...');
+    });
+
     it('should render suggestions', async () => {
       chat.options = {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
@@ -492,7 +503,6 @@ describe('Chat', () => {
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
-                        placeholder="Type a message..."
                         resize="auto"
                         rows="1"
                         >
@@ -570,7 +580,6 @@ describe('Chat', () => {
             <div part="input-wrapper">
               <igc-textarea
                 part="text-input"
-                placeholder="Type a message..."
                 resize="auto"
                 rows="1"
               >
