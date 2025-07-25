@@ -1,0 +1,36 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+[part='buttons-container'] {
+    display: flex;
+    align-items: center;
+    margin-block: rem(8px) rem(16px);
+}
+
+[part='send-button'] {
+    margin-inline-start: auto;
+}
+
+[part='attachments'] {
+    display: flex;
+    gap: rem(8px);
+    margin-block-end: rem(8px);
+}
+
+igc-file-input {
+    width: fit-content;
+    margin-inline-end: auto;
+}
+
+igc-file-input::part(file-names) {
+    display: none;
+}
+
+igc-file-input::part(container) {
+    background: transparent;
+    border: none;
+
+    &::after {
+        display: none;
+    }
+}

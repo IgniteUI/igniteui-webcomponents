@@ -1,0 +1,19 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: none;
+}
+
+:host(::-webkit-scrollbar) {
+    display: none;
+}
+
+[part='message-list'] {
+    display: flex;
+    flex-direction: column;
+    gap: rem(24px);
+}
