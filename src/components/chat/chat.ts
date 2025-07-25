@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, type TemplateResult } from 'lit';
+import { property, query } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -157,6 +157,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     initialValue: this._chatState,
   });
 
+  @query(IgcChatInputComponent.tagName)
+  private _chatInput!: IgcChatInputComponent;
+
   constructor() {
     super();
     addThemingController(this, all);
@@ -214,6 +217,26 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
+  /** Returns the default attachments element. */
+  public get defaultAttachments(): TemplateResult {
+    return this._chatInput.defaultAttachmentsArea;
+  }
+
+  /** Returns the default textarea element. */
+  public get defaultTextArea(): TemplateResult {
+    return this._chatInput.defaultTextArea;
+  }
+
+  /** Returns the default file upload button element. */
+  public get defaultFileUploadButton(): TemplateResult {
+    return this._chatInput.defaultFileUploadButton;
+  }
+
+  /** Returns the default send message button element. */
+  public get defaultSendButton(): TemplateResult {
+    return this._chatInput.defaultSendButton;
+  }
+
   @watch('messages')
   @watch('draftMessage')
   @watch('options')
@@ -239,7 +262,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
       role="list"
       aria-label="Suggestions"
     >
-      <slot name="suggestions-header"> </slot>
+      <slot name="suggestions-header" part="suggestions-header"></slot>
       <slot name="suggestions" part="suggestions">
         ${this._chatState.options?.suggestions?.map(
           (suggestion) => html`

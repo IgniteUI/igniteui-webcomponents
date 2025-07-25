@@ -202,7 +202,7 @@ describe('Chat', () => {
                       </slot>
                     </div>
                     <div aria-label="Suggestions" part="suggestions-container" role="list">
-                        <slot name="suggestions-header"> </slot>
+                        <slot name="suggestions-header" part="suggestions-header"> </slot>
                         <slot name="suggestions" part="suggestions">
                         </slot>
                     </div>
@@ -433,7 +433,7 @@ describe('Chat', () => {
 
       expect(suggestionsContainer).dom.to.equal(
         `<div aria-label="Suggestions" part="suggestions-container" role="list">
-          <slot name="suggestions-header"> </slot>
+          <slot name="suggestions-header" part="suggestions-header"> </slot>
           <slot name="suggestions" part="suggestions">
               <slot name="suggestion" part="suggestion" role="listitem">
                   <igc-chip>
@@ -713,7 +713,7 @@ describe('Chat', () => {
 
       expect(suggestionsContainer).dom.to.equal(
         `<div aria-label="Suggestions" part="suggestions-container" role="list">
-                    <slot name="suggestions-header"> </slot>
+                    <slot name="suggestions-header" part="suggestions-header"> </slot>
                     <slot name="suggestions" part="suggestions">
                         <slot name="suggestion" part="suggestion" role="listitem">
                             <igc-chip>
