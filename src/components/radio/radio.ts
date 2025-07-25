@@ -1,5 +1,5 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -98,9 +98,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
 
-  @queryAssignedNodes({ flatten: true })
-  protected readonly _label!: Array<Node>;
-
   @state()
   protected _hideLabel = true;
 
@@ -167,7 +164,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public set checked(value: boolean) {
     this._formValue.setValueAndFormState(value);
     this._tabIndex = this.checked ? 0 : -1;
-    this._validate();
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
     }
@@ -208,7 +204,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         radio.defaultChecked = false;
       }
     } else {
-      this._updateValidity();
+      this._validate();
     }
   }
 
@@ -285,6 +281,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override formResetCallback(): void {
     super.formResetCallback();
     this._resetTabIndexes();
+    this.updateComplete.then(() => this._validate());
   }
 
   /** Called after a form reset callback to restore default keyboard navigation. */
@@ -304,6 +301,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
+    this._setTouchedState();
 
     if (this.checked) {
       return;
@@ -324,6 +322,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[next];
 
+    this._setTouchedState();
     radio.focus();
     radio.checked = true;
     radio.emitEvent('igcChange', {

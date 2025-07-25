@@ -113,10 +113,12 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override emitInputEvent() {
+    this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value });
   }
 
   protected override emitChangeEvent() {
+    this._setTouchedState();
     this.emitEvent('igcChange', { detail: this.value });
   }
 

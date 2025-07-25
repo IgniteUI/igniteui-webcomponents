@@ -100,7 +100,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(value);
     this.updateMaskedValue();
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   /**
@@ -135,7 +134,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(value);
     this.updateMaskedValue();
     this._formValue.setValueAndFormState(value);
-    this._updateValidity();
   }
 
   protected async updateInput(string: string, range: MaskRange) {
@@ -148,7 +146,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
     this.maskedValue = value;
     this._formValue.setValueAndFormState(this.parser.parse(value));
-    this._validate();
     this.requestUpdate();
 
     if (range.start !== this.mask.length) {
@@ -187,13 +184,14 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  protected handleBlur() {
+  protected override _handleBlur() {
     this.focused = false;
     this.updateMaskedValue();
-    this.invalid = !this.checkValidity();
+    super._handleBlur();
   }
 
   protected handleChange() {
+    this._setTouchedState();
     this.emitEvent('igcChange', { detail: this.value });
   }
 
@@ -220,7 +218,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}
         @dragstart=${this.handleDragStart}
-        @blur=${this.handleBlur}
+        @blur=${this._handleBlur}
         @focus=${this.handleFocus}
         @cut=${this.handleCut}
         @change=${this.handleChange}
@@ -231,7 +229,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
-        aria-invalid=${this.invalid ? 'true' : 'false'}
         @keydown=${this.handleKeydown}
       />
     `;

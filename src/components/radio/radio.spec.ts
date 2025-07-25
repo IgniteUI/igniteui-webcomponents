@@ -1,15 +1,16 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateClick,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
@@ -69,20 +70,6 @@ describe('Radio Component', () => {
       );
 
       radio.labelPosition = 'after';
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio label-position="after">${label}</igc-radio>`
-      );
-    });
-
-    it('sets invalid properly', async () => {
-      radio.invalid = true;
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio invalid label-position="after">${label}</igc-radio>`
-      );
-
-      radio.invalid = false;
       await elementUpdated(radio);
       expect(radio).dom.to.equal(
         `<igc-radio label-position="after">${label}</igc-radio>`
@@ -220,7 +207,7 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
       // checkValidity - all radios from the group should have invalid styles applied
-      expect(first(radios).checkValidity()).to.be.false;
+      expect(first(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
       // Set a checked radio - valid state, invalid styles should not be applied

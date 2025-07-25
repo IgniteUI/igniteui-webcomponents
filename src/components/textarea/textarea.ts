@@ -234,7 +234,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string) {
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get value(): string {
@@ -285,7 +284,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       callback: this._setAreaHeight,
     });
 
-    addSafeEventListener(this, 'focus', this._handleFocus);
     addSafeEventListener(this, 'blur', this._handleBlur);
   }
 
@@ -351,21 +349,15 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _handleInput(): void {
+    this._setTouchedState();
     this.value = this._input.value;
     this.emitEvent('igcInput', { detail: this.value });
   }
 
   protected _handleChange(): void {
+    this._setTouchedState();
     this.value = this._input.value;
     this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  protected _handleFocus(): void {
-    this._dirty = true;
-  }
-
-  protected _handleBlur(): void {
-    this._validate();
   }
 
   //#endregion
@@ -491,7 +483,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}
-        aria-invalid=${this.invalid}
         aria-describedby=${describedBy}
       ></textarea>
     `;

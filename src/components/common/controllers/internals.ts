@@ -3,6 +3,7 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
+import type { FormValueType } from '../mixins/forms/types.js';
 
 /** Configuration for the ElementInternalsController. */
 type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
@@ -22,11 +23,46 @@ class ElementInternalsController {
    * Gets the closest ancestor `<form>` element or `null`.
    *
    * @remarks
-   * The host element must be form associated, that is should have
+   * The host element must be form associated, that is, it should have
    * `static formAssociated = true` in order to return the parent form.
    */
   public get form(): HTMLFormElement | null {
     return this._internals.form;
+  }
+
+  /**
+   * Returns a `ValidityState` object which represents the different validity states
+   * the element can be in, with respect to constraint validation.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public get validity(): ValidityState {
+    return this._internals.validity;
+  }
+
+  /**
+   * Returns a string containing the validation message of this element.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public get validationMessage(): string {
+    return this._internals.validationMessage;
+  }
+
+  /**
+   * Returns a boolean value which returns true if the element is a submittable element
+   * which is a candidate for constraint validation.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public get willValidate(): boolean {
+    return this._internals.willValidate;
   }
 
   constructor(
@@ -52,12 +88,61 @@ class ElementInternalsController {
 
   /**
    * Adds or removes a custom state from the element's internals.
-   * Custom states can be styled via `:state()` pseudo-class in CSS.
+   * Custom states can be styled via `:state()` selector in CSS.
    */
   public setState(state: string, value: boolean): void {
     value
       ? this._internals.states.add(state)
       : this._internals.states.delete(state);
+  }
+
+  /**
+   * Sets both the state and submission value of internals's target element to value.
+   *
+   * If value is null, the element won't participate in form submission.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public setFormValue(value: FormValueType, state?: FormValueType): void {
+    this._internals.setFormValue(value, state);
+  }
+
+  /**
+   * Sets the internal validity state of the host element as well as the validation
+   * message.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public setValidity(flags?: ValidityStateFlags, message?: string): void {
+    this._internals.setValidity(flags, message);
+  }
+
+  /**
+   * Checks the internal validity of the host element and fires an `invalid` event if
+   * the host element fails validation constraints.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public checkValidity(): boolean {
+    return this._internals.checkValidity();
+  }
+
+  /**
+   * Checks the internal validity of the host element and fires an `invalid` event if
+   * the host element fails validation constraints.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true`.
+   */
+  public reportValidity(): boolean {
+    return this._internals.reportValidity();
   }
 }
 
