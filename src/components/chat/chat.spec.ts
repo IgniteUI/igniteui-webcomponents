@@ -201,11 +201,6 @@ describe('Chat', () => {
                       <slot name="empty-state">
                       </slot>
                     </div>
-                    <div aria-label="Suggestions" part="suggestions-container" role="list">
-                        <slot name="suggestions-header" part="suggestions-header"> </slot>
-                        <slot name="suggestions" part="suggestions">
-                        </slot>
-                    </div>
                     <igc-chat-input>
                     </igc-chat-input>
                 </div>`
@@ -215,8 +210,6 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <div aria-label="Attachments" part="attachments" role="list">
-                    </div>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -496,8 +489,6 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <div aria-label="Attachments" part="attachments" role="list">
-                    </div>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"

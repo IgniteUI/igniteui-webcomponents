@@ -327,7 +327,10 @@ export default class IgcChatInputComponent extends LitElement {
   protected override render() {
     return html`
       <div part="input-container" class="${this.dragClass}">
-        ${this.renderAttachmentsArea()}
+        ${this._chatState?.inputAttachments &&
+        this._chatState?.inputAttachments.length > 0
+          ? this.renderAttachmentsArea()
+          : nothing}
 
         <div part="input-wrapper">
           ${this._chatState?.options?.templates?.textInputTemplate

@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement, type TemplateResult } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -293,7 +293,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}
-        ${this.renderSuggestions()}
+        ${this._chatState.options?.suggestions &&
+        this._chatState.options?.suggestions?.length > 0
+          ? this.renderSuggestions()
+          : nothing}
         <igc-chat-input></igc-chat-input>
       </div>
     `;
