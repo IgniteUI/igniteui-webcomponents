@@ -195,7 +195,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private setupDragAndDrop() {
     const container = this.shadowRoot?.querySelector(
-      '.input-container'
+      `div[part='input-container']`
     ) as HTMLElement;
     if (container) {
       container.addEventListener('dragenter', this.handleDragEnter.bind(this));
