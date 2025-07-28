@@ -131,10 +131,8 @@ $dropdown-theme: dropdown-theme.$material;
 }
 
 :host(:disabled[outlined]),
-:host([outlined][disabled]),
-:host([outlined][invalid]) {
+:host([outlined][disabled]) {
     igc-input::part(filled) + igc-input::part(notch) {
         border-top-color: transparent;
     }
 }
-
