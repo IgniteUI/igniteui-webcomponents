@@ -18,7 +18,7 @@
     gap: rem(8px);
 }
 
-//should be changed when the design is ready
+// should be changed when the design is ready
 [part~='dragging'] {
     igc-textarea::part(container) {    
         background: color(gray, 300);
