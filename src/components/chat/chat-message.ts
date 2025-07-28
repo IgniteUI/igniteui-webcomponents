@@ -81,13 +81,13 @@ export default class IgcChatMessageComponent extends LitElement {
    * - Renders attachments and custom templates if provided.
    */
   protected override render() {
-    const containerClass = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
+    const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
     const sanitizedMessageText = this.message?.text.trim() || '';
     const rendererConfig = this._chatState?.options?.rendererConfig!;
     const isPlainText = rendererConfig?.type === 'plain';
 
     return html`
-      <div part=${containerClass}>
+      <div part=${containerPart}>
         <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
