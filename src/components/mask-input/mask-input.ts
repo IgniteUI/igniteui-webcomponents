@@ -5,10 +5,7 @@ import { live } from 'lit/directives/live.js';
 
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  createFormValueState,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
 import type { MaskInputValueMode } from '../types.js';
@@ -55,14 +52,13 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     return maskValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<string> =
-    createFormValueState(this, {
-      initialValue: '',
-      transformers: {
-        setFormValue: (value) =>
-          this._isRawMode ? value || null : this.maskedValue || null,
-      },
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: '',
+    transformers: {
+      setFormValue: (value) =>
+        this._isRawMode ? value || null : this.maskedValue || null,
+    },
+  });
 
   protected get _isRawMode() {
     return this.valueMode === 'raw';

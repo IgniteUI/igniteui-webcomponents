@@ -16,11 +16,8 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  createFormValueState,
-  defaultDateTimeTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
@@ -85,11 +82,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<Date | null> =
-    createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: null,
+    transformers: FormValueDateTimeTransformers,
+  });
 
   protected _defaultMask!: string;
   private _oldValue: Date | null = null;
