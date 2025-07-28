@@ -36,6 +36,10 @@ export class ChatState {
     wildcardTypes: Set<string>;
   } | null = null;
 
+  private _suggestionsPosition:
+    | 'above-input'
+    | 'below-input'
+    | 'below-messages' = 'below-messages';
   //#endregion
 
   //#region Public properties
@@ -87,6 +91,12 @@ export class ChatState {
     return this._options?.currentUserId ?? 'user';
   }
 
+  /**
+   * Gets the current suggestionsPosition from options or returns the default value 'below-messages'.
+   */
+  public get suggestionsPosition(): string {
+    return this._options?.suggestionsPosition ?? this._suggestionsPosition;
+  }
   /**
    * Gets the text area component.
    */

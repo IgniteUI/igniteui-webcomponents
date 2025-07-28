@@ -277,6 +277,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           `
         )}
       </slot>
+      <slot name="suggestions-actions" part="suggestions-actions"></slot>
     </div>`;
   }
 
@@ -285,6 +286,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const hasSuggestions =
+      this._chatState.options?.suggestions &&
+      this._chatState.options.suggestions.length > 0;
     return html`
       <div part="chat-container">
         ${this.renderHeader()}
@@ -293,11 +297,20 @@ export default class IgcChatComponent extends EventEmitterMixin<
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}
-        ${this._chatState.options?.suggestions &&
-        this._chatState.options?.suggestions?.length > 0
+        ${hasSuggestions &&
+        this._chatState.suggestionsPosition === 'below-messages'
           ? this.renderSuggestions()
           : nothing}
-        <igc-chat-input></igc-chat-input>
+        <igc-chat-input>
+          ${hasSuggestions &&
+          this._chatState.suggestionsPosition === 'above-input'
+            ? html`${this.renderSuggestions()}`
+            : nothing}
+        </igc-chat-input>
+        ${hasSuggestions &&
+        this._chatState.suggestionsPosition === 'below-input'
+          ? this.renderSuggestions()
+          : nothing}
       </div>
     `;
   }
