@@ -1,4 +1,4 @@
-import { type TemplateResult, html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { marked } from 'marked';
 
 marked.setOptions({

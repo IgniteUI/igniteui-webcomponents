@@ -139,7 +139,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
     this.updateMask();
-    this._validate();
   }
 
   /**
@@ -149,7 +148,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ converter: convertToDate })
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get min(): Date | null {
@@ -163,7 +162,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ converter: convertToDate })
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get max(): Date | null {
@@ -299,7 +298,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this._updateValidity();
     if (this.value) {
       this.updateMask();
     }
@@ -375,6 +373,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override handleInput() {
+    this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
@@ -625,7 +624,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.emitEvent('igcChange', { detail: this.value });
     }
 
-    this.checkValidity();
+    super._handleBlur();
   }
 
   protected navigateParts(delta: number) {

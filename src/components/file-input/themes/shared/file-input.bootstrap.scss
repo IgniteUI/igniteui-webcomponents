@@ -72,7 +72,7 @@ $theme-file-input: file-input.$bootstrap;
 }
 
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled]):state(ig-invalid)) {
     --input-border-color: #{var-get($theme, 'error-secondary-color')};
 
     [part='prefix'],
@@ -82,7 +82,7 @@ $theme-file-input: file-input.$bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not([disabled]):state(ig-invalid):focus-within) {
     [part~='container'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }

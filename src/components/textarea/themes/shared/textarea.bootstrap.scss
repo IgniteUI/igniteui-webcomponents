@@ -130,19 +130,15 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host(:not(:disabled,[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
     textarea {
         border: rem(1px) solid var-get($theme, 'error-secondary-color');
     }
-
-    ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
-    }
 }
 
-:host([invalid]:not(:disabled):focus-within),
-:host([invalid]:not([disabled])):focus-within {
+:host(:not(:disabled,[readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled],[readonly])):state(ig-invalid):focus-within {
     textarea {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }

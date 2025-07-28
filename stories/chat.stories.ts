@@ -17,7 +17,6 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
@@ -133,6 +132,7 @@ const _customRenderer = (text: string) =>
 
 const ai_chat_options = {
   headerText: 'Chat',
+  inputPlaceholder: 'Type your message here...',
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
     // messageActionsTemplate: messageActionsTemplate,
@@ -145,7 +145,7 @@ const ai_chat_options = {
 };
 
 const chat_options = {
-  disableAutoScroll: true,
+  disableAutoScroll: false,
   disableAttachments: true,
 };
 

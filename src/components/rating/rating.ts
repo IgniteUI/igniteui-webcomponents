@@ -201,7 +201,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       ? clamp(asNumber(number), 0, this.max)
       : Math.max(asNumber(number), 0);
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get value(): number {
@@ -301,6 +300,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected emitValueUpdate(value: number) {
+    this._setTouchedState();
     this.value = clamp(value, 0, this.max);
     if (value === this.value) {
       this.emitEvent('igcChange', { detail: this.value });

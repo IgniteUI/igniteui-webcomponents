@@ -9,6 +9,7 @@ import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
+import { styles as shared } from './themes/shared/message-attachments.common.css.js';
 import {
   closeIcon,
   fileIcon,
@@ -19,14 +20,30 @@ import {
 } from './types.js';
 
 /**
+ * A component that renders message attachments within a chat.
+ *
+ * Displays attachments such as images or files, supporting custom templates
+ * and default rendering using expansion panels.
  *
  * @element igc-message-attachments
  *
+ * @slot attachment-icon - Slot to override the attachment icon (image or file).
+ * @slot attachment-name - Slot to override the displayed attachment name.
+ * @slot attachment-content - Slot to override the content shown inside the attachment panel.
+ *
+ * @csspart attachments-container - Container wrapping all attachments.
+ * @csspart attachment - Wrapper for a single attachment header.
+ * @csspart attachment-icon - Icon part representing the attachment type.
+ * @csspart file-name - Part representing the attachment's file name.
+ * @csspart actions - Container for header action buttons.
+ * @csspart image-attachment - Part for the image element inside an image attachment.
+ *
+ * @fires igcAttachmentClick - Fired when an attachment header is toggled (clicked).
  */
 export default class IgcMessageAttachmentsComponent extends LitElement {
   public static readonly tagName = 'igc-message-attachments';
 
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
@@ -40,9 +57,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       IgcExpansionPanelComponent
     );
   }
+
+  /**
+   * The array of attachments to render.
+   */
   @property({ attribute: false })
   attachments: IgcMessageAttachment[] = [];
 
+  /**
+   * The preview image URL for the attachments.
+   */
   @property({ attribute: false })
   previewImage = '';
 
@@ -71,7 +95,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
-    return html`<div class="details">
+    return html`<div part="details">
       ${this._chatState?.options?.templates?.attachmentHeaderTemplate
         ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.attachments
@@ -83,23 +107,23 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 ? html`<igc-icon
                     name="image"
                     collection="material"
-                    class="medium"
+                    part="attachment-icon"
                   ></igc-icon>`
                 : html`<igc-icon
                     name="file"
                     collection="material"
-                    class="medium"
+                    part="attachment-icon"
                   ></igc-icon>`}
             </slot>
             <slot name="attachment-name">
-              <span class="file-name">${attachment.name}</span>
+              <span part="file-name">${attachment.name}</span>
             </slot>
           `}
     </div>`;
   }
 
   private renderAttachmentHeaderActions() {
-    return html`<div class="actions">
+    return html`<div part="actions">
       ${this._chatState?.options?.templates?.attachmentActionsTemplate
         ? this._chatState.options.templates.attachmentActionsTemplate(
             this.attachments
@@ -119,7 +143,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             ${attachment.type === 'image' ||
             attachment.file?.type.startsWith('image/')
               ? html` <img
-                  class="image-attachment"
+                  part="image-attachment"
                   src=${this.getURL(attachment)}
                   alt=${attachment.name}
                 />`
@@ -139,7 +163,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
           @igcClosing=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
           @igcOpening=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
         >
-          <div slot="title" class="attachment">
+          <div slot="title" part="attachment">
             ${this.renderAttachmentHeaderText(attachment)}
             ${this.renderAttachmentHeaderActions()}
           </div>
@@ -151,7 +175,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div class="attachments-container">
+      <div part="attachments-container">
         ${this._chatState?.options?.templates?.attachmentTemplate
           ? this._chatState.options.templates.attachmentTemplate(
               this.attachments

@@ -53,14 +53,8 @@ $input-theme: input-theme.$indigo;
     }
 }
 
-:host([invalid]:focus-within) {
-    igc-input::part(label) {
-        color: var-get($theme, 'error-secondary-color');
-    }
-}
-
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($input-theme, 'helper-text-color');
     }

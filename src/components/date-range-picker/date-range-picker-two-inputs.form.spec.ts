@@ -4,11 +4,14 @@ import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  runValidationContainerTests,
   simulateClick,
   simulateInput,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
@@ -282,6 +285,8 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
         },
       ];
 
+      ValidityHelpers.setTouchedState(spec.element);
+
       // both values within disabled range
       spec.setProperties({
         disabledDates,
@@ -469,6 +474,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     });
   });
   it('is correctly validated on switching between two and single inputs', async () => {
+    ValidityHelpers.setTouchedState(spec.element);
     spec.setProperties({ useTwoInputs: false });
     await elementUpdated(spec.element);
 

@@ -165,8 +165,8 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   private _handleChange(): void {
     this._hasActivation = false;
+    this._setTouchedState();
     this._formValue.setValueAndFormState(this.files);
-    this._validate();
 
     this.requestUpdate();
     this.emitEvent('igcChange', { detail: this.files! });
@@ -174,6 +174,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   private _handleCancel(): void {
     this._hasActivation = false;
+    this._setTouchedState();
     this._validate();
 
     this.emitEvent('igcCancel', {
@@ -181,14 +182,8 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     });
   }
 
-  protected _handleFocus(): void {
-    this._dirty = true;
-  }
-
-  protected _handleBlur(): void {
-    if (!this._hasActivation) {
-      this._validate();
-    }
+  protected override _handleBlur(): void {
+    this._hasActivation ? this._validate() : super._handleBlur();
   }
 
   /* c8 ignore next 3 */
@@ -228,14 +223,12 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         ?multiple=${this.multiple}
         tabindex=${this.tabIndex}
         accept=${ifDefined(this.accept === '' ? undefined : this.accept)}
-        aria-invalid=${this.invalid}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
         @click=${this._handleClick}
         @change=${this._handleChange}
         @cancel=${this._handleCancel}
-        @focus=${this._handleFocus}
         @blur=${this._handleBlur}
       />
     `;

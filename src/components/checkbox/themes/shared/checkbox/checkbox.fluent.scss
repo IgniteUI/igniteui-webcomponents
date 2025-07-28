@@ -107,7 +107,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host([invalid]:not([disabled])) {
+:host(:state(ig-invalid):not([disabled])) {
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-color;
@@ -121,7 +121,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host([invalid]:focus-visible) {
+:host(:state(ig-invalid):focus-visible) {
     [part~='control'] {
         &::after {
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;
@@ -135,7 +135,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host([invalid]:hover) {
+:host(:state(ig-invalid):hover) {
     [part~='indicator'] {
         stroke: $invalid-color;
     }
@@ -157,8 +157,8 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]),
-:host(:not(:disabled)[invalid][indeterminate]) {
+:host(:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='control'] {
         &::before {
             background: $invalid-color;
@@ -184,8 +184,8 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host(:hover:not([disabled])[invalid][indeterminate]),
-:host(:hover:not(:disabled)[invalid][indeterminate]) {
+:host(:hover:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:hover:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='control'] {
         &::before {
             background: $invalid-hover-color;
@@ -195,13 +195,6 @@ $disabled-color: var-get($theme, 'disabled-color');
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;
             background: transparent;
         }
-    }
-}
-
-:host([invalid][checked]) [part='control checked'] {
-    &::after {
-        box-shadow: inset 0 0 0 rem(1px) $invalid-color;
-        background: $invalid-color;
     }
 }
 
@@ -250,33 +243,3 @@ $disabled-color: var-get($theme, 'disabled-color');
         }
     }
 }
-
-:host([disabled][invalid]),
-:host(:disabled[invalid]) {
-    [part~='control'] {
-        &::after {
-            box-shadow: inset 0 0 0 rem(1px) $disabled-color;
-        }
-    }
-
-    [part='control checked'] {
-        &::after {
-            background: $disabled-color;
-        }
-    }
-}
-
-:host([disabled][invalid][indeterminate]),
-:host(:disabled[invalid][indeterminate]) {
-    [part~='control'] {
-        &::before {
-            background: $disabled-color;
-        }
-
-        &::after {
-            box-shadow: inset 0 0 0 rem(1px) $disabled-color;
-            background: transparent;
-        }
-    }
-}
-

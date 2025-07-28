@@ -1,6 +1,7 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
@@ -11,28 +12,118 @@ import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
 import { createChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
+import { styles as shared } from './themes/shared/chat.common.css.js';
+import { all } from './themes/themes.js';
 import type {
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
 } from './types.js';
 
+/**
+ * Defines the custom events dispatched by the `<igc-chat>` component.
+ */
 export interface IgcChatComponentEventMap {
+  /**
+   * Dispatched when a new chat message is created (sent).
+   *
+   * @event igcMessageCreated
+   * @type {CustomEvent<IgcMessage>}
+   * @detail The message that was created.
+   */
   igcMessageCreated: CustomEvent<IgcMessage>;
+
+  /**
+   * Dispatched when a chat message attachment is clicked.
+   *
+   * @event igcAttachmentClick
+   * @type {CustomEvent<IgcMessageAttachment>}
+   * @detail The attachment that was clicked.
+   */
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
+
+  /**
+   * Dispatched when an attachment is changed (e.g., updated or removed).
+   *
+   * @event igcAttachmentChange
+   * @type {CustomEvent<IgcMessageAttachment>}
+   * @detail The attachment that was changed.
+   */
   igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
+
+  /**
+   * Dispatched during an attachment drag operation.
+   *
+   * @event igcAttachmentDrag
+   * @type {CustomEvent<any>}
+   * @detail The drag event payload.
+   */
   igcAttachmentDrag: CustomEvent<any>;
+
+  /**
+   * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+   *
+   * @event igcAttachmentDrop
+   * @type {CustomEvent<any>}
+   * @detail The drop event payload.
+   */
   igcAttachmentDrop: CustomEvent<any>;
+
+  /**
+   * Dispatched when the typing status changes (e.g., user starts or stops typing).
+   *
+   * @event igcTypingChange
+   * @type {CustomEvent<boolean>}
+   * @detail `true` if typing started, `false` if stopped.
+   */
   igcTypingChange: CustomEvent<boolean>;
+
+  /**
+   * Dispatched when the chat input field gains focus.
+   *
+   * @event igcInputFocus
+   * @type {CustomEvent<any>}
+   * @detail Focus event payload.
+   */
   igcInputFocus: CustomEvent<any>;
+
+  /**
+   * Dispatched when the chat input field loses focus.
+   *
+   * @event igcInputBlur
+   * @type {CustomEvent<any>}
+   * @detail Blur event payload.
+   */
   igcInputBlur: CustomEvent<any>;
+
+  /**
+   * Dispatched when the content of the chat input changes.
+   *
+   * @event igcInputChange
+   * @type {CustomEvent<string>}
+   * @detail The current text value of the input.
+   */
   igcInputChange: CustomEvent<string>;
 }
 
 /**
+ * A chat UI component for displaying messages, attachments, and input interaction.
+ *
+ * This component is part of the Ignite UI Web Components suite.
  *
  * @element igc-chat
+ * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
+ * @slot title - Slot for overriding the chat title content.
+ * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
+ * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
+ * @slot suggestion - Slot for rendering a single suggestion item.
+ * @slot empty-state - Slot shown when there are no messages.
  *
+ * @csspart header - Styles the header container.
+ * @csspart prefix - Styles the element before the title (e.g., avatar).
+ * @csspart title - Styles the chat header title.
+ * @csspart suggestions - Styles the suggestion container.
+ * @csspart suggestion - Styles each suggestion item.
  */
 export default class IgcChatComponent extends EventEmitterMixin<
   IgcChatComponentEventMap,
@@ -40,9 +131,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-chat';
 
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
+  /**
+   * Registers the chat component and its child components.
+   * Should be called once before using the component.
+   *
+   * @example
+   * IgcChatComponent.register();
+   */
   public static register() {
     registerComponent(
       IgcChatComponent,
@@ -59,8 +157,17 @@ export default class IgcChatComponent extends EventEmitterMixin<
     initialValue: this._chatState,
   });
 
+  @query(IgcChatInputComponent.tagName)
+  private _chatInput!: IgcChatInputComponent;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   /**
    * The list of chat messages currently displayed.
+   * Use this property to set or update the message history.
    */
   @property({ reflect: true, attribute: false })
   public set messages(value: IgcMessage[]) {
@@ -72,7 +179,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
-   * The chat message that is still unsend.
+   * The chat message currently being composed but not yet sent.
+   * Includes the draft text and any attachments.
    */
   @property({ reflect: true, attribute: false })
   public set draftMessage(value: {
@@ -97,9 +205,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   /**
-   * Controls the chat configuration and how it will be displayed.
+   * Controls the chat behavior and appearance through a configuration object.
+   * Use this to toggle UI options, provide suggestions, templates, etc.
    */
-
   @property({ attribute: false })
   public set options(value: IgcChatOptions) {
     this._chatState.options = value;
@@ -107,6 +215,26 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   public get options(): IgcChatOptions | undefined {
     return this._chatState.options;
+  }
+
+  /** Returns the default attachments element. */
+  public get defaultAttachments(): TemplateResult {
+    return this._chatInput.defaultAttachmentsArea;
+  }
+
+  /** Returns the default textarea element. */
+  public get defaultTextArea(): TemplateResult {
+    return this._chatInput.defaultTextArea;
+  }
+
+  /** Returns the default file upload button element. */
+  public get defaultFileUploadButton(): TemplateResult {
+    return this._chatInput.defaultFileUploadButton;
+  }
+
+  /** Returns the default send message button element. */
+  public get defaultSendButton(): TemplateResult {
+    return this._chatInput.defaultSendButton;
   }
 
   @watch('messages')
@@ -117,25 +245,24 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderHeader() {
-    return html` <div class="header" part="header">
-      <div class="info">
+    return html` <div part="header">
+      <div part="info">
         <slot name="prefix" part="prefix"></slot>
         <slot name="title" part="title"
           >${this._chatState.options?.headerText}</slot
         >
       </div>
-      <slot name="actions" class="actions">
-        <igc-button variant="flat">⋯</igc-button>
-      </slot>
+      <slot name="actions" part="actions"></slot>
     </div>`;
   }
 
   private renderSuggestions() {
     return html` <div
-      class="suggestions-container"
+      part="suggestions-container"
       role="list"
       aria-label="Suggestions"
     >
+      <slot name="suggestions-header" part="suggestions-header"></slot>
       <slot name="suggestions" part="suggestions">
         ${this._chatState.options?.suggestions?.map(
           (suggestion) => html`
@@ -162,14 +289,17 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div class="chat-container">
+      <div part="chat-container">
         ${this.renderHeader()}
         ${this.messages.length === 0
-          ? html`<div class="empty-state">
+          ? html`<div part="empty-state">
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}
-        ${this.renderSuggestions()}
+        ${this._chatState.options?.suggestions &&
+        this._chatState.options?.suggestions?.length > 0
+          ? this.renderSuggestions()
+          : nothing}
         <igc-chat-input></igc-chat-input>
       </div>
     `;
@@ -178,6 +308,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
 declare global {
   interface HTMLElementTagNameMap {
+    /** The `<igc-chat>` custom element. */
     'igc-chat': IgcChatComponent;
   }
 }

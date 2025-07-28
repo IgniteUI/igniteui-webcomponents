@@ -24,22 +24,10 @@ $input-theme: input-theme.$bootstrap;
     padding: rem(8px) 0;
 }
 
-:host(:focus-within) {
+:host(:not(:state(ig-invalid)):focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
         box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'focused-secondary-color');
         border-color: var-get($input-theme, 'focused-border-color');
-    }
-}
-
-:host([invalid]) {
-    igc-input[readonly]:not([disabled])::part(input) {
-        border-color: var-get($input-theme, 'error-secondary-color');
-    }
-}
-
-:host([invalid]:focus-within) {
-    igc-input[readonly]:not([disabled])::part(input) {
-        box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'error-shadow-color');
     }
 }
 
