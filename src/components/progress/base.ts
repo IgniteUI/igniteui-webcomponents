@@ -1,15 +1,11 @@
 import { html, LitElement, nothing } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import type { SlotController } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { partMap } from '../common/part-map.js';
-import { asPercent, clamp, formatString, isEmpty } from '../common/util.js';
+import { asPercent, clamp, formatString } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
@@ -21,8 +17,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     },
   });
 
-  @queryAssignedElements()
-  protected _assignedElements!: HTMLElement[];
+  protected abstract _slots: SlotController<any>;
 
   @query('[part="base"]', true)
   protected _base!: HTMLElement;
@@ -97,14 +92,14 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   public labelFormat!: string;
 
   @watch('indeterminate')
-  protected indeterminateChange() {
+  protected _indeterminateChange(): void {
     if (!this.indeterminate) {
       this._updateProgress();
     }
   }
 
   @watch('max')
-  protected maxChange() {
+  protected _maxChange(): void {
     this.max = Math.max(0, this.max);
     if (this.value > this.max) {
       this.value = this.max;
@@ -116,7 +111,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   @watch('value')
-  protected valueChange() {
+  protected _valueChange(): void {
     this.value = clamp(this.value, 0, this.max);
 
     if (!this.indeterminate) {
@@ -124,18 +119,14 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  protected override updated() {
+  protected override updated(): void {
     this._updateARIA();
   }
 
-  private _updateARIA() {
-    const text = this.labelFormat ? this.renderLabelFormat() : `${this.value}%`;
+  private _updateARIA(): void {
+    const text = this.labelFormat
+      ? this._renderLabelFormat()
+      : `${this.value}%`;
 
     this._internals.setARIA({
       ariaValueMax: this.max.toString(),
@@ -144,7 +135,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     });
   }
 
-  private _updateProgress() {
+  private _updateProgress(): void {
     const percentage = asPercent(this.value, Math.max(1, this.max));
     const fractionValue = Math.round((percentage % 1) * 100);
     this._hasFraction = fractionValue > 0;
@@ -157,7 +148,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     };
   }
 
-  protected renderLabel() {
+  protected _renderLabel() {
     const parts = {
       label: true,
       value: true,
@@ -165,21 +156,23 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     };
 
     return this.labelFormat
-      ? html`<span part=${partMap(parts)}>${this.renderLabelFormat()}</span>`
+      ? html`<span part=${partMap(parts)}>${this._renderLabelFormat()}</span>`
       : html`<span part=${partMap({ ...parts, counter: true })}></span>`;
   }
 
-  protected renderLabelFormat() {
+  protected _renderLabelFormat(): string {
     return formatString(this.labelFormat, this.value, this.max);
   }
 
-  protected renderDefaultSlot() {
+  protected _renderDefaultSlot() {
     const hideDefaultLabel =
-      this.indeterminate || this.hideLabel || !isEmpty(this._assignedElements);
+      this.indeterminate ||
+      this.hideLabel ||
+      this._slots.hasAssignedElements('[default]');
 
     return html`
       <slot part="label"></slot>
-      ${hideDefaultLabel ? nothing : this.renderLabel()}
+      ${hideDefaultLabel ? nothing : this._renderLabel()}
     `;
   }
 }

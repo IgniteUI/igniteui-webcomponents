@@ -1,15 +1,16 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateClick,
-  type ValidationContainerTestsParams,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
@@ -75,20 +76,6 @@ describe('Radio Component', () => {
       );
     });
 
-    it('sets invalid properly', async () => {
-      radio.invalid = true;
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio invalid label-position="after">${label}</igc-radio>`
-      );
-
-      radio.invalid = false;
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio label-position="after">${label}</igc-radio>`
-      );
-    });
-
     it('sets the name property successfully', async () => {
       const name = 'fruit';
 
@@ -109,33 +96,6 @@ describe('Radio Component', () => {
       expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
     });
 
-    it('sets the checked property successfully', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-disabled',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      radio.checked = true;
-      expect(radio.checked).to.be.true;
-      await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input aria-checked="true" />`, DIFF_OPTIONS);
-
-      radio.checked = false;
-      expect(radio.checked).to.be.false;
-      await elementUpdated(radio);
-
-      expect(input).dom.to.equal(
-        `<input aria-checked="false" />`,
-        DIFF_OPTIONS
-      );
-    });
-
     it('sets the disabled property successfully', async () => {
       const DIFF_OPTIONS = {
         ignoreAttributes: [
@@ -151,19 +111,13 @@ describe('Radio Component', () => {
       radio.disabled = true;
       expect(radio.disabled).to.be.true;
       await elementUpdated(radio);
-      expect(input).dom.to.equal(
-        `<input disabled aria-disabled="true" />`,
-        DIFF_OPTIONS
-      );
+      expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
 
       radio.disabled = false;
       expect(radio.disabled).to.be.false;
       await elementUpdated(radio);
 
-      expect(input).dom.to.equal(
-        `<input aria-disabled="false" />`,
-        DIFF_OPTIONS
-      );
+      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
     });
 
     it('sets the required property successfully', async () => {
@@ -253,7 +207,7 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
       // checkValidity - all radios from the group should have invalid styles applied
-      expect(first(radios).checkValidity()).to.be.false;
+      expect(first(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
       // Set a checked radio - valid state, invalid styles should not be applied

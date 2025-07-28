@@ -6,7 +6,6 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
@@ -477,6 +476,7 @@ export default class IgcComboComponent<
 
     addThemingController(this, all);
     addSafeEventListener(this, 'blur', this._handleBlur);
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
 
     // TODO
     this.addEventListener(
@@ -498,7 +498,7 @@ export default class IgcComboComponent<
     this._formValue.value = this._formValue.defaultValue;
     this._updateSelection();
     this.updateValue(true);
-    this._updateValidity();
+    this._validate();
   }
 
   protected override _setDefaultValue(current: string | null): void {
@@ -622,6 +622,7 @@ export default class IgcComboComponent<
   }
 
   protected async handleMainInput({ detail }: CustomEvent<string>) {
+    this._setTouchedState();
     this._show();
     this._state.searchTerm = detail;
 
@@ -638,12 +639,16 @@ export default class IgcComboComponent<
     this.clearSingleSelection();
   }
 
-  private _handleBlur() {
+  protected _handleFocusIn() {
+    this._setTouchedState();
+  }
+
+  protected override _handleBlur() {
     if (this._selection.isEmpty) {
       this._displayValue = '';
       this.resetSearchTerm();
     }
-    this.checkValidity();
+    super._handleBlur();
   }
 
   protected handleSearchInput({ detail }: CustomEvent<string>) {
@@ -775,6 +780,7 @@ export default class IgcComboComponent<
   }
 
   protected itemClickHandler(event: PointerEvent) {
+    this._setTouchedState();
     const target = findElementFromEventPath<IgcComboItemComponent>(
       IgcComboItemComponent.tagName,
       event
@@ -836,6 +842,7 @@ export default class IgcComboComponent<
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
+    this._setTouchedState();
     this._navigation.navigateMainInput(e, this._list);
   }
 
@@ -900,7 +907,7 @@ export default class IgcComboComponent<
         role="combobox"
         aria-controls="dropdown"
         aria-owns="dropdown"
-        aria-expanded=${this.open ? 'true' : 'false'}
+        aria-expanded=${this.open}
         aria-describedby="combo-helper-text"
         aria-disabled=${this.disabled}
         exportparts="container: input, input: native-input, label, prefix, suffix"
@@ -913,7 +920,7 @@ export default class IgcComboComponent<
         .value=${this._displayValue}
         .disabled=${this.disabled}
         .required=${this.required}
-        .invalid=${live(this.invalid)}
+        .invalid=${this.invalid}
         .outlined=${this.outlined}
         .autofocus=${this.autofocus}
         ?readonly=${!this.singleSelect}

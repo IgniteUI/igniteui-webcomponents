@@ -84,7 +84,6 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
     this.updateMask();
-    this._validate();
   }
 
   protected override get targetDatePart(): DatePart | undefined {
@@ -143,6 +142,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   }
 
   protected override handleInput() {
+    this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
@@ -319,7 +319,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
       this.emitEvent('igcChange', { detail: this.value });
     }
 
-    this.checkValidity();
+    super._handleBlur();
   }
 }
 

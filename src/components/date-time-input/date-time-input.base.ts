@@ -1,6 +1,8 @@
 import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
   arrowDown,
@@ -9,26 +11,23 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
+import { watch } from '../common/decorators/watch.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
+import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
+import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskRange,
 } from '../mask-input/mask-input-base.js';
-
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { convertToDate } from '../calendar/helpers.js';
-import { watch } from '../common/decorators/watch.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
-import type { IgcInputComponentEventMap } from '../input/input-base.js';
-import { type DatePartDeltas, DateParts, DateTimeUtil } from './date-util.js';
 import type {
   DatePart,
   DatePartInfo,
   DateRangePart,
   DateRangePartInfo,
 } from './date-util.js';
+import { type DatePartDeltas, DateParts, DateTimeUtil } from './date-util.js';
 import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputComponentEventMap
@@ -119,7 +118,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   @property({ converter: convertToDate })
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get min(): Date | null {
@@ -133,7 +132,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   @property({ converter: convertToDate })
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
-    this._updateValidity();
+    this._validate();
   }
 
   public get max(): Date | null {
@@ -191,7 +190,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this._updateValidity();
+    this._validate();
     if (this.value) {
       this.updateMask();
     }

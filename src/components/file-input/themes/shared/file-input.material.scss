@@ -82,8 +82,8 @@ $active-border-width: rem(2px) !default;
 }
 
 
-:host([outlined][invalid]),
-:host([outlined][invalid]:focus-within) {
+:host([outlined]:state(ig-invalid)),
+:host([outlined]:state(ig-invalid):focus-within) {
     [part='file-selector-button'] {
         border-color: var-get($theme, 'error-secondary-color');
     }

@@ -26,7 +26,7 @@ const metadata: Meta<IgcFileInputComponent> = {
   component: 'igc-file-input',
   parameters: {
     docs: { description: { component: '' } },
-    actions: { handles: ['igcInput', 'igcChange', 'igcCancel'] },
+    actions: { handles: ['igcChange', 'igcCancel'] },
   },
   argTypes: {
     value: {

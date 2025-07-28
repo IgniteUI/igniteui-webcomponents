@@ -4,9 +4,9 @@ import { CalendarDay } from '../calendar/model.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
-  type FormValue,
   createFormValueState,
   defaultDateRangeTransformers,
+  type FormValue,
 } from '../common/mixins/forms/form-value.js';
 import { createCounter, equal } from '../common/util.js';
 import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
@@ -305,7 +305,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       this.emitEvent('igcChange', { detail: this.value });
     }
 
-    this.checkValidity();
+    this._handleBlur();
   }
 
   protected override spinValue(
@@ -367,6 +367,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override handleInput() {
+    this._setTouchedState();
     this.emitEvent('igcInput', { detail: JSON.stringify(this.value) });
   }
 

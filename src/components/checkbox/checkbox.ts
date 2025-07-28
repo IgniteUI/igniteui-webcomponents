@@ -1,17 +1,17 @@
-import { html, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { createCounter } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/checkbox.base.css.js';
 import { all } from './themes/checkbox-themes.js';
 import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
+
+let nextId = 1;
 
 /**
  * A check box allowing single values to be selected/deselected.
@@ -40,11 +40,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     registerComponent(IgcCheckboxComponent, IgcValidationContainerComponent);
   }
 
-  private static readonly increment = createCounter();
-
   private readonly _themes = addThemingController(this, all);
 
-  private readonly _inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
+  private readonly _inputId = `checkbox-${nextId++}`;
   private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**
@@ -59,11 +57,11 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     super._handleClick(event);
   }
 
-  protected renderValidatorContainer(): TemplateResult {
+  protected _renderValidatorContainer(): TemplateResult {
     return IgcValidationContainerComponent.create(this);
   }
 
-  protected renderStandard() {
+  protected _renderStandard() {
     return html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <path d="M4.1,12.7 9,17.6 20.3,6.3" />
@@ -71,7 +69,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     `;
   }
 
-  protected renderIndigo() {
+  protected _renderIndigo() {
     return html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <rect width="18" height="4" x="3" y="10" rx="1.85" />
@@ -84,6 +82,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const describedBy = this._slots.hasAssignedElements('helper-text')
+      ? 'helper-text'
+      : nothing;
     const checked = this.checked;
 
     return html`
@@ -100,31 +101,30 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           type="checkbox"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
-          .required=${this.required}
-          .disabled=${this.disabled}
+          ?required=${this.required}
+          ?disabled=${this.disabled}
           .checked=${live(checked)}
           .indeterminate=${live(this.indeterminate)}
-          aria-checked=${this.indeterminate && !checked ? 'mixed' : checked}
-          aria-disabled=${this.disabled ? 'true' : 'false'}
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          aria-describedby=${describedBy}
           @click=${this._handleClick}
-          @focus=${this._handleFocus}
+          @blur=${this._handleBlur}
         />
         <span part=${partMap({ control: true, checked })}>
           <span part=${partMap({ indicator: true, checked })}>
             ${this._themes.theme === 'indigo'
-              ? this.renderIndigo()
-              : this.renderStandard()}
+              ? this._renderIndigo()
+              : this._renderStandard()}
           </span>
         </span>
         <span
-          .hidden=${this._hideLabel}
-          part=${partMap({ label: true, checked })}
           id=${this._labelId}
+          part=${partMap({ label: true, checked })}
+          ?hidden=${this._hideLabel}
           ><slot></slot>
         </span>
       </label>
-      ${this.renderValidatorContainer()}
+      ${this._renderValidatorContainer()}
     `;
   }
 }

@@ -60,7 +60,7 @@ describe('Form associated mixin tests', () => {
 
         public set minLength(value: number) {
           this._minLength = value;
-          this._updateValidity();
+          this._validate();
         }
 
         public get minLength() {
@@ -69,7 +69,7 @@ describe('Form associated mixin tests', () => {
 
         public set maxLength(value: number) {
           this._maxLength = value;
-          this._updateValidity();
+          this._validate();
         }
 
         public get maxLength() {
@@ -78,16 +78,10 @@ describe('Form associated mixin tests', () => {
 
         public set value(value: string) {
           this._formValue.setValueAndFormState(value);
-          this._updateValidity();
         }
 
         public get value() {
           return this._formValue.value;
-        }
-
-        public override connectedCallback() {
-          super.connectedCallback();
-          this._updateValidity();
         }
 
         protected override render() {

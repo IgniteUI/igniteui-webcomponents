@@ -58,14 +58,14 @@
     "lit": "^3.3.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "~2.1.1",
+    "@biomejs/biome": "~2.1.2",
     "@custom-elements-manifest/analyzer": "^0.10.4",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^9.0.16",
-    "@storybook/addon-docs": "^9.0.16",
-    "@storybook/addon-links": "^9.0.16",
-    "@storybook/web-components-vite": "^9.0.16",
+    "@storybook/addon-a11y": "^9.0.18",
+    "@storybook/addon-docs": "^9.0.18",
+    "@storybook/addon-links": "^9.0.18",
+    "@storybook/web-components-vite": "^9.0.18",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^1.0.4",
     "@web/test-runner": "^0.20.2",
@@ -78,8 +78,8 @@
     "custom-element-vs-code-integration": "^1.5.0",
     "globby": "^14.1.0",
     "husky": "^9.1.7",
-    "ig-typedoc-theme": "^6.2.2",
-    "igniteui-theming": "^19.1.2",
+    "ig-typedoc-theme": "^6.2.3",
+    "igniteui-theming": "^19.2.1",
     "keep-a-changelog": "^2.6.2",
     "lint-staged": "^16.1.2",
     "lit-analyzer": "^2.0.3",
@@ -91,8 +91,8 @@
     "rimraf": "^6.0.1",
     "sass-embedded": "~1.78.0",
     "sinon": "^21.0.0",
-    "storybook": "^9.0.16",
-    "stylelint": "^16.21.1",
+    "storybook": "^9.0.18",
+    "stylelint": "^16.22.0",
     "stylelint-config-standard-scss": "^15.0.1",
     "stylelint-prettier": "^5.0.3",
     "stylelint-scss": "^6.12.1",
@@ -101,7 +101,7 @@
     "typedoc": "~0.27.9",
     "typedoc-plugin-localization": "^3.0.6",
     "typescript": "^5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.0.6"
   },
   "browserslist": [
     "defaults"
