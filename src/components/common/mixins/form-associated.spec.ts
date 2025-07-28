@@ -15,7 +15,7 @@ import {
   type Validator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
-import { createFormValueState, type FormValueOf } from './forms/form-value.js';
+import { createFormValueState } from './forms/form-value.js';
 import type {
   FormAssociatedElementInterface,
   FormRequiredInterface,
@@ -52,8 +52,9 @@ describe('Form associated mixin tests', () => {
           return [requiredValidator, minLengthValidator, maxLengthValidator];
         }
 
-        protected override _formValue: FormValueOf<string> =
-          createFormValueState(this, { initialValue: '' });
+        protected override _formValue = createFormValueState(this, {
+          initialValue: '',
+        });
 
         private _minLength!: number;
         private _maxLength!: number;

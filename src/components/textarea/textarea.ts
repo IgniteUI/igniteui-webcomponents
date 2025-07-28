@@ -23,10 +23,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { addSafeEventListener, asNumber } from '../common/util.js';
 import type {
@@ -121,8 +118,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return textAreaValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<string> =
-    createFormValueState(this, { initialValue: '' });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: '',
+  });
 
   //#endregion
 

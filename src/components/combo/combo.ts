@@ -16,10 +16,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
@@ -147,14 +144,15 @@ export default class IgcComboComponent<
     },
   });
 
-  protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
-    createFormValueState<ComboValue<T>[]>(this, {
-      initialValue: [],
-      transformers: {
-        setValue: asArray,
-        setDefaultValue: asArray,
-      },
-    });
+  protected override readonly _formValue = createFormValueState<
+    ComboValue<T>[]
+  >(this, {
+    initialValue: [],
+    transformers: {
+      setValue: asArray,
+      setDefaultValue: asArray,
+    },
+  });
   private _data: T[] = [];
 
   private _valueKey?: Keys<T>;

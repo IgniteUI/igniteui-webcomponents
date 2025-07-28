@@ -4,10 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  createFormValueState,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
 import type { InputType, RangeTextSelectMode } from '../types.js';
@@ -50,8 +47,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
 
-  protected override readonly _formValue: FormValueOf<string> =
-    createFormValueState(this, { initialValue: '' });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: '',
+  });
 
   protected override get __validators() {
     return this.type !== 'number' ? stringValidators : numberValidators;
