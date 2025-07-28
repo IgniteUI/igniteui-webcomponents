@@ -24,11 +24,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import {
-  createFormValueState,
-  defaultNumberTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   asNumber,
   clamp,
@@ -89,11 +86,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
-  protected override readonly _formValue: FormValueOf<number> =
-    createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: 0,
+    transformers: FormValueNumberTransformers,
+  });
 
   private _max = 5;
   private _step = 1;

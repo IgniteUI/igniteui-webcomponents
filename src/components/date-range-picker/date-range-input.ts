@@ -3,11 +3,8 @@ import { property } from 'lit/decorators.js';
 import { CalendarDay } from '../calendar/model.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  createFormValueState,
-  defaultDateRangeTransformers,
-  type FormValue,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { createCounter, equal } from '../common/util.js';
 import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
 import {
@@ -55,7 +52,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   private _oldRangeValue: DateRangeValue | null = null;
 
   protected override _inputFormat!: string;
-  protected override _formValue: FormValue<DateRangeValue | null>;
+
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: { start: null, end: null },
+    transformers: FormValueDateRangeTransformers,
+  });
 
   protected override get targetDatePart(): DateRangePart | undefined {
     let result: DateRangePart | undefined;
@@ -115,15 +116,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   // #endregion
 
   // #region Methods
-
-  constructor() {
-    super();
-
-    this._formValue = createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateRangeTransformers,
-    });
-  }
 
   @watch('displayFormat')
   protected _onDisplayFormatChange() {

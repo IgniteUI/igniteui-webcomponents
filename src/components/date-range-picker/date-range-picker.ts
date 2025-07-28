@@ -34,11 +34,8 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  defaultDateRangeTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   addSafeEventListener,
   asNumber,
@@ -217,14 +214,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private readonly _themes = addThemingController(this, all);
 
-  protected override readonly _formValue: FormValueOf<DateRangeValue | null> =
-    createFormValueState(this, {
-      initialValue: {
-        start: null,
-        end: null,
-      },
-      transformers: defaultDateRangeTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: { start: null, end: null },
+    transformers: FormValueDateRangeTransformers,
+  });
 
   protected override readonly _rootClickController = addRootClickController(
     this,
