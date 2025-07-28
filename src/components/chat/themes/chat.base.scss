@@ -1,11 +1,12 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
+//should be removed
 :host {
   width: 100%;
   height: 600px;
   overflow: hidden;
-  box-shadow: 0 8px 24px #1f1f1f;
+  box-shadow: var(--ig-elevation-4);
   display: flex;
   flex-direction: column;
 }
@@ -16,11 +17,14 @@
   align-items: center;
   height: 100%;
   gap: rem(40px);
+}
 
-  > * {
-    max-width: rem(760px);
-    width: 100%;
-  }
+igc-chat-message-list,
+[part='empty-state'],
+[part='suggestions-container'] {
+  max-width: rem(760px);
+  width: 100%;
+  margin-inline: rem(16px);
 }
 
 [part='empty-state'] {
@@ -34,7 +38,7 @@
   padding: rem(16px) rem(13px);
   gap: rem(16px);
   box-shadow: var(--ig-elevation-4);
-  max-width: 100%;
+  width: 100%;
 }
 
 [part='title'] {
@@ -50,5 +54,7 @@
 
   igc-chip {
     --ig-size: 3;
+
+    width: fit-content;
   }
 }

@@ -3,7 +3,7 @@
 
 $theme: $material;
 
-.chat-container {
+:host {
     background: var-get($theme, 'background');
 }
 
