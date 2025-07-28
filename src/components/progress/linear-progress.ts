@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import type { LinearProgressLabelAlign } from '../types.js';
@@ -35,9 +36,13 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcLinearProgressComponent);
   }
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+  });
 
   /**
    * Sets the striped look of the control.
@@ -72,7 +77,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
           <div part=${partMap(parts)}></div>
           <div part=${partMap({ ...parts, secondary: true })}></div>
         </div>
-        ${this.renderDefaultSlot()}
+        ${this._renderDefaultSlot()}
       </div>
     `;
   }

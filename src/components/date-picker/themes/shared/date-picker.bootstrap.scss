@@ -40,6 +40,18 @@ $theme: $bootstrap;
     }
 }
 
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
+    igc-date-time-input::part(input) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    igc-date-time-input:focus-within {
+        &::part(input) {
+            box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+        }
+    }
+}
+
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
 }

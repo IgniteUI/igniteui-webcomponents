@@ -142,8 +142,8 @@ textarea {
     }
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host(:not(:disabled,[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
     ::part(validation-icon) {
         color: #{var-get($theme, 'error-secondary-color')};
     }
@@ -154,6 +154,10 @@ textarea {
         &::after {
             border-block-end: rem(1px) solid var-get($theme, 'error-secondary-color');
         }
+    }
+
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
     }
 }
 

@@ -2,89 +2,53 @@
 @use 'styles/utilities' as *;
 
 :host {
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px #1f1f1f;
+  display: flex;
+  flex-direction: column;
+}
+
+[part='chat-container'] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: rem(40px);
+
+  > * {
+    max-width: rem(760px);
     width: 100%;
-    height: 600px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px #1f1f1f;
-    display: flex;
-    flex-direction: column;
   }
+}
 
-  .chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #edeff0;
-  }
+[part='empty-state'] {
+  height: 100%;
+}
 
-  .info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+[part='header'] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: rem(16px) rem(13px);
+  gap: rem(16px);
+  box-shadow: var(--ig-elevation-4);
+  max-width: 100%;
+}
 
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
+[part='title'] {
+  @include type-style('h6') {
+    margin: 0;
+  };
+}
 
-  .avatar-container {
-    position: relative;
-  }
+[part='suggestions-container'] {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12px);
 
-  .status-indicator {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #30D158;
-    border: 2px solid white;
+  igc-chip {
+    --ig-size: 3;
   }
-
-  .actions {
-    display: flex;
-    gap: 16px;
-  }
-
-  .action-button {
-    background: none;
-    border: none;
-    color: #0A84FF;
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: white 0.2s;
-  }
-
-  .action-button:hover {
-    background-color: #E5E5EA;
-  }
-
-  .suggestions-container {
-    display: flex;
-    justify-content: end;
-  
-    igc-chip::part(base) {
-      background-color: transparent;
-      border: 1px solid var(--ig-primary-500);
-      color: var(--ig-primary-500);
-    }
-
-  }
+}

@@ -86,8 +86,8 @@ $theme: $indigo;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='base'] {
         &:hover {
             [part~='label'] {

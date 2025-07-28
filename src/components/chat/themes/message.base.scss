@@ -2,115 +2,26 @@
 @use 'styles/utilities' as *;
 @import 'highlight.js/scss/github.scss';
 
-:host {
-    display: block;
+[part~='message-container'] {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
 
-    --message-max-width: 75%;
+[part~='sent'] {
+  max-width: rem(576px);
+  margin-inline-start: auto;
+  padding: rem(12px) rem(16px);
+  border-radius: rem(24px) rem(24px) 0;
+}
+
+[part~='bubble'] {
+  @include type-style('body-1') {
+    margin: 0;
+  };
+
+  p {
+    margin: 0;
+    padding: 0;
   }
-
-  .message-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
-    gap: 8px;
-    margin-bottom: 4px;
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .message-container.sent {
-    display: flex;
-    flex-direction: row-reverse;
-  }
-
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    opacity: 0;
-  }
-
-  .message-container.show-avatar .avatar {
-    opacity: 1;
-  }
-
-  .message-container pre {
-    // background-color: black;
-    padding: 8px;
-    border-radius: 4px;
-    overflow-x: auto;
-    margin: 8px 0;
-  }
-
-  .message-container code {
-    font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
-    font-size: 0.9em;
-    padding: 2px 4px;
-    border-radius: 4px;
-  }
-
-  .bubble {
-    display: block;
-    padding: 12px 16px;
-    border-radius: 18px;
-    color: black;
-    word-break: break-all;
-    font-weight: 400;
-    line-height: 1.4;
-    position: relative;
-    transition: all 0.2s ease;
-    width: fit-content;
-  }
-
-  .sent {
-    border-radius: 18px 18px 4px;
-  }
-
-  .sent .bubble {
-    background-color: #E5E5EA;
-  }
-
-  .received .bubble {
-    border-radius: 18px 18px 18px 4px;
-  }
-
-  .meta {
-    display: flex;
-    font-size: 0.7rem;
-    color: #636366;
-    margin-top: 4px;
-    opacity: 0.8;
-  }
-
-  .sent .meta {
-    justify-content: flex-end;
-  }
-
-  .time {
-    margin-right: 4px;
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-/* Styles for pre and code from highlight.js theme will apply */
-// pre {
-//   margin: 1em 0;
-//   padding: 1em;
-//   border-radius: 5px;
-//   overflow-x: auto;
-// }
-// code {
-//   font-family: monospace;
-//   font-size: 0.9em;
-// }
+}

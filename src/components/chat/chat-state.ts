@@ -1,3 +1,4 @@
+import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import type {
@@ -7,14 +8,29 @@ import type {
   IgcRendererConfig,
 } from './types.js';
 
+/**
+ * Internal state manager for the `<igc-chat>` component.
+ *
+ * Manages messages, input value, attachments, options, and event emissions.
+ */
 export class ChatState {
-  //#region Internal properties and state
+  //#region Internal properties and state /** The host `<igc-chat>` component instance */
   private readonly _host: IgcChatComponent;
+  /** Reference to the text area input component */
+  private _textArea: IgcTextareaComponent | null = null;
+  /** The current list of messages */
   private _messages: IgcMessage[] = [];
+  /** Sorted copy of messages by timestamp */
+  private _sortedMessages: IgcMessage[] = [];
+  /** Chat options/configuration */
   private _options?: IgcChatOptions;
+  /** List of current input attachments */
   private _inputAttachments: IgcMessageAttachment[] = [];
+  /** Current input text */
   private _inputValue = '';
-  // Cache for accepted file types
+  /**
+   * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
+   */
   private _acceptedTypesCache: {
     extensions: Set<string>;
     mimeTypes: Set<string>;
@@ -25,50 +41,93 @@ export class ChatState {
   //#endregion
 
   //#region Public properties
+  /**
+   * Array of message IDs sorted by timestamp ascending.
+   */
+  public get sortedMessagesIds(): string[] {
+    return this._sortedMessages.map((m) => m.id);
+  }
 
-  /** Chat message list. */
+  /**
+   * Gets the list of chat messages.
+   */
   public get messages(): IgcMessage[] {
     return this._messages;
   }
 
-  /** Sets the chat message list. */
+  /**
+   * Sets the list of chat messages.
+   * Also sorts messages by timestamp and requests host update.
+   */
   public set messages(value: IgcMessage[]) {
     this._messages = value;
+    this._sortedMessages = value.slice().sort((a, b) => {
+      return a.timestamp.getTime() - b.timestamp.getTime();
+    });
     this._host.requestUpdate();
   }
 
-  /** Chat config options. */
+  /**
+   * Gets current chat options.
+   */
   public get options(): IgcChatOptions | undefined {
     return this._options;
   }
 
-  /** Sets the chat options. */
+  /**
+   * Sets chat options and requests host update.
+   */
   public set options(value: IgcChatOptions) {
     this._options = value;
     this._host.requestUpdate();
   }
 
-  /** Gets the current user id. */
+  /**
+   * Gets the current user ID from options or returns 'user' as fallback.
+   */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
   }
 
-  /** Input attachments. */
+  /**
+   * Gets the text area component.
+   */
+  public get textArea(): IgcTextareaComponent | null {
+    return this._textArea;
+  }
+
+  /**
+   * Sets the text area component.
+   */
+  public set textArea(value: IgcTextareaComponent) {
+    this._textArea = value;
+  }
+
+  /**
+   * Gets the list of attachments currently attached to input.
+   */
   public get inputAttachments(): IgcMessageAttachment[] {
     return this._inputAttachments;
   }
 
-  /** Sets input attachments. */
+  /**
+   * Sets the input attachments and requests host update.
+   */
   public set inputAttachments(value: IgcMessageAttachment[]) {
     this._inputAttachments = value;
     this._host.requestUpdate(); // Notify the host component to re-render
   }
 
-  /** Input value. */
+  /**
+   * Gets the current input value.
+   */
   public get inputValue(): string {
     return this._inputValue;
   }
 
+  /**
+   * Sets the current input value and requests host update.
+   */
   public set inputValue(value: string) {
     this._inputValue = value;
     this._host.requestUpdate();
@@ -84,18 +143,31 @@ export class ChatState {
   }
   //#endregion
 
+  /**
+   * Creates an instance of ChatState.
+   * @param chat The host `<igc-chat>` component.
+   */
   constructor(chat: IgcChatComponent) {
     this._host = chat;
   }
 
   //#region Event handlers
 
-  /** Emmits chat events. */
+  /**
+   * Emits a custom event from the host component.
+   * @param name Event name (key of IgcChatComponentEventMap)
+   * @param args Event detail or options
+   * @returns true if event was not canceled, false otherwise
+   */
   public emitEvent(name: keyof IgcChatComponentEventMap, args?: any) {
     return this._host.emitEvent(name, args);
   }
 
-  /** Handles input changes. */
+  /**
+   * Handles input text changes.
+   * Updates internal inputValue and emits 'igcInputChange' event.
+   * @param value New input value
+   */
   public handleInputChange(value: string): void {
     this.inputValue = value;
     this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
@@ -105,7 +177,12 @@ export class ChatState {
 
   //#region Public API
 
-  /** Adds a new message to the chat. */
+  /**
+   * Adds a new chat message.
+   * Emits 'igcMessageCreated' event which can be canceled to prevent adding.
+   * Clears input value and attachments on success.
+   * @param message Partial message object with optional id, sender, timestamp
+   */
   public addMessage(message: {
     id?: string;
     text: string;
@@ -127,12 +204,19 @@ export class ChatState {
     });
 
     if (allowed) {
-      this.messages = [...this.messages, newMessage];
+      if (!this.messages.some((msg) => msg.id === newMessage.id)) {
+        this.messages = [...this.messages, newMessage];
+      }
+      this.inputValue = '';
       this.inputAttachments = [];
     }
   }
 
-  /** Adds a new attachmnet to the attachments list. */
+  /**
+   * Adds files as attachments to the input.
+   * Emits 'igcAttachmentChange' event which can be canceled to prevent adding.
+   * @param files Array of File objects to attach
+   */
   public attachFiles(files: File[]) {
     const newAttachments: IgcMessageAttachment[] = [];
     let count = this.inputAttachments.length;
@@ -140,7 +224,6 @@ export class ChatState {
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
         id: Date.now().toString() + count++,
-        // type: isImage ? 'image' : 'file',
         url: URL.createObjectURL(file),
         name: file.name,
         file: file,
@@ -157,7 +240,11 @@ export class ChatState {
     }
   }
 
-  /** Removes an attachment by index. */
+  /**
+   * Removes an attachment by index.
+   * Emits 'igcAttachmentChange' event which can be canceled to prevent removal.
+   * @param index Index of the attachment to remove
+   */
   public removeAttachment(index: number): void {
     const allowed = this.emitEvent('igcAttachmentChange', {
       detail: this.inputAttachments.filter((_, i) => i !== index),
@@ -170,11 +257,30 @@ export class ChatState {
     }
   }
 
-  /** Updates chat options dynamically. */
+  /**
+   * Handles when a suggestion is clicked.
+   * Adds the suggestion as a new message and focuses the text area.
+   * @param suggestion The suggestion string clicked
+   */
+  public handleSuggestionClick(suggestion: string): void {
+    this.addMessage({ text: suggestion });
+    if (this.textArea) {
+      this.textArea.focus();
+    }
+  }
+
+  /**
+   * Updates the chat options partially.
+   * @param options Partial options to merge with current options
+   */
   public updateOptions(options: Partial<IgcChatOptions>): void {
     this.options = { ...this.options, ...options };
   }
 
+  /**
+   * Updates the internal cache for accepted file types.
+   * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
+   */
   public updateAcceptedTypesCache() {
     if (!this.options?.acceptedFiles) {
       this._acceptedTypesCache = null;
@@ -195,7 +301,12 @@ export class ChatState {
     };
   }
 
-  /** Checks if a file could be attached based on the acceptedFiles. */
+  /**
+   * Checks if a file's type or extension is accepted by the chat's acceptedFiles setting.
+   * @param file File object to check
+   * @param type Optional MIME type override if no file provided
+   * @returns True if accepted, false otherwise
+   */
   public isFileTypeAccepted(file: File, type = ''): boolean {
     if (!this._acceptedTypesCache) return true;
 

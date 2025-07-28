@@ -1,9 +1,15 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { IgcFormControl } from '../common/mixins/forms/types.js';
+import {
+  type IgcFormControl,
+  InternalInvalidEvent,
+  InternalResetEvent,
+} from '../common/mixins/forms/types.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -25,6 +31,7 @@ interface ValidationContainerConfig {
 
 const VALIDATION_SLOTS_SELECTOR = 'slot:not([name="helper-text"])';
 const ALL_SLOTS_SELECTOR = 'slot';
+const QUERY_CONFIG: AssignedNodesOptions = { flatten: true };
 
 function getValidationSlots(
   element: IgcValidationContainerComponent
@@ -38,7 +45,7 @@ function hasProjection(element: IgcValidationContainerComponent): boolean {
   const allSlots =
     element.renderRoot.querySelectorAll<HTMLSlotElement>(ALL_SLOTS_SELECTOR);
   return Array.from(allSlots).every((slot) =>
-    isEmpty(slot.assignedElements({ flatten: true }))
+    isEmpty(slot.assignedElements(QUERY_CONFIG))
   );
 }
 
@@ -47,15 +54,14 @@ function hasProjectedValidation(
   slotName?: string
 ): boolean {
   const slots = Array.from(getValidationSlots(element));
-  const config: AssignedNodesOptions = { flatten: true };
 
   if (slotName) {
     return slots
       .filter((slot) => slot.name === slotName)
-      .some((slot) => !isEmpty(slot.assignedElements(config)));
+      .some((slot) => !isEmpty(slot.assignedElements(QUERY_CONFIG)));
   }
 
-  return slots.some((slot) => !isEmpty(slot.assignedElements(config)));
+  return slots.some((slot) => !isEmpty(slot.assignedElements(QUERY_CONFIG)));
 }
 
 /* blazorSuppress */
@@ -99,12 +105,14 @@ export default class IgcValidationContainerComponent extends LitElement {
         slot=${ifDefined(config.slot)}
         ?invalid=${host.invalid}
         .target=${host}
-        exportparts="helper-text validation-message validation-icon"
+        exportparts="helper-text, validation-message, validation-icon"
       >
         ${helperText}${validationSlots}
       </igc-validator>
     `;
   }
+
+  private readonly _abortHandle = createAbortHandle();
 
   private _target!: IgcFormControl;
 
@@ -120,9 +128,12 @@ export default class IgcValidationContainerComponent extends LitElement {
       return;
     }
 
-    this._target?.removeEventListener('invalid', this);
+    this._abortHandle.abort();
+    const { signal } = this._abortHandle;
+
     this._target = value;
-    this._target.addEventListener('invalid', this);
+    this._target.addEventListener(InternalInvalidEvent, this, { signal });
+    this._target.addEventListener(InternalResetEvent, this, { signal });
   }
 
   public get target(): IgcFormControl {
@@ -143,10 +154,11 @@ export default class IgcValidationContainerComponent extends LitElement {
   /** @internal */
   public handleEvent(event: Event): void {
     switch (event.type) {
-      case 'invalid':
-        if (!this.invalid) {
-          this.invalid = true;
-        }
+      case InternalInvalidEvent:
+        this.invalid = true;
+        break;
+      case InternalResetEvent:
+        this.invalid = false;
         break;
       case 'slotchange': {
         const newHasSlottedContent = hasProjectedValidation(this);
@@ -208,9 +220,9 @@ export default class IgcValidationContainerComponent extends LitElement {
   }
 
   protected override render(): TemplateResult {
-    const slots = this.invalid
-      ? this._renderValidationSlots(this.target.validity)
-      : nothing;
+    const slots = cache(
+      this.invalid ? this._renderValidationSlots(this.target.validity) : nothing
+    );
 
     return html`
       <div part=${partMap({ 'helper-text': true, empty: hasProjection(this) })}>

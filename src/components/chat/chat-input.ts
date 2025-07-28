@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -15,9 +15,33 @@ import { styles } from './themes/input.base.css.js';
 import { attachmentIcon, sendButtonIcon } from './types.js';
 
 /**
+ * A web component that provides the input area for the `igc-chat` interface.
+ *
+ * It supports:
+ * - Text input with automatic resizing
+ * - Sending messages on Enter key (with Shift+Enter for newlines)
+ * - File attachments via file picker or drag-and-drop
+ * - Customizable templates for send button, attachments, and text input
+ * - Emits various chat-related events (typing, input focus/blur, attachment drop, etc.)
  *
  * @element igc-chat-input
  *
+ * @slot - Default unnamed slot for rendering inside the component
+ * @fires igcTypingChange - Fired when the user starts/stops typing
+ * @fires igcInputFocus - Fired when the input area receives focus
+ * @fires igcInputBlur - Fired when the input area loses focus
+ * @fires igcAttachmentDrag - Fired when dragging a file over the input
+ * @fires igcAttachmentDrop - Fired when a file is dropped into the input
+ * @fires igcChange - Fired when file input changes (delegated from `<igc-file-input>`)
+ *
+ * @csspart input-container - Container for the input section
+ * @csspart input-wrapper - Wrapper around the text input
+ * @csspart text-input - The `<igc-textarea>` component
+ * @csspart buttons-container - Container for file upload/send buttons
+ * @csspart send-button - The send icon button
+ * @csspart attachments - Container for rendering attachments
+ * @csspart attachment-wrapper - Wrapper for individual attachment
+ * @csspart attachment-name - Display name of an attachment
  */
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
@@ -51,7 +75,10 @@ export default class IgcChatInputComponent extends LitElement {
   private inputValue = '';
 
   @state()
-  private dragClass = '';
+  private inputPlaceholder = '';
+
+  @state()
+  private dragPart = '';
 
   constructor() {
     super();
@@ -59,9 +86,78 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('send-message', sendButtonIcon, 'material');
   }
 
+  public get defaultAttachmentsArea(): TemplateResult {
+    return html`${this._chatState?.inputAttachments?.map(
+      (attachment, index) => html`
+        <div part="attachment-wrapper" role="listitem">
+          <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
+            <span part="attachment-name">${attachment.name}</span>
+          </igc-chip>
+        </div>
+      `
+    )} `;
+  }
+
+  public get defaultTextArea(): TemplateResult {
+    return html` <igc-textarea
+      part="text-input"
+      .placeholder=${this.inputPlaceholder}
+      resize="auto"
+      rows="1"
+      .value=${this.inputValue}
+      @input=${this.handleInput}
+      @keydown=${this.handleKeyDown}
+      @focus=${this.handleFocus}
+      @blur=${this.handleBlur}
+    ></igc-textarea>`;
+  }
+
+  public get defaultFileUploadButton(): TemplateResult {
+    return html`
+      <igc-file-input
+        multiple
+        .accept=${this._chatState?.options?.acceptedFiles}
+        @igcChange=${this.handleFileUpload}
+      >
+        <igc-icon
+          slot="file-selector-text"
+          name="attachment"
+          collection="material"
+        ></igc-icon>
+      </igc-file-input>
+    `;
+  }
+
+  public get defaultSendButton(): TemplateResult {
+    return html` <igc-icon-button
+      aria-label="Send message"
+      name="send-message"
+      collection="material"
+      variant="contained"
+      part="send-button"
+      ?disabled=${!this.inputValue.trim() &&
+      this._chatState?.inputAttachments.length === 0}
+      @click=${this.sendMessage}
+    ></igc-icon-button>`;
+  }
+
+  protected *renderDefaultFileUploadTemplate() {
+    yield html`${this._chatState?.options?.disableAttachments
+      ? nothing
+      : this.defaultFileUploadButton}`;
+  }
+
   protected override firstUpdated() {
     this.setupDragAndDrop();
-    this._chatState?.updateAcceptedTypesCache();
+    if (this._chatState) {
+      this._chatState.updateAcceptedTypesCache();
+      this._chatState.textArea = this.textInputElement;
+    }
+  }
+
+  protected override updated() {
+    this.inputValue = this._chatState?.inputValue || '';
+    this.inputPlaceholder = this._chatState?.options?.inputPlaceholder || '';
   }
 
   private handleInput(e: Event) {
@@ -99,7 +195,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private setupDragAndDrop() {
     const container = this.shadowRoot?.querySelector(
-      '.input-container'
+      `div[part='input-container']`
     ) as HTMLElement;
     if (container) {
       container.addEventListener('dragenter', this.handleDragEnter.bind(this));
@@ -120,7 +216,7 @@ export default class IgcChatInputComponent extends LitElement {
       this._chatState?.isFileTypeAccepted(item.getAsFile() as File, item.type)
     );
 
-    this.dragClass = hasValidFiles ? 'dragging' : '';
+    this.dragPart = hasValidFiles ? 'dragging' : '';
 
     this._chatState?.emitEvent('igcAttachmentDrag');
   }
@@ -145,14 +241,14 @@ export default class IgcChatInputComponent extends LitElement {
       y <= rect.top ||
       y >= rect.bottom
     ) {
-      this.dragClass = '';
+      this.dragPart = '';
     }
   }
 
   private handleDrop(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
-    this.dragClass = '';
+    this.dragPart = '';
 
     const files = Array.from(e.dataTransfer?.files || []);
     if (files.length === 0) return;
@@ -212,76 +308,43 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
-  private renderFileUploadArea() {
-    return html`${this._chatState?.options?.disableAttachments
-      ? nothing
-      : html`
-          <igc-file-input
-            multiple
-            .accept=${this._chatState?.options?.acceptedFiles}
-            @igcChange=${this.handleFileUpload}
-          >
-            <igc-icon
-              slot="file-selector-text"
-              name="attachment"
-              collection="material"
-            ></igc-icon>
-          </igc-file-input>
-        `}`;
-  }
-
   private renderActionsArea() {
-    return html`<div class="buttons-container">
-      <igc-icon-button
-        name="send-message"
-        collection="material"
-        variant="contained"
-        class="small"
-        ?disabled=${!this.inputValue.trim() &&
-        this._chatState?.inputAttachments.length === 0}
-        @click=${this.sendMessage}
-      ></igc-icon-button>
+    return html`<div part="buttons-container">
+      ${this._chatState?.options?.templates?.textAreaActionsTemplate
+        ? this._chatState?.options?.templates?.textAreaActionsTemplate
+        : html`
+            ${this.renderDefaultFileUploadTemplate()} ${this.defaultSendButton}
+          `}
     </div>`;
   }
 
   private renderAttachmentsArea() {
-    return html`<div>
-      ${this._chatState?.inputAttachments?.map(
-        (attachment, index) => html`
-          <div class="attachment-wrapper">
-            <igc-chip
-              removable
-              @igcRemove=${() => this.removeAttachment(index)}
-            >
-              <span class="attachment-name">${attachment.name}</span>
-            </igc-chip>
-          </div>
-        `
-      )}
+    return html`<div part="attachments" role="list" aria-label="Attachments">
+      ${this._chatState?.options?.templates?.textAreaAttachmentsTemplate
+        ? this._chatState.options.templates.textAreaAttachmentsTemplate(
+            this._chatState?.inputAttachments
+          )
+        : this.defaultAttachmentsArea}
     </div>`;
   }
 
   protected override render() {
     return html`
-      <div class="input-container ${this.dragClass}">
-        ${this.renderFileUploadArea()}
+      <div part="input-container ${this.dragPart}">
+        ${this._chatState?.inputAttachments &&
+        this._chatState?.inputAttachments.length > 0
+          ? this.renderAttachmentsArea()
+          : nothing}
 
-        <div class="input-wrapper">
-          <igc-textarea
-            class="text-input"
-            placeholder="Type a message..."
-            rows="1"
-            .value=${this.inputValue}
-            @input=${this.handleInput}
-            @keydown=${this.handleKeyDown}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          ></igc-textarea>
+        <div part="input-wrapper">
+          ${this._chatState?.options?.templates?.textInputTemplate
+            ? this._chatState.options.templates.textInputTemplate(
+                this._chatState?.inputValue
+              )
+            : this.defaultTextArea}
         </div>
-
         ${this.renderActionsArea()}
       </div>
-      ${this.renderAttachmentsArea()}
     `;
   }
 }
