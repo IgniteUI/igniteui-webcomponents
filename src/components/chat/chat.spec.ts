@@ -181,7 +181,7 @@ describe('Chat', () => {
 
     it('is rendered correctly', () => {
       expect(chat).dom.to.equal(
-        `<igc-chat>                   
+        `<igc-chat>
         </igc-chat>`
       );
 
@@ -399,7 +399,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div part="header" part="header"> 
+        `<div part="header" part="header">
                     <div part="info">
                         <slot name="prefix" part="prefix">
                         </slot>
@@ -425,16 +425,26 @@ describe('Chat', () => {
       expect(textArea?.placeholder).to.equal('Type message here...');
     });
 
-    it('should render suggestions', async () => {
+    it('should not render suggestions if not provided', () => {
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        'div[part="suggestions-container"]'
+      );
+      expect(suggestionsContainer).to.be.null;
+    });
+
+    it('should render suggestions below messages by default', async () => {
       chat.options = {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
       };
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        'div[part="suggestions-container"]'
+        'div[ part="suggestions-container"]'
       );
 
+      expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
+        'empty-state'
+      );
       expect(suggestionsContainer).dom.to.equal(
         `<div aria-label="Suggestions" part="suggestions-container" role="list">
           <slot name="suggestions-header" part="suggestions-header"> </slot>
@@ -454,6 +464,7 @@ describe('Chat', () => {
                   </igc-chip>
               </slot>
           </slot>
+          <slot name="suggestions-actions" part="suggestions-actions"> </slot>
       </div>`
       );
     });
