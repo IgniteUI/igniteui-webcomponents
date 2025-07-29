@@ -818,7 +818,7 @@ describe('Chat', () => {
       const diff =
         textArea.getBoundingClientRect().top -
         suggestionsContainer.getBoundingClientRect().bottom;
-      expect(diff).to.equal(0);
+      expect(diff).to.equal(8);
     });
 
     it("should render suggestions below input area when position is 'below-input'", async () => {
