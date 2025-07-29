@@ -115,7 +115,9 @@ export interface IgcChatComponentEventMap {
  * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
  * @slot title - Slot for overriding the chat title content.
  * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
+ * @slot suggestions-header - Slot for rendering a custom header for the suggestions list.
  * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
+ * @slot suggestions-actions - Slot for rendering additional actions.
  * @slot suggestion - Slot for rendering a single suggestion item.
  * @slot empty-state - Slot shown when there are no messages.
  *

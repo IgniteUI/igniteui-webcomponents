@@ -160,6 +160,8 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
+  const GAP = 40; // Default gap between elements in the chat container
+
   let chat: IgcChatComponent;
   let clock: SinonFakeTimers;
 
@@ -210,6 +212,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
+                    <slot> </slot>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -511,6 +514,7 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
+                    <slot> </slot>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -588,6 +592,7 @@ describe('Chat', () => {
                 </igc-chip>
               </div>
             </div>
+            <slot> </slot>
             <div part="input-wrapper">
               <igc-textarea
                 part="text-input"
@@ -712,7 +717,15 @@ describe('Chat', () => {
       });
     });
 
-    it('should render suggestions', async () => {
+    it('should not render container if suggestions are not provided', async () => {
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      );
+
+      expect(suggestionsContainer).to.be.null;
+    });
+
+    it('should render suggestions if provided', async () => {
       chat.options = {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
       };
@@ -741,8 +754,85 @@ describe('Chat', () => {
                             </igc-chip>
                         </slot>
                     </slot>
+                    <slot name="suggestions-actions" part="suggestions-actions"> </slot>
                 </div>`
       );
+    });
+
+    it('should render suggestions below messages by default', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      await elementUpdated(chat);
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      );
+
+      expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
+        'empty-state'
+      );
+    });
+
+    it('should render suggestions below messages by default', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      chat.messages.push({
+        id: '5',
+        text: 'New message',
+        sender: 'user',
+        timestamp: new Date(),
+      });
+      await elementUpdated(chat);
+
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      )!;
+
+      const messageList = chat.shadowRoot?.querySelector(
+        'igc-chat-message-list'
+      )!;
+
+      const diff =
+        suggestionsContainer.getBoundingClientRect().top -
+        messageList.getBoundingClientRect().bottom;
+      expect(diff).to.equal(GAP);
+    });
+
+    it("should render suggestions above input when position is 'above-input'", async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+        suggestionsPosition: 'above-input',
+      };
+      await elementUpdated(chat);
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      )!;
+
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
+      const textArea = inputArea.shadowRoot?.querySelector('igc-textarea')!;
+      const diff =
+        textArea.getBoundingClientRect().top -
+        suggestionsContainer.getBoundingClientRect().bottom;
+      expect(diff).to.equal(0);
+    });
+
+    it("should render suggestions below input area when position is 'below-input'", async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+        suggestionsPosition: 'below-input',
+      };
+      await elementUpdated(chat);
+
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      )!;
+
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
+      const diff =
+        suggestionsContainer.getBoundingClientRect().top -
+        inputArea.getBoundingClientRect().bottom;
+      expect(diff).to.equal(GAP);
     });
 
     it('should render composing indicator if `isComposing` is true', async () => {
@@ -988,6 +1078,7 @@ describe('Chat', () => {
                 </a>
               </div>
             </div>
+            <slot> </slot>
             <div part="input-wrapper">
                 <igc-input placeholder="Type text here...">
             </div>
