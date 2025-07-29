@@ -280,8 +280,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     </div>`;
   }
 
-  protected override firstUpdated() {
+  protected override async firstUpdated() {
     this._context.setValue(this._chatState, true);
+    await this._chatState.updateRendererConfig(
+      this._chatState.options?.rendererConfig
+    );
   }
 
   protected override render() {

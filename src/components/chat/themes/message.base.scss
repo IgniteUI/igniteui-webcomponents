@@ -1,5 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@import 'highlight.js/scss/github.scss';
 
 [part~='message-container'] {
   display: flex;

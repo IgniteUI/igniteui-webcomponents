@@ -5,6 +5,7 @@ import type {
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
+  IgcRendererConfig,
 } from './types.js';
 
 /**
@@ -36,6 +37,7 @@ export class ChatState {
     wildcardTypes: Set<string>;
   } | null = null;
 
+  private _rendererConfig: IgcRendererConfig | undefined;
   //#endregion
 
   //#region Public properties
@@ -128,6 +130,15 @@ export class ChatState {
    */
   public set inputValue(value: string) {
     this._inputValue = value;
+    this._host.requestUpdate();
+  }
+
+  public get rendererConfig(): IgcRendererConfig | undefined {
+    return this._rendererConfig;
+  }
+
+  public set rendererConfig(value: IgcRendererConfig) {
+    this._rendererConfig = value;
     this._host.requestUpdate();
   }
   //#endregion
@@ -321,6 +332,35 @@ export class ChatState {
     // Check wildcard MIME types
     const [fileBaseType] = fileType.split('/');
     return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
+  }
+
+  public async updateRendererConfig(config?: IgcRendererConfig): Promise<void> {
+    if (!config || config.type === 'plain') {
+      this.rendererConfig = { type: 'plain' };
+      return;
+    }
+
+    if (config.type === 'custom' && config.renderFn) {
+      this.rendererConfig = {
+        type: 'custom',
+        renderFn: config.renderFn,
+      };
+      return;
+    }
+
+    if (
+      config.type === 'markdown' &&
+      !config.markdown?.disableDefaultHighlighter
+    ) {
+      const { registerHlLanguages, configureDefaultHighlighter } = await import(
+        './markdown-util.js'
+      );
+      registerHlLanguages(config.markdown?.languages || {});
+      configureDefaultHighlighter();
+    }
+
+    this.rendererConfig = config;
+    return;
   }
   //#endregion
 }
