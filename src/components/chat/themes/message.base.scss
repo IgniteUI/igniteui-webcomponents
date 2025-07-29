@@ -5,11 +5,13 @@
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
+  margin-inline-end: auto;
+  max-width: rem(576px);
 }
 
 [part~='sent'] {
-  max-width: rem(576px);
   margin-inline-start: auto;
+  margin-inline-end: unset;
   padding: rem(12px) rem(16px);
   border-radius: rem(24px) rem(24px) 0;
 }

@@ -78,7 +78,7 @@ export default class IgcChatInputComponent extends LitElement {
   private inputPlaceholder = '';
 
   @state()
-  private dragClass = '';
+  private containerPart = 'input-container';
 
   constructor() {
     super();
@@ -195,7 +195,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private setupDragAndDrop() {
     const container = this.shadowRoot?.querySelector(
-      '.input-container'
+      `div[part='input-container']`
     ) as HTMLElement;
     if (container) {
       container.addEventListener('dragenter', this.handleDragEnter.bind(this));
@@ -216,7 +216,7 @@ export default class IgcChatInputComponent extends LitElement {
       this._chatState?.isFileTypeAccepted(item.getAsFile() as File, item.type)
     );
 
-    this.dragClass = hasValidFiles ? 'dragging' : '';
+    this.containerPart = `input-container ${hasValidFiles ? ' dragging' : ''}`;
 
     this._chatState?.emitEvent('igcAttachmentDrag');
   }
@@ -241,14 +241,14 @@ export default class IgcChatInputComponent extends LitElement {
       y <= rect.top ||
       y >= rect.bottom
     ) {
-      this.dragClass = '';
+      this.containerPart = 'input-container';
     }
   }
 
   private handleDrop(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
-    this.dragClass = '';
+    this.containerPart = 'input-container';
 
     const files = Array.from(e.dataTransfer?.files || []);
     if (files.length === 0) return;
@@ -330,11 +330,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div
-        part="input-container"
-        class="${this.dragClass}"
-        exportparts="input-container, suggestions-container"
-      >
+      <div part="${this.containerPart}">
         ${this._chatState?.inputAttachments &&
         this._chatState?.inputAttachments.length > 0
           ? this.renderAttachmentsArea()
