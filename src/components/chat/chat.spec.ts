@@ -212,7 +212,6 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <slot> </slot>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -515,7 +514,6 @@ describe('Chat', () => {
 
       expect(inputArea).shadowDom.to.equal(
         `<div part="input-container">
-                    <slot> </slot>
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -594,7 +592,6 @@ describe('Chat', () => {
                 </igc-chip>
               </div>
             </div>
-            <slot> </slot>
             <div part="input-wrapper">
               <igc-textarea
                 part="text-input"
@@ -801,24 +798,6 @@ describe('Chat', () => {
         suggestionsContainer.getBoundingClientRect().top -
         messageList.getBoundingClientRect().bottom;
       expect(diff).to.equal(GAP);
-    });
-
-    it("should render suggestions above input when position is 'above-input'", async () => {
-      chat.options = {
-        suggestions: ['Suggestion 1', 'Suggestion 2'],
-        suggestionsPosition: 'above-input',
-      };
-      await elementUpdated(chat);
-      const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
-      )!;
-
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
-      const textArea = inputArea.shadowRoot?.querySelector('igc-textarea')!;
-      const diff =
-        textArea.getBoundingClientRect().top -
-        suggestionsContainer.getBoundingClientRect().bottom;
-      expect(diff).to.equal(8);
     });
 
     it("should render suggestions below input area when position is 'below-input'", async () => {
@@ -1091,7 +1070,6 @@ describe('Chat', () => {
                 </a>
               </div>
             </div>
-            <slot> </slot>
             <div part="input-wrapper">
                 <igc-input placeholder="Type text here...">
             </div>

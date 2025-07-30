@@ -303,12 +303,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
         this._chatState.suggestionsPosition === 'below-messages'
           ? this.renderSuggestions()
           : nothing}
-        <igc-chat-input>
-          ${hasSuggestions &&
-          this._chatState.suggestionsPosition === 'above-input'
-            ? html`${this.renderSuggestions()}`
-            : nothing}
-        </igc-chat-input>
+        <igc-chat-input> </igc-chat-input>
         ${hasSuggestions &&
         this._chatState.suggestionsPosition === 'below-input'
           ? this.renderSuggestions()
