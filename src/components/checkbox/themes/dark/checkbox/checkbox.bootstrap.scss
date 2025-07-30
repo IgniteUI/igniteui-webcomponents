@@ -8,8 +8,8 @@ $theme: $bootstrap;
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='indicator'] {
         stroke: black;
     }

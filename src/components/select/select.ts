@@ -335,7 +335,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this.focus();
     }
 
-    this._updateValidity();
+    this._validate();
   }
 
   //#endregion
@@ -430,20 +430,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#region Event listeners
 
-  private _handleFocusIn({ relatedTarget }: FocusEvent): void {
-    this._dirty = true;
-
-    if (this.contains(relatedTarget as Node) || this.open) {
-      return;
-    }
+  private _handleFocusIn(): void {
+    this._setTouchedState();
   }
 
   private _handleFocusOut({ relatedTarget }: FocusEvent): void {
     if (this.contains(relatedTarget as Node)) {
       return;
     }
-
-    this.checkValidity();
+    super._handleBlur();
   }
 
   private _handleClick(event: PointerEvent): void {
@@ -457,6 +452,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleChange(item: IgcSelectItemComponent): boolean {
+    this._setTouchedState();
     return this.emitEvent('igcChange', { detail: item });
   }
 
@@ -472,6 +468,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   //#endregion
 
   //#region Internal API
+
+  protected override _restoreDefaultValue(): void {
+    super._restoreDefaultValue();
+    this._formValue.setValueAndFormState(this._formValue.defaultValue);
+    const item = this._getItem(this._formValue.value!);
+    item ? this._setSelectedItem(item) : this._clearSelectedItem();
+  }
 
   private _activateItem(item: IgcSelectItemComponent): void {
     if (this._activeItem) {
@@ -534,7 +537,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string): void {
     this._formValue.setValueAndFormState(value!);
-    this._validate();
   }
 
   private _clearSelectedItem(): void {

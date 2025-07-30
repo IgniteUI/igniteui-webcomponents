@@ -1,102 +1,28 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host {
-    display: block;
+[part~='message-container'] {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-inline-end: auto;
+  max-width: rem(576px);
+}
 
-    --message-max-width: 75%;
-  }
+[part~='sent'] {
+  margin-inline-start: auto;
+  margin-inline-end: unset;
+  padding: rem(12px) rem(16px);
+  border-radius: rem(24px) rem(24px) 0;
+}
 
-  .message-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
-    gap: 8px;
-    margin-bottom: 4px;
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .message-container.sent {
-    display: flex;
-    flex-direction: row-reverse;
-  }
-
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    opacity: 0;
-  }
-
-  .message-container.show-avatar .avatar {
-    opacity: 1;
-  }
-
-  .message-container pre {
-    border-radius: 4px;
-    overflow-x: auto;
+[part~='bubble'] {
+  @include type-style('body-1') {
     margin: 0;
-  }
+  };
 
-  .message-container code {
-    font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
-    font-size: 0.9em;
-    border-radius: 4px;
+  p {
     margin: 0;
+    padding: 0;
   }
-
-  .bubble {
-    display: block;
-    padding: 12px 16px;
-    border-radius: 18px;
-    color: black;
-    word-break: break-all;
-    font-weight: 400;
-    line-height: 1.4;
-    position: relative;
-    transition: all 0.2s ease;
-    width: fit-content;
-  }
-
-  .sent {
-    border-radius: 18px 18px 4px;
-  }
-
-  .sent .bubble {
-    background-color: #E5E5EA;
-  }
-
-  .received .bubble {
-    border-radius: 18px 18px 18px 4px;
-  }
-
-  .meta {
-    display: flex;
-    font-size: 0.7rem;
-    color: #636366;
-    margin-top: 4px;
-    opacity: 0.8;
-  }
-
-  .sent .meta {
-    justify-content: flex-end;
-  }
-
-  .time {
-    margin-right: 4px;
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
+}

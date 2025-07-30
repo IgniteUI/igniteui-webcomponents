@@ -6,18 +6,14 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-
 import { type CalendarDay, toCalendarDay } from '../calendar/model.js';
-import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { parseKeys } from './controllers/key-bindings.js';
-import type { IgniteComponent } from './definitions/register.js';
-import type { Constructor } from './mixins/constructor.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
-import { isEmpty, toKebabCase } from './util.js';
+import { toKebabCase } from './util.js';
 
 export function createFormAssociatedTestBed<T extends IgcFormControl>(
   template: TemplateResult
-) {
+): FormAssociatedTestBed<T> {
   return new FormAssociatedTestBed<T>(template);
 }
 
@@ -25,6 +21,7 @@ const initialFormData = Object.freeze(new FormData());
 
 class FormAssociatedTestBed<T extends IgcFormControl> {
   private _element!: T;
+  private _template: TemplateResult;
   private _form!: HTMLFormElement;
 
   /**
@@ -49,7 +46,9 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     return this.element.checkValidity();
   }
 
-  constructor(private template: TemplateResult) {}
+  constructor(template: TemplateResult) {
+    this._template = template;
+  }
 
   /**
    * Creates the fixture.
@@ -59,13 +58,13 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    * query selector for the component.
    */
   public async setup(qs: string): Promise<void> {
-    this._form = await fixture<HTMLFormElement>(
-      html`<form><fieldset>${this.template}</fieldset></form>`
+    this._form = await fixture(
+      html`<form><fieldset>${this._template}</fieldset></form>`
     );
     this._element = this._form.querySelector<T>(qs)!;
   }
 
-  public setAncestorDisabledState(state: boolean) {
+  public setAncestorDisabledState(state: boolean): void {
     this.form.querySelector('fieldset')?.toggleAttribute('disabled', state);
   }
 
@@ -190,7 +189,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
 export function simulatePointerEnter(
   node: Element,
   options?: PointerEventInit
-) {
+): void {
   node.dispatchEvent(
     new PointerEvent('pointerenter', {
       bubbles: true,
@@ -204,7 +203,7 @@ export function simulatePointerEnter(
 export function simulatePointerLeave(
   node: Element,
   options?: PointerEventInit
-) {
+): void {
   node.dispatchEvent(
     new PointerEvent('pointerleave', {
       bubbles: true,
@@ -215,11 +214,11 @@ export function simulatePointerLeave(
   );
 }
 
-export function simulateFocus(node: Element) {
+export function simulateFocus(node: Element): void {
   node.dispatchEvent(new FocusEvent('focus'));
 }
 
-export function simulateBlur(node: Element) {
+export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
@@ -227,7 +226,7 @@ export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
   times = 1
-) {
+): void {
   for (let i = 0; i < times; i++) {
     node.dispatchEvent(
       new PointerEvent('pointerdown', {
@@ -243,7 +242,7 @@ export function simulatePointerDown(
 export function simulateLostPointerCapture(
   node: Element,
   options?: PointerEventInit
-) {
+): void {
   node.dispatchEvent(
     new PointerEvent('lostpointercapture', {
       composed: true,
@@ -259,7 +258,7 @@ export function simulatePointerMove(
   options?: PointerEventInit,
   increment?: { x?: number; y?: number },
   times = 1
-) {
+): void {
   const { x = 0, y = 0 } = increment ?? {};
   const { clientX = 0, clientY = 0 } = options ?? {};
 
@@ -281,7 +280,7 @@ export function simulateClick(
   node: Element,
   options?: PointerEventInit,
   times = 1
-) {
+): void {
   for (let i = 0; i < times; i++) {
     node.dispatchEvent(
       new PointerEvent('click', { bubbles: true, composed: true, ...options })
@@ -309,7 +308,7 @@ interface MockInputEventConfig extends InputEventInit {
 export function simulateInput(
   input: HTMLInputElement | HTMLTextAreaElement,
   options: MockInputEventConfig = { value: '', skipValueProperty: false }
-) {
+): void {
   if (!options.skipValueProperty) {
     input.value = options.value ?? '';
   }
@@ -327,7 +326,7 @@ export function simulateKeyboard(
   node: Element,
   key: string | string[],
   times = 1
-) {
+): void {
   const { keys, modifiers } = parseKeys(key);
   const eventOptions: Record<string, boolean> = {};
 
@@ -363,7 +362,10 @@ export function simulateKeyboard(
 /**
  * Simulates scrolling for a given element.
  */
-export async function simulateScroll(node: Element, options?: ScrollToOptions) {
+export async function simulateScroll(
+  node: Element,
+  options?: ScrollToOptions
+): Promise<void> {
   node.scrollTo(options);
   node.dispatchEvent(new Event('scroll'));
   await elementUpdated(node);
@@ -373,13 +375,13 @@ export async function simulateScroll(node: Element, options?: ScrollToOptions) {
 /**
  * Simulates a wheel event for a given element.
  */
-export function simulateWheel(node: Element, options?: WheelEventInit) {
+export function simulateWheel(node: Element, options?: WheelEventInit): void {
   node.dispatchEvent(
     new WheelEvent('wheel', { bubbles: true, composed: true, ...options })
   );
 }
 
-export function simulateDoubleClick(node: Element) {
+export function simulateDoubleClick(node: Element): void {
   node.dispatchEvent(
     new PointerEvent('dblclick', { bubbles: true, composed: true })
   );
@@ -392,7 +394,7 @@ export function simulateDoubleClick(node: Element) {
 export function getAnimationsFor(
   element: ShadowRoot | Element,
   options?: GetAnimationsOptions
-) {
+): Animation[] {
   return element.getAnimations(options);
 }
 
@@ -402,7 +404,7 @@ export function getAnimationsFor(
 export function finishAnimationsFor(
   element: ShadowRoot | Element,
   options?: GetAnimationsOptions
-) {
+): void {
   const animations = getAnimationsFor(element, options);
   for (const animation of animations) {
     animation.finish();
@@ -410,67 +412,9 @@ export function finishAnimationsFor(
 }
 
 /**
- * Returns whether all passed `names` exist as slots in the given `root`.
- */
-export function hasSlots(
-  root: HTMLElement | DocumentFragment,
-  ...names: string[]
-) {
-  const slotNames = new Set(
-    Array.from(root.querySelectorAll('slot')).map((slot) => slot.name ?? '')
-  );
-
-  for (const name of names) {
-    if (!slotNames.has(name)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
- * Returns whether the given slot `name` has any slotted content for the given `root`.
- * Pass an empty string for the default slot.
- *
- * The function will flatten the target slot discarding any slot re-projection and
- * will match only elements being projected.
- */
-export function hasSlotContent(
-  root: HTMLElement | DocumentFragment,
-  name: string
-) {
-  const slot = root.querySelector<HTMLSlotElement>(
-    name ? `slot[name='${name}']` : 'slot:not([name])'
-  );
-
-  return !!slot && slot.assignedElements({ flatten: true }).length > 0;
-}
-
-export async function checkValidationSlots(
-  element: IgcFormControl,
-  ...names: Array<keyof ValidityStateFlags | 'invalid'>
-) {
-  const container = element.renderRoot.querySelector(
-    IgcValidationContainerComponent.tagName
-  )!;
-
-  const slots = names.map((name) => toKebabCase(name));
-
-  element.checkValidity();
-  await Promise.all([elementUpdated(element), elementUpdated(container)]);
-
-  expect(element.invalid, `${element.tagName} is not invalid`).to.be.true;
-  expect(hasSlots(container.renderRoot, ...slots)).to.be.true;
-
-  for (const slot of slots) {
-    expect(hasSlotContent(container.renderRoot, slot)).to.be.true;
-  }
-}
-
-/**
  * Checks if a given element is within the view of another element.
  */
-export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
+export function scrolledIntoView(el: HTMLElement, view: HTMLElement): boolean {
   const { top, bottom, height } = el.getBoundingClientRect();
   const { top: viewTop, bottom: viewBottom } = view.getBoundingClientRect();
 
@@ -479,48 +423,8 @@ export function scrolledIntoView(el: HTMLElement, view: HTMLElement) {
     : bottom - viewBottom <= height;
 }
 
-export function isFocused(element?: Element) {
+export function isFocused(element?: Element): boolean {
   return element ? element.matches(':focus') : false;
-}
-
-export type ValidationContainerTestsParams<T> = {
-  slots: Array<keyof ValidityStateFlags | 'invalid'>;
-  props?: { [K in keyof T]?: T[K] };
-};
-
-export function runValidationContainerTests<T extends IgcFormControl>(
-  element: Constructor<T> & IgniteComponent,
-  testParams: ValidationContainerTestsParams<T>[]
-) {
-  const runner = async ({
-    slots,
-    props,
-  }: ValidationContainerTestsParams<T>) => {
-    if (isEmpty(slots)) return;
-
-    const instance = document.createElement(element.tagName) as T;
-    instance.append(
-      ...slots.map((slot) =>
-        Object.assign(document.createElement('div'), {
-          slot: toKebabCase(slot),
-        })
-      )
-    );
-    Object.assign(instance, props);
-    document.body.append(instance);
-    await elementUpdated(instance);
-
-    if (slots.includes('customError')) {
-      instance.setCustomValidity('invalid');
-    }
-
-    await checkValidationSlots(instance, ...slots);
-    instance.remove();
-  };
-
-  for (const each of testParams) {
-    runner(each);
-  }
 }
 
 /**

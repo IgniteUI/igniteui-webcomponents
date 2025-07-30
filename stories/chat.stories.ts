@@ -17,7 +17,6 @@ import type {
 // const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = ''; //createClient(supabaseUrl, supabaseKey);
 
-const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
@@ -47,8 +46,8 @@ const regenerateIcon =
 registerIconFromText('thumb_up', thumbUpIcon, 'material');
 registerIconFromText('thumb_down', thumbDownIcon, 'material');
 registerIconFromText('regenerate', regenerateIcon, 'material');
-
-let messages: any[] = [
+let messages: any[] = [];
+const initialMessages: any[] = [
   {
     id: '1',
     text: 'Hello! How can I help you today?',
@@ -81,7 +80,7 @@ const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
       ? html`
-          <div style="float: right">
+          <div style="float: left">
             <igc-icon-button
               name="thumb_up"
               collection="material"
@@ -133,6 +132,7 @@ const _customRenderer = (text: string) =>
 
 const ai_chat_options = {
   headerText: 'Chat',
+  inputPlaceholder: 'Type your message here...',
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
     // messageActionsTemplate: messageActionsTemplate,
@@ -150,7 +150,7 @@ const ai_chat_options = {
 };
 
 const chat_options = {
-  disableAutoScroll: true,
+  disableAutoScroll: false,
   disableAttachments: true,
   supportsMarkdown: true,
   // markdownRenderer: _customRenderer,
@@ -183,6 +183,7 @@ function handleMessageSend(e: CustomEvent) {
   if (!chat) {
     return;
   }
+  chat.options = { ...chat.options, suggestions: [] };
 
   const attachments: IgcMessageAttachment[] =
     newMessage.text.includes('picture') ||
@@ -566,14 +567,17 @@ async function handleAIMessageSend(e: CustomEvent) {
 }
 
 export const Basic: Story = {
-  render: () => html`
-    <igc-chat
-      .messages=${messages}
-      .options=${chat_options}
-      @igcMessageCreated=${handleMessageSend}
-    >
-    </igc-chat>
-  `,
+  render: () => {
+    messages = initialMessages;
+    return html`
+      <igc-chat
+        .messages=${messages}
+        .options=${chat_options}
+        @igcMessageCreated=${handleMessageSend}
+      >
+      </igc-chat>
+    `;
+  },
 };
 
 export const Supabase: Story = {
@@ -600,4 +604,46 @@ export const AI: Story = {
     >
     </igc-chat>
   `,
+};
+
+let options: any;
+export const Chat_Templates: Story = {
+  play: async () => {
+    const chat = document.querySelector('igc-chat');
+    if (chat) {
+      const actionsTemplate = html`
+        <div>
+          ${chat.defaultFileUploadButton}
+          <div>
+            <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
+            <igc-button>...</igc-button>
+          </div>
+        </div>
+      `;
+      options = {
+        headerText: 'Chat',
+        inputPlaceholder: 'Type your message here...',
+        suggestions: ['Hello', 'Hi', 'Generate an image!'],
+        templates: {
+          messageActionsTemplate: _messageActionsTemplate,
+          textAreaActionsTemplate: actionsTemplate,
+        },
+      };
+      chat.options = { ...options };
+    }
+  },
+  render: () => {
+    messages = [];
+    return html`
+      <igc-chat
+        .messages=${messages}
+        .options=${options}
+        @igcMessageCreated=${handleMessageSend}
+      >
+        <div slot="suggestions-header">
+          <h5>Suggestions</h5>
+        </div>
+      </igc-chat>
+    `;
+  },
 };

@@ -1,8 +1,21 @@
-import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  nextFrame,
+} from '@open-wc/testing';
 import { html } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import {
+  arrowDown,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
+  isFocused,
   simulateBlur,
   simulateClick,
   simulateFocus,
@@ -67,9 +80,10 @@ describe('Chat', () => {
       .value=${text}
     ></igc-input>`;
 
-  const fileUploadTemplate = html`<igc-button>Upload</igc-button>`;
-
-  const textAreaActionsTemplate = html`<igc-button>Send</igc-button>`;
+  const textAreaActionsTemplate = html`<div>
+    <igc-button>Upload</igc-button>
+    <igc-button>Send</igc-button>
+  </div>`;
 
   const textAreaAttachmentsTemplate = (attachments: any[]) => {
     return html`<div>
@@ -162,6 +176,7 @@ describe('Chat', () => {
     it('is correctly initialized with its default component state', () => {
       expect(chat.messages.length).to.equal(0);
       expect(chat.options).to.be.undefined;
+      expect(chat.draftMessage).to.deep.equal({ text: '', attachments: [] });
     });
 
     it('is rendered correctly', () => {
@@ -171,75 +186,58 @@ describe('Chat', () => {
       );
 
       expect(chat).shadowDom.to.equal(
-        ` <div class="chat-container">
-                    <div class="header" part="header">
-                        <div class="info">
+        ` <div part="chat-container">
+                    <div part="header" part="header">
+                        <div part="info">
                             <slot name="prefix" part="prefix">
                             </slot>
                             <slot name="title" part="title">
                             </slot>
                         </div>
-                        <slot class="actions" name="actions">
-                            <igc-button type="button" variant="flat">
-                            ⋯
-                            </igc-button>
+                        <slot part="actions" name="actions">
                         </slot>
                     </div>
-                    <igc-chat-message-list>
-                    </igc-chat-message-list>
-                    <div class="suggestions-container">
-                        <slot name="suggestions" part="suggestions">
-                        </slot>
+                    <div part="empty-state">
+                      <slot name="empty-state">
+                      </slot>
                     </div>
                     <igc-chat-input>
                     </igc-chat-input>
                 </div>`
       );
 
-      const messageList = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
-      );
-
-      expect(messageList).shadowDom.to.equal(
-        `<div aria-activedescendant="" class="message-container" tabindex="0">
-                </div>
-                <div class="message-list">
-                </div>`
-      );
-
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div class="input-container">
-                    <igc-file-input multiple="">
-                        <igc-icon
-                        collection="material"
-                        name="attachment"
-                        slot="file-selector-text"
-                        >
-                        </igc-icon>
-                    </igc-file-input>
-                    <div class="input-wrapper">
+        `<div part="input-container">
+                    <div part="input-wrapper">
                         <igc-textarea
-                        class="text-input"
-                        placeholder="Type a message..."
+                        part="text-input"
+                        resize="auto"
                         rows="1"
                         >
                         </igc-textarea>
                     </div>
-                    <div class="buttons-container">
+                    <div part="buttons-container">
+                        <igc-file-input multiple="">
+                            <igc-icon
+                            collection="material"
+                            name="attachment"
+                            slot="file-selector-text"
+                            >
+                            </igc-icon>
+                        </igc-file-input>
                         <igc-icon-button
-                        class="small"
-                        collection="material"
-                        disabled=""
-                        name="send-message"
-                        type="button"
-                            variant="contained"
+                          aria-label="Send message"
+                          part="send-button"
+                          collection="material"
+                          disabled=""
+                          name="send-message"
+                          type="button"
+                          variant="contained"
                         >
                         </igc-icon-button>
                         </div>
-                    </div>
-                    <div>
                     </div>`
       );
     });
@@ -249,29 +247,35 @@ describe('Chat', () => {
         html`<igc-chat .messages=${messages}> </igc-chat>`
       );
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+      const messageList = chat.shadowRoot?.querySelector(
+        'igc-chat-message-list'
+      );
+      const messageContainer = messageList?.shadowRoot?.querySelector(
+        `div[part='message-list']`
+      );
+
+      expect(messageList).shadowDom.to.equal(
+        `<div aria-activedescendant="" aria-label="Message list" part="message-container" role="group" tabindex="0">
+                  </div>
+                  <div part="message-list">
+                   <igc-chat-message id="message-1" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-2" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-3" part="message-item " role="option">
+                    </igc-chat-message>
+                    <igc-chat-message id="message-4" part="message-item " role="option">
+                    </igc-chat-message>
+                  </div>`
+      );
 
       expect(chat.messages.length).to.equal(4);
-      expect(messageContainer).dom.to.equal(
-        `<div class="message-list">
-                    <igc-chat-message id="message-1">
-                    </igc-chat-message>
-                    <igc-chat-message id="message-2">
-                    </igc-chat-message>
-                    <igc-chat-message id="message-3">
-                    </igc-chat-message>
-                    <igc-chat-message id="message-4">
-                    </igc-chat-message>
-                </div>`
-      );
 
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[0]
       ).shadowDom.to.equal(
-        `<div class="message-container ">
-                    <div class="bubble">
+        `<div part="message-container ">
+                    <div part="bubble">
                         <div>
                             <p>Hello! How can I help you today?</p>
                         </div>
@@ -282,8 +286,8 @@ describe('Chat', () => {
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[3]
       ).shadowDom.to.equal(
-        `<div class="message-container sent">
-                    <div class="bubble">
+        `<div part="message-container sent">
+                    <div part="bubble">
                         <div>
                             <p>Thank you too!</p>
                         </div>
@@ -307,15 +311,15 @@ describe('Chat', () => {
 
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+        ?.shadowRoot?.querySelector(`div[part='message-list']`);
 
       expect(chat.messages.length).to.equal(1);
 
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[0]
       ).shadowDom.to.equal(
-        `<div class="message-container ">
-                    <div class="bubble">
+        `<div part="message-container ">
+                    <div part="bubble">
                         <div>
                             <p>Hello!</p>
                         </div>
@@ -347,8 +351,9 @@ describe('Chat', () => {
 
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+        ?.shadowRoot?.querySelector(`div[part='message-list']`);
 
+      expect(messageContainer).not.to.be.undefined;
       expect(chat.messages.length).to.equal(3);
 
       messageContainer
@@ -356,16 +361,16 @@ describe('Chat', () => {
         .forEach((messageElement, index) => {
           if (index !== 2) {
             expect(
-              messageElement.shadowRoot
-                ?.querySelector('.message-container')
-                ?.classList.contains('sent')
-            ).to.be.false;
+              messageElement.shadowRoot?.querySelector(
+                `div[part='message-container ']`
+              )
+            ).not.to.be.undefined;
           } else {
             expect(
-              messageElement.shadowRoot
-                ?.querySelector('.message-container')
-                ?.classList.contains('sent')
-            ).to.be.true;
+              messageElement.shadowRoot?.querySelector(
+                `div[part='message-container sent']`
+              )
+            ).not.to.be.undefined;
           }
         });
     });
@@ -392,76 +397,99 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
 
-      const headerArea = chat.shadowRoot?.querySelector('.header');
+      const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div class="header" part="header"> 
-                    <div class="info">
+        `<div part="header" part="header"> 
+                    <div part="info">
                         <slot name="prefix" part="prefix">
                         </slot>
                         <slot name="title" part="title">
                             Chat
                         </slot>
                     </div>
-                    <slot class="actions" name="actions">
-                        <igc-button type="button" variant="flat">
-                        ⋯
-                        </igc-button>
+                    <slot part="actions" name="actions">
                     </slot>
                 </div>`
       );
     });
 
-    // it('should scroll to bottom by default', async () => {
-    //   chat.messages = [messages[0], messages[1], messages[2]];
-    //   await elementUpdated(chat);
-    //   await clock.tickAsync(500);
+    it('should apply `inputPlaceholder` correctly', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+      };
+      await elementUpdated(chat);
 
-    //   const messagesContainer = chat.shadowRoot?.querySelector(
-    //     'igc-chat-message-list'
-    //   );
-    //   let scrollPosition = messagesContainer
-    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-    //     : 0;
-    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
-    //   chat.messages = [...chat.messages, messages[3]];
-    //   await chat.updateComplete;
-    //   await clock.tickAsync(500);
+      expect(textArea?.placeholder).to.equal('Type message here...');
+    });
 
-    //   scrollPosition = messagesContainer
-    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-    //     : 0;
+    it('should render suggestions', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      await elementUpdated(chat);
 
-    //   expect(chat.messages.length).to.equal(4);
-    //   expect(messagesContainer?.scrollTop).not.to.equal(0);
-    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
-    // });
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        'div[part="suggestions-container"]'
+      );
 
-    // it('should not scroll to bottom if `disableAutoScroll` is true', async () => {
-    //   chat.messages = [messages[0], messages[1], messages[2]];
-    //   chat.options = {
-    //     disableAutoScroll: true,
-    //   };
-    //   await elementUpdated(chat);
-    //   await clock.tickAsync(500);
+      expect(suggestionsContainer).dom.to.equal(
+        `<div aria-label="Suggestions" part="suggestions-container" role="list">
+          <slot name="suggestions-header" part="suggestions-header"> </slot>
+          <slot name="suggestions" part="suggestions">
+              <slot name="suggestion" part="suggestion" role="listitem">
+                  <igc-chip>
+                      <span>
+                      Suggestion 1
+                      </span>
+                  </igc-chip>
+              </slot>
+              <slot name="suggestion" part="suggestion" role="listitem">
+                  <igc-chip>
+                      <span>
+                      Suggestion 2
+                      </span>
+                  </igc-chip>
+              </slot>
+          </slot>
+      </div>`
+      );
+    });
 
-    //   const messagesContainer = chat.shadowRoot?.querySelector(
-    //     'igc-chat-message-list'
-    //   );
-    //   const scrollPosition = messagesContainer
-    //     ? messagesContainer.scrollHeight - messagesContainer.scrollTop
-    //     : 0;
-    //   expect(scrollPosition).to.equal(messagesContainer?.clientHeight);
+    it('should enable/disable the send button properly', async () => {
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+      const sendButton =
+        inputArea?.shadowRoot?.querySelector('igc-icon-button');
 
-    //   messagesContainer?.scrollTo(0, 0);
-    //   chat.messages = [...chat.messages, messages[3]];
-    //   await chat.updateComplete;
-    //   await clock.tickAsync(500);
+      expect(sendButton?.disabled).to.be.true;
+      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
-    //   expect(chat.messages.length).to.equal(4);
-    //   expect(messagesContainer?.scrollTop).to.equal(0);
-    // });
+      // When there is a text in the text area, the send button should be enabled
+      textArea?.setAttribute('value', 'Hello!');
+      textArea?.dispatchEvent(new Event('input'));
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.false;
+
+      // When there is no text in the text area, the send button should be disabled
+      textArea?.setAttribute('value', '');
+      textArea?.dispatchEvent(new Event('input'));
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.true;
+
+      // When there are attachments, the send button should be enabled regardless of the text area content
+      const fileInput = inputArea?.shadowRoot
+        ?.querySelector('igc-file-input')
+        ?.shadowRoot?.querySelector('input') as HTMLInputElement;
+      simulateFileUpload(fileInput, files);
+      await elementUpdated(chat);
+
+      expect(sendButton?.disabled).to.be.false;
+    });
 
     it('should not render attachment button if `disableAttachments` is true', async () => {
       chat.options = {
@@ -472,28 +500,27 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div class="input-container">
-                    <div class="input-wrapper">
+        `<div part="input-container">
+                    <div part="input-wrapper">
                         <igc-textarea
-                        class="text-input"
-                        placeholder="Type a message..."
+                        part="text-input"
+                        resize="auto"
                         rows="1"
                         >
                         </igc-textarea>
                     </div>
-                    <div class="buttons-container">
+                    <div part="buttons-container">
                         <igc-icon-button
-                        class="small"
-                        collection="material"
-                        disabled=""
-                        name="send-message"
-                        type="button"
-                            variant="contained"
+                          aria-label="Send message"
+                          part="send-button"
+                          collection="material"
+                          disabled=""
+                          name="send-message"
+                          type="button"
+                          variant="contained"
                         >
                         </igc-icon-button>
                         </div>
-                    </div>
-                    <div>
                     </div>`
       );
     });
@@ -505,6 +532,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const element = inputArea?.shadowRoot?.querySelector('igc-file-input');
+      expect(element).not.to.be.undefined;
       if (element) {
         expect(element.accept).to.equal('image/*');
 
@@ -534,26 +562,43 @@ describe('Chat', () => {
       expect(eventArgs).to.deep.equal(args);
 
       expect(inputArea).shadowDom.to.equal(
-        `<div class="input-container">
-            <igc-file-input multiple="">
-              <igc-icon
-                collection="material"
-                name="attachment"
-                slot="file-selector-text"
-              >
-              </igc-icon>
-            </igc-file-input>
-            <div class="input-wrapper">
+        `<div part="input-container">
+            <div aria-label="Attachments" part="attachments" role="list">
+              <div part="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span part="attachment-name">
+                    test.txt
+                  </span>
+                </igc-chip>
+              </div>
+              <div part="attachment-wrapper" role="listitem">
+                <igc-chip removable="">
+                  <span part="attachment-name">
+                    image.png
+                  </span>
+                </igc-chip>
+              </div>
+            </div>
+            <div part="input-wrapper">
               <igc-textarea
-                class="text-input"
-                placeholder="Type a message..."
+                part="text-input"
+                resize="auto"
                 rows="1"
               >
               </igc-textarea>
             </div>
-            <div class="buttons-container">
+            <div part="buttons-container">
+              <igc-file-input multiple="">
+                <igc-icon
+                  collection="material"
+                  name="attachment"
+                  slot="file-selector-text"
+                >
+                </igc-icon>
+              </igc-file-input>
               <igc-icon-button
-                class="small"
+                aria-label="Send message"
+                part="send-button"
                 collection="material"
                 name="send-message"
                 type="button"
@@ -561,23 +606,7 @@ describe('Chat', () => {
               >
               </igc-icon-button>
             </div>
-            </div>
-            <div>
-            <div class="attachment-wrapper">
-              <igc-chip removable="">
-                <span class="attachment-name">
-                  test.txt
-                </span>
-              </igc-chip>
-            </div>
-            <div class="attachment-wrapper">
-              <igc-chip removable="">
-                <span class="attachment-name">
-                  image.png
-                </span>
-              </igc-chip>
-            </div>
-        </div>`
+            </div>`
       );
     });
 
@@ -588,13 +617,15 @@ describe('Chat', () => {
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
+      expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
-          messageElement.shadowRoot?.querySelector('.bubble');
+          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
-          `<div class="bubble">
+          `<div part="bubble">
                             <div>
                                 <p>${(messsageContainer as HTMLElement)?.innerText}</p>
                             </div>
@@ -609,51 +640,31 @@ describe('Chat', () => {
         // Check if image attachments are rendered correctly
         if (index === 0) {
           expect(attachments).shadowDom.to.equal(
-            `<div class="attachments-container">
+            `<div part="attachments-container">
                             <igc-expansion-panel indicator-position="none" open="">
-                                <div class="attachment" slot="title">
-                                <div class="details">
+                                <div part="attachment" slot="title">
+                                <div part="details">
                                     <slot name="attachment-icon">
                                     <igc-icon
-                                        class="medium"
+                                        part="attachment-icon"
                                         collection="material"
                                         name="image"
                                     >
                                     </igc-icon>
                                     </slot>
                                     <slot name="attachment-name">
-                                    <span class="file-name">
+                                    <span part="file-name">
                                         img1.png
                                     </span>
                                     </slot>
                                 </div>
-                                <div class="actions">
-                                    <slot name="attachment-actions">
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="preview"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="more"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    </slot>
+                                <div part="actions">
                                 </div>
                                 </div>
                                 <slot name="attachment-content">
                                 <img
                                     alt="img1.png"
-                                    class="image-attachment"
+                                    part="image-attachment"
                                     src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
                                 >
                                 </slot>
@@ -664,36 +675,25 @@ describe('Chat', () => {
         // Check if non-image attachments are rendered correctly
         if (index === 1) {
           expect(attachments).shadowDom.to.equal(
-            `<div class="attachments-container">
+            `<div part="attachments-container">
                             <igc-expansion-panel indicator-position="none">
-                                <div class="attachment" slot="title">
-                                <div class="details">
+                                <div part="attachment" slot="title">
+                                <div part="details">
                                     <slot name="attachment-icon">
                                     <igc-icon
-                                        class="medium"
+                                        part="attachment-icon"
                                         collection="material"
                                         name="file"
                                     >
                                     </igc-icon>
                                     </slot>
                                     <slot name="attachment-name">
-                                    <span class="file-name">
+                                    <span part="file-name">
                                         img2.png
                                     </span>
                                     </slot>
                                 </div>
-                                <div class="actions">
-                                    <slot name="attachment-actions">
-                                    <igc-icon-button
-                                        class="small"
-                                        collection="material"
-                                        name="more"
-                                        tabindex="-1"
-                                        type="button"
-                                        variant="flat"
-                                    >
-                                    </igc-icon-button>
-                                    </slot>
+                                <div part="actions">
                                 </div>
                                 </div>
                                 <slot name="attachment-content">
@@ -712,20 +712,21 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        '.suggestions-container'
+        `div[part='suggestions-container']`
       );
 
       expect(suggestionsContainer).dom.to.equal(
-        `<div class="suggestions-container">
+        `<div aria-label="Suggestions" part="suggestions-container" role="list">
+                    <slot name="suggestions-header" part="suggestions-header"> </slot>
                     <slot name="suggestions" part="suggestions">
-                        <slot name="suggestion" part="suggestion">
+                        <slot name="suggestion" part="suggestion" role="listitem">
                             <igc-chip>
                                 <span>
                                 Suggestion 1
                                 </span>
                             </igc-chip>
                             </slot>
-                            <slot name="suggestion" part="suggestion">
+                            <slot name="suggestion" part="suggestion" role="listitem">
                             <igc-chip>
                                 <span>
                                 Suggestion 2
@@ -746,19 +747,19 @@ describe('Chat', () => {
 
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+        ?.shadowRoot?.querySelector(`div[part='message-list']`);
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div class="message-list">
-                <igc-chat-message id="message-1">
+        `<div part="message-list">
+                <igc-chat-message id="message-1" part="message-item " role="option">
                 </igc-chat-message>
-                <div class="typing-indicator">
-                    <div class="typing-dot">
+                <div part="typing-indicator">
+                    <div part="typing-dot">
                     </div>
-                    <div class="typing-dot">
+                    <div part="typing-dot">
                     </div>
-                    <div class="typing-dot">
+                    <div part="typing-dot">
                     </div>
                 </div>
             </div>`
@@ -784,6 +785,7 @@ describe('Chat', () => {
     it('should slot header prefix', () => {});
     it('should slot header title', () => {});
     it('should slot header action buttons area', () => {});
+    it('should slot message list area when there are no messages', () => {});
     it('should slot suggestions area', () => {});
   });
 
@@ -803,16 +805,18 @@ describe('Chat', () => {
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
+      expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
-          messageElement.shadowRoot?.querySelector('.bubble');
+          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        expect(messsageContainer).not.to.be.undefined;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
         );
         expect(attachments).shadowDom.to.equal(
-          `<div class="attachments-container">
+          `<div part="attachments-container">
                         <igc-chip>
                             <span>
                             ${chat.messages[index].attachments?.[0].name || ''}
@@ -836,26 +840,29 @@ describe('Chat', () => {
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
-
+      expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
-          messageElement.shadowRoot?.querySelector('.bubble');
+          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        expect(messsageContainer).not.to.be.undefined;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
         );
 
-        const details = attachments?.shadowRoot?.querySelector('.details');
+        const details =
+          attachments?.shadowRoot?.querySelector(`div[part='details']`);
         expect(details).dom.to.equal(
-          `<div class="details">
+          `<div part="details">
                         <h5>Custom ${chat.messages[index].attachments?.[0].name}</h5>
                     </div>`
         );
 
-        const actions = attachments?.shadowRoot?.querySelector('.actions');
+        const actions =
+          attachments?.shadowRoot?.querySelector(`div[part='actions']`);
         expect(actions).dom.to.equal(
-          `<div class="actions">
+          `<div part="actions">
                         <igc-button type="button" variant="contained">?</igc-button>
                     </div>`
         );
@@ -877,13 +884,15 @@ describe('Chat', () => {
       await aTimeout(500);
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
+      expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
-          messageElement.shadowRoot?.querySelector('.bubble');
+          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
-          `<div class="bubble">
+          `<div part="bubble">
                 <div>
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
@@ -903,14 +912,16 @@ describe('Chat', () => {
       await aTimeout(500);
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
+      expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
-          messageElement.shadowRoot?.querySelector('.bubble');
+          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        expect(messsageContainer).not.to.be.undefined;
         if (index === 0) {
           expect(messsageContainer).dom.to.equal(
-            `<div class="bubble">
+            `<div part="bubble">
                             <div>
                                 <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                             </div>
@@ -920,7 +931,7 @@ describe('Chat', () => {
           );
         } else {
           expect(messsageContainer).dom.to.equal(
-            `<div class="bubble">
+            `<div part="bubble">
                             <div>
                                 <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                             </div>
@@ -946,12 +957,12 @@ describe('Chat', () => {
       await elementUpdated(chat);
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list');
+        ?.shadowRoot?.querySelector(`div[part='message-list']`);
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div class="message-list">
-                <igc-chat-message id="message-1">
+        `<div part="message-list">
+                <igc-chat-message id="message-1" part="message-item " role="option">
                 </igc-chat-message>
                 <span>loading...</span>
             </div>`
@@ -963,7 +974,6 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           textInputTemplate: textInputTemplate,
-          fileUploadTemplate: fileUploadTemplate,
           textAreaActionsTemplate: textAreaActionsTemplate,
           textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
         },
@@ -972,22 +982,25 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div class="input-container">
-            <igc-button type="button" variant="contained">Upload</igc-button>
-            <div class="input-wrapper">
+        `<div part="input-container">
+          <div aria-label="Attachments" part="attachments" role="list">
+              <div>
+                <a href=${draftMessage.attachments[0].url} target="_blank">
+                  ${draftMessage.attachments[0].name}
+                </a>
+              </div>
+            </div>
+            <div part="input-wrapper">
                 <igc-input placeholder="Type text here...">
             </div>
-            <div class="buttons-container">
+            <div part="buttons-container">
+              <div>
+                <igc-button type="button" variant="contained">Upload</igc-button>
                 <igc-button type="button" variant="contained">Send</igc-button>
+              </div>
             </div>
           </div>
-          <div>
-            <div>
-              <a href=${draftMessage.attachments[0].url} target="_blank">
-                ${draftMessage.attachments[0].name}
-              </a>
-            </div>
-          </div>`
+          `
       );
 
       expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
@@ -1005,6 +1018,8 @@ describe('Chat', () => {
           'igc-icon-button[name="send-message"]'
         );
         const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+        expect(sendButton).not.to.be.undefined;
+        expect(textArea).not.to.be.undefined;
 
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
@@ -1024,6 +1039,8 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
+          // The focus should be on the input area after send button is clicked
+          expect(isFocused(textArea)).to.be.true;
         }
       });
 
@@ -1035,7 +1052,7 @@ describe('Chat', () => {
         await elementUpdated(chat);
 
         const suggestionChips = chat.shadowRoot
-          ?.querySelector('.suggestions-container')
+          ?.querySelector(`div[part='suggestions-container']`)
           ?.querySelectorAll('igc-chip');
 
         expect(suggestionChips?.length).to.equal(2);
@@ -1053,6 +1070,12 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Suggestion 1');
           expect(chat.messages[0].sender).to.equal('user');
+          // The focus should be on the input area after suggestion click
+          const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
+          const textArea = inputArea?.shadowRoot?.querySelector(
+            'igc-textarea'
+          ) as HTMLElement;
+          expect(isFocused(textArea)).to.be.true;
         }
       });
 
@@ -1094,9 +1117,11 @@ describe('Chat', () => {
       it('should be able to drag & drop files based on the types listed in `acceptedFiles`', async () => {
         const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
-        const dropZone =
-          inputArea?.shadowRoot?.querySelector('.input-container');
+        const dropZone = inputArea?.shadowRoot?.querySelector(
+          `div[part='input-container']`
+        );
 
+        expect(dropZone).not.to.be.undefined;
         if (dropZone) {
           const mockDataTransfer = new DataTransfer();
           files.forEach((file) => {
@@ -1149,6 +1174,9 @@ describe('Chat', () => {
         );
         const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
+        expect(sendButton).not.to.be.undefined;
+        expect(textArea).not.to.be.undefined;
+
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
           textArea.dispatchEvent(new Event('input'));
@@ -1174,7 +1202,101 @@ describe('Chat', () => {
           expect(chat.messages.length).to.equal(1);
           expect(chat.messages[0].text).to.equal('Hello!');
           expect(chat.messages[0].sender).to.equal('user');
+
+          // The focus should be on the input area after message is sent
+          expect(isFocused(textArea)).to.be.true;
         }
+      });
+
+      it('should activates the recent message when the message list is focused', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector(
+            `div[part='message-container']`
+          ) as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
+
+        const messageElements =
+          messageContainer?.querySelectorAll('igc-chat-message');
+        messageElements?.forEach((message, index) => {
+          if (index === messages.length - 1) {
+            expect(message.part.length).to.equal(2);
+            expect(message.part[0]).to.equal('message-item');
+            expect(message.part[1]).to.equal('active');
+          } else {
+            expect(message.part.length).to.equal(1);
+            expect(message.part[0]).to.equal('message-item');
+          }
+        });
+      });
+
+      it('should activates the next/previous message on `ArrowDown`/`ArrowUp`', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector(
+            `div[part='message-container']`
+          ) as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+        await nextFrame();
+        await nextFrame();
+
+        // Activates the previous message on `ArrowUp`
+        simulateKeyboard(messageContainer, arrowUp);
+        await elementUpdated(chat);
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-3'
+        );
+
+        // Activates the next message on `ArrowDown`
+        simulateKeyboard(messageContainer, arrowDown);
+        await elementUpdated(chat);
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
+      });
+
+      it('should activates the first/last message on `Home`/`End`', async () => {
+        chat.messages = messages;
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot
+          ?.querySelector('igc-chat-message-list')
+          ?.shadowRoot?.querySelector(
+            `div[part='message-container']`
+          ) as HTMLElement;
+        messageContainer.focus();
+        await elementUpdated(chat);
+        await nextFrame();
+        await nextFrame();
+
+        // Activates the first message on `Home`
+        simulateKeyboard(messageContainer, homeKey);
+        await elementUpdated(chat);
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-1'
+        );
+
+        // Activates the last message on `End`
+        simulateKeyboard(messageContainer, endKey);
+        await elementUpdated(chat);
+        expect(messageContainer.getAttribute('aria-activedescendant')).to.equal(
+          'message-4'
+        );
       });
     });
   });
@@ -1188,7 +1310,7 @@ describe('Chat', () => {
 
       const messageElement = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list'`)
         ?.querySelector('igc-chat-message');
 
       const attachmentHeader = messageElement?.shadowRoot
@@ -1207,6 +1329,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
+      expect(textArea).not.to.be.undefined;
       if (textArea) {
         simulateFocus(textArea);
         simulateKeyboard(textArea, 'a');
@@ -1226,6 +1349,7 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+      expect(textArea).not.to.be.undefined;
 
       if (textArea) {
         simulateFocus(textArea);
@@ -1237,6 +1361,7 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+      expect(textArea).not.to.be.undefined;
 
       if (textArea) {
         simulateBlur(textArea);
@@ -1249,6 +1374,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
+      expect(textArea).not.to.be.undefined;
       if (textArea) {
         textArea.setAttribute('value', 'Hello!');
         textArea.dispatchEvent(new Event('input'));
@@ -1265,6 +1391,8 @@ describe('Chat', () => {
         'igc-icon-button[name="send-message"]'
       );
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
+      expect(sendButton).not.to.be.undefined;
+      expect(textArea).not.to.be.undefined;
 
       chat.addEventListener('igcMessageCreated', (event) => {
         event.preventDefault();

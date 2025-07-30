@@ -2,128 +2,61 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: block;
-    padding: 12px 16px;
-    border-top: 1px solid #E5E5EA;
-}
-
-igc-file-input{
-    width: fit-content;
-}
-
-igc-file-input::part(file-names){
-    display: none;
-}
-
-.input-container {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.input-container.dragging{
-    background-color: black;
-    border: 2px dashed #0A84FF;
-}
-
-.input-wrapper {
-    flex: 1;
-    position: relative;
-    border-radius: 24px;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-}
-
-.buttons-container {
-    display: flex;
-    align-items: center;
-}
-
-.input-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    margin-left: 0.25rem;
-    background: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    color: #8E8E93;
-    transition: all 0.2s ease;
-}
-
-.input-button:hover {
-    color: #0A84FF;
-    background-color: #a1a1a1;
-}
-
-.text-input {
     width: 100%;
-    border: none;
-    padding: 12px 16px;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    outline: none;
-    resize: none;
-    max-height: 120px;
-    font-family: inherit;
-}
-
-.input-wrapper:focus-within {
-    box-shadow: 0 0 0 2px #0A84FF;
-}
-
-.attachment-button,
-.send-button {
-    display: flex;
-    align-items: center;
+    padding-block: rem(16px);
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: #0A84FF;
-    transition: white 0.2s;
 }
 
-.attachment-button:hover,
-.send-button:hover {
-    background-color: #8E8E93;
+[part~='input-container'] {
+    display: flex;
+    flex-direction: column;
+    max-width: rem(760px);
+    width: 100%;
+    margin-inline: rem(16px);
+    gap: rem(8px);
 }
 
-.attachment-wrapper {
-    max-width: 200px;
-    margin-right: 5px;
-    float: left;
+// should be changed when the design is ready
+[part~='dragging'] {
+    igc-textarea::part(container) {    
+        background: color(gray, 300);
 
-    igc-chip {
-        border: 1px solid #E5E5EA;
-        border-radius: 5px;
+        &::after {
+            border-block-end: rem(2px) solid color(primary, 500);
+        }
     }
 }
 
-.attachment-name {
-    font-size: small;
-    font-style: italic;
-    margin: 0 5px;
+[part='buttons-container'] {
+    display: flex;
+    align-items: center;
 }
 
-.send-button {
-    background-color: #0A84FF;
-    color: white;
+[part='send-button'] {
+    margin-inline-start: auto;
 }
 
-.send-button:hover {
-    background-color: #5AC8FA;
+[part='attachments'] {
+    display: flex;
+    gap: rem(8px);
 }
 
-.send-button:disabled {
-    background-color: #C7C7CC;
-    cursor: not-allowed;
+igc-file-input {
+    width: fit-content;
+    margin-inline-end: auto;
 }
 
+igc-file-input::part(file-names) {
+    display: none;
+}
+
+igc-file-input::part(container) {
+    background: transparent;
+    border: none;
+
+    &::after {
+        display: none;
+    }
+}

@@ -10,4 +10,8 @@
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-7);
     }
+
+    igc-popover::part(container) {
+        box-shadow: var(--ig-elevation-2);
+    }
 }

@@ -109,7 +109,8 @@ $theme: $fluent;
     }
 }
 
-:host(:not([disabled])[invalid]:hover) {
+:host(:not([disabled]):state(ig-invalid):hover),
+:host(:not(:disabled):state(ig-invalid):hover) {
     [part='control'] {
         &::after {
             border-color: var-get($theme, 'error-color-hover');
@@ -131,7 +132,8 @@ $theme: $fluent;
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');

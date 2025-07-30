@@ -14,8 +14,8 @@ $theme: $base;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }

@@ -108,8 +108,8 @@ $theme: $material;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -135,8 +135,8 @@ $theme: $material;
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]),
-:host(:not(:disabled)[invalid][indeterminate]) {
+:host(:not([disabled]):state(ig-invalid)[indeterminate]),
+:host(:not(:disabled):state(ig-invalid)[indeterminate]) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
