@@ -8,8 +8,8 @@ import type { ChatState } from './chat-state.js';
 import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
-import type { IgcMessage, IgcRendererConfig } from './types.js';
 import { styles as shared } from './themes/shared/chat-message.common.css.js';
+import type { IgcMessage, IgcRendererConfig } from './types.js';
 
 /**
  * A chat message component for displaying individual messages in `<igc-chat>`.
@@ -81,13 +81,13 @@ export default class IgcChatMessageComponent extends LitElement {
    * - Renders attachments and custom templates if provided.
    */
   protected override render() {
-    const containerClass = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
+    const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
     const sanitizedMessageText = this.message?.text.trim() || '';
     const rendererConfig = this._chatState?.options?.rendererConfig!;
     const isPlainText = rendererConfig?.type === 'plain';
 
     return html`
-      <div part=${containerClass}>
+      <div part=${containerPart}>
         <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)

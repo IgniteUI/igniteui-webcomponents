@@ -186,8 +186,9 @@ export default class IgcChatMessageListComponent extends LitElement {
       (id) => `message-${id}` === this._activeMessageId
     );
     let activeMessageId = '';
+    const key = e.key.toLowerCase();
 
-    switch (e.key) {
+    switch (key) {
       case 'home':
         activeMessageId = this._chatState.sortedMessagesIds[0];
         break;

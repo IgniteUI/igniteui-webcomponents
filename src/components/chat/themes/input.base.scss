@@ -1,10 +1,37 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
+:host {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-block: rem(16px);
+    justify-content: center;
+}
+
+[part~='input-container'] {
+    display: flex;
+    flex-direction: column;
+    max-width: rem(760px);
+    width: 100%;
+    margin-inline: rem(16px);
+    gap: rem(8px);
+}
+
+// should be changed when the design is ready
+[part~='dragging'] {
+    igc-textarea::part(container) {    
+        background: color(gray, 300);
+
+        &::after {
+            border-block-end: rem(2px) solid color(primary, 500);
+        }
+    }
+}
+
 [part='buttons-container'] {
     display: flex;
     align-items: center;
-    margin-block: rem(8px) rem(16px);
 }
 
 [part='send-button'] {
@@ -14,7 +41,6 @@
 [part='attachments'] {
     display: flex;
     gap: rem(8px);
-    margin-block-end: rem(8px);
 }
 
 igc-file-input {

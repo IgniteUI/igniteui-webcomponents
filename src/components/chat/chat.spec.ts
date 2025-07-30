@@ -209,7 +209,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container ">
+        `<div part="input-container">
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -500,7 +500,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container ">
+        `<div part="input-container">
                     <div part="input-wrapper">
                         <igc-textarea
                         part="text-input"
@@ -562,7 +562,7 @@ describe('Chat', () => {
       expect(eventArgs).to.deep.equal(args);
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container ">
+        `<div part="input-container">
             <div aria-label="Attachments" part="attachments" role="list">
               <div part="attachment-wrapper" role="listitem">
                 <igc-chip removable="">
@@ -982,7 +982,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
       expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container ">
+        `<div part="input-container">
           <div aria-label="Attachments" part="attachments" role="list">
               <div>
                 <a href=${draftMessage.attachments[0].url} target="_blank">
