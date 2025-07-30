@@ -36,10 +36,8 @@ export class ChatState {
     wildcardTypes: Set<string>;
   } | null = null;
 
-  private _suggestionsPosition:
-    | 'above-input'
-    | 'below-input'
-    | 'below-messages' = 'below-messages';
+  private _suggestionsPosition: 'below-input' | 'below-messages' =
+    'below-messages';
   //#endregion
 
   //#region Public properties
