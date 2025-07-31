@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    // border-block-start: rem(1px) solid var-get($theme, 'chat-input-border');
+    border-block-start: rem(1px) solid color(gray, 300);
+}
