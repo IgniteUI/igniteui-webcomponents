@@ -187,16 +187,6 @@ describe('Chat', () => {
 
       expect(chat).shadowDom.to.equal(
         ` <div part="chat-container">
-                    <div part="header" part="header">
-                        <div part="info">
-                            <slot name="prefix" part="prefix">
-                            </slot>
-                            <slot name="title" part="title">
-                            </slot>
-                        </div>
-                        <slot part="actions" name="actions">
-                        </slot>
-                    </div>
                     <div part="empty-state">
                       <slot name="empty-state">
                       </slot>
@@ -401,13 +391,11 @@ describe('Chat', () => {
 
       expect(headerArea).dom.to.equal(
         `<div part="header" part="header"> 
-                    <div part="info">
-                        <slot name="prefix" part="prefix">
-                        </slot>
-                        <slot name="title" part="title">
-                            Chat
-                        </slot>
-                    </div>
+                      <slot name="prefix" part="prefix">
+                      </slot>
+                      <slot name="title" part="title">
+                          Chat
+                      </slot>
                     <slot part="actions" name="actions">
                     </slot>
                 </div>`

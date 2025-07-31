@@ -322,6 +322,18 @@ export class ChatState {
     const [fileBaseType] = fileType.split('/');
     return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
   }
+
+  /**
+   * Checks if a slot is empty.
+   * @param name Slot name to check
+   * @returns True if the slot has content, false otherwise
+   */
+  public hasSlotContent(name: string): boolean {
+    return (
+      this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
+        ?.childNodes.length !== 0
+    );
+  }
   //#endregion
 }
 
