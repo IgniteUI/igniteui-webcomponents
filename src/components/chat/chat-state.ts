@@ -1,11 +1,12 @@
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
+import { PlainTextRenderer } from './plain-text-renderer.js';
 import type {
+  ChatMessageRenderer,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
-  IgcRendererConfig,
 } from './types.js';
 
 /**
@@ -36,7 +37,6 @@ export class ChatState {
     mimeTypes: Set<string>;
     wildcardTypes: Set<string>;
   } | null = null;
-  private _rendererConfig: IgcRendererConfig | undefined;
   //#endregion
 
   //#region Public properties
@@ -89,6 +89,14 @@ export class ChatState {
   }
 
   /**
+   * Gets the current message renderer based on options.
+   * Defaults to PlainTextRenderer if no custom renderer is set.
+   */
+  public get messageRenderer(): ChatMessageRenderer {
+    return this._options?.messageRenderer ?? new PlainTextRenderer();
+  }
+
+  /**
    * Gets the text area component.
    */
   public get textArea(): IgcTextareaComponent | null {
@@ -129,15 +137,6 @@ export class ChatState {
    */
   public set inputValue(value: string) {
     this._inputValue = value;
-    this._host.requestUpdate();
-  }
-
-  public get rendererConfig(): IgcRendererConfig | undefined {
-    return this._rendererConfig;
-  }
-
-  public set rendererConfig(value: IgcRendererConfig) {
-    this._rendererConfig = value;
     this._host.requestUpdate();
   }
   //#endregion
@@ -333,33 +332,10 @@ export class ChatState {
     return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
   }
 
-  public updateRendererConfig(config?: IgcRendererConfig): void {
-    if (!config || config.type === 'plain') {
-      this.rendererConfig = { type: 'plain' };
-      return;
+  public initRenderer(): void {
+    if (this.options && !this._options?.messageRenderer) {
+      this._options!.messageRenderer = new PlainTextRenderer();
     }
-
-    if (config.type === 'custom' && config.renderFn) {
-      this.rendererConfig = {
-        type: 'custom',
-        renderFn: config.renderFn,
-      };
-      return;
-    }
-
-    if (
-      config.type === 'markdown' &&
-      !config.markdown?.disableDefaultHighlighter
-    ) {
-      // const { registerHlLanguages, configureDefaultHighlighter } = await import(
-      //   './markdown-util.js'
-      // );
-      // registerHlLanguages(config.markdown?.languages || {});
-      // configureDefaultHighlighter();
-    }
-
-    this.rendererConfig = config;
-    return;
   }
   //#endregion
 }
