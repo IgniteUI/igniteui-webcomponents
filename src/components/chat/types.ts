@@ -1,7 +1,5 @@
 import type { TemplateResult } from 'lit';
 
-// export type IgcMessageAttachmentType = 'image' | 'file';
-
 /**
  * Represents a single chat message in the conversation.
  */
@@ -76,11 +74,11 @@ export interface IgcMessageAttachment {
  * (e.g. rendering thumbnails, file icons, or download links).
  *
  * @param {IgcMessageAttachment[]} attachments - The list of attachments to render.
- * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered attachments.
+ * @returns {unknown} A custom rendered representation of the attachments.
  */
 export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
-) => TemplateResult;
+) => unknown;
 
 /**
  * A function type used to render a single chat message.
@@ -89,9 +87,9 @@ export type AttachmentTemplate = (
  * including its text, sender info, timestamp, and any attachments.
  *
  * @param {IgcMessage} message - The chat message to render.
- * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered message.
+ * @returns {unknown} A custom rendered representation of the message.
  */
-export type MessageTemplate = (message: IgcMessage) => TemplateResult;
+export type MessageTemplate = (message: IgcMessage) => unknown;
 
 // export type MarkdownRenderer = (text: string) => TemplateResult;
 
@@ -103,6 +101,16 @@ export type IgcChatOptions = {
    * The ID of the current user. Used to differentiate between incoming and outgoing messages.
    */
   currentUserId?: string;
+  /**
+   * Whether to hide message timestamps.
+   * Defaults to `false`.
+   */
+  hideTimestamp?: boolean;
+  /**
+   * Whether to hide sender usernames in the message list.
+   * Defaults to `false`.
+   */
+  hideUserName?: boolean;
   /**
    * If `true`, prevents the chat from automatically scrolling to the latest message.
    */
@@ -181,21 +189,21 @@ export type IgcChatTemplates = {
   /**
    * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
    */
-  composingIndicatorTemplate?: TemplateResult;
+  composingIndicatorTemplate?: unknown;
 
   /**
    * Template for customizing the text input element (usually a `<textarea>` or `<input>`).
    *
    * @param text - The current value of the text input.
-   * @returns A Lit `TemplateResult` representing the rendered input.
+   * @returns {unknown} A custom rendered representation of the text input.
    */
-  textInputTemplate?: (text: string) => TemplateResult;
+  textInputTemplate?: (text: string) => unknown;
 
   /**
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: TemplateResult;
+  textAreaActionsTemplate?: unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).
