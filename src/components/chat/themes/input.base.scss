@@ -1,0 +1,59 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-block: rem(16px);
+    justify-content: center;
+}
+
+[part~='input-container'] {
+    display: flex;
+    flex-direction: column;
+    max-width: rem(760px);
+    width: 100%;
+    margin-inline: rem(16px);
+    gap: rem(8px);
+}
+
+[part='buttons-container'] {
+    display: flex;
+    align-items: center;
+}
+
+[part='send-button'] {
+    margin-inline-start: auto;
+}
+
+[part='attachments'] {
+    display: flex;
+    gap: rem(8px);
+}
+
+igc-textarea::part(input) {
+    // maximum eight lines
+    max-height: rem(216px);
+    overflow-y: auto;
+}
+
+igc-file-input {
+    width: fit-content;
+    margin-inline-end: auto;
+}
+
+igc-file-input::part(file-names),
+igc-file-input::part(start),
+igc-file-input::part(end) {
+    display: none;
+}
+
+igc-file-input::part(container) {
+    background: transparent;
+    border: none;
+
+    &::after {
+        display: none;
+    }
+}

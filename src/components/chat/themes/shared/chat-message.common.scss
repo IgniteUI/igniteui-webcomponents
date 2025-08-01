@@ -1,0 +1,19 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+// should be changed when the design is ready
+:host([part~='active']) {
+    &::part(message-container) {
+        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'message-color');
+    }
+}
+
+[part~='sent'] {
+    background: var-get($theme, 'message-background');
+}
+
+[part~='bubble'] {
+    color: var-get($theme, 'message-color');
+}

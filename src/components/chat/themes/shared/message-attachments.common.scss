@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+[part='attachment-header'] {
+    background: var-get($theme, 'image-background');
+    border: rem(1px) solid var-get($theme, 'image-border');
+    border-block-end: none;
+}
+
+[part='attachment-content'] {
+    border: rem(1px) solid var-get($theme, 'image-border');
+    border-block-start: none
+}
