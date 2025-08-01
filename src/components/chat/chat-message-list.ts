@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { chatContext } from '../common/context.js';
@@ -14,7 +14,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-list.base.css.js';
-import type { IgcMessage } from './types.js';
+import type { IgcChatDefaultTemplates, IgcMessage } from './types.js';
 
 /**
  * A chat message list component that displays a list of chat messages grouped by date.
@@ -216,6 +216,14 @@ export default class IgcChatMessageListComponent extends LitElement {
     this.scrollToMessage(activeMessageId);
   }
 
+  private get defaultComposingIndicatorTemplate(): TemplateResult {
+    return html`<div part="typing-indicator">
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+    </div>`;
+  }
+
   /**
    * Lifecycle: called when the component updates.
    * Scrolls to bottom unless auto-scroll is disabled.
@@ -231,8 +239,14 @@ export default class IgcChatMessageListComponent extends LitElement {
    * Scrolls to bottom unless auto-scroll is disabled.
    */
   protected override firstUpdated() {
-    if (!this._chatState?.options?.disableAutoScroll) {
-      this.scrollToBottom();
+    if (this._chatState) {
+      if (!this._chatState.options?.disableAutoScroll) {
+        this.scrollToBottom();
+      }
+      this._chatState.defaultTemplates = {
+        ...this._chatState?.defaultTemplates,
+        defaultComposingIndicator: this.defaultComposingIndicatorTemplate,
+      } as IgcChatDefaultTemplates;
     }
   }
 
@@ -243,11 +257,7 @@ export default class IgcChatMessageListComponent extends LitElement {
   protected *renderLoadingTemplate() {
     yield html`${this._chatState?.options?.templates?.composingIndicatorTemplate
       ? this._chatState.options.templates.composingIndicatorTemplate
-      : html`<div part="typing-indicator">
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-        </div>`}`;
+      : this.defaultComposingIndicatorTemplate}`;
   }
 
   /**

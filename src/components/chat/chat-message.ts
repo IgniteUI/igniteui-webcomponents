@@ -1,6 +1,6 @@
 import { consume } from '@lit/context';
 import DOMPurify from 'dompurify';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -10,7 +10,7 @@ import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { styles as shared } from './themes/shared/chat-message.common.css.js';
-import type { IgcMessage } from './types.js';
+import type { IgcChatDefaultTemplates, IgcMessage } from './types.js';
 
 /**
  * A chat message component for displaying individual messages in `<igc-chat>`.
@@ -42,6 +42,8 @@ export default class IgcChatMessageComponent extends LitElement {
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
 
+  private _defaultTemplateAssigned = false;
+
   /**
    * Registers this component and its dependencies.
    * This is used internally to set up the component definitions.
@@ -61,6 +63,21 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
+  private defaultMessageTemplate(message: IgcMessage): TemplateResult {
+    const sanitizedMessageText = this.sanitizeMessageText(
+      message?.text.trim() || ''
+    );
+    const renderer =
+      this._chatState?.options?.markdownRenderer || renderMarkdown;
+    return html` ${sanitizedMessageText
+      ? html`<div>${renderer(sanitizedMessageText)}</div>`
+      : nothing}
+    ${message.attachments && message.attachments.length > 0
+      ? html`<igc-message-attachments .attachments=${message.attachments}>
+        </igc-message-attachments>`
+      : nothing}`;
+  }
+
   /**
    * Sanitizes message text to prevent XSS or invalid HTML.
    * @param text The raw message text
@@ -72,6 +89,28 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   /**
+   * Ensures the default message template is assigned to chat state
+   * before rendering occurs.
+   */
+  private ensureDefaultTemplateAssigned() {
+    if (this._chatState && !this._defaultTemplateAssigned) {
+      this._chatState.defaultTemplates = {
+        ...this._chatState.defaultTemplates,
+        defaultMessage: this.defaultMessageTemplate.bind(this),
+      } as IgcChatDefaultTemplates;
+      this._defaultTemplateAssigned = true;
+    }
+  }
+
+  protected override willUpdate() {
+    this.ensureDefaultTemplateAssigned();
+  }
+
+  protected override firstUpdated() {
+    this.ensureDefaultTemplateAssigned();
+  }
+
+  /**
    * Renders the chat message template.
    * - Applies 'sent' CSS class if the message sender matches current user.
    * - Uses markdown rendering if configured.
@@ -79,36 +118,25 @@ export default class IgcChatMessageComponent extends LitElement {
    */
   protected override render() {
     const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
-    const sanitizedMessageText = this.sanitizeMessageText(
-      this.message?.text.trim() || ''
-    );
-    const renderer =
-      this._chatState?.options?.markdownRenderer || renderMarkdown;
 
-    return html`
-      <div part=${containerPart}>
-        <div part="bubble">
-          ${this._chatState?.options?.templates?.messageTemplate && this.message
-            ? this._chatState.options.templates.messageTemplate(this.message)
-            : html` ${sanitizedMessageText
-                ? html`<div>${renderer(sanitizedMessageText)}</div>`
+    return this.message
+      ? html`
+          <div part=${containerPart}>
+            <div part="bubble">
+              ${this._chatState?.options?.templates?.messageTemplate
+                ? this._chatState.options.templates.messageTemplate(
+                    this.message
+                  )
+                : this.defaultMessageTemplate(this.message)}
+              ${this._chatState?.options?.templates?.messageActionsTemplate
+                ? this._chatState.options.templates.messageActionsTemplate(
+                    this.message
+                  )
                 : nothing}
-              ${this.message?.attachments &&
-              this.message?.attachments.length > 0
-                ? html`<igc-message-attachments
-                    .attachments=${this.message?.attachments}
-                  >
-                  </igc-message-attachments>`
-                : nothing}`}
-          ${this._chatState?.options?.templates?.messageActionsTemplate &&
-          this.message
-            ? this._chatState.options.templates.messageActionsTemplate(
-                this.message
-              )
-            : nothing}
-        </div>
-      </div>
-    `;
+            </div>
+          </div>
+        `
+      : nothing;
   }
 }
 

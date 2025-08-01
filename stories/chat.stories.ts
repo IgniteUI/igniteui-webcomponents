@@ -27,7 +27,14 @@ defineComponents(IgcChatComponent);
 const metadata: Meta<IgcChatComponent> = {
   title: 'Chat',
   component: 'igc-chat',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A chat UI component for displaying messages, attachments, and input interaction.\n\nThis component is part of the Ignite UI Web Components suite.',
+      },
+    },
+  },
 };
 
 export default metadata;
@@ -602,19 +609,30 @@ export const Chat_Templates: Story = {
     if (chat) {
       const actionsTemplate = html`
         <div>
-          ${chat.defaultFileUploadButton}
+          ${chat.defaultTemplates?.defaultFileUploadButton}
           <div>
-            <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
+            ${chat.defaultTemplates?.defaultSendButton}
             <igc-button>...</igc-button>
           </div>
         </div>
       `;
+      const messageTemplate = (msg: any) => {
+        if (msg.sender === 'user') {
+          return html`<div>
+            <h3>${msg.sender}:</h3>
+            ${chat.defaultTemplates?.defaultMessage(msg)}
+          </div>`;
+        } else {
+          return chat.defaultTemplates?.defaultMessage(msg);
+        }
+      };
       options = {
         headerText: 'Chat',
         inputPlaceholder: 'Type your message here...',
-        suggestions: ['Hello', 'Hi', 'Generate an image!'],
+        //suggestions: ['Hello', 'Hi', 'Generate an image!'],
         templates: {
           messageActionsTemplate: _messageActionsTemplate,
+          messageTemplate: messageTemplate,
           textAreaActionsTemplate: actionsTemplate,
         },
       };

@@ -2,6 +2,7 @@ import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import type {
+  IgcChatDefaultTemplates,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
@@ -27,6 +28,8 @@ export class ChatState {
   private _inputAttachments: IgcMessageAttachment[] = [];
   /** Current input text */
   private _inputValue = '';
+  /** Default templates of the chat components */
+  private _defaultTemplates: IgcChatDefaultTemplates | undefined;
   /**
    * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
    */
@@ -130,6 +133,16 @@ export class ChatState {
     this._inputValue = value;
     this._host.requestUpdate();
   }
+
+  /** Returns all default templates applied in the chat component. */
+  public get defaultTemplates(): IgcChatDefaultTemplates | undefined {
+    return this._defaultTemplates;
+  }
+
+  /** Sets the default templates applied in the chat component. */
+  public set defaultTemplates(templates: IgcChatDefaultTemplates) {
+    this._defaultTemplates = { ...templates };
+  }
   //#endregion
 
   /**
@@ -163,6 +176,8 @@ export class ChatState {
   }
 
   //#endregion
+
+  //#region Default Templates renderers
 
   //#region Public API
 

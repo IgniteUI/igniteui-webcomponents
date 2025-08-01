@@ -12,7 +12,11 @@ import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
-import { attachmentIcon, sendButtonIcon } from './types.js';
+import {
+  attachmentIcon,
+  type IgcChatDefaultTemplates,
+  sendButtonIcon,
+} from './types.js';
 
 /**
  * A web component that provides the input area for the `igc-chat` interface.
@@ -86,7 +90,7 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('send-message', sendButtonIcon, 'material');
   }
 
-  public get defaultAttachmentsArea(): TemplateResult {
+  private get defaultAttachmentsArea(): TemplateResult {
     return html`${this._chatState?.inputAttachments?.map(
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
@@ -98,7 +102,7 @@ export default class IgcChatInputComponent extends LitElement {
     )} `;
   }
 
-  public get defaultTextArea(): TemplateResult {
+  private get defaultTextArea(): TemplateResult {
     return html` <igc-textarea
       part="text-input"
       .placeholder=${this.inputPlaceholder}
@@ -112,7 +116,7 @@ export default class IgcChatInputComponent extends LitElement {
     ></igc-textarea>`;
   }
 
-  public get defaultFileUploadButton(): TemplateResult {
+  private get defaultFileUploadButton(): TemplateResult {
     return html`
       <igc-file-input
         multiple
@@ -128,7 +132,7 @@ export default class IgcChatInputComponent extends LitElement {
     `;
   }
 
-  public get defaultSendButton(): TemplateResult {
+  private get defaultSendButton(): TemplateResult {
     return html` <igc-icon-button
       aria-label="Send message"
       name="send-message"
@@ -152,6 +156,13 @@ export default class IgcChatInputComponent extends LitElement {
     if (this._chatState) {
       this._chatState.updateAcceptedTypesCache();
       this._chatState.textArea = this.textInputElement;
+      this._chatState.defaultTemplates = {
+        ...this._chatState.defaultTemplates,
+        defaultAttachmentsArea: this.defaultAttachmentsArea,
+        defaultTextArea: this.defaultTextArea,
+        defaultFileUploadButton: this.defaultFileUploadButton,
+        defaultSendButton: this.defaultSendButton,
+      } as IgcChatDefaultTemplates;
     }
   }
 

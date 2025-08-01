@@ -60,12 +60,6 @@ describe('Chat', () => {
     })}`;
   };
 
-  const attachmentActionsTemplate = (attachments: any[]) => {
-    return html`${attachments.map(() => {
-      return html`<igc-button>?</igc-button>`;
-    })}`;
-  };
-
   const attachmentContentTemplate = (attachments: any[]) => {
     return html`${attachments.map((attachment) => {
       return html`<p>
@@ -809,7 +803,6 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           attachmentHeaderTemplate: attachmentHeaderTemplate,
-          attachmentActionsTemplate: attachmentActionsTemplate,
           attachmentContentTemplate: attachmentContentTemplate,
         },
       };
