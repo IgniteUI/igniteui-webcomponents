@@ -22,9 +22,21 @@ $background: var-get($theme, 'background') !default;
     box-shadow: var-get($theme, 'elevation');
 }
 
-[part~='base'],
-[part~='mini'] {
+:host([position='start']) [part~='base'],
+:host([position='start']) [part~='mini'] {
     border-inline-end-color: var-get($theme, 'border-color');
+}
+
+:host([position='end']) [part~='base'],
+:host([position='end']) [part~='mini'] {
+    border-inline-start-color: var-get($theme, 'border-color');
+}
+
+:host([position='relative']) {
+    [part~='base'],
+    [part~='mini'] {
+        border-inline-end-color: var-get($theme, 'border-color');
+    }
 }
 
 :host([open]:not([position='relative'])) {
