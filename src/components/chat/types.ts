@@ -66,6 +66,10 @@ export interface IgcMessageAttachment {
    */
   thumbnail?: string;
 }
+export interface ICodeHighlighter {
+  languages: string[];
+  themes: string[];
+}
 
 /**
  * A function type used to render a group of attachments in a chat message.
@@ -146,6 +150,8 @@ export type IgcChatOptions = {
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
   templates?: IgcChatTemplates;
+  supportsMarkdown: boolean;
+  highlighter?: ICodeHighlighter;
   markdownRenderer?: (text: string) => TemplateResult; //TODO: Remove when highlighter is implemented
 };
 

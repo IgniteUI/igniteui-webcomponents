@@ -1,12 +1,11 @@
 import { consume } from '@lit/context';
-import DOMPurify from 'dompurify';
-import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { ChatState } from './chat-state.js';
-import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { styles as shared } from './themes/shared/chat-message.common.css.js';
@@ -61,14 +60,25 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
-  /**
-   * Sanitizes message text to prevent XSS or invalid HTML.
-   * @param text The raw message text
-   * @returns Sanitized text safe for HTML rendering
-   * @private
-   */
-  private sanitizeMessageText(text: string): string {
-    return DOMPurify.sanitize(text);
+  @state()
+  private _renderedMarkdown: TemplateResult | null = null;
+
+  @watch('message')
+  async processMarkdown() {
+    const text = this.message?.text.trim() || '';
+
+    if (this._chatState?.options?.supportsMarkdown !== true) {
+      this._renderedMarkdown = html`${text}`;
+      return;
+    }
+
+    const renderer = this._chatState?.options?.markdownRenderer;
+    if (renderer) {
+      this._renderedMarkdown = renderer(text);
+    } else {
+      const { renderMarkdown } = await import('./markdown-util.js');
+      this._renderedMarkdown = await renderMarkdown(text);
+    }
   }
 
   /**
@@ -79,19 +89,14 @@ export default class IgcChatMessageComponent extends LitElement {
    */
   protected override render() {
     const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
-    const sanitizedMessageText = this.sanitizeMessageText(
-      this.message?.text.trim() || ''
-    );
-    const renderer =
-      this._chatState?.options?.markdownRenderer || renderMarkdown;
 
     return html`
       <div part=${containerPart}>
         <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
-            : html` ${sanitizedMessageText
-                ? html`<div>${renderer(sanitizedMessageText)}</div>`
+            : html` ${this._renderedMarkdown
+                ? html`<div>${this._renderedMarkdown}</div>`
                 : nothing}
               ${this.message?.attachments &&
               this.message?.attachments.length > 0
