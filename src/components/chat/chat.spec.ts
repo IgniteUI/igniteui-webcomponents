@@ -189,16 +189,6 @@ describe('Chat', () => {
 
       expect(chat).shadowDom.to.equal(
         ` <div part="chat-container">
-                    <div part="header" part="header">
-                        <div part="info">
-                            <slot name="prefix" part="prefix">
-                            </slot>
-                            <slot name="title" part="title">
-                            </slot>
-                        </div>
-                        <slot part="actions" name="actions">
-                        </slot>
-                    </div>
                     <div part="empty-state">
                       <slot name="empty-state">
                       </slot>
@@ -402,14 +392,12 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div part="header" part="header">
-                    <div part="info">
-                        <slot name="prefix" part="prefix">
-                        </slot>
-                        <slot name="title" part="title">
-                            Chat
-                        </slot>
-                    </div>
+        `<div part="header" part="header"> 
+                      <slot name="prefix" part="prefix">
+                      </slot>
+                      <slot name="title" part="title">
+                          Chat
+                      </slot>
                     <slot part="actions" name="actions">
                     </slot>
                 </div>`
@@ -654,65 +642,55 @@ describe('Chat', () => {
         if (index === 0) {
           expect(attachments).shadowDom.to.equal(
             `<div part="attachments-container">
-                            <igc-expansion-panel indicator-position="none" open="">
-                                <div part="attachment" slot="title">
-                                <div part="details">
-                                    <slot name="attachment-icon">
-                                    <igc-icon
-                                        part="attachment-icon"
-                                        collection="material"
-                                        name="image"
-                                    >
-                                    </igc-icon>
-                                    </slot>
-                                    <slot name="attachment-name">
-                                    <span part="file-name">
-                                        img1.png
-                                    </span>
-                                    </slot>
-                                </div>
-                                <div part="actions">
-                                </div>
-                                </div>
-                                <slot name="attachment-content">
-                                <img
-                                    alt="img1.png"
-                                    part="image-attachment"
-                                    src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
-                                >
-                                </slot>
-                            </igc-expansion-panel>
-                            </div>`
+                <div part="attachment">
+                  <div part="attachment-header" role="button">
+                      <div part="details">                          
+                          <igc-icon
+                              part="attachment-icon"
+                              collection="material"
+                              name="image"
+                          >
+                          </igc-icon>
+                          <span part="file-name">
+                              img1.png
+                          </span>
+                      </div>
+                      <div part="actions">
+                      </div>
+                  </div>
+                  <div part="attachment-content">
+                    <img
+                        alt="img1.png"
+                        part="image-attachment"
+                        src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
+                    >
+                  </div>
+                </div>
+              </div>`
           );
         }
         // Check if non-image attachments are rendered correctly
         if (index === 1) {
           expect(attachments).shadowDom.to.equal(
             `<div part="attachments-container">
-                            <igc-expansion-panel indicator-position="none">
-                                <div part="attachment" slot="title">
-                                <div part="details">
-                                    <slot name="attachment-icon">
-                                    <igc-icon
-                                        part="attachment-icon"
-                                        collection="material"
-                                        name="file"
-                                    >
-                                    </igc-icon>
-                                    </slot>
-                                    <slot name="attachment-name">
-                                    <span part="file-name">
-                                        img2.png
-                                    </span>
-                                    </slot>
-                                </div>
-                                <div part="actions">
-                                </div>
-                                </div>
-                                <slot name="attachment-content">
-                                </slot>
-                            </igc-expansion-panel>
-                        </div>`
+                <div part="attachment">
+                  <div part="attachment-header" role="button">
+                      <div part="details">                          
+                          <igc-icon
+                            part="attachment-icon"
+                            collection="material"
+                            name="file"
+                          >
+                          </igc-icon>
+                          <span part="file-name">
+                              img2.png
+                          </span>
+                      </div>
+                      <div part="actions">
+                      </div>
+                  </div>
+                </div>
+              </div>`
           );
         }
       });
@@ -1395,8 +1373,8 @@ describe('Chat', () => {
 
       const attachmentHeader = messageElement?.shadowRoot
         ?.querySelector('igc-message-attachments')
-        ?.shadowRoot?.querySelector('igc-expansion-panel')
-        ?.shadowRoot?.querySelector(`div[part='header']`) as HTMLElement;
+        ?.shadowRoot?.querySelector(`div[part='attachment']`)
+        ?.querySelector(`div[part='attachment-header']`) as HTMLElement;
 
       simulateClick(attachmentHeader);
       expect(eventSpy).calledWith('igcAttachmentClick', {

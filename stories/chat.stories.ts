@@ -46,8 +46,8 @@ const regenerateIcon =
 registerIconFromText('thumb_up', thumbUpIcon, 'material');
 registerIconFromText('thumb_down', thumbDownIcon, 'material');
 registerIconFromText('regenerate', regenerateIcon, 'material');
-
-let messages: any[] = [
+let messages: any[] = [];
+const initialMessages: any[] = [
   {
     id: '1',
     text: 'Hello! How can I help you today?',
@@ -63,7 +63,7 @@ let messages: any[] = [
       {
         id: 'img1',
         name: 'img1.png',
-        url: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+        url: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg',
         type: 'image',
       },
     ],
@@ -80,7 +80,7 @@ const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
       ? html`
-          <div style="float: right">
+          <div>
             <igc-icon-button
               name="thumb_up"
               collection="material"
@@ -175,6 +175,7 @@ function handleMessageSend(e: CustomEvent) {
   if (!chat) {
     return;
   }
+  chat.options = { ...chat.options, suggestions: [] };
 
   const attachments: IgcMessageAttachment[] =
     newMessage.text.includes('picture') ||
@@ -558,14 +559,17 @@ async function handleAIMessageSend(e: CustomEvent) {
 }
 
 export const Basic: Story = {
-  render: () => html`
-    <igc-chat
-      .messages=${messages}
-      .options=${chat_options}
-      @igcMessageCreated=${handleMessageSend}
-    >
-    </igc-chat>
-  `,
+  render: () => {
+    messages = initialMessages;
+    return html`
+      <igc-chat
+        .messages=${messages}
+        .options=${chat_options}
+        @igcMessageCreated=${handleMessageSend}
+      >
+      </igc-chat>
+    `;
+  },
 };
 
 export const Supabase: Story = {
@@ -592,4 +596,40 @@ export const AI: Story = {
     >
     </igc-chat>
   `,
+};
+
+let options: any;
+export const Chat_Templates: Story = {
+  play: async () => {
+    const chat = document.querySelector('igc-chat');
+    if (chat) {
+      const actionsTemplate = html`
+        ${chat.defaultFileUploadButton}
+        <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
+        <igc-button variant="flat">...</igc-button>
+      `;
+      options = {
+        headerText: 'Chat',
+        inputPlaceholder: 'Type your message here...',
+        suggestions: ['Hello', 'Hi', 'Generate an image!'],
+        templates: {
+          messageActionsTemplate: _messageActionsTemplate,
+          textAreaActionsTemplate: actionsTemplate,
+        },
+      };
+      chat.options = { ...options };
+    }
+  },
+  render: () => {
+    messages = [];
+    return html`
+      <igc-chat
+        .messages=${messages}
+        .options=${options}
+        @igcMessageCreated=${handleMessageSend}
+      >
+        <div slot="suggestions-header">Suggestions</div>
+      </igc-chat>
+    `;
+  },
 };

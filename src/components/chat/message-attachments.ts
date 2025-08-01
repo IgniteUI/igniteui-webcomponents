@@ -27,12 +27,10 @@ import {
  *
  * @element igc-message-attachments
  *
- * @slot attachment-icon - Slot to override the attachment icon (image or file).
- * @slot attachment-name - Slot to override the displayed attachment name.
- * @slot attachment-content - Slot to override the content shown inside the attachment panel.
- *
  * @csspart attachments-container - Container wrapping all attachments.
- * @csspart attachment - Wrapper for a single attachment header.
+ * @csspart attachment - Wrapper for a single attachment.
+ * @csspart attachment-header - Wrapper for a single attachment header.
+ * @csspart attachments-content - Part representing the attachment preview.
  * @csspart attachment-icon - Icon part representing the attachment type.
  * @csspart file-name - Part representing the attachment's file name.
  * @csspart actions - Container for header action buttons.
@@ -79,9 +77,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  private handleToggle(e: CustomEvent, attachment: IgcMessageAttachment) {
+  private handleHeaderClick(attachment: IgcMessageAttachment) {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
-    e.preventDefault();
   }
 
   private getURL(attachment: IgcMessageAttachment): string {
@@ -94,31 +91,36 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return '';
   }
 
+  private defaulAttachmentContent(attachment: IgcMessageAttachment) {
+    return html`${attachment.type === 'image' ||
+    attachment.file?.type.startsWith('image/')
+      ? html`<img
+          part="image-attachment"
+          src=${this.getURL(attachment)}
+          alt=${attachment.name}
+        />`
+      : nothing}`;
+  }
+
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
     return html`<div part="details">
       ${this._chatState?.options?.templates?.attachmentHeaderTemplate
         ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.attachments
           )
-        : html`
-            <slot name="attachment-icon">
-              ${attachment.type === 'image' ||
-              attachment.file?.type.startsWith('image/')
-                ? html`<igc-icon
-                    name="image"
-                    collection="material"
-                    part="attachment-icon"
-                  ></igc-icon>`
-                : html`<igc-icon
-                    name="file"
-                    collection="material"
-                    part="attachment-icon"
-                  ></igc-icon>`}
-            </slot>
-            <slot name="attachment-name">
-              <span part="file-name">${attachment.name}</span>
-            </slot>
-          `}
+        : html`${attachment.type === 'image' ||
+            attachment.file?.type.startsWith('image/')
+              ? html`<igc-icon
+                  name="image"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`
+              : html`<igc-icon
+                  name="file"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`}
+            <span part="file-name">${attachment.name}</span> `}
     </div>`;
   }
 
@@ -133,43 +135,34 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentContent(attachment: IgcMessageAttachment) {
-    return html` ${this._chatState?.options?.templates
-      ?.attachmentContentTemplate
-      ? this._chatState.options.templates.attachmentContentTemplate(
-          this.attachments
-        )
-      : html`
-          <slot name="attachment-content">
-            ${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html` <img
-                  part="image-attachment"
-                  src=${this.getURL(attachment)}
-                  alt=${attachment.name}
-                />`
-              : nothing}
-          </slot>
-        `}`;
+    return html`<div part="attachment-content">
+      ${this._chatState?.options?.templates?.attachmentContentTemplate
+        ? this._chatState.options.templates.attachmentContentTemplate(
+            this.attachments
+          )
+        : this.defaulAttachmentContent(attachment)}
+    </div>`;
   }
 
   private renderDefaultAttachmentsTemplate() {
     return html`${this.attachments.map(
       (attachment) =>
-        html`<igc-expansion-panel
-          indicator-position="none"
-          .open=${attachment.type === 'image' ||
-          attachment.file?.type.startsWith('image/') ||
-          this._chatState?.options?.templates?.attachmentContentTemplate}
-          @igcClosing=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
-          @igcOpening=${(ev: CustomEvent) => this.handleToggle(ev, attachment)}
-        >
-          <div slot="title" part="attachment">
+        html`<div part="attachment">
+          <div
+            part="attachment-header"
+            role="button"
+            @click=${() => this.handleHeaderClick(attachment)}
+          >
             ${this.renderAttachmentHeaderText(attachment)}
             ${this.renderAttachmentHeaderActions()}
           </div>
 
-          ${this.renderAttachmentContent(attachment)}
-        </igc-expansion-panel>`
+          ${attachment.type === 'image' ||
+          attachment.file?.type.startsWith('image/') ||
+          this._chatState?.options?.templates?.attachmentContentTemplate
+            ? this.renderAttachmentContent(attachment)
+            : nothing}
+        </div>`
     )}`;
   }
 
