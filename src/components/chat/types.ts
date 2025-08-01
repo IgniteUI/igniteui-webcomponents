@@ -102,16 +102,6 @@ export type IgcChatOptions = {
    */
   currentUserId?: string;
   /**
-   * Whether to hide message timestamps.
-   * Defaults to `false`.
-   */
-  hideTimestamp?: boolean;
-  /**
-   * Whether to hide sender usernames in the message list.
-   * Defaults to `false`.
-   */
-  hideUserName?: boolean;
-  /**
    * If `true`, prevents the chat from automatically scrolling to the latest message.
    */
   disableAutoScroll?: boolean;
