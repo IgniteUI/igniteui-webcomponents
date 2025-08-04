@@ -117,21 +117,98 @@ const handleToggle = () => {
   drawer?.toggle();
 };
 
-const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
-  return html`
-    <style>
-      .main {
-        display: flex;
-        margin: -1rem;
-        height: 100vh;
-        overflow: hidden;
-      }
+const commonStyles = html`
+  <style>
+    .main {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      margin: -16px;
+    }
 
-      .content {
-        padding-inline-start: 20px;
-        font-family: var(--ig-font-family);
+    .content {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      grid-template-columns: auto;
+      gap: 8px;
+      height: fit-content;
+      align-items: center;
+      justify-self: center;
+      padding: 16px;
+
+      p {
+        grid-column: 1 / -1;
       }
-    </style>
+    }
+
+    .relative {
+      grid-template-columns: auto auto auto;
+      text-align: left;
+      justify-self: start;
+    }
+  </style>
+`;
+
+const createDrawerContent = (headerText: string, itemCount = 15) => html`
+  <igc-nav-drawer-header-item>${headerText}</igc-nav-drawer-header-item>
+
+  ${Array.from(range(itemCount)).map(
+    (i) => html`
+      <igc-nav-drawer-item>
+        <igc-icon slot="icon" name="home"></igc-icon>
+        <span slot="content">Navbar item ${i + 1}</span>
+      </igc-nav-drawer-item>
+    `
+  )}
+
+  <igc-nav-drawer-item disabled>
+    <igc-icon slot="icon" name="home"></igc-icon>
+    <span slot="content">Disabled item</span>
+  </igc-nav-drawer-item>
+`;
+
+// Create a function for mini slot content
+const createMiniContent = () => html`
+  <div slot="mini">
+    <igc-nav-drawer-item>
+      <igc-icon slot="icon" name="search"></igc-icon>
+    </igc-nav-drawer-item>
+
+    <igc-nav-drawer-item>
+      <igc-icon slot="icon" name="home"></igc-icon>
+    </igc-nav-drawer-item>
+
+    <igc-nav-drawer-item disabled>
+      <igc-icon slot="icon" name="home"></igc-icon>
+    </igc-nav-drawer-item>
+  </div>
+`;
+
+// Create a function for control buttons
+const createControlButtons = (position: string) => html`
+  ${position === 'relative'
+    ? html`
+        <igc-button @click="${handleToggle}">Toggle</igc-button>
+        <igc-button variant="outlined" @click="${handleClose}"
+          >Close</igc-button
+        >
+      `
+    : ''}
+
+  <igc-button variant="outlined" @click="${handleOpen}">Open</igc-button>
+`;
+
+// Main template function
+const createTemplate = (options: {
+  headerText?: string;
+  itemCount?: number;
+  includeMini?: boolean;
+  contentText?: string;
+}) => {
+  return ({ open = false, position }: IgcNavDrawerArgs) => html`
+    ${commonStyles}
 
     <div class="ig-scrollbar main">
       <igc-nav-drawer
@@ -139,41 +216,40 @@ const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
         .position=${position}
         @click="${handleClick}"
       >
-        <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
-
-        ${Array.from(range(15)).map(
-          (i) => html`
-            <igc-nav-drawer-item>
-              <igc-icon slot="icon" name="home"></igc-icon>
-              <span slot="content">Navbar item ${i + 1}</span>
-            </igc-nav-drawer-item>
-          `
+        ${createDrawerContent(
+          options.headerText || 'Sample Drawer',
+          options.itemCount
         )}
-
-        <igc-nav-drawer-item disabled>
-          <igc-icon slot="icon" name="home"></igc-icon>
-          <span slot="content">Disabled item</span>
-        </igc-nav-drawer-item>
-
-        <div slot="mini">
-          <igc-nav-drawer-item>
-            <igc-icon slot="icon" name="home"></igc-icon>
-          </igc-nav-drawer-item>
-
-          <igc-nav-drawer-item>
-            <igc-icon slot="icon" name="search"></igc-icon>
-          </igc-nav-drawer-item>
-        </div>
+        ${options.includeMini ? createMiniContent() : ''}
       </igc-nav-drawer>
 
-      <section class="content">
-        <p>Sample page content</p>
-        <igc-button @click="${handleOpen}">Open</igc-button>
-        <igc-button @click="${handleClose}">Close</igc-button>
-        <igc-button @click="${handleToggle}">Toggle</igc-button>
+      <section class="content ${position === 'relative' ? 'relative' : ''}">
+        <p>${options.contentText}</p>
+        ${createControlButtons(position)}
       </section>
     </div>
   `;
 };
 
-export const Basic: Story = Template.bind({});
+// Now create your stories using the template factory
+export const Basic: Story = {
+  render: createTemplate({
+    headerText: 'Drawer header',
+    itemCount: 15,
+    includeMini: false,
+    contentText: 'Basic drawer example',
+  }),
+};
+
+export const MiniVariant: Story = {
+  render: createTemplate({
+    headerText: 'Drawer header',
+    itemCount: 5,
+    includeMini: true,
+    contentText: 'Mini drawer example ',
+  }),
+  args: {
+    position: 'start',
+    open: false,
+  },
+};
