@@ -416,50 +416,6 @@ describe('Chat', () => {
       expect(textArea?.placeholder).to.equal('Type message here...');
     });
 
-    it('should not render suggestions if not provided', () => {
-      const suggestionsContainer = chat.shadowRoot?.querySelector(
-        'div[part="suggestions-container"]'
-      );
-      expect(suggestionsContainer).to.be.null;
-    });
-
-    it('should render suggestions below messages by default', async () => {
-      chat.options = {
-        suggestions: ['Suggestion 1', 'Suggestion 2'],
-      };
-      await elementUpdated(chat);
-
-      const suggestionsContainer = chat.shadowRoot?.querySelector(
-        'div[ part="suggestions-container"]'
-      );
-
-      expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
-        'empty-state'
-      );
-      expect(suggestionsContainer).dom.to.equal(
-        `<div aria-label="Suggestions" part="suggestions-container" role="list">
-          <slot name="suggestions-header" part="suggestions-header"> </slot>
-          <slot name="suggestions" part="suggestions">
-              <slot name="suggestion" part="suggestion" role="listitem">
-                  <igc-chip>
-                      <span>
-                      Suggestion 1
-                      </span>
-                  </igc-chip>
-              </slot>
-              <slot name="suggestion" part="suggestion" role="listitem">
-                  <igc-chip>
-                      <span>
-                      Suggestion 2
-                      </span>
-                  </igc-chip>
-              </slot>
-          </slot>
-          <slot name="suggestions-actions" part="suggestions-actions"> </slot>
-      </div>`
-      );
-    });
-
     it('should enable/disable the send button properly', async () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const sendButton =
@@ -738,7 +694,7 @@ describe('Chat', () => {
       );
     });
 
-    it('should render suggestions below messages by default', async () => {
+    it('should render suggestions below empty state by default', async () => {
       chat.options = {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
       };
