@@ -90,16 +90,13 @@ export default class IgcChatMessageComponent extends LitElement {
         <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
-            : html` ${sanitizedMessageText
+            : html`${sanitizedMessageText
                 ? html`<div>${renderer(sanitizedMessageText)}</div>`
-                : nothing}
-              ${this.message?.attachments &&
-              this.message?.attachments.length > 0
-                ? html`<igc-message-attachments
-                    .attachments=${this.message?.attachments}
-                  >
-                  </igc-message-attachments>`
                 : nothing}`}
+          ${this.message?.attachments && this.message?.attachments.length > 0
+            ? html`<igc-message-attachments .message=${this.message}>
+              </igc-message-attachments>`
+            : nothing}
           ${this._chatState?.options?.templates?.messageActionsTemplate &&
           this.message
             ? this._chatState.options.templates.messageActionsTemplate(

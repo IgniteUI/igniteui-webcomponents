@@ -13,6 +13,7 @@ import { styles as shared } from './themes/shared/message-attachments.common.css
 import {
   closeIcon,
   fileIcon,
+  type IgcMessage,
   type IgcMessageAttachment,
   imageIcon,
   moreIcon,
@@ -60,13 +61,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * The array of attachments to render.
    */
   @property({ attribute: false })
-  attachments: IgcMessageAttachment[] = [];
-
-  /**
-   * The preview image URL for the attachments.
-   */
-  @property({ attribute: false })
-  previewImage = '';
+  message: IgcMessage | undefined;
 
   constructor() {
     super();
@@ -104,9 +99,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
     return html`<div part="details">
-      ${this._chatState?.options?.templates?.attachmentHeaderTemplate
+      ${this._chatState?.options?.templates?.attachmentHeaderTemplate &&
+      this.message
         ? this._chatState.options.templates.attachmentHeaderTemplate(
-            this.attachments
+            this.message
           )
         : html`${attachment.type === 'image' ||
             attachment.file?.type.startsWith('image/')
@@ -126,9 +122,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private renderAttachmentHeaderActions() {
     return html`<div part="actions">
-      ${this._chatState?.options?.templates?.attachmentActionsTemplate
+      ${this._chatState?.options?.templates?.attachmentActionsTemplate &&
+      this.message
         ? this._chatState.options.templates.attachmentActionsTemplate(
-            this.attachments
+            this.message
           )
         : nothing}
     </div>`;
@@ -136,16 +133,17 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private renderAttachmentContent(attachment: IgcMessageAttachment) {
     return html`<div part="attachment-content">
-      ${this._chatState?.options?.templates?.attachmentContentTemplate
+      ${this._chatState?.options?.templates?.attachmentContentTemplate &&
+      this.message
         ? this._chatState.options.templates.attachmentContentTemplate(
-            this.attachments
+            this.message
           )
         : this.defaulAttachmentContent(attachment)}
     </div>`;
   }
 
   private renderDefaultAttachmentsTemplate() {
-    return html`${this.attachments.map(
+    return html`${this.message?.attachments?.map(
       (attachment) =>
         html`<div part="attachment">
           <div
@@ -169,10 +167,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   protected override render() {
     return html`
       <div part="attachments-container">
-        ${this._chatState?.options?.templates?.attachmentTemplate
-          ? this._chatState.options.templates.attachmentTemplate(
-              this.attachments
-            )
+        ${this._chatState?.options?.templates?.attachmentTemplate &&
+        this.message
+          ? this._chatState.options.templates.attachmentTemplate(this.message)
           : this.renderDefaultAttachmentsTemplate()}
       </div>
     `;
