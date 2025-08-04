@@ -71,10 +71,6 @@ export default class IgcChatMessageComponent extends LitElement {
       this._chatState?.options?.markdownRenderer || renderMarkdown;
     return html` ${sanitizedMessageText
       ? html`<div>${renderer(sanitizedMessageText)}</div>`
-      : nothing}
-    ${message.attachments && message.attachments.length > 0
-      ? html`<igc-message-attachments .attachments=${message.attachments}>
-        </igc-message-attachments>`
       : nothing}`;
   }
 
@@ -128,6 +124,11 @@ export default class IgcChatMessageComponent extends LitElement {
                     this.message
                   )
                 : this.defaultMessageTemplate(this.message)}
+              ${this.message?.attachments &&
+              this.message?.attachments.length > 0
+                ? html`<igc-message-attachments .message=${this.message}>
+                  </igc-message-attachments>`
+                : nothing}
               ${this._chatState?.options?.templates?.messageActionsTemplate
                 ? this._chatState.options.templates.messageActionsTemplate(
                     this.message

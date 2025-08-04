@@ -14,6 +14,7 @@ import {
   closeIcon,
   fileIcon,
   type IgcChatDefaultTemplates,
+  type IgcMessage,
   type IgcMessageAttachment,
   imageIcon,
   moreIcon,
@@ -63,7 +64,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * The array of attachments to render.
    */
   @property({ attribute: false })
-  attachments: IgcMessageAttachment[] = [];
+  message: IgcMessage | undefined;
 
   constructor() {
     super();
@@ -88,17 +89,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return '';
   }
 
-  private defaultAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`${attachment.type === 'image' ||
-    attachment.file?.type.startsWith('image/')
-      ? html`<img
-          part="image-attachment"
-          src=${this.getURL(attachment)}
-          alt=${attachment.name}
-        />`
-      : nothing}`;
-  }
-
   private defaultAttachmentHeader(attachment: IgcMessageAttachment) {
     return html`${attachment.type === 'image' ||
       attachment.file?.type.startsWith('image/')
@@ -115,26 +105,41 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       <span part="file-name">${attachment.name}</span> `;
   }
 
+  private defaultAttachmentContent(attachment: IgcMessageAttachment) {
+    return html`${attachment.type === 'image' ||
+    attachment.file?.type.startsWith('image/')
+      ? html`<img
+          part="image-attachment"
+          src=${this.getURL(attachment)}
+          alt=${attachment.name}
+        />`
+      : nothing}`;
+  }
+
   private renderAttachmentHeader(attachment: IgcMessageAttachment) {
-    return html` ${this._chatState?.options?.templates?.attachmentHeaderTemplate
-      ? this._chatState.options.templates.attachmentHeaderTemplate(
-          this.attachments
-        )
-      : this.defaultAttachmentHeader(attachment)}`;
+    return html`<div part="details">
+      ${this._chatState?.options?.templates?.attachmentHeaderTemplate &&
+      this.message
+        ? this._chatState.options.templates.attachmentHeaderTemplate(
+            this.message
+          )
+        : this.defaultAttachmentHeader(attachment)}
+    </div>`;
   }
 
   private renderAttachmentContent(attachment: IgcMessageAttachment) {
     return html`<div part="attachment-content">
-      ${this._chatState?.options?.templates?.attachmentContentTemplate
+      ${this._chatState?.options?.templates?.attachmentContentTemplate &&
+      this.message
         ? this._chatState.options.templates.attachmentContentTemplate(
-            this.attachments
+            this.message
           )
         : this.defaultAttachmentContent(attachment)}
     </div>`;
   }
 
-  private defaultAttachmentsTemplate(attachments: IgcMessageAttachment[]) {
-    return html`${attachments.map(
+  private defaultAttachmentsTemplate() {
+    return html`${this.message?.attachments?.map(
       (attachment) =>
         html`<div part="attachment">
           <div
@@ -149,11 +154,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
           attachment.file?.type.startsWith('image/') ||
           this._chatState?.options?.templates?.attachmentContentTemplate
             ? this.renderAttachmentContent(attachment)
-            : nothing}
-          ${this._chatState?.options?.templates?.attachmentFooterTemplate
-            ? this._chatState?.options?.templates?.attachmentFooterTemplate(
-                this.attachments
-              )
             : nothing}
         </div>`
     )}`;
@@ -187,11 +187,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   protected override render() {
     return html`
       <div part="attachments-container">
-        ${this._chatState?.options?.templates?.attachmentTemplate
-          ? this._chatState.options.templates.attachmentTemplate(
-              this.attachments
-            )
-          : this.defaultAttachmentsTemplate(this.attachments)}
+        ${this._chatState?.options?.templates?.attachmentTemplate &&
+        this.message
+          ? this._chatState.options.templates.attachmentTemplate(this.message)
+          : this.defaultAttachmentsTemplate()}
       </div>
     `;
   }

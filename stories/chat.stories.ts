@@ -70,7 +70,7 @@ const initialMessages: any[] = [
       {
         id: 'img1',
         name: 'img1.png',
-        url: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+        url: 'https://www.infragistics.com/angular-demos-lob/assets/images/card/media/yosemite.jpg',
         type: 'image',
       },
     ],
@@ -87,7 +87,7 @@ const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
       ? html`
-          <div style="float: left">
+          <div>
             <igc-icon-button
               name="thumb_up"
               collection="material"
@@ -622,9 +622,8 @@ export const Chat_Templates: Story = {
             <h3>${msg.sender}:</h3>
             ${chat.defaultTemplates?.defaultMessage(msg)}
           </div>`;
-        } else {
-          return chat.defaultTemplates?.defaultMessage(msg);
         }
+        return chat.defaultTemplates?.defaultMessage(msg);
       };
       options = {
         headerText: 'Chat',
@@ -647,9 +646,7 @@ export const Chat_Templates: Story = {
         .options=${options}
         @igcMessageCreated=${handleMessageSend}
       >
-        <div slot="suggestions-header">
-          <h5>Suggestions</h5>
-        </div>
+        <div slot="suggestions-header">Suggestions</div>
       </igc-chat>
     `;
   },

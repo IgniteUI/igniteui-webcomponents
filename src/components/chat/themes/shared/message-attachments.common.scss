@@ -3,28 +3,13 @@
 
 $theme: $material;
 
-:host {
-    border: rem(1px) solid var-get($theme, 'image-border');
-    border-radius: rem(4px);
-}
-
-igc-expansion-panel {
-    border-radius: rem(4px);
-}
-
-igc-expansion-panel::part(header) {
+[part='attachment-header'] {
     background: var-get($theme, 'image-background');
-    padding: rem(8px) rem(12px) rem(8px) rem(16px);
+    border: rem(1px) solid var-get($theme, 'image-border');
+    border-block-end: none;
 }
 
-[part='details'] {
-    display: flex;
-    align-items: center;
-    gap: rem(8px);
-}
-
-[part='file-name'] {
-    @include type-style('body-2') {
-        margin: 0;
-    };
+[part='attachment-content'] {
+    border: rem(1px) solid var-get($theme, 'image-border');
+    border-block-start: none
 }

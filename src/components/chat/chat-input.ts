@@ -1,6 +1,7 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { query, state } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
@@ -12,6 +13,8 @@ import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
+import { all } from './themes/input.js';
+import { styles as shared } from './themes/shared/input/input.common.css.js';
 import {
   attachmentIcon,
   type IgcChatDefaultTemplates,
@@ -50,7 +53,7 @@ import {
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
 
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
@@ -86,6 +89,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   constructor() {
     super();
+    addThemingController(this, all);
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
   }
@@ -175,7 +179,7 @@ export default class IgcChatInputComponent extends LitElement {
     const target = e.target as HTMLTextAreaElement;
     this.inputValue = target.value;
     this._chatState?.handleInputChange(this.inputValue);
-    this.adjustTextareaHeight();
+    // this.adjustTextareaHeight();
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -274,14 +278,14 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
-  private adjustTextareaHeight() {
-    const textarea = this.textInputElement;
-    if (!textarea) return;
+  // private adjustTextareaHeight() {
+  //   const textarea = this.textInputElement;
+  //   if (!textarea) return;
 
-    textarea.style.height = 'auto';
-    const newHeight = Math.min(textarea.scrollHeight, 120);
-    textarea.style.height = `${newHeight}px`;
-  }
+  //   textarea.style.height = 'auto';
+  //   const newHeight = Math.min(textarea.scrollHeight, 120);
+  //   textarea.style.height = `${newHeight}px`;
+  // }
 
   private sendMessage() {
     if (

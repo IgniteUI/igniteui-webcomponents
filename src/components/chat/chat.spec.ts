@@ -48,20 +48,20 @@ describe('Chat', () => {
 
   const composingIndicatorTemplate = html`<span>loading...</span>`;
 
-  const attachmentTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
     })}`;
   };
 
-  const attachmentHeaderTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentHeaderTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<h5>Custom ${attachment.name}</h5>`;
     })}`;
   };
 
-  const attachmentContentTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentContentTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<p>
         This is a template rendered as content of ${attachment.name}
       </p>`;
@@ -868,6 +868,8 @@ describe('Chat', () => {
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                 </div>
+                 <igc-message-attachments>
+                 </igc-message-attachments>
             </div>`
         );
       });
