@@ -496,3 +496,10 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
 export type RequiredProps<T, K extends keyof T> = T & {
   [P in K]-?: T[P];
 };
+
+export function setStyles(
+  element: HTMLElement,
+  styles: Partial<CSSStyleDeclaration>
+): void {
+  Object.assign(element.style, styles);
+}
