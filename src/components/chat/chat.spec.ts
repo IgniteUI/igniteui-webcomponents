@@ -74,10 +74,11 @@ describe('Chat', () => {
       .value=${text}
     ></igc-input>`;
 
-  const textAreaActionsTemplate = html`<div>
-    <igc-button>Upload</igc-button>
-    <igc-button>Send</igc-button>
-  </div>`;
+  const textAreaActionsTemplate = () =>
+    html`<div>
+      <igc-button>Upload</igc-button>
+      <igc-button>Send</igc-button>
+    </div>`;
 
   const textAreaAttachmentsTemplate = (attachments: any[]) => {
     return html`<div>
@@ -636,8 +637,6 @@ describe('Chat', () => {
                               img1.png
                           </span>
                       </div>
-                      <div part="actions">
-                      </div>
                   </div>
                   <div part="attachment-content">
                     <img
@@ -666,8 +665,6 @@ describe('Chat', () => {
                           <span part="file-name">
                               img2.png
                           </span>
-                      </div>
-                      <div part="actions">
                       </div>
                   </div>
                 </div>
@@ -799,7 +796,7 @@ describe('Chat', () => {
       });
     });
 
-    it('should render attachmentHeaderTemplate, attachmentActionsTemplate, attachmentContentTemplate', async () => {
+    it('should render attachmentHeaderTemplate, attachmentContentTemplate', async () => {
       chat.options = {
         templates: {
           attachmentHeaderTemplate: attachmentHeaderTemplate,
@@ -827,14 +824,6 @@ describe('Chat', () => {
         expect(details).dom.to.equal(
           `<div part="details">
                         <h5>Custom ${chat.messages[index].attachments?.[0].name}</h5>
-                    </div>`
-        );
-
-        const actions =
-          attachments?.shadowRoot?.querySelector(`div[part='actions']`);
-        expect(actions).dom.to.equal(
-          `<div part="actions">
-                        <igc-button type="button" variant="contained">?</igc-button>
                     </div>`
         );
 

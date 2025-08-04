@@ -187,7 +187,7 @@ export type IgcChatTemplates = {
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: unknown;
+  textAreaActionsTemplate?: () => unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).
@@ -197,12 +197,12 @@ export type IgcChatTemplates = {
 
 export type IgcChatDefaultTemplates = {
   defaultAttachmentsArea: TemplateResult;
-  defaultTextArea: TemplateResult;
+  defaultTextArea: () => TemplateResult;
   defaultFileUploadButton: TemplateResult;
-  defaultSendButton: TemplateResult;
+  defaultSendButton: () => TemplateResult;
   defaultComposingIndicator: TemplateResult;
   defaultMessage: MessageTemplate;
-  defaultMessageAttachment: AttachmentTemplate;
+  defaultMessageAttachment: MessageTemplate | undefined;
   defaultMessageAttachmentHeader: (
     attachments: IgcMessageAttachment
   ) => TemplateResult;

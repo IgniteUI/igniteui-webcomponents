@@ -79,43 +79,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
   }
 
-  private getURL(attachment: IgcMessageAttachment): string {
-    if (attachment.url) {
-      return attachment.url;
-    }
-    if (attachment.file) {
-      return URL.createObjectURL(attachment.file);
-    }
-    return '';
-  }
-
-  private defaultAttachmentHeader(attachment: IgcMessageAttachment) {
-    return html`${attachment.type === 'image' ||
-      attachment.file?.type.startsWith('image/')
-        ? html`<igc-icon
-            name="image"
-            collection="material"
-            part="attachment-icon"
-          ></igc-icon>`
-        : html`<igc-icon
-            name="file"
-            collection="material"
-            part="attachment-icon"
-          ></igc-icon>`}
-      <span part="file-name">${attachment.name}</span> `;
-  }
-
-  private defaultAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`${attachment.type === 'image' ||
-    attachment.file?.type.startsWith('image/')
-      ? html`<img
-          part="image-attachment"
-          src=${this.getURL(attachment)}
-          alt=${attachment.name}
-        />`
-      : nothing}`;
-  }
-
   private renderAttachmentHeader(attachment: IgcMessageAttachment) {
     return html`<div part="details">
       ${this._chatState?.options?.templates?.attachmentHeaderTemplate &&
@@ -123,7 +86,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.message
           )
-        : this.defaultAttachmentHeader(attachment)}
+        : this._chatState?.defaultAttachmentHeader(attachment)}
     </div>`;
   }
 
@@ -134,12 +97,12 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ? this._chatState.options.templates.attachmentContentTemplate(
             this.message
           )
-        : this.defaultAttachmentContent(attachment)}
+        : this._chatState?.defaultAttachmentContent(attachment)}
     </div>`;
   }
 
-  private defaultAttachmentsTemplate() {
-    return html`${this.message?.attachments?.map(
+  private defaultAttachmentsTemplate(message?: IgcMessage) {
+    return html`${message?.attachments?.map(
       (attachment) =>
         html`<div part="attachment">
           <div
@@ -168,9 +131,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       this._chatState.defaultTemplates = {
         ...this._chatState?.defaultTemplates,
         defaultMessageAttachment: this.defaultAttachmentsTemplate.bind(this),
-        defaultMessageAttachmentHeader: this.defaultAttachmentHeader.bind(this),
-        defaultMessageAttachmentContent:
-          this.defaultAttachmentContent.bind(this),
       } as IgcChatDefaultTemplates;
       this._defaultTemplateAssigned = true;
     }
@@ -190,7 +150,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ${this._chatState?.options?.templates?.attachmentTemplate &&
         this.message
           ? this._chatState.options.templates.attachmentTemplate(this.message)
-          : this.defaultAttachmentsTemplate()}
+          : this.defaultAttachmentsTemplate(this.message)}
       </div>
     `;
   }

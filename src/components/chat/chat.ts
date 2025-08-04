@@ -267,6 +267,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this._chatState, true);
   }
 
+  /**
+   * Updates the context value to notify all consumers that the chat state has changed.
+   * This ensures that components consuming the chat context will re-render.
+   */
+  public updateContextValue() {
+    this._context.setValue(this._chatState, true);
+  }
+
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
     const root = super.createRenderRoot();
     root.addEventListener('slotchange', () => {
