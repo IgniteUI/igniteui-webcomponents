@@ -6,13 +6,18 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   IgcFileInputComponent,
   IgcIconComponent,
+  IgcIconButtonComponent,
   defineComponents,
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import { formControls, formSubmitHandler } from './story.js';
 
-defineComponents(IgcFileInputComponent, IgcIconComponent);
+defineComponents(
+  IgcFileInputComponent,
+  IgcIconComponent,
+  IgcIconButtonComponent
+);
 registerIconFromText(github.name, github.value);
 registerIcon(
   'search',
@@ -184,6 +189,17 @@ export const Slots: Story = {
       <igc-icon name="github" slot="prefix"></igc-icon>
       <igc-icon name="github" slot="suffix"></igc-icon>
       <span slot="helper-text">Sample helper text.</span>
+    </igc-file-input>
+  `,
+};
+
+export const IconButton: Story = {
+  render: () => html`
+    <igc-file-input>
+      <igc-icon-button
+        name="search"
+        slot="file-selector-icon"
+      ></igc-icon-button>
     </igc-file-input>
   `,
 };
