@@ -19,6 +19,17 @@ $theme-file-input: file-input.$base;
         }
     }
 
+    [part='file-selector-icon'] {
+        position: relative;
+        display: inline-block;
+        width: fit-content;
+        aspect-ratio: 1;
+
+        input {
+            height: 100%;
+        }
+    }
+
     [part='file-names'] {
         display: flex;
         align-items: center;

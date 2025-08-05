@@ -34,6 +34,7 @@ export interface IgcFileInputComponentEventMap
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
  * @slot file-selector-text - Renders content for the browse button when input type is file.
+ * @slot file-selector-icon - Renders icon button template for the browse button when input type is file.
  * @slot file-missing-text - Renders content when input type is file and no file is chosen.
  * @slot value-missing - Renders content when the required validation fails.
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
@@ -47,6 +48,7 @@ export interface IgcFileInputComponentEventMap
  * @csspart label - The native label element.
  * @csspart file-names - The file names wrapper when input type is 'file'.
  * @csspart file-selector-button - The browse button when input type is 'file'.
+ * @csspart file-selector-icon - The icon browse button wrapper when input type is 'file'.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
@@ -141,6 +143,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     return this.input?.files ?? null;
   }
 
+  public get hasIconSlot(): boolean {
+    return !!this.querySelector('[slot="file-selector-icon"]');
+  }
+
   constructor() {
     super();
     addThemingController(this, all);
@@ -187,6 +193,18 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     this._hasActivation = true;
   }
 
+  protected renderIconTemplate() {
+    return html`
+      <div part="file-selector-icon">
+        <slot name="file-selector-icon"></slot>
+        ${this.renderInput()}
+      </div>
+      <div part="file-names">
+        <span> ${this._fileNames} </span>
+      </div>
+    `;
+  }
+
   protected override renderFileParts() {
     const emptyText = this.placeholder ?? 'No file chosen';
 
@@ -228,6 +246,13 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         @blur=${this._handleBlur}
       />
     `;
+  }
+
+  protected override render() {
+    if (this.hasIconSlot) {
+      return this.renderIconTemplate();
+    }
+    return super.render();
   }
 }
 
