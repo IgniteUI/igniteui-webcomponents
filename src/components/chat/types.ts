@@ -133,6 +133,16 @@ export type IgcChatOptions = {
    */
   suggestions?: string[];
   /**
+   * Controls the position of the chat suggestions within the component layout.
+   *
+   * - `"below-input"`: Renders suggestions below the chat input area.
+   * - `"below-messages"`: Renders suggestions below the chat messages area.
+   *
+   * Default is `"below-messages"`.
+   */
+  suggestionsPosition?: 'below-input' | 'below-messages';
+
+  /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
   templates?: IgcChatTemplates;
