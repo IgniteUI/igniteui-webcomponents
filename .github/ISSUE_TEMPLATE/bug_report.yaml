@@ -25,6 +25,7 @@ body:
         - Combo
         - Date-time input
         - Date picker
+        - Date range picker
         - Dialog
         - Dropdown
         - Expansion panel

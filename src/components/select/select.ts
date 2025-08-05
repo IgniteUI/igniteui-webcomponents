@@ -33,10 +33,8 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueSelectTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
@@ -162,14 +160,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
   );
 
-  protected override readonly _formValue: FormValueOf<string | undefined> =
-    createFormValueState<string | undefined>(this, {
-      initialValue: undefined,
-      transformers: {
-        setValue: (value) => value || undefined,
-        setDefaultValue: (value) => value || undefined,
-      },
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: undefined,
+    transformers: FormValueSelectTransformers,
+  });
 
   @state()
   protected _selectedItem: IgcSelectItemComponent | null = null;
