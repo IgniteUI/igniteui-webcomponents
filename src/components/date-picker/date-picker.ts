@@ -30,11 +30,8 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  defaultDateTimeTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   addSafeEventListener,
   createCounter,
@@ -192,11 +189,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _displayFormat?: string;
   private _inputFormat?: string;
 
-  protected override readonly _formValue: FormValueOf<Date | null> =
-    createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: null,
+    transformers: FormValueDateTimeTransformers,
+  });
 
   protected override readonly _rootClickController = addRootClickController(
     this,

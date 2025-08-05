@@ -7,11 +7,8 @@ import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  createFormValueState,
-  defaultFileListTransformer,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
 import {
@@ -74,11 +71,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     return fileValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<FileList | null> =
-    createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultFileListTransformer,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: null,
+    transformers: FormValueFileListTransformers,
+  });
 
   @state()
   private _hasActivation = false;
