@@ -165,12 +165,6 @@ export type IgcChatTemplates = {
   attachmentHeaderTemplate?: MessageTemplate;
 
   /**
-   * Template for rendering custom action buttons or controls related to an attachment
-   * (e.g. download, preview, delete).
-   */
-  attachmentActionsTemplate?: MessageTemplate;
-
-  /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
   attachmentContentTemplate?: MessageTemplate;
@@ -203,12 +197,28 @@ export type IgcChatTemplates = {
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: unknown;
+  textAreaActionsTemplate?: () => unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).
    */
   textAreaAttachmentsTemplate?: AttachmentTemplate;
+};
+
+export type IgcChatDefaultTemplates = {
+  defaultAttachmentsArea: TemplateResult;
+  defaultTextArea: () => TemplateResult;
+  defaultFileUploadButton: TemplateResult;
+  defaultSendButton: () => TemplateResult;
+  defaultComposingIndicator: TemplateResult;
+  defaultMessage: MessageTemplate;
+  defaultMessageAttachment: MessageTemplate | undefined;
+  defaultMessageAttachmentHeader: (
+    attachments: IgcMessageAttachment
+  ) => TemplateResult;
+  defaultMessageAttachmentContent: (
+    attachments: IgcMessageAttachment
+  ) => TemplateResult;
 };
 
 export const attachmentIcon =

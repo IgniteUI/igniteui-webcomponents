@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { html, LitElement, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -162,9 +162,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @state()
   private _hasContent = false;
 
-  @query(IgcChatInputComponent.tagName)
-  private _chatInput!: IgcChatInputComponent;
-
   constructor() {
     super();
     addThemingController(this, all);
@@ -222,24 +219,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
-  /** Returns the default attachments element. */
-  public get defaultAttachments(): TemplateResult {
-    return this._chatInput.defaultAttachmentsArea;
-  }
-
-  /** Returns the default textarea element. */
-  public get defaultTextArea(): TemplateResult {
-    return this._chatInput.defaultTextArea;
-  }
-
-  /** Returns the default file upload button element. */
-  public get defaultFileUploadButton(): TemplateResult {
-    return this._chatInput.defaultFileUploadButton;
-  }
-
-  /** Returns the default send message button element. */
-  public get defaultSendButton(): TemplateResult {
-    return this._chatInput.defaultSendButton;
+  /** Returns all default templates applied in the chat component. */
+  public get defaultTemplates() {
+    return this._chatState.defaultTemplates;
   }
 
   @watch('messages')
@@ -285,6 +267,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   protected override firstUpdated() {
+    this._context.setValue(this._chatState, true);
+  }
+
+  /**
+   * Updates the context value to notify all consumers that the chat state has changed.
+   * This ensures that components consuming the chat context will re-render.
+   */
+  public updateContextValue() {
     this._context.setValue(this._chatState, true);
   }
 

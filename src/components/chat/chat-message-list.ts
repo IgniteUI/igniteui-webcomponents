@@ -232,8 +232,10 @@ export default class IgcChatMessageListComponent extends LitElement {
    * Scrolls to bottom unless auto-scroll is disabled.
    */
   protected override firstUpdated() {
-    if (!this._chatState?.options?.disableAutoScroll) {
-      this.scrollToBottom();
+    if (this._chatState) {
+      if (!this._chatState.options?.disableAutoScroll) {
+        this.scrollToBottom();
+      }
     }
   }
 
@@ -244,11 +246,7 @@ export default class IgcChatMessageListComponent extends LitElement {
   protected *renderLoadingTemplate() {
     yield html`${this._chatState?.options?.templates?.composingIndicatorTemplate
       ? this._chatState.options.templates.composingIndicatorTemplate
-      : html`<div part="typing-indicator">
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-        </div>`}`;
+      : this._chatState?.defaultComposingIndicatorTemplate}`;
   }
 
   /**

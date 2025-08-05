@@ -1,12 +1,10 @@
 import { consume } from '@lit/context';
-import DOMPurify from 'dompurify';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { ChatState } from './chat-state.js';
-import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { styles as shared } from './themes/shared/chat-message.common.css.js';
@@ -62,16 +60,6 @@ export default class IgcChatMessageComponent extends LitElement {
   public message: IgcMessage | undefined;
 
   /**
-   * Sanitizes message text to prevent XSS or invalid HTML.
-   * @param text The raw message text
-   * @returns Sanitized text safe for HTML rendering
-   * @private
-   */
-  private sanitizeMessageText(text: string): string {
-    return DOMPurify.sanitize(text);
-  }
-
-  /**
    * Renders the chat message template.
    * - Applies 'sent' CSS class if the message sender matches current user.
    * - Uses markdown rendering if configured.
@@ -79,33 +67,30 @@ export default class IgcChatMessageComponent extends LitElement {
    */
   protected override render() {
     const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
-    const sanitizedMessageText = this.sanitizeMessageText(
-      this.message?.text.trim() || ''
-    );
-    const renderer =
-      this._chatState?.options?.markdownRenderer || renderMarkdown;
 
-    return html`
-      <div part=${containerPart}>
-        <div part="bubble">
-          ${this._chatState?.options?.templates?.messageTemplate && this.message
-            ? this._chatState.options.templates.messageTemplate(this.message)
-            : html`${sanitizedMessageText
-                ? html`<div>${renderer(sanitizedMessageText)}</div>`
-                : nothing}`}
-          ${this.message?.attachments && this.message?.attachments.length > 0
-            ? html`<igc-message-attachments .message=${this.message}>
-              </igc-message-attachments>`
-            : nothing}
-          ${this._chatState?.options?.templates?.messageActionsTemplate &&
-          this.message
-            ? this._chatState.options.templates.messageActionsTemplate(
-                this.message
-              )
-            : nothing}
-        </div>
-      </div>
-    `;
+    return this.message
+      ? html`
+          <div part=${containerPart}>
+            <div part="bubble">
+              ${this._chatState?.options?.templates?.messageTemplate
+                ? this._chatState.options.templates.messageTemplate(
+                    this.message
+                  )
+                : this._chatState?.defaultMessageTemplate(this.message)}
+              ${this.message?.attachments &&
+              this.message?.attachments.length > 0
+                ? html`<igc-message-attachments .message=${this.message}>
+                  </igc-message-attachments>`
+                : nothing}
+              ${this._chatState?.options?.templates?.messageActionsTemplate
+                ? this._chatState.options.templates.messageActionsTemplate(
+                    this.message
+                  )
+                : nothing}
+            </div>
+          </div>
+        `
+      : nothing;
   }
 }
 
