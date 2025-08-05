@@ -69,6 +69,9 @@ export default class IgcChatInputComponent extends LitElement {
   @query(IgcTextareaComponent.tagName)
   private textInputElement!: IgcTextareaComponent;
 
+  @query(IgcFileInputComponent.tagName)
+  private fileInputElement!: IgcFileInputComponent;
+
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
     this._chatState?.updateAcceptedTypesCache();
@@ -305,6 +308,10 @@ export default class IgcChatInputComponent extends LitElement {
     const files = Array.from(input.files);
     this._chatState?.attachFiles(files);
     this.requestUpdate();
+
+    if (this.fileInputElement) {
+      this.fileInputElement.value = '';
+    }
   }
 
   private removeAttachment(index: number) {

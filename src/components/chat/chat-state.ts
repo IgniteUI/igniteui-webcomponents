@@ -218,6 +218,10 @@ export class ChatState {
     const newAttachments: IgcMessageAttachment[] = [];
     let count = this.inputAttachments.length;
     files.forEach((file) => {
+      if (this.inputAttachments.find((a) => a.name === file.name)) {
+        return;
+      }
+
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
         id: Date.now().toString() + count++,
