@@ -15,7 +15,13 @@ import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
-import { attachmentIcon, sendButtonIcon } from './types.js';
+import {
+  attachmentIcon,
+  fileDocumentIcon,
+  fileImageIcon,
+  fileOtherIcon,
+  sendButtonIcon,
+} from './types.js';
 
 /**
  * A web component that provides the input area for the `igc-chat` interface.
@@ -87,6 +93,19 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all);
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
+    registerIconFromText('file-document', fileDocumentIcon, 'material');
+    registerIconFromText('file-image', fileImageIcon, 'material');
+    registerIconFromText('file-other', fileOtherIcon, 'material');
+  }
+
+  private getIconName(fileType: string | undefined): string {
+    if (fileType?.startsWith('text')) {
+      return 'file-document';
+    }
+    if (fileType?.startsWith('image')) {
+      return 'file-image';
+    }
+    return 'file-other';
   }
 
   public get defaultAttachmentsArea(): TemplateResult {
@@ -94,6 +113,14 @@ export default class IgcChatInputComponent extends LitElement {
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
+            <span slot="prefix">
+              <igc-icon
+                name=${this.getIconName(
+                  attachment.file?.type ?? attachment.type
+                )}
+                collection="material"
+              ></igc-icon>
+            </span>
             <span part="attachment-name">${attachment.name}</span>
           </igc-chip>
         </div>
@@ -137,7 +164,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   public get defaultSendButton(): TemplateResult {
-    return html` <igc-icon-button
+    return html`<igc-icon-button
       aria-label="Send message"
       name="send-message"
       collection="material"

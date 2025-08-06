@@ -605,6 +605,7 @@ export const Chat_Templates: Story = {
     if (chat) {
       const actionsTemplate = html`
         ${chat.defaultFileUploadButton}
+        <igc-button variant="flat">🎤</igc-button>
         <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
         <igc-button variant="flat">...</igc-button>
       `;
