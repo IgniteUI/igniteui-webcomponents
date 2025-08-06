@@ -4,5 +4,5 @@
 $theme: $material;
 
 [part='typing-dot'] {
-    background: color(gray, 600);
+    background: var-get($theme, 'progress-indicator-color');
 }

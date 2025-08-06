@@ -113,14 +113,11 @@ export default class IgcChatInputComponent extends LitElement {
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
-            <span slot="prefix">
-              <igc-icon
-                name=${this.getIconName(
-                  attachment.file?.type ?? attachment.type
-                )}
-                collection="material"
-              ></igc-icon>
-            </span>
+            <igc-icon
+              slot="prefix"
+              name=${this.getIconName(attachment.file?.type ?? attachment.type)}
+              collection="material"
+            ></igc-icon>
             <span part="attachment-name">${attachment.name}</span>
           </igc-chip>
         </div>
@@ -144,22 +141,21 @@ export default class IgcChatInputComponent extends LitElement {
 
   public get defaultFileUploadButton(): TemplateResult {
     return html`
-      <label for="input_attachments">
-        <igc-icon
-          slot="file-selector-text"
+      <label for="input_attachments" part="upload-button">
+        <igc-icon-button
+          variant="flat"
           name="attachment"
           collection="material"
-        ></igc-icon>
+        ></igc-icon-button>
+        <input
+          type="file"
+          id="input_attachments"
+          name="input_attachments"
+          multiple
+          accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
+          @change=${this.handleFileUpload}>
+        </input>
       </label>
-      <input
-        type="file"
-        id="input_attachments"
-        name="input_attachments"
-        style="opacity: 0"
-        multiple
-        accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
-        @change=${this.handleFileUpload}>
-      </input>
     `;
   }
 

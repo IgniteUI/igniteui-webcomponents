@@ -248,6 +248,7 @@ export default class IgcChatMessageListComponent extends LitElement {
           <div part="typing-dot"></div>
           <div part="typing-dot"></div>
           <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
         </div>`}`;
   }
 
