@@ -286,6 +286,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._context.setValue(this._chatState, true);
+    this._chatState.initRenderer();
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

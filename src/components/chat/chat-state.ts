@@ -1,7 +1,9 @@
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
+import { PlainTextRenderer } from './plain-text-renderer.js';
 import type {
+  ChatMessageRenderer,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
@@ -87,6 +89,14 @@ export class ChatState {
    */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
+  }
+
+  /**
+   * Gets the current message renderer based on options.
+   * Defaults to PlainTextRenderer if no custom renderer is set.
+   */
+  public get messageRenderer(): ChatMessageRenderer {
+    return this._options?.messageRenderer ?? new PlainTextRenderer();
   }
 
   /**
@@ -345,6 +355,12 @@ export class ChatState {
       this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
         ?.childNodes.length !== 0
     );
+  }
+
+  public initRenderer(): void {
+    if (this.options && !this._options?.messageRenderer) {
+      this._options!.messageRenderer = new PlainTextRenderer();
+    }
   }
   //#endregion
 }
