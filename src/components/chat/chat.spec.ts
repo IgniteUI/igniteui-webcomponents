@@ -48,26 +48,26 @@ describe('Chat', () => {
 
   const composingIndicatorTemplate = html`<span>loading...</span>`;
 
-  const attachmentTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
     })}`;
   };
 
-  const attachmentHeaderTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentHeaderTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<h5>Custom ${attachment.name}</h5>`;
     })}`;
   };
 
-  const attachmentActionsTemplate = (attachments: any[]) => {
-    return html`${attachments.map(() => {
+  const attachmentActionsTemplate = (message: any) => {
+    return html`${message.attachments.map(() => {
       return html`<igc-button>?</igc-button>`;
     })}`;
   };
 
-  const attachmentContentTemplate = (attachments: any[]) => {
-    return html`${attachments.map((attachment) => {
+  const attachmentContentTemplate = (message: any) => {
+    return html`${message.attachments.map((attachment: any) => {
       return html`<p>
         This is a template rendered as content of ${attachment.name}
       </p>`;
@@ -160,6 +160,8 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
+  const GAP = 40; // Default gap between elements in the chat container
+
   let chat: IgcChatComponent;
   let clock: SinonFakeTimers;
 
@@ -187,16 +189,6 @@ describe('Chat', () => {
 
       expect(chat).shadowDom.to.equal(
         ` <div part="chat-container">
-                    <div part="header" part="header">
-                        <div part="info">
-                            <slot name="prefix" part="prefix">
-                            </slot>
-                            <slot name="title" part="title">
-                            </slot>
-                        </div>
-                        <slot part="actions" name="actions">
-                        </slot>
-                    </div>
                     <div part="empty-state">
                       <slot name="empty-state">
                       </slot>
@@ -401,13 +393,11 @@ describe('Chat', () => {
 
       expect(headerArea).dom.to.equal(
         `<div part="header" part="header"> 
-                    <div part="info">
-                        <slot name="prefix" part="prefix">
-                        </slot>
-                        <slot name="title" part="title">
-                            Chat
-                        </slot>
-                    </div>
+                      <slot name="prefix" part="prefix">
+                      </slot>
+                      <slot name="title" part="title">
+                          Chat
+                      </slot>
                     <slot part="actions" name="actions">
                     </slot>
                 </div>`
@@ -424,39 +414,6 @@ describe('Chat', () => {
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
       expect(textArea?.placeholder).to.equal('Type message here...');
-    });
-
-    it('should render suggestions', async () => {
-      chat.options = {
-        suggestions: ['Suggestion 1', 'Suggestion 2'],
-      };
-      await elementUpdated(chat);
-
-      const suggestionsContainer = chat.shadowRoot?.querySelector(
-        'div[part="suggestions-container"]'
-      );
-
-      expect(suggestionsContainer).dom.to.equal(
-        `<div aria-label="Suggestions" part="suggestions-container" role="list">
-          <slot name="suggestions-header" part="suggestions-header"> </slot>
-          <slot name="suggestions" part="suggestions">
-              <slot name="suggestion" part="suggestion" role="listitem">
-                  <igc-chip>
-                      <span>
-                      Suggestion 1
-                      </span>
-                  </igc-chip>
-              </slot>
-              <slot name="suggestion" part="suggestion" role="listitem">
-                  <igc-chip>
-                      <span>
-                      Suggestion 2
-                      </span>
-                  </igc-chip>
-              </slot>
-          </slot>
-      </div>`
-      );
     });
 
     it('should enable/disable the send button properly', async () => {
@@ -641,71 +598,69 @@ describe('Chat', () => {
         if (index === 0) {
           expect(attachments).shadowDom.to.equal(
             `<div part="attachments-container">
-                            <igc-expansion-panel indicator-position="none" open="">
-                                <div part="attachment" slot="title">
-                                <div part="details">
-                                    <slot name="attachment-icon">
-                                    <igc-icon
-                                        part="attachment-icon"
-                                        collection="material"
-                                        name="image"
-                                    >
-                                    </igc-icon>
-                                    </slot>
-                                    <slot name="attachment-name">
-                                    <span part="file-name">
-                                        img1.png
-                                    </span>
-                                    </slot>
-                                </div>
-                                <div part="actions">
-                                </div>
-                                </div>
-                                <slot name="attachment-content">
-                                <img
-                                    alt="img1.png"
-                                    part="image-attachment"
-                                    src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
-                                >
-                                </slot>
-                            </igc-expansion-panel>
-                            </div>`
+                <div part="attachment">
+                  <div part="attachment-header" role="button">
+                      <div part="details">                          
+                          <igc-icon
+                              part="attachment-icon"
+                              collection="material"
+                              name="image"
+                          >
+                          </igc-icon>
+                          <span part="file-name">
+                              img1.png
+                          </span>
+                      </div>
+                      <div part="actions">
+                      </div>
+                  </div>
+                  <div part="attachment-content">
+                    <img
+                        alt="img1.png"
+                        part="image-attachment"
+                        src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
+                    >
+                  </div>
+                </div>
+              </div>`
           );
         }
         // Check if non-image attachments are rendered correctly
         if (index === 1) {
           expect(attachments).shadowDom.to.equal(
             `<div part="attachments-container">
-                            <igc-expansion-panel indicator-position="none">
-                                <div part="attachment" slot="title">
-                                <div part="details">
-                                    <slot name="attachment-icon">
-                                    <igc-icon
-                                        part="attachment-icon"
-                                        collection="material"
-                                        name="file"
-                                    >
-                                    </igc-icon>
-                                    </slot>
-                                    <slot name="attachment-name">
-                                    <span part="file-name">
-                                        img2.png
-                                    </span>
-                                    </slot>
-                                </div>
-                                <div part="actions">
-                                </div>
-                                </div>
-                                <slot name="attachment-content">
-                                </slot>
-                            </igc-expansion-panel>
-                        </div>`
+                <div part="attachment">
+                  <div part="attachment-header" role="button">
+                      <div part="details">                          
+                          <igc-icon
+                            part="attachment-icon"
+                            collection="material"
+                            name="file"
+                          >
+                          </igc-icon>
+                          <span part="file-name">
+                              img2.png
+                          </span>
+                      </div>
+                      <div part="actions">
+                      </div>
+                  </div>
+                </div>
+              </div>`
           );
         }
       });
     });
 
-    it('should render suggestions', async () => {
+    it('should not render container if suggestions are not provided', async () => {
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      );
+
+      expect(suggestionsContainer).to.be.null;
+    });
+
+    it('should render suggestions if provided', async () => {
       chat.options = {
         suggestions: ['Suggestion 1', 'Suggestion 2'],
       };
@@ -734,8 +689,67 @@ describe('Chat', () => {
                             </igc-chip>
                         </slot>
                     </slot>
+                    <slot name="suggestions-actions" part="suggestions-actions"> </slot>
                 </div>`
       );
+    });
+
+    it('should render suggestions below empty state by default', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      await elementUpdated(chat);
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      );
+
+      expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
+        'empty-state'
+      );
+    });
+
+    it('should render suggestions below messages by default', async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+      };
+      chat.messages.push({
+        id: '5',
+        text: 'New message',
+        sender: 'user',
+        timestamp: new Date(),
+      });
+      await elementUpdated(chat);
+
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      )!;
+
+      const messageList = chat.shadowRoot?.querySelector(
+        'igc-chat-message-list'
+      )!;
+
+      const diff =
+        suggestionsContainer.getBoundingClientRect().top -
+        messageList.getBoundingClientRect().bottom;
+      expect(diff).to.equal(GAP);
+    });
+
+    it("should render suggestions below input area when position is 'below-input'", async () => {
+      chat.options = {
+        suggestions: ['Suggestion 1', 'Suggestion 2'],
+        suggestionsPosition: 'below-input',
+      };
+      await elementUpdated(chat);
+
+      const suggestionsContainer = chat.shadowRoot?.querySelector(
+        `div[part='suggestions-container']`
+      )!;
+
+      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
+      const diff =
+        suggestionsContainer.getBoundingClientRect().top -
+        inputArea.getBoundingClientRect().bottom;
+      expect(diff).to.equal(GAP);
     });
 
     it('should render composing indicator if `isComposing` is true', async () => {
@@ -897,6 +911,8 @@ describe('Chat', () => {
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                 </div>
+                 <igc-message-attachments>
+                 </igc-message-attachments>
             </div>`
         );
       });
@@ -1315,8 +1331,8 @@ describe('Chat', () => {
 
       const attachmentHeader = messageElement?.shadowRoot
         ?.querySelector('igc-message-attachments')
-        ?.shadowRoot?.querySelector('igc-expansion-panel')
-        ?.shadowRoot?.querySelector(`div[part='header']`) as HTMLElement;
+        ?.shadowRoot?.querySelector(`div[part='attachment']`)
+        ?.querySelector(`div[part='attachment-header']`) as HTMLElement;
 
       simulateClick(attachmentHeader);
       expect(eventSpy).calledWith('igcAttachmentClick', {

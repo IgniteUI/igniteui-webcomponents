@@ -9,7 +9,7 @@
 [![npm version](https://badge.fury.io/js/igniteui-webcomponents.svg)](https://badge.fury.io/js/igniteui-webcomponents)
 [![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
 
-[Ignite UI for Web Components] is a complete library of UI components, giving you the ability to build modern web applications using encapsulation and the concept of reusable components in a dependency-free approach. All components are based on the [Indigo.Design Design System] and are backed by ready-to-use UI kit for Figma.
+[Ignite UI for Web Components] is a comprehensive library that includes the fastest [Data Grid] on the market, a high-performing [Hierarchical Grid], Pivot Grid, 60+ data [Charts], [Dock Manager], and more. Plus maps, gauges and other reusable feature-rich components to help you create better web apps and modern-day UX experiences.
 
 See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
@@ -21,8 +21,12 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 ## Overview
 
+<details open>
+<summary>Components</summary>
+
 | Components              | Status |         Documentation          | Released Version |
 | :---------------------- | :----: | :----------------------------: | :--------------: |
+| Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      |
 | Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      |
 | File Input              |   ✅   |    [Docs][File Input Docs]     |     [5.4.0]      |
 | Tile Manager            |   ✅   |   [Docs][Tile Manager Docs]    |     [5.3.0]      |
@@ -68,6 +72,8 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Radio Group             |   ✅   |       [Docs][Radio Docs]       |     [1.0.0]      |
 | Ripple                  |   ✅   |      [Docs][Ripple Docs]       |     [1.0.0]      |
 | Switch                  |   ✅   |      [Docs][Switch Docs]       |     [1.0.0]      |
+
+</details>
 
 ## Components available in [Ignite UI for WebComponents Grids]
 
@@ -198,6 +204,10 @@ npm run storybook:build
 [opera_48x48]: https://user-images.githubusercontent.com/2188411/168109520-b6865a6c-b69f-44a4-9948-748d8afd687c.png
 [safari_48x48]: https://user-images.githubusercontent.com/2188411/168109527-6c58f2cf-7386-4b97-98b1-cfe0ab4e8626.png
 [Contribution Guidelines]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/CONTRIBUTING.md
+[Data Grid]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/data-grid
+[Hierarchical Grid]: https://www.infragistics.com/webcomponentssite/components/grids/hierarchical-grid/overview
+[Charts]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/chart-overview
+[Dock Manager]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/dock-manager
 [Pivot Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview
 [Data Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview
 [Tree Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview
@@ -245,6 +255,7 @@ npm run storybook:build
 [Tile Manager Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tile-manager
 [File Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/file-input
 [Tooltip Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/tooltip
+[Date Range Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-range-picker
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -258,3 +269,4 @@ npm run storybook:build
 [5.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.1.0
 [5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.3.0
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.4.0
+[6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.1.0

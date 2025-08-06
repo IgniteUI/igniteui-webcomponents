@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -115,7 +115,9 @@ export interface IgcChatComponentEventMap {
  * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
  * @slot title - Slot for overriding the chat title content.
  * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
+ * @slot suggestions-header - Slot for rendering a custom header for the suggestions list.
  * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
+ * @slot suggestions-actions - Slot for rendering additional actions.
  * @slot suggestion - Slot for rendering a single suggestion item.
  * @slot empty-state - Slot shown when there are no messages.
  *
@@ -156,6 +158,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatContext,
     initialValue: this._chatState,
   });
+
+  @state()
+  private _hasContent = false;
 
   @query(IgcChatInputComponent.tagName)
   private _chatInput!: IgcChatInputComponent;
@@ -246,12 +251,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private renderHeader() {
     return html` <div part="header">
-      <div part="info">
-        <slot name="prefix" part="prefix"></slot>
-        <slot name="title" part="title"
-          >${this._chatState.options?.headerText}</slot
-        >
-      </div>
+      <slot name="prefix" part="prefix"></slot>
+      <slot name="title" part="title"
+        >${this._chatState.options?.headerText}</slot
+      >
       <slot name="actions" part="actions"></slot>
     </div>`;
   }
@@ -277,6 +280,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           `
         )}
       </slot>
+      <slot name="suggestions-actions" part="suggestions-actions"></slot>
     </div>`;
   }
 
@@ -285,20 +289,40 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._chatState.initRenderer();
   }
 
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    const root = super.createRenderRoot();
+    root.addEventListener('slotchange', () => {
+      this._hasContent =
+        this._chatState?.hasSlotContent('prefix') ||
+        this._chatState?.hasSlotContent('title') ||
+        this._chatState?.hasSlotContent('actions');
+    });
+    return root;
+  }
+
   protected override render() {
+    const hasSuggestions =
+      this._chatState.options?.suggestions &&
+      this._chatState.options.suggestions.length > 0;
     return html`
       <div part="chat-container">
-        ${this.renderHeader()}
+        ${this._hasContent || this._chatState.options?.headerText
+          ? this.renderHeader()
+          : nothing}
         ${this.messages.length === 0
           ? html`<div part="empty-state">
               <slot name="empty-state"> </slot>
             </div>`
           : html`<igc-chat-message-list> </igc-chat-message-list>`}
-        ${this._chatState.options?.suggestions &&
-        this._chatState.options?.suggestions?.length > 0
+        ${hasSuggestions &&
+        this._chatState.suggestionsPosition === 'below-messages'
           ? this.renderSuggestions()
           : nothing}
-        <igc-chat-input></igc-chat-input>
+        <igc-chat-input> </igc-chat-input>
+        ${hasSuggestions &&
+        this._chatState.suggestionsPosition === 'below-input'
+          ? this.renderSuggestions()
+          : nothing}
       </div>
     `;
   }

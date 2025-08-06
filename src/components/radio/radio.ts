@@ -16,11 +16,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  createFormValueState,
-  defaultBooleanTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isDefined, isEmpty, isLTR, last, wrap } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
@@ -87,11 +84,10 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     onChange: this._handleSlotChange,
   });
 
-  protected override readonly _formValue: FormValueOf<boolean> =
-    createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: false,
+    transformers: FormValueBooleanTransformers,
+  });
 
   protected _value!: string;
 
@@ -147,7 +143,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this._setFormValue(this._value || 'on');
+      this._formValue.setValueAndFormState(this.checked);
     }
   }
 

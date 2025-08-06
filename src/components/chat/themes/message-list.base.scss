@@ -6,6 +6,7 @@
     overflow-y: auto;
     flex: 1;
     scrollbar-width: none;
+    padding-block-start: rem(16px);
 }
 
 :host(::-webkit-scrollbar) {
@@ -16,4 +17,46 @@
     display: flex;
     flex-direction: column;
     gap: rem(24px);
+}
+
+[part='typing-indicator'] {
+    position: relative;
+}
+
+// should be updated when design is ready
+[part='typing-dot'] {
+    $dot-size: rem(8px);
+
+    content: '';
+    animation: blink 1.5s infinite;
+    animation-fill-mode: both;
+    height: $dot-size;
+    width: $dot-size;
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+
+    &:nth-child(2) {
+        animation-delay: .2s;
+        margin-left: $dot-size * 1.5;
+    }
+
+    &:nth-child(3) {
+        animation-delay: .4s;
+        margin-left: $dot-size * 3;
+    }
+}
+
+@keyframes blink {
+  0% {
+    opacity: .1;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: .1;
+  }
 }

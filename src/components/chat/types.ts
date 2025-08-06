@@ -1,7 +1,3 @@
-import type { TemplateResult } from 'lit';
-
-// export type IgcMessageAttachmentType = 'image' | 'file';
-
 /**
  * Represents a single chat message in the conversation.
  */
@@ -76,11 +72,11 @@ export interface IgcMessageAttachment {
  * (e.g. rendering thumbnails, file icons, or download links).
  *
  * @param {IgcMessageAttachment[]} attachments - The list of attachments to render.
- * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered attachments.
+ * @returns {unknown} A custom rendered representation of the attachments.
  */
 export type AttachmentTemplate = (
   attachments: IgcMessageAttachment[]
-) => TemplateResult;
+) => unknown;
 
 /**
  * A function type used to render a single chat message.
@@ -89,11 +85,9 @@ export type AttachmentTemplate = (
  * including its text, sender info, timestamp, and any attachments.
  *
  * @param {IgcMessage} message - The chat message to render.
- * @returns {TemplateResult} A Lit `TemplateResult` representing the rendered message.
+ * @returns {unknown} A custom rendered representation of the message.
  */
-export type MessageTemplate = (message: IgcMessage) => TemplateResult;
-
-// export type MarkdownRenderer = (text: string) => TemplateResult;
+export type MessageTemplate = (message: IgcMessage) => unknown;
 
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
@@ -135,6 +129,16 @@ export type IgcChatOptions = {
    */
   suggestions?: string[];
   /**
+   * Controls the position of the chat suggestions within the component layout.
+   *
+   * - `"below-input"`: Renders suggestions below the chat input area.
+   * - `"below-messages"`: Renders suggestions below the chat messages area.
+   *
+   * Default is `"below-messages"`.
+   */
+  suggestionsPosition?: 'below-input' | 'below-messages';
+
+  /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
   templates?: IgcChatTemplates;
@@ -154,23 +158,23 @@ export type IgcChatTemplates = {
   /**
    * Template for rendering an attachment in a message.
    */
-  attachmentTemplate?: AttachmentTemplate;
+  attachmentTemplate?: MessageTemplate;
 
   /**
    * Template for rendering a custom header above the attachment in a message.
    */
-  attachmentHeaderTemplate?: AttachmentTemplate;
+  attachmentHeaderTemplate?: MessageTemplate;
 
   /**
    * Template for rendering custom action buttons or controls related to an attachment
    * (e.g. download, preview, delete).
    */
-  attachmentActionsTemplate?: AttachmentTemplate;
+  attachmentActionsTemplate?: MessageTemplate;
 
   /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
-  attachmentContentTemplate?: AttachmentTemplate;
+  attachmentContentTemplate?: MessageTemplate;
 
   /**
    * Template for rendering a single chat message.
@@ -186,21 +190,21 @@ export type IgcChatTemplates = {
   /**
    * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
    */
-  composingIndicatorTemplate?: TemplateResult;
+  composingIndicatorTemplate?: unknown;
 
   /**
    * Template for customizing the text input element (usually a `<textarea>` or `<input>`).
    *
    * @param text - The current value of the text input.
-   * @returns A Lit `TemplateResult` representing the rendered input.
+   * @returns {unknown} A custom rendered representation of the text input.
    */
-  textInputTemplate?: (text: string) => TemplateResult;
+  textInputTemplate?: (text: string) => unknown;
 
   /**
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: TemplateResult;
+  textAreaActionsTemplate?: unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).

@@ -14,6 +14,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-list.base.css.js';
+import { styles as shared } from './themes/shared/message-list.common.css.js';
 import type { IgcMessage } from './types.js';
 
 /**
@@ -38,7 +39,7 @@ export default class IgcChatMessageListComponent extends LitElement {
   public static readonly tagName = 'igc-chat-message-list';
 
   /** Styles applied to the component */
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   /**
    * Consumed chat state context providing messages, options, and user data.

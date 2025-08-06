@@ -24,7 +24,14 @@ igc-chat-message-list,
 [part='suggestions-container'] {
   max-width: rem(760px);
   width: 100%;
-  margin-inline: rem(16px);
+
+  // margin-inline: rem(16px);
+}
+
+[part='suggestions-header'] {
+  @include type-style('subtitle-2') {
+    margin: 0;
+  };
 }
 
 [part='empty-state'] {

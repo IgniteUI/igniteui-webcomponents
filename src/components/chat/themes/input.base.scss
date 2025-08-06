@@ -18,17 +18,6 @@
     gap: rem(8px);
 }
 
-// should be changed when the design is ready
-[part~='dragging'] {
-    igc-textarea::part(container) {    
-        background: color(gray, 300);
-
-        &::after {
-            border-block-end: rem(2px) solid color(primary, 500);
-        }
-    }
-}
-
 [part='buttons-container'] {
     display: flex;
     align-items: center;
@@ -43,12 +32,20 @@
     gap: rem(8px);
 }
 
+igc-textarea::part(input) {
+    // maximum eight lines
+    max-height: rem(216px);
+    overflow-y: auto;
+}
+
 igc-file-input {
     width: fit-content;
     margin-inline-end: auto;
 }
 
-igc-file-input::part(file-names) {
+igc-file-input::part(file-names),
+igc-file-input::part(start),
+igc-file-input::part(end) {
     display: none;
 }
 

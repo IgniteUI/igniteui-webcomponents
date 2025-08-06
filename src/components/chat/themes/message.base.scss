@@ -17,6 +17,11 @@
 }
 
 [part~='bubble'] {
+  display: flex;
+  flex-direction: column;
+  gap: rem(16px);
+  width: 100%;
+
   @include type-style('body-1') {
     margin: 0;
   };

@@ -37,6 +37,9 @@ export class ChatState {
     mimeTypes: Set<string>;
     wildcardTypes: Set<string>;
   } | null = null;
+
+  private _suggestionsPosition: 'below-input' | 'below-messages' =
+    'below-messages';
   //#endregion
 
   //#region Public properties
@@ -96,6 +99,12 @@ export class ChatState {
     return this._options?.messageRenderer ?? new PlainTextRenderer();
   }
 
+  /**
+   * Gets the current suggestionsPosition from options or returns the default value 'below-messages'.
+   */
+  public get suggestionsPosition(): string {
+    return this._options?.suggestionsPosition ?? this._suggestionsPosition;
+  }
   /**
    * Gets the text area component.
    */
@@ -219,6 +228,10 @@ export class ChatState {
     const newAttachments: IgcMessageAttachment[] = [];
     let count = this.inputAttachments.length;
     files.forEach((file) => {
+      if (this.inputAttachments.find((a) => a.name === file.name)) {
+        return;
+      }
+
       const isImage = file.type.startsWith('image/');
       newAttachments.push({
         id: Date.now().toString() + count++,
@@ -330,6 +343,18 @@ export class ChatState {
     // Check wildcard MIME types
     const [fileBaseType] = fileType.split('/');
     return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
+  }
+
+  /**
+   * Checks if a slot is empty.
+   * @param name Slot name to check
+   * @returns True if the slot has content, false otherwise
+   */
+  public hasSlotContent(name: string): boolean {
+    return (
+      this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
+        ?.childNodes.length !== 0
+    );
   }
 
   public initRenderer(): void {
