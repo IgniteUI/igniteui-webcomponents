@@ -91,8 +91,6 @@ export type AttachmentTemplate = (
  */
 export type MessageTemplate = (message: IgcMessage) => unknown;
 
-// export type MarkdownRenderer = (text: string) => TemplateResult;
-
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
  */

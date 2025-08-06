@@ -1,13 +1,13 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
@@ -61,16 +61,12 @@ export default class IgcChatInputComponent extends LitElement {
       IgcTextareaComponent,
       IgcIconButtonComponent,
       IgcChipComponent,
-      IgcFileInputComponent,
       IgcIconComponent
     );
   }
 
   @query(IgcTextareaComponent.tagName)
   private textInputElement!: IgcTextareaComponent;
-
-  @query(IgcFileInputComponent.tagName)
-  private fileInputElement!: IgcFileInputComponent;
 
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
@@ -121,17 +117,22 @@ export default class IgcChatInputComponent extends LitElement {
 
   public get defaultFileUploadButton(): TemplateResult {
     return html`
-      <igc-file-input
-        multiple
-        .accept=${this._chatState?.options?.acceptedFiles}
-        @igcChange=${this.handleFileUpload}
-      >
+      <label for="input_attachments">
         <igc-icon
           slot="file-selector-text"
           name="attachment"
           collection="material"
         ></igc-icon>
-      </igc-file-input>
+      </label>
+      <input
+        type="file"
+        id="input_attachments"
+        name="input_attachments"
+        style="opacity: 0"
+        multiple
+        accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
+        @change=${this.handleFileUpload}>
+      </input>
     `;
   }
 
@@ -302,16 +303,14 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private handleFileUpload(e: Event) {
-    const input = (e.target as any).input as HTMLInputElement;
+    const input = e.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
     this._chatState?.attachFiles(files);
     this.requestUpdate();
 
-    if (this.fileInputElement) {
-      this.fileInputElement.value = '';
-    }
+    input.value = '';
   }
 
   private removeAttachment(index: number) {
