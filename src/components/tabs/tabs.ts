@@ -166,7 +166,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     addKeybindings(this, {
       ref: this._headerRef,
       skip: this._skipKeyboard,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this._handleArrowKeys(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._handleArrowKeys(isLTR(this) ? 1 : -1))

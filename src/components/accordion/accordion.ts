@@ -54,10 +54,7 @@ export default class IgcAccordionComponent extends LitElement {
 
     addSafeEventListener(this, 'igcOpening' as any, this.handlePanelOpening);
 
-    addKeybindings(this, {
-      skip: this.skipKeybinding,
-      bindingDefaults: { preventDefault: true },
-    })
+    addKeybindings(this, { skip: this.skipKeybinding })
       .set(homeKey, () =>
         this.getPanelHeader(first(this.enabledPanels)).focus()
       )
