@@ -290,7 +290,6 @@ export class IgcSliderBaseComponent extends LitElement {
 
     addKeybindings(this, {
       skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
