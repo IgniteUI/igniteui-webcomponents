@@ -281,6 +281,10 @@ export function isPlainObject(
     : false;
 }
 
+function isUnsafeProperty(key: PropertyKey) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
 export function isEventListenerObject(x: unknown): x is EventListenerObject {
   return isObject(x) && 'handleEvent' in x;
 }
@@ -539,6 +543,11 @@ export function merge<
 
   for (let i = 0; i < length; i++) {
     const key = sourceKeys[i];
+
+    if (isUnsafeProperty(key)) {
+      continue;
+    }
+
     const sourceValue = source[key];
     const targetValue = target[key];
 
