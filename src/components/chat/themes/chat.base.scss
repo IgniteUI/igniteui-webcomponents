@@ -1,0 +1,86 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+$inline-inset: rem(16px);
+
+// should be removed
+:host {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  box-shadow: var(--ig-elevation-4);
+  display: flex;
+  flex-direction: column;
+}
+
+[part='chat-container'] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: rem(24px);
+}
+
+igc-chat-message-list,
+[part='empty-state'],
+[part='suggestions-container'] {
+  max-width: calc(rem(760px) + $inline-inset * 2);
+  width: 100%;
+  padding-inline: $inline-inset;
+}
+
+[part='suggestions-header'] {
+  @include type-style('subtitle-2') {
+    margin: 0;
+  };
+}
+
+[part='empty-state'] {
+  height: 100%;
+}
+
+[part='header'] {
+  display: flex;
+  align-items: center;
+  min-height: rem(56px);
+  padding-inline: $inline-inset;
+  box-shadow: var(--ig-elevation-4);
+  width: 100%;
+}
+
+[part='title'] {
+  @include type-style('h6') {
+    margin: 0;
+  };
+}
+
+[part='actions'] {
+  display: flex;
+  margin-inline-start: auto;
+  gap: rem(16px);
+}
+
+[part='prefix'] {
+  display: block;
+  margin-inline-end: rem(32px);
+}
+
+[part='prefix'],
+[part='actions'],
+[part='title'] {
+  &:empty {
+    display: none;
+  }
+}
+
+[part='suggestions-container'] {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12px);
+
+  igc-chip {
+    --ig-size: 3;
+
+    width: fit-content;
+  }
+}

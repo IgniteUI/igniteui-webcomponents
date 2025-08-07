@@ -1,0 +1,18 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host([part~='active']) {
+    &::part(message-container) {
+        background: var-get($theme, 'message-focus-color');
+    }
+}
+
+[part~='sent'] {
+    background: var-get($theme, 'message-background');
+}
+
+[part~='bubble'] {
+    color: var-get($theme, 'message-color');
+}

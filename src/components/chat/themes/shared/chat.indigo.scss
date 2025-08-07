@@ -1,0 +1,21 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+[part='header'] {
+    box-shadow: none;
+    border-block-end: rem(1px) solid var-get($theme, 'header-border');
+}
+
+[part='title'] {
+    @include type-style('h5') {
+        margin: 0;
+    };
+}
+
+[part='suggestions-container'] {
+    igc-chip {
+      --ig-size: 2;
+    }
+}

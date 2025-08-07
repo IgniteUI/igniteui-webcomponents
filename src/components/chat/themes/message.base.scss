@@ -1,0 +1,33 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+[part~='message-container'] {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-inline-end: auto;
+  max-width: rem(576px);
+}
+
+[part~='sent'] {
+  margin-inline-start: auto;
+  margin-inline-end: unset;
+  padding: rem(12px) rem(16px);
+  border-radius: rem(24px) rem(24px) 0;
+}
+
+[part~='bubble'] {
+  display: flex;
+  flex-direction: column;
+  gap: rem(16px);
+  width: 100%;
+
+  @include type-style('body-1') {
+    margin: 0;
+  };
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+}
