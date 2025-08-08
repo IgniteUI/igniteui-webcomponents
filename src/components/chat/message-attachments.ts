@@ -86,7 +86,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return '';
   }
 
-  private defaulAttachmentContent(attachment: IgcMessageAttachment) {
+  private renderDefaultAttachmentContent(attachment: IgcMessageAttachment) {
     return html`${attachment.type === 'image' ||
     attachment.file?.type.startsWith('image/')
       ? html`<img
@@ -138,7 +138,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ? this._chatState.options.templates.attachmentContentTemplate(
             this.message
           )
-        : this.defaulAttachmentContent(attachment)}
+        : this.renderDefaultAttachmentContent(attachment)}
     </div>`;
   }
 

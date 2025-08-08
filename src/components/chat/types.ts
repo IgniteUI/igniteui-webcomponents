@@ -139,7 +139,11 @@ export type IgcChatOptions = {
    * Default is `"below-messages"`.
    */
   suggestionsPosition?: 'below-input' | 'below-messages';
-
+  /**
+   * Time in milliseconds to wait before dispatching a stop typing event.
+   * Default is `3000`.
+   */
+  stopTypingDelay?: number;
   /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */

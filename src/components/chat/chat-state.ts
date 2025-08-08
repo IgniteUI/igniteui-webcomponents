@@ -19,8 +19,6 @@ export class ChatState {
   private _textArea: IgcTextareaComponent | null = null;
   /** The current list of messages */
   private _messages: IgcMessage[] = [];
-  /** Sorted copy of messages by timestamp */
-  private _sortedMessages: IgcMessage[] = [];
   /** Chat options/configuration */
   private _options?: IgcChatOptions;
   /** List of current input attachments */
@@ -35,19 +33,14 @@ export class ChatState {
     mimeTypes: Set<string>;
     wildcardTypes: Set<string>;
   } | null = null;
-
+  /** Default position of the suggestions */
   private _suggestionsPosition: 'below-input' | 'below-messages' =
     'below-messages';
+  /** Default time in milliseconds before dispatching stop typing event */
+  private _stopTypingDelay = 3000;
   //#endregion
 
   //#region Public properties
-  /**
-   * Array of message IDs sorted by timestamp ascending.
-   */
-  public get sortedMessagesIds(): string[] {
-    return this._sortedMessages.map((m) => m.id);
-  }
-
   /**
    * Gets the list of chat messages.
    */
@@ -61,9 +54,6 @@ export class ChatState {
    */
   public set messages(value: IgcMessage[]) {
     this._messages = value;
-    this._sortedMessages = value.slice().sort((a, b) => {
-      return a.timestamp.getTime() - b.timestamp.getTime();
-    });
     this._host.requestUpdate();
   }
 
@@ -95,6 +85,14 @@ export class ChatState {
   public get suggestionsPosition(): string {
     return this._options?.suggestionsPosition ?? this._suggestionsPosition;
   }
+
+  /**
+   * Gets the current stopTypingDelay from options or returns the default value `3000`.
+   */
+  public get stopTypingDelay(): number {
+    return this._options?.stopTypingDelay ?? this._stopTypingDelay;
+  }
+
   /**
    * Gets the text area component.
    */

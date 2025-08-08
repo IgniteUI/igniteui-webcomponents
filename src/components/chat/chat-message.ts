@@ -38,13 +38,6 @@ export default class IgcChatMessageComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /**
-   * Injected chat state context. Provides message data, user info, and options.
-   * @private
-   */
-  @consume({ context: chatContext, subscribe: true })
-  private _chatState?: ChatState;
-
-  /**
    * Registers this component and its dependencies.
    * This is used internally to set up the component definitions.
    */
@@ -56,6 +49,13 @@ export default class IgcChatMessageComponent extends LitElement {
       IgcAvatarComponent
     );
   }
+
+  /**
+   * Injected chat state context. Provides message data, user info, and options.
+   * @private
+   */
+  @consume({ context: chatContext, subscribe: true })
+  private _chatState?: ChatState;
 
   /**
    * The chat message to render.

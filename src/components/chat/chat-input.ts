@@ -60,6 +60,10 @@ export default class IgcChatInputComponent extends LitElement {
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
 
+  private _isTyping = false;
+
+  private _lastTyped = Date.now();
+
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -132,7 +136,7 @@ export default class IgcChatInputComponent extends LitElement {
       resize="auto"
       rows="1"
       .value=${this.inputValue}
-      @input=${this.handleInput}
+      @igcInput=${this.handleInput}
       @keydown=${this.handleKeyDown}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
@@ -191,11 +195,9 @@ export default class IgcChatInputComponent extends LitElement {
     this.inputPlaceholder = this._chatState?.options?.inputPlaceholder || '';
   }
 
-  private handleInput(e: Event) {
-    const target = e.target as HTMLTextAreaElement;
-    this.inputValue = target.value;
+  private handleInput({ detail }: CustomEvent<string>) {
+    this.inputValue = detail;
     this._chatState?.handleInputChange(this.inputValue);
-    // this.adjustTextareaHeight();
   }
 
   private handleKeyDown(e: KeyboardEvent) {
@@ -203,16 +205,27 @@ export default class IgcChatInputComponent extends LitElement {
       e.preventDefault();
       this.sendMessage();
     } else {
-      this._chatState?.emitEvent('igcTypingChange', {
-        detail: { isTyping: true },
-      });
-
-      // wait 3 seconds and dispatch a stop-typing event
-      setTimeout(() => {
+      this._lastTyped = Date.now();
+      if (!this._isTyping) {
         this._chatState?.emitEvent('igcTypingChange', {
-          detail: { isTyping: false },
+          detail: { isTyping: true },
         });
-      }, 3000);
+        this._isTyping = true;
+      }
+
+      const stopTypingDelay = this._chatState?.stopTypingDelay;
+      setTimeout(() => {
+        if (
+          this._isTyping &&
+          stopTypingDelay &&
+          this._lastTyped + stopTypingDelay < Date.now()
+        ) {
+          this._chatState?.emitEvent('igcTypingChange', {
+            detail: { isTyping: false },
+          });
+          this._isTyping = false;
+        }
+      }, stopTypingDelay);
     }
   }
 
@@ -293,15 +306,6 @@ export default class IgcChatInputComponent extends LitElement {
     this._chatState?.attachFiles(validFiles);
     this.requestUpdate();
   }
-
-  // private adjustTextareaHeight() {
-  //   const textarea = this.textInputElement;
-  //   if (!textarea) return;
-
-  //   textarea.style.height = 'auto';
-  //   const newHeight = Math.min(textarea.scrollHeight, 120);
-  //   textarea.style.height = `${newHeight}px`;
-  // }
 
   private sendMessage() {
     if (

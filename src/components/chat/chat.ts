@@ -174,7 +174,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
    */
-  @property({ reflect: true, attribute: false })
+  @property({ attribute: false })
   public set messages(value: IgcMessage[]) {
     this._chatState.messages = value;
   }
@@ -187,7 +187,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * The chat message currently being composed but not yet sent.
    * Includes the draft text and any attachments.
    */
-  @property({ reflect: true, attribute: false })
+  @property({ attribute: false })
   public set draftMessage(value: {
     text: string;
     attachments?: IgcMessageAttachment[];
