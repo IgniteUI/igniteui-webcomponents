@@ -22,6 +22,8 @@ igc-textarea::part(input) {
     }
 }
 
-igc-chip {
-    --ig-size: 1;
+[part='attachment-wrapper'] {
+    igc-chip {
+        --ig-size: 1;
+    }
 }

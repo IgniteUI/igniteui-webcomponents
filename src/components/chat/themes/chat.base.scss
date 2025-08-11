@@ -65,13 +65,13 @@ igc-chat-message-list,
   margin-inline-end: rem(32px);
 }
 
-[part='prefix'],
-[part='actions'],
-[part='title'] {
-  &:empty {
-    display: none;
-  }
-}
+// [part='prefix'],
+// [part='actions'],
+// [part='title'] {
+//   &:empty {
+//     display: none;
+//   }
+// }
 
 [part='suggestions-container'] {
   display: flex;
