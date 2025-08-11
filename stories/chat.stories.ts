@@ -5,6 +5,7 @@ import { GoogleGenAI, Modality } from '@google/genai';
 // import { createClient } from '@supabase/supabase-js';
 import {
   IgcChatComponent,
+  MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
   registerIconFromText,
@@ -28,7 +29,14 @@ defineComponents(IgcChatComponent);
 const metadata: Meta<IgcChatComponent> = {
   title: 'Chat',
   component: 'igc-chat',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A chat UI component for displaying messages, attachments, and input interaction.\n\nThis component is part of the Ignite UI Web Components suite.',
+      },
+    },
+  },
 };
 
 export default metadata;
@@ -160,6 +168,7 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
+  messageRenderer: new MarkdownMessageRenderer(),
 };
 
 function handleCustomSendClick() {

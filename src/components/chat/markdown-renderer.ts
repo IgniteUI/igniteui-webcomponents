@@ -98,11 +98,18 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
     const markedShiki = await import('marked-shiki');
     this._marked.use(
       markedShiki.default({
-        highlight: (code, lang) =>
-          this.highlighter?.codeToHtml(code, {
-            lang,
-            themes: { light: this.theme },
-          }) ?? code,
+        highlight: (code, lang) => {
+          if (!this.highlighter || !this.langs.includes(lang)) {
+            return `<pre><code>${this.escapeHtml(code)}</code></pre>`; // No highlighter or unsupported language
+          }
+
+          return (
+            this.highlighter.codeToHtml(code, {
+              lang,
+              themes: { light: this.theme },
+            }) ?? code
+          );
+        },
       })
     );
 
@@ -127,5 +134,19 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
     template.innerHTML = rendered ?? message.text;
 
     return html`${template.content}`;
+  }
+
+  private escapeHtml(str: string): string {
+    return str.replace(
+      /[&<>"']/g,
+      (m) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[m] ?? m
+    );
   }
 }

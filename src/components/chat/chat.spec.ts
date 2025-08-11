@@ -23,6 +23,8 @@ import {
 } from '../common/utils.spec.js';
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
 import IgcChatComponent from './chat.js';
+import { MarkdownMessageRenderer } from './markdown-renderer.js';
+import type { IgcMessage } from './types.js';
 
 describe('Chat', () => {
   before(() => {
@@ -392,7 +394,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div part="header" part="header"> 
+        `<div part="header" part="header">
                       <slot name="prefix" part="prefix">
                       </slot>
                       <slot name="title" part="title">
@@ -600,7 +602,7 @@ describe('Chat', () => {
             `<div part="attachments-container">
                 <div part="attachment">
                   <div part="attachment-header" role="button">
-                      <div part="details">                          
+                      <div part="details">
                           <igc-icon
                               part="attachment-icon"
                               collection="material"
@@ -631,7 +633,7 @@ describe('Chat', () => {
             `<div part="attachments-container">
                 <div part="attachment">
                   <div part="attachment-header" role="button">
-                      <div part="details">                          
+                      <div part="details">
                           <igc-icon
                             part="attachment-icon"
                             collection="material"
@@ -1480,9 +1482,7 @@ describe('Chat', () => {
 
     it('should render markdown using default renderer when enabled', async () => {
       chat.options = {
-        rendererConfig: {
-          type: 'markdown',
-        },
+        messageRenderer: new MarkdownMessageRenderer(),
       };
 
       const messageElements = chat.shadowRoot
@@ -1500,12 +1500,11 @@ describe('Chat', () => {
     });
 
     it('should use a custom markdown renderer if provided', async () => {
-      const _customRenderer = (text: string) =>
-        html`<span>${text.toUpperCase()}</span>`;
+      const _customRenderer = (message: IgcMessage) =>
+        html`<span>${message.text.toUpperCase()}</span>`;
       chat.options = {
-        rendererConfig: {
-          type: 'custom',
-          renderFn: _customRenderer,
+        messageRenderer: {
+          render: _customRenderer,
         },
       };
 

@@ -162,3 +162,4 @@ export type {
   AttachmentTemplate,
   MessageTemplate,
 } from './components/chat/types.js';
+export { MarkdownMessageRenderer } from './components/chat/markdown-renderer.js';
