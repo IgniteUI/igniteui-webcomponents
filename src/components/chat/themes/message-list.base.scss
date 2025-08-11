@@ -5,12 +5,7 @@
     display: block;
     overflow-y: auto;
     flex: 1;
-    scrollbar-width: none;
     padding-block-start: rem(16px);
-}
-
-:host(::-webkit-scrollbar) {
-    display: none;
 }
 
 [part='message-list'] {
