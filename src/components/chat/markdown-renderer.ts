@@ -99,16 +99,22 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
     this._marked.use(
       markedShiki.default({
         highlight: (code, lang) => {
-          if (!this.highlighter || !this.langs.includes(lang)) {
-            return `<pre><code>${this.escapeHtml(code)}</code></pre>`; // No highlighter or unsupported language
-          }
+          try {
+            const safeLang =
+              lang && this.highlighter.getLoadedLanguages?.().includes(lang)
+                ? lang
+                : 'text';
 
-          return (
-            this.highlighter.codeToHtml(code, {
-              lang,
-              themes: { light: this.theme },
-            }) ?? code
-          );
+            return (
+              this.highlighter?.codeToHtml(code, {
+                lang: safeLang,
+                themes: { light: this.theme },
+              }) ?? code
+            );
+          } catch (_err) {
+            // if Shiki still throws for some reason, just return escaped code
+            return `<pre><code>${this.escapeHtml(code)}</code></pre>`;
+          }
         },
       })
     );
