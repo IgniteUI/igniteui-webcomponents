@@ -15,7 +15,6 @@ import { styles as shared } from './themes/shared/message-list.common.css.js';
  *
  * This component:
  * - Renders messages using the `<igc-chat-message>` component.
- * - Supports keyboard navigation between messages (Home, End, ArrowUp, ArrowDown).
  * - Manages focus highlighting on active messages.
  * - Automatically scrolls to the bottom when new messages arrive, unless auto-scroll is disabled.
  * - Displays a typing indicator if the chat state option `isComposing` is true.
