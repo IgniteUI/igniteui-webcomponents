@@ -91,8 +91,6 @@ export type AttachmentTemplate = (
  */
 export type MessageTemplate = (message: IgcMessage) => unknown;
 
-// export type MarkdownRenderer = (text: string) => TemplateResult;
-
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
  */
@@ -141,7 +139,11 @@ export type IgcChatOptions = {
    * Default is `"below-messages"`.
    */
   suggestionsPosition?: 'below-input' | 'below-messages';
-
+  /**
+   * Time in milliseconds to wait before dispatching a stop typing event.
+   * Default is `3000`.
+   */
+  stopTypingDelay?: number;
   /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
@@ -235,3 +237,7 @@ export const moreIcon =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z"/></svg>';
 export const previewIcon =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"/></svg>';
+export const fileImageIcon =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M6.75 1.5L5.3775 3H3C2.175 3 1.5 3.675 1.5 4.5V13.5C1.5 14.325 2.175 15 3 15H15C15.825 15 16.5 14.325 16.5 13.5V4.5C16.5 3.675 15.825 3 15 3H12.6225L11.25 1.5H6.75ZM9 12.75C6.93 12.75 5.25 11.07 5.25 9C5.25 6.93 6.93 5.25 9 5.25C11.07 5.25 12.75 6.93 12.75 9C12.75 11.07 11.07 12.75 9 12.75Z"/></svg>';
+export const fileDocumentIcon =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M4.5 1.5C3.675 1.5 3.0075 2.175 3.0075 3L3 15C3 15.825 3.6675 16.5 4.4925 16.5H13.5C14.325 16.5 15 15.825 15 15V6L10.5 1.5H4.5ZM9.75 6.75V2.625L13.875 6.75H9.75Z"/></svg>';

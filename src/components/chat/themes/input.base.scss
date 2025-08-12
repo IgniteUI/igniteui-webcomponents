@@ -27,9 +27,33 @@
     margin-inline-start: auto;
 }
 
+[part='upload-button'] {
+    position: relative;
+    display: inline-block;
+
+    input {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        z-index: 1;
+        cursor: pointer;
+    }
+}
+
 [part='attachments'] {
     display: flex;
+    flex-wrap: wrap;
     gap: rem(8px);
+}
+
+[part='attachment-wrapper'] {
+    min-width: rem(90px);
+    max-width: fit-content;
+    flex: 1 1;
+
+    igc-chip {
+        --ig-size: 2;
+    }
 }
 
 igc-textarea::part(input) {
@@ -38,22 +62,6 @@ igc-textarea::part(input) {
     overflow-y: auto;
 }
 
-igc-file-input {
-    width: fit-content;
-    margin-inline-end: auto;
-}
-
-igc-file-input::part(file-names),
-igc-file-input::part(start),
-igc-file-input::part(end) {
-    display: none;
-}
-
-igc-file-input::part(container) {
-    background: transparent;
-    border: none;
-
-    &::after {
-        display: none;
-    }
+igc-icon-button {
+    --ig-size: 2;
 }

@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.2.0] - 2025-08-04
+### Added
+- Form associated custom elements now expose the **ig-invalid** custom state for styling with the `:state()` CSS selector.
+  [See here for additional information](https://developer.mozilla.org/en-US/docs/Web/CSS/:state)
+
+### Changed
+- Form associated custom elements validity behavior. Now elements will try to mimic `:user-invalid`, and won't apply invalid
+  styles unless interacted through the UI or through a form `requestSubmit()/reset()` invocation.
+
+### Fixed
+- #### All igc-input based components
+  - Invalid state in **readonly** mode [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+  - Cannot style **helper-text** parts [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Card
+  - Slotted igc-avatar in Indigo theme [#1795](https://github.com/IgniteUI/igniteui-webcomponents/pull/1795)
+- #### Combo
+  - Border overlaps label text in invalid state [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Date picker
+  - Indigo elevation styles [#1799](https://github.com/IgniteUI/igniteui-webcomponents/pull/1799)
+- #### Date range picker
+  - Return focus to main input on keyboard interactions [#1783](https://github.com/IgniteUI/igniteui-webcomponents/pull/1783)
+- #### Input
+  - Placeholder and label alignment in Material theme [#1792](https://github.com/IgniteUI/igniteui-webcomponents/pull/1792)
+- #### Navigation drawer
+  - Update *relative* positions styles and animation [#1806](https://github.com/IgniteUI/igniteui-webcomponents/pull/1806)
+- #### Select
+  - Invalid state theming issues [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Textarea
+  - Material theme interaction issues [#1797](https://github.com/IgniteUI/igniteui-webcomponents/pull/1797)
+  - Resizing behavior with suffix part [#1797](https://github.com/IgniteUI/igniteui-webcomponents/pull/1797)
+
 ## [6.1.2] - 2025-07-14
 ### Added
 - #### File input
@@ -953,6 +984,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.2...6.2.0
 [6.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.1...6.1.2
 [6.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.0...6.1.1
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.1...6.1.0

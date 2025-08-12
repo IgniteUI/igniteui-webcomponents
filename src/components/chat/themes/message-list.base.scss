@@ -5,12 +5,7 @@
     display: block;
     overflow-y: auto;
     flex: 1;
-    scrollbar-width: none;
     padding-block-start: rem(16px);
-}
-
-:host(::-webkit-scrollbar) {
-    display: none;
 }
 
 [part='message-list'] {
@@ -20,43 +15,53 @@
 }
 
 [part='typing-indicator'] {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: rem(2px);
 }
 
-// should be updated when design is ready
 [part='typing-dot'] {
-    $dot-size: rem(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(8px);
+    aspect-ratio: 1;
 
-    content: '';
-    animation: blink 1.5s infinite;
-    animation-fill-mode: both;
-    height: $dot-size;
-    width: $dot-size;
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-
-    &:nth-child(2) {
-        animation-delay: .2s;
-        margin-left: $dot-size * 1.5;
+    &::after {
+      content: '';
+      display: block;
+      animation: blink 1.2s ease-in-out infinite;
+      animation-fill-mode: both;
+      width: rem(6px);
+      aspect-ratio: 1;
+      border-radius: 50%;
     }
 
-    &:nth-child(3) {
+    &:nth-child(2)::after {
+        animation-delay: .2s;
+        width: rem(4px);
+    }
+
+    &:nth-child(3)::after {
         animation-delay: .4s;
-        margin-left: $dot-size * 3;
+    }
+
+    &:nth-child(4)::after {
+        animation-delay: .6s;
+        width: rem(2px);
     }
 }
 
 @keyframes blink {
-  0% {
-    opacity: .1;
+  0%, 100% {
+    transform: scale(0.9);
   }
 
-  20% {
-    opacity: 1;
+  25%, 75% {
+    transform: scale(1.05);
   }
 
-  100% {
-    opacity: .1;
+  50% {
+    transform: scale(1.1);
   }
 }

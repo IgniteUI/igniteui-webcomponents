@@ -1,14 +1,10 @@
 import { property } from 'lit/decorators.js';
-
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import {
-  createFormValueState,
-  defaultNumberTransformers,
-  type FormValueOf,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { asNumber, asPercent, clamp } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
@@ -60,11 +56,10 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     registerComponent(IgcSliderComponent, IgcSliderLabelComponent);
   }
 
-  protected override readonly _formValue: FormValueOf<number> =
-    createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: 0,
+    transformers: FormValueNumberTransformers,
+  });
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**

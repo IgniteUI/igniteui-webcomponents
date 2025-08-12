@@ -3,6 +3,11 @@
 
 $theme: $indigo;
 
+igc-textarea::part(input) {
+    // maximum eight lines
+    max-height: rem(140px);
+}
+
 [part~='dragging'] {
     igc-textarea::part(container) {  
         background: var-get($theme, 'box-background-hover');
@@ -14,5 +19,11 @@ $theme: $indigo;
 
     igc-textarea::part(input) {
         color: var-get($theme, 'focused-text-color');
+    }
+}
+
+[part='attachment-wrapper'] {
+    igc-chip {
+        --ig-size: 1;
     }
 }

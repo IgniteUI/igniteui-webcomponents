@@ -7,7 +7,6 @@ import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcFileInputComponent from '../file-input/file-input.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
@@ -15,7 +14,12 @@ import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
-import { attachmentIcon, sendButtonIcon } from './types.js';
+import {
+  attachmentIcon,
+  fileDocumentIcon,
+  fileImageIcon,
+  sendButtonIcon,
+} from './types.js';
 
 /**
  * A web component that provides the input area for the `igc-chat` interface.
@@ -61,7 +65,6 @@ export default class IgcChatInputComponent extends LitElement {
       IgcTextareaComponent,
       IgcIconButtonComponent,
       IgcChipComponent,
-      IgcFileInputComponent,
       IgcIconComponent
     );
   }
@@ -82,6 +85,8 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all);
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
+    registerIconFromText('file-document', fileDocumentIcon, 'material');
+    registerIconFromText('file-image', fileImageIcon, 'material');
   }
 
   protected *renderDefaultFileUploadTemplate() {

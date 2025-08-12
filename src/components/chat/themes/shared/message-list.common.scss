@@ -3,6 +3,6 @@
 
 $theme: $material;
 
-[part='typing-dot'] {
-    background: color(gray, 600);
+[part='typing-dot']::after {
+    background: var-get($theme, 'progress-indicator-color');
 }

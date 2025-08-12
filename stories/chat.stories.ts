@@ -6,6 +6,7 @@ import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
   defineComponents,
+  registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import type {
@@ -53,6 +54,15 @@ const regenerateIcon =
 registerIconFromText('thumb_up', thumbUpIcon, 'material');
 registerIconFromText('thumb_down', thumbDownIcon, 'material');
 registerIconFromText('regenerate', regenerateIcon, 'material');
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
+registerIcon(
+  'search',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
 let messages: any[] = [];
 const initialMessages: any[] = [
   {
@@ -649,6 +659,17 @@ export const Chat_Templates: Story = {
         .options=${options}
         @igcMessageCreated=${handleMessageSend}
       >
+        <igc-icon-button
+          variant="flat"
+          slot="prefix"
+          name="home"
+        ></igc-icon-button>
+        <igc-button slot="actions" variant="outlined">New Chat</igc-button>
+        <igc-icon-button
+          slot="actions"
+          variant="flat"
+          name="search"
+        ></igc-icon-button>
         <div slot="suggestions-header">Suggestions</div>
       </igc-chat>
     `;
