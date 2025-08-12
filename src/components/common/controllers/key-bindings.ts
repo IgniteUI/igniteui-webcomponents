@@ -1,7 +1,12 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
-import { asArray, findElementFromEventPath, isFunction } from '../util.js';
+import {
+  asArray,
+  findElementFromEventPath,
+  isFunction,
+  toMerged,
+} from '../util.js';
 
 //#region Keys and modifiers
 
@@ -179,6 +184,7 @@ class KeyBindingController implements ReactiveController {
 
   private static readonly _defaultOptions: KeyBindingControllerOptions = {
     skip: ['input', 'textarea', 'select'],
+    bindingDefaults: { preventDefault: true },
   };
 
   private readonly _host: ReactiveControllerHost & Element;
@@ -209,7 +215,10 @@ class KeyBindingController implements ReactiveController {
   ) {
     this._host = host;
     this._ref = options?.ref;
-    this._options = { ...KeyBindingController._defaultOptions, ...options };
+    this._options = toMerged(
+      KeyBindingController._defaultOptions,
+      options ?? {}
+    );
 
     if (Array.isArray(this._options.skip)) {
       this._skipSelector = this._options.skip.join(',');
@@ -343,7 +352,10 @@ class KeyBindingController implements ReactiveController {
   ) {
     const { keys, modifiers } = parseKeys(key);
     const combination = createCombinationKey(keys, modifiers);
-    const options = { ...this._options?.bindingDefaults, ...bindingOptions };
+    const options = toMerged(
+      this._options.bindingDefaults!,
+      bindingOptions ?? {}
+    );
 
     for (const each of [...keys, ...modifiers]) {
       this._allowedKeys.add(each);
