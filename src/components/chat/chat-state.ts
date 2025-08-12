@@ -54,6 +54,8 @@ export class ChatState {
     'below-messages';
   /** Default time in milliseconds before dispatching stop typing event */
   private _stopTypingDelay = 3000;
+  private _isTyping = false;
+  private _lastTyped = Date.now();
   //#endregion
 
   //#region Public properties
@@ -525,16 +527,27 @@ export class ChatState {
       e.preventDefault();
       this.sendMessage();
     } else {
-      this.emitEvent('igcTypingChange', {
-        detail: { isTyping: true },
-      });
-
-      // wait 3 seconds and dispatch a stop-typing event
-      setTimeout(() => {
+      this._lastTyped = Date.now();
+      if (!this._isTyping) {
         this.emitEvent('igcTypingChange', {
-          detail: { isTyping: false },
+          detail: { isTyping: true },
         });
-      }, 3000);
+        this._isTyping = true;
+      }
+
+      const stopTypingDelay = this.stopTypingDelay;
+      setTimeout(() => {
+        if (
+          this._isTyping &&
+          stopTypingDelay &&
+          this._lastTyped + stopTypingDelay < Date.now()
+        ) {
+          this.emitEvent('igcTypingChange', {
+            detail: { isTyping: false },
+          });
+          this._isTyping = false;
+        }
+      }, stopTypingDelay);
     }
   }
 
