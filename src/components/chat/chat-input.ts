@@ -19,7 +19,6 @@ import {
   attachmentIcon,
   fileDocumentIcon,
   fileImageIcon,
-  fileOtherIcon,
   sendButtonIcon,
 } from './types.js';
 
@@ -99,17 +98,13 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
     registerIconFromText('file-image', fileImageIcon, 'material');
-    registerIconFromText('file-other', fileOtherIcon, 'material');
   }
 
   private getIconName(fileType: string | undefined): string {
-    if (fileType?.startsWith('text')) {
-      return 'file-document';
-    }
     if (fileType?.startsWith('image')) {
       return 'file-image';
     }
-    return 'file-other';
+    return 'file-document';
   }
 
   public get defaultAttachmentsArea(): TemplateResult {
