@@ -14,6 +14,10 @@ $theme: $material;
     [part~='label'] {
         color: var-get($theme, 'label-hover-color');
     }
+
+    [part~='thumb']:not([part~='checked']) {
+        background: var-get($theme, 'thumb-off-hover-color');
+    }
 }
 
 :host([disabled]),

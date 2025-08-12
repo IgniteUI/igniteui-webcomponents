@@ -17,7 +17,7 @@ import { styles as shared } from './themes/shared/message-list.common.css.js';
  * - Renders messages using the `<igc-chat-message>` component.
  * - Manages focus highlighting on active messages.
  * - Automatically scrolls to the bottom when new messages arrive, unless auto-scroll is disabled.
- * - Displays a typing indicator if the chat state option `isComposing` is true.
+ * - Displays a typing indicator if the chat state option `isTyping` is true.
  *
  * Accessibility:
  * - Uses ARIA roles and properties for grouping and active descendant management.
@@ -93,12 +93,12 @@ export default class IgcChatMessageListComponent extends LitElement {
   }
 
   /**
-   * Renders the typing indicator template if composing.
+   * Renders the typing indicator template.
    * @protected
    */
   protected *renderLoadingTemplate() {
-    yield html`${this._chatState?.options?.templates?.composingIndicatorTemplate
-      ? this._chatState.options.templates.composingIndicatorTemplate
+    yield html`${this._chatState?.options?.templates?.typingIndicatorTemplate
+      ? this._chatState.options.templates.typingIndicatorTemplate
       : html`<div part="typing-indicator">
           <div part="typing-dot"></div>
           <div part="typing-dot"></div>
@@ -140,7 +140,7 @@ export default class IgcChatMessageListComponent extends LitElement {
              }
            )}
           ${
-            this._chatState?.options?.isComposing
+            this._chatState?.options?.isTyping
               ? this.renderLoadingTemplate()
               : nothing
           }

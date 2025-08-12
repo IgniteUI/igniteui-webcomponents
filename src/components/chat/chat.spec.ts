@@ -46,7 +46,7 @@ describe('Chat', () => {
       : html``;
   };
 
-  const composingIndicatorTemplate = html`<span>loading...</span>`;
+  const typingIndicatorTemplate = html`<span>loading...</span>`;
 
   const attachmentTemplate = (message: any) => {
     return html`${message.attachments.map((attachment: any) => {
@@ -782,10 +782,10 @@ describe('Chat', () => {
       expect(diff).to.equal(GAP);
     });
 
-    it('should render composing indicator if `isComposing` is true', async () => {
+    it('should render typing indicator if `isTyping` is true', async () => {
       chat.messages = [messages[0]];
       chat.options = {
-        isComposing: true,
+        isTyping: true,
       };
       await elementUpdated(chat);
 
@@ -994,12 +994,12 @@ describe('Chat', () => {
       });
     });
 
-    it('should render composingIndicatorTemplate', async () => {
+    it('should render typingIndicatorTemplate', async () => {
       chat.messages = [messages[0]];
       chat.options = {
-        isComposing: true,
+        isTyping: true,
         templates: {
-          composingIndicatorTemplate: composingIndicatorTemplate,
+          typingIndicatorTemplate: typingIndicatorTemplate,
         },
       };
       await elementUpdated(chat);

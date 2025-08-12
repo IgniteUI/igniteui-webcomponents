@@ -250,7 +250,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
     addKeybindings(this, {
       skip: () => !this.isInteractive,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowUp, () => this.emitValueUpdate(this.value + this.step))
       .set(arrowRight, () =>
