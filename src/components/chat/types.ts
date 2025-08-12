@@ -109,9 +109,9 @@ export type IgcChatOptions = {
    */
   disableAttachments?: boolean;
   /**
-   * Indicates whether the other user is currently typing or composing a message.
+   * Indicates whether the other user is currently typing a message.
    */
-  isComposing?: boolean;
+  isTyping?: boolean;
   /**
    * The accepted files that could be attached.
    * Defines the file types as a list of comma-separated values (e.g. "image/*,.pdf") that the file input should accept.
@@ -191,7 +191,7 @@ export type IgcChatTemplates = {
   /**
    * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
    */
-  composingIndicatorTemplate?: unknown;
+  typingIndicatorTemplate?: unknown;
 
   /**
    * Template for customizing the text input element (usually a `<textarea>` or `<input>`).

@@ -116,7 +116,7 @@ const _messageActionsTemplate = (msg: any) => {
     : html``;
 };
 
-const _composingIndicatorTemplate = html`<span>LOADING...</span>`;
+const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
 const _textInputTemplate = (text: string) =>
   html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
 const _textAreaActionsTemplate = html`<igc-button
@@ -146,7 +146,7 @@ const ai_chat_options = {
   suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
   templates: {
     // messageActionsTemplate: messageActionsTemplate,
-    //composingIndicatorTemplate: _composingIndicatorTemplate,
+    // typingIndicatorTemplate: _typingIndicatorTemplate,
     // textInputTemplate: _textInputTemplate,
     // textAreaActionsTemplate: _textAreaActionsTemplate,
     // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
@@ -475,9 +475,9 @@ async function handleAIMessageSend(e: CustomEvent) {
     return;
   }
 
-  chat.options = { ...ai_chat_options, suggestions: [], isComposing: true };
+  chat.options = { ...ai_chat_options, suggestions: [], isTyping: true };
   setTimeout(async () => {
-    chat.options = { ...ai_chat_options, suggestions: [], isComposing: false };
+    chat.options = { ...ai_chat_options, suggestions: [], isTyping: false };
     let response: any;
     let responseText = '';
     const attachments: IgcMessageAttachment[] = [];
