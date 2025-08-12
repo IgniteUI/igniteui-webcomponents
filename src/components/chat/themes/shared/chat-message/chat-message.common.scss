@@ -3,12 +3,6 @@
 
 $theme: $material;
 
-:host([part~='active']) {
-    &::part(message-container) {
-        background: var-get($theme, 'message-focus-color');
-    }
-}
-
 [part~='sent'] {
     background: var-get($theme, 'message-background');
 }
