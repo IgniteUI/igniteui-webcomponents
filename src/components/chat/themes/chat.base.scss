@@ -3,12 +3,11 @@
 
 $inline-inset: rem(16px);
 
-// should be removed
 :host {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  box-shadow: var(--ig-elevation-4);
+  box-shadow: var(--ig-elevation-24);
   display: flex;
   flex-direction: column;
 }
