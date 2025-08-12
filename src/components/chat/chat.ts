@@ -1,9 +1,10 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -106,6 +107,18 @@ export interface IgcChatComponentEventMap {
   igcInputChange: CustomEvent<string>;
 }
 
+const Slots = setSlots(
+  'prefix',
+  'title',
+  'actions',
+  'suggestions-header',
+  'suggestions',
+  'suggestions-actions',
+  'suggestions-header',
+  'suggestion',
+  'empty-state'
+);
+
 /**
  * A chat UI component for displaying messages, attachments, and input interaction.
  *
@@ -154,13 +167,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private readonly _chatState = createChatState(this);
 
+  private readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
+
   private _context = new ContextProvider(this, {
     context: chatContext,
     initialValue: this._chatState,
   });
-
-  @state()
-  private _hasContent = false;
 
   @query(IgcChatInputComponent.tagName)
   private _chatInput!: IgcChatInputComponent;
@@ -250,7 +264,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderHeader() {
-    return html` <div part="header">
+    const hasContent =
+      this._slots.hasAssignedElements('prefix') ||
+      this._slots.hasAssignedElements('title') ||
+      this._slots.hasAssignedElements('actions');
+    return html` <div part="header" ?hidden=${!hasContent}>
       <slot name="prefix" part="prefix"></slot>
       <slot name="title" part="title"
         >${this._chatState.options?.headerText}</slot
@@ -288,26 +306,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this._chatState, true);
   }
 
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => {
-      this._hasContent =
-        this._chatState?.hasSlotContent('prefix') ||
-        this._chatState?.hasSlotContent('title') ||
-        this._chatState?.hasSlotContent('actions');
-    });
-    return root;
-  }
-
   protected override render() {
     const hasSuggestions =
       this._chatState.options?.suggestions &&
       this._chatState.options.suggestions.length > 0;
     return html`
       <div part="chat-container">
-        ${this._hasContent || this._chatState.options?.headerText
-          ? this.renderHeader()
-          : nothing}
+        ${this.renderHeader()}
         ${this.messages.length === 0
           ? html`<div part="empty-state">
               <slot name="empty-state"> </slot>
