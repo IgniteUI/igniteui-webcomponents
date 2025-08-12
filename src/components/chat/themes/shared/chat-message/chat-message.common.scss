@@ -8,7 +8,11 @@ $theme: $material;
         background: var-get($theme, 'message-focus-color');
     }
 }
-
+pre {
+    // white-space: pre-wrap;
+    // word-break: break-word;
+    overflow-x: auto;
+}
 [part~='sent'] {
     background: var-get($theme, 'message-background');
 }

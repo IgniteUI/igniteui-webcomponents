@@ -1472,7 +1472,7 @@ describe('Chat', () => {
     it('should render message as plain text by default', async () => {
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
 
       expect(messageElements?.[0].shadowRoot?.textContent?.trim()).to.equal(
@@ -1484,15 +1484,14 @@ describe('Chat', () => {
       chat.options = {
         messageRenderer: new MarkdownMessageRenderer(),
       };
+      await elementUpdated(chat);
+      // await aTimeout(500);
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
-      const mdRenderer = spy(
-        messageElements?.[0] as any,
-        'renderDefaultMarkdown'
-      );
+      const mdRenderer = spy(messageElements?.[0] as any, 'renderContent');
 
       await elementUpdated(chat);
 
@@ -1510,21 +1509,16 @@ describe('Chat', () => {
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector('.message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
       const mdCustomRenderer = spy(
         messageElements?.[0] as any,
-        'renderCustomMarkdown'
-      );
-      const mdDefaultRenderer = spy(
-        messageElements?.[0] as any,
-        'renderDefaultMarkdown'
+        'renderContent'
       );
 
       await elementUpdated(chat);
 
       expect(mdCustomRenderer).to.have.been.calledOnce;
-      expect(mdDefaultRenderer).not.to.have.been.called;
     });
   });
 });

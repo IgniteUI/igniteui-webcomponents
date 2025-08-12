@@ -74,16 +74,23 @@ export default class IgcChatMessageComponent extends LitElement {
   @state()
   private renderer?: ChatMessageRenderer;
 
-  /**
-   * Renders the current message using the assigned `renderer`.
-   * If no message is available or renderer is missing, sets empty HTML.
-   *
-   * @returns {Promise<void>} A promise that resolves once rendering is complete.
-   */
-  private async renderContent(): Promise<void> {
-    if (!this.message) return;
-    const rendered = (await this.renderer?.render(this.message)) ?? html``;
+  @state()
+  private renderedTextCache: Map<string, unknown> = new Map();
+
+  private async renderText(message: IgcMessage) {
+    if (!message.id) {
+      // fallback if message has no ID
+      return (await this.renderer?.render(message)) ?? html``;
+    }
+
+    if (this.renderedTextCache.has(message.id)) {
+      return this.renderedTextCache.get(message.id);
+    }
+
+    const rendered = (await this.renderer?.render(message)) ?? html``;
+    this.renderedTextCache.set(message.id, rendered);
     this.renderedContent = rendered;
+    return rendered;
   }
 
   /**
@@ -109,7 +116,8 @@ export default class IgcChatMessageComponent extends LitElement {
     changedProps: Map<string, any>
   ): Promise<void> {
     if (changedProps.has('message') || changedProps.has('renderer')) {
-      await this.renderContent();
+      this.renderedTextCache.clear();
+      await this.renderText(this.message!);
     }
   }
 
@@ -126,6 +134,12 @@ export default class IgcChatMessageComponent extends LitElement {
    */
   protected override render() {
     const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
+
+    if (!this.message) {
+      return html``;
+    }
+
+    // const renderTextFn = (m: IgcMessage) => this.renderText(m);
 
     return html`
       <div part=${containerPart}>
