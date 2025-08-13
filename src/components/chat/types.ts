@@ -88,7 +88,13 @@ export type AttachmentTemplate = (
  * @returns {unknown} A custom rendered representation of the message.
  */
 export type MessageTemplate = (message: IgcMessage) => unknown;
-
+export type MessageTemplateFn = (
+  message: IgcMessage,
+  ctx?: {
+    textContent: unknown;
+    templates: Required<IgcChatTemplates>;
+  }
+) => unknown;
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
  */
@@ -145,7 +151,7 @@ export type IgcChatOptions = {
   /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
-  templates?: IgcChatTemplates;
+  templates?: Partial<IgcChatTemplates>;
 
   /**
    * Optional custom renderer for chat messages.
@@ -184,7 +190,7 @@ export type IgcChatTemplates = {
    * Template for rendering a single chat message.
    * Use this to customize message layout, formatting, or metadata.
    */
-  messageTemplate?: MessageTemplate;
+  messageTemplate?: MessageTemplateFn;
 
   /**
    * Template for rendering message-specific actions such as edit, delete, reply, etc.
@@ -231,7 +237,13 @@ export interface ChatMessageRenderer {
    * @returns {unknown} The rendered output, typically an HTMLElement, DocumentFragment, or a lit-html TemplateResult,
    * depending on the renderer implementation.
    */
-  render(message: IgcMessage): unknown;
+  render(
+    message: IgcMessage,
+    ctx?: {
+      templates: Required<IgcChatTemplates>;
+      renderText: (message: IgcMessage) => unknown;
+    }
+  ): unknown;
 
   /**
    * Performs optional asynchronous initialization.

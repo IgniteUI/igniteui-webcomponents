@@ -159,7 +159,6 @@ const ai_chat_options = {
     // textAreaActionsTemplate: _textAreaActionsTemplate,
     // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
   },
-  // markdownRenderer: _customRenderer
 };
 
 const chat_options = {
@@ -169,6 +168,12 @@ const chat_options = {
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
   messageRenderer: new MarkdownMessageRenderer(),
+  templates: {
+    messageActionsTemplate: _messageActionsTemplate,
+    attachmentHeaderTemplate: () => html`<span>Attachments</span>`,
+    textInputTemplate: _textInputTemplate,
+    textAreaActionsTemplate: _textAreaActionsTemplate,
+  },
 };
 
 function handleCustomSendClick() {

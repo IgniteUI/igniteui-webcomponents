@@ -1,7 +1,10 @@
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
-import { PlainTextRenderer } from './plain-text-renderer.js';
+import {
+  DefaultChatRenderer,
+  PlainTextRenderer,
+} from './plain-text-renderer.js';
 import type {
   ChatMessageRenderer,
   IgcChatOptions,
@@ -86,7 +89,10 @@ export class ChatState {
    * Defaults to PlainTextRenderer if no custom renderer is set.
    */
   public get messageRenderer(): ChatMessageRenderer {
-    return this._options?.messageRenderer ?? new PlainTextRenderer();
+    return (
+      this._options?.messageRenderer ??
+      new DefaultChatRenderer(new PlainTextRenderer(), this._options?.templates)
+    );
   }
 
   /**
