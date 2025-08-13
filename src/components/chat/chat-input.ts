@@ -101,11 +101,6 @@ export default class IgcChatInputComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-    // Configure keybindings to not skip textarea events and bind Enter key
-    addKeybindings(this, {
-      skip: ['input', 'select'],
-      ref: this._textAreaRef,
-    }).setActivateHandler(this.handleKeyDown);
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
@@ -195,6 +190,20 @@ export default class IgcChatInputComponent extends LitElement {
       this._chatState.updateAcceptedTypesCache();
       this._chatState.textArea = this.textInputElement;
     }
+
+    // Use keybindings controller to capture all key events
+    // Custom skip function that never skips - this captures ALL key events
+    const keybindings = addKeybindings(this, {
+      skip: () => false, // Never skip any key events
+      ref: this._textAreaRef,
+    });
+
+    // Override the controller's handleEvent to capture all keys
+    // This is a more direct approach that doesn't require listing specific keys
+    keybindings.handleEvent = (event: KeyboardEvent) => {
+      // Call our handler for every key event
+      this.handleKeyDown(event);
+    };
   }
 
   protected override updated() {
