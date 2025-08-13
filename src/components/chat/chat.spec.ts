@@ -11,6 +11,7 @@ import {
   arrowDown,
   arrowUp,
   endKey,
+  enterKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -437,15 +438,17 @@ describe('Chat', () => {
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
       // When there is a text in the text area, the send button should be enabled
-      textArea?.setAttribute('value', 'Hello!');
-      textArea?.dispatchEvent(new Event('input'));
+      let value = 'Hello!';
+      textArea?.setAttribute('value', value);
+      textArea?.dispatchEvent(new CustomEvent('igcInput', { detail: value }));
       await elementUpdated(chat);
 
       expect(sendButton?.disabled).to.be.false;
 
       // When there is no text in the text area, the send button should be disabled
-      textArea?.setAttribute('value', '');
-      textArea?.dispatchEvent(new Event('input'));
+      value = '';
+      textArea?.setAttribute('value', value);
+      textArea?.dispatchEvent(new CustomEvent('igcInput', { detail: value }));
       await elementUpdated(chat);
 
       expect(sendButton?.disabled).to.be.true;
@@ -1071,7 +1074,9 @@ describe('Chat', () => {
 
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
-          textArea.dispatchEvent(new Event('input'));
+          textArea.dispatchEvent(
+            new CustomEvent('igcInput', { detail: 'Hello!' })
+          );
           await elementUpdated(chat);
           simulateClick(sendButton);
           await elementUpdated(chat);
@@ -1227,16 +1232,12 @@ describe('Chat', () => {
 
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
-          textArea.dispatchEvent(new Event('input'));
+          textArea.dispatchEvent(
+            new CustomEvent('igcInput', { detail: 'Hello!' })
+          );
           await elementUpdated(chat);
           simulateFocus(textArea);
-          textArea?.dispatchEvent(
-            new KeyboardEvent('keydown', {
-              key: 'Enter',
-              bubbles: true,
-              cancelable: true,
-            })
-          );
+          simulateKeyboard(textArea, enterKey);
           await elementUpdated(chat);
           await clock.tickAsync(500);
 
@@ -1421,7 +1422,9 @@ describe('Chat', () => {
       expect(textArea).not.to.be.undefined;
       if (textArea) {
         textArea.setAttribute('value', 'Hello!');
-        textArea.dispatchEvent(new Event('input'));
+        textArea.dispatchEvent(
+          new CustomEvent('igcInput', { detail: 'Hello!' })
+        );
         await elementUpdated(chat);
         expect(eventSpy).calledWith('igcInputChange', {
           detail: { value: 'Hello!' },
@@ -1444,7 +1447,9 @@ describe('Chat', () => {
 
       if (sendButton && textArea) {
         textArea.setAttribute('value', 'Hello!');
-        textArea.dispatchEvent(new Event('input'));
+        textArea.dispatchEvent(
+          new CustomEvent('igcInput', { detail: 'Hello!' })
+        );
         await elementUpdated(chat);
         simulateClick(sendButton);
         await elementUpdated(chat);

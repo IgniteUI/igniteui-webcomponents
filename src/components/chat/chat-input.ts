@@ -217,7 +217,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private handleKeyDown(e: KeyboardEvent) {
-    if (e.key === enterKey && !e.shiftKey) {
+    if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
     } else {
