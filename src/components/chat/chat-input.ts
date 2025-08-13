@@ -2,10 +2,15 @@ import { consume } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
+import {
+  addKeybindings,
+  enterKey,
+} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -77,6 +82,8 @@ export default class IgcChatInputComponent extends LitElement {
   @query(IgcTextareaComponent.tagName)
   private textInputElement!: IgcTextareaComponent;
 
+  private readonly _textAreaRef = createRef<IgcTextareaComponent>();
+
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
     this._chatState?.updateAcceptedTypesCache();
@@ -94,6 +101,11 @@ export default class IgcChatInputComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+    // Configure keybindings to not skip textarea events and bind Enter key
+    addKeybindings(this, {
+      skip: ['input', 'select'],
+      ref: this._textAreaRef,
+    }).setActivateHandler(this.handleKeyDown);
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
@@ -127,12 +139,12 @@ export default class IgcChatInputComponent extends LitElement {
   public get defaultTextArea(): TemplateResult {
     return html` <igc-textarea
       part="text-input"
+      ${ref(this._textAreaRef)}
       .placeholder=${this.inputPlaceholder}
       resize="auto"
       rows="1"
       .value=${this.inputValue}
       @igcInput=${this.handleInput}
-      @keydown=${this.handleKeyDown}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
     ></igc-textarea>`;
@@ -196,7 +208,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === enterKey && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
     } else {
