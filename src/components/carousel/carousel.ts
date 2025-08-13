@@ -338,7 +338,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._indicatorsContainerRef,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, this._handleArrowLeft)
       .set(arrowRight, this._handleArrowRight)
@@ -347,12 +346,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._prevButtonRef,
-      bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this._handleNavigationInteractionPrevious);
 
     addKeybindings(this, {
       ref: this._nextButtonRef,
-      bindingDefaults: { preventDefault: true },
     }).setActivateHandler(this._handleNavigationInteractionNext);
 
     createMutationController(this, {

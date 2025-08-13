@@ -55,7 +55,6 @@ export class ChatState {
 
   /**
    * Sets the list of chat messages.
-   * Also sorts messages by timestamp and requests host update.
    */
   public set messages(value: IgcMessage[]) {
     this._messages = value;

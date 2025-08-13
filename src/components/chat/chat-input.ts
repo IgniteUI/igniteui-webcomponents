@@ -2,10 +2,15 @@ import { consume } from '@lit/context';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
+import {
+  addKeybindings,
+  enterKey,
+} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -19,7 +24,6 @@ import {
   attachmentIcon,
   fileDocumentIcon,
   fileImageIcon,
-  fileOtherIcon,
   sendButtonIcon,
 } from './types.js';
 
@@ -78,6 +82,8 @@ export default class IgcChatInputComponent extends LitElement {
   @query(IgcTextareaComponent.tagName)
   private textInputElement!: IgcTextareaComponent;
 
+  private readonly _textAreaRef = createRef<IgcTextareaComponent>();
+
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
     this._chatState?.updateAcceptedTypesCache();
@@ -99,17 +105,13 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
     registerIconFromText('file-image', fileImageIcon, 'material');
-    registerIconFromText('file-other', fileOtherIcon, 'material');
   }
 
   private getIconName(fileType: string | undefined): string {
-    if (fileType?.startsWith('text')) {
-      return 'file-document';
-    }
     if (fileType?.startsWith('image')) {
       return 'file-image';
     }
-    return 'file-other';
+    return 'file-document';
   }
 
   public get defaultAttachmentsArea(): TemplateResult {
@@ -132,12 +134,12 @@ export default class IgcChatInputComponent extends LitElement {
   public get defaultTextArea(): TemplateResult {
     return html` <igc-textarea
       part="text-input"
+      ${ref(this._textAreaRef)}
       .placeholder=${this.inputPlaceholder}
       resize="auto"
       rows="1"
       .value=${this.inputValue}
       @igcInput=${this.handleInput}
-      @keydown=${this.handleKeyDown}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
     ></igc-textarea>`;
@@ -188,6 +190,20 @@ export default class IgcChatInputComponent extends LitElement {
       this._chatState.updateAcceptedTypesCache();
       this._chatState.textArea = this.textInputElement;
     }
+
+    // Use keybindings controller to capture all key events
+    // Custom skip function that never skips - this captures ALL key events
+    const keybindings = addKeybindings(this, {
+      skip: () => false, // Never skip any key events
+      ref: this._textAreaRef,
+    });
+
+    // Override the controller's handleEvent to capture all keys
+    // This is a more direct approach that doesn't require listing specific keys
+    keybindings.handleEvent = (event: KeyboardEvent) => {
+      // Call our handler for every key event
+      this.handleKeyDown(event);
+    };
   }
 
   protected override updated() {
@@ -201,7 +217,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === enterKey && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
     } else {
