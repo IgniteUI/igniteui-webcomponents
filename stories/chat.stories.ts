@@ -171,7 +171,7 @@ const chat_options = {
   templates: {
     messageActionsTemplate: _messageActionsTemplate,
     attachmentHeaderTemplate: () => html`<span>Attachments</span>`,
-    textInputTemplate: _textInputTemplate,
+    // textInputTemplate: _textInputTemplate,
     textAreaActionsTemplate: _textAreaActionsTemplate,
   },
 };

@@ -23,7 +23,7 @@ export class PlainTextRenderer implements ChatMessageRenderer {
 }
 
 export class DefaultChatRenderer implements ChatMessageRenderer {
-  private cache = new Map<string, unknown>();
+  private cache = new Map<string, { text: string; rendered: unknown }>();
 
   constructor(
     private baseTextRenderer: ChatMessageRenderer, // e.g. markdown/plaintext renderer
@@ -46,13 +46,15 @@ export class DefaultChatRenderer implements ChatMessageRenderer {
       attachmentContentTemplate: () => nothing,
 
       messageTemplate: (m, ctx) => html`
-        ${ctx.textContent}
-        ${m.attachments?.length ? ctx.templates.attachmentTemplate(m) : nothing}
-        ${ctx.templates.messageActionsTemplate(m)}
+        ${ctx?.textContent}
+        ${m.attachments?.length
+          ? ctx?.templates.attachmentTemplate(m)
+          : nothing}
+        ${ctx?.templates.messageActionsTemplate(m)}
       `,
 
       messageActionsTemplate: () => nothing,
-      composingIndicatorTemplate: () => nothing,
+      typingIndicatorTemplate: () => nothing,
       textInputTemplate: (text) => html`<textarea .value=${text}></textarea>`,
       textAreaActionsTemplate: () => nothing,
       textAreaAttachmentsTemplate: () => nothing,
@@ -68,11 +70,19 @@ export class DefaultChatRenderer implements ChatMessageRenderer {
 
   /** Cached renderer for message text */
   protected async renderText(message: IgcMessage) {
-    if (!message.id) return this.baseTextRenderer.render(message);
-    if (this.cache.has(message.id)) return this.cache.get(message.id);
-
+    if (!message.id) return await this.baseTextRenderer.render(message);
+    if (this.cache.has(message.id)) {
+      const cached = this.cache.get(message.id);
+      if (cached && cached.text === message.text) {
+        return cached.rendered;
+      }
+      this.cache.delete(message.id);
+    }
+    if (!message.text) {
+      return html``;
+    }
     const rendered = await this.baseTextRenderer.render(message);
-    this.cache.set(message.id, rendered);
+    this.cache.set(message.id, { text: message.text, rendered });
     return rendered;
   }
 
