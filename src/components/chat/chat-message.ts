@@ -7,10 +7,6 @@ import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
-import {
-  DefaultChatRenderer,
-  PlainTextRenderer,
-} from './plain-text-renderer.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
@@ -82,11 +78,7 @@ export default class IgcChatMessageComponent extends LitElement {
   protected override async firstUpdated(
     _changedProperties: PropertyValues
   ): Promise<void> {
-    const baseRenderer =
-      this._chatState?.options?.messageRenderer ?? new PlainTextRenderer();
-    const userTemplates = this._chatState?.options?.templates;
-
-    this.renderer = new DefaultChatRenderer(baseRenderer, userTemplates);
+    this.renderer = this._chatState?.options?.renderer;
   }
 
   /**

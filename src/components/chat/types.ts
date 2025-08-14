@@ -157,7 +157,9 @@ export type IgcChatOptions = {
    * Optional custom renderer for chat messages.
    * If provided, this will be used to render all messages instead of the default rendering logic.
    */
-  messageRenderer?: ChatMessageRenderer;
+  // messageRenderer?: ChatMessageRenderer;
+
+  renderer?: ChatMessageRenderer;
 };
 
 /**

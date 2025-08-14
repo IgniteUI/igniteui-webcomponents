@@ -14,6 +14,7 @@ import type {
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
+import { ChatRenderer } from '../src/components/chat/chat-renderer.js';
 
 // const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 // const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -167,13 +168,12 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
-  messageRenderer: new MarkdownMessageRenderer(),
-  templates: {
+  renderer: new ChatRenderer(new MarkdownMessageRenderer(), {
     messageActionsTemplate: _messageActionsTemplate,
     attachmentHeaderTemplate: () => html`<span>Attachments</span>`,
     // textInputTemplate: _textInputTemplate,
     textAreaActionsTemplate: _textAreaActionsTemplate,
-  },
+  }),
 };
 
 function handleCustomSendClick() {
@@ -460,6 +460,9 @@ function generateAIResponse(message: string): string {
 ##### Heading 5
 ###### Heading 6
 `;
+  }
+  if (lowerMessage.includes('long')) {
+    return 'Another update regarding the integration: I’ve updated the messageTemplate I’m using to render styled tables using markdown, and also implemented the regenerate functionality for any message in the chat (regenerating a message in the middle of the conversation will drop the rest of the messages after the regenerated message). Video attached at the end, as usual. I also temporarily commented out the logic to include dashboards in the chat, although it’s still there.';
   }
 
   return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
