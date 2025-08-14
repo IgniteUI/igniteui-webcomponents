@@ -11,6 +11,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageListComponent from './chat-message-list.js';
+import type { ChatRenderer } from './chat-renderer.js';
 import { createChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
@@ -300,6 +301,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
       </slot>
       <slot name="suggestions-actions" part="suggestions-actions"></slot>
     </div>`;
+  }
+
+  public override disconnectedCallback() {
+    super.disconnectedCallback();
+    (this._chatState?.options?.renderer as ChatRenderer)?.clearCache();
   }
 
   protected override firstUpdated() {
