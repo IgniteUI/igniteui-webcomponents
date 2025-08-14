@@ -4,8 +4,10 @@
 $inline-inset: rem(16px);
 
 :host {
+  --igc-chat-height: 100%;
+
   width: 100%;
-  height: 100vh;
+  height: var(--igc-chat-height);
   overflow: hidden;
   box-shadow: var(--ig-elevation-24);
   display: flex;
@@ -20,7 +22,7 @@ $inline-inset: rem(16px);
   gap: rem(24px);
 }
 
-igc-chat-message-list,
+[part='chat-messages'],
 [part='empty-state'],
 [part='suggestions-container'] {
   max-width: calc(rem(760px) + $inline-inset * 2);

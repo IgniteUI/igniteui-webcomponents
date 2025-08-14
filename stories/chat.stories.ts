@@ -590,6 +590,7 @@ export const Basic: Story = {
     messages = initialMessages;
     return html`
       <igc-chat
+        style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}
         .options=${chat_options}
         @igcMessageCreated=${handleMessageSend}
@@ -610,13 +611,18 @@ export const Supabase: Story = {
     });
   },
   render: () => html`
-    <igc-chat @igcMessageCreated=${handleMessageCreatedSupabase}> </igc-chat>
+    <igc-chat
+      style="--igc-chat-height: calc(100vh - 32px);"
+      @igcMessageCreated=${handleMessageCreatedSupabase}
+    >
+    </igc-chat>
   `,
 };
 
 export const AI: Story = {
   render: () => html`
     <igc-chat
+      style="--igc-chat-height: calc(100vh - 32px);"
       .draftMessage=${draftMessage}
       .options=${ai_chat_options}
       @igcMessageCreated=${handleAIMessageSend}
@@ -654,6 +660,7 @@ export const Chat_Templates: Story = {
     messages = [];
     return html`
       <igc-chat
+        style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}
         .options=${options}
         @igcMessageCreated=${handleMessageSend}
