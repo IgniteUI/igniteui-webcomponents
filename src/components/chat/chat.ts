@@ -256,6 +256,36 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatInput.defaultSendButton;
   }
 
+  /**
+   * Scrolls the view to a specific message by id.
+   * @param messageId - The id of the message to scroll to
+   */
+  public scrollToMessage(messageId: string) {
+    // Find the message list component
+    const messageListComponent = this.shadowRoot?.querySelector(
+      'igc-chat-message-list'
+    );
+    if (!messageListComponent) {
+      return;
+    }
+
+    // Look for the message element inside the message list's shadow DOM
+    const messageElement = messageListComponent.shadowRoot?.querySelector(
+      `#message-${messageId}`
+    );
+
+    if (!messageElement) {
+      return;
+    }
+
+    // Scroll the message into view with smooth behavior
+    messageElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest',
+    });
+  }
+
   @watch('messages')
   @watch('draftMessage')
   @watch('options')
