@@ -103,7 +103,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     addKeybindings(this, {
       ref: this._headerRef,
       skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true },
     })
       .setActivateHandler(this._toggleWithEvent)
       .set([altKey, arrowDown], this._openWithEvent)

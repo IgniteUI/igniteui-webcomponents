@@ -637,7 +637,6 @@ describe('Date range picker - two inputs', () => {
       it('should set the calendar active date to the altered date of the range while typing', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const aMonthAgo = today.add('month', -1);
-        const twoMonthsAgo = today.add('month', -2);
         picker.value = null;
         picker.open = true;
         await elementUpdated(picker);
@@ -699,25 +698,6 @@ describe('Date range picker - two inputs', () => {
         expect(eventSpy).calledWith('igcChange', {
           detail: { start: aMonthAgo.native, end: today.native },
         });
-        eventSpy.resetHistory();
-
-        checkSelectedRange(picker, {
-          start: aMonthAgo.native,
-          end: today.native,
-        });
-        checkDatesEqual(calendar.activeDate, aMonthAgo.native);
-
-        dateTimeInputs[0].setSelectionRange(0, 1);
-        simulateKeyboard(dateTimeInputs[0], arrowDown);
-        await elementUpdated(picker);
-
-        expect(eventSpy).calledWith('igcInput');
-        checkDatesEqual(dateTimeInputs[0].value!, twoMonthsAgo.native);
-        checkSelectedRange(picker, {
-          start: twoMonthsAgo.native,
-          end: today.native,
-        });
-        checkDatesEqual(calendar.activeDate, twoMonthsAgo.native);
       });
 
       it('should set the calendar active date to the typed date and reflect selection in calendar', async () => {

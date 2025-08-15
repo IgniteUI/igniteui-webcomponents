@@ -461,7 +461,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
-      bindingDefaults: { preventDefault: true },
     })
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
