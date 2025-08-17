@@ -129,3 +129,43 @@ $dropdown-theme: dropdown-theme.$bootstrap;
         }
     }
 }
+
+:host {
+    [slot='suffix']:not([part|='toggle']):not([part|='clear']),
+    [slot='prefix'] {
+        padding-inline: unset;
+    }
+
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(14px));
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot='suffix']),
+    [part|='toggle'] {
+        border-inline-end: .0625rem solid var(--border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--border-color);
+    }
+}
+
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot='suffix']),
+    [part|='toggle'] {
+        border-inline-end: .0625rem solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--disabled-border-color);
+    }
+}

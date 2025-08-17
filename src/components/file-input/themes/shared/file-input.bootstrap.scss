@@ -101,3 +101,13 @@ $theme-file-input: file-input.$bootstrap;
         --disabled-border-color: var(--input-border-color);
     }
 }
+
+:host(:not([disabled]):state(ig-invalid)) {
+	[part~='prefixed'] ::slotted([slot='prefix']) {
+	    border-inline-start-color: var(--error-secondary-color);
+	}
+	
+	[part~='suffixed'] ::slotted([slot='suffix']) {
+	    border-inline-end-color: var(--error-secondary-color);
+	}
+}

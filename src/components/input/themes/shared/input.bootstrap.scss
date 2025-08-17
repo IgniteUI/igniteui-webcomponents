@@ -211,3 +211,35 @@ $theme: $bootstrap;
         color: var-get($theme, 'disabled-text-color');
     }
 }
+
+:host {
+    [part='prefix'] {
+        border-inline-start-width: 0;
+    }
+
+    [part='suffix'] {
+        border-inline-end-width: 0;
+    }
+}
+
+:host(:not(:disabled):not([role='combobox'])),
+:host(:not([disabled]):not([role='combobox'])) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: .0625rem solid var(--border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--border-color);
+    }
+}
+
+:host(:disabled:not([role='combobox'])),
+:host([disabled]:not([role='combobox'])) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: .0625rem solid var(--disabled-border-color);
+    }
+
+   ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--disabled-border-color);
+    }
+}

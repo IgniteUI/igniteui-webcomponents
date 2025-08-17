@@ -158,3 +158,48 @@ textarea {
         box-shadow: none;
     }
 }
+
+:host {
+    [part~='prefix'],
+    [part~='suffix'] {
+        padding-inline: unset;
+    }
+
+    ::slotted([slot="prefix"]),
+    ::slotted([slot="suffix"]) {
+        padding-inline: pad-inline(rem(10px), rem(12px), rem(12px));
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    [part~='prefix'] {
+        border-inline-start-width: 0;
+    }
+
+    [part~='suffix'] {
+        border-inline-end-width: 0;
+    }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: .0625rem solid var(--border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--border-color);
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: .0625rem solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: .0625rem solid var(--disabled-border-color);
+    }
+}
