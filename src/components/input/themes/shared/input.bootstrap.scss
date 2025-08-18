@@ -18,6 +18,14 @@ $theme: $bootstrap;
         grid-auto-rows: minmax(rem(20px), auto);
         margin-block-start: rem(4px);
     }
+
+    [part='prefix'] {
+        border-inline-start-width: 0;
+    }
+
+    [part='suffix'] {
+        border-inline-end-width: 0;
+    }
 }
 
 [part~='container'] {
@@ -212,18 +220,8 @@ $theme: $bootstrap;
     }
 }
 
-:host {
-    [part='prefix'] {
-        border-inline-start-width: 0;
-    }
-
-    [part='suffix'] {
-        border-inline-end-width: 0;
-    }
-}
-
-:host(:not(:disabled):not([role='combobox'])),
-:host(:not([disabled]):not([role='combobox'])) {
+:host(:not(:disabled, [role='combobox'])),
+:host(:not([disabled], [role='combobox'])) {
     ::slotted([slot='suffix']) {
         border-inline-end: .0625rem solid var(--border-color);
     }
