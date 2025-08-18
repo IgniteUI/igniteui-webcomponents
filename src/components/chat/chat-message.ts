@@ -6,18 +6,27 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { registerIconFromText } from '../icon/icon.registry.js';
 import type { ChatState } from './chat-state.js';
 import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
-import type { IgcMessage } from './types.js';
+import {
+  copyIcon,
+  type IgcMessage,
+  regenerateIcon,
+  thumbDownIcon,
+  thumbUpIcon,
+} from './types.js';
 
 /**
  * A chat message component for displaying individual messages in `<igc-chat>`.
  *
  * @element igc-chat-message
+ *
+ * @fires igcMessageReact - Fired when a message is reacted to.
  *
  * This component renders a single chat message including:
  * - Message text (sanitized)
@@ -76,6 +85,51 @@ export default class IgcChatMessageComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+    registerIconFromText('copy', copyIcon, 'material');
+    registerIconFromText('thumb_up', thumbUpIcon, 'material');
+    registerIconFromText('thumb_down', thumbDownIcon, 'material');
+    registerIconFromText('regenerate', regenerateIcon, 'material');
+  }
+
+  private get defaultMessageActionsTemplate() {
+    const isLastMessage = this.message === this._chatState?.messages.at(-1);
+    return this.message?.sender !== 'user' &&
+      this.message?.text.trim() &&
+      (!isLastMessage || !this._chatState?.options?.isTyping)
+      ? html`<div>
+          <igc-icon-button
+            name="copy"
+            collection="material"
+            variant="flat"
+            @click=${this.handleMessageActionClick}
+          ></igc-icon-button>
+          <igc-icon-button
+            name="thumb_up"
+            collection="material"
+            variant="flat"
+            @click=${this.handleMessageActionClick}
+          ></igc-icon-button>
+          <igc-icon-button
+            name="thumb_down"
+            variant="flat"
+            collection="material"
+            @click=${this.handleMessageActionClick}
+          ></igc-icon-button>
+          <igc-icon-button
+            name="regenerate"
+            variant="flat"
+            collection="material"
+            @click=${this.handleMessageActionClick}
+          ></igc-icon-button>
+        </div>`
+      : nothing;
+  }
+
+  private handleMessageActionClick(event: MouseEvent): void {
+    const reaction = (event.target as HTMLElement).getAttribute('name');
+    this._chatState?.emitEvent('igcMessageReact', {
+      detail: { message: this.message, reaction: reaction },
+    });
   }
 
   /**
@@ -109,7 +163,7 @@ export default class IgcChatMessageComponent extends LitElement {
             ? this._chatState.options.templates.messageActionsTemplate(
                 this.message
               )
-            : nothing}
+            : this.defaultMessageActionsTemplate}
         </div>
       </div>
     `;

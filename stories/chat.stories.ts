@@ -2,21 +2,15 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import { GoogleGenAI, Modality } from '@google/genai';
-// import { createClient } from '@supabase/supabase-js';
 import {
   IgcChatComponent,
   defineComponents,
   registerIcon,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
 import type {
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
-
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = ''; // createClient(supabaseUrl, supabaseKey);
 
 const ai = new GoogleGenAI({
   apiKey: 'googleGenAIKey',
@@ -28,7 +22,14 @@ defineComponents(IgcChatComponent);
 const metadata: Meta<IgcChatComponent> = {
   title: 'Chat',
   component: 'igc-chat',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A chat UI component for displaying messages, attachments, and input interaction.\n\nThis component is part of the Ignite UI Web Components suite.',
+      },
+    },
+  },
 };
 
 export default metadata;
@@ -37,16 +38,6 @@ type Story = StoryObj;
 
 // endregion
 
-const thumbUpIcon =
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z"/></svg>';
-const thumbDownIcon =
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-840h440v520L400-40l-50-50q-7-7-11.5-19t-4.5-23v-14l44-174H120q-32 0-56-24t-24-56v-80q0-7 2-15t4-15l120-282q9-20 30-34t44-14Zm360 80H240L120-480v80h360l-54 220 174-174v-406Zm0 406v-406 406Zm80 34v-80h120v-360H680v-80h200v520H680Z"/></svg>';
-const regenerateIcon =
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg>';
-
-registerIconFromText('thumb_up', thumbUpIcon, 'material');
-registerIconFromText('thumb_down', thumbDownIcon, 'material');
-registerIconFromText('regenerate', regenerateIcon, 'material');
 registerIcon(
   'home',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
@@ -55,6 +46,11 @@ registerIcon(
 registerIcon(
   'search',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
+
+registerIcon(
+  'alarm',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_alarm_24px.svg'
 );
 let messages: any[] = [];
 const initialMessages: any[] = [
@@ -92,23 +88,9 @@ const _messageActionsTemplate = (msg: any) => {
       ? html`
           <div>
             <igc-icon-button
-              name="thumb_up"
-              collection="material"
+              name="alarm"
               variant="flat"
-              @click=${() => alert(`Liked message: ${msg.text}`)}
-            ></igc-icon-button>
-            <igc-icon-button
-              name="thumb_down"
-              variant="flat"
-              collection="material"
-              @click=${() => alert(`Disliked message: ${msg.text}`)}
-            ></igc-icon-button>
-            <igc-icon-button
-              name="regenerate"
-              variant="flat"
-              collection="material"
-              @click=${() =>
-                alert(`Response should be re-generated: ${msg.text}`)}
+              @click=${() => alert(`Message reacted: ${msg.text}`)}
             ></igc-icon-button>
           </div>
         `
@@ -185,7 +167,7 @@ function handleMessageSend(e: CustomEvent) {
   if (!chat) {
     return;
   }
-  chat.options = { ...chat.options, suggestions: [] };
+  chat.options = { ...chat.options, suggestions: [], isTyping: true };
 
   const attachments: IgcMessageAttachment[] =
     newMessage.text.includes('picture') ||
@@ -217,176 +199,10 @@ function handleMessageSend(e: CustomEvent) {
     showResponse(chat, responseParts).then(() => {
       messages = chat.messages;
       isResponseSent = true;
+      chat.options = { ...chat.options, suggestions: [], isTyping: false };
       // TODO: add attachments (if any) to the response message
     });
   }, 1000);
-}
-
-// load messages and attachments from supabase
-async function fetchMessages() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('id, text, sender, timestamp, attachments (id, name, type)')
-    .order('timestamp', { ascending: true });
-
-  if (error) {
-    // console.log('Error fetching messages:', error);
-    return [];
-  }
-
-  if (!data || data.length === 0) {
-    return messages;
-  }
-
-  const mappedData = data.map((message) => ({
-    id: message.id,
-    text: message.text,
-    sender: message.sender,
-    timestamp: new Date(message.timestamp),
-    attachments: message.attachments.map((attachment: any) => ({
-      id: attachment.id,
-      name: attachment.name,
-      type: attachment.type,
-      url: supabase.storage.from('files').getPublicUrl(attachment.name).data
-        .publicUrl,
-    })),
-  }));
-  await processMappedData(mappedData);
-  return mappedData;
-}
-
-async function processMappedData(data: any) {
-  for (const message of data) {
-    for (const attachment of message.attachments) {
-      if (attachment.type.startsWith('image')) {
-        const file = await fetchAttachment(attachment.name);
-        if (file) {
-          attachment.file = file;
-        }
-      } else {
-        attachment.file = new File([], attachment.name, {
-          type: attachment.type,
-        });
-      }
-    }
-  }
-  return data;
-}
-
-async function fetchAttachment(name: string) {
-  const { data, error } = await supabase.storage.from('files').download(name);
-
-  if (error) {
-    // console.log('Error fetching attachment:', error);
-    return null;
-  }
-
-  const file = new File([data], name, {
-    type: data.type,
-  });
-
-  return file;
-}
-
-async function handleMessageCreatedSupabase(e: CustomEvent) {
-  const newMessage = e.detail;
-  const chat = document.querySelector('igc-chat');
-  if (!chat) {
-    return;
-  }
-
-  saveMessageToSupabase(newMessage);
-
-  const attachments: IgcMessageAttachment[] = [];
-  // newMessage.text.includes('picture') ||
-  // newMessage.text.includes('image') ||
-  // newMessage.text.includes('file')
-  //   ? [
-  //       {
-  //         id: 'random_img',
-  //         // type: newMessage.text.includes('file') ? 'file' : 'image',
-  //         url: 'https://picsum.photos/378/395',
-  //         name: 'random.png',
-  //       },
-  //     ]
-  //   : [];
-
-  isResponseSent = false;
-  setTimeout(() => {
-    // create empty response
-    const emptyResponse = {
-      id: Date.now().toString(),
-      text: '',
-      sender: 'bot',
-      timestamp: new Date(),
-      attachments: attachments,
-    };
-    chat.messages = [...chat.messages, emptyResponse];
-
-    const responseParts = generateAIResponse(e.detail.text).split(' ');
-    showResponse(chat, responseParts).then(() => {
-      const lastMessageIndex = chat.messages.length - 1;
-      const lastMessage = chat.messages[lastMessageIndex];
-      lastMessage.attachments = attachments;
-      saveMessageToSupabase(lastMessage);
-      isResponseSent = true;
-      // TODO: add attachments (if any) to the response message
-    });
-  }, 1000);
-}
-
-async function saveMessageToSupabase(message: any) {
-  const { error } = await supabase
-    .from('messages')
-    .insert([
-      {
-        id: message.id,
-        text: message.text,
-        sender: message.sender,
-        timestamp: message.timestamp,
-      },
-    ])
-    .select();
-  if (error) {
-    // console.log('Error saving message:', error);
-  }
-
-  // save attachments to supabase storage
-  if (message.attachments) {
-    message.attachments.forEach(async (attachment: IgcMessageAttachment) => {
-      if (!attachment.file) {
-        return;
-      }
-
-      const { error } = await supabase.storage
-        .from('files')
-        .upload(attachment.file.name, attachment.file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-      if (error) {
-        // console.log('Error saving attachment:', error);
-      }
-
-      // save attachment metadata to database
-      const { error: attachmentError } = await supabase
-        .from('attachments')
-        .insert([
-          {
-            id: attachment.id,
-            message_id: message.id,
-            name: attachment.file.name,
-            type: attachment.file.type,
-          },
-        ])
-        .select();
-      if (attachmentError) {
-        // console.log('Error saving attachment to table "attachments":', attachmentError);
-      }
-    });
-  }
-
-  return message;
 }
 
 async function showResponse(chat: any, responseParts: any) {
@@ -568,6 +384,12 @@ async function handleAIMessageSend(e: CustomEvent) {
   }, 2000);
 }
 
+function handleMessageReacted() {
+// e: CustomEvent
+  // const { message, reaction } = e.detail;
+  // console.log('Message reacted:', message, 'Reaction:', reaction);
+}
+
 export const Basic: Story = {
   render: () => {
     messages = initialMessages;
@@ -576,30 +398,12 @@ export const Basic: Story = {
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}
         .options=${chat_options}
+        @igcMessageReact=${handleMessageReacted}
         @igcMessageCreated=${handleMessageSend}
       >
       </igc-chat>
     `;
   },
-};
-
-export const Supabase: Story = {
-  play: async () => {
-    fetchMessages().then((msgs) => {
-      messages = msgs;
-      const chat = document.querySelector('igc-chat');
-      if (chat) {
-        chat.messages = messages;
-      }
-    });
-  },
-  render: () => html`
-    <igc-chat
-      style="--igc-chat-height: calc(100vh - 32px);"
-      @igcMessageCreated=${handleMessageCreatedSupabase}
-    >
-    </igc-chat>
-  `,
 };
 
 export const AI: Story = {
@@ -664,3 +468,199 @@ export const Chat_Templates: Story = {
     `;
   },
 };
+
+// #region SUPABASE
+
+// import { createClient } from '@supabase/supabase-js';
+
+// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+// const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// const supabase = createClient(supabaseUrl, supabaseKey);
+
+// // load messages and attachments from supabase
+// async function fetchMessages() {
+//   const { data, error } = await supabase
+//     .from('messages')
+//     .select('id, text, sender, timestamp, attachments (id, name, type)')
+//     .order('timestamp', { ascending: true });
+
+//   if (error) {
+//     // console.log('Error fetching messages:', error);
+//     return [];
+//   }
+
+//   if (!data || data.length === 0) {
+//     return messages;
+//   }
+
+//   const mappedData = data.map((message) => ({
+//     id: message.id,
+//     text: message.text,
+//     sender: message.sender,
+//     timestamp: new Date(message.timestamp),
+//     attachments: message.attachments.map((attachment: any) => ({
+//       id: attachment.id,
+//       name: attachment.name,
+//       type: attachment.type,
+//       url: supabase.storage.from('files').getPublicUrl(attachment.name).data
+//         .publicUrl,
+//     })),
+//   }));
+//   await processMappedData(mappedData);
+//   return mappedData;
+// }
+
+// async function processMappedData(data: any) {
+//   for (const message of data) {
+//     for (const attachment of message.attachments) {
+//       if (attachment.type.startsWith('image')) {
+//         const file = await fetchAttachment(attachment.name);
+//         if (file) {
+//           attachment.file = file;
+//         }
+//       } else {
+//         attachment.file = new File([], attachment.name, {
+//           type: attachment.type,
+//         });
+//       }
+//     }
+//   }
+//   return data;
+// }
+
+// async function fetchAttachment(name: string) {
+//   const { data, error } = await supabase.storage.from('files').download(name);
+
+//   if (error) {
+//     // console.log('Error fetching attachment:', error);
+//     return null;
+//   }
+
+//   const file = new File([data], name, {
+//     type: data.type,
+//   });
+
+//   return file;
+// }
+
+// async function handleMessageCreatedSupabase(e: CustomEvent) {
+//   const newMessage = e.detail;
+//   const chat = document.querySelector('igc-chat');
+//   if (!chat) {
+//     return;
+//   }
+
+//   saveMessageToSupabase(newMessage);
+
+//   const attachments: IgcMessageAttachment[] = [];
+//   // newMessage.text.includes('picture') ||
+//   // newMessage.text.includes('image') ||
+//   // newMessage.text.includes('file')
+//   //   ? [
+//   //       {
+//   //         id: 'random_img',
+//   //         // type: newMessage.text.includes('file') ? 'file' : 'image',
+//   //         url: 'https://picsum.photos/378/395',
+//   //         name: 'random.png',
+//   //       },
+//   //     ]
+//   //   : [];
+
+//   isResponseSent = false;
+//   setTimeout(() => {
+//     // create empty response
+//     const emptyResponse = {
+//       id: Date.now().toString(),
+//       text: '',
+//       sender: 'bot',
+//       timestamp: new Date(),
+//       attachments: attachments,
+//     };
+//     chat.messages = [...chat.messages, emptyResponse];
+
+//     const responseParts = generateAIResponse(e.detail.text).split(' ');
+//     showResponse(chat, responseParts).then(() => {
+//       const lastMessageIndex = chat.messages.length - 1;
+//       const lastMessage = chat.messages[lastMessageIndex];
+//       lastMessage.attachments = attachments;
+//       saveMessageToSupabase(lastMessage);
+//       isResponseSent = true;
+//       // TODO: add attachments (if any) to the response message
+//     });
+//   }, 1000);
+// }
+
+// async function saveMessageToSupabase(message: any) {
+//   const { error } = await supabase
+//     .from('messages')
+//     .insert([
+//       {
+//         id: message.id,
+//         text: message.text,
+//         sender: message.sender,
+//         timestamp: message.timestamp,
+//       },
+//     ])
+//     .select();
+//   if (error) {
+//     // console.log('Error saving message:', error);
+//   }
+
+//   // save attachments to supabase storage
+//   if (message.attachments) {
+//     message.attachments.forEach(async (attachment: IgcMessageAttachment) => {
+//       if (!attachment.file) {
+//         return;
+//       }
+
+//       const { error } = await supabase.storage
+//         .from('files')
+//         .upload(attachment.file.name, attachment.file, {
+//           cacheControl: '3600',
+//           upsert: true,
+//         });
+//       if (error) {
+//         // console.log('Error saving attachment:', error);
+//       }
+
+//       // save attachment metadata to database
+//       const { error: attachmentError } = await supabase
+//         .from('attachments')
+//         .insert([
+//           {
+//             id: attachment.id,
+//             message_id: message.id,
+//             name: attachment.file.name,
+//             type: attachment.file.type,
+//           },
+//         ])
+//         .select();
+//       if (attachmentError) {
+//         // console.log('Error saving attachment to table "attachments":', attachmentError);
+//       }
+//     });
+//   }
+
+//   return message;
+// }
+
+// export const Supabase: Story = {
+//   play: async () => {
+//     fetchMessages().then((msgs) => {
+//       messages = msgs;
+//       const chat = document.querySelector('igc-chat');
+//       if (chat) {
+//         chat.messages = messages;
+//       }
+//     });
+//   },
+//   render: () => html`
+//     <igc-chat
+//       style="--igc-chat-height: calc(100vh - 32px);"
+//       @igcMessageCreated=${handleMessageCreatedSupabase}
+//     >
+//     </igc-chat>
+//   `,
+// };
+
+// #endregion

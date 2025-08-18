@@ -163,6 +163,37 @@ describe('Chat', () => {
 
   const GAP = 24; // Default gap between elements in the chat container
 
+  const messageReactions = `<div>
+                          <igc-icon-button
+                            collection="material"
+                            name="copy"
+                            type="button"
+                            variant="flat"
+                          >
+                          </igc-icon-button>
+                          <igc-icon-button
+                            collection="material"
+                            name="thumb_up"
+                            type="button"
+                            variant="flat"
+                          >
+                          </igc-icon-button>
+                          <igc-icon-button
+                            collection="material"
+                            name="thumb_down"
+                            type="button"
+                            variant="flat"
+                          >
+                          </igc-icon-button>
+                          <igc-icon-button
+                            collection="material"
+                            name="regenerate"
+                            type="button"
+                            variant="flat"
+                          >
+                          </igc-icon-button>
+                        </div>`;
+
   let chat: IgcChatComponent;
   let clock: SinonFakeTimers;
 
@@ -275,14 +306,15 @@ describe('Chat', () => {
 
       expect(chat.messages.length).to.equal(4);
 
-      expect(
-        messageContainer?.querySelectorAll('igc-chat-message')[0]
-      ).shadowDom.to.equal(
+      const firstMessage =
+        messageContainer?.querySelectorAll('igc-chat-message')[0];
+      expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
                     <div part="bubble">
                         <div>
                             <p>Hello! How can I help you today?</p>
                         </div>
+                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
                     </div>
                 </div>`
       );
@@ -319,14 +351,15 @@ describe('Chat', () => {
 
       expect(chat.messages.length).to.equal(1);
 
-      expect(
-        messageContainer?.querySelectorAll('igc-chat-message')[0]
-      ).shadowDom.to.equal(
+      const firstMessage =
+        messageContainer?.querySelectorAll('igc-chat-message')[0];
+      expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
                     <div part="bubble">
                         <div>
                             <p>Hello!</p>
                         </div>
+                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
                     </div>
                 </div>`
       );
@@ -621,6 +654,7 @@ describe('Chat', () => {
                             </div>
                             <igc-message-attachments>
                             </igc-message-attachments>
+                            ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
                     </div>`
         );
 
@@ -948,6 +982,7 @@ describe('Chat', () => {
                 </div>
                  <igc-message-attachments>
                  </igc-message-attachments>
+                 ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
             </div>`
         );
       });
@@ -1430,6 +1465,27 @@ describe('Chat', () => {
           detail: { value: 'Hello!' },
         });
       }
+    });
+
+    it('emits igcMessageReact', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      chat.messages = [messages[0]];
+      await elementUpdated(chat);
+      await aTimeout(500);
+
+      const messageElement = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelector(`div[part='message-list'`)
+        ?.querySelector('igc-chat-message');
+
+      const thumbUpIcon = messageElement?.shadowRoot?.querySelector(
+        'igc-icon-button[name="thumb_up"]'
+      ) as HTMLElement;
+
+      simulateClick(thumbUpIcon);
+      expect(eventSpy).calledWith('igcMessageReact', {
+        detail: { message: messages[0], reaction: 'thumb_up' },
+      });
     });
 
     it('can cancel `igcMessageCreated` event', async () => {

@@ -35,6 +35,15 @@ export interface IgcChatComponentEventMap {
   igcMessageCreated: CustomEvent<IgcMessage>;
 
   /**
+   * Dispatched when a new chat message is created (sent).
+   *
+   * @event igcMessageCreated
+   * @type {CustomEvent<IgcMessage>}
+   * @detail The message that was reacted to and the reaction.
+   */
+  igcMessageReact: CustomEvent<{ message: IgcMessage; reaction: string }>;
+
+  /**
    * Dispatched when a chat message attachment is clicked.
    *
    * @event igcAttachmentClick
