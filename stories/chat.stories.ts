@@ -119,8 +119,11 @@ const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
     )}
   </div>`;
 };
-const _customRenderer = (text: string) =>
-  html`<span>${text.toUpperCase()}</span>`;
+const _customRenderer = {
+  render: (m: IgcMessage) => {
+    return html`<span>${m.text.toUpperCase()}</span>`;
+  },
+};
 
 const ai_chat_options = {
   headerText: 'Chat',
@@ -434,7 +437,7 @@ export const Chat_Templates: Story = {
     const chat = document.querySelector('igc-chat');
     if (chat) {
       const actionsTemplate = html`
-        ${chat.defaultFileUploadButton}
+        <!-- ${chat.defaultFileUploadButton} -->
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>

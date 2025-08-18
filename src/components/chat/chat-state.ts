@@ -2,6 +2,8 @@ import { html, nothing, type TemplateResult } from 'lit';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
+import { DefaultChatRenderer } from './chat-renderer.js';
+import { PlainTextRenderer } from './plain-text-renderer.js';
 import type {
   IgcChatOptions,
   IgcChatTemplates,
@@ -56,7 +58,7 @@ export class ChatState {
       this.renderDefaultAttachmentContent(att),
     messageTemplate: (
       m: IgcMessage,
-      ctx: { textContent: string; templates: Required<IgcChatTemplates> }
+      ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
     ) => this.renderDefaultMessageTemplate(m, ctx),
     messageActionsTemplate: (message: IgcMessage) =>
       this.renderDefaultMessageActionsTemplate(message),
@@ -66,6 +68,7 @@ export class ChatState {
     textAreaAttachmentsTemplate: () => this.renderDefaultAttachmentsArea(),
   };
 
+  private _chatRenderer?: DefaultChatRenderer;
   //#endregion
 
   //#region Default Templates renderers
@@ -169,15 +172,16 @@ export class ChatState {
    */
   public renderDefaultMessageTemplate = (
     m: IgcMessage,
-    ctx: { textContent: string; templates: Required<IgcChatTemplates> }
+    ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
   ) => {
+    const templates = { ...this._defaultTemplates, ...ctx.templates };
     return html`
       ${ctx?.textContent ?? m.text}
       ${m.attachments?.length
         ? html`<igc-message-attachments .message=${m}>
           </igc-message-attachments>`
         : nothing}
-      ${ctx?.templates.messageActionsTemplate(m) ?? nothing}
+      ${templates.messageActionsTemplate(m) ?? nothing}
     `;
   };
 
@@ -414,6 +418,9 @@ export class ChatState {
     return { ...this._defaultTemplates, ...this.options?.templates };
   }
 
+  public get chatRenderer(): DefaultChatRenderer | undefined {
+    return this._chatRenderer;
+  }
   //#endregion
 
   /**
@@ -635,7 +642,7 @@ export class ChatState {
    * Updates the internal cache for accepted file types.
    * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
    */
-  public updateAcceptedTypesCache() {
+  public updateAcceptedTypesCache = () => {
     if (!this.options?.acceptedFiles) {
       this._acceptedTypesCache = null;
       return;
@@ -653,7 +660,7 @@ export class ChatState {
         types.filter((t) => t.endsWith('/*')).map((t) => t.slice(0, -2))
       ),
     };
-  }
+  };
 
   /**
    * Checks if a file's type or extension is accepted by the chat's acceptedFiles setting.
@@ -661,7 +668,7 @@ export class ChatState {
    * @param type Optional MIME type override if no file provided
    * @returns True if accepted, false otherwise
    */
-  public isFileTypeAccepted(file: File, type = ''): boolean {
+  public isFileTypeAccepted = (file: File, type = ''): boolean => {
     if (!this._acceptedTypesCache) return true;
 
     if (file === null && type === '') return false;
@@ -686,7 +693,7 @@ export class ChatState {
     // Check wildcard MIME types
     const [fileBaseType] = fileType.split('/');
     return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
-  }
+  };
 
   /**
    * Checks if a slot is empty.
@@ -697,6 +704,15 @@ export class ChatState {
     return (
       this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
         ?.childNodes.length !== 0
+    );
+  }
+
+  public initRenderer() {
+    const messageRenderer = this.options?.messageRenderer;
+    messageRenderer?.init?.();
+    this._chatRenderer = new DefaultChatRenderer(
+      this.options?.messageRenderer ?? new PlainTextRenderer(),
+      this.mergedTemplates
     );
   }
   //#endregion
