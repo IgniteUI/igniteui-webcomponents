@@ -18,7 +18,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
         margin-block-start: rem(4px);
     }
 
-		[slot='suffix']:not([part|='toggle'], [part|='clear']),
+    [slot='suffix']:not([part|='toggle'], [part|='clear']),
     [slot='prefix'] {
         padding-inline: unset;
     }
@@ -142,7 +142,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
         }
     }
 
-		::slotted([slot='suffix']),
+    ::slotted([slot='suffix']),
     [part|='toggle'] {
         border-inline-end: .0625rem solid var(--disabled-border-color);
     }

@@ -81,13 +81,13 @@ $theme-file-input: file-input.$bootstrap;
         border-color: var-get($theme, 'error-secondary-color');
     }
 
-		[part~='prefixed'] ::slotted([slot='prefix']) {
-	      border-inline-start-color: var(--error-secondary-color);
-	  }
+    [part~='prefixed'] ::slotted([slot='prefix']) {
+        border-inline-start-color: var(--error-secondary-color);
+    }
 
-	  [part~='suffixed'] ::slotted([slot='suffix']) {
-	      border-inline-end-color: var(--error-secondary-color);
-	  }
+    [part~='suffixed'] ::slotted([slot='suffix']) {
+        border-inline-end-color: var(--error-secondary-color);
+    }
 }
 
 :host(:not([disabled]):state(ig-invalid):focus-within) {
