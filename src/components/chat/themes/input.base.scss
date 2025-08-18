@@ -33,10 +33,9 @@
 
     input {
         position: absolute;
-        opacity: 0;
+        width: 0;
+        aspect-ratio: 1;
         inset: 0;
-        z-index: 1;
-        cursor: pointer;
     }
 }
 

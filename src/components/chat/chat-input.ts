@@ -25,6 +25,7 @@ import {
   fileDocumentIcon,
   fileImageIcon,
   sendButtonIcon,
+  starIcon,
 } from './types.js';
 
 /**
@@ -105,6 +106,7 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
     registerIconFromText('file-image', fileImageIcon, 'material');
+    registerIconFromText('star-icon', starIcon, 'material');
   }
 
   private getIconName(fileType: string | undefined): string {

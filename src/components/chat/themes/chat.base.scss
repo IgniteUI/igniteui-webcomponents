@@ -19,7 +19,6 @@ $inline-inset: rem(16px);
   flex-direction: column;
   align-items: center;
   height: 100%;
-  gap: rem(24px);
 }
 
 [part='chat-messages'],
@@ -28,12 +27,6 @@ $inline-inset: rem(16px);
   max-width: calc(rem(760px) + $inline-inset * 2);
   width: 100%;
   padding-inline: $inline-inset;
-}
-
-[part='suggestions-header'] {
-  @include type-style('subtitle-2') {
-    margin: 0;
-  };
 }
 
 [part='empty-state'] {
@@ -66,14 +59,9 @@ $inline-inset: rem(16px);
   margin-inline-end: rem(32px);
 }
 
-[part='suggestions-container'] {
-  display: flex;
-  flex-direction: column;
-  gap: rem(12px);
+igc-list {
+  --ig-size: 3;
 
-  igc-chip {
-    --ig-size: 3;
-
-    width: fit-content;
-  }
+  min-height: fit-content;
+  padding-block-end: rem(24px);
 }

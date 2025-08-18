@@ -5,7 +5,7 @@
     display: block;
     overflow-y: auto;
     flex: 1;
-    padding-block-start: rem(16px);
+    padding-block: rem(16px) rem(24px);
 }
 
 [part='message-list'] {
