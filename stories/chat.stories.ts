@@ -384,10 +384,20 @@ async function handleAIMessageSend(e: CustomEvent) {
   }, 2000);
 }
 
-function handleMessageReacted() {
-// e: CustomEvent
-  // const { message, reaction } = e.detail;
-  // console.log('Message reacted:', message, 'Reaction:', reaction);
+function handleMessageReacted(e: CustomEvent) {
+  const chat = document.querySelector('igc-chat');
+  if (!chat) {
+    return;
+  }
+
+  const { message, reaction } = e.detail;
+  const botResponse: IgcMessage = {
+    id: Date.now().toString(),
+    text: `Reacted with '${reaction}' to: '${message.text}'`,
+    sender: 'bot',
+    timestamp: new Date(),
+  };
+  chat.messages = [...chat.messages, botResponse];
 }
 
 export const Basic: Story = {
