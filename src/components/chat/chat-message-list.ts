@@ -65,7 +65,7 @@ export default class IgcChatMessageListComponent extends LitElement {
    * @param messageId - The id of the message to scroll to
    * @private
    */
-  private scrollToMessage(messageId: string) {
+  public scrollToMessage(messageId: string) {
     const messageElement = this.shadowRoot?.querySelector(
       `#message-${messageId}`
     );

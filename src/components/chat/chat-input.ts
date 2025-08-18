@@ -1,16 +1,10 @@
 import { consume } from '@lit/context';
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
-import {
-  addKeybindings,
-  enterKey,
-} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -65,10 +59,6 @@ export default class IgcChatInputComponent extends LitElement {
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
 
-  private _isTyping = false;
-
-  private _lastTyped = Date.now();
-
   /* blazorSuppress */
   public static register() {
     registerComponent(
@@ -83,18 +73,12 @@ export default class IgcChatInputComponent extends LitElement {
   @query(IgcTextareaComponent.tagName)
   private textInputElement!: IgcTextareaComponent;
 
-  private readonly _textAreaRef = createRef<IgcTextareaComponent>();
+  // private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
     this._chatState?.updateAcceptedTypesCache();
   }
-
-  @state()
-  private inputValue = '';
-
-  @state()
-  private inputPlaceholder = '';
 
   @state()
   private containerPart = 'input-container';
@@ -109,150 +93,12 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('star-icon', starIcon, 'material');
   }
 
-  private getIconName(fileType: string | undefined): string {
-    if (fileType?.startsWith('image')) {
-      return 'file-image';
-    }
-    return 'file-document';
-  }
-
-  public get defaultAttachmentsArea(): TemplateResult {
-    return html`${this._chatState?.inputAttachments?.map(
-      (attachment, index) => html`
-        <div part="attachment-wrapper" role="listitem">
-          <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
-            <igc-icon
-              slot="prefix"
-              name=${this.getIconName(attachment.file?.type ?? attachment.type)}
-              collection="material"
-            ></igc-icon>
-            <span part="attachment-name">${attachment.name}</span>
-          </igc-chip>
-        </div>
-      `
-    )} `;
-  }
-
-  public get defaultTextArea(): TemplateResult {
-    return html` <igc-textarea
-      part="text-input"
-      ${ref(this._textAreaRef)}
-      .placeholder=${this.inputPlaceholder}
-      resize="auto"
-      rows="1"
-      .value=${this.inputValue}
-      @igcInput=${this.handleInput}
-      @focus=${this.handleFocus}
-      @blur=${this.handleBlur}
-    ></igc-textarea>`;
-  }
-
-  public get defaultFileUploadButton(): TemplateResult {
-    return html`
-      <label for="input_attachments" part="upload-button">
-        <igc-icon-button
-          variant="flat"
-          name="attachment"
-          collection="material"
-        ></igc-icon-button>
-        <input
-          type="file"
-          id="input_attachments"
-          name="input_attachments"
-          multiple
-          accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
-          @change=${this.handleFileUpload}>
-        </input>
-      </label>
-    `;
-  }
-
-  public get defaultSendButton(): TemplateResult {
-    return html`<igc-icon-button
-      aria-label="Send message"
-      name="send-message"
-      collection="material"
-      variant="contained"
-      part="send-button"
-      ?disabled=${!this.inputValue.trim() &&
-      this._chatState?.inputAttachments.length === 0}
-      @click=${this.sendMessage}
-    ></igc-icon-button>`;
-  }
-
-  protected *renderDefaultFileUploadTemplate() {
-    yield html`${this._chatState?.options?.disableAttachments
-      ? nothing
-      : this.defaultFileUploadButton}`;
-  }
-
   protected override firstUpdated() {
     this.setupDragAndDrop();
     if (this._chatState) {
       this._chatState.updateAcceptedTypesCache();
       this._chatState.textArea = this.textInputElement;
     }
-
-    // Use keybindings controller to capture all key events
-    // Custom skip function that never skips - this captures ALL key events
-    const keybindings = addKeybindings(this, {
-      skip: () => false, // Never skip any key events
-      ref: this._textAreaRef,
-    });
-
-    // Override the controller's handleEvent to capture all keys
-    // This is a more direct approach that doesn't require listing specific keys
-    keybindings.handleEvent = (event: KeyboardEvent) => {
-      // Call our handler for every key event
-      this.handleKeyDown(event);
-    };
-  }
-
-  protected override updated() {
-    this.inputValue = this._chatState?.inputValue || '';
-    this.inputPlaceholder = this._chatState?.options?.inputPlaceholder || '';
-  }
-
-  private handleInput({ detail }: CustomEvent<string>) {
-    this.inputValue = detail;
-    this._chatState?.handleInputChange(this.inputValue);
-  }
-
-  private handleKeyDown(e: KeyboardEvent) {
-    if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
-      e.preventDefault();
-      this.sendMessage();
-    } else {
-      this._lastTyped = Date.now();
-      if (!this._isTyping) {
-        this._chatState?.emitEvent('igcTypingChange', {
-          detail: { isTyping: true },
-        });
-        this._isTyping = true;
-      }
-
-      const stopTypingDelay = this._chatState?.stopTypingDelay;
-      setTimeout(() => {
-        if (
-          this._isTyping &&
-          stopTypingDelay &&
-          this._lastTyped + stopTypingDelay < Date.now()
-        ) {
-          this._chatState?.emitEvent('igcTypingChange', {
-            detail: { isTyping: false },
-          });
-          this._isTyping = false;
-        }
-      }, stopTypingDelay);
-    }
-  }
-
-  private handleFocus() {
-    this._chatState?.emitEvent('igcInputFocus');
-  }
-
-  private handleBlur() {
-    this._chatState?.emitEvent('igcInputBlur');
   }
 
   private setupDragAndDrop() {
@@ -325,79 +171,20 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
-  private sendMessage() {
-    if (
-      !this.inputValue.trim() &&
-      this._chatState?.inputAttachments.length === 0
-    )
-      return;
-
-    this._chatState?.addMessage({
-      text: this.inputValue,
-      attachments: this._chatState?.inputAttachments,
-    });
-    this.inputValue = '';
-
-    if (this.textInputElement) {
-      this.textInputElement.style.height = 'auto';
-    }
-
-    this.updateComplete.then(() => {
-      this.textInputElement?.focus();
-    });
-  }
-
-  private handleFileUpload(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-
-    const files = Array.from(input.files);
-    this._chatState?.attachFiles(files);
-    this.requestUpdate();
-
-    input.value = '';
-  }
-
-  private removeAttachment(index: number) {
-    this._chatState?.removeAttachment(index);
-    this.requestUpdate();
-  }
-
-  private renderActionsArea() {
-    return html`<div part="buttons-container">
-      ${this._chatState?.options?.templates?.textAreaActionsTemplate
-        ? this._chatState?.options?.templates?.textAreaActionsTemplate
-        : html`
-            ${this.renderDefaultFileUploadTemplate()} ${this.defaultSendButton}
-          `}
-    </div>`;
-  }
-
-  private renderAttachmentsArea() {
-    return html`<div part="attachments" role="list" aria-label="Attachments">
-      ${this._chatState?.options?.templates?.textAreaAttachmentsTemplate
-        ? this._chatState.options.templates.textAreaAttachmentsTemplate(
-            this._chatState?.inputAttachments
-          )
-        : this.defaultAttachmentsArea}
-    </div>`;
-  }
-
   protected override render() {
+    const templates = this._chatState?.mergedTemplates;
     return html`
       <div part="${this.containerPart}">
         ${this._chatState?.inputAttachments &&
         this._chatState?.inputAttachments.length > 0
-          ? this.renderAttachmentsArea()
+          ? templates?.textAreaAttachmentsTemplate(
+              this._chatState?.inputAttachments
+            )
           : nothing}
         <div part="input-wrapper">
-          ${this._chatState?.options?.templates?.textInputTemplate
-            ? this._chatState.options.templates.textInputTemplate(
-                this._chatState?.inputValue
-              )
-            : this.defaultTextArea}
+          ${templates?.textInputTemplate(this._chatState?.inputValue ?? '')}
         </div>
-        ${this.renderActionsArea()}
+        ${templates?.textAreaActionsTemplate()}
       </div>
     `;
   }

@@ -61,12 +61,6 @@ describe('Chat', () => {
     })}`;
   };
 
-  const attachmentActionsTemplate = (message: any) => {
-    return html`${message.attachments.map(() => {
-      return html`<igc-button>?</igc-button>`;
-    })}`;
-  };
-
   const attachmentContentTemplate = (message: any) => {
     return html`${message.attachments.map((attachment: any) => {
       return html`<p>
@@ -221,7 +215,7 @@ describe('Chat', () => {
 
       expect(chat).shadowDom.to.equal(
         ` <div part="chat-container">
-                    <div hidden="" part="header"> 
+                    <div hidden="" part="header">
                       <slot name="prefix" part="prefix"></slot>
                       <slot name="title" part="title"></slot>
                       <slot part="actions" name="actions"></slot>
@@ -437,7 +431,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div hidden="" part="header"> 
+        `<div hidden="" part="header">
                       <slot name="prefix" part="prefix">
                       </slot>
                       <slot name="title" part="title">
@@ -667,7 +661,7 @@ describe('Chat', () => {
             `<div part="attachments-container">
                 <div part="attachment">
                   <div part="attachment-header" role="button">
-                      <div part="details">                          
+                      <div part="details">
                           <igc-icon
                               part="attachment-icon"
                               collection="material"
@@ -698,7 +692,7 @@ describe('Chat', () => {
             `<div part="attachments-container">
                 <div part="attachment">
                   <div part="attachment-header" role="button">
-                      <div part="details">                          
+                      <div part="details">
                           <igc-icon
                             part="attachment-icon"
                             collection="material"
@@ -914,7 +908,7 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           attachmentHeaderTemplate: attachmentHeaderTemplate,
-          attachmentActionsTemplate: attachmentActionsTemplate,
+          // attachmentActionsTemplate: attachmentActionsTemplate,
           attachmentContentTemplate: attachmentContentTemplate,
         },
       };
@@ -1060,7 +1054,7 @@ describe('Chat', () => {
       chat.options = {
         templates: {
           textInputTemplate: textInputTemplate,
-          textAreaActionsTemplate: textAreaActionsTemplate,
+          textAreaActionsTemplate: () => textAreaActionsTemplate,
           textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
         },
       };

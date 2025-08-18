@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
@@ -14,7 +14,6 @@ import {
   closeIcon,
   fileIcon,
   type IgcMessage,
-  type IgcMessageAttachment,
   imageIcon,
   moreIcon,
   previewIcon,
@@ -72,105 +71,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  private handleHeaderClick(attachment: IgcMessageAttachment) {
-    this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
-  }
-
-  private getURL(attachment: IgcMessageAttachment): string {
-    if (attachment.url) {
-      return attachment.url;
-    }
-    if (attachment.file) {
-      return URL.createObjectURL(attachment.file);
-    }
-    return '';
-  }
-
-  private renderDefaultAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`${attachment.type === 'image' ||
-    attachment.file?.type.startsWith('image/')
-      ? html`<img
-          part="image-attachment"
-          src=${this.getURL(attachment)}
-          alt=${attachment.name}
-        />`
-      : nothing}`;
-  }
-
-  private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
-    return html`<div part="details">
-      ${this._chatState?.options?.templates?.attachmentHeaderTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentHeaderTemplate(
-            this.message
-          )
-        : html`${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html`<igc-icon
-                  name="image"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`
-              : html`<igc-icon
-                  name="file"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`}
-            <span part="file-name">${attachment.name}</span> `}
-    </div>`;
-  }
-
-  private renderAttachmentHeaderActions() {
-    return html`<div part="actions">
-      ${this._chatState?.options?.templates?.attachmentActionsTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentActionsTemplate(
-            this.message
-          )
-        : nothing}
-    </div>`;
-  }
-
-  private renderAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`<div part="attachment-content">
-      ${this._chatState?.options?.templates?.attachmentContentTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentContentTemplate(
-            this.message
-          )
-        : this.renderDefaultAttachmentContent(attachment)}
-    </div>`;
-  }
-
-  private renderDefaultAttachmentsTemplate() {
-    return html`${this.message?.attachments?.map(
-      (attachment) =>
-        html`<div part="attachment">
-          <div
-            part="attachment-header"
-            role="button"
-            @click=${() => this.handleHeaderClick(attachment)}
-          >
-            ${this.renderAttachmentHeaderText(attachment)}
-            ${this.renderAttachmentHeaderActions()}
-          </div>
-
-          ${attachment.type === 'image' ||
-          attachment.file?.type.startsWith('image/') ||
-          this._chatState?.options?.templates?.attachmentContentTemplate
-            ? this.renderAttachmentContent(attachment)
-            : nothing}
-        </div>`
-    )}`;
-  }
-
   protected override render() {
     return html`
       <div part="attachments-container">
-        ${this._chatState?.options?.templates?.attachmentTemplate &&
-        this.message
-          ? this._chatState.options.templates.attachmentTemplate(this.message)
-          : this.renderDefaultAttachmentsTemplate()}
+        ${this._chatState?.mergedTemplates.attachmentsTemplate(this.message!)}
       </div>
     `;
   }

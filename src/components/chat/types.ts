@@ -89,7 +89,10 @@ export type AttachmentTemplate = (
  * @param {IgcMessage} message - The chat message to render.
  * @returns {unknown} A custom rendered representation of the message.
  */
-export type MessageTemplate = (message: IgcMessage) => unknown;
+export type MessageTemplate = (
+  message: IgcMessage,
+  ctx: { textContent: string; templates: Required<IgcChatTemplates> }
+) => unknown;
 
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
@@ -147,7 +150,7 @@ export type IgcChatOptions = {
   /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
-  templates?: IgcChatTemplates;
+  templates?: Partial<IgcChatTemplates>;
   markdownRenderer?: (text: string) => TemplateResult; //TODO: Remove when highlighter is implemented
 };
 
@@ -157,25 +160,25 @@ export type IgcChatOptions = {
  */
 export type IgcChatTemplates = {
   /**
-   * Template for rendering an attachment in a message.
+   * Template for rendering the attachments of a message.
    */
-  attachmentTemplate?: MessageTemplate;
+  attachmentsTemplate?: (m: IgcMessage) => unknown;
+
+  /**
+   * Template for rendering an attachment in a message.
+   * This allows customization of how each attachment is displayed.
+   */
+  attachmentTemplate?: (attachment: IgcMessageAttachment) => unknown;
 
   /**
    * Template for rendering a custom header above the attachment in a message.
    */
-  attachmentHeaderTemplate?: MessageTemplate;
-
-  /**
-   * Template for rendering custom action buttons or controls related to an attachment
-   * (e.g. download, preview, delete).
-   */
-  attachmentActionsTemplate?: MessageTemplate;
+  attachmentHeaderTemplate?: (attachment: IgcMessageAttachment) => unknown;
 
   /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
-  attachmentContentTemplate?: MessageTemplate;
+  attachmentContentTemplate?: (attachment: IgcMessageAttachment) => unknown;
 
   /**
    * Template for rendering a single chat message.
@@ -184,9 +187,10 @@ export type IgcChatTemplates = {
   messageTemplate?: MessageTemplate;
 
   /**
-   * Template for rendering message-specific actions such as edit, delete, reply, etc.
+   * Template for rendering the actions available for a message (e.g. copy, like, dislike, regenerate).
+   * This allows customization of the buttons or controls shown for each message.
    */
-  messageActionsTemplate?: MessageTemplate;
+  messageActionsTemplate?: (message: IgcMessage) => unknown;
 
   /**
    * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
@@ -205,7 +209,7 @@ export type IgcChatTemplates = {
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: unknown;
+  textAreaActionsTemplate?: () => unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).
