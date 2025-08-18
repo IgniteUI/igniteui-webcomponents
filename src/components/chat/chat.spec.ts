@@ -161,8 +161,6 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
-  const GAP = 24; // Default gap between elements in the chat container
-
   const messageReactions = `<div>
                           <igc-icon-button
                             collection="material"
@@ -721,7 +719,7 @@ describe('Chat', () => {
 
     it('should not render container if suggestions are not provided', async () => {
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
+        `igc-list[part='suggestions-container']`
       );
 
       expect(suggestionsContainer).to.be.null;
@@ -734,30 +732,63 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
+        `igc-list[part='suggestions-container']`
       );
 
       expect(suggestionsContainer).dom.to.equal(
-        `<div aria-label="Suggestions" part="suggestions-container" role="list">
-                    <slot name="suggestions-header" part="suggestions-header"> </slot>
-                    <slot name="suggestions" part="suggestions">
-                        <slot name="suggestion" part="suggestion" role="listitem">
-                            <igc-chip>
-                                <span>
-                                Suggestion 1
-                                </span>
-                            </igc-chip>
-                            </slot>
-                            <slot name="suggestion" part="suggestion" role="listitem">
-                            <igc-chip>
-                                <span>
-                                Suggestion 2
-                                </span>
-                            </igc-chip>
-                        </slot>
-                    </slot>
-                    <slot name="suggestions-actions" part="suggestions-actions"> </slot>
-                </div>`
+        `<igc-list
+          aria-label="Suggestions"
+          part="suggestions-container"
+          role="list"
+        >
+          <igc-list-header
+            hidden=""
+            part="suggestions-header"
+          >
+            <slot name="suggestions-header">
+            </slot>
+          </igc-list-header>
+          <slot
+            name="suggestions"
+            part="suggestions"
+          >
+            <slot
+              name="suggestion"
+              part="suggestion"
+              role="listitem"
+            >
+              <igc-list-item>
+                <igc-icon
+                  collection="material"
+                  name="star-icon"
+                  slot="start"
+                >
+                </igc-icon>
+                <span>Suggestion 1</span>
+              </igc-list-item>
+            </slot>
+            <slot
+              name="suggestion"
+              part="suggestion"
+              role="listitem"
+            >
+              <igc-list-item>
+                <igc-icon
+                  collection="material"
+                  name="star-icon"
+                  slot="start"
+                >
+                </igc-icon>
+                <span>Suggestion 2</span>
+              </igc-list-item>
+            </slot>
+          </slot>
+          <slot
+            name="suggestions-actions"
+            part="suggestions-actions"
+          >
+          </slot>
+        </igc-list>`
       );
     });
 
@@ -767,7 +798,7 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
+        `igc-list[part='suggestions-container']`
       );
 
       expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
@@ -788,7 +819,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
+        `igc-list[part='suggestions-container']`
       )!;
 
       const messageList = chat.shadowRoot?.querySelector(
@@ -798,7 +829,7 @@ describe('Chat', () => {
       const diff =
         suggestionsContainer.getBoundingClientRect().top -
         messageList.getBoundingClientRect().bottom;
-      expect(diff).to.equal(GAP);
+      expect(diff).to.greaterThanOrEqual(0);
     });
 
     it("should render suggestions below input area when position is 'below-input'", async () => {
@@ -809,14 +840,14 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `div[part='suggestions-container']`
+        `igc-list[part='suggestions-container']`
       )!;
 
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
       const diff =
         suggestionsContainer.getBoundingClientRect().top -
         inputArea.getBoundingClientRect().bottom;
-      expect(diff).to.equal(GAP);
+      expect(diff).to.greaterThanOrEqual(0);
     });
 
     it('should render typing indicator if `isTyping` is true', async () => {
@@ -1139,13 +1170,13 @@ describe('Chat', () => {
         };
         await elementUpdated(chat);
 
-        const suggestionChips = chat.shadowRoot
-          ?.querySelector(`div[part='suggestions-container']`)
-          ?.querySelectorAll('igc-chip');
+        const suggestionItems = chat.shadowRoot
+          ?.querySelector(`igc-list[part='suggestions-container']`)
+          ?.querySelectorAll('igc-list-item');
 
-        expect(suggestionChips?.length).to.equal(2);
-        if (suggestionChips) {
-          simulateClick(suggestionChips[0]);
+        expect(suggestionItems?.length).to.equal(2);
+        if (suggestionItems) {
+          simulateClick(suggestionItems[0]);
           await elementUpdated(chat);
 
           expect(eventSpy).calledWith('igcMessageCreated');

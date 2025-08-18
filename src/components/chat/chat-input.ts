@@ -81,7 +81,10 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   @query(IgcTextareaComponent.tagName)
-  private textInputElement!: IgcTextareaComponent;
+  private _textInputElement!: IgcTextareaComponent;
+
+  @query('#input_attachments')
+  protected _inputAttachmentsButton!: IgcIconButtonComponent;
 
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
@@ -154,6 +157,7 @@ export default class IgcChatInputComponent extends LitElement {
           variant="flat"
           name="attachment"
           collection="material"
+          @click=${() => this._inputAttachmentsButton.click()}
         ></igc-icon-button>
         <input
           type="file"
@@ -190,7 +194,7 @@ export default class IgcChatInputComponent extends LitElement {
     this.setupDragAndDrop();
     if (this._chatState) {
       this._chatState.updateAcceptedTypesCache();
-      this._chatState.textArea = this.textInputElement;
+      this._chatState.textArea = this._textInputElement;
     }
 
     // Use keybindings controller to capture all key events
@@ -338,12 +342,12 @@ export default class IgcChatInputComponent extends LitElement {
     });
     this.inputValue = '';
 
-    if (this.textInputElement) {
-      this.textInputElement.style.height = 'auto';
+    if (this._textInputElement) {
+      this._textInputElement.style.height = 'auto';
     }
 
     this.updateComplete.then(() => {
-      this.textInputElement?.focus();
+      this._textInputElement?.focus();
     });
   }
 
