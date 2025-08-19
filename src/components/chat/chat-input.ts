@@ -5,6 +5,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext } from '../common/context.js';
+import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -102,6 +103,20 @@ export default class IgcChatInputComponent extends LitElement {
       this._chatState.updateAcceptedTypesCache();
       this._chatState.textArea = this._textInputElement;
     }
+
+    // Use keybindings controller to capture all key events
+    // Custom skip function that never skips - this captures ALL key events
+    const keybindings = addKeybindings(this, {
+      skip: () => false, // Never skip any key events
+      ref: this._chatState?.textAreaRef,
+    });
+
+    // Override the controller's handleEvent to capture all keys
+    // This is a more direct approach that doesn't require listing specific keys
+    keybindings.handleEvent = (event: KeyboardEvent) => {
+      // Call our handler for every key event
+      this._chatState?.handleKeyDown(event);
+    };
   }
 
   private setupDragAndDrop() {

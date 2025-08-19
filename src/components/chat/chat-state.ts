@@ -1,4 +1,7 @@
 import { html, nothing, type TemplateResult } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
+import { enterKey } from '../common/controllers/key-bindings.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
@@ -45,6 +48,9 @@ export class ChatState {
 
   private _isTyping = false;
   private _lastTyped = Date.now();
+
+  private readonly _textAreaRef = createRef<IgcTextareaComponent>();
+  private readonly _attachmentsButtonInputRef = createRef<HTMLInputElement>();
 
   /** Default templates of the chat components */
   private _defaultTemplates: Required<IgcChatTemplates> = {
@@ -97,12 +103,12 @@ export class ChatState {
   public renderDefaultTextArea = (): TemplateResult => {
     return html` <igc-textarea
       part="text-input"
+      ${ref(this._textAreaRef)}
       .placeholder=${this.options?.inputPlaceholder}
       resize="auto"
       rows="1"
       .value=${this.inputValue}
       @input=${this.handleInputChange}
-      @keydown=${this.handleKeyDown}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
     ></igc-textarea>`;
@@ -115,17 +121,23 @@ export class ChatState {
    */
   public renderDefaultFileUploadButton = (): TemplateResult => {
     return html`
-      <igc-file-input
-        multiple
-        .accept=${this.options?.acceptedFiles}
-        @igcChange=${this.handleFileUpload}
-      >
-        <igc-icon
-          slot="file-selector-text"
+      <label for="input_attachments" part="upload-button">
+        <igc-icon-button
+          variant="flat"
           name="attachment"
           collection="material"
-        ></igc-icon>
-      </igc-file-input>
+          @click=${() => this._attachmentsButtonInputRef?.value?.click()}
+        ></igc-icon-button>
+        <input
+          type="file"
+          id="input_attachments"
+          name="input_attachments"
+          ${ref(this._attachmentsButtonInputRef)}
+          multiple
+          accept=${ifDefined(this.options?.acceptedFiles === '' ? undefined : this.options?.acceptedFiles)}
+          @change=${this.handleFileUpload}>
+        </input>
+      </label>
     `;
   };
 
@@ -367,6 +379,13 @@ export class ChatState {
   }
 
   /**
+   * Gets the text area component.
+   */
+  public get textAreaRef(): Ref<IgcTextareaComponent> {
+    return this._textAreaRef;
+  }
+
+  /**
    * Gets the list of attachments currently attached to input.
    */
   public get inputAttachments(): IgcMessageAttachment[] {
@@ -538,7 +557,7 @@ export class ChatState {
   };
 
   public handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
     } else {
@@ -593,7 +612,7 @@ export class ChatState {
   };
 
   private handleFileUpload = (e: Event) => {
-    const input = (e.target as any).input as HTMLInputElement;
+    const input = e.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
