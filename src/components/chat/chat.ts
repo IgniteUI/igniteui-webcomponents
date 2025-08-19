@@ -353,16 +353,18 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return html`
       <div part="chat-container">
         ${this.renderHeader()}
-        ${this.messages.length === 0
-          ? html`<div part="empty-state">
-              <slot name="empty-state"> </slot>
-            </div>`
-          : html`<igc-chat-message-list part="chat-messages">
-            </igc-chat-message-list>`}
-        ${hasSuggestions &&
-        this._chatState.suggestionsPosition === 'below-messages'
-          ? this.renderSuggestions()
-          : nothing}
+        <div part="chat-wrapper">
+          ${this.messages.length === 0
+            ? html`<div part="empty-state">
+                <slot name="empty-state"> </slot>
+              </div>`
+            : html`<igc-chat-message-list part="chat-messages">
+              </igc-chat-message-list>`}
+          ${hasSuggestions &&
+          this._chatState.suggestionsPosition === 'below-messages'
+            ? this.renderSuggestions()
+            : nothing}
+        </div>
         <igc-chat-input> </igc-chat-input>
         ${hasSuggestions &&
         this._chatState.suggestionsPosition === 'below-input'

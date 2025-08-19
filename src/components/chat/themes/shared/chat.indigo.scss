@@ -14,8 +14,6 @@ $theme: $indigo;
     };
 }
 
-[part='suggestions-container'] {
-    igc-chip {
-      --ig-size: 2;
-    }
+igc-list {
+  --ig-size: 2;
 }

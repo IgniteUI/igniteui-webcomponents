@@ -30,4 +30,16 @@
     margin: 0;
     padding: 0;
   }
+
+  a {
+    overflow-wrap: anywhere;
+    color: color(primary, 500);
+  }
 }
+
+pre, code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+}
+
