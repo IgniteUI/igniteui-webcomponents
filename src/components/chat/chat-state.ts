@@ -108,7 +108,7 @@ export class ChatState {
       resize="auto"
       rows="1"
       .value=${this.inputValue}
-      @input=${this.handleInputChange}
+      @igcInput=${this.handleInputChange}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
     ></igc-textarea>`;
@@ -438,6 +438,16 @@ export class ChatState {
   }
 
   public get chatRenderer(): DefaultChatRenderer | undefined {
+    if (
+      !this._chatRenderer ||
+      this._chatRenderer !== this.options?.messageRenderer
+    ) {
+      this._chatRenderer = new DefaultChatRenderer(
+        this.options?.messageRenderer ?? new PlainTextRenderer(),
+        this.mergedTemplates
+      );
+      this.options?.messageRenderer?.init?.();
+    }
     return this._chatRenderer;
   }
   //#endregion
@@ -723,15 +733,6 @@ export class ChatState {
     return (
       this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
         ?.childNodes.length !== 0
-    );
-  }
-
-  public initRenderer() {
-    const messageRenderer = this.options?.messageRenderer;
-    messageRenderer?.init?.();
-    this._chatRenderer = new DefaultChatRenderer(
-      this.options?.messageRenderer ?? new PlainTextRenderer(),
-      this.mergedTemplates
     );
   }
   //#endregion
