@@ -218,9 +218,11 @@ describe('Chat', () => {
                       <slot name="title" part="title"></slot>
                       <slot part="actions" name="actions"></slot>
                     </div>
-                    <div part="empty-state">
-                      <slot name="empty-state">
-                      </slot>
+                    <div part="chat-wrapper">
+                      <div part="empty-state">
+                        <slot name="empty-state">
+                        </slot>
+                      </div>
                     </div>
                     <igc-chat-input>
                     </igc-chat-input>
@@ -274,6 +276,7 @@ describe('Chat', () => {
         html`<igc-chat .messages=${messages}> </igc-chat>`
       );
 
+      await aTimeout(500);
       const messageList = chat.shadowRoot?.querySelector(
         'igc-chat-message-list'
       );
@@ -303,9 +306,9 @@ describe('Chat', () => {
       expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
                     <div part="bubble">
-                        <div>
-                            <p>Hello! How can I help you today?</p>
-                        </div>
+                        <pre part="plain-text">
+                            Hello! How can I help you today?
+                        </pre>
                         ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
                     </div>
                 </div>`
@@ -316,9 +319,9 @@ describe('Chat', () => {
       ).shadowDom.to.equal(
         `<div part="message-container sent">
                     <div part="bubble">
-                        <div>
-                            <p>Thank you too!</p>
-                        </div>
+                        <pre part="plain-text">
+                            Thank you too!
+                        </pre>
                     </div>
                 </div>`
       );
@@ -336,6 +339,7 @@ describe('Chat', () => {
       chat = await fixture<IgcChatComponent>(
         html`<igc-chat .messages=${rawMessages}> </igc-chat>`
       );
+      await aTimeout(500);
 
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
@@ -348,9 +352,9 @@ describe('Chat', () => {
       expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
                     <div part="bubble">
-                        <div>
-                            <p>Hello!</p>
-                        </div>
+                        <pre part="plain-text">
+                            Hello!
+                        </pre>
                         ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
                     </div>
                 </div>`
@@ -377,6 +381,8 @@ describe('Chat', () => {
         html`<igc-chat .messages=${initialMessages} .options=${options}>
         </igc-chat>`
       );
+
+      await aTimeout(500);
 
       const messageContainer = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
@@ -641,9 +647,9 @@ describe('Chat', () => {
         expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
           `<div part="bubble">
-                            <div>
-                                <p>${(messsageContainer as HTMLElement)?.innerText}</p>
-                            </div>
+                              <pre part="plain-text">
+                                ${(messsageContainer as HTMLElement)?.innerText}
+                              </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
                             ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
@@ -1033,9 +1039,9 @@ describe('Chat', () => {
         if (index === 0) {
           expect(messsageContainer).dom.to.equal(
             `<div part="bubble">
-                            <div>
-                                <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
-                            </div>
+                              <pre part="plain-text">
+                                ${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}
+                              </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
                         </div>`

@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
+  MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
@@ -145,6 +146,7 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
+  messageRenderer: new MarkdownMessageRenderer(),
 };
 
 function handleCustomSendClick() {
@@ -436,7 +438,7 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const actionsTemplate = html`
+      const actionsTemplate = () => html`
         <!-- ${chat.defaultFileUploadButton} -->
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
@@ -444,6 +446,7 @@ export const Chat_Templates: Story = {
           <igc-button variant="flat">...</igc-button>
         </div>
       `;
+
       options = {
         headerText: 'Chat',
         inputPlaceholder: 'Type your message here...',
@@ -452,6 +455,7 @@ export const Chat_Templates: Story = {
           messageActionsTemplate: _messageActionsTemplate,
           textAreaActionsTemplate: actionsTemplate,
         },
+        messageRenderer: _customRenderer,
       };
       chat.options = { ...options };
     }
