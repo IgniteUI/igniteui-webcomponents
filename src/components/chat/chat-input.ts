@@ -71,7 +71,10 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   @query(IgcTextareaComponent.tagName)
-  private textInputElement!: IgcTextareaComponent;
+  private _textInputElement!: IgcTextareaComponent;
+
+  @query('#input_attachments')
+  protected _inputAttachmentsButton!: IgcIconButtonComponent;
 
   // private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
@@ -97,7 +100,7 @@ export default class IgcChatInputComponent extends LitElement {
     this.setupDragAndDrop();
     if (this._chatState) {
       this._chatState.updateAcceptedTypesCache();
-      this._chatState.textArea = this.textInputElement;
+      this._chatState.textArea = this._textInputElement;
     }
   }
 
