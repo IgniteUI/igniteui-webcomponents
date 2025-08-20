@@ -3,7 +3,6 @@
 
 $theme: $material;
 
-:host {
-    // border-block-start: rem(1px) solid var-get($theme, 'chat-input-border');
-    border-block-start: rem(1px) solid color(gray, 300);
+[part~='input-container'] {
+    border: rem(1px) solid var-get($theme, 'chat-input-border');
 }
