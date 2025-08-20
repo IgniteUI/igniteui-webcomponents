@@ -65,7 +65,7 @@ export default class IgcChatMessageListComponent extends LitElement {
    * @param messageId - The id of the message to scroll to
    * @private
    */
-  private scrollToMessage(messageId: string) {
+  public scrollToMessage(messageId: string) {
     const messageElement = this.shadowRoot?.querySelector(
       `#message-${messageId}`
     );
@@ -133,7 +133,10 @@ export default class IgcChatMessageListComponent extends LitElement {
                    id=${messageId}
                    role="option"
                    part="message-item"
+                   data-role=${message.sender}
                    .message=${message}
+                   exportparts="message-container, bubble, message-text, message-attachments, message-actions,
+                   attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
                  >
                  </igc-chat-message>
                `;

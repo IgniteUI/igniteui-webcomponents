@@ -366,21 +366,85 @@ export default class IgcChatComponent extends EventEmitterMixin<
       this._chatState.options?.suggestions &&
       this._chatState.options.suggestions.length > 0;
     return html`
-      <div part="chat-container">
+      <div
+        part="chat-container"
+        exportparts="
+          chat-container,
+          header,
+          prefix,
+          title,
+          actions,
+          chat-wrapper,
+          chat-messages,
+          empty-state,
+          suggestions-container,
+          suggestions-header,
+          suggestions,
+          suggestions-actions,
+          suggestion,
+          message-container,
+          message-list,
+          message-item,
+          message,
+          bubble,
+          message-text,
+          message-attachments,
+          message-actions,
+          typing-indicator,
+          attachments-container,
+          attachment,
+          attachment-header,
+          attachment-content,
+          attachment-icon,
+          file-name,
+          attachment-actions
+        "
+      >
         ${this.renderHeader()}
         <div part="chat-wrapper">
           ${this.messages.length === 0
             ? html`<div part="empty-state">
                 <slot name="empty-state"> </slot>
               </div>`
-            : html`<igc-chat-message-list part="chat-messages">
+            : html` <igc-chat-message-list
+                part="chat-messages"
+                exportparts="
+                  message-container,
+                  message-list,
+                  message-item,
+                  message,
+                  bubble,
+                  message-text,
+                  message-attachments,
+                  message-actions,
+                  typing-indicator,
+                  attachments-container,
+                  attachment,
+                  attachment-header,
+                  attachment-content,
+                  attachment-icon,
+                  file-name,
+                  actions: attachment-actions"
+              >
               </igc-chat-message-list>`}
           ${hasSuggestions &&
           this._chatState.suggestionsPosition === 'below-messages'
             ? this.renderSuggestions()
             : nothing}
         </div>
-        <igc-chat-input> </igc-chat-input>
+        <igc-chat-input
+          exportparts="
+              input-container,
+              input-wrapper,
+              attachments: input-attachments-container,
+              attachments-wrapper: input-attachment,
+              attachment-name: input-attachment-name,
+              text-input,
+              buttons-container: input-buttons-container,
+              upload-button,
+              send-button"
+        >
+        </igc-chat-input>
         ${hasSuggestions &&
         this._chatState.suggestionsPosition === 'below-input'
           ? this.renderSuggestions()
