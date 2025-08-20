@@ -13,8 +13,9 @@ import type {
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
 
+const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
-  apiKey: 'googleGenAIKey',
+  apiKey: googleGenAIKey,
 });
 
 defineComponents(IgcChatComponent);
@@ -74,6 +75,24 @@ const initialMessages: any[] = [
         type: 'image',
       },
     ],
+  },
+  {
+    id: 'message-3', // Example message with markdown
+    text: `Here is some sample typescript code:
+
+\`\`\`ts
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+\`\`\`
+
+And some sample html:
+
+\`\`\`html
+<igc-avatar initials="AZ"></igc-avatar>
+<igc-badge></igc-badge>
+\`\`\``,
+    sender: 'bot',
+    attachments: [],
+    timestamp: new Date(),
   },
 ];
 
@@ -138,6 +157,11 @@ const ai_chat_options = {
     // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
   },
   // markdownRenderer: _customRenderer
+  messageRenderer: new MarkdownMessageRenderer({
+    // noHighlighter: true
+    // languages: ['typescript']
+    // theme: 'github-dark'
+  }),
 };
 
 const chat_options = {
@@ -146,7 +170,11 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
-  messageRenderer: new MarkdownMessageRenderer(),
+  // messageRenderer: new MarkdownMessageRenderer({
+  //   // noHighlighter: true
+  //   // languages: ['typescript']
+  //   // theme: 'github-dark'
+  // })
 };
 
 function handleCustomSendClick() {
