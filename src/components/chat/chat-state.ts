@@ -3,6 +3,9 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
+import defaultFileIcon from './assets/file.png';
+import jsonIcon from './assets/json.png';
+import linkIcon from './assets/link.png';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import { DefaultChatRenderer } from './chat-renderer.js';
@@ -54,8 +57,8 @@ export class ChatState {
 
   /** Default templates of the chat components */
   private _defaultTemplates: Required<IgcChatTemplates> = {
-    attachmentTemplate: (att: IgcMessageAttachment) =>
-      this.renderDefaultAttachmentTemplate(att),
+    attachmentTemplate: (att: IgcMessageAttachment, m: IgcMessage) =>
+      this.renderDefaultAttachmentTemplate(att, m),
     attachmentsTemplate: (m: IgcMessage) =>
       this.renderDefaultAttachmentsTemplate(m),
     attachmentHeaderTemplate: (att: IgcMessageAttachment) =>
@@ -197,6 +200,29 @@ export class ChatState {
     `;
   };
 
+  private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
+    return html`<div part="details">
+      ${this.options?.templates?.attachmentHeaderTemplate
+        ? this.options.templates.attachmentHeaderTemplate(attachment)
+        : html`${attachment.type === 'image' ||
+            attachment.file?.type.startsWith('image/')
+              ? html`<igc-icon
+                  name="image"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`
+              : html`<igc-icon
+                  name="file"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`}
+            <span part="file-name">${attachment.name}</span> `}
+    </div>`;
+  }
+
+  private handleHeaderClick(attachment: IgcMessageAttachment) {
+    this.emitEvent('igcAttachmentClick', { detail: attachment });
+  }
   /**
    * Default attachment header template used when no custom template is provided.
    * Renders the attachment icon and name.
@@ -204,19 +230,26 @@ export class ChatState {
    * @returns TemplateResult containing the rendered attachment header
    */
   public renderDefaultAttachmentHeader = (attachment: IgcMessageAttachment) => {
-    return html`${attachment.type === 'image' ||
-      attachment.file?.type.startsWith('image/')
-        ? html`<igc-icon
-            name="image"
-            collection="material"
-            part="attachment-icon"
-          ></igc-icon>`
-        : html`<igc-icon
-            name="file"
-            part="attachment-icon"
-            collection="material"
-          ></igc-icon>`}
-      <span part="file-name">${attachment.name}</span> `;
+    // return html`${attachment.type === 'image' ||
+    //   attachment.file?.type.startsWith('image/')
+    //     ? html`<igc-icon
+    //         name="image"
+    //         collection="material"
+    //         part="attachment-icon"
+    //       ></igc-icon>`
+    //     : html`<igc-icon
+    //         name="file"
+    //         part="attachment-icon"
+    //         collection="material"
+    //       ></igc-icon>`}
+    //   <span part="file-name">${attachment.name}</span> `;
+    return html` <div
+      part="attachment-header"
+      role="button"
+      @click=${() => this.handleHeaderClick(attachment)}
+    >
+      ${this.renderAttachmentHeaderText(attachment)}
+    </div>`;
   };
 
   /**
@@ -228,14 +261,13 @@ export class ChatState {
   public renderDefaultAttachmentContent = (
     attachment: IgcMessageAttachment
   ) => {
-    return html`${attachment.type === 'image' ||
-    attachment.file?.type.startsWith('image/')
-      ? html`<img
-          part="image-attachment"
-          src=${this.getURL(attachment)}
-          alt=${attachment.name}
-        />`
-      : nothing}`;
+    const ext = this.getFileExtension(attachment.name);
+    const isImage = this.isImageAttachment(attachment);
+    const url = isImage
+      ? this.getURL(attachment)
+      : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
+    const partName = isImage ? 'image-attachment' : 'file-attachment';
+    return html` <img part="${partName}" src=${url} alt=${attachment.name} />`;
   };
 
   private renderDefaultMessageActionsTemplate = (
@@ -288,11 +320,19 @@ export class ChatState {
     });
   };
 
-  private renderDefaultAttachmentTemplate = (att: IgcMessageAttachment) => {
+  private renderDefaultAttachmentTemplate = (
+    att: IgcMessageAttachment,
+    msg: IgcMessage
+  ) => {
     return html`
       <div part="attachment">
+        ${msg?.sender === this.currentUserId
+          ? this.renderDefaultAttachmentContent(att)
+          : nothing}
         ${this.renderDefaultAttachmentHeader(att)}
-        ${this.renderDefaultAttachmentContent(att)}
+        ${msg?.sender !== this.currentUserId
+          ? this.renderDefaultAttachmentContent(att)
+          : nothing}
       </div>
     `;
   };
@@ -301,7 +341,7 @@ export class ChatState {
     return html`
       <div part="attachments">
         ${(m.attachments ?? []).map((att: IgcMessageAttachment) =>
-          this.renderDefaultAttachmentTemplate(att)
+          this.renderDefaultAttachmentTemplate(att, m)
         ) || nothing}
       </div>
     `;
@@ -556,6 +596,7 @@ export class ChatState {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
     }
   }
+
   private getURL = (attachment: IgcMessageAttachment): string => {
     if (attachment.url) {
       return attachment.url;
@@ -565,6 +606,32 @@ export class ChatState {
     }
     return '';
   };
+
+  private isImageAttachment(attachment: IgcMessageAttachment): boolean {
+    return (
+      attachment.type === 'image' ||
+      !!attachment.file?.type.startsWith('image/')
+    );
+  }
+  private _fileIconMap: Record<string, string> = {
+    pdf: defaultFileIcon,
+    doc: defaultFileIcon,
+    docx: defaultFileIcon,
+    xls: defaultFileIcon,
+    xlsx: defaultFileIcon,
+    txt: defaultFileIcon,
+    json: jsonIcon,
+    link: linkIcon,
+    default: defaultFileIcon, // A fallback icon
+  };
+
+  private getFileExtension(fileName: string): string {
+    const parts = fileName.split('.');
+    if (parts.length > 1) {
+      return parts.pop()!.toLowerCase();
+    }
+    return '';
+  }
 
   public handleKeyDown = (e: KeyboardEvent) => {
     if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
