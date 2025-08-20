@@ -7,6 +7,9 @@ import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
+import defaultFileIcon from './assets/file.png';
+import jsonIcon from './assets/json.png';
+import linkIcon from './assets/link.png';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments.common.css.js';
@@ -76,6 +79,32 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
   }
 
+  private isImageAttachment(attachment: IgcMessageAttachment): boolean {
+    return (
+      attachment.type === 'image' ||
+      !!attachment.file?.type.startsWith('image/')
+    );
+  }
+  private _fileIconMap: Record<string, string> = {
+    pdf: defaultFileIcon,
+    doc: defaultFileIcon,
+    docx: defaultFileIcon,
+    xls: defaultFileIcon,
+    xlsx: defaultFileIcon,
+    txt: defaultFileIcon,
+    json: jsonIcon,
+    link: linkIcon,
+    default: defaultFileIcon, // A fallback icon
+  };
+
+  private getFileExtension(fileName: string): string {
+    const parts = fileName.split('.');
+    if (parts.length > 1) {
+      return parts.pop()!.toLowerCase();
+    }
+    return '';
+  }
+
   private getURL(attachment: IgcMessageAttachment): string {
     if (attachment.url) {
       return attachment.url;
@@ -87,14 +116,13 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderDefaultAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`${attachment.type === 'image' ||
-    attachment.file?.type.startsWith('image/')
-      ? html`<img
-          part="image-attachment"
-          src=${this.getURL(attachment)}
-          alt=${attachment.name}
-        />`
-      : nothing}`;
+    const ext = this.getFileExtension(attachment.name);
+    const isImage = this.isImageAttachment(attachment);
+    const url = isImage
+      ? this.getURL(attachment)
+      : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
+    const partName = isImage ? 'image-attachment' : 'file-attachment';
+    return html` <img part="${partName}" src=${url} alt=${attachment.name} />`;
   }
 
   private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
@@ -146,6 +174,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return html`${this.message?.attachments?.map(
       (attachment) =>
         html`<div part="attachment">
+          ${this.message?.sender === this._chatState?.currentUserId
+            ? this.renderAttachmentContent(attachment)
+            : nothing}
           <div
             part="attachment-header"
             role="button"
@@ -155,9 +186,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             ${this.renderAttachmentHeaderActions()}
           </div>
 
-          ${attachment.type === 'image' ||
-          attachment.file?.type.startsWith('image/') ||
-          this._chatState?.options?.templates?.attachmentContentTemplate
+          ${this.message?.sender !== this._chatState?.currentUserId
             ? this.renderAttachmentContent(attachment)
             : nothing}
         </div>`
