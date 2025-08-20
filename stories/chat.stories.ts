@@ -12,8 +12,9 @@ import type {
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
 
+const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
 const ai = new GoogleGenAI({
-  apiKey: 'googleGenAIKey',
+  apiKey: googleGenAIKey,
 });
 
 defineComponents(IgcChatComponent);
@@ -379,7 +380,35 @@ async function handleAIMessageSend(e: CustomEvent) {
         };
         chat.messages = [...chat.messages];
       }
-      chat.options = { ...ai_chat_options, suggestions: ['Thank you!'] };
+
+      const messagesForSuggestions = [
+        ...chat.messages,
+        `Based on all my previous prompts give me 3 strings that would act like a suggestions for my next prompt. Don't repeat my previous prompts, I want just the suggestions in the format "suggestion1: '...', suggestion2: '...', suggestion3: '...'`,
+      ];
+      const responseWithSuggestions = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: messagesForSuggestions,
+        config: {
+          responseModalities: [Modality.TEXT],
+        },
+      });
+      response = responseWithSuggestions?.candidates?.[0]?.content?.parts;
+      if (response && response.length === 1) {
+        const responseText = response[0]?.text ?? '';
+        const regex: RegExp = /'(.*?)'/g;
+
+        // Use String.prototype.matchAll() to get an iterator of all matches, including captured groups.
+        const matches: IterableIterator<RegExpMatchArray> =
+          responseText.matchAll(regex);
+
+        // Map the matches to an array, extracting the first capturing group (the content).
+        const suggestions: string[] = Array.from(
+          matches,
+          (match: RegExpMatchArray) => match[1]
+        );
+
+        chat.options = { ...ai_chat_options, suggestions: suggestions };
+      }
     }
   }, 2000);
 }
