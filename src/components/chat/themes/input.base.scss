@@ -15,7 +15,9 @@
     max-width: rem(760px);
     width: 100%;
     margin-inline: rem(16px);
-    gap: rem(8px);
+    border-radius: rem(4px);
+    padding: rem(16px);
+    gap: rem(12px);
 }
 
 [part='buttons-container'] {

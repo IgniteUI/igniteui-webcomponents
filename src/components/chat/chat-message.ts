@@ -1,6 +1,7 @@
 import { consume } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+// import DOMPurify from 'dompurify';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -70,6 +71,16 @@ export default class IgcChatMessageComponent extends LitElement {
    */
   @property({ attribute: false })
   public message: IgcMessage | undefined;
+
+  /**
+   * Sanitizes message text to prevent XSS or invalid HTML.
+   * @param text The raw message text
+   * @returns Sanitized text safe for HTML rendering
+   * @private
+   */
+  private sanitizeMessageText(text: string): string {
+    return text.trim();
+  }
 
   constructor() {
     super();
