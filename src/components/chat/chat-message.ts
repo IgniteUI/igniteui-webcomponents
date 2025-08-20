@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import DOMPurify from 'dompurify';
+// import DOMPurify from 'dompurify';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -79,7 +79,7 @@ export default class IgcChatMessageComponent extends LitElement {
    * @private
    */
   private sanitizeMessageText(text: string): string {
-    return DOMPurify.sanitize(text);
+    return text.trim();
   }
 
   constructor() {
@@ -96,7 +96,7 @@ export default class IgcChatMessageComponent extends LitElement {
     return this.message?.sender !== 'user' &&
       this.message?.text.trim() &&
       (!isLastMessage || !this._chatState?.options?.isTyping)
-      ? html`<div>
+      ? html`<div part="message-actions">
           <igc-icon-button
             name="copy"
             collection="material"
@@ -155,7 +155,11 @@ export default class IgcChatMessageComponent extends LitElement {
                 ? html`<div>${renderer(sanitizedMessageText)}</div>`
                 : nothing}`}
           ${this.message?.attachments && this.message?.attachments.length > 0
-            ? html`<igc-message-attachments .message=${this.message}>
+            ? html` <igc-message-attachments
+                .message=${this.message}
+                part="message-attachments"
+                exportparts="message-attachments,attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
+              >
               </igc-message-attachments>`
             : nothing}
           ${this._chatState?.options?.templates?.messageActionsTemplate &&
