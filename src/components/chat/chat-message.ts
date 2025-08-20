@@ -152,7 +152,9 @@ export default class IgcChatMessageComponent extends LitElement {
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
             : html`${sanitizedMessageText
-                ? html`<div>${renderer(sanitizedMessageText)}</div>`
+                ? html`<div part="message-text">
+                    ${renderer(sanitizedMessageText)}
+                  </div>`
                 : nothing}`}
           ${this.message?.attachments && this.message?.attachments.length > 0
             ? html` <igc-message-attachments
