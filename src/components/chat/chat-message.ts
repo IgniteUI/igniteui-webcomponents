@@ -8,7 +8,6 @@ import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import type { ChatState } from './chat-state.js';
-import { renderMarkdown } from './markdown-util.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
@@ -167,19 +166,15 @@ export default class IgcChatMessageComponent extends LitElement {
     const sanitizedMessageText = this.sanitizeMessageText(
       this.message?.text.trim() || ''
     );
-    const renderer =
-      this._chatState?.options?.markdownRenderer || renderMarkdown;
+    // const renderer =
+    //   this._chatState?.options?.markdownRenderer || renderMarkdown;
 
     return html`
       <div part=${containerPart}>
         <div part="bubble">
           ${this._chatState?.options?.templates?.messageTemplate && this.message
             ? this._chatState.options.templates.messageTemplate(this.message)
-            : html`${sanitizedMessageText
-                ? html`<div part="message-text">
-                    ${renderer(sanitizedMessageText)}
-                  </div>`
-                : nothing}`}
+            : html`${sanitizedMessageText ? html`<slot></slot>` : nothing}`}
           ${this.message?.attachments && this.message?.attachments.length > 0
             ? html` <igc-message-attachments
                 .message=${this.message}
