@@ -7,9 +7,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
-import defaultFileIcon from './assets/file.png';
-import jsonIcon from './assets/json.png';
-import linkIcon from './assets/link.png';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments.common.css.js';
@@ -85,16 +82,21 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       !!attachment.file?.type.startsWith('image/')
     );
   }
+
+  private _fileIcon = new URL('./assets/file.png', import.meta.url).href;
+  private _jsonIcon = new URL('./assets/json.png', import.meta.url).href;
+  private _linkIcon = new URL('./assets/link.png', import.meta.url).href;
+
   private _fileIconMap: Record<string, string> = {
-    pdf: defaultFileIcon,
-    doc: defaultFileIcon,
-    docx: defaultFileIcon,
-    xls: defaultFileIcon,
-    xlsx: defaultFileIcon,
-    txt: defaultFileIcon,
-    json: jsonIcon,
-    link: linkIcon,
-    default: defaultFileIcon, // A fallback icon
+    pdf: this._fileIcon,
+    doc: this._fileIcon,
+    docx: this._fileIcon,
+    xls: this._fileIcon,
+    xlsx: this._fileIcon,
+    txt: this._fileIcon,
+    json: this._jsonIcon,
+    link: this._linkIcon,
+    default: this._fileIcon, // A fallback icon
   };
 
   private getFileExtension(fileName: string): string {
