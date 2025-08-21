@@ -16,7 +16,7 @@ $transition-duration: .25s;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
     --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
-    --prefix-suffix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
+    --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;

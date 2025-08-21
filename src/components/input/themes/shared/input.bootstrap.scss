@@ -10,7 +10,7 @@ $theme: $bootstrap;
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
     --input-border-color: #{var-get($theme, 'border-color')};
     --input-height: #{var-get($theme, 'size')};
-		--prefix-suffix-padding: #{pad-inline(rem(8px), rem(12px), rem(14px))};
+    --affix-padding: #{pad-inline(rem(8px), rem(12px), rem(14px))};
 
     ::part(helper-text) {
         @include type-style('body-2');

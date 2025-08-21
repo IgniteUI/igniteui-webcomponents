@@ -83,12 +83,12 @@ $theme: $base;
 }
 
 [name='suffix']::slotted(:is([part|='toggle'], [part|='clear'])) {
-    padding-inline: var(--prefix-suffix-padding);
+    padding-inline: var(--affix-padding);
 }
 
 :host(:not([role='combobox'])) {
     ::slotted([slot='suffix']),
     ::slotted([slot='prefix']) {
-        padding-inline: var(--prefix-suffix-padding);
+        padding-inline: var(--affix-padding);
     }
 }

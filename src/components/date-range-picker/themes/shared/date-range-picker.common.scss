@@ -132,5 +132,5 @@ igc-icon,
 
 ::slotted([slot|='suffix']),
 ::slotted([slot|='prefix']) {
-    padding-inline: var(--prefix-suffix-padding);
+    padding-inline: var(--affix-padding);
 }

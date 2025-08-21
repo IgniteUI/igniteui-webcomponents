@@ -25,7 +25,7 @@ $fs: rem(16px) !default;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
-    --prefix-suffix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
+    --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
