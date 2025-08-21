@@ -331,38 +331,36 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
-    return html` <igc-list
-      part="suggestions-container"
-      role="list"
-      aria-label="Suggestions"
-    >
-      <igc-list-header part="suggestions-header">
-        <span ?hidden=${hasContent}
-          >${this.resourceStrings.suggestionsHeader}</span
-        >
-        <slot name="suggestions-header"></slot>
-      </igc-list-header>
-      <slot name="suggestions" part="suggestions">
-        ${this._chatState.options?.suggestions?.map(
-          (suggestion) => html`
-            <slot name="suggestion" part="suggestion" role="listitem">
-              <igc-list-item
-                @click=${() =>
-                  this._chatState?.handleSuggestionClick(suggestion)}
-              >
-                <igc-icon
-                  slot="start"
-                  name="star-icon"
-                  collection="material"
-                ></igc-icon>
-                <span>${suggestion}</span>
-              </igc-list-item>
-            </slot>
-          `
-        )}
-      </slot>
-      <slot name="suggestions-actions" part="suggestions-actions"></slot>
-    </igc-list>`;
+    return html`<div part="suggestions-container">
+      <igc-list role="list" aria-label="Suggestions">
+        <igc-list-header part="suggestions-header">
+          <span ?hidden=${hasContent}>
+            ${this.resourceStrings.suggestionsHeader}
+          </span>
+          <slot name="suggestions-header"></slot>
+        </igc-list-header>
+        <slot name="suggestions" part="suggestions">
+          ${this._chatState.options?.suggestions?.map(
+            (suggestion) => html`
+              <slot name="suggestion" part="suggestion" role="listitem">
+                <igc-list-item
+                  @click=${() =>
+                    this._chatState?.handleSuggestionClick(suggestion)}
+                >
+                  <igc-icon
+                    slot="start"
+                    name="star-icon"
+                    collection="material"
+                  ></igc-icon>
+                  <span slot="title">${suggestion}</span>
+                </igc-list-item>
+              </slot>
+            `
+          )}
+        </slot>
+        <slot name="suggestions-actions" part="suggestions-actions"></slot>
+      </igc-list>
+    </div>`;
   }
 
   protected override firstUpdated() {

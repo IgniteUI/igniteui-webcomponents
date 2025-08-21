@@ -84,6 +84,7 @@
     "lint-staged": "^16.1.4",
     "lit-analyzer": "^2.0.3",
     "madge": "^8.0.0",
+    "marked": "^12.0.0",
     "node-watch": "^0.7.4",
     "playwright": "^1.54.2",
     "postcss": "^8.5.6",

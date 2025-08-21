@@ -4,6 +4,7 @@ igc-list {
     border: none;
 }
 
-igc-list-item {
+igc-list-item:not(:hover),
+igc-list-header {
     background: initial;
 }

@@ -467,7 +467,7 @@ export const Chat_Templates: Story = {
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
-          <igc-button variant="flat">...</igc-button>
+          <igc-icon-button variant="flat">...</igc-icon-button>
         </div>
       `;
       options = {
@@ -502,7 +502,7 @@ export const Chat_Templates: Story = {
           variant="flat"
           name="search"
         ></igc-icon-button>
-        <div slot="suggestions-header">Suggestions</div>
+        <div slot="suggestions-header">Get Inspired</div>
       </igc-chat>
     `;
   },

@@ -9,7 +9,6 @@ $inline-inset: rem(16px);
   width: 100%;
   height: var(--igc-chat-height);
   overflow: hidden;
-  box-shadow: var(--ig-elevation-24);
   display: flex;
   flex-direction: column;
 }
@@ -70,15 +69,16 @@ $inline-inset: rem(16px);
 igc-list {
   --ig-size: 3;
 
-  min-height: fit-content;
   padding-block-end: rem(24px);
-}
-
-igc-list-header,
-igc-list-item {
+  min-height: fit-content;
+  width: fit-content;
   max-width: rem(576px);
 }
 
 igc-list-item {
   cursor: pointer;
+}
+
+igc-list-item::part(title) {
+  @include line-clamp(2, true, true);
 }
