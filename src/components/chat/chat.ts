@@ -329,6 +329,18 @@ export default class IgcChatComponent extends EventEmitterMixin<
     </div>`;
   }
 
+  private renderSuggestionPrefix() {
+    const defaultPrefix = html`<igc-icon
+      name="star-icon"
+      collection="material"
+    ></igc-icon>`;
+    return html`<span slot="start">
+      ${this._chatState?.options?.templates?.suggestionPrefixTemplate
+        ? this._chatState.options.templates.suggestionPrefixTemplate
+        : defaultPrefix}
+    </span>`;
+  }
+
   private renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
     return html`<div part="suggestions-container">
@@ -347,11 +359,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                   @click=${() =>
                     this._chatState?.handleSuggestionClick(suggestion)}
                 >
-                  <igc-icon
-                    slot="start"
-                    name="star-icon"
-                    collection="material"
-                  ></igc-icon>
+                  ${this.renderSuggestionPrefix()}
                   <span slot="title">${suggestion}</span>
                 </igc-list-item>
               </slot>
