@@ -121,10 +121,8 @@ const _messageActionsTemplate = (msg: any) => {
 const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
 const _textInputTemplate = (text: string) =>
   html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
-const _textAreaActionsTemplate = html`<igc-button
-  @click=${handleCustomSendClick}
-  >Send</igc-button
->`;
+const _textAreaActionsTemplate = () =>
+  html`<igc-button @click=${handleCustomSendClick}>Send</igc-button>`;
 const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
   return html`<div>
     ${attachments.map(
@@ -175,6 +173,16 @@ const chat_options = {
   //   // languages: ['typescript']
   //   // theme: 'github-dark'
   // })
+  messageRenderer: new MarkdownMessageRenderer({
+    // noHighlighter: true
+    // languages: ['typescript']
+    // theme: 'github-dark'
+  }),
+  templates: {
+    messageActionsTemplate: _messageActionsTemplate,
+    textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
+    textAreaActionsTemplate: _textAreaActionsTemplate,
+  },
 };
 
 function handleCustomSendClick() {
