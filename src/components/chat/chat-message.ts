@@ -100,7 +100,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
   private get defaultMessageActionsTemplate() {
     const isLastMessage = this.message === this._chatState?.messages.at(-1);
-    return this.message?.sender !== 'user' &&
+    return this.message?.sender !== this._chatState?.currentUserId &&
       this.message?.text.trim() &&
       (!isLastMessage || !this._chatState?.options?.isTyping)
       ? html`<div part="message-actions">

@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partMap } from '../common/part-map.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
@@ -173,6 +174,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderDefaultAttachmentsTemplate() {
+    const parts = {
+      'attachment-header': true,
+      sent: this.message?.sender === this._chatState?.currentUserId,
+    };
+
     return html`${this.message?.attachments?.map(
       (attachment) =>
         html`<div part="attachment">
@@ -180,7 +186,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
             ? this.renderAttachmentContent(attachment)
             : nothing}
           <div
-            part="attachment-header"
+            part=${partMap(parts)}
             role="button"
             @click=${() => this.handleHeaderClick(attachment)}
           >
