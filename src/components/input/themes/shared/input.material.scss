@@ -20,12 +20,12 @@ $fs: rem(16px) !default;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
 }
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
+    --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;

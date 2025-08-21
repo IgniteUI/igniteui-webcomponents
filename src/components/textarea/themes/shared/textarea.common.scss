@@ -95,3 +95,8 @@ textarea {
         color: var-get($theme, 'disabled-text-color');
     }
 }
+
+::slotted([slot='suffix']),
+::slotted([slot='prefix']) {
+    padding-inline: var(--affix-padding);
+}
