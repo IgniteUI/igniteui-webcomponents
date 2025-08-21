@@ -18,14 +18,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
         margin-block-start: rem(4px);
     }
 
-    [slot='suffix']:not([part|='toggle'], [part|='clear']),
-    [slot='prefix'] {
-        padding-inline: unset;
-    }
-
     ::slotted([slot='suffix']),
     ::slotted([slot='prefix']) {
-        padding-inline: pad-inline(rem(8px), rem(12px), rem(14px));
         height: 100%;
         display: flex;
         align-items: center;
@@ -144,11 +138,11 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 
     ::slotted([slot='suffix']),
     [part|='toggle'] {
-        border-inline-end: .0625rem solid var(--disabled-border-color);
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
     }
 
     ::slotted([slot='prefix']) {
-        border-inline-start: .0625rem solid var(--disabled-border-color);
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
     }
 }
 
@@ -156,10 +150,10 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 :host(:not(:disabled)) {
     ::slotted([slot='suffix']),
     [part|='toggle'] {
-        border-inline-end: .0625rem solid var(--border-color);
+        border-inline-end: rem(1px) solid var(--border-color);
     }
 
     ::slotted([slot='prefix']) {
-        border-inline-start: .0625rem solid var(--border-color);
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 }

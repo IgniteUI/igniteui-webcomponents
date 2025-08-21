@@ -129,3 +129,8 @@ igc-icon,
 ::slotted(igc-icon) {
     --component-size: var(--input-size);
 }
+
+::slotted([slot|='suffix']),
+::slotted([slot|='prefix']) {
+    padding-inline: var(--prefix-suffix-padding);
+}

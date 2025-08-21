@@ -8,6 +8,7 @@ $theme: $fluent;
     --input-size: var(--component-size);
     --helper-text-top-spacer: rem(5px);
     --input-border-size: #{rem(1px)};
+    --prefix-suffix-padding: #{pad-inline(rem(8px), rem(12px), rem(16px))};
 
     [part='prefix'],
     [part='suffix'] {
@@ -34,7 +35,6 @@ $theme: $fluent;
         align-items: center;
         width: max-content;
         height: 100%;
-        padding-inline: pad-inline(8px, 12px, 16px);
     }
 
     [part='prefix'] {

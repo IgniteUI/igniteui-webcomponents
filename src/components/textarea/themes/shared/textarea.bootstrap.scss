@@ -7,6 +7,7 @@ $theme: $bootstrap;
     @include type-style('body-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --prefix-suffix-padding: #{pad-inline(rem(10px), rem(12px), rem(12px))};
 
     ::part(helper-text) {
         @include type-style('body-2');
@@ -23,7 +24,6 @@ $theme: $bootstrap;
 
     ::slotted([slot="prefix"]),
     ::slotted([slot="suffix"]) {
-        padding-inline: pad-inline(rem(10px), rem(12px), rem(12px));
         height: 100%;
         display: flex;
         align-items: center;
@@ -172,21 +172,21 @@ textarea {
     }
 
     ::slotted([slot='suffix']) {
-        border-inline-end: .0625rem solid var(--disabled-border-color);
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
     }
 
     ::slotted([slot='prefix']) {
-        border-inline-start: .0625rem solid var(--disabled-border-color);
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
     }
 }
 
 :host(:not([disabled])),
 :host(:not(:disabled)) {
     ::slotted([slot='suffix']) {
-        border-inline-end: .0625rem solid var(--border-color);
+        border-inline-end: rem(1px) solid var(--border-color);
     }
 
     ::slotted([slot='prefix']) {
-        border-inline-start: .0625rem solid var(--border-color);
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 }

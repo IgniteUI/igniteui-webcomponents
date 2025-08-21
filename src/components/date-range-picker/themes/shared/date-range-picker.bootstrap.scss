@@ -64,12 +64,12 @@ $theme: $bootstrap;
 :host(:not(:disabled)) {
     ::slotted([slot^='prefix-']),
     [part|='calendar-icon'] {
-        border-inline-start: .0625rem solid var(--border-color);
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 
     ::slotted([slot^='suffix-']),
     [part|='clear-icon'] {
-        border-inline-end: .0625rem solid var(--border-color);
+        border-inline-end: rem(1px) solid var(--border-color);
     }
 }
 
@@ -77,11 +77,11 @@ $theme: $bootstrap;
 :host([disabled]) {
     ::slotted([slot^='prefix-']),
     [part|='calendar-icon'] {
-        border-inline-start: .0625rem solid var(--disabled-border-color);
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
     }
 
     ::slotted([slot^='suffix-']),
     [part|='clear-icon'] {
-        border-inline-end: .0625rem solid var(--disabled-border-color);
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
     }
 }

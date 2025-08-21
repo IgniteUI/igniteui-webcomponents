@@ -78,7 +78,6 @@ textarea {
     width: max-content;
     align-items: center;
     height: 100%;
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     transition: color .25s $out-cubic, background .25s $out-cubic;
 
     igc-icon {
