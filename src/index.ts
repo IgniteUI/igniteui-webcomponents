@@ -89,6 +89,10 @@ export {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from './components/common/i18n/calendar.resources.js';
+export {
+  IgcChatResourceStringEN,
+  type IgcChatResourceStrings,
+} from './components/common/i18n/chat.resources.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';

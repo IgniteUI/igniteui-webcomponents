@@ -13,12 +13,15 @@ import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
+import '../tooltip/tooltip.js';
+import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import {
-  copyIcon,
+  thumbDownIcon as badResponseIcon,
+  copyIcon as copyResponseIcon,
+  thumbUpIcon as goodResponseIcon,
   type IgcMessage,
-  regenerateIcon,
-  thumbDownIcon,
-  thumbUpIcon,
+  regenerateIcon as redoIcon,
 } from './types.js';
 
 /**
@@ -55,7 +58,8 @@ export default class IgcChatMessageComponent extends LitElement {
     registerComponent(
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
-      IgcAvatarComponent
+      IgcAvatarComponent,
+      IgcTooltipComponent
     );
   }
 
@@ -72,6 +76,10 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
+  /** The resource strings. */
+  @property({ attribute: false })
+  public resourceStrings = IgcChatResourceStringEN;
+
   /**
    * Sanitizes message text to prevent XSS or invalid HTML.
    * @param text The raw message text
@@ -85,10 +93,10 @@ export default class IgcChatMessageComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-    registerIconFromText('copy', copyIcon, 'material');
-    registerIconFromText('thumb_up', thumbUpIcon, 'material');
-    registerIconFromText('thumb_down', thumbDownIcon, 'material');
-    registerIconFromText('regenerate', regenerateIcon, 'material');
+    registerIconFromText('copy-response', copyResponseIcon, 'material');
+    registerIconFromText('good-response', goodResponseIcon, 'material');
+    registerIconFromText('bad-response', badResponseIcon, 'material');
+    registerIconFromText('redo', redoIcon, 'material');
   }
 
   private get defaultMessageActionsTemplate() {
@@ -98,29 +106,45 @@ export default class IgcChatMessageComponent extends LitElement {
       (!isLastMessage || !this._chatState?.options?.isTyping)
       ? html`<div part="message-actions">
           <igc-icon-button
-            name="copy"
+            id="copy-response-button"
+            name="copy-response"
             collection="material"
             variant="flat"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
+          <igc-tooltip anchor="copy-response-button" hide-delay="0">
+            ${this.resourceStrings.reactionCopyResponse}
+          </igc-tooltip>
           <igc-icon-button
-            name="thumb_up"
+            id="good-response-button"
+            name="good-response"
             collection="material"
             variant="flat"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
+          <igc-tooltip anchor="good-response-button" hide-delay="0">
+            ${this.resourceStrings.reactionGoodResponse}
+          </igc-tooltip>
           <igc-icon-button
-            name="thumb_down"
+            id="bad-response-button"
+            name="bad-response"
             variant="flat"
             collection="material"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
+          <igc-tooltip anchor="bad-response-button" hide-delay="0">
+            ${this.resourceStrings.reactionBadResponse}
+          </igc-tooltip>
           <igc-icon-button
-            name="regenerate"
+            id="redo-button"
+            name="redo"
             variant="flat"
             collection="material"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
+          <igc-tooltip anchor="redo-button" hide-delay="0">
+            ${this.resourceStrings.reactionRedo}
+          </igc-tooltip>
         </div>`
       : nothing;
   }

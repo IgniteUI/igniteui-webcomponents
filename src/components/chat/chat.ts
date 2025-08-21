@@ -7,6 +7,7 @@ import { chatContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -253,6 +254,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
+  /** The resource strings. */
+  @property({ attribute: false })
+  public resourceStrings = IgcChatResourceStringEN;
+
   /** Returns the default attachments element. */
   public get defaultAttachments(): TemplateResult {
     return this._chatInput.defaultAttachmentsArea;
@@ -331,7 +336,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
       role="list"
       aria-label="Suggestions"
     >
-      <igc-list-header part="suggestions-header" ?hidden=${!hasContent}>
+      <igc-list-header part="suggestions-header">
+        <span ?hidden=${hasContent}
+          >${this.resourceStrings.suggestionsHeader}</span
+        >
         <slot name="suggestions-header"></slot>
       </igc-list-header>
       <slot name="suggestions" part="suggestions">
