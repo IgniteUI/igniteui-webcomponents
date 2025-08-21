@@ -1,7 +1,7 @@
 import { consume } from '@lit/context';
 // import DOMPurify from 'dompurify';
 import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
@@ -79,6 +79,10 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public resourceStrings = IgcChatResourceStringEN;
 
+  /** The tooltip component used for showing action tooltips. */
+  @query('#sharedTooltip')
+  private _sharedTooltip!: IgcTooltipComponent;
+
   /**
    * Sanitizes message text to prevent XSS or invalid HTML.
    * @param text The raw message text
@@ -106,46 +110,60 @@ export default class IgcChatMessageComponent extends LitElement {
       ? html`<div part="message-actions">
           <igc-icon-button
             id="copy-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'copy-response-button',
+                this.resourceStrings.reactionCopyResponse
+              )}
             name="copy-response"
             collection="material"
             variant="flat"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
-          <igc-tooltip anchor="copy-response-button" hide-delay="0">
-            ${this.resourceStrings.reactionCopyResponse}
-          </igc-tooltip>
           <igc-icon-button
             id="good-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'good-response-button',
+                this.resourceStrings.reactionGoodResponse
+              )}
             name="good-response"
             collection="material"
             variant="flat"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
-          <igc-tooltip anchor="good-response-button" hide-delay="0">
-            ${this.resourceStrings.reactionGoodResponse}
-          </igc-tooltip>
           <igc-icon-button
             id="bad-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'bad-response-button',
+                this.resourceStrings.reactionBadResponse
+              )}
             name="bad-response"
             variant="flat"
             collection="material"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
-          <igc-tooltip anchor="bad-response-button" hide-delay="0">
-            ${this.resourceStrings.reactionBadResponse}
-          </igc-tooltip>
           <igc-icon-button
             id="redo-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'redo-button',
+                this.resourceStrings.reactionRedo
+              )}
             name="redo"
             variant="flat"
             collection="material"
             @click=${this.handleMessageActionClick}
           ></igc-icon-button>
-          <igc-tooltip anchor="redo-button" hide-delay="0">
-            ${this.resourceStrings.reactionRedo}
-          </igc-tooltip>
+          <igc-tooltip id="sharedTooltip"></igc-tooltip>
         </div>`
       : nothing;
+  }
+
+  private showTooltip(elementId: string, text: string) {
+    this._sharedTooltip.message = text;
+    this._sharedTooltip.show(elementId);
   }
 
   private handleMessageActionClick(event: MouseEvent): void {
