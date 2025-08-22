@@ -3,13 +3,22 @@
 
 $theme: $material;
 
+[part='attachment-header'],
+[part='attachment-content'],
+[part='attachment-content sent'] {
+    border: rem(1px) solid var-get($theme, 'image-border');
+}
+
 [part='attachment-header'] {
     background: var-get($theme, 'image-background');
-    border: rem(1px) solid var-get($theme, 'image-border');
     border-block-end: none;
 }
 
+[part~='attachment-content'] {
+    // background: var-get($theme, 'file-background');
+    background: white;
+}
+
 [part='attachment-content'] {
-    border: rem(1px) solid var-get($theme, 'image-border');
-    border-block-start: none
+    border-block-start: none;
 }

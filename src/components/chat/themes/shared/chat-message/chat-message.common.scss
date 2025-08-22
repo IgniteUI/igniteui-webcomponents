@@ -10,3 +10,9 @@ $theme: $material;
 [part~='bubble'] {
     color: var-get($theme, 'message-color');
 }
+
+[part~='message-actions'] {
+    igc-icon-button::part(icon) {
+        color: var-get($theme, 'message-actions-color');
+    }
+}

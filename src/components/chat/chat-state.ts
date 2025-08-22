@@ -217,18 +217,20 @@ export class ChatState {
     return html`<div part="details">
       ${this.options?.templates?.attachmentHeaderTemplate
         ? this.options.templates.attachmentHeaderTemplate(attachment, message)
-        : html`${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html`<igc-icon
-                  name="image"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`
-              : html`<igc-icon
-                  name="file"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`}
+        : html`${message.sender !== this.currentUserId
+              ? html`${attachment.type === 'image' ||
+                attachment.file?.type.startsWith('image/')
+                  ? html`<igc-icon
+                      name="image"
+                      collection="material"
+                      part="attachment-icon"
+                    ></igc-icon>`
+                  : html`<igc-icon
+                      name="file"
+                      collection="material"
+                      part="attachment-icon"
+                    ></igc-icon>`}`
+              : nothing}
             <span part="file-name">${attachment.name}</span> `}
     </div>`;
   }
@@ -279,7 +281,8 @@ export class ChatState {
    * @returns TemplateResult containing the rendered attachment content
    */
   public renderDefaultAttachmentContent = (
-    attachment: IgcMessageAttachment
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
   ) => {
     const ext = this.getFileExtension(attachment.name);
     const isImage = this.isImageAttachment(attachment);
@@ -287,7 +290,13 @@ export class ChatState {
       ? this.getURL(attachment)
       : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
     const partName = isImage ? 'image-attachment' : 'file-attachment';
-    return html` <img part="${partName}" src=${url} alt=${attachment.name} />`;
+    const parts = {
+      'attachment-content': true,
+      sent: message?.sender === this.currentUserId,
+    };
+    return html` <div part=${partMap(parts)}>
+      <img part="${partName}" src=${url} alt=${attachment.name} />
+    </div>`;
   };
 
   private renderDefaultMessageActionsTemplate = (
@@ -372,14 +381,19 @@ export class ChatState {
     att: IgcMessageAttachment,
     msg: IgcMessage
   ) => {
+    const isCurrentUser = msg.sender === this.currentUserId;
+    const parts = {
+      attachment: true,
+      sent: isCurrentUser,
+    };
     return html`
-      <div part="attachment">
-        ${msg?.sender === this.currentUserId
-          ? this.renderDefaultAttachmentContent(att)
+      <div part=${partMap(parts)}>
+        ${isCurrentUser
+          ? this.renderDefaultAttachmentContent(att, msg)
           : nothing}
         ${this.renderDefaultAttachmentHeader(att, msg)}
-        ${msg?.sender !== this.currentUserId
-          ? this.renderDefaultAttachmentContent(att)
+        ${!isCurrentUser
+          ? this.renderDefaultAttachmentContent(att, msg)
           : nothing}
       </div>
     `;

@@ -19,13 +19,22 @@
     max-width: rem(400px);
 }
 
-[part='attachment-header'] {
+[part='attachment sent'] {
+    border-radius: rem(2px);
+    max-width: rem(80px);
+}
+
+[part~='attachment-header'] {
     padding: rem(8px) rem(12px) rem(8px) rem(16px);
     border-top-left-radius: inherit;
     border-top-right-radius: inherit;
 }
 
-[part='attachment-content'] {
+[part='attachment-header sent'] {
+    padding: rem(6px) 0 0;
+}
+
+[part~='attachment-content'] {
     display: flex;
     border-bottom-left-radius: inherit;
     border-bottom-right-radius: inherit;
@@ -33,10 +42,24 @@
     overflow: hidden;
 }
 
+[part='attachment-content sent'] {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    width: rem(78px);
+    aspect-ratio: 1;
+}
+
 [part='image-attachment'] {
     width: 100%;
     height: 100%;
     border-radius: inherit;
+    object-fit: cover;
+}
+
+[part='file-attachment'] {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
