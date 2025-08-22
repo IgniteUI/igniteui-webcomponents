@@ -328,11 +328,8 @@ export class ChatState {
       ? html`<div>
           <igc-icon-button
             id="copy-response-button"
-            @pointerenter=${() =>
-              this.showTooltip(
-                'copy-response-button',
-                this.resourceStrings.reactionCopyResponse
-              )}
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(ev, this.resourceStrings.reactionCopyResponse)}
             name="copy-response"
             collection="material"
             variant="flat"
@@ -341,11 +338,8 @@ export class ChatState {
           ></igc-icon-button>
           <igc-icon-button
             id="good-response-button"
-            @pointerenter=${() =>
-              this.showTooltip(
-                'good-response-button',
-                this.resourceStrings.reactionGoodResponse
-              )}
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(ev, this.resourceStrings.reactionGoodResponse)}
             name="good-response"
             collection="material"
             variant="flat"
@@ -354,11 +348,8 @@ export class ChatState {
           ></igc-icon-button>
           <igc-icon-button
             id="bad-response-button"
-            @pointerenter=${() =>
-              this.showTooltip(
-                'bad-response-button',
-                this.resourceStrings.reactionBadResponse
-              )}
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(ev, this.resourceStrings.reactionBadResponse)}
             name="bad-response"
             variant="flat"
             collection="material"
@@ -367,11 +358,8 @@ export class ChatState {
           ></igc-icon-button>
           <igc-icon-button
             id="redo-button"
-            @pointerenter=${() =>
-              this.showTooltip(
-                'redo-button',
-                this.resourceStrings.reactionRedo
-              )}
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(ev, this.resourceStrings.reactionRedo)}
             name="redo"
             variant="flat"
             collection="material"
@@ -426,11 +414,11 @@ export class ChatState {
     `;
   };
 
-  private showTooltip(elementId: string, text: string) {
+  private showTooltip(ev: PointerEvent, text: string) {
     if (!this._sharedTooltip) return;
     this._sharedTooltip.message = text;
     this._sharedTooltip.hideDelay = 300;
-    this._sharedTooltip.show(elementId);
+    this._sharedTooltip.show(ev.composedPath()[0] as any);
   }
 
   //#endregion
