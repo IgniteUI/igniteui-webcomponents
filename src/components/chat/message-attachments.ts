@@ -135,18 +135,20 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ? this._chatState.options.templates.attachmentHeaderTemplate(
             this.message
           )
-        : html`${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html`<igc-icon
-                  name="image"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`
-              : html`<igc-icon
-                  name="file"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`}
+        : html`${this.message?.sender !== this._chatState?.currentUserId
+              ? html`${attachment.type === 'image' ||
+                attachment.file?.type.startsWith('image/')
+                  ? html`<igc-icon
+                      name="image"
+                      collection="material"
+                      part="attachment-icon"
+                    ></igc-icon>`
+                  : html`<igc-icon
+                      name="file"
+                      collection="material"
+                      part="attachment-icon"
+                    ></igc-icon>`}`
+              : nothing}
             <span part="file-name">${attachment.name}</span> `}
     </div>`;
   }
@@ -163,7 +165,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   private renderAttachmentContent(attachment: IgcMessageAttachment) {
-    return html`<div part="attachment-content">
+    const parts = {
+      'attachment-content': true,
+      sent: this.message?.sender === this._chatState?.currentUserId,
+    };
+    return html`<div part=${partMap(parts)}>
       ${this._chatState?.options?.templates?.attachmentContentTemplate &&
       this.message
         ? this._chatState.options.templates.attachmentContentTemplate(
@@ -175,18 +181,23 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private renderDefaultAttachmentsTemplate() {
     const parts = {
+      attachment: true,
+      sent: this.message?.sender === this._chatState?.currentUserId,
+    };
+
+    const headerParts = {
       'attachment-header': true,
       sent: this.message?.sender === this._chatState?.currentUserId,
     };
 
     return html`${this.message?.attachments?.map(
       (attachment) =>
-        html`<div part="attachment">
+        html`<div part=${partMap(parts)}>
           ${this.message?.sender === this._chatState?.currentUserId
             ? this.renderAttachmentContent(attachment)
             : nothing}
           <div
-            part=${partMap(parts)}
+            part=${partMap(headerParts)}
             role="button"
             @click=${() => this.handleHeaderClick(attachment)}
           >
