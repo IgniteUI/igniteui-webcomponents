@@ -4,17 +4,22 @@ import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import { partMap } from '../common/part-map.js';
+import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import { DefaultChatRenderer } from './chat-renderer.js';
 import { PlainTextRenderer } from './plain-text-renderer.js';
-import type {
-  IgcChatOptions,
-  IgcChatTemplates,
-  IgcMessage,
-  IgcMessageAttachment,
+import {
+  copyIcon,
+  type IgcChatOptions,
+  type IgcChatTemplates,
+  type IgcMessage,
+  type IgcMessageAttachment,
+  regenerateIcon,
+  thumbDownIcon,
+  thumbUpIcon,
 } from './types.js';
 
 /**
@@ -328,7 +333,7 @@ export class ChatState {
                 'copy-response-button',
                 this.resourceStrings.reactionCopyResponse
               )}
-            name="copy"
+            name="copy-response"
             collection="material"
             variant="flat"
             @click=${(e: MouseEvent) =>
@@ -341,7 +346,7 @@ export class ChatState {
                 'good-response-button',
                 this.resourceStrings.reactionGoodResponse
               )}
-            name="thumb_up"
+            name="good-response"
             collection="material"
             variant="flat"
             @click=${(e: MouseEvent) =>
@@ -354,7 +359,7 @@ export class ChatState {
                 'bad-response-button',
                 this.resourceStrings.reactionBadResponse
               )}
-            name="thumb_down"
+            name="bad-response"
             variant="flat"
             collection="material"
             @click=${(e: MouseEvent) =>
@@ -367,7 +372,7 @@ export class ChatState {
                 'redo-button',
                 this.resourceStrings.reactionRedo
               )}
-            name="regenerate"
+            name="redo"
             variant="flat"
             collection="material"
             @click=${(e: MouseEvent) =>
@@ -424,6 +429,7 @@ export class ChatState {
   private showTooltip(elementId: string, text: string) {
     if (!this._sharedTooltip) return;
     this._sharedTooltip.message = text;
+    this._sharedTooltip.hideDelay = 300;
     this._sharedTooltip.show(elementId);
   }
 
@@ -591,6 +597,10 @@ export class ChatState {
    */
   constructor(chat: IgcChatComponent) {
     this._host = chat;
+    registerIconFromText('copy-response', copyIcon, 'material');
+    registerIconFromText('good-response', thumbUpIcon, 'material');
+    registerIconFromText('bad-response', thumbDownIcon, 'material');
+    registerIconFromText('redo', regenerateIcon, 'material');
   }
 
   //#region Event handlers

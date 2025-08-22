@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
@@ -118,11 +117,11 @@ const _messageActionsTemplate = (msg: any) => {
     : html``;
 };
 
-const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
-const _textInputTemplate = (text: string) =>
-  html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
-const _textAreaActionsTemplate = () =>
-  html`<igc-button @click=${handleCustomSendClick}>Send</igc-button>`;
+// const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
+// const _textInputTemplate = (text: string) =>
+//   html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
+// const _textAreaActionsTemplate = () =>
+//   html`<igc-button @click=${handleCustomSendClick}>Send</igc-button>`;
 const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
   return html`<div>
     ${attachments.map(
@@ -178,11 +177,11 @@ const chat_options = {
     // languages: ['typescript']
     // theme: 'github-dark'
   }),
-  templates: {
-    messageActionsTemplate: _messageActionsTemplate,
-    textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
-    textAreaActionsTemplate: _textAreaActionsTemplate,
-  },
+  // templates: {
+  //   messageActionsTemplate: _messageActionsTemplate,
+  //   textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
+  //   textAreaActionsTemplate: _textAreaActionsTemplate,
+  // },
 };
 
 function handleCustomSendClick() {
@@ -334,7 +333,6 @@ async function handleAIMessageSend(e: CustomEvent) {
 
   chat.options = { ...ai_chat_options, suggestions: [], isTyping: true };
   setTimeout(async () => {
-    chat.options = { ...ai_chat_options, suggestions: [], isTyping: false };
     let response: any;
     let responseText = '';
     const attachments: IgcMessageAttachment[] = [];
@@ -364,7 +362,7 @@ async function handleAIMessageSend(e: CustomEvent) {
 
     if (newMessage.text.includes('image')) {
       response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-preview-image-generation',
+        model: 'gemini-2.5-flash-preview-image-generation',
         contents: userMessages,
         config: {
           responseModalities: [Modality.TEXT, Modality.IMAGE],
@@ -401,11 +399,12 @@ async function handleAIMessageSend(e: CustomEvent) {
 
       botResponse.text = responseText;
       botResponse.attachments = attachments;
+      chat.options = { ...ai_chat_options, isTyping: false };
       chat.messages = [...chat.messages, botResponse];
     } else {
       chat.messages = [...chat.messages, botResponse];
       response = await ai.models.generateContentStream({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: userMessages,
         config: {
           responseModalities: [Modality.TEXT],
@@ -423,10 +422,10 @@ async function handleAIMessageSend(e: CustomEvent) {
 
       const messagesForSuggestions = [
         ...chat.messages,
-        `Based on all my previous prompts give me 3 strings that would act like a suggestions for my next prompt. Don't repeat my previous prompts, I want just the suggestions in the format "suggestion1: '...', suggestion2: '...', suggestion3: '...'`,
+        `Based on all my previous prompts give me 3 strings that would act like a suggestions for my next prompt. Don't repeat my previous prompts, I want just the suggestions in the format "suggestion1: ***...***, suggestion2: ***...***, suggestion3: ***...***`,
       ];
       const responseWithSuggestions = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: messagesForSuggestions,
         config: {
           responseModalities: [Modality.TEXT],
@@ -435,19 +434,20 @@ async function handleAIMessageSend(e: CustomEvent) {
       response = responseWithSuggestions?.candidates?.[0]?.content?.parts;
       if (response && response.length === 1) {
         const responseText = response[0]?.text ?? '';
-        const regex: RegExp = /'(.*?)'/g;
-
-        // Use String.prototype.matchAll() to get an iterator of all matches, including captured groups.
+        const regex: RegExp = /\*\*\*(.*?)\*\*\*/g; // suggestions between  *** and ***
         const matches: IterableIterator<RegExpMatchArray> =
           responseText.matchAll(regex);
 
-        // Map the matches to an array, extracting the first capturing group (the content).
         const suggestions: string[] = Array.from(
           matches,
           (match: RegExpMatchArray) => match[1]
         );
 
-        chat.options = { ...ai_chat_options, suggestions: suggestions };
+        chat.options = {
+          ...ai_chat_options,
+          suggestions: suggestions,
+          isTyping: false,
+        };
       }
     }
   }, 2000);
@@ -503,7 +503,6 @@ export const Chat_Templates: Story = {
     const chat = document.querySelector('igc-chat');
     if (chat) {
       const actionsTemplate = () => html`
-        <!-- ${chat.defaultFileUploadButton} -->
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
@@ -517,6 +516,7 @@ export const Chat_Templates: Story = {
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         templates: {
           messageActionsTemplate: _messageActionsTemplate,
+          textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
           textAreaActionsTemplate: actionsTemplate,
           suggestionPrefixTemplate: html`✨`,
         },
