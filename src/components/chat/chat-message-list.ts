@@ -106,9 +106,7 @@ export default class IgcChatMessageListComponent extends LitElement {
           <div part="typing-dot"></div>
         </div>`}`;
   }
-  private get renderer() {
-    return this._chatState?.options?.messageRenderer;
-  }
+
   /**
    * Main render method.
    * Groups messages by date and renders each message.
@@ -140,7 +138,6 @@ export default class IgcChatMessageListComponent extends LitElement {
                    exportparts="message-container, bubble, message-text, message-attachments, message-actions,
                    attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
                  >
-                   ${this.renderer?.render(message)}
                  </igc-chat-message>
                `;
              }

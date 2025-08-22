@@ -577,12 +577,12 @@ export class ChatState {
    * Updates internal inputValue and emits 'igcInputChange' event.
    * @param e Input event from the text area
    */
-  private handleInput({ detail }: CustomEvent<string>) {
+  private handleInput = ({ detail }: CustomEvent<string>) => {
     if (detail === this.inputValue) return;
 
     this.inputValue = detail;
     this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
-  }
+  };
   //#endregion
 
   /**
@@ -601,9 +601,9 @@ export class ChatState {
    * @param args Event detail or options
    * @returns true if event was not canceled, false otherwise
    */
-  public emitEvent(name: keyof IgcChatComponentEventMap, args?: any) {
+  public emitEvent = (name: keyof IgcChatComponentEventMap, args?: any) => {
     return this._host.emitEvent(name, args);
-  }
+  };
 
   // /**
   //  * Handles input text changes.
