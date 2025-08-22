@@ -518,6 +518,7 @@ export const Chat_Templates: Story = {
         templates: {
           messageActionsTemplate: _messageActionsTemplate,
           textAreaActionsTemplate: actionsTemplate,
+          suggestionPrefixTemplate: html`✨`,
         },
         messageRenderer: _customRenderer,
       };

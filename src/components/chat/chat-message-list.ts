@@ -5,6 +5,7 @@ import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcChatMessageComponent from './chat-message.js';
 import type { ChatState } from './chat-state.js';
+import { renderMarkdown } from './markdown-util.js';
 import { styles } from './themes/message-list.base.css.js';
 import { styles as shared } from './themes/shared/message-list.common.css.js';
 
@@ -106,7 +107,9 @@ export default class IgcChatMessageListComponent extends LitElement {
           <div part="typing-dot"></div>
         </div>`}`;
   }
-
+  private get renderer() {
+    return this._chatState?.options?.markdownRenderer || renderMarkdown;
+  }
   /**
    * Main render method.
    * Groups messages by date and renders each message.
@@ -138,6 +141,7 @@ export default class IgcChatMessageListComponent extends LitElement {
                    exportparts="message-container, bubble, message-text, message-attachments, message-actions,
                    attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
                  >
+                   ${this.renderer(message.text)}
                  </igc-chat-message>
                `;
              }

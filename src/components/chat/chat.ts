@@ -7,6 +7,7 @@ import { chatContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -249,6 +250,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
+  /** The resource strings. */
+  @property({ attribute: false })
+  public resourceStrings = IgcChatResourceStringEN;
+
   /**
    * Scrolls the view to a specific message by id.
    * @param messageId - The id of the message to scroll to
@@ -300,11 +305,27 @@ export default class IgcChatComponent extends EventEmitterMixin<
     </div>`;
   }
 
+  private renderSuggestionPrefix() {
+    const defaultPrefix = html`<igc-icon
+      name="star-icon"
+      collection="material"
+    ></igc-icon>`;
+    return html`<span slot="start">
+      ${this._chatState?.options?.templates?.suggestionPrefixTemplate
+        ? this._chatState.options.templates.suggestionPrefixTemplate
+        : defaultPrefix}
+    </span>`;
+  }
+
   private renderSuggestions() {
+    const hasContent = this._slots.hasAssignedElements('suggestions-header');
     return html`<div part="suggestions-container">
       <igc-list role="list" aria-label="Suggestions">
         <igc-list-header part="suggestions-header">
-          <slot name="suggestions-header">Suggestions</slot>
+          <span ?hidden=${hasContent}>
+            ${this.resourceStrings.suggestionsHeader}
+          </span>
+          <slot name="suggestions-header"></slot>
         </igc-list-header>
         <slot name="suggestions" part="suggestions">
           ${this._chatState.options?.suggestions?.map(
@@ -314,11 +335,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                   @click=${() =>
                     this._chatState?.handleSuggestionClick(suggestion)}
                 >
-                  <igc-icon
-                    slot="start"
-                    name="star-icon"
-                    collection="material"
-                  ></igc-icon>
+                  ${this.renderSuggestionPrefix()}
                   <span slot="title">${suggestion}</span>
                 </igc-list-item>
               </slot>

@@ -217,6 +217,11 @@ export type IgcChatTemplates = {
    * Template for rendering attachments that are currently queued for sending (in the input area).
    */
   textAreaAttachmentsTemplate?: AttachmentTemplate;
+
+  /**
+   * Template for rendering the suggestion prefix.
+   */
+  suggestionPrefixTemplate?: unknown;
 };
 
 /**
