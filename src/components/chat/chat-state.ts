@@ -89,6 +89,12 @@ export class ChatState {
 
   private resourceStrings = IgcChatResourceStringEN;
 
+  private getIconName(fileType: string | undefined): string {
+    if (fileType?.startsWith('image')) {
+      return 'file-image';
+    }
+    return 'file-document';
+  }
   //#endregion
 
   //#region Default Templates renderers
