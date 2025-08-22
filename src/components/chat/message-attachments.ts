@@ -1,10 +1,9 @@
 import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
@@ -15,7 +14,6 @@ import {
   closeIcon,
   fileIcon,
   type IgcMessage,
-  type IgcMessageAttachment,
   imageIcon,
   moreIcon,
   previewIcon,
@@ -73,152 +71,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  private handleHeaderClick(attachment: IgcMessageAttachment) {
-    this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
-  }
-
-  private isImageAttachment(attachment: IgcMessageAttachment): boolean {
-    return (
-      attachment.type === 'image' ||
-      !!attachment.file?.type.startsWith('image/')
-    );
-  }
-
-  private _fileIcon = new URL('./assets/file.png', import.meta.url).href;
-  private _jsonIcon = new URL('./assets/json.png', import.meta.url).href;
-  private _linkIcon = new URL('./assets/link.png', import.meta.url).href;
-
-  private _fileIconMap: Record<string, string> = {
-    pdf: this._fileIcon,
-    doc: this._fileIcon,
-    docx: this._fileIcon,
-    xls: this._fileIcon,
-    xlsx: this._fileIcon,
-    txt: this._fileIcon,
-    json: this._jsonIcon,
-    link: this._linkIcon,
-    default: this._fileIcon, // A fallback icon
-  };
-
-  private getFileExtension(fileName: string): string {
-    const parts = fileName.split('.');
-    if (parts.length > 1) {
-      return parts.pop()!.toLowerCase();
-    }
-    return '';
-  }
-
-  private getURL(attachment: IgcMessageAttachment): string {
-    if (attachment.url) {
-      return attachment.url;
-    }
-    if (attachment.file) {
-      return URL.createObjectURL(attachment.file);
-    }
-    return '';
-  }
-
-  private renderDefaultAttachmentContent(attachment: IgcMessageAttachment) {
-    const ext = this.getFileExtension(attachment.name);
-    const isImage = this.isImageAttachment(attachment);
-    const url = isImage
-      ? this.getURL(attachment)
-      : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
-    const partName = isImage ? 'image-attachment' : 'file-attachment';
-    return html` <img part="${partName}" src=${url} alt=${attachment.name} />`;
-  }
-
-  private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
-    return html`<div part="details">
-      ${this._chatState?.options?.templates?.attachmentHeaderTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentHeaderTemplate(
-            this.message
-          )
-        : html`${this.message?.sender !== this._chatState?.currentUserId
-              ? html`${attachment.type === 'image' ||
-                attachment.file?.type.startsWith('image/')
-                  ? html`<igc-icon
-                      name="image"
-                      collection="material"
-                      part="attachment-icon"
-                    ></igc-icon>`
-                  : html`<igc-icon
-                      name="file"
-                      collection="material"
-                      part="attachment-icon"
-                    ></igc-icon>`}`
-              : nothing}
-            <span part="file-name">${attachment.name}</span> `}
-    </div>`;
-  }
-
-  private renderAttachmentHeaderActions() {
-    return html`<div part="actions">
-      ${this._chatState?.options?.templates?.attachmentActionsTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentActionsTemplate(
-            this.message
-          )
-        : nothing}
-    </div>`;
-  }
-
-  private renderAttachmentContent(attachment: IgcMessageAttachment) {
-    const parts = {
-      'attachment-content': true,
-      sent: this.message?.sender === this._chatState?.currentUserId,
-    };
-    return html`<div part=${partMap(parts)}>
-      ${this._chatState?.options?.templates?.attachmentContentTemplate &&
-      this.message
-        ? this._chatState.options.templates.attachmentContentTemplate(
-            this.message
-          )
-        : this.renderDefaultAttachmentContent(attachment)}
-    </div>`;
-  }
-
-  private renderDefaultAttachmentsTemplate() {
-    const parts = {
-      attachment: true,
-      sent: this.message?.sender === this._chatState?.currentUserId,
-    };
-
-    const headerParts = {
-      'attachment-header': true,
-      sent: this.message?.sender === this._chatState?.currentUserId,
-    };
-
-    return html`${this.message?.attachments?.map(
-      (attachment) =>
-        html`<div part=${partMap(parts)}>
-          ${this.message?.sender === this._chatState?.currentUserId
-            ? this.renderAttachmentContent(attachment)
-            : nothing}
-          <div
-            part=${partMap(headerParts)}
-            role="button"
-            @click=${() => this.handleHeaderClick(attachment)}
-          >
-            ${this.renderAttachmentHeaderText(attachment)}
-            ${this.renderAttachmentHeaderActions()}
-          </div>
-
-          ${this.message?.sender !== this._chatState?.currentUserId
-            ? this.renderAttachmentContent(attachment)
-            : nothing}
-        </div>`
-    )}`;
-  }
-
   protected override render() {
     return html`
       <div part="attachments-container">
-        ${this._chatState?.options?.templates?.attachmentTemplate &&
-        this.message
-          ? this._chatState.options.templates.attachmentTemplate(this.message)
-          : this.renderDefaultAttachmentsTemplate()}
+        ${this._chatState?.mergedTemplates.attachmentsTemplate(this.message!)}
       </div>
     `;
   }

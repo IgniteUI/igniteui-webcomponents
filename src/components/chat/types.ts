@@ -1,5 +1,3 @@
-import type { TemplateResult } from 'lit';
-
 /**
  * Represents a single chat message in the conversation.
  */
@@ -89,7 +87,10 @@ export type AttachmentTemplate = (
  * @param {IgcMessage} message - The chat message to render.
  * @returns {unknown} A custom rendered representation of the message.
  */
-export type MessageTemplate = (message: IgcMessage) => unknown;
+export type MessageTemplate = (
+  message: IgcMessage,
+  ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
+) => unknown;
 
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
@@ -147,8 +148,9 @@ export type IgcChatOptions = {
   /**
    * A set of template override functions used to customize rendering of messages, attachments, etc.
    */
-  templates?: IgcChatTemplates;
-  markdownRenderer?: (text: string) => TemplateResult; //TODO: Remove when highlighter is implemented
+  templates?: Partial<IgcChatTemplates>;
+
+  messageRenderer?: ChatMessageRenderer;
 };
 
 /**
@@ -157,25 +159,34 @@ export type IgcChatOptions = {
  */
 export type IgcChatTemplates = {
   /**
-   * Template for rendering an attachment in a message.
+   * Template for rendering the attachments of a message.
    */
-  attachmentTemplate?: MessageTemplate;
+  attachmentsTemplate?: (m: IgcMessage) => unknown;
+
+  /**
+   * Template for rendering an attachment in a message.
+   * This allows customization of how each attachment is displayed.
+   */
+  attachmentTemplate?: (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => unknown;
 
   /**
    * Template for rendering a custom header above the attachment in a message.
    */
-  attachmentHeaderTemplate?: MessageTemplate;
-
-  /**
-   * Template for rendering custom action buttons or controls related to an attachment
-   * (e.g. download, preview, delete).
-   */
-  attachmentActionsTemplate?: MessageTemplate;
+  attachmentHeaderTemplate?: (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => unknown;
 
   /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
-  attachmentContentTemplate?: MessageTemplate;
+  attachmentContentTemplate?: (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => unknown;
 
   /**
    * Template for rendering a single chat message.
@@ -184,9 +195,10 @@ export type IgcChatTemplates = {
   messageTemplate?: MessageTemplate;
 
   /**
-   * Template for rendering message-specific actions such as edit, delete, reply, etc.
+   * Template for rendering the actions available for a message (e.g. copy, like, dislike, regenerate).
+   * This allows customization of the buttons or controls shown for each message.
    */
-  messageActionsTemplate?: MessageTemplate;
+  messageActionsTemplate?: (message: IgcMessage) => unknown;
 
   /**
    * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
@@ -205,7 +217,7 @@ export type IgcChatTemplates = {
    * Template for rendering additional controls in the message input area,
    * such as send buttons, emoji pickers, or voice recorders.
    */
-  textAreaActionsTemplate?: unknown;
+  textAreaActionsTemplate?: () => unknown;
 
   /**
    * Template for rendering attachments that are currently queued for sending (in the input area).
@@ -217,6 +229,40 @@ export type IgcChatTemplates = {
    */
   suggestionPrefixTemplate?: unknown;
 };
+
+/**
+ * @interface
+ * Interface for rendering chat messages within a component, such as in a Lit-based chat UI.
+ *
+ * Defines how a given {@link IgcMessage} should be rendered.
+ *
+ * @export
+ */
+
+export interface ChatMessageRenderer {
+  /**
+   * Renders a given message.
+   * @param {IgcMessage} message The message to render.
+   * @returns {unknown} The rendered output, typically an HTMLElement, DocumentFragment, or a lit-html TemplateResult,
+   * depending on the renderer implementation.
+   */
+  render(
+    message: IgcMessage,
+    ctx?: {
+      renderText: (message: IgcMessage) => unknown;
+      templates: Partial<IgcChatTemplates>;
+    }
+  ): unknown;
+
+  /**
+   * Performs optional asynchronous initialization.
+   * This method is called before any rendering occurs and can be used to load resources
+   * like syntax highlighters or fonts.
+   * @async
+   * @returns {Promise<void>} A promise that resolves when initialization is complete.
+   */
+  init?(): Promise<void>;
+}
 
 export const attachmentIcon =
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M720-330q0 104-73 177T470-80q-104 0-177-73t-73-177v-370q0-75 52.5-127.5T400-880q75 0 127.5 52.5T580-700v350q0 46-32 78t-78 32q-46 0-78-32t-32-78v-370h80v370q0 13 8.5 21.5T470-320q13 0 21.5-8.5T500-350v-350q-1-42-29.5-71T400-800q-42 0-71 29t-29 71v370q-1 71 49 120.5T470-160q70 0 119-49.5T640-330v-390h80v390Z"/></svg>';

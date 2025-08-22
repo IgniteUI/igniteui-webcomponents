@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
+  MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
@@ -75,6 +76,24 @@ const initialMessages: any[] = [
       },
     ],
   },
+  {
+    id: 'message-3', // Example message with markdown
+    text: `Here is some sample typescript code:
+
+\`\`\`ts
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+\`\`\`
+
+And some sample html:
+
+\`\`\`html
+<igc-avatar initials="AZ"></igc-avatar>
+<igc-badge></igc-badge>
+\`\`\``,
+    sender: 'bot',
+    attachments: [],
+    timestamp: new Date(),
+  },
 ];
 
 const draftMessage = { text: 'Hi' };
@@ -102,10 +121,8 @@ const _messageActionsTemplate = (msg: any) => {
 const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
 const _textInputTemplate = (text: string) =>
   html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
-const _textAreaActionsTemplate = html`<igc-button
-  @click=${handleCustomSendClick}
-  >Send</igc-button
->`;
+const _textAreaActionsTemplate = () =>
+  html`<igc-button @click=${handleCustomSendClick}>Send</igc-button>`;
 const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
   return html`<div>
     ${attachments.map(
@@ -120,8 +137,11 @@ const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
     )}
   </div>`;
 };
-const _customRenderer = (text: string) =>
-  html`<span>${text.toUpperCase()}</span>`;
+const _customRenderer = {
+  render: (m: IgcMessage) => {
+    return html`<span>${m.text.toUpperCase()}</span>`;
+  },
+};
 
 const ai_chat_options = {
   headerText: 'Chat',
@@ -135,6 +155,11 @@ const ai_chat_options = {
     // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
   },
   // markdownRenderer: _customRenderer
+  messageRenderer: new MarkdownMessageRenderer({
+    // noHighlighter: true
+    // languages: ['typescript']
+    // theme: 'github-dark'
+  }),
 };
 
 const chat_options = {
@@ -143,6 +168,21 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
+  // messageRenderer: new MarkdownMessageRenderer({
+  //   // noHighlighter: true
+  //   // languages: ['typescript']
+  //   // theme: 'github-dark'
+  // })
+  messageRenderer: new MarkdownMessageRenderer({
+    // noHighlighter: true
+    // languages: ['typescript']
+    // theme: 'github-dark'
+  }),
+  templates: {
+    messageActionsTemplate: _messageActionsTemplate,
+    textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
+    textAreaActionsTemplate: _textAreaActionsTemplate,
+  },
 };
 
 function handleCustomSendClick() {
@@ -462,14 +502,15 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const actionsTemplate = html`
-        ${chat.defaultFileUploadButton}
+      const actionsTemplate = () => html`
+        <!-- ${chat.defaultFileUploadButton} -->
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
           <igc-icon-button variant="flat">...</igc-icon-button>
         </div>
       `;
+
       options = {
         headerText: 'Chat',
         inputPlaceholder: 'Type your message here...',
@@ -479,6 +520,7 @@ export const Chat_Templates: Story = {
           textAreaActionsTemplate: actionsTemplate,
           suggestionPrefixTemplate: html`✨`,
         },
+        messageRenderer: _customRenderer,
       };
       chat.options = { ...options };
     }
