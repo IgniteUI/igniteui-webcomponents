@@ -64,8 +64,8 @@ export class ChatState {
       this.renderDefaultAttachmentsTemplate(m),
     attachmentHeaderTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
       this.renderDefaultAttachmentHeader(att, msg),
-    attachmentContentTemplate: (att: IgcMessageAttachment) =>
-      this.renderDefaultAttachmentContent(att),
+    attachmentContentTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
+      this.renderDefaultAttachmentContent(att, msg),
     messageTemplate: (
       m: IgcMessage,
       ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
@@ -76,7 +76,8 @@ export class ChatState {
     typingIndicatorTemplate: () => this.renderDefaultTypingIndicator(),
     textInputTemplate: () => this.renderDefaultTextArea(),
     textAreaActionsTemplate: () => this.renderDefaultActionsArea(),
-    textAreaAttachmentsTemplate: () => this.renderDefaultAttachmentsArea(),
+    textAreaAttachmentsTemplate: (attachments: IgcMessageAttachment[]) =>
+      this.renderDefaultAttachmentsArea(attachments),
   };
 
   private _chatRenderer?: DefaultChatRenderer;
@@ -96,11 +97,18 @@ export class ChatState {
    * Renders the list of input attachments as chips.
    * @returns TemplateResult containing the attachments area
    */
-  public renderDefaultAttachmentsArea = (): TemplateResult => {
-    return html`${this.inputAttachments?.map(
+  public renderDefaultAttachmentsArea = (
+    attachments: IgcMessageAttachment[]
+  ): TemplateResult => {
+    return html`${attachments?.map(
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
+            <igc-icon
+              slot="prefix"
+              name=${this.getIconName(attachment.file?.type ?? attachment.type)}
+              collection="material"
+            ></igc-icon>
             <span part="attachment-name">${attachment.name}</span>
           </igc-chip>
         </div>
@@ -121,7 +129,7 @@ export class ChatState {
       resize="auto"
       rows="1"
       .value=${this.inputValue}
-      @igcInput=${this.handleInputChange}
+      @igcInput=${this.handleInput}
       @focus=${this.handleFocus}
       @blur=${this.handleBlur}
     ></igc-textarea>`;
@@ -401,11 +409,9 @@ export class ChatState {
 
   private renderDefaultAttachmentsTemplate = (m: IgcMessage) => {
     return html`
-      <div part="attachments">
-        ${(m.attachments ?? []).map((att: IgcMessageAttachment) =>
-          this.renderDefaultAttachmentTemplate(att, m)
-        ) || nothing}
-      </div>
+      ${(m.attachments ?? []).map((att: IgcMessageAttachment) =>
+        this.renderDefaultAttachmentTemplate(att, m)
+      ) || nothing}
     `;
   };
 
@@ -559,6 +565,18 @@ export class ChatState {
     }
     return this._chatRenderer;
   }
+
+  /**
+   * Handles input text changes.
+   * Updates internal inputValue and emits 'igcInputChange' event.
+   * @param e Input event from the text area
+   */
+  private handleInput({ detail }: CustomEvent<string>) {
+    if (detail === this.inputValue) return;
+
+    this.inputValue = detail;
+    this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
+  }
   //#endregion
 
   /**
@@ -581,19 +599,17 @@ export class ChatState {
     return this._host.emitEvent(name, args);
   }
 
-  /**
-   * Handles input text changes.
-   * Updates internal inputValue and emits 'igcInputChange' event.
-   * @param e Input event from the text area
-   */
-  public handleInputChange = (e: Event): void => {
-    const input = e.target as HTMLInputElement;
-    const value = input.value;
-    if (value === this.inputValue) return;
+  // /**
+  //  * Handles input text changes.
+  //  * Updates internal inputValue and emits 'igcInputChange' event.
+  //  * @param e Input event from the text area
+  //  */
+  // private handleInputChange = (value: string): void => {
+  //   if (value === this.inputValue) return;
 
-    this.inputValue = value;
-    this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
-  };
+  //   this.inputValue = value;
+  //   this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
+  // };
 
   //#endregion
 
