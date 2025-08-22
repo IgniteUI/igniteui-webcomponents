@@ -95,7 +95,7 @@ And some sample html:
   },
 ];
 
-const draftMessage = { text: 'Hi' };
+// const draftMessage = { text: 'Hi' };
 
 const userMessages: any[] = [];
 
@@ -145,7 +145,11 @@ const _customRenderer = {
 const ai_chat_options = {
   headerText: 'Chat',
   inputPlaceholder: 'Type your message here...',
-  suggestions: ['Hello', 'Hi', 'Generate an image of a pig!'],
+  suggestions: [
+    'Hello',
+    'What is triskaidekaphobia?',
+    'Show me very short sample typescript code',
+  ],
   templates: {
     // messageActionsTemplate: messageActionsTemplate,
     // typingIndicatorTemplate: _typingIndicatorTemplate,
@@ -362,7 +366,7 @@ async function handleAIMessageSend(e: CustomEvent) {
 
     if (newMessage.text.includes('image')) {
       response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-image-generation',
+        model: 'gemini-2.0-flash-preview-image-generation',
         contents: userMessages,
         config: {
           responseModalities: [Modality.TEXT, Modality.IMAGE],
@@ -419,6 +423,7 @@ async function handleAIMessageSend(e: CustomEvent) {
         };
         chat.messages = [...chat.messages];
       }
+      chat.options = { ...ai_chat_options, suggestions: [], isTyping: false };
 
       const messagesForSuggestions = [
         ...chat.messages,
@@ -438,15 +443,14 @@ async function handleAIMessageSend(e: CustomEvent) {
         const matches: IterableIterator<RegExpMatchArray> =
           responseText.matchAll(regex);
 
-        const suggestions: string[] = Array.from(
+        const suggestionsFromResponse: string[] = Array.from(
           matches,
           (match: RegExpMatchArray) => match[1]
         );
 
         chat.options = {
           ...ai_chat_options,
-          suggestions: suggestions,
-          isTyping: false,
+          suggestions: suggestionsFromResponse,
         };
       }
     }
@@ -489,7 +493,6 @@ export const AI: Story = {
   render: () => html`
     <igc-chat
       style="--igc-chat-height: calc(100vh - 32px);"
-      .draftMessage=${draftMessage}
       .options=${ai_chat_options}
       @igcMessageCreated=${handleAIMessageSend}
     >
