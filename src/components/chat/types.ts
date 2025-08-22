@@ -175,12 +175,18 @@ export type IgcChatTemplates = {
   /**
    * Template for rendering a custom header above the attachment in a message.
    */
-  attachmentHeaderTemplate?: (attachment: IgcMessageAttachment) => unknown;
+  attachmentHeaderTemplate?: (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => unknown;
 
   /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
-  attachmentContentTemplate?: (attachment: IgcMessageAttachment) => unknown;
+  attachmentContentTemplate?: (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => unknown;
 
   /**
    * Template for rendering a single chat message.

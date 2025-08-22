@@ -2,10 +2,10 @@ import { html, nothing, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
+import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import { partMap } from '../common/part-map.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
-import defaultFileIcon from './assets/file.png';
-import jsonIcon from './assets/json.png';
-import linkIcon from './assets/link.png';
+import type IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import { DefaultChatRenderer } from './chat-renderer.js';
@@ -54,6 +54,7 @@ export class ChatState {
 
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
   private readonly _attachmentsButtonInputRef = createRef<HTMLInputElement>();
+  private readonly _sharedTooltipRef = createRef<IgcTooltipComponent>();
 
   /** Default templates of the chat components */
   private _defaultTemplates: Required<IgcChatTemplates> = {
@@ -61,8 +62,8 @@ export class ChatState {
       this.renderDefaultAttachmentTemplate(att, m),
     attachmentsTemplate: (m: IgcMessage) =>
       this.renderDefaultAttachmentsTemplate(m),
-    attachmentHeaderTemplate: (att: IgcMessageAttachment) =>
-      this.renderDefaultAttachmentHeader(att),
+    attachmentHeaderTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
+      this.renderDefaultAttachmentHeader(att, msg),
     attachmentContentTemplate: (att: IgcMessageAttachment) =>
       this.renderDefaultAttachmentContent(att),
     messageTemplate: (
@@ -71,6 +72,7 @@ export class ChatState {
     ) => this.renderDefaultMessageTemplate(m, ctx),
     messageActionsTemplate: (message: IgcMessage) =>
       this.renderDefaultMessageActionsTemplate(message),
+    suggestionPrefixTemplate: () => {},
     typingIndicatorTemplate: () => this.renderDefaultTypingIndicator(),
     textInputTemplate: () => this.renderDefaultTextArea(),
     textAreaActionsTemplate: () => this.renderDefaultActionsArea(),
@@ -78,6 +80,14 @@ export class ChatState {
   };
 
   private _chatRenderer?: DefaultChatRenderer;
+
+  /** The tooltip component used for showing action tooltips. */
+  private get _sharedTooltip(): IgcTooltipComponent | undefined {
+    return this._sharedTooltipRef?.value;
+  }
+
+  private resourceStrings = IgcChatResourceStringEN;
+
   //#endregion
 
   //#region Default Templates renderers
@@ -200,10 +210,13 @@ export class ChatState {
     `;
   };
 
-  private renderAttachmentHeaderText(attachment: IgcMessageAttachment) {
+  private renderAttachmentHeaderText(
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) {
     return html`<div part="details">
       ${this.options?.templates?.attachmentHeaderTemplate
-        ? this.options.templates.attachmentHeaderTemplate(attachment)
+        ? this.options.templates.attachmentHeaderTemplate(attachment, message)
         : html`${attachment.type === 'image' ||
             attachment.file?.type.startsWith('image/')
               ? html`<igc-icon
@@ -229,7 +242,10 @@ export class ChatState {
    * @param attachment The message attachment to render
    * @returns TemplateResult containing the rendered attachment header
    */
-  public renderDefaultAttachmentHeader = (attachment: IgcMessageAttachment) => {
+  public renderDefaultAttachmentHeader = (
+    attachment: IgcMessageAttachment,
+    message: IgcMessage
+  ) => {
     // return html`${attachment.type === 'image' ||
     //   attachment.file?.type.startsWith('image/')
     //     ? html`<igc-icon
@@ -243,12 +259,16 @@ export class ChatState {
     //         collection="material"
     //       ></igc-icon>`}
     //   <span part="file-name">${attachment.name}</span> `;
+    const parts = {
+      'attachment-header': true,
+      sent: message?.sender === this.currentUserId,
+    };
     return html` <div
-      part="attachment-header"
+      part=${partMap(parts)}
       role="button"
       @click=${() => this.handleHeaderClick(attachment)}
     >
-      ${this.renderAttachmentHeaderText(attachment)}
+      ${this.renderAttachmentHeaderText(attachment, message)}
     </div>`;
   };
 
@@ -274,11 +294,17 @@ export class ChatState {
     message: IgcMessage
   ): unknown => {
     const isLastMessage = message === this.messages.at(-1);
-    return message?.sender !== 'user' &&
+    return message?.sender !== this.currentUserId &&
       message?.text.trim() &&
       (!isLastMessage || !this._isTyping)
       ? html`<div>
           <igc-icon-button
+            id="copy-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'copy-response-button',
+                this.resourceStrings.reactionCopyResponse
+              )}
             name="copy"
             collection="material"
             variant="flat"
@@ -286,6 +312,12 @@ export class ChatState {
               this.handleMessageActionClick(e, message)}
           ></igc-icon-button>
           <igc-icon-button
+            id="good-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'good-response-button',
+                this.resourceStrings.reactionGoodResponse
+              )}
             name="thumb_up"
             collection="material"
             variant="flat"
@@ -293,6 +325,12 @@ export class ChatState {
               this.handleMessageActionClick(e, message)}
           ></igc-icon-button>
           <igc-icon-button
+            id="bad-response-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'bad-response-button',
+                this.resourceStrings.reactionBadResponse
+              )}
             name="thumb_down"
             variant="flat"
             collection="material"
@@ -300,12 +338,22 @@ export class ChatState {
               this.handleMessageActionClick(e, message)}
           ></igc-icon-button>
           <igc-icon-button
+            id="redo-button"
+            @pointerenter=${() =>
+              this.showTooltip(
+                'redo-button',
+                this.resourceStrings.reactionRedo
+              )}
             name="regenerate"
             variant="flat"
             collection="material"
             @click=${(e: MouseEvent) =>
               this.handleMessageActionClick(e, message)}
           ></igc-icon-button>
+          <igc-tooltip
+            id="sharedTooltip"
+            ${ref(this._sharedTooltipRef)}
+          ></igc-tooltip>
         </div>`
       : nothing;
   };
@@ -329,7 +377,7 @@ export class ChatState {
         ${msg?.sender === this.currentUserId
           ? this.renderDefaultAttachmentContent(att)
           : nothing}
-        ${this.renderDefaultAttachmentHeader(att)}
+        ${this.renderDefaultAttachmentHeader(att, msg)}
         ${msg?.sender !== this.currentUserId
           ? this.renderDefaultAttachmentContent(att)
           : nothing}
@@ -346,6 +394,13 @@ export class ChatState {
       </div>
     `;
   };
+
+  private showTooltip(elementId: string, text: string) {
+    if (!this._sharedTooltip) return;
+    this._sharedTooltip.message = text;
+    this._sharedTooltip.show(elementId);
+  }
+
   //#endregion
 
   //#region Public properties
@@ -613,16 +668,21 @@ export class ChatState {
       !!attachment.file?.type.startsWith('image/')
     );
   }
+
+  private _fileIcon = new URL('./assets/file.png', import.meta.url).href;
+  private _jsonIcon = new URL('./assets/json.png', import.meta.url).href;
+  private _linkIcon = new URL('./assets/link.png', import.meta.url).href;
+
   private _fileIconMap: Record<string, string> = {
-    pdf: defaultFileIcon,
-    doc: defaultFileIcon,
-    docx: defaultFileIcon,
-    xls: defaultFileIcon,
-    xlsx: defaultFileIcon,
-    txt: defaultFileIcon,
-    json: jsonIcon,
-    link: linkIcon,
-    default: defaultFileIcon, // A fallback icon
+    pdf: this._fileIcon,
+    doc: this._fileIcon,
+    docx: this._fileIcon,
+    xls: this._fileIcon,
+    xlsx: this._fileIcon,
+    txt: this._fileIcon,
+    json: this._jsonIcon,
+    link: this._linkIcon,
+    default: this._fileIcon, // A fallback icon
   };
 
   private getFileExtension(fileName: string): string {

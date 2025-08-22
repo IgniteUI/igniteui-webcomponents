@@ -14,7 +14,6 @@ import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import '../tooltip/tooltip.js';
-import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import {
   thumbDownIcon as badResponseIcon,
@@ -76,23 +75,15 @@ export default class IgcChatMessageComponent extends LitElement {
   @property({ attribute: false })
   public message: IgcMessage | undefined;
 
-  /** The resource strings. */
-  @property({ attribute: false })
-  public resourceStrings = IgcChatResourceStringEN;
-
-  /** The tooltip component used for showing action tooltips. */
-  @query('#sharedTooltip')
-  private _sharedTooltip!: IgcTooltipComponent;
-
   /**
    * Sanitizes message text to prevent XSS or invalid HTML.
    * @param text The raw message text
    * @returns Sanitized text safe for HTML rendering
    * @private
    */
-  private sanitizeMessageText(text: string): string {
-    return text.trim();
-  }
+  // private sanitizeMessageText(text: string): string {
+  //   return text.trim();
+  // }
 
   constructor() {
     super();
