@@ -55,18 +55,14 @@ describe('Chat', () => {
     })}`;
   };
 
-  const attachmentHeaderTemplate = (message: any) => {
-    return html`${message.attachments.map((attachment: any) => {
-      return html`<h5>Custom ${attachment.name}</h5>`;
-    })}`;
+  const attachmentHeaderTemplate = (attachment: any, _message: any) => {
+    return html`<h5>Custom ${attachment.name}</h5>`;
   };
 
-  const attachmentContentTemplate = (message: any) => {
-    return html`${message.attachments.map((attachment: any) => {
-      return html`<p>
-        This is a template rendered as content of ${attachment.name}
-      </p>`;
-    })}`;
+  const attachmentContentTemplate = (attachment: any, _message: any) => {
+    return html`<p>
+      This is a template rendered as content of ${attachment.name}
+    </p>`;
   };
 
   const textInputTemplate = (text: string) =>
