@@ -695,10 +695,23 @@ describe('Chat', () => {
                 <div part="attachment">
                   <div part="attachment-header" role="button">
                       <div part="details">
+                          <igc-icon
+                            collection="material"
+                            name="file"
+                            part="attachment-icon"
+                          >
+                          </igc-icon>
                           <span part="file-name">
                               img2.png
                           </span>
                       </div>
+                  </div>
+                  <div part="attachment-content">
+                    <img
+                      alt="img2.png"
+                      part="file-attachment"
+                      src="http://localhost:8000/src/components/chat/assets/file.png"
+                    >
                   </div>
                 </div>
               </div>`
@@ -731,10 +744,7 @@ describe('Chat', () => {
           aria-label="Suggestions"
           role="list"
         >
-          <igc-list-header
-            hidden=""
-            part="suggestions-header"
-          >
+          <igc-list-header part="suggestions-header">
             <span>
               Suggestions
             </span>
@@ -751,13 +761,16 @@ describe('Chat', () => {
               role="listitem"
             >
               <igc-list-item>
-                <igc-icon
-                  collection="material"
-                  name="star-icon"
-                  slot="start"
-                >
-                </igc-icon>
-                <span>Suggestion 1</span>
+                <span slot="start">
+                  <igc-icon
+                    collection="material"
+                    name="star-icon"
+                  >
+                  </igc-icon>
+                </span>
+                <span slot="title">
+                  Suggestion 1
+                </span>
               </igc-list-item>
             </slot>
             <slot
@@ -766,13 +779,16 @@ describe('Chat', () => {
               role="listitem"
             >
               <igc-list-item>
-                <igc-icon
-                  collection="material"
-                  name="star-icon"
-                  slot="start"
-                >
-                </igc-icon>
-                <span>Suggestion 2</span>
+                <span slot="start">
+                  <igc-icon
+                    collection="material"
+                    name="star-icon"
+                  >
+                  </igc-icon>
+                </span>
+                <span slot="title">
+                  Suggestion 2
+                </span>
               </igc-list-item>
             </slot>
           </slot>
@@ -945,12 +961,11 @@ describe('Chat', () => {
         },
       };
       await elementUpdated(chat);
-      await clock.tickAsync(500);
+      await aTimeout(500);
 
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`)
-        ?.querySelectorAll('igc-chat-message');
+        ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
@@ -985,8 +1000,7 @@ describe('Chat', () => {
       await aTimeout(500);
       const messageElements = chat.shadowRoot
         ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`)
-        ?.querySelectorAll('igc-chat-message');
+        ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const messsageContainer =
@@ -998,8 +1012,6 @@ describe('Chat', () => {
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                 </div>
-                 <igc-message-attachments>
-                 </igc-message-attachments>
                  ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
             </div>`
         );
@@ -1027,7 +1039,7 @@ describe('Chat', () => {
           expect(messsageContainer).dom.to.equal(
             `<div part="bubble">
                               <pre part="plain-text">
-                                ${messages[0].text}
+                                ${chat.messages[index].text}
                               </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>

@@ -204,7 +204,9 @@ export default class IgcChatInputComponent extends LitElement {
         <div part="input-wrapper">
           ${templates?.textInputTemplate(this._chatState?.inputValue ?? '')}
         </div>
-        ${templates?.textAreaActionsTemplate()}
+        <div part="buttons-container">
+          ${templates?.textAreaActionsTemplate()}
+        </div>
       </div>
     `;
   }

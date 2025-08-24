@@ -198,9 +198,8 @@ export class ChatState {
   };
 
   private renderDefaultActionsArea = () => {
-    return html` <div part="buttons-container">
-      ${this.renderDefaultFileUploadButton()} ${this.renderDefaultSendButton()}
-    </div>`;
+    return html` ${this.renderDefaultFileUploadButton()}
+    ${this.renderDefaultSendButton()}`;
   };
   /**
    * Default typing indicator template used when no custom template is provided.
