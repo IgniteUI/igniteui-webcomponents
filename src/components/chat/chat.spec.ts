@@ -30,6 +30,10 @@ describe('Chat', () => {
     defineComponents(IgcChatComponent);
   });
 
+  const DIFF_OPTIONS = {
+    ignoreAttributes: ['exportparts'],
+  };
+
   const createChatComponent = () => html`<igc-chat></igc-chat>`;
 
   const messageTemplate = (msg: any) => {
@@ -49,10 +53,8 @@ describe('Chat', () => {
 
   const typingIndicatorTemplate = html`<span>loading...</span>`;
 
-  const attachmentTemplate = (message: any) => {
-    return html`${message.attachments.map((attachment: any) => {
-      return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
-    })}`;
+  const attachmentTemplate = (attachment: any) => {
+    return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
   };
 
   const attachmentHeaderTemplate = (attachment: any, _message: any) => {
@@ -154,32 +156,38 @@ describe('Chat', () => {
   const messageReactions = `<div>
                           <igc-icon-button
                             collection="material"
-                            name="copy"
+                            id="copy-response-button"
+                            name="copy-response"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            name="thumb_up"
+                            id="good-response-button"
+                            name="good-response"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            name="thumb_down"
+                            id="bad-response-button"
+                            name="bad-response"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            name="regenerate"
+                            id="redo-button"
+                            name="redo"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
+                          <igc-tooltip id="sharedTooltip">
+                          </igc-tooltip>
                         </div>`;
 
   let chat: IgcChatComponent;
@@ -222,7 +230,8 @@ describe('Chat', () => {
                     </div>
                     <igc-chat-input>
                     </igc-chat-input>
-                </div>`
+                </div>`,
+        DIFF_OPTIONS
       );
 
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
@@ -292,7 +301,8 @@ describe('Chat', () => {
                     </igc-chat-message>
                     <igc-chat-message id="message-4" part="message-item" role="option">
                     </igc-chat-message>
-                  </div>`
+                  </div>`,
+        DIFF_OPTIONS
       );
 
       expect(chat.messages.length).to.equal(4);
@@ -659,28 +669,20 @@ describe('Chat', () => {
         if (index === 0) {
           expect(attachments).shadowDom.to.equal(
             `<div part="attachments-container">
-                <div part="attachment">
-                  <div part="attachment-header" role="button">
-                      <div part="details">
-                          <igc-icon
-                              part="attachment-icon"
-                              collection="material"
-                              name="image"
-                          >
-                          </igc-icon>
-                          <span part="file-name">
-                              img1.png
-                          </span>
-                      </div>
-                      <div part="actions">
-                      </div>
-                  </div>
-                  <div part="attachment-content">
+                <div part="attachment sent">
+                  <div part="attachment-content sent">
                     <img
                         alt="img1.png"
                         part="image-attachment"
                         src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
                     >
+                  </div>
+                  <div part="attachment-header sent" role="button">
+                      <div part="details">
+                          <span part="file-name">
+                              img1.png
+                          </span>
+                      </div>
                   </div>
                 </div>
               </div>`
@@ -693,17 +695,9 @@ describe('Chat', () => {
                 <div part="attachment">
                   <div part="attachment-header" role="button">
                       <div part="details">
-                          <igc-icon
-                            part="attachment-icon"
-                            collection="material"
-                            name="file"
-                          >
-                          </igc-icon>
                           <span part="file-name">
                               img2.png
                           </span>
-                      </div>
-                      <div part="actions">
                       </div>
                   </div>
                 </div>
@@ -715,7 +709,7 @@ describe('Chat', () => {
 
     it('should not render container if suggestions are not provided', async () => {
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `igc-list[part='suggestions-container']`
+        `[part='suggestions-container']`
       );
 
       expect(suggestionsContainer).to.be.null;
@@ -728,19 +722,22 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `igc-list[part='suggestions-container']`
+        `[part='suggestions-container']`
       );
 
       expect(suggestionsContainer).dom.to.equal(
-        `<igc-list
+        `<div part="suggestions-container">
+        <igc-list
           aria-label="Suggestions"
-          part="suggestions-container"
           role="list"
         >
           <igc-list-header
             hidden=""
             part="suggestions-header"
           >
+            <span>
+              Suggestions
+            </span>
             <slot name="suggestions-header">
             </slot>
           </igc-list-header>
@@ -784,7 +781,8 @@ describe('Chat', () => {
             part="suggestions-actions"
           >
           </slot>
-        </igc-list>`
+        </igc-list>
+      </div>`
       );
     });
 
@@ -794,7 +792,7 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `igc-list[part='suggestions-container']`
+        `[part='suggestions-container']`
       );
 
       expect(suggestionsContainer?.previousElementSibling?.part[0]).to.equal(
@@ -815,7 +813,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `igc-list[part='suggestions-container']`
+        `[part='suggestions-container']`
       )!;
 
       const messageList = chat.shadowRoot?.querySelector(
@@ -836,7 +834,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const suggestionsContainer = chat.shadowRoot?.querySelector(
-        `igc-list[part='suggestions-container']`
+        `[part='suggestions-container']`
       )!;
 
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input')!;
@@ -872,7 +870,8 @@ describe('Chat', () => {
                     <div part="typing-dot">
                     </div>
                 </div>
-            </div>`
+            </div>`,
+        DIFF_OPTIONS
       );
     });
   });
@@ -937,7 +936,7 @@ describe('Chat', () => {
       });
     });
 
-    it('should render attachmentHeaderTemplate, attachmentActionsTemplate, attachmentContentTemplate', async () => {
+    it('should render attachmentHeaderTemplate, attachmentContentTemplate', async () => {
       chat.options = {
         templates: {
           attachmentHeaderTemplate: attachmentHeaderTemplate,
@@ -969,17 +968,9 @@ describe('Chat', () => {
                     </div>`
         );
 
-        const actions =
-          attachments?.shadowRoot?.querySelector(`div[part='actions']`);
-        expect(actions).dom.to.equal(
-          `<div part="actions">
-                        <igc-button type="button" variant="contained">?</igc-button>
-                    </div>`
-        );
-
-        const content = attachments?.shadowRoot?.querySelector('p');
+        const content = attachments?.shadowRoot?.querySelector('pre');
         expect(content).dom.to.equal(
-          `<p>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</p>`
+          `<pre>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</pre>`
         );
       });
     });
@@ -1036,7 +1027,7 @@ describe('Chat', () => {
           expect(messsageContainer).dom.to.equal(
             `<div part="bubble">
                               <pre part="plain-text">
-                                ${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}
+                                ${messages[0].text}
                               </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
@@ -1078,7 +1069,8 @@ describe('Chat', () => {
                 <igc-chat-message id="message-1" part="message-item" role="option">
                 </igc-chat-message>
                 <span>loading...</span>
-            </div>`
+            </div>`,
+        DIFF_OPTIONS
       );
     });
 
@@ -1142,7 +1134,7 @@ describe('Chat', () => {
           await elementUpdated(chat);
           simulateClick(sendButton);
           await elementUpdated(chat);
-          await clock.tickAsync(500);
+          await aTimeout(500);
 
           expect(eventSpy).calledWith('igcMessageCreated');
           const eventArgs = eventSpy.getCall(1).args[1]?.detail;
@@ -1167,7 +1159,7 @@ describe('Chat', () => {
         await elementUpdated(chat);
 
         const suggestionItems = chat.shadowRoot
-          ?.querySelector(`igc-list[part='suggestions-container']`)
+          ?.querySelector('igc-list')
           ?.querySelectorAll('igc-list-item');
 
         expect(suggestionItems?.length).to.equal(2);
@@ -1422,8 +1414,9 @@ describe('Chat', () => {
 
       const attachmentHeader = messageElement?.shadowRoot
         ?.querySelector('igc-message-attachments')
-        ?.shadowRoot?.querySelector(`div[part='attachment']`)
-        ?.querySelector(`div[part='attachment-header']`) as HTMLElement;
+        ?.shadowRoot?.querySelector(
+          `div[part='attachment-header sent']`
+        ) as HTMLElement;
 
       simulateClick(attachmentHeader);
       expect(eventSpy).calledWith('igcAttachmentClick', {
@@ -1505,13 +1498,13 @@ describe('Chat', () => {
         ?.shadowRoot?.querySelector(`div[part='message-list'`)
         ?.querySelector('igc-chat-message');
 
-      const thumbUpIcon = messageElement?.shadowRoot?.querySelector(
-        'igc-icon-button[name="thumb_up"]'
+      const goodResponseIcon = messageElement?.shadowRoot?.querySelector(
+        'igc-icon-button[name="good-response"]'
       ) as HTMLElement;
 
-      simulateClick(thumbUpIcon);
+      simulateClick(goodResponseIcon);
       expect(eventSpy).calledWith('igcMessageReact', {
-        detail: { message: messages[0], reaction: 'thumb_up' },
+        detail: { message: messages[0], reaction: 'good-response' },
       });
     });
 

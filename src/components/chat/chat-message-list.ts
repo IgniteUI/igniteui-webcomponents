@@ -133,7 +133,6 @@ export default class IgcChatMessageListComponent extends LitElement {
                    id=${messageId}
                    role="option"
                    part="message-item"
-                   data-role=${message.sender}
                    .message=${message}
                    exportparts="message-container, bubble, message-text, message-attachments, message-actions,
                    attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
