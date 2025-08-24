@@ -161,7 +161,10 @@ export type IgcChatTemplates = {
   /**
    * Template for rendering the attachments of a message.
    */
-  attachmentsTemplate?: (m: IgcMessage) => unknown;
+  attachmentsTemplate?: (
+    message: IgcMessage,
+    ctx: { templates: Partial<IgcChatTemplates> }
+  ) => unknown;
 
   /**
    * Template for rendering an attachment in a message.

@@ -72,9 +72,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   protected override render() {
+    const templates = this._chatState?.mergedTemplates;
+
     return html`
       <div part="attachments-container">
-        ${this._chatState?.mergedTemplates.attachmentsTemplate(this.message!)}
+        ${templates?.attachmentsTemplate(this.message!, { templates })}
       </div>
     `;
   }

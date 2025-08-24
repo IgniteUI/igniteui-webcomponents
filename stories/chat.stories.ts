@@ -8,6 +8,7 @@ import {
   registerIcon,
 } from 'igniteui-webcomponents';
 import type {
+  IgcChatTemplates,
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
@@ -177,11 +178,13 @@ const chat_options = {
     // languages: ['typescript']
     // theme: 'github-dark'
   }),
-  // templates: {
-  //   messageActionsTemplate: _messageActionsTemplate,
-  //   textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
-  //   textAreaActionsTemplate: _textAreaActionsTemplate,
-  // },
+  templates: {
+    // attachmentContentTemplate: () => html`<p>content</p>`,
+    // attachmentHeaderTemplate: () => html`<p>header</p>`
+    // messageActionsTemplate: _messageActionsTemplate,
+    // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
+    // textAreaActionsTemplate: _textAreaActionsTemplate,
+  } as Partial<IgcChatTemplates>,
 };
 
 function handleCustomSendClick() {
