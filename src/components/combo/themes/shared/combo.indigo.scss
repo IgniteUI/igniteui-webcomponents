@@ -61,6 +61,10 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 }
 
+[part='list'] {
+    min-height: calc(var(--size) * 6 + rem(10px)) !important;
+}
+
 [part='filter-input'] {
     padding: pad-inline(rem(12px));
 }
