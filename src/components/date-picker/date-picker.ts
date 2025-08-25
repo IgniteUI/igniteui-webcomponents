@@ -541,7 +541,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     super.handleAnchorClick();
     await this.updateComplete;
-    this._calendar[focusActiveDate]();
+    this._calendar[focusActiveDate]({ preventScroll: true });
   }
 
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
@@ -583,6 +583,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     }
 
     this.value = (event.target as IgcDateTimeInputComponent).value!;
+    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
     this.emitEvent('igcInput', { detail: this.value });
   }
 

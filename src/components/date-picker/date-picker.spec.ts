@@ -938,6 +938,31 @@ describe('Date picker', () => {
       expect(selectedMonths).lengthOf(1);
     });
 
+    it('should update the calendar view when typing, i.e. switch to other month', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const date = new CalendarDay({ year: 2025, month: 1, date: 1 });
+      picker.value = date.native;
+      picker.open = true;
+      picker.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      dateTimeInput.setSelectionRange(0, 1);
+      await elementUpdated(picker);
+
+      simulateKeyboard(dateTimeInput, arrowUp);
+      simulateKeyboard(dateTimeInput, arrowUp);
+
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledWith('igcInput');
+      expect(eventSpy).not.calledWith('igcChange');
+
+      const expectedValue = new CalendarDay({ year: 2025, month: 3, date: 1 })
+        .native;
+      checkDatesEqual(calendar.activeDate, expectedValue);
+    });
+
     describe('Readonly state', () => {
       describe('Dropdown mode', () => {
         beforeEach(async () => {
