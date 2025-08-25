@@ -1,8 +1,6 @@
 import type { ReactiveController } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-
 import {
-  type KeyBindingOptions,
   addKeybindings,
   altKey,
   arrowDown,
@@ -11,6 +9,7 @@ import {
   enterKey,
   escapeKey,
   homeKey,
+  type KeyBindingOptions,
   shiftKey,
   spaceBar,
   tabKey,
@@ -54,20 +53,20 @@ export class ComboNavigationController<T extends object> {
     return this._config.list.value!;
   }
 
-  protected get firstItem(): number {
+  protected get _firstItem(): number {
     return this.state.dataState.findIndex((rec) => !rec.header);
   }
 
-  protected get lastItem(): number {
+  protected get _lastItem(): number {
     return this.state.dataState.length - 1;
   }
 
-  protected async hide(): Promise<boolean> {
+  protected async _hide(): Promise<boolean> {
     // @ts-expect-error: protected access
     return await this.combo._hide(true);
   }
 
-  protected async show(): Promise<boolean> {
+  protected async _show(): Promise<boolean> {
     // @ts-expect-error: protected access
     return await this.combo._show(true);
   }
@@ -77,12 +76,12 @@ export class ComboNavigationController<T extends object> {
     this.combo.toggleSelect(index);
   }
 
-  protected select(index: number): void {
+  protected _select(index: number): void {
     // @ts-expect-error: protected access
     this.combo.selectByIndex(index);
   }
 
-  private onSpace = (): void => {
+  private _onSpace = (): void => {
     if (this._active === -1) {
       return;
     }
@@ -93,7 +92,7 @@ export class ComboNavigationController<T extends object> {
     }
   };
 
-  private onEnter = async (): Promise<void> => {
+  private _onEnter = async (): Promise<void> => {
     if (this._active === -1) {
       return;
     }
@@ -101,63 +100,63 @@ export class ComboNavigationController<T extends object> {
     const item = this.state.dataState[this._active];
 
     if (!item.header && this.combo.singleSelect) {
-      this.select(this.active);
+      this._select(this.active);
     }
 
-    if (await this.hide()) {
+    if (await this._hide()) {
       this.input.select();
       this.combo.focus();
     }
   };
 
-  private onTab = async (): Promise<void> => {
+  private _onTab = async (): Promise<void> => {
     if (this.combo.open) {
-      await this.hide();
+      await this._hide();
     }
   };
 
-  private onEscape = async (): Promise<void> => {
-    if (await this.hide()) {
+  private _onEscape = async (): Promise<void> => {
+    if (await this._hide()) {
       this.input.focus();
     }
   };
 
-  private onMainInputArrowDown = async (): Promise<void> => {
-    if (!this.combo.open && !(await this.show())) {
+  private _onMainInputArrowDown = async (): Promise<void> => {
+    if (!this.combo.open && !(await this._show())) {
       return;
     }
 
     if (this.combo.singleSelect) {
-      this.onSearchArrowDown();
+      this._onSearchArrowDown();
     }
   };
 
-  private onSearchArrowDown = (): void => {
+  private _onSearchArrowDown = (): void => {
     this.list.focus();
-    this.onArrowDown();
+    this._onArrowDown();
   };
 
-  private onHome = (): void => {
-    this.active = this.firstItem;
-    this.scrollToActive();
+  private _onHome = (): void => {
+    this.active = this._firstItem;
+    this._scrollToActive();
   };
 
-  private onEnd = (): void => {
-    this.active = this.lastItem;
-    this.scrollToActive();
+  private _onEnd = (): void => {
+    this.active = this._lastItem;
+    this._scrollToActive();
   };
 
-  private onArrowUp = (): void => {
-    this.getNextItem(-1);
-    this.scrollToActive();
+  private _onArrowUp = (): void => {
+    this._getNextItem(-1);
+    this._scrollToActive();
   };
 
-  private onArrowDown = (): void => {
-    this.getNextItem(1);
-    this.scrollToActive();
+  private _onArrowDown = (): void => {
+    this._getNextItem(1);
+    this._scrollToActive();
   };
 
-  private scrollToActive(behavior?: ScrollBehavior): void {
+  private _scrollToActive(behavior?: ScrollBehavior): void {
     this.list.element(this.active)?.scrollIntoView({
       block: 'center',
       behavior: behavior ?? 'auto',
@@ -166,7 +165,7 @@ export class ComboNavigationController<T extends object> {
     this.list.requestUpdate();
   }
 
-  private getNearestItem(start: number, delta: -1 | 1): number {
+  private _getNearestItem(start: number, delta: -1 | 1): number {
     let index = start;
     const items = this.state.dataState;
 
@@ -179,10 +178,10 @@ export class ComboNavigationController<T extends object> {
     return index >= 0 && index < items.length ? index : -1;
   }
 
-  private getNextItem(delta: -1 | 1): void {
-    const next = this.getNearestItem(this._active, delta);
+  private _getNextItem(delta: -1 | 1): void {
+    const next = this._getNearestItem(this._active, delta);
     if (next === -1) {
-      if (this.active === this.firstItem) {
+      if (this.active === this._firstItem) {
         (this.combo.singleSelect ? this.input : this.searchInput).focus();
         this.active = -1;
       }
@@ -201,7 +200,6 @@ export class ComboNavigationController<T extends object> {
     this._config = config;
 
     const bindingDefaults = {
-      preventDefault: true,
       triggers: ['keydownRepeat'],
     } as KeyBindingOptions;
 
@@ -209,9 +207,9 @@ export class ComboNavigationController<T extends object> {
 
     // Combo
     addKeybindings(this.combo, { skip, bindingDefaults })
-      .set(tabKey, this.onTab, { preventDefault: false })
-      .set([shiftKey, tabKey], this.onTab, { preventDefault: false })
-      .set(escapeKey, this.onEscape);
+      .set(tabKey, this._onTab, { preventDefault: false })
+      .set([shiftKey, tabKey], this._onTab, { preventDefault: false })
+      .set(escapeKey, this._onEscape);
 
     // Main input
     addKeybindings(this.combo, {
@@ -219,10 +217,10 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.input,
       bindingDefaults,
     })
-      .set(arrowUp, async () => await this.hide())
-      .set([altKey, arrowDown], this.onMainInputArrowDown)
-      .set(arrowDown, this.onMainInputArrowDown)
-      .set(enterKey, this.onEnter);
+      .set(arrowUp, async () => await this._hide())
+      .set([altKey, arrowDown], this._onMainInputArrowDown)
+      .set(arrowDown, this._onMainInputArrowDown)
+      .set(enterKey, this._onEnter);
 
     // Search input
     addKeybindings(this.combo, {
@@ -230,8 +228,8 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.search,
       bindingDefaults,
     })
-      .set(arrowUp, this.onEscape)
-      .set(arrowDown, this.onSearchArrowDown);
+      .set(arrowUp, this._onEscape)
+      .set(arrowDown, this._onSearchArrowDown);
 
     // List
     addKeybindings(this.combo, {
@@ -239,12 +237,12 @@ export class ComboNavigationController<T extends object> {
       ref: this._config.list,
       bindingDefaults,
     })
-      .set(arrowUp, this.onArrowUp)
-      .set(arrowDown, this.onArrowDown)
-      .set(homeKey, this.onHome)
-      .set(endKey, this.onEnd)
-      .set(spaceBar, this.onSpace)
-      .set(enterKey, this.onEnter);
+      .set(arrowUp, this._onArrowUp)
+      .set(arrowDown, this._onArrowDown)
+      .set(homeKey, this._onHome)
+      .set(endKey, this._onEnd)
+      .set(spaceBar, this._onSpace)
+      .set(enterKey, this._onEnter);
   }
 
   public hostDisconnected(): void {

@@ -12,11 +12,13 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
-import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
-  runValidationContainerTests,
+  createFormAssociatedTestBed,
   simulateClick,
   simulateKeyboard,
+} from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
