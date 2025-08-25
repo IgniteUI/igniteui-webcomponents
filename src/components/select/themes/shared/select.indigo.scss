@@ -11,6 +11,7 @@ $input-theme: input-theme.$indigo;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
 
     ::part(helper-text) {
         @include type-style('caption');
@@ -25,6 +26,10 @@ $input-theme: input-theme.$indigo;
 
     igc-input::part(container) {
         padding-inline: 0;
+    }
+
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
     }
 }
 
