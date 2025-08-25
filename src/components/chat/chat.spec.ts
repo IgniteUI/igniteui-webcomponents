@@ -61,7 +61,7 @@ describe('Chat', () => {
     return html`<h5>Custom ${attachment.name}</h5>`;
   };
 
-  const attachmentContentTemplate = (attachment: any, _message: any) => {
+  const attachmentContentTemplate = (attachment: any) => {
     return html`<p>
       This is a template rendered as content of ${attachment.name}
     </p>`;
@@ -979,13 +979,18 @@ describe('Chat', () => {
           attachments?.shadowRoot?.querySelector(`div[part='details']`);
         expect(details).dom.to.equal(
           `<div part="details">
-                        <h5>Custom ${chat.messages[index].attachments?.[0].name}</h5>
-                    </div>`
+              <h5>Custom ${chat.messages[index].attachments?.[0].name}</h5>
+            </div>`
         );
 
-        const content = attachments?.shadowRoot?.querySelector('pre');
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const content = attachments?.shadowRoot?.querySelector(
+          `div[part='attachment-content${isCurrentUser ? ' sent' : ''}']`
+        );
         expect(content).dom.to.equal(
-          `<pre>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</pre>`
+          `<div part="attachment-content${isCurrentUser ? ' sent' : ''}">
+              <p>This is a template rendered as content of ${chat.messages[index].attachments?.[0].name}</p>
+            </div>`
         );
       });
     });
@@ -1012,7 +1017,6 @@ describe('Chat', () => {
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                 </div>
-                 ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
             </div>`
         );
       });
@@ -1035,30 +1039,23 @@ describe('Chat', () => {
         const messsageContainer =
           messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
         expect(messsageContainer).not.to.be.undefined;
-        if (index === 0) {
-          expect(messsageContainer).dom.to.equal(
-            `<div part="bubble">
-                              <pre part="plain-text">
-                                ${chat.messages[index].text}
-                              </pre>
-                            <igc-message-attachments>
-                            </igc-message-attachments>
-                        </div>`
-          );
-        } else {
-          expect(messsageContainer).dom.to.equal(
-            `<div part="bubble">
-                            <div>
-                                <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
-                            </div>
-                            <igc-message-attachments>
-                            </igc-message-attachments>
-                            <div style="float: right">
-                                <igc-button name="regenerate" type="button" variant="flat">...</igc-button>
-                            </div>
-                        </div>`
-          );
-        }
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        expect(messsageContainer).dom.to.equal(
+          `<div part="bubble">
+                            <pre part="plain-text">
+                              ${chat.messages[index].text}
+                            </pre>
+                          <igc-message-attachments>
+                          </igc-message-attachments>
+                      ${
+                        !isCurrentUser
+                          ? `<div style="float: right">
+                            <igc-button name="regenerate" type="button" variant="flat">...</igc-button>
+                          </div>`
+                          : ''
+                      }
+            </div>`
+        );
       });
     });
 

@@ -78,8 +78,8 @@ export class ChatState {
     ) => this.renderDefaultAttachmentsTemplate(m),
     attachmentHeaderTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
       this.renderDefaultAttachmentHeader(att, msg),
-    attachmentContentTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
-      this.renderDefaultAttachmentContent(att, msg),
+    attachmentContentTemplate: (att: IgcMessageAttachment) =>
+      this.renderDefaultAttachmentContent(att),
     messageTemplate: (
       m: IgcMessage,
       ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
@@ -239,7 +239,7 @@ export class ChatState {
     attachment: IgcMessageAttachment,
     message: IgcMessage
   ) {
-    return html`<div part="details">
+    return html`
       ${html`${message.sender !== this.currentUserId
           ? html`${attachment.type === 'image' ||
             attachment.file?.type.startsWith('image/')
@@ -253,9 +253,8 @@ export class ChatState {
                   collection="material"
                   part="attachment-icon"
                 ></igc-icon>`}`
-          : nothing}
-        <span part="file-name">${attachment.name}</span> `}
-    </div>`;
+          : nothing} <span part="file-name">${attachment.name}</span>`}
+    `;
   }
 
   private handleHeaderClick(attachment: IgcMessageAttachment) {
@@ -271,17 +270,7 @@ export class ChatState {
     attachment: IgcMessageAttachment,
     message: IgcMessage
   ) => {
-    const parts = {
-      'attachment-header': true,
-      sent: message?.sender === this.currentUserId,
-    };
-    return html` <div
-      part=${partMap(parts)}
-      role="button"
-      @click=${() => this.handleHeaderClick(attachment)}
-    >
-      ${this.renderDefaultAttachmentHeaderText(attachment, message)}
-    </div>`;
+    return this.renderDefaultAttachmentHeaderText(attachment, message);
   };
 
   /**
@@ -291,8 +280,7 @@ export class ChatState {
    * @returns TemplateResult containing the rendered attachment content
    */
   private renderDefaultAttachmentContent = (
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
+    attachment: IgcMessageAttachment
   ) => {
     const ext = this.getFileExtension(attachment.name);
     const isImage = this.isImageAttachment(attachment);
@@ -300,13 +288,7 @@ export class ChatState {
       ? this.getURL(attachment)
       : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
     const partName = isImage ? 'image-attachment' : 'file-attachment';
-    const parts = {
-      'attachment-content': true,
-      sent: message?.sender === this.currentUserId,
-    };
-    return html` <div part=${partMap(parts)}>
-      <img part="${partName}" src=${url} alt=${attachment.name} />
-    </div>`;
+    return html`<img part="${partName}" src=${url} alt=${attachment.name} />`;
   };
 
   private renderDefaultMessageActionsTemplate = (
@@ -380,20 +362,36 @@ export class ChatState {
     msg: IgcMessage
   ) => {
     const isCurrentUser = msg.sender === this.currentUserId;
-    const parts = {
+    const attachmentParts = {
       attachment: true,
       sent: isCurrentUser,
     };
+    const contentParts = {
+      'attachment-content': true,
+      sent: isCurrentUser,
+    };
+    const headerParts = {
+      'attachment-header': true,
+      sent: isCurrentUser,
+    };
 
-    const content = this.mergedTemplates.attachmentContentTemplate(att, msg);
-    const header = this.mergedTemplates.attachmentHeaderTemplate(att, msg);
-
-    return html`
-      <div part=${partMap(parts)}>
-        ${isCurrentUser ? content : nothing} ${header}
-        ${!isCurrentUser ? content : nothing}
+    const content = html`<div part=${partMap(contentParts)}>
+      ${this.mergedTemplates.attachmentContentTemplate(att, msg)}
+    </div>`;
+    const header = html` <div
+      part=${partMap(headerParts)}
+      role="button"
+      @click=${() => this.handleHeaderClick(att)}
+    >
+      <div part="details">
+        ${this.mergedTemplates.attachmentHeaderTemplate(att, msg)}
       </div>
-    `;
+    </div>`;
+
+    return html`<div part=${partMap(attachmentParts)}>
+      ${isCurrentUser ? content : nothing} ${header}
+      ${!isCurrentUser ? content : nothing}
+    </div> `;
   };
 
   private renderDefaultAttachmentsTemplate = (m: IgcMessage) => {

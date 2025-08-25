@@ -186,10 +186,7 @@ export type IgcChatTemplates = {
   /**
    * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
    */
-  attachmentContentTemplate?: (
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
-  ) => unknown;
+  attachmentContentTemplate?: (attachment: IgcMessageAttachment) => unknown;
 
   /**
    * Template for rendering a single chat message.
