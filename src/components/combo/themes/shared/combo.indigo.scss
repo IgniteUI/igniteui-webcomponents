@@ -62,7 +62,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='list'] {
-    min-height: calc(var(--size) * 6 + rem(10px)) !important;
+    min-height: calc(var(--size) * 6 + rem(16px)) !important;
 }
 
 [part='filter-input'] {
