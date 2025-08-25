@@ -42,6 +42,12 @@
     gap: rem(8px);
 }
 
+[part='start'] {
+    ::slotted(*) {
+        display: flex;
+    }
+}
+
 [part='title'] {
     @include type-style('subtitle-1');
 }

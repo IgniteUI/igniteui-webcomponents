@@ -47,6 +47,7 @@ $inline-inset: rem(16px);
   padding-inline: $inline-inset;
   box-shadow: var(--ig-elevation-4);
   width: 100%;
+  z-index: 1;
 }
 
 [part='title'] {

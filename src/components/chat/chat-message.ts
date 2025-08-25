@@ -6,6 +6,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partMap } from '../common/part-map.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type { DefaultChatRenderer } from './chat-renderer.js';
 import type { ChatState } from './chat-state.js';
@@ -128,15 +129,12 @@ export default class IgcChatMessageComponent extends LitElement {
    * - Renders attachments and custom templates if provided.
    */
   protected override render() {
-    const containerPart = `message-container ${this.message?.sender === this._chatState?.currentUserId ? 'sent' : ''}`;
-    // const renderer =
-    //   this._chatState?.options?.markdownRenderer || renderMarkdown;
+    const parts = {
+      'message-container': true,
+      sent: this._chatState?.currentUserId === this.message?.sender,
+    };
 
-    return html`
-      <div part=${containerPart}>
-        <div part="bubble">${this.renderedContent}</div>
-      </div>
-    `;
+    return html` <div part=${partMap(parts)}>${this.renderedContent}</div> `;
   }
 }
 

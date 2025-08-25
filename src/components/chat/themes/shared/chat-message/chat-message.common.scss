@@ -7,7 +7,7 @@ $theme: $material;
     background: var-get($theme, 'message-background');
 }
 
-[part~='bubble'] {
+[part~='message-container'] {
     color: var-get($theme, 'message-color');
 }
 

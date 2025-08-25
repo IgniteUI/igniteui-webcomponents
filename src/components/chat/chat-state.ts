@@ -376,7 +376,7 @@ export class ChatState {
     };
 
     const content = html`<div part=${partMap(contentParts)}>
-      ${this.mergedTemplates.attachmentContentTemplate(att, msg)}
+      ${this.mergedTemplates.attachmentContentTemplate(att)}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}

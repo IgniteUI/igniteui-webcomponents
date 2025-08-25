@@ -310,26 +310,22 @@ describe('Chat', () => {
       const firstMessage =
         messageContainer?.querySelectorAll('igc-chat-message')[0];
       expect(firstMessage).shadowDom.to.equal(
-        `<div part="message-container ">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Hello! How can I help you today?
-                        </pre>
-                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
-                    </div>
-                </div>`
+        `<div part="message-container">
+            <pre part="plain-text">
+              Hello! How can I help you today?
+            </pre>
+            ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+        </div>`
       );
 
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[3]
       ).shadowDom.to.equal(
         `<div part="message-container sent">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Thank you too!
-                        </pre>
-                    </div>
-                </div>`
+          <pre part="plain-text">
+            Thank you too!
+          </pre>
+        </div>`
       );
     });
 
@@ -357,13 +353,11 @@ describe('Chat', () => {
         messageContainer?.querySelectorAll('igc-chat-message')[0];
       expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Hello!
-                        </pre>
-                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
-                    </div>
-                </div>`
+          <pre part="plain-text">
+            Hello!
+          </pre>
+          ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+        </div>`
       );
     });
 
@@ -648,11 +642,13 @@ describe('Chat', () => {
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
-        const messsageContainer =
-          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
         expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
-          `<div part="bubble">
+          `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                               <pre part="plain-text">
                                 ${(messsageContainer as HTMLElement)?.innerText}
                               </pre>
@@ -934,8 +930,10 @@ describe('Chat', () => {
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
-        const messsageContainer =
-          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
         expect(messsageContainer).not.to.be.undefined;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
@@ -968,8 +966,10 @@ describe('Chat', () => {
         ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
-        const messsageContainer =
-          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
         expect(messsageContainer).not.to.be.undefined;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
@@ -983,7 +983,6 @@ describe('Chat', () => {
             </div>`
         );
 
-        const isCurrentUser = chat.messages[index].sender === 'user';
         const content = attachments?.shadowRoot?.querySelector(
           `div[part='attachment-content${isCurrentUser ? ' sent' : ''}']`
         );
@@ -1008,11 +1007,13 @@ describe('Chat', () => {
         ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
-        const messsageContainer =
-          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
         expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
-          `<div part="bubble">
+          `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                 <div>
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
@@ -1036,12 +1037,13 @@ describe('Chat', () => {
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
-        const messsageContainer =
-          messageElement.shadowRoot?.querySelector(`div[part='bubble']`);
-        expect(messsageContainer).not.to.be.undefined;
         const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
+        expect(messsageContainer).not.to.be.undefined;
         expect(messsageContainer).dom.to.equal(
-          `<div part="bubble">
+          `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                             <pre part="plain-text">
                               ${chat.messages[index].text}
                             </pre>
