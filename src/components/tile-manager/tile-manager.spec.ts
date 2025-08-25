@@ -957,7 +957,10 @@ describe('Tile Manager component', () => {
         document.createElement(IgcTileComponent.tagName)
       );
 
-      tiles.forEach((tile) => tileManager.appendChild(tile));
+      for (const tile of tiles) {
+        tileManager.appendChild(tile);
+      }
+
       await elementUpdated(tileManager);
 
       tileManager.tiles.forEach((tile, index) => {
