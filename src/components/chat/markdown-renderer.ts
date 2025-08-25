@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { html, type TemplateResult } from 'lit';
 import { Marked, Renderer } from 'marked';
 import type { ChatMessageRenderer, IgcMessage } from './types.js';
@@ -25,6 +26,11 @@ export interface MarkdownRendererOptions {
    * The theme used by the syntax highlighter (e.g., 'github-light').
    */
   theme?: string;
+
+  /**
+   * A custom HTML sanitization function. Defaults to DOMPurify.sanitize.
+   */
+  sanitizer?: (html: string) => string;
 }
 
 /**
@@ -39,6 +45,7 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
   private langs: string[];
   private _marked: Marked;
   private initialized = false;
+  private _sanitizer: (html: string) => string;
 
   /**
    * Creates a new MarkdownMessageRenderer.
@@ -52,6 +59,7 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
 
     this._marked = new Marked();
     this.initMarked();
+    this._sanitizer = this.initSanitizer();
   }
 
   /**
@@ -73,6 +81,10 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
       breaks: true,
       renderer,
     });
+  }
+
+  private initSanitizer() {
+    return this.opts?.sanitizer ?? DOMPurify.sanitize;
   }
 
   /**
@@ -113,7 +125,7 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
             );
           } catch (_err) {
             // if Shiki still throws for some reason, just return escaped code
-            return `<pre><code>${this.escapeHtml(code)}</code></pre>`;
+            return `<pre><code>${DOMPurify.sanitize(code)}</code></pre>`;
           }
         },
       })
@@ -136,23 +148,10 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
     if (!message.text) return html``;
 
     const rendered = await this._marked?.parse(message.text);
+    const cleanHtml = this._sanitizer(rendered);
     const template = document.createElement('template');
-    template.innerHTML = rendered ?? message.text;
+    template.innerHTML = cleanHtml ?? message.text;
 
     return html`${template.content}`;
-  }
-
-  private escapeHtml(str: string): string {
-    return str.replace(
-      /[&<>"']/g,
-      (m) =>
-        ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-        })[m] ?? m
-    );
   }
 }
