@@ -8,7 +8,7 @@ $theme: $fluent;
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
 }
 
-:host([invalid]:hover) {
+:host(:state(ig-invalid):hover) {
     [part~='indicator'] {
         stroke: color('error', 500);
     }

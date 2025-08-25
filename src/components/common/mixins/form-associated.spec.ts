@@ -9,13 +9,13 @@ import { LitElement } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { StaticValue } from 'lit/static-html.js';
 import {
-  type Validator,
   maxLengthValidator,
   minLengthValidator,
   requiredValidator,
+  type Validator,
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
-import { type FormValueOf, createFormValueState } from './forms/form-value.js';
+import { createFormValueState } from './forms/form-value.js';
 import type {
   FormAssociatedElementInterface,
   FormRequiredInterface,
@@ -52,15 +52,16 @@ describe('Form associated mixin tests', () => {
           return [requiredValidator, minLengthValidator, maxLengthValidator];
         }
 
-        protected override _formValue: FormValueOf<string> =
-          createFormValueState(this, { initialValue: '' });
+        protected override _formValue = createFormValueState(this, {
+          initialValue: '',
+        });
 
         private _minLength!: number;
         private _maxLength!: number;
 
         public set minLength(value: number) {
           this._minLength = value;
-          this._updateValidity();
+          this._validate();
         }
 
         public get minLength() {
@@ -69,7 +70,7 @@ describe('Form associated mixin tests', () => {
 
         public set maxLength(value: number) {
           this._maxLength = value;
-          this._updateValidity();
+          this._validate();
         }
 
         public get maxLength() {
@@ -78,16 +79,10 @@ describe('Form associated mixin tests', () => {
 
         public set value(value: string) {
           this._formValue.setValueAndFormState(value);
-          this._updateValidity();
         }
 
         public get value() {
           return this._formValue.value;
-        }
-
-        public override connectedCallback() {
-          super.connectedCallback();
-          this._updateValidity();
         }
 
         protected override render() {

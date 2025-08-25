@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   eventOptions,
   property,
@@ -9,7 +9,7 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
@@ -19,8 +19,8 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { watch } from '../common/decorators/watch.js';
@@ -40,11 +40,11 @@ import {
   wrap,
 } from '../common/util.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
-import { createTabHelpers, getTabHeader } from './tab-dom.js';
 import IgcTabComponent from './tab.js';
+import { createTabHelpers, getTabHeader } from './tab-dom.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
+import { all } from './themes/tabs-themes.js';
 
 export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -67,7 +67,6 @@ export interface IgcTabsComponentEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
  */
-@themes(all)
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsComponentEventMap,
   Constructor<LitElement>
@@ -162,10 +161,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       ref: this._headerRef,
       skip: this._skipKeyboard,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowLeft, () => this._handleArrowKeys(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._handleArrowKeys(isLTR(this) ? 1 : -1))
@@ -237,8 +237,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     changes,
   }: MutationControllerParams<IgcTabComponent>): void {
     const selected = changes.attributes.find(
-      (tab) => this._tabs.includes(tab) && tab.selected
-    );
+      ({ node: tab }) => this._tabs.includes(tab) && tab.selected
+    )?.node;
     this._setSelectedTab(selected, false);
   }
 

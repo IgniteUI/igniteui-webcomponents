@@ -23,8 +23,8 @@ import {
   simulateKeyboard,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcRatingComponent from './rating.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -240,9 +240,9 @@ describe('Rating component', () => {
 
       expect(projected.max).to.equal(3);
 
-      getProjectedSymbols(projected).forEach((symbol) =>
-        expect(symbol.textContent).to.eq('🐝')
-      );
+      for (const symbol of getProjectedSymbols(projected)) {
+        expect(symbol.textContent).to.eq('🐝');
+      }
     });
 
     it('sets max value correctly when igc-rating-symbols are projected', async () => {

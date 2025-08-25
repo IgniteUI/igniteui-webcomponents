@@ -9,6 +9,7 @@ import { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import {
+  altKey,
   arrowDown,
   arrowUp,
   escapeKey,
@@ -633,7 +634,6 @@ describe('Date range picker - two inputs', () => {
       it('should set the calendar active date to the altered date of the range while typing', async () => {
         const eventSpy = spy(picker, 'emitEvent');
         const aMonthAgo = today.add('month', -1);
-        const twoMonthsAgo = today.add('month', -2);
         picker.value = null;
         picker.open = true;
         await elementUpdated(picker);
@@ -695,25 +695,6 @@ describe('Date range picker - two inputs', () => {
         expect(eventSpy).calledWith('igcChange', {
           detail: { start: aMonthAgo.native, end: today.native },
         });
-        eventSpy.resetHistory();
-
-        checkSelectedRange(picker, {
-          start: aMonthAgo.native,
-          end: today.native,
-        });
-        checkDatesEqual(calendar.activeDate, aMonthAgo.native);
-
-        dateTimeInputs[0].setSelectionRange(0, 1);
-        simulateKeyboard(dateTimeInputs[0], arrowDown);
-        await elementUpdated(picker);
-
-        expect(eventSpy).calledWith('igcInput');
-        checkDatesEqual(dateTimeInputs[0].value!, twoMonthsAgo.native);
-        checkSelectedRange(picker, {
-          start: twoMonthsAgo.native,
-          end: today.native,
-        });
-        checkDatesEqual(calendar.activeDate, twoMonthsAgo.native);
       });
 
       it('should set the calendar active date to the typed date and reflect selection in calendar', async () => {
@@ -798,6 +779,42 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, june3rd2025);
+      });
+      it('should toggle the calendar with keyboard combinations and keep focus', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        dateTimeInputs[0].focus();
+
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+
+        simulateKeyboard(dateTimeInputs[0], [altKey, arrowDown]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+        expect(isFocused(dateTimeInputs[0])).to.be.false;
+        expect(eventSpy.firstCall).calledWith('igcOpening');
+        expect(eventSpy.lastCall).calledWith('igcOpened');
+        eventSpy.resetHistory();
+
+        simulateKeyboard(dateTimeInputs[0], [altKey, arrowUp]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
+
+        simulateKeyboard(dateTimeInputs[0], [altKey, arrowDown]);
+        await elementUpdated(picker);
+        eventSpy.resetHistory();
+
+        simulateKeyboard(dateTimeInputs[0], escapeKey);
+        await elementUpdated(picker);
+        await elementUpdated(dateTimeInputs[0]);
+
+        expect(picker.open).to.be.false;
+        expect(isFocused(dateTimeInputs[0])).to.be.true;
+        expect(eventSpy.firstCall).calledWith('igcClosing');
+        expect(eventSpy.lastCall).calledWith('igcClosed');
       });
     });
     describe('Readonly state', () => {

@@ -12,18 +12,19 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
+import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
-  type ValidationContainerTestsParams,
-  createFormAssociatedTestBed,
   runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import type IgcInputComponent from '../input/input.js';
+import IgcComboComponent from './combo.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
 import type IgcComboListComponent from './combo-list.js';
-import IgcComboComponent from './combo.js';
 
 describe('Combo', () => {
   type City = {
@@ -595,13 +596,13 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.false;
-      expect(combo.invalid).to.be.true;
+      ValidityHelpers.isValid(combo).to.be.false;
 
       combo.select();
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
     });
 
     it('reports validity when not required', async () => {
@@ -609,13 +610,13 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
 
       combo.deselect();
       await elementUpdated(combo);
 
       expect(combo.checkValidity()).to.be.true;
-      expect(combo.invalid).to.be.false;
+      ValidityHelpers.isValid(combo).to.be.true;
     });
 
     it('opens the list of options when Down or Alt+Down keys are pressed', async () => {

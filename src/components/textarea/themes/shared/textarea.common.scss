@@ -46,12 +46,26 @@ textarea {
     }
 }
 
-:host(:hover),
+:host([readonly]) {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not([readonly]):hover),
 :host(:focus) {
     textarea {
         &::placeholder {
             color: var-get($theme, 'hover-placeholder-color');
         }
+    }
+}
+
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)) {
+    ::part(helper-text) {
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
@@ -80,4 +94,9 @@ textarea {
     [part~='label'] {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+::slotted([slot='suffix']),
+::slotted([slot='prefix']) {
+    padding-inline: var(--affix-padding);
 }

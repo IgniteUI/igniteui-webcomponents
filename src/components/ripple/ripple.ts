@@ -1,6 +1,7 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
 import { registerComponent } from '../common/definitions/register.js';
+import { addSafeEventListener } from '../common/util.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [
@@ -34,13 +35,13 @@ export default class IgcRippleComponent extends LitElement {
   public static override styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcRippleComponent);
   }
 
   constructor() {
     super();
-    this.addEventListener('pointerdown', this.handler);
+    addSafeEventListener(this, 'pointerdown', this.handler);
   }
 
   private handler = ({ clientX, clientY }: PointerEvent) => {

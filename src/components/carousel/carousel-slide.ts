@@ -1,15 +1,17 @@
 import { consume } from '@lit/context';
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { carouselContext } from '../common/context.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, formatString } from '../common/util.js';
+import { formatString } from '../common/util.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
+
+let nextId = 1;
 
 /**
  * A single content container within a set of containers used in the context of an `igc-carousel`.
@@ -18,29 +20,32 @@ import { styles } from './themes/carousel-slide.base.css.js';
  *
  * @slot Default slot for the carousel slide.
  */
-
 export default class IgcCarouselSlideComponent extends LitElement {
   public static override styles = styles;
   public static readonly tagName = 'igc-carousel-slide';
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcCarouselSlideComponent);
   }
 
-  private static readonly increment = createCounter();
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'tabpanel',
+      ariaRoleDescription: 'slide',
+    },
+  });
 
-  private _internals: ElementInternals;
-  private _animationPlayer = addAnimationController(this);
+  private readonly _player = addAnimationController(this);
 
   @consume({ context: carouselContext, subscribe: true })
-  private _carousel?: IgcCarouselComponent;
+  private readonly _carousel?: IgcCarouselComponent;
 
-  protected get _index() {
+  protected get _index(): number {
     return this._carousel ? this._carousel.slides.indexOf(this) : 0;
   }
 
-  protected get _total() {
+  protected get _total(): number {
     return this._carousel ? this._carousel.slides.length : 0;
   }
 
@@ -54,7 +59,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
     return animation;
   }
 
-  protected get _labelFormat() {
+  protected get _labelFormat(): string {
     return this._carousel ? this._carousel.slidesLabelFormat : '';
   }
 
@@ -76,48 +81,32 @@ export default class IgcCarouselSlideComponent extends LitElement {
   public async toggleAnimation(
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
-  ) {
+  ): Promise<boolean> {
     const animation = animations.get(this._animation)!.get(type)!;
 
-    const options: KeyframeAnimationOptions = {
-      duration: 320,
-      easing: EaseInOut.Quad,
-      direction,
-    };
-
-    const [_, event] = await Promise.all([
-      this._animationPlayer.stopAll(),
-      this._animationPlayer.play(animation(options)),
-    ]);
-
-    return event.type === 'finish';
-  }
-
-  constructor() {
-    super();
-    this._internals = this.attachInternals();
-
-    this._internals.role = 'tabpanel';
-    this._internals.ariaRoleDescription = 'slide';
-  }
-
-  protected override willUpdate(): void {
-    this._internals.ariaLabel = formatString(
-      this._labelFormat,
-      this._index + 1,
-      this._total
+    return await this._player.playExclusive(
+      animation({
+        duration: 320,
+        easing: EaseInOut.Quad,
+        direction,
+      })
     );
   }
 
+  protected override willUpdate(): void {
+    this._internals.setARIA({
+      ariaLabel: formatString(this._labelFormat, this._index + 1, this._total),
+    });
+  }
+
+  /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-
-    this.id =
-      this.id || `igc-carousel-slide-${IgcCarouselSlideComponent.increment()}`;
+    this.id = this.id || `igc-carousel-slide-${nextId++}`;
   }
 
   protected override render() {
-    return html` <slot></slot> `;
+    return html`<slot></slot>`;
   }
 }
 

@@ -4,6 +4,8 @@
 $theme: $fluent;
 
 :host {
+    --calendar-border-color: #{$fluent-calendar-border-color};
+
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }
@@ -35,15 +37,17 @@ $theme: $fluent;
     }
 }
 
-:host(:not([invalid])[readonly]:hover) {
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'border-color');
+        &::before {
+            box-shadow: inset 0 0 0 var(--input-border-size) var-get($theme, 'error-secondary-color');
+        }
     }
-}
 
-:host(:not([invalid])[readonly]:focus-within) {
-    igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'focused-border-color');
+    igc-date-time-input:focus-within {
+        &::part(container)::before {
+            box-shadow: inset 0 0 0 calc(var(--input-border-size) + #{rem(1px)}) var-get($theme, 'error-secondary-color');
+        }
     }
 }
 

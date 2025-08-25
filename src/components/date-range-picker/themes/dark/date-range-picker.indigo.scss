@@ -4,4 +4,14 @@
 
 :host {
     @include css-vars-from-theme(diff(light.$base, $indigo), 'ig-daterangepicker');
+
+    --calendar-border-color: #{$indigo-calendar-border-color};
+
+    igc-dialog[open]::part(base) {
+        box-shadow: var(--ig-elevation-7);
+    }
+
+    igc-popover::part(container) {
+        box-shadow: var(--ig-elevation-2);
+    }
 }

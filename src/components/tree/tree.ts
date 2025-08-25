@@ -1,19 +1,20 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { addSafeEventListener } from '../common/util.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
-import IgcTreeItemComponent from './tree-item.js';
 import type { IgcTreeComponentEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import IgcTreeItemComponent from './tree-item.js';
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
@@ -30,7 +31,6 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends EventEmitterMixin<
   IgcTreeComponentEventMap,
@@ -99,21 +99,27 @@ export default class IgcTreeComponent extends EventEmitterMixin<
           }
         });
       } else {
-        this.items.forEach((item) => item.collapseWithEvent());
+        for (const item of this.items) {
+          item.collapseWithEvent();
+        }
       }
     }
   }
 
   constructor() {
     super();
+
+    addThemingController(this, all);
+
     this.selectionService = new IgcTreeSelectionService(this);
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
+
+    addSafeEventListener(this, 'keydown', this.handleKeydown);
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('role', 'tree');
-    this.addEventListener('keydown', this.handleKeydown);
     // set init to true for all items which are rendered along with the tree
     this.items.forEach((i: IgcTreeItemComponent) => {
       i.init = true;

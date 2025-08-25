@@ -1,12 +1,5 @@
-import {
-  aTimeout,
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { spy, useFakeTimers } from 'sinon';
 import {
   altKey,
   arrowDown,
@@ -20,18 +13,21 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
+import IgcSelectComponent from './select.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import type IgcSelectItemComponent from './select-item.js';
-import IgcSelectComponent from './select.js';
 
 type ItemState = {
   active?: boolean;
@@ -470,78 +466,70 @@ describe('Select', () => {
     });
 
     it('reports validity when required', async () => {
-      const validity = spy(select, 'reportValidity');
-
       select.value = '';
       select.required = true;
       await elementUpdated(select);
 
       select.reportValidity();
-      expect(validity).to.have.returned(false);
-      expect(select.invalid).to.be.true;
+      ValidityHelpers.isValid(select).to.be.false;
+      ValidityHelpers.hasInvalidStyles(select).to.be.true;
 
       select.value = Items[0].value;
       select.reportValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('reports validity when not required', async () => {
-      const validity = spy(select, 'reportValidity');
-
       select.value = '';
       select.required = false;
       await elementUpdated(select);
 
       select.reportValidity();
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.reportValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('checks validity when required', async () => {
-      const validity = spy(select, 'checkValidity');
-
       select.value = '';
       select.required = true;
       await elementUpdated(select);
 
       select.checkValidity();
-      expect(validity).to.have.returned(false);
-      expect(select.invalid).to.be.true;
+      ValidityHelpers.isValid(select).to.be.false;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.checkValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('checks validity when not required', async () => {
-      const validity = spy(select, 'checkValidity');
-
       select.value = '';
       select.required = false;
       await elementUpdated(select);
 
       select.checkValidity();
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
 
       select.value = Items[0].value;
       await elementUpdated(select);
       select.checkValidity();
 
-      expect(validity).to.have.returned(true);
-      expect(select.invalid).to.be.false;
+      ValidityHelpers.isValid(select).to.be.true;
+      ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
     it('`focus()`', async () => {
@@ -875,16 +863,20 @@ describe('Select', () => {
     });
 
     it('resumes search after default timeout', async () => {
+      const clock = useFakeTimers({ now: 0, toFake: ['Date'] });
+
       simulateKeyboard(select, 'null'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem).to.be.null;
 
-      await aTimeout(501);
+      await clock.tickAsync(501);
+
       simulateKeyboard(select, 'impl'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem?.value).to.equal('implementation');
+      clock.restore();
     });
 
     it('activates the correct item when searching with character keys (open state)', async () => {

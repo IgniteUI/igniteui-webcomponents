@@ -64,7 +64,8 @@ $theme: $base;
     }
 }
 
-:host([invalid]) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -79,4 +80,15 @@ $theme: $base;
 
 ::part(helper-text) {
     display: grid;
+}
+
+[name='suffix']::slotted(:is([part|='toggle'], [part|='clear'])) {
+    padding-inline: var(--affix-padding);
+}
+
+:host(:not([role='combobox'])) {
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        padding-inline: var(--affix-padding);
+    }
 }

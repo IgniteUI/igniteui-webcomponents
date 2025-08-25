@@ -3,11 +3,14 @@ import { CalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
-  runValidationContainerTests,
   simulateClick,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
@@ -308,6 +311,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
           dateRange: [minDate, maxDate],
         },
       ];
+
+      ValidityHelpers.setTouchedState(spec.element);
 
       // both values within disabled range
       spec.setProperties({

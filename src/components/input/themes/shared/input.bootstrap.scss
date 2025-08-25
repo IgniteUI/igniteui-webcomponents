@@ -10,6 +10,7 @@ $theme: $bootstrap;
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
     --input-border-color: #{var-get($theme, 'border-color')};
     --input-height: #{var-get($theme, 'size')};
+    --affix-padding: #{pad-inline(rem(8px), rem(12px), rem(14px))};
 
     ::part(helper-text) {
         @include type-style('body-2');
@@ -17,6 +18,14 @@ $theme: $bootstrap;
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
         margin-block-start: rem(4px);
+    }
+
+    [part='prefix'] {
+        border-inline-start-width: 0;
+    }
+
+    [part='suffix'] {
+        border-inline-end-width: 0;
     }
 }
 
@@ -87,7 +96,6 @@ $theme: $bootstrap;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(8px, 12px, 16px);
 }
 
 [part='prefix'],
@@ -170,10 +178,16 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not([disabled])[invalid]:focus-within) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part~='input'] {
         border-color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:not([disabled],[readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled])[role='combobox']:state(ig-invalid):focus-within) {
+    [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
 }
@@ -203,5 +217,27 @@ $theme: $bootstrap;
     [part='label'],
     ::part(helper-text) {
         color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not(:disabled, [role='combobox'])),
+:host(:not([disabled], [role='combobox'])) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--border-color);
+    }
+}
+
+:host(:disabled:not([role='combobox'])),
+:host([disabled]:not([role='combobox'])) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
+    }
+
+   ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
     }
 }

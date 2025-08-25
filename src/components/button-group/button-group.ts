@@ -1,10 +1,10 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
-  type MutationControllerParams,
   createMutationController,
+  type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -35,7 +35,6 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes(all)
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>
@@ -63,7 +62,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
     const buttons = this.toggleButtons;
     const idx = buttons.indexOf(
-      added.length ? last(added).node : last(attributes)
+      added.length ? last(added).node : last(attributes).node
     );
 
     for (const [i, button] of buttons.entries()) {
@@ -133,6 +132,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
+    addThemingController(this, all);
 
     createMutationController(this, {
       callback: this._observerCallback,

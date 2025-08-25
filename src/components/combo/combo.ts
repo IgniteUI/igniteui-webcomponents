@@ -1,11 +1,10 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
-import { themes } from '../../theming/theming-decorator.js';
-import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
@@ -13,12 +12,10 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  type FormValueOf,
-  createFormValueState,
-} from '../common/mixins/forms/form-value.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
+  addSafeEventListener,
   asArray,
   equal,
   findElementFromEventPath,
@@ -102,7 +99,6 @@ import { comboValidators } from './validators.js';
  * @csspart footer - The container holding the footer content of the combo.
  * @csspart empty - The container holding the empty content of the combo.
  */
-@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<
@@ -142,14 +138,27 @@ export default class IgcComboComponent<
   /** The combo virtualized dropdown list. */
   private _listRef = createRef<IgcComboListComponent>();
 
-  protected override readonly _formValue: FormValueOf<ComboValue<T>[]> =
-    createFormValueState<ComboValue<T>[]>(this, {
-      initialValue: [],
-      transformers: {
-        setValue: asArray,
-        setDefaultValue: asArray,
-      },
-    });
+  private readonly _rootClickController = addRootClickController(this, {
+    onHide: async () => {
+      if (!this.handleClosing()) {
+        return;
+      }
+      this.open = false;
+
+      await this.updateComplete;
+      this.emitEvent('igcClosed');
+    },
+  });
+
+  protected override readonly _formValue = createFormValueState<
+    ComboValue<T>[]
+  >(this, {
+    initialValue: [],
+    transformers: {
+      setValue: asArray,
+      setDefaultValue: asArray,
+    },
+  });
 
   private _data: T[] = [];
 
@@ -462,22 +471,12 @@ export default class IgcComboComponent<
     this._rootClickController.update();
   }
 
-  private _rootClickController = addRootClickHandler(this, {
-    hideCallback: async () => {
-      if (!this.handleClosing()) {
-        return;
-      }
-      this.open = false;
-
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    },
-  });
-
   constructor() {
     super();
 
-    this.addEventListener('blur', this._handleBlur);
+    addThemingController(this, all);
+    addSafeEventListener(this, 'blur', this._handleBlur);
+    addSafeEventListener(this, 'focusin', this._handleFocusIn);
   }
 
   protected override async firstUpdated() {
@@ -493,7 +492,7 @@ export default class IgcComboComponent<
     this._formValue.value = this._formValue.defaultValue;
     this._updateSelection();
     this.updateValue(true);
-    this._updateValidity();
+    this._validate();
   }
 
   protected override _setDefaultValue(current: string | null): void {
@@ -617,6 +616,7 @@ export default class IgcComboComponent<
   }
 
   protected async handleMainInput({ detail }: CustomEvent<string>) {
+    this._setTouchedState();
     this._show();
     this._state.searchTerm = detail;
 
@@ -633,12 +633,16 @@ export default class IgcComboComponent<
     this.clearSingleSelection();
   }
 
-  private _handleBlur() {
+  protected _handleFocusIn() {
+    this._setTouchedState();
+  }
+
+  protected override _handleBlur() {
     if (this._selection.isEmpty) {
       this._displayValue = '';
       this.resetSearchTerm();
     }
-    this.checkValidity();
+    super._handleBlur();
   }
 
   protected handleSearchInput({ detail }: CustomEvent<string>) {
@@ -759,6 +763,7 @@ export default class IgcComboComponent<
   };
 
   protected itemClickHandler(event: PointerEvent) {
+    this._setTouchedState();
     const target = findElementFromEventPath<IgcComboItemComponent>(
       IgcComboItemComponent.tagName,
       event
@@ -877,7 +882,7 @@ export default class IgcComboComponent<
         role="combobox"
         aria-controls="dropdown"
         aria-owns="dropdown"
-        aria-expanded=${this.open ? 'true' : 'false'}
+        aria-expanded=${this.open}
         aria-describedby="combo-helper-text"
         aria-disabled=${this.disabled}
         exportparts="container: input, input: native-input, label, prefix, suffix"
@@ -889,7 +894,7 @@ export default class IgcComboComponent<
         .value=${this._displayValue}
         .disabled=${this.disabled}
         .required=${this.required}
-        .invalid=${live(this.invalid)}
+        .invalid=${this.invalid}
         .outlined=${this.outlined}
         .autofocus=${this.autofocus}
         ?readonly=${!this.singleSelect}

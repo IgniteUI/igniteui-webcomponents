@@ -8,9 +8,7 @@ $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
 
 %label {
-    --label-position: #{sizable(18px, 22px, 26px)};
-
-    transform: translateY(calc(var(--label-position) * -1));
+    translate: 0 -50%;
 }
 
 %floated-styles {
@@ -22,12 +20,12 @@ $fs: rem(16px) !default;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
 }
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
+    --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
@@ -52,8 +50,8 @@ $fs: rem(16px) !default;
 
 input:placeholder-shown + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
-    @extend %label;
     @include type-style('caption');
+    @extend %label;
 }
 
 [part~='input'] {
@@ -70,11 +68,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     color: var-get($theme, 'idle-secondary-color');
     transition:
         transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        translate 150ms cubic-bezier(0.4, 0, 0.2, 1),
         color 150ms cubic-bezier(0.4, 0, 0.2, 1),
         font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
     text-overflow: ellipsis;
     overflow: hidden;
-    will-change: font-size, color, transform;
+    will-change: font-size, color, transform, translate;
 }
 
 [part^='container'] {
@@ -139,17 +138,31 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host(:focus-within) {
     [part='label'] {
-        @extend %label;
-        @include type-style('caption');
-
         color: var-get($theme, 'focused-secondary-color');
     }
 }
 
+:host(:not([readonly]):focus-within) {
+    [part='label'] {
+        @include type-style('caption');
+
+        translate: 0 -73%;
+    }
+}
+
+:host([outlined]:not([readonly]):focus-within) {
+    [part='label'] {
+        @extend %label;
+
+        align-self: start;
+    }
+}
+
+
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+            translate: 0;
             font-size: initial;
         }
     }
@@ -201,7 +214,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -245,15 +258,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
             opacity: 1;
         }
     }
+}
 
-    [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
+    [part='label'] {
+        @include type-style('caption');
+
+        translate: 0 -73%;
     }
 }
 
-:host(:not([outlined])[invalid]),
-:host(:not([outlined])[invalid]:focus-within),
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[invalid][readonly]:hover) {
+:host(:not([outlined],[disabled],[readonly]):state(ig-invalid)),
+:host(:not([outlined],[disabled],[readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled],[outlined])[role='combobox']:state(ig-invalid)),
+:host(:not([disabled],[outlined])[role='combobox']:state(ig-invalid):focus-within) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -310,16 +328,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-top: rem(20px);
         padding-bottom: rem(6px);
     }
-
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        transform: translateY(-73%);
-    }
 }
 
 :host([outlined][type='search']:focus-within) {
     [part='notch'] [part='label'] {
-        transform: translateY(-73%);
+        translate: 0 -73%;
     }
 }
 
@@ -404,6 +417,16 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+
+        [part='label'] {
+            align-self: start;
+        }
+    }
+
+    [part~='container']:has(input:placeholder-shown) {
+        [part='label'] {
+            align-self: start;
+        }
     }
 }
 
@@ -433,14 +456,15 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'])[readonly][outlined]:focus-within) {
+:host(:not(:state(ig-invalid),[type='search'])[readonly][outlined]:focus-within) {
     :not([part~='filled']) {
-        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
-            transform: translate(0);
+        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+            translate: 0;
             font-size: initial;
+            align-self: center;
         }
 
-        input:not(:placeholder-shown) + [part='notch'] {
+        input:has(:not(:placeholder-shown)) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
@@ -464,10 +488,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined]:focus-within) {
-    [part='label'] {
-        margin-block-start: calc(#{$active-border-width} / 2);
-    }
-
     [part='start'] {
         border: {
             color: var-get($theme, 'focused-border-color');
@@ -482,6 +502,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'focused-border-color');
+        }
+    }
+
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
@@ -510,6 +538,16 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([type='search'],[aria-haspopup='dialog'],[role='combobox'])[outlined]:focus-within) {
+    [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'focused-border-color');
+            top: $idle-border-width solid transparent;
+        }
+    }
+}
+
 :host(:not([type='search'])[outlined]:focus),
 :host(:not([type='search'])[outlined]:focus-within) {
     [part='suffix'] {
@@ -528,9 +566,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'])[outlined][invalid]),
-:host(:not([type='search'])[outlined][invalid]:focus-within),
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly][invalid]:hover) {
+:host(:not([type='search'],[readonly])[outlined]:state(ig-invalid)),
+:host(:not([type='search'],[readonly])[outlined]:state(ig-invalid):focus-within),
+:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid)),
+:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -544,28 +583,23 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'])[outlined][invalid]:focus-within) {
+:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
+     :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] {
+            border-width: $active-border-width;
+        }
+    }
+}
+
+:host(:not([type='search'])[outlined]:state(ig-invalid):focus-within),
+:host([role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
     }
 }
 
-:host(:not([type='search'])[readonly][outlined][invalid]:focus-within) {
-    input:not(:placeholder-shown) + [part='notch'] {
-        border: {
-            width: $active-border-width;
-            color: var-get($theme, 'error-secondary-color');
-            top: $active-border-width solid
-                var-get($theme, 'error-secondary-color');
-        }
-    }
-
-    [part~='filled'] + [part='notch'] {
-        border-top: $idle-border-width solid transparent !important;
-    }
-}
-
-:host([invalid]) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part='label'] {
         color: var-get($theme, 'error-secondary-color');
     }

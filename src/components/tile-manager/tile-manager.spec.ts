@@ -11,8 +11,8 @@ import IgcIconButtonComponent from '../button/icon-button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
-import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
+import IgcTileManagerComponent from './tile-manager.js';
 
 describe('Tile Manager component', () => {
   before(() => {
@@ -957,7 +957,10 @@ describe('Tile Manager component', () => {
         document.createElement(IgcTileComponent.tagName)
       );
 
-      tiles.forEach((tile) => tileManager.appendChild(tile));
+      for (const tile of tiles) {
+        tileManager.appendChild(tile);
+      }
+
       await elementUpdated(tileManager);
 
       tileManager.tiles.forEach((tile, index) => {

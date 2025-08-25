@@ -39,9 +39,9 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
+      type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
       description: 'The type attribute of the control.',
-      options: ['email', 'number', 'password', 'search', 'tel', 'text', 'url'],
+      options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
     },
@@ -164,7 +164,7 @@ interface IgcInputArgs {
   /** The value of the control. */
   value: string | Date;
   /** The type attribute of the control. */
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /**
    * The input mode attribute of the control.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
@@ -278,6 +278,7 @@ export const Validation: Story = {
     <form @submit=${formSubmitHandler}>
       <fieldset>
         <igc-input
+          name="min-length-value"
           label="Validate without validation slots and helper text"
           minlength="3"
         >
@@ -286,14 +287,21 @@ export const Validation: Story = {
       </fieldset>
 
       <fieldset>
-        <igc-input label="Username" required>
+        <igc-input name="username" label="Username" required autocomplete="off">
           <p slot="helper-text">The username you will use in the platform</p>
           <p slot="value-missing">The username is required!</p>
         </igc-input>
       </fieldset>
 
       <fieldset>
-        <igc-input id="customError" label="Email" type="email" required>
+        <igc-input
+          name="email"
+          id="customError"
+          label="Email"
+          type="email"
+          required
+          autocomplete="off"
+        >
           <p slot="helper-text">
             A valid email for restoring credentials
             <strong>(not show in your profile)!</strong>
@@ -305,6 +313,8 @@ export const Validation: Story = {
 
       <fieldset>
         <igc-input
+          name="password"
+          autocomplete="off"
           label="Password"
           type="password"
           required

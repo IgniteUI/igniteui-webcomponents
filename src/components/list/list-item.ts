@@ -1,7 +1,8 @@
-import { LitElement, html } from 'lit';
+import { html, LitElement } from 'lit';
 
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
@@ -26,13 +27,12 @@ import { styles as shared } from './themes/shared/item/list-item.common.css.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-@themes(all)
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcListItemComponent);
   }
 
@@ -43,13 +43,16 @@ export default class IgcListItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
-  private _internals: ElementInternals;
-
   constructor() {
     super();
-    this._internals = this.attachInternals();
 
-    this._internals.role = 'listitem';
+    addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'listitem',
+      },
+    });
   }
 
   protected override render() {

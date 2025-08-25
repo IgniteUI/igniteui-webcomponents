@@ -1,7 +1,9 @@
-import { LitElement, html } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { createMutationController } from '../common/controllers/mutation-observer.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
@@ -16,23 +18,32 @@ import { all } from './themes/themes.js';
  *
  * @slot - Default slot
  */
-@themes(all)
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcRadioGroupComponent, IgcRadioComponent);
   }
 
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'radiogroup',
+    },
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+    onChange: this._handleSlotChange,
+    initial: true,
+  });
+
+  private _radios: IgcRadioComponent[] = [];
+
   private _defaultValue!: string;
-  private _internals: ElementInternals;
   private _name!: string;
   private _value!: string;
-
-  @queryAssignedElements({ selector: 'igc-radio', flatten: true })
-  private _radios!: NodeListOf<IgcRadioComponent>;
 
   /**
    * Alignment of the radio controls inside this group.
@@ -79,35 +90,16 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   public get value(): string {
     if (this._radios.length) {
-      this._value =
-        Array.from(this._radios).find((radio) => radio.checked)?.value ?? '';
+      this._value = this._radios.find((radio) => radio.checked)?.value ?? '';
     }
 
     return this._value;
   }
 
-  private _observerCallback() {
-    const radios = Array.from(this._radios);
-    const setState = (state: string, condition: boolean) =>
-      condition
-        ? this._internals.states.add(state)
-        : this._internals.states.delete(state);
-
-    setState(
-      'disabled',
-      radios.every((radio) => radio.disabled)
-    );
-    setState(
-      'label-before',
-      radios.some((radio) => radio.labelPosition === 'before')
-    );
-  }
-
   constructor() {
     super();
 
-    this._internals = this.attachInternals();
-    this._internals.role = 'radiogroup';
+    addThemingController(this, all);
 
     createMutationController(this, {
       callback: this._observerCallback,
@@ -119,13 +111,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     });
   }
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this._setCSSGridVars());
-    return root;
-  }
-
-  protected override firstUpdated() {
+  protected override firstUpdated(): void {
     const radios = Array.from(this._radios);
     const allRadiosUnchecked = radios.every((radio) => !radio.checked);
 
@@ -138,17 +124,30 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   }
 
-  private _setCSSGridVars() {
-    const slot = this.renderRoot.querySelector('slot');
-    if (slot) {
-      this.style.setProperty(
-        '--layout-count',
-        `${slot.assignedElements({ flatten: true }).length}`
-      );
-    }
+  private _observerCallback(): void {
+    const disabled = this._radios.every((radio) => radio.disabled);
+    const labeBefore = this._radios.some(
+      (radio) => radio.labelPosition === 'before'
+    );
+
+    this._internals.setState('disabled', disabled);
+    this._internals.setState('label-before', labeBefore);
   }
 
-  private _setRadiosDefaultChecked() {
+  private _handleSlotChange(): void {
+    this._radios = this._slots.getAssignedElements('[default]', {
+      selector: IgcRadioComponent.tagName,
+      flatten: true,
+    });
+
+    const elements = this._slots.getAssignedElements('[default]', {
+      flatten: true,
+    });
+
+    this.style.setProperty('--layout-count', elements.length.toString());
+  }
+
+  private _setRadiosDefaultChecked(): void {
     if (this._defaultValue) {
       for (const radio of this._radios) {
         radio.defaultChecked = radio.value === this._defaultValue;
@@ -156,7 +155,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   }
 
-  private _setRadiosName() {
+  private _setRadiosName(): void {
     if (this._name) {
       for (const radio of this._radios) {
         radio.name = this._name;
@@ -164,13 +163,13 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   }
 
-  private _setDefaultValue() {
+  private _setDefaultValue(): void {
     for (const radio of this._radios) {
       radio.toggleAttribute('checked', radio.checked);
     }
   }
 
-  private _setSelectedRadio() {
+  private _setSelectedRadio(): void {
     for (const radio of this._radios) {
       radio.checked = radio.value === this._value;
     }

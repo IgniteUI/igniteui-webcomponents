@@ -9,6 +9,7 @@ $theme: $indigo;
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
@@ -24,7 +25,7 @@ $theme: $indigo;
 
 }
 
-:host(:hover) {
+:host(:not([readonly], :focus-within):hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-hover');
 
@@ -38,7 +39,8 @@ $theme: $indigo;
     }
 }
 
-:host(:focus-within) {
+:host(:focus-within),
+:host([readonly]:focus-within) {
     [part~='label'] {
         color: var-get($theme, 'focused-secondary-color');
     }
@@ -105,11 +107,6 @@ textarea {
     }
 }
 
-[part~='prefixed'] [part='prefix'],
-[part~='suffixed'] [part='suffix'] {
-    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
-}
-
 [part~='prefixed'] textarea {
     padding-inline-start: 0;
 }
@@ -135,8 +132,14 @@ textarea {
     height: calc(100% - #{rem(1px)});
 }
 
-:host([invalid]:not(:disabled)),
-:host([invalid]:not([disabled])) {
+:host([readonly]) {
+    [part~='container']::after {
+        border-block-end-color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host(:not(:disabled,[readonly]):state(ig-invalid)),
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
     ::part(validation-icon) {
         color: #{var-get($theme, 'error-secondary-color')};
     }
@@ -147,6 +150,10 @@ textarea {
         &::after {
             border-block-end: rem(1px) solid var-get($theme, 'error-secondary-color');
         }
+    }
+
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
     }
 }
 

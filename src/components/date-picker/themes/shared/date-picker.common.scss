@@ -7,6 +7,7 @@ $input-theme: input-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --calendar-border-color: #{$material-calendar-border-color};
 
     igc-dialog {
         box-shadow: none;
@@ -23,6 +24,7 @@ $input-theme: input-theme.$material;
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-24);
+        border: rem(1px) solid var(--calendar-border-color);
     }
 
     igc-dialog::part(content),
@@ -42,6 +44,7 @@ $input-theme: input-theme.$material;
 
         border-radius: var-get($theme, 'border-radius');
         background: var-get($theme, 'content-background');
+        box-shadow: 0 0 0 rem(1px) var(--calendar-border-color);
     }
 
     igc-popover::part(container) {
@@ -94,8 +97,8 @@ $input-theme: input-theme.$material;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not(:disabled,[readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }

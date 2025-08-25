@@ -1,4 +1,5 @@
 import type { LitElement } from 'lit';
+import type { ElementInternalsController } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
@@ -9,11 +10,11 @@ export type IgcFormControl = LitElement &
 declare class BaseFormAssociatedElement {
   public static readonly formAssociated: boolean;
 
-  private __internals: ElementInternals;
+  //#region Properties
 
-  // Properties
-  protected _formValue: unknown;
-  protected _dirty: boolean;
+  private readonly __internals: ElementInternalsController;
+  protected readonly _formValue: unknown;
+
   protected _pristine: boolean;
   protected _disabled: boolean;
   protected _invalid: boolean;
@@ -58,7 +59,25 @@ declare class BaseFormAssociatedElement {
    */
   public get willValidate(): boolean;
 
-  // Methods
+  //#endregion
+
+  //#region Methods
+
+  /**
+   * Sets the **touched** state of the component and invokes {@link BaseFormAssociatedElement._validate | `_validate()`} method.
+   *
+   * As the naming of the method suggests, this should be invoked either on **blur** or **focusout**, depending
+   * on the DOM structure and how focus state is managed by the component.
+   */
+  protected _handleBlur(): void;
+
+  /**
+   * Sets the **touched** state of the component and **DOES NOT** invoke {@link BaseFormAssociatedElement._validate | `_validate()`} method.
+   *
+   * This should be called whenever a user interaction triggers a response, usually an event, from the component in
+   * regards to its value.
+   */
+  protected _setTouchedState(): void;
 
   /**
    * Sets the default value of the component.
@@ -72,16 +91,9 @@ declare class BaseFormAssociatedElement {
   protected _restoreDefaultValue(): void;
 
   /**
-   * Executes the {@link BaseFormAssociatedElement._updateValidity | `_updateValidity()`} hook and then applies
-   * the {@link BaseFormAssociatedElement.invalid | `invalid`} attribute on the control and the associated styles
-   * if the element has completed the first update cycle or it has been interacted with by the user.
+   * Executes the component validators and updates the internal validity state.
    */
   protected _validate(message?: string): void;
-
-  /**
-   * Executes the component's validators and updates the internal validity state.
-   */
-  protected _updateValidity(message?: string): void;
 
   /**
    * Sets the component's submission value and state.
@@ -135,6 +147,8 @@ declare class BaseFormAssociatedElement {
    * As long as `message` is not empty, the control is considered invalid.
    */
   public setCustomValidity(message: string): void;
+
+  //#endregion
 }
 
 export declare class FormAssociatedElementInterface extends BaseFormAssociatedElement {
@@ -160,3 +174,6 @@ export declare class FormRequiredInterface {
   public set required(value: boolean);
   public get required(): boolean;
 }
+
+export const InternalInvalidEvent = 'igc-form-internal-invalid';
+export const InternalResetEvent = 'igc-form-internal-reset';

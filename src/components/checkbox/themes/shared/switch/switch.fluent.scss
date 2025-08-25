@@ -70,10 +70,6 @@ $theme: $fluent;
         border-color: var-get($theme, 'border-on-hover-color');
     }
 
-    [part~='thumb'] {
-        background: var-get($theme, 'border-hover-color');
-    }
-
     [part~='thumb'][part~='checked'] {
         background: var-get($theme, 'thumb-on-color');
     }

@@ -1,7 +1,7 @@
 import { isEmpty } from '../common/util.js';
-import type IgcTreeItemComponent from './tree-item.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
+import type IgcTreeItemComponent from './tree-item.js';
 
 /* blazorSuppress */
 export class IgcTreeSelectionService {
@@ -141,7 +141,9 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    items.forEach((item: IgcTreeItemComponent) => this.itemSelection.add(item));
+    for (const item of items) {
+      this.itemSelection.add(item);
+    }
 
     this.updateItemsState(oldSelection);
   }
@@ -165,9 +167,9 @@ export class IgcTreeSelectionService {
     if (!items) {
       this.itemSelection.clear();
     } else {
-      items.forEach((item: IgcTreeItemComponent) =>
-        this.itemSelection.delete(item)
-      );
+      for (const item of items) {
+        this.itemSelection.delete(item);
+      }
     }
 
     this.updateItemsState(oldSelection);

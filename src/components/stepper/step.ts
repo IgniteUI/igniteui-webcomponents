@@ -1,11 +1,11 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { type Ref, createRef, ref } from 'lit/directives/ref.js';
+import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { when } from 'lit/directives/when.js';
 
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
@@ -53,7 +53,6 @@ import { all } from './themes/step/themes.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes(all)
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];
@@ -155,6 +154,11 @@ export default class IgcStepComponent extends LitElement {
   /** @hidden @internal @private */
   @property({ attribute: false })
   public animationDuration = 350;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   /**
    * @hidden @internal

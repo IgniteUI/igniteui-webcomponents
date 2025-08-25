@@ -1,10 +1,9 @@
-import { LitElement, html } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-
-import { themes } from '../../theming/theming-decorator.js';
+import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -25,13 +24,12 @@ import { styles as shared } from './themes/shared/container/nav-drawer.common.cs
  * @csspart main - The main container of the igc-navigation-drawer.
  * @csspart mini - The mini container of the igc-navigation-drawer.
  */
-@themes(all)
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcNavDrawerComponent,
       IgcNavDrawerHeaderItemComponent,
@@ -39,8 +37,9 @@ export default class IgcNavDrawerComponent extends LitElement {
     );
   }
 
-  @queryAssignedElements({ slot: 'mini' })
-  private _miniSlotElements!: Array<HTMLElement>;
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('mini'),
+  });
 
   /**
    * The position of the drawer.
@@ -56,10 +55,9 @@ export default class IgcNavDrawerComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   private _waitTransitions() {
@@ -110,7 +108,10 @@ export default class IgcNavDrawerComponent extends LitElement {
       </div>
 
       <div
-        part=${partMap({ mini: true, hidden: isEmpty(this._miniSlotElements) })}
+        part=${partMap({
+          mini: true,
+          hidden: !this._slots.hasAssignedElements('mini'),
+        })}
       >
         <slot name="mini"></slot>
       </div>

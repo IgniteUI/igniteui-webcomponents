@@ -4,22 +4,22 @@ import { spy } from 'sinon';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { scrolledIntoView } from '../common/utils.spec.js';
+import IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
-  DIFF_OPTIONS,
-  PARTS,
-  SLOTS,
-  TreeTestFunctions,
   activeItemsTree,
+  DIFF_OPTIONS,
   disabledItemsTree,
   expandCollapseTree,
   navigationTree,
+  PARTS,
+  SLOTS,
   selectedItemsTree,
   simpleHierarchyTree,
   simpleTree,
+  TreeTestFunctions,
   wrappedItemsTree,
 } from './tree-utils.spec.js';
-import IgcTreeComponent from './tree.js';
 
 describe('Tree', () => {
   before(() => {
@@ -99,12 +99,8 @@ describe('Tree', () => {
         .to.have.lengthOf(2)
         .and.to.contain(topLevelItems[0])
         .and.to.contain(item1Children[0]);
-      expect(
-        item1Children[0].path.findIndex((tree) => tree === topLevelItems[0])
-      ).to.equal(0);
-      expect(
-        item1Children[0].path.findIndex((tree) => tree === item1Children[0])
-      ).to.equal(1);
+      expect(item1Children[0].path.indexOf(topLevelItems[0])).to.equal(0);
+      expect(item1Children[0].path.indexOf(item1Children[0])).to.equal(1);
 
       // item.getChildren({flatten: false}) should return only the direct children of item
       const item2Children = topLevelItems[1].getChildren();
@@ -114,12 +110,9 @@ describe('Tree', () => {
         .to.have.lengthOf(2)
         .and.to.contain(topLevelItems[1])
         .and.to.contain(item2Children[0]);
-      expect(
-        item2Children[0].path.findIndex((tree) => tree === topLevelItems[1])
-      ).to.equal(0);
-      expect(
-        item2Children[0].path.findIndex((tree) => tree === item2Children[0])
-      ).to.equal(1);
+
+      expect(item2Children[0].path.indexOf(topLevelItems[1])).to.equal(0);
+      expect(item2Children[0].path.indexOf(item2Children[0])).to.equal(1);
 
       const item2GrandChildren = item2Children[0].getChildren();
       expect(item2GrandChildren.length).to.equal(2);
@@ -129,20 +122,10 @@ describe('Tree', () => {
         .to.contain(topLevelItems[1])
         .and.to.contain(item2Children[0])
         .and.to.contain(item2GrandChildren[0]);
+      expect(item2GrandChildren[0].path.indexOf(topLevelItems[1])).to.equal(0);
+      expect(item2GrandChildren[0].path.indexOf(item2Children[0])).to.equal(1);
       expect(
-        item2GrandChildren[0].path.findIndex(
-          (tree) => tree === topLevelItems[1]
-        )
-      ).to.equal(0);
-      expect(
-        item2GrandChildren[0].path.findIndex(
-          (tree) => tree === item2Children[0]
-        )
-      ).to.equal(1);
-      expect(
-        item2GrandChildren[0].path.findIndex(
-          (tree) => tree === item2GrandChildren[0]
-        )
+        item2GrandChildren[0].path.indexOf(item2GrandChildren[0])
       ).to.equal(2);
 
       // item.getChildren({flatten: true}) should return all item's children
@@ -901,7 +884,7 @@ describe('Tree', () => {
 
         // Level 1
         const item2Children = topLevelItems[1].getChildren();
-        // topLevelItems[1] is currenlty expanded
+        // topLevelItems[1] is currently expanded
         const item21IndSlot = TreeTestFunctions.getSlot(
           item2Children[0],
           SLOTS.indicator
@@ -1185,7 +1168,7 @@ describe('Tree', () => {
       expect(item21.active).to.be.false;
       expect(item21Children[0].active).to.be.false;
       expect(item21Children[1].active).to.be.false;
-      expect(item22.active).to.be.true; // item22 is the next non-disbaled
+      expect(item22.active).to.be.true; // item22 is the next non-disabled
 
       item22.dispatchEvent(new Event('focus'));
       expect(tree.navService.focusedItem).to.equal(item22);

@@ -17,9 +17,9 @@ import {
   simulateKeyboard,
   simulateScroll,
 } from '../common/utils.spec.js';
+import IgcDropdownComponent from './dropdown.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
-import IgcDropdownComponent from './dropdown.js';
 
 type ItemState = {
   active?: boolean;

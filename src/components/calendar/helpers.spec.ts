@@ -76,7 +76,7 @@ export function getCalendarDOM(element: IgcCalendarComponent) {
       },
     },
     get content() {
-      return root.querySelector<HTMLElement>('[part="content"]')!;
+      return root.querySelector<HTMLElement>('[part~="content"]')!;
     },
     views: {
       get days() {

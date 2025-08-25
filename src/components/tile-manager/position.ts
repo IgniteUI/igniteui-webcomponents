@@ -1,6 +1,6 @@
 import { last, partition } from '../common/util.js';
-import type IgcTileManagerComponent from './tile-manager.js';
 import type IgcTileComponent from './tile.js';
+import type IgcTileManagerComponent from './tile-manager.js';
 
 class TilesState {
   private _nextEmptyPosition = 0;
@@ -65,10 +65,13 @@ class TilesState {
       }
     } else {
       const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
+
       tile.position =
         positionedTiles.length > 1
           ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
-          : this._nextEmptyPosition++;
+          : this._nextEmptyPosition;
+
+      this._nextEmptyPosition += 1;
     }
   }
 

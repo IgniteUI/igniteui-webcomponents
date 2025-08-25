@@ -5,18 +5,19 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
-
 import type { TemplateResult } from 'lit';
+import { spy } from 'sinon';
 import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
-  type ValidationContainerTestsParams,
   createFormAssociatedTestBed,
   isFocused,
-  runValidationContainerTests,
   simulateInput,
 } from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+} from '../common/validity-helpers.spec.js';
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {

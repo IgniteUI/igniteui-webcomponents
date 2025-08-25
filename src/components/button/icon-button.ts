@@ -2,13 +2,13 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
-  registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
 } from '../icon/icon.registry.js';
 import type { IconButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
@@ -22,13 +22,12 @@ import { all } from './themes/icon-button/themes.js';
  * @csspart base - The wrapping element of the icon button.
  * @csspart icon - The icon element of the icon button.
  */
-@themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcIconButtonComponent, IgcIconComponent);
   }
 
@@ -38,14 +37,14 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
    * @attr
    */
   @property()
-  public name!: string;
+  public name?: string;
 
   /**
    * The name of the icon collection.
    * @attr
    */
   @property()
-  public collection!: string;
+  public collection?: string;
 
   /**
    * Whether to flip the icon button. Useful for RTL layouts.
@@ -60,6 +59,11 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
    */
   @property({ reflect: true })
   public variant: IconButtonVariant = 'contained';
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   protected renderContent() {
     return html`

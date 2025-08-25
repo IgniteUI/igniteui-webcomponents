@@ -19,7 +19,7 @@
         inset-block: 0;
         z-index: 999;
         opacity: 1;
-        transition: transform ease-out .3s, .3s, opacity ease-out .3s, .3s;
+        transition: translate ease-out .3s, .3s, opacity ease-out .3s, .3s;
     }
 
     [part~='mini'] {
@@ -125,7 +125,7 @@
 :host(:not([open])[position='top']),
 :host(:not([open])[position='bottom']) {
     [part='base'] {
-        transform: translateY(-60vh);
+        translate: 0 -60vh;
     }
 
     [part='mini'] {
@@ -135,7 +135,7 @@
 
 :host(:not([open])[position='bottom']) {
     [part='base'] {
-        transform: translateY(60vh);
+        translate: 0 60vh;
     }
 }
 
@@ -161,7 +161,7 @@
 
 :host(:not([open])) {
     [part='base'] {
-        transform: translateX(calc(100% * var(--dir)));
+        translate: calc(100% * var(--dir)) 0;
         opacity: 0;
     }
 
@@ -170,3 +170,15 @@
         opacity: 0;
     }
 }
+
+:host([position='relative']:not([open])) {
+    [part='base'] {
+        opacity: 1;
+        overflow: hidden;
+    }
+
+    [part='main'] {
+        opacity: 0;
+    }
+}
+

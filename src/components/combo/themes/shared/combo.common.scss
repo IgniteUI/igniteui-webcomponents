@@ -59,8 +59,8 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not(:disabled)[invalid]) {
+:host(:not([disabled]):state(ig-invalid)),
+:host(:not(:disabled):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -93,4 +93,9 @@ $dropdown-theme: dropdown-theme.$material;
             color: inherit;
         }
     }
+}
+
+::slotted([slot='suffix']),
+::slotted([slot='prefix']) {
+    padding-inline: var(--affix-padding);
 }

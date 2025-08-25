@@ -27,8 +27,8 @@ import {
   simulatePointerMove,
 } from '../common/utils.spec.js';
 import IgcRangeSliderComponent from './range-slider.js';
-import type { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderComponent from './slider.js';
+import type { IgcSliderBaseComponent } from './slider-base.js';
 
 describe('Slider component', () => {
   describe('Regular', () => {
@@ -473,49 +473,44 @@ describe('Slider component', () => {
       expect(ticks.labelsInner).lengthOf(11);
       expect(slider.tickLabelRotation).to.eq(0);
 
-      ticks.labelsInner
-        .map((tick) => getComputedStyle(tick))
-        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
-          expect([
-            marginInlineStart,
-            marginBlock,
-            writingMode,
-            transform,
-          ]).to.eql(['-50%', '0px', 'horizontal-tb', 'none'])
+      for (const {
+        marginInlineStart,
+        marginBlock,
+        writingMode,
+        transform,
+      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
+        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
+          ['-50%', '0px', 'horizontal-tb', 'none']
         );
+      }
 
       slider.tickLabelRotation = 90;
       await elementUpdated(slider);
 
-      ticks.labelsInner
-        .map((tick) => getComputedStyle(tick))
-        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
-          expect([
-            marginInlineStart,
-            marginBlock,
-            writingMode,
-            transform,
-          ]).to.eql(['0px', '-9px', 'vertical-rl', 'none'])
+      for (const {
+        marginInlineStart,
+        marginBlock,
+        writingMode,
+        transform,
+      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
+        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
+          ['0px', '-9px', 'vertical-rl', 'none']
         );
+      }
 
       slider.tickLabelRotation = -90;
       await elementUpdated(slider);
 
-      ticks.labelsInner
-        .map((tick) => getComputedStyle(tick))
-        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
-          expect([
-            marginInlineStart,
-            marginBlock,
-            writingMode,
-            transform,
-          ]).to.eql([
-            '0px',
-            '-9px',
-            'vertical-rl',
-            'matrix(-1, 0, 0, -1, 0, 0)',
-          ])
+      for (const {
+        marginInlineStart,
+        marginBlock,
+        writingMode,
+        transform,
+      } of ticks.labelsInner.map((tick) => getComputedStyle(tick))) {
+        expect([marginInlineStart, marginBlock, writingMode, transform]).to.eql(
+          ['0px', '-9px', 'vertical-rl', 'matrix(-1, 0, 0, -1, 0, 0)']
         );
+      }
     });
 
     it('track should be continuos or discrete based on discreteTrack', async () => {

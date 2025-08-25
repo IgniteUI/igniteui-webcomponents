@@ -1,4 +1,4 @@
-import { type IterNodesOptions, getRoot, iterNodes } from '../common/util.js';
+import { getRoot, type IterNodesOptions, iterNodes } from '../common/util.js';
 import type IgcRadioComponent from './radio.js';
 
 type RadioQueryResult = {

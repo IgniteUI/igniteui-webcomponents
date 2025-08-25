@@ -4,18 +4,12 @@
 $theme: $bootstrap;
 
 :host {
+    --calendar-border-color: #{$bootstrap-calendar-border-color};
+
     igc-dialog {
         igc-calendar {
             border: none;
         }
-    }
-
-    igc-dialog::part(base) {
-        border: rem(1px) solid var-get($theme, 'border-color');
-    }
-
-    igc-focus-trap {
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     ::part(helper-text) {
@@ -39,10 +33,55 @@ $theme: $bootstrap;
     }
 }
 
+:host(:not([disabled],[readonly]):state(ig-invalid)) {
+    igc-input::part(input),
+    igc-date-time-input::part(input) {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    igc-date-time-input:focus-within {
+        &::part(input) {
+            box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+        }
+    }
+}
+
+:host(:not([disabled],[readonly]):state(ig-invalid):focus-within) {
+    igc-input::part(input) {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+}
+
 [part='separator'] {
     @include type-style('body-1');
 }
 
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--border-color);
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
+    }
 }

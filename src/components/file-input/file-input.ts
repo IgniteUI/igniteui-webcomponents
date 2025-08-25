@@ -2,21 +2,29 @@ import { html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  type FormValueOf,
-  createFormValueState,
-  defaultFileListTransformer,
-} from '../common/mixins/forms/form-value.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
-import { IgcInputBaseComponent } from '../input/input-base.js';
+import {
+  IgcInputBaseComponent,
+  type IgcInputComponentEventMap,
+} from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
+
+export interface IgcFileInputComponentEventMap
+  extends Omit<IgcInputComponentEventMap, 'igcChange' | 'igcInput'> {
+  igcCancel: CustomEvent<FileList>;
+  igcChange: CustomEvent<FileList>;
+}
 
 /* blazorSuppress */
 /**
@@ -31,7 +39,6 @@ import { fileValidators } from './validators.js';
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcInput - Emitted when the control input receives user input.
  * @fires igcChange - Emitted when the control's checked state changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
@@ -44,10 +51,12 @@ import { fileValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(all)
-export default class IgcFileInputComponent extends IgcInputBaseComponent {
+export default class IgcFileInputComponent extends EventEmitterMixin<
+  IgcFileInputComponentEventMap,
+  AbstractConstructor<IgcInputBaseComponent>
+>(IgcInputBaseComponent) {
   public static readonly tagName = 'igc-file-input';
-  public static override styles = [...IgcInputBaseComponent.styles, styles];
+  public static styles = [...IgcInputBaseComponent.styles, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -62,11 +71,10 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return fileValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<FileList | null> =
-    createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultFileListTransformer,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: null,
+    transformers: FormValueFileListTransformers,
+  });
 
   @state()
   private _hasActivation = false;
@@ -133,6 +141,11 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
     return this.input?.files ?? null;
   }
 
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   protected override _restoreDefaultValue(): void {
     this.input.value = '';
     super._restoreDefaultValue();
@@ -148,30 +161,25 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
 
   private _handleChange(): void {
     this._hasActivation = false;
+    this._setTouchedState();
     this._formValue.setValueAndFormState(this.files);
-    this._validate();
 
     this.requestUpdate();
-    this.emitEvent('igcChange', { detail: this.value });
+    this.emitEvent('igcChange', { detail: this.files! });
   }
 
   private _handleCancel(): void {
     this._hasActivation = false;
+    this._setTouchedState();
     this._validate();
 
     this.emitEvent('igcCancel', {
-      detail: this.value,
+      detail: this.files!,
     });
   }
 
-  protected _handleFocus(): void {
-    this._dirty = true;
-  }
-
-  protected _handleBlur(): void {
-    if (!this._hasActivation) {
-      this._validate();
-    }
+  protected override _handleBlur(): void {
+    this._hasActivation ? this._validate() : super._handleBlur();
   }
 
   /* c8 ignore next 3 */
@@ -211,14 +219,12 @@ export default class IgcFileInputComponent extends IgcInputBaseComponent {
         ?multiple=${this.multiple}
         tabindex=${this.tabIndex}
         accept=${ifDefined(this.accept === '' ? undefined : this.accept)}
-        aria-invalid=${this.invalid}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
         @click=${this._handleClick}
         @change=${this._handleChange}
         @cancel=${this._handleCancel}
-        @focus=${this._handleFocus}
         @blur=${this._handleBlur}
       />
     `;

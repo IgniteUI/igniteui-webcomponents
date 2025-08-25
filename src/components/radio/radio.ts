@@ -1,9 +1,8 @@
-import { LitElement, type TemplateResult, html } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
 import {
   addKeybindings,
@@ -12,24 +11,15 @@ import {
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  type FormValueOf,
-  createFormValueState,
-  defaultBooleanTransformers,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import {
-  createCounter,
-  isDefined,
-  isEmpty,
-  isLTR,
-  last,
-  wrap,
-} from '../common/util.js';
+import { isDefined, isEmpty, isLTR, last, wrap } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
@@ -52,6 +42,8 @@ export interface IgcRadioComponentEventMap {
   blur: FocusEvent;
 }
 
+let nextId = 1;
+
 /**
  * @element igc-radio
  *
@@ -67,7 +59,6 @@ export interface IgcRadioComponentEventMap {
  * @csspart control - The radio input control.
  * @csspart label - The radio control label.
  */
-@themes(all)
 export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMixin(
   EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -81,32 +72,30 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     registerComponent(IgcRadioComponent, IgcValidationContainerComponent);
   }
 
-  private static readonly increment = createCounter();
-
   protected override get __validators() {
     return radioValidators;
   }
 
-  protected override readonly _formValue: FormValueOf<boolean> =
-    createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
-
-  private readonly _inputId = `radio-${IgcRadioComponent.increment()}`;
+  private readonly _inputId = `radio-${nextId++}`;
   private readonly _labelId = `radio-label-${this._inputId}`;
   private readonly _focusRingManager = addKeyboardFocusRing(this);
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    onChange: this._handleSlotChange,
+  });
+
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: false,
+    transformers: FormValueBooleanTransformers,
+  });
 
   protected _value!: string;
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
 
-  @queryAssignedNodes({ flatten: true })
-  protected readonly _label!: Array<Node>;
-
   @state()
-  protected _hideLabel = false;
+  protected _hideLabel = true;
 
   @state()
   private _tabIndex = 0;
@@ -154,7 +143,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this._setFormValue(this._value || 'on');
+      this._formValue.setValueAndFormState(this.checked);
     }
   }
 
@@ -171,7 +160,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public set checked(value: boolean) {
     this._formValue.setValueAndFormState(value);
     this._tabIndex = this.checked ? 0 : -1;
-    this._validate();
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
     }
@@ -191,6 +179,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
@@ -199,16 +189,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this._navigate(-1))
       .set(arrowDown, () => this._navigate(1));
-  }
-
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    const root = super.createRenderRoot();
-    this._hideLabel = isEmpty(this._label);
-
-    root.addEventListener('slotchange', () => {
-      this._hideLabel = isEmpty(this._label);
-    });
-    return root;
   }
 
   protected override async firstUpdated(): Promise<void> {
@@ -220,8 +200,12 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         radio.defaultChecked = false;
       }
     } else {
-      this._updateValidity();
+      this._validate();
     }
+  }
+
+  protected _handleSlotChange(): void {
+    this._hideLabel = !this._slots.hasAssignedNodes('[default]', true);
   }
 
   protected override _setDefaultValue(current: string | null): void {
@@ -293,6 +277,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override formResetCallback(): void {
     super.formResetCallback();
     this._resetTabIndexes();
+    this.updateComplete.then(() => this._validate());
   }
 
   /** Called after a form reset callback to restore default keyboard navigation. */
@@ -312,6 +297,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
+    this._setTouchedState();
 
     if (this.checked) {
       return;
@@ -332,6 +318,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
     const radio = active[next];
 
+    this._setTouchedState();
     radio.focus();
     radio.checked = true;
     radio.emitEvent('igcChange', {
@@ -345,6 +332,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
+    const describedBy = this._slots.hasAssignedElements('helper-text')
+      ? 'helper-text'
+      : nothing;
     const checked = this.checked;
 
     return html`
@@ -361,25 +351,24 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           type="radio"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
-          .required=${this.required}
-          .disabled=${this.disabled}
+          ?required=${this.required}
+          ?disabled=${this.disabled}
           .checked=${live(checked)}
           tabindex=${this._tabIndex}
-          aria-checked=${checked}
-          aria-disabled=${this.disabled}
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
+          aria-describedby=${describedBy}
           @click=${this._handleClick}
         />
         <span part=${partMap({ control: true, checked })}>
           <span
-            .hidden=${this.disabled}
             part=${partMap({ ripple: true, checked })}
+            ?hidden=${this.disabled}
           ></span>
         </span>
         <span
-          .hidden=${this._hideLabel}
-          part=${partMap({ label: true, checked })}
           id=${this._labelId}
+          part=${partMap({ label: true, checked })}
+          ?hidden=${this._hideLabel}
         >
           <slot></slot>
         </span>

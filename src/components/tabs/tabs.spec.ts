@@ -5,9 +5,8 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
-
 import { range } from 'lit/directives/range.js';
+import { spy } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
   arrowLeft,
@@ -431,7 +430,10 @@ describe('Tabs component', () => {
       element.select('third');
       await elementUpdated(element);
 
-      element.tabs.slice(0, 2).forEach((el) => el.remove());
+      for (const el of element.tabs.slice(0, 2)) {
+        el.remove();
+      }
+
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[0]);

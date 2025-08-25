@@ -1,3 +1,5 @@
+import { isServer } from 'lit';
+
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
 export const clamp = (number: number, min: number, max: number) =>
@@ -260,6 +262,29 @@ export function isObject(value: unknown): value is object {
   return value != null && typeof value === 'object';
 }
 
+export function isPlainObject(
+  value: unknown
+): value is Record<PropertyKey, unknown> {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  const proto = Object.getPrototypeOf(value) as typeof Object.prototype | null;
+
+  const hasObjectPrototype =
+    proto === null ||
+    proto === Object.prototype ||
+    Object.getPrototypeOf(proto) === null;
+
+  return hasObjectPrototype
+    ? Object.prototype.toString.call(value) === '[object Object]'
+    : false;
+}
+
+function isUnsafeProperty(key: PropertyKey) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
 export function isEventListenerObject(x: unknown): x is EventListenerObject {
   return isObject(x) && 'handleEvent' in x;
 }
@@ -280,6 +305,33 @@ export function addWeakEventListener(
   };
 
   element.addEventListener(event, wrapped, options);
+}
+
+type EventTypeOf<T extends keyof HTMLElementEventMap | keyof WindowEventMap> =
+  (HTMLElementEventMap & WindowEventMap)[T];
+
+/**
+ * Safely adds an event listener to an HTMLElement, automatically handling
+ * server-side rendering environments by doing nothing if `isServer` is true.
+ * This function also correctly binds the `handler`'s `this` context to the `target` element
+ * and ensures proper event type inference.
+ */
+export function addSafeEventListener<
+  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
+>(
+  target: HTMLElement,
+  eventName: E,
+  handler: (event: EventTypeOf<E>) => unknown,
+  options?: boolean | AddEventListenerOptions
+): void {
+  if (isServer) {
+    return;
+  }
+
+  const boundHandler = (event: Event) =>
+    handler.call(target, event as EventTypeOf<E>);
+
+  target.addEventListener(eventName, boundHandler, options);
 }
 
 /**
@@ -443,7 +495,7 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
     }
 
     for (const key of aKeys) {
-      if (!Object.prototype.hasOwnProperty.call(b, key)) {
+      if (!Object.hasOwn(b, key)) {
         return false;
       }
     }
@@ -467,3 +519,65 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
 export type RequiredProps<T, K extends keyof T> = T & {
   [P in K]-?: T[P];
 };
+
+export function setStyles(
+  element: HTMLElement,
+  styles: Partial<CSSStyleDeclaration>
+): void {
+  merge(element.style, styles);
+}
+
+/**
+ * Merges the properties of `source` into `target` performing a recursive deep merge over POJOs and arrays.
+ *
+ * @remarks
+ * This function mutates the `target` object.
+ * If that is not the desired outcome, see {@link toMerged} for another approach.
+ */
+export function merge<
+  T extends Record<PropertyKey, any>,
+  S extends Record<PropertyKey, any>,
+>(target: T, source: S): T & S {
+  const sourceKeys = Object.keys(source) as Array<keyof S>;
+  const length = sourceKeys.length;
+
+  for (let i = 0; i < length; i++) {
+    const key = sourceKeys[i];
+
+    if (isUnsafeProperty(key)) {
+      continue;
+    }
+
+    const sourceValue = source[key];
+    const targetValue = target[key];
+
+    if (Array.isArray(sourceValue)) {
+      if (Array.isArray(targetValue)) {
+        target[key] = merge(targetValue, sourceValue);
+      } else {
+        target[key] = merge([], sourceValue);
+      }
+    } else if (isPlainObject(sourceValue)) {
+      if (isPlainObject(targetValue)) {
+        target[key] = merge(targetValue, sourceValue);
+      } else {
+        target[key] = merge({}, sourceValue);
+      }
+    } else if (targetValue === undefined || sourceValue !== undefined) {
+      target[key] = sourceValue;
+    }
+  }
+
+  return target;
+}
+
+/**
+ * Just like {@link merge} but it does not mutate the `target` object instead
+ * mutating a structured clone of it.
+ */
+export function toMerged<
+  T extends Record<PropertyKey, any>,
+  S extends Record<PropertyKey, any>,
+>(target: T, source: S): T & S {
+  return merge(structuredClone(target), source);
+}

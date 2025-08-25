@@ -1,17 +1,13 @@
 import { LitElement } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
-
+import { property, query, state } from 'lit/decorators.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import {
-  type FormValueOf,
-  createFormValueState,
-  defaultBooleanTransformers,
-} from '../common/mixins/forms/form-value.js';
-import { isEmpty } from '../common/util.js';
+import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
@@ -39,22 +35,23 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     return checkBoxValidators;
   }
 
+  protected readonly _slots = addSlotController(this, {
+    slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
+    onChange: this._handleSlotChange,
+  });
+
   protected readonly _focusRingManager = addKeyboardFocusRing(this);
-  protected override readonly _formValue: FormValueOf<boolean> =
-    createFormValueState(this, {
-      initialValue: false,
-      transformers: defaultBooleanTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: false,
+    transformers: FormValueBooleanTransformers,
+  });
   protected _value!: string;
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
 
-  @queryAssignedNodes({ flatten: true })
-  protected readonly _label!: Array<Node>;
-
   @state()
-  protected _hideLabel = false;
+  protected _hideLabel = true;
 
   /**
    * The value attribute of the control.
@@ -64,7 +61,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   public set value(value: string) {
     this._value = value;
     if (this.checked) {
-      this._setFormValue(this._value || 'on');
+      this._formValue.setValueAndFormState(this.checked);
     }
   }
 
@@ -80,7 +77,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   @property({ type: Boolean })
   public set checked(value: boolean) {
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get checked(): boolean {
@@ -93,17 +89,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
-
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    const root = super.createRenderRoot();
-    this._hideLabel = isEmpty(this._label);
-
-    root.addEventListener('slotchange', () => {
-      this._hideLabel = isEmpty(this._label);
-    });
-
-    return root;
-  }
 
   /** Simulates a click on the control. */
   public override click(): void {
@@ -122,16 +107,17 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     this._input.blur();
   }
 
+  protected _handleSlotChange(): void {
+    this._hideLabel = !this._slots.hasAssignedNodes('[default]');
+  }
+
   protected _handleClick(event: PointerEvent): void {
     event.stopPropagation();
 
+    this._setTouchedState();
     this.checked = !this.checked;
     this.emitEvent('igcChange', {
       detail: { checked: this.checked, value: this.value },
     });
-  }
-
-  protected _handleFocus(): void {
-    this._dirty = true;
   }
 }

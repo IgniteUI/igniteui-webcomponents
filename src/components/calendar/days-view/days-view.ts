@@ -1,7 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
-import { themes } from '../../../theming/theming-decorator.js';
+import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -12,7 +12,13 @@ import { createDateTimeFormatters } from '../../common/localization/intl-formatt
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
-import { chunk, first, last, take } from '../../common/util.js';
+import {
+  addSafeEventListener,
+  chunk,
+  first,
+  last,
+  take,
+} from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -24,8 +30,8 @@ import {
   isPreviousMonth,
 } from '../helpers.js';
 import { CalendarDay, daysInWeek } from '../model.js';
-import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
+import { styles } from '../themes/days-view.base.css.js';
 import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
@@ -49,7 +55,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
  */
 @blazorSuppressComponent
 @blazorIndirectRender
-@themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -134,11 +139,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   constructor() {
     super();
 
-    addKeybindings(this, {
-      bindingDefaults: { preventDefault: true },
-    }).setActivateHandler(this.handleInteraction);
-
-    this.addEventListener('click', this.handleInteraction);
+    addThemingController(this, all);
+    addKeybindings(this).setActivateHandler(this.handleInteraction);
+    addSafeEventListener(this, 'click', this.handleInteraction);
   }
 
   public override connectedCallback() {
@@ -147,8 +150,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   /** Focuses the active date. */
-  public focusActiveDate() {
-    this.activeDay.focus();
+  public focusActiveDate(options?: FocusOptions) {
+    this.activeDay.focus(options);
   }
 
   protected handleInteraction(event: Event) {

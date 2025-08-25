@@ -1,9 +1,7 @@
-import { LitElement, type TemplateResult, html, nothing } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
-
-import { getThemeController, themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
@@ -19,7 +17,9 @@ import {
   arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
+import { addRootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -30,12 +30,10 @@ import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
-  type FormValueOf,
-  createFormValueState,
-  defaultDateTimeTransformers,
-} from '../common/mixins/forms/form-value.js';
-import {
+  addSafeEventListener,
   createCounter,
   findElementFromEventPath,
   isEmpty,
@@ -145,10 +143,10 @@ export interface IgcDatePickerComponentEventMap {
  * @csspart selected - The calendar selected state for element(s). Applies to date, month and year elements.
  * @csspart current - The calendar current state for element(s). Applies to date, month and year elements.
  */
-@themes(all, { exposeController: true })
 @blazorAdditionalDependencies(
   'IgcCalendarComponent, IgcDateTimeInputComponent, IgcDialogComponent, IgcIconComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatePickerComponentEventMap,
@@ -157,11 +155,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
-
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   /* blazorSuppress */
   public static register(): void {
@@ -182,6 +175,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private static readonly _increment = createCounter();
   protected _inputId = `date-picker-${IgcDatePickerComponent._increment()}`;
 
+  private readonly _themes = addThemingController(this, all);
+
   protected override get __validators() {
     return datePickerValidators;
   }
@@ -194,11 +189,17 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _displayFormat?: string;
   private _inputFormat?: string;
 
-  protected override readonly _formValue: FormValueOf<Date | null> =
-    createFormValueState(this, {
-      initialValue: null,
-      transformers: defaultDateTimeTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: null,
+    transformers: FormValueDateTimeTransformers,
+  });
+
+  protected override readonly _rootClickController = addRootClickController(
+    this,
+    {
+      onHide: this._handleClosing,
+    }
+  );
 
   @query(IgcDateTimeInputComponent.tagName)
   private readonly _input!: IgcDateTimeInputComponent;
@@ -220,10 +221,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private get _isDropDown(): boolean {
     return this.mode === 'dropdown';
-  }
-
-  protected get _isMaterialTheme(): boolean {
-    return getThemeController(this)?.theme === 'material';
   }
 
   //#endregion
@@ -273,7 +270,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
-    this._validate();
   }
 
   public get value(): Date | null {
@@ -301,7 +297,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set min(value: Date | string | null | undefined) {
     this._min = convertToDate(value);
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get min(): Date | null {
@@ -316,7 +312,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set max(value: Date | string | null | undefined) {
     this._max = convertToDate(value);
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get max(): Date | null {
@@ -356,7 +352,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public set disabledDates(dates: DateRangeDescriptor[]) {
     this._disabledDates = dates;
     this._setDateConstraints();
-    this._updateValidity();
+    this._validate();
   }
 
   public get disabledDates() {
@@ -461,14 +457,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
 
-    this.addEventListener('focusin', this._handleFocusIn);
-    this.addEventListener('focusout', this._handleFocusOut);
-
-    this._rootClickController.update({ hideCallback: this._handleClosing });
+    addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
-      bindingDefaults: { preventDefault: true },
     })
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
@@ -523,13 +515,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected _handleFocusIn(): void {
-    this._dirty = true;
-  }
-
   protected _handleFocusOut({ relatedTarget }: FocusEvent): void {
     if (!this.contains(relatedTarget as Node)) {
-      this.checkValidity();
+      this._handleBlur();
     }
   }
 
@@ -558,6 +546,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
+
+    this._setTouchedState();
     this.value = (event.target as IgcDateTimeInputComponent).value!;
     this.emitEvent('igcChange', { detail: this.value });
   }
@@ -566,6 +556,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     event: CustomEvent<Date>
   ): Promise<void> {
     event.stopPropagation();
+
+    this._setTouchedState();
 
     if (this.readOnly) {
       // Wait till the calendar finishes updating and then restore the current value from the date-picker.
@@ -582,6 +574,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
+
+    this._setTouchedState();
 
     if (this.nonEditable) {
       event.preventDefault();
@@ -807,12 +801,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
     const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(this._isMaterialTheme ? this.label : undefined)}
+        label=${ifDefined(isMaterial ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -825,7 +820,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .placeholder=${this.placeholder}
         .min=${this.min}
         .max=${this.max}
-        .invalid=${live(this.invalid)}
+        .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
         @click=${this._isDropDown || this.readOnly
@@ -843,11 +838,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected override render() {
     const id = this.id || this._inputId;
+    const isMaterial = this._themes.theme === 'material';
 
     return html`
-      ${this._isMaterialTheme ? nothing : this._renderLabel(id)}
-      ${this._renderInput(id)} ${this._renderPicker(id)}
-      ${this._renderHelperText()}
+      ${isMaterial ? nothing : this._renderLabel(id)} ${this._renderInput(id)}
+      ${this._renderPicker(id)} ${this._renderHelperText()}
     `;
   }
 

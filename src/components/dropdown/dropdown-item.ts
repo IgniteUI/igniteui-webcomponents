@@ -1,4 +1,4 @@
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
 import { styles } from './themes/dropdown-item.base.css.js';
@@ -18,14 +18,18 @@ import { styles as shared } from './themes/shared/item/dropdown-item.common.css.
  * @csspart content - The main content wrapper of the igc-dropdown-item.
  * @csspart suffix - The suffix wrapper of the igc-dropdown-item.
  */
-@themes(all)
 export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-dropdown-item';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcDropdownItemComponent);
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 }
 

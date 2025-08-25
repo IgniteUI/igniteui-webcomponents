@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -10,7 +10,7 @@ import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { themes } from '../../theming/theming-decorator.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -24,11 +24,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import {
-  type FormValueOf,
-  createFormValueState,
-  defaultNumberTransformers,
-} from '../common/mixins/forms/form-value.js';
+import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   asNumber,
   clamp,
@@ -72,7 +69,6 @@ export interface IgcRatingComponentEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes(all)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
     LitElement
@@ -90,11 +86,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     );
   }
 
-  protected override readonly _formValue: FormValueOf<number> =
-    createFormValueState(this, {
-      initialValue: 0,
-      transformers: defaultNumberTransformers,
-    });
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: 0,
+    transformers: FormValueNumberTransformers,
+  });
 
   private _max = 5;
   private _step = 1;
@@ -202,7 +197,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       ? clamp(asNumber(number), 0, this.max)
       : Math.max(asNumber(number), 0);
     this._formValue.setValueAndFormState(value);
-    this._validate();
   }
 
   public get value(): number {
@@ -252,9 +246,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   constructor() {
     super();
 
+    addThemingController(this, all);
+
     addKeybindings(this, {
       skip: () => !this.isInteractive,
-      bindingDefaults: { preventDefault: true },
     })
       .set(arrowUp, () => this.emitValueUpdate(this.value + this.step))
       .set(arrowRight, () =>
@@ -300,6 +295,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   protected emitValueUpdate(value: number) {
+    this._setTouchedState();
     this.value = clamp(value, 0, this.max);
     if (value === this.value) {
       this.emitEvent('igcChange', { detail: this.value });

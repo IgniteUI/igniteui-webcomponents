@@ -4,11 +4,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.1.0] - 2025-06-11
+## [6.2.0] - 2025-08-04
+### Added
+- Form associated custom elements now expose the **ig-invalid** custom state for styling with the `:state()` CSS selector.
+  [See here for additional information](https://developer.mozilla.org/en-US/docs/Web/CSS/:state)
+
+### Changed
+- Form associated custom elements validity behavior. Now elements will try to mimic `:user-invalid`, and won't apply invalid
+  styles unless interacted through the UI or through a form `requestSubmit()/reset()` invocation.
+
+### Fixed
+- #### All igc-input based components
+  - Invalid state in **readonly** mode [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+  - Cannot style **helper-text** parts [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Card
+  - Slotted igc-avatar in Indigo theme [#1795](https://github.com/IgniteUI/igniteui-webcomponents/pull/1795)
+- #### Combo
+  - Border overlaps label text in invalid state [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Date picker
+  - Indigo elevation styles [#1799](https://github.com/IgniteUI/igniteui-webcomponents/pull/1799)
+- #### Date range picker
+  - Return focus to main input on keyboard interactions [#1783](https://github.com/IgniteUI/igniteui-webcomponents/pull/1783)
+- #### Input
+  - Placeholder and label alignment in Material theme [#1792](https://github.com/IgniteUI/igniteui-webcomponents/pull/1792)
+- #### Navigation drawer
+  - Update *relative* positions styles and animation [#1806](https://github.com/IgniteUI/igniteui-webcomponents/pull/1806)
+- #### Select
+  - Invalid state theming issues [#1786](https://github.com/IgniteUI/igniteui-webcomponents/pull/1786)
+- #### Textarea
+  - Material theme interaction issues [#1797](https://github.com/IgniteUI/igniteui-webcomponents/pull/1797)
+  - Resizing behavior with suffix part [#1797](https://github.com/IgniteUI/igniteui-webcomponents/pull/1797)
+
+## [6.1.2] - 2025-07-14
+### Added
+- #### File input
+  - Exposed CSS variables for styling most of the Shadow DOM parts [#1747](https://github.com/IgniteUI/igniteui-webcomponents/pull/1747)
+
+### Fixed
+- #### Calendar
+  - Vertical mode container paddings [#1775](https://github.com/IgniteUI/igniteui-webcomponents/pull/1775)
+- #### Carousel
+  - Pause automatic rotation on pointer-initiated focus [#1731](https://github.com/IgniteUI/igniteui-webcomponents/issues/1731)
+  - Ensure `igcSlideChanged` event is emitted when a slide is changed [#1772](https://github.com/IgniteUI/igniteui-webcomponents/issues/1772)
+- #### Date picker
+  - Styling issues [#1765](https://github.com/IgniteUI/igniteui-webcomponents/pull/1765)
+- #### Date range picker
+  - CSS borders and elevation [#1764](https://github.com/IgniteUI/igniteui-webcomponents/pull/1764)
+- #### File input
+  - Bootstrap invalid box-shadow styles [#1747](https://github.com/IgniteUI/igniteui-webcomponents/pull/1747)
+- #### Stepper
+  - Error when setting linear property in deferred rendering scenarios [#1672](https://github.com/IgniteUI/igniteui-webcomponents/pull/1672)
+- #### Textarea
+  - Readonly state styles [#1768](https://github.com/IgniteUI/igniteui-webcomponents/pull/1768)
+
+## [6.1.1] - 2025-06-25
+### Fixed
+- #### Dropdown
+  - Icon size in Bootstrap theme [#1755](https://github.com/IgniteUI/igniteui-webcomponents/pull/1755)
+- #### Input, File Input
+  - Label positioning and transition logic in Material theme [#1739](https://github.com/IgniteUI/igniteui-webcomponents/pull/1739) [#1753](https://github.com/IgniteUI/igniteui-webcomponents/pull/1753)
+
+## [6.1.0] - 2025-06-12
 ### Added
 - Date Range Picker
 
 ### Changed
+- Updated the readonly styles of most form associated components across all themes to better signify when a component
+  is in a readonly state.
+- #### File input
+  - **Breaking change**: `igcChange` & `igcCancel` events detail now returns the underlying component `files` property.
 - #### Tooltip
   - **Behavioral change**: Tooltip default `placement` is 'bottom' now.
   - **Behavioral change**: Tooltip will not render an arrow indicator by default unless `with-arrow` is set.
@@ -25,6 +89,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Incorrect date rollover for in certain scenarios [#1710](https://github.com/IgniteUI/igniteui-webcomponents/issues/1710)
 - #### Combo
   - Case insensitive icon styles in themes [#1728](https://github.com/IgniteUI/igniteui-webcomponents/pull/1728)
+- #### Input
+  - Replace border in fluent theme with a box-shadow [#1726](https://github.com/IgniteUI/igniteui-webcomponents/pull/1726)
+  - Focused state background color in Indigo theme [#1732](https://github.com/IgniteUI/igniteui-webcomponents/pull/1732)
 - #### Textarea
   - Label height and component height override [#1715](https://github.com/IgniteUI/igniteui-webcomponents/pull/1715)
 
@@ -917,6 +984,9 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.2...6.2.0
+[6.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.1...6.1.2
+[6.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.0...6.1.1
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.1...6.1.0
 [6.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.0.0...6.0.1
 [6.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/5.4.1...6.0.0
