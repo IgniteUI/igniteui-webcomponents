@@ -120,7 +120,7 @@ describe('Date Util', () => {
       [DateParts.Seconds, currentDate.getSeconds()],
       [
         DateParts.Year,
-        Number.parseInt(currentDate.getFullYear().toString().slice(-2)),
+        Number.parseInt(currentDate.getFullYear().toString().slice(-2), 10),
       ],
     ]);
 
@@ -139,7 +139,9 @@ describe('Date Util', () => {
         const amPm = currentDate.getHours() >= 12 ? 'PM' : 'AM';
         expect(amPm).to.equal(targetValue);
       } else {
-        expect(partsMap.get(part.type)).to.equal(Number.parseInt(targetValue));
+        expect(partsMap.get(part.type)).to.equal(
+          Number.parseInt(targetValue, 10)
+        );
       }
     }
   });

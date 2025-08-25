@@ -16,7 +16,9 @@ import {
 } from './story.js';
 
 defineComponents(IgcRatingComponent, IgcIconComponent);
-utils.icons.forEach((icon) => registerIconFromText(icon.name, icon.value));
+for (const { name, value } of utils.icons) {
+  registerIconFromText(name, value);
+}
 
 // region default
 const metadata: Meta<IgcRatingComponent> = {

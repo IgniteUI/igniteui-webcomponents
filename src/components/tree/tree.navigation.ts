@@ -139,9 +139,9 @@ export class IgcTreeNavigationService {
         }
       });
     } else {
-      item
-        .getChildren({ flatten: true })
-        ?.forEach((c: IgcTreeItemComponent) => this._invisibleChildren.add(c));
+      for (const child of item.getChildren({ flatten: true })) {
+        this._invisibleChildren.add(child);
+      }
     }
 
     if (shouldUpdate) {
