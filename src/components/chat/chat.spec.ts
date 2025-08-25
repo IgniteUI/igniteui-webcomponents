@@ -1048,9 +1048,9 @@ describe('Chat', () => {
         } else {
           expect(messsageContainer).dom.to.equal(
             `<div part="bubble">
-                            <div>
-                                <p>${(messsageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
-                            </div>
+                            <pre part="plain-text">
+                              ${chat.messages[index].text}
+                            </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
                             <div style="float: right">
