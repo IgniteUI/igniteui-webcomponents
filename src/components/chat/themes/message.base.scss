@@ -1,31 +1,15 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-[part~='message-container'] {
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-end;
-  margin-inline-end: auto;
-}
-
-[part~='sent'] {
-  margin-inline-start: auto;
-  margin-inline-end: unset;
-  padding: rem(12px) rem(16px);
-  border-radius: rem(24px) rem(24px) 0;
-  max-width: rem(576px);
-  width: fit-content;
-}
-
-[part~='bubble'] {
-  display: flex;
-  flex-direction: column;
-  gap: rem(16px);
-  width: 100%;
-
+[part~='message-container'] {  
   @include type-style('body-1') {
     margin: 0;
   };
+
+  display: flex;
+  margin-inline-end: auto;
+  flex-direction: column;
+  gap: rem(16px);
 
   p {
     margin: 0;
@@ -36,10 +20,19 @@
     overflow-wrap: anywhere;
     color: color(primary, 500);
   }
+
+  pre, code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+  }
 }
 
-pre, code {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-x: auto;
+[part~='sent'] {
+  margin-inline-start: auto;
+  margin-inline-end: unset;
+  padding: rem(12px) rem(16px);
+  border-radius: rem(24px) rem(24px) 0;
+  max-width: rem(576px);
+  width: fit-content;
 }

@@ -132,11 +132,7 @@ export default class IgcChatMessageComponent extends LitElement {
     // const renderer =
     //   this._chatState?.options?.markdownRenderer || renderMarkdown;
 
-    return html`
-      <div part=${containerPart}>
-        <div part="bubble">${this.renderedContent}</div>
-      </div>
-    `;
+    return html` <div part=${containerPart}>${this.renderedContent}</div> `;
   }
 }
 

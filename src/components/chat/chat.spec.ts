@@ -311,25 +311,21 @@ describe('Chat', () => {
         messageContainer?.querySelectorAll('igc-chat-message')[0];
       expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Hello! How can I help you today?
-                        </pre>
-                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
-                    </div>
-                </div>`
+            <pre part="plain-text">
+              Hello! How can I help you today?
+            </pre>
+            ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+        </div>`
       );
 
       expect(
         messageContainer?.querySelectorAll('igc-chat-message')[3]
       ).shadowDom.to.equal(
         `<div part="message-container sent">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Thank you too!
-                        </pre>
-                    </div>
-                </div>`
+          <pre part="plain-text">
+            Thank you too!
+          </pre>
+        </div>`
       );
     });
 
@@ -357,13 +353,11 @@ describe('Chat', () => {
         messageContainer?.querySelectorAll('igc-chat-message')[0];
       expect(firstMessage).shadowDom.to.equal(
         `<div part="message-container ">
-                    <div part="bubble">
-                        <pre part="plain-text">
-                            Hello!
-                        </pre>
-                        ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
-                    </div>
-                </div>`
+          <pre part="plain-text">
+            Hello!
+          </pre>
+          ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+        </div>`
       );
     });
 
