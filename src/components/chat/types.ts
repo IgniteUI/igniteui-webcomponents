@@ -108,7 +108,7 @@ export type IgcChatOptions = {
    * If `true`, disables the ability to upload and send attachments.
    * Defaults to `false`.
    */
-  disableAttachments?: boolean;
+  disableInputAttachments?: boolean;
   /**
    * Indicates whether the other user is currently typing a message.
    */

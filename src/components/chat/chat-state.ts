@@ -158,7 +158,7 @@ export class ChatState {
    * @returns TemplateResult containing the file upload button
    */
   private renderDefaultFileUploadButton = (): TemplateResult => {
-    if (this.options?.disableAttachments) return html``;
+    if (this.options?.disableInputAttachments) return html``;
     return html`
       <label for="input_attachments" part="upload-button">
         <igc-icon-button

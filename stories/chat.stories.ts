@@ -168,7 +168,7 @@ const ai_chat_options = {
 
 const chat_options = {
   disableAutoScroll: false,
-  disableAttachments: false,
+  disableInputAttachments: false,
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
