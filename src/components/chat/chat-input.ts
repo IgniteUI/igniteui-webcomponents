@@ -58,7 +58,7 @@ export default class IgcChatInputComponent extends LitElement {
   public static override styles = [styles, shared];
 
   @consume({ context: chatContext, subscribe: true })
-  private _chatState?: ChatState;
+  private _chatState!: ChatState;
 
   /* blazorSuppress */
   public static register() {
@@ -81,7 +81,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   @watch('acceptedFiles', { waitUntilFirstUpdate: true })
   protected acceptedFilesChange(): void {
-    this._chatState?.updateAcceptedTypesCache();
+    this._chatState.updateAcceptedTypesCache();
   }
 
   @state()
@@ -99,23 +99,21 @@ export default class IgcChatInputComponent extends LitElement {
 
   protected override firstUpdated() {
     this.setupDragAndDrop();
-    if (this._chatState) {
-      this._chatState.updateAcceptedTypesCache();
-      this._chatState.textArea = this._textInputElement;
-    }
+    this._chatState.updateAcceptedTypesCache();
+    this._chatState.textArea = this._textInputElement;
 
     // Use keybindings controller to capture all key events
     // Custom skip function that never skips - this captures ALL key events
     const keybindings = addKeybindings(this, {
       skip: () => false, // Never skip any key events
-      ref: this._chatState?.textAreaRef,
+      ref: this._chatState.textAreaRef,
     });
 
     // Override the controller's handleEvent to capture all keys
     // This is a more direct approach that doesn't require listing specific keys
     keybindings.handleEvent = (event: KeyboardEvent) => {
       // Call our handler for every key event
-      this._chatState?.handleKeyDown(event);
+      this._chatState.handleKeyDown(event);
     };
   }
 
@@ -139,12 +137,12 @@ export default class IgcChatInputComponent extends LitElement {
       (item) => item.kind === 'file'
     );
     const hasValidFiles = files.some((item) =>
-      this._chatState?.isFileTypeAccepted(item.getAsFile() as File, item.type)
+      this._chatState.isFileTypeAccepted(item.getAsFile() as File, item.type)
     );
 
     this.containerPart = `input-container ${hasValidFiles ? ' dragging' : ''}`;
 
-    this._chatState?.emitEvent('igcAttachmentDrag');
+    this._chatState.emitEvent('igcAttachmentDrag');
   }
 
   private handleDragOver(e: DragEvent) {
@@ -180,29 +178,29 @@ export default class IgcChatInputComponent extends LitElement {
     if (files.length === 0) return;
 
     const validFiles = files.filter((file) =>
-      this._chatState?.isFileTypeAccepted(file)
+      this._chatState.isFileTypeAccepted(file)
     );
 
-    this._chatState?.emitEvent('igcAttachmentDrop');
+    this._chatState.emitEvent('igcAttachmentDrop');
 
-    this._chatState?.attachFiles(validFiles);
+    this._chatState.attachFiles(validFiles);
     this.requestUpdate();
   }
 
   protected override render() {
-    const templates = this._chatState?.mergedTemplates;
+    const templates = this._chatState.mergedTemplates;
     return html`
       <div part="${this.containerPart}">
-        ${this._chatState?.inputAttachments &&
-        this._chatState?.inputAttachments.length > 0
+        ${this._chatState.inputAttachments &&
+        this._chatState.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
               ${templates?.textAreaAttachmentsTemplate(
-                this._chatState?.inputAttachments
+                this._chatState.inputAttachments
               )}
             </div>`
           : nothing}
         <div part="input-wrapper">
-          ${templates?.textInputTemplate(this._chatState?.inputValue ?? '')}
+          ${templates?.textInputTemplate(this._chatState.inputValue ?? '')}
         </div>
         <div part="buttons-container">
           ${templates?.textAreaActionsTemplate()}

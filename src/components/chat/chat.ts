@@ -220,7 +220,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     text: string;
     attachments?: IgcMessageAttachment[];
   }) {
-    if (this._chatState) {
+    if (this._chatState && value) {
       this._chatState.inputValue = value.text;
       this._chatState.inputAttachments = value.attachments || [];
       this.requestUpdate();
@@ -345,10 +345,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <slot name="suggestions-actions" part="suggestions-actions"></slot>
       </igc-list>
     </div>`;
-  }
-
-  protected override firstUpdated() {
-    this._context.setValue(this._chatState, true);
   }
 
   /**
