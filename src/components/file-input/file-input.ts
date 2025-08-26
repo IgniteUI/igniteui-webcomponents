@@ -2,7 +2,7 @@ import { html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { addThemingController } from '../../theming/theming-controller.js';
+// import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -17,7 +17,7 @@ import {
 } from '../input/input-base.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
-import { all } from './themes/themes.js';
+// import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
 export interface IgcFileInputComponentEventMap
@@ -141,10 +141,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     return this.input?.files ?? null;
   }
 
-  constructor() {
-    super();
-    addThemingController(this, all);
-  }
+  // constructor() {
+  //   super();
+  //   addThemingController(this, all);
+  // }
 
   protected override _restoreDefaultValue(): void {
     this.input.value = '';

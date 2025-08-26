@@ -1,7 +1,10 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 
-import { addThemingController } from '../../theming/theming-controller.js';
+import {
+  addDynamicTheme,
+  // addThemingController,
+} from '../../theming/theming-controller.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -13,7 +16,7 @@ import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/input.base.css.js';
 import { styles as shared } from './themes/shared/input.common.css.js';
-import { all } from './themes/themes.js';
+// import { all } from './themes/themes.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -37,7 +40,26 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   public static styles = [styles, shared];
   private static readonly increment = createCounter();
 
-  protected readonly _themes = addThemingController(this, all);
+  protected readonly _themes = addDynamicTheme(this, {
+    themes: {
+      light: {
+        shared: new URL('./themes/light/input.shared.css.js', import.meta.url)
+          .href,
+        bootstrap: new URL(
+          './themes/light/input.bootstrap.css.js',
+          import.meta.url
+        ).href,
+      },
+      dark: {
+        shared: new URL('./themes/light/input.shared.css.js', import.meta.url)
+          .href,
+        bootstrap: new URL(
+          './themes/dark/input.bootstrap.css.js',
+          import.meta.url
+        ).href,
+      },
+    },
+  });
 
   protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 

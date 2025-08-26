@@ -6,11 +6,12 @@ import {
   type ReactiveControllerHost,
   type ReactiveElement,
 } from 'lit';
-
+import { createAbortHandle } from '../components/common/abort-handler.js';
 import { getTheme } from './config.js';
 import { _themeChangedEmitter, CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
   Theme,
+  ThemeChangedCallback,
   Themes,
   ThemeVariant,
   ThemingControllerConfig,
@@ -98,3 +99,122 @@ export function addThemingController(
 }
 
 export type { ThemingController };
+
+type LazyThemes = {
+  light: {
+    [K in Theme | 'shared']?: string;
+  };
+  dark: {
+    [K in Theme | 'shared']?: string;
+  };
+};
+
+type NewThemingControllerConfig = {
+  themes: LazyThemes;
+  onThemeChange?: ThemeChangedCallback;
+};
+
+class NewThemingController implements ReactiveController {
+  private readonly _host: ReactiveControllerHost & ReactiveElement;
+  private readonly _abortHandler = createAbortHandle();
+  private readonly _options: NewThemingControllerConfig;
+
+  private _theme: Theme = 'bootstrap';
+  private _variant: ThemeVariant = 'light';
+
+  public get theme(): Theme {
+    return this._theme;
+  }
+
+  public get variant(): ThemeVariant {
+    return this._variant;
+  }
+
+  constructor(
+    host: ReactiveControllerHost & ReactiveElement,
+    options: NewThemingControllerConfig
+  ) {
+    this._host = host;
+    this._options = options;
+    this._host.addController(this);
+  }
+
+  /** @internal */
+  public hostConnected(): void {
+    this._handleThemeChange();
+    _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this, {
+      signal: this._abortHandler.signal,
+    });
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._abortHandler.abort();
+  }
+
+  public handleEvent(): void {
+    this._handleThemeChange();
+  }
+
+  private async _handleThemeChange() {
+    await this._adoptStyles();
+    this._options.onThemeChange?.call(this._host, this._theme);
+    this._host.requestUpdate();
+  }
+
+  private async _adoptStyles() {
+    const current = getTheme();
+    this._theme = current.theme;
+    this._variant = current.themeVariant;
+    const whatever = this._options.themes[this._variant];
+
+    const newStyles = { shared: css``, theme: css`` };
+
+    // Instead of loading a `CSSResult` from the matching dynamic import path
+    // load the CSS payload as a string and create a style sheet:
+
+    // const { styles } = await import(path);
+    // const sheet = new CSSStyleSheet();
+    // const sheet.replace(styles);
+    // newStyles.shared = sheet;
+
+    // Another approach is to use Lit's `unsafeCSS` to get the `CSSResult` object.
+
+    for (const [name, path] of Object.entries(whatever ?? {})) {
+      if (name === 'shared') {
+        // !! Potential performance hit:
+        // While dynamic imports are aggressively cached by the browser until the import
+        // is resolved subsequent calls to this function will queue more requests - for example,
+        // having a dozen inputs in a form, on initial render each input `connectedCallback` invokes
+        // this function until a one of them resolves.
+
+        // If the dynamic approach is successful then this could be optimized by having a cache, which checks
+        // whether a given element has a pending/resolved promise for a given theme-variant combination and
+        // waits/resolves on it, thus minimizing the number of requests created.
+
+        const { styles } = await import(path);
+        newStyles.shared = styles;
+      }
+      if (name === this._theme) {
+        const { styles } = await import(path);
+        newStyles.theme = styles;
+      }
+    }
+
+    const ctor = this._host.constructor as typeof LitElement;
+    adoptStyles(this._host.shadowRoot!, [
+      ...ctor.elementStyles,
+      newStyles.shared,
+      newStyles.theme,
+    ]);
+  }
+}
+
+export function addDynamicTheme(
+  host: ReactiveControllerHost & ReactiveElement,
+  options: NewThemingControllerConfig
+): NewThemingController {
+  return new NewThemingController(host, options);
+}
+
+export type { NewThemingController };
