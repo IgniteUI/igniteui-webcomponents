@@ -36,6 +36,10 @@ describe('Chat', () => {
 
   const createChatComponent = () => html`<igc-chat></igc-chat>`;
 
+  const messageAuthorTemplate = (msg: any) => {
+    return msg.sender !== 'user' ? html`<span>AI Assistant</span>` : html``;
+  };
+
   const messageTemplate = (msg: any) => {
     return html`<div>
       <h5>${msg.sender === 'user' ? 'You' : 'Bot'}:</h5>
@@ -1122,6 +1126,39 @@ describe('Chat', () => {
       expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
         draftMessage.text
       );
+    });
+
+    it.only('should render messageAuthorTemplate', async () => {
+      chat.options = {
+        templates: {
+          messageAuthorTemplate: messageAuthorTemplate,
+        },
+      };
+      await elementUpdated(chat);
+      await aTimeout(500);
+
+      const messageElements = chat.shadowRoot
+        ?.querySelector('igc-chat-message-list')
+        ?.shadowRoot?.querySelectorAll('igc-chat-message');
+      expect(messageElements).not.to.be.undefined;
+      messageElements?.forEach((messageElement, index) => {
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messsageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
+        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).dom.to.equal(
+          `<div part="message-container${isCurrentUser ? ' sent' : ''}">
+              ${!isCurrentUser ? '<span>AI Assistant</span>' : ''}
+              <pre part="plain-text">
+                ${chat.messages[index].text}
+              </pre>
+              <igc-message-attachments>
+              </igc-message-attachments>
+              ${!isCurrentUser ? messageReactions : ''}
+            </div>`
+        );
+      });
     });
   });
 

@@ -102,6 +102,24 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
+const _messageAuthorTemplate = (msg: any) => {
+  return msg.sender !== 'user'
+    ? html`
+        <div>
+          <igc-avatar
+            shape="circle"
+            src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
+            style="position: relative;"
+          >
+          </igc-avatar>
+          <span
+            style="color: #c00000; font-weight: bold; position: absolute; margin: 8px"
+            >AI Assistant</span
+          >
+        </div>
+      `
+    : html``;
+};
 const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
     ? isResponseSent !== false
@@ -521,6 +539,7 @@ export const Chat_Templates: Story = {
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         templates: {
+          messageAuthorTemplate: _messageAuthorTemplate,
           messageActionsTemplate: _messageActionsTemplate,
           textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
           textAreaActionsTemplate: actionsTemplate,

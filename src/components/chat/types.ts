@@ -189,6 +189,12 @@ export type IgcChatTemplates = {
   attachmentContentTemplate?: (attachment: IgcMessageAttachment) => unknown;
 
   /**
+   * Template for rendering an information about the author of a single chat message.
+   * Use this to customize message layout, formatting, or metadata.
+   */
+  messageAuthorTemplate?: (message: IgcMessage) => unknown;
+
+  /**
    * Template for rendering a single chat message.
    * Use this to customize message layout, formatting, or metadata.
    */

@@ -80,6 +80,7 @@ export class ChatState {
       this.renderDefaultAttachmentHeader(att, msg),
     attachmentContentTemplate: (att: IgcMessageAttachment) =>
       this.renderDefaultAttachmentContent(att),
+    messageAuthorTemplate: () => {},
     messageTemplate: (
       m: IgcMessage,
       ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
@@ -226,6 +227,7 @@ export class ChatState {
   ) => {
     const templates = { ...this._defaultTemplates, ...ctx.templates };
     return html`
+      ${templates.messageAuthorTemplate(m) ?? nothing}
       ${ctx?.textContent ?? m.text}
       ${m.attachments?.length
         ? html`<igc-message-attachments .message=${m}>
