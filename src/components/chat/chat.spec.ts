@@ -1128,7 +1128,7 @@ describe('Chat', () => {
       );
     });
 
-    it.only('should render messageAuthorTemplate', async () => {
+    it('should render messageAuthorTemplate', async () => {
       chat.options = {
         templates: {
           messageAuthorTemplate: messageAuthorTemplate,
