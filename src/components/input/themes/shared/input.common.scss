@@ -81,3 +81,14 @@ $theme: $base;
 ::part(helper-text) {
     display: grid;
 }
+
+[name='suffix']::slotted(:is([part|='toggle'], [part|='clear'])) {
+    padding-inline: var(--affix-padding);
+}
+
+:host(:not([role='combobox'])) {
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        padding-inline: var(--affix-padding);
+    }
+}

@@ -234,7 +234,7 @@ export class NavigationController<T extends object>
   }
 
   public navigateTo(item: T, container: IgcComboListComponent) {
-    this.active = this.dataState.findIndex((i) => i === item);
+    this.active = this.dataState.indexOf(item as ComboRecord<T>);
     this.scrollToActive(container, 'smooth');
   }
 

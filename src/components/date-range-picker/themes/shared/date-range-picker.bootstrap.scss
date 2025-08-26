@@ -59,3 +59,29 @@ $theme: $bootstrap;
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
 }
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--border-color);
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
+    }
+}

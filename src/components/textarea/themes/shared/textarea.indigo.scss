@@ -9,6 +9,7 @@ $theme: $indigo;
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
@@ -104,11 +105,6 @@ textarea {
     [part~='input'] {
         color: var-get($theme, 'filled-text-color');
     }
-}
-
-[part~='prefixed'] [part='prefix'],
-[part~='suffixed'] [part='suffix'] {
-    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
 }
 
 [part~='prefixed'] textarea {

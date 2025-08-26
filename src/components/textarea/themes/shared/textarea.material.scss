@@ -10,6 +10,7 @@ $input-bottom-padding: rem(6px);
     @include type-style('subtitle-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     ::part(helper-text) {
         @include type-style('caption');
@@ -222,18 +223,6 @@ textarea {
 
 [part='end'] {
     grid-area: 1 / 4;
-}
-
-[part~='prefixed'] {
-    [part~='prefix'] {
-        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
-    }
-}
-
-[part~='suffixed'] {
-    [part~='suffix'] {
-        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
-    }
 }
 
 [part~='filled'] {
