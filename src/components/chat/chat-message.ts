@@ -1,14 +1,13 @@
 import { consume } from '@lit/context';
-import { html, LitElement, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-// import DOMPurify from 'dompurify';
+import { adoptStyles, html, LitElement, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
-import type { DefaultChatRenderer } from './chat-renderer.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
@@ -35,18 +34,11 @@ import type { IgcMessage } from './types.js';
  * and can be rendered with a markdown renderer if provided.
  */
 export default class IgcChatMessageComponent extends LitElement {
-  /** Tag name of the custom element. */
   public static readonly tagName = 'igc-chat-message';
-
-  /** Styles applied to the component. */
   public static override styles = [styles, shared];
 
-  /**
-   * Registers this component and its dependencies.
-   * This is used internally to set up the component definitions.
-   */
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
@@ -57,7 +49,6 @@ export default class IgcChatMessageComponent extends LitElement {
 
   /**
    * Injected chat state context. Provides message data, user info, and options.
-   * @private
    */
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
@@ -66,62 +57,17 @@ export default class IgcChatMessageComponent extends LitElement {
    * The chat message to render.
    */
   @property({ attribute: false })
-  public message: IgcMessage | undefined;
-
-  /**
-   * Sanitizes message text to prevent XSS or invalid HTML.
-   * @param text The raw message text
-   * @returns Sanitized text safe for HTML rendering
-   * @private
-   */
-  // private sanitizeMessageText(text: string): string {
-  //   return text.trim();
-  // }
+  public message?: IgcMessage;
 
   constructor() {
     super();
     addThemingController(this, all);
   }
 
-  /**
-   * The renderer instance responsible for converting message data into HTML.
-   * Typically provided through component options or chat state.
-   */
-  @state()
-  private renderer?: DefaultChatRenderer;
-
-  @state()
-  private renderedContent?: unknown;
-  /**
-   * Lit lifecycle method called after the component's first update.
-   * Initializes the `renderer` from chat state options if available.
-   *
-   * @param _changedProperties - The properties that changed before the update.
-   */
-  protected override async firstUpdated(
-    _changedProperties: PropertyValues
-  ): Promise<void> {
-    this.renderer = this._chatState?.chatRenderer;
-    if (this.message && this.renderer) {
-      this.renderedContent = await this.renderer?.render(this.message);
-    }
+  protected override firstUpdated(): void {
+    adoptPageStyles(this);
   }
 
-  /**
-   * Lit lifecycle method called after any update to the component.
-   * Triggers re-rendering when `message` or `renderer` has changed.
-   *
-   * @param changedProps - A map of changed properties and their previous values.
-   */
-  protected override async updated(
-    changedProps: Map<string, any>
-  ): Promise<void> {
-    if (changedProps.has('message') || changedProps.has('renderer')) {
-      if (this.message && this.renderer) {
-        this.renderedContent = await this.renderer?.render(this.message);
-      }
-    }
-  }
   /**
    * Renders the chat message template.
    * - Applies 'sent' CSS class if the message sender matches current user.
@@ -134,7 +80,13 @@ export default class IgcChatMessageComponent extends LitElement {
       sent: this._chatState?.currentUserId === this.message?.sender,
     };
 
-    return html` <div part=${partMap(parts)}>${this.renderedContent}</div> `;
+    return this.message && this._chatState?.chatRenderer
+      ? html`
+          <div part=${partMap(parts)}>
+            ${until(this._chatState.chatRenderer.render(this.message))}
+          </div>
+        `
+      : nothing;
   }
 }
 
@@ -142,4 +94,22 @@ declare global {
   interface HTMLElementTagNameMap {
     'igc-chat-message': IgcChatMessageComponent;
   }
+}
+
+// REVIEW: Maybe put that behind a configuration flag as this is nasty.
+function adoptPageStyles(message: IgcChatMessageComponent): void {
+  const sheets: CSSStyleSheet[] = [];
+
+  for (const sheet of document.styleSheets) {
+    try {
+      const constructed = new CSSStyleSheet();
+      for (const rule of sheet.cssRules) {
+        constructed.insertRule(rule.cssText);
+      }
+      sheets.push(constructed);
+    } catch {}
+  }
+
+  const ctor = message.constructor as typeof LitElement;
+  adoptStyles(message.shadowRoot!, [...ctor.elementStyles, ...sheets]);
 }
