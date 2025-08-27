@@ -7,7 +7,7 @@
     align-items: center;
     align-content: flex-start;
     width: 100%;
-    padding: rem(16px);
+    padding: pad(rem(16px));
     box-sizing: border-box;
 }
 
@@ -35,5 +35,5 @@ header {
 ::slotted([slot='thumbnail']) {
     display: flex;
     align-self: flex-start;
-    margin-inline-end: rem(16px);
+    margin-inline-end: pad-inline(rem(16px));
 }

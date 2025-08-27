@@ -2,9 +2,9 @@
 
 [part~='base'] {
     gap: rem(16px);
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
     margin: 0;
-    margin-block-end: rem(4px);
+    margin-block-end: pad-block(rem(4px));
 
     ::slotted(igc-icon) {
         --ig-size: 2;
@@ -12,5 +12,5 @@
 }
 
 [part='base mini'] {
-    padding: rem(8px);
+    padding: pad(rem(8px));
 }

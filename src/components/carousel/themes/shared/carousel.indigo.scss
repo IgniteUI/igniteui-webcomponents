@@ -23,12 +23,12 @@ igc-button::part(focused):hover {
 
 [part~='indicators'] {
     gap: rem(4px);
-    padding: rem(6px);
+    padding: pad(rem(6px));
 }
 
 [part='label indicators'],
 [part='label indicators start'] {
-    padding: rem(4px) rem(6px);
+    padding: pad-block(rem(4px)) pad-inline(rem(6px));
     min-width: rem(28px);
     border-radius: rem(2px);
 }
@@ -75,22 +75,22 @@ igc-button::part(focused):hover {
 
 :host([vertical]) {
     [part~='indicators'] {
-        padding: rem(6px);
+        padding: pad-block(rem(6px));
     }
 
     [part='label indicators'],
     [part='label indicators start'] {
-        padding: rem(4px) rem(6px);
+        padding: pad-block(rem(4px)) pad-inline(rem(6px));
     }
 
     [part~='indicators'],
     [part='label indicators'] {
-        margin-inline-end: rem(16px);
+        margin-inline-end: pad-inline(rem(16px));
     }
 
     [part='indicators start'],
     [part='label indicators start'] {
-        margin-inline-start: rem(16px);
+        margin-inline-start: pad-inline(rem(16px));
     }
 
     [part~='dot'] {

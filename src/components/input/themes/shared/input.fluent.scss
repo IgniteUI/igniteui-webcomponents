@@ -25,7 +25,7 @@ $theme: $fluent;
         @include type-style('caption');
 
         color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(5px);
+        margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 
@@ -49,7 +49,7 @@ $theme: $fluent;
         @include type-style('subtitle-2') {
             --ig-subtitle-2-line-height: #{rem(16px)};
 
-            margin-block: 0 rem(5px);
+            margin-block: 0 pad-block(rem(5px));
         };
 
         color: var-get($theme, 'idle-secondary-color');
@@ -88,7 +88,7 @@ $theme: $fluent;
         color: var-get($theme, 'idle-text-color');
         background: initial;
         font-size: rem(14px);
-        padding-inline: rem(8px);
+        padding-inline: pad-inline(rem(8px));
         max-height: 100%;
         border: none;
         grid-area: 1 / 2;

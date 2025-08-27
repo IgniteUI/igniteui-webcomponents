@@ -1,7 +1,7 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-:host { 
+:host {
     display: block;
     width: 100%;
     height: 100%;
@@ -24,18 +24,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: rem(16px) 0;
+    margin: pad-block(rem(16px)) 0;
     list-style: none;
     z-index: 10;
     gap: rem(8px);
-    padding: rem(4px) rem(6px);
+    padding: pad-block(rem(4px)) pad-inline(rem(6px));
 }
 
 [part='label indicators'],
 [part='label indicators start'] {
     @include type-style('caption');
 
-    margin: rem(16px) 0;
+    margin: pad-block(rem(16px)) 0;
     min-width: rem(46px);
 }
 
@@ -92,12 +92,12 @@ igc-button::part(base) {
 
     [part='navigation previous'] {
         inset-inline-start: 0;
-        margin-inline-start: rem(16px);
+        margin-inline-start: pad-inline(rem(16px));
     }
 
     [part='navigation next'] {
         inset-inline-end: 0;
-        margin-inline-end: rem(16px);
+        margin-inline-end: pad-inline(rem(16px));
     }
 
     [part='navigation next'],
@@ -121,7 +121,7 @@ igc-button::part(base) {
 :host([vertical]) {
     [part~='navigation'] {
         inset-inline-end: 0;
-        margin-inline-end: rem(16px);
+        margin-inline-end: pad-inline(rem(16px));
 
         igc-icon {
             transform: rotate(90deg);
@@ -130,12 +130,12 @@ igc-button::part(base) {
 
     [part='navigation previous'] {
         inset-block-start: 0;
-        margin-block-start: rem(16px);
+        margin-block-start: pad-block(rem(16px));
     }
 
     [part='navigation next'] {
         inset-block-end: 0;
-        margin-block-end: rem(16px);
+        margin-block-end: pad-block(rem(16px));
     }
 
     [part~='indicators'] {
@@ -144,24 +144,24 @@ igc-button::part(base) {
         inset-block-start: 50%;
         transform: translateY(-50%);
         margin-block: 0;
-        margin-inline-end: rem(29px);
-        padding: rem(6px) rem(4px);
+        margin-inline-end: pad-inline(rem(29px));
+        padding: pad-block(rem(6px)) pad-inline(rem(4px));
     }
 
     [part='label indicators'] {
-        margin-inline-end: rem(16px);
+        margin-inline-end: pad-inline(rem(16px));
     }
 
     [part='indicators start'],
     [part='label indicators start'] {
         inset-inline-end: unset;
         inset-inline-start: 0;
-        margin-inline-start: rem(16px);
+        margin-inline-start: pad-inline(rem(16px));
         margin-inline-end: unset;
     }
 
     [part='label indicators'],
     [part='label indicators start'] {
-        padding: rem(4px) rem(6px);
+        padding: pad-block(rem(4px)) pad-inline(rem(6px));
     }
 }

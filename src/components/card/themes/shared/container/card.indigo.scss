@@ -10,11 +10,11 @@ $theme: $indigo;
 
     ::slotted(igc-card-header:first-child),
     ::slotted(igc-card-header:last-child) {
-        padding-block-end: rem(16px);
+        padding-block-end: pad-block(rem(16px));
     }
 
     ::slotted(igc-card-content:not(:last-child)) {
-        padding-block-end: rem(8px);
+        padding-block-end: pad-block(rem(8px));
     }
 }
 

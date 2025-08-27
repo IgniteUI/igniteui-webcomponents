@@ -11,7 +11,7 @@
 [part~='base'] {
     display: grid;
     position: relative;
-    padding: rem(20px);
+    padding: pad(rem(20px));
     width: 100%;
     height: 100%;
     grid-template-columns: repeat(var(--column-count, auto-fit), minmax(min(var(--min-col-width, 100%)), 1fr));

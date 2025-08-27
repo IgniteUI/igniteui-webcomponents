@@ -26,7 +26,7 @@ $transition-duration: .25s;
         @include type-style('caption');
 
         color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -65,7 +65,7 @@ $transition-duration: .25s;
         @include type-style('caption');
 
         color: var-get($theme, 'idle-secondary-color');
-        margin-block-end: rem(4px);
+        margin-block-end: pad-block(rem(4px));
     }
 
     [part^='container'] {
@@ -99,7 +99,7 @@ $transition-duration: .25s;
         font-size: rem(12px);
         line-height: rem(16px);
         background: initial;
-        padding-block: rem(6px);
+        padding-block: pad-block(rem(6px));
         padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
         border: none;
         grid-area: 1 / 2;

@@ -8,8 +8,8 @@ $outlined-theme: $indigo-outlined;
 
 :host [part~='base']{
     min-width: rem(28px);
-    padding: 0 pad(10px, 16px, 24px);
-    
+    padding: 0 pad-inline(10px, 16px, 24px);
+
     ::slotted(igc-icon) {
         --component-size: var(--ig-size-medium) !important;
     }
@@ -34,7 +34,7 @@ $outlined-theme: $indigo-outlined;
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
 
     [part~='base'] {
-        padding: 0 pad(rem(6px), rem(8px), rem(10px));
+        padding: 0 pad-inline(rem(6px), rem(8px), rem(10px));
     }
 }
 
