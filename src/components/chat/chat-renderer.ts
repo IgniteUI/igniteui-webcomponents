@@ -19,7 +19,7 @@ export class DefaultChatRenderer implements ChatMessageRenderer {
     };
   }
 
-  protected async renderText(message: IgcMessage) {
+  public async renderText(message: IgcMessage) {
     const rendered = await this.baseTextRenderer.render(message);
     return rendered;
   }
@@ -28,7 +28,7 @@ export class DefaultChatRenderer implements ChatMessageRenderer {
     message: IgcMessage,
     ctx?: { templates?: Partial<IgcChatTemplates> }
   ): Promise<unknown> {
-    const templates = { ...ctx?.templates, ...this.templates };
+    const templates = { ...this.templates, ...ctx?.templates };
     if (!message.id) {
       // No caching for messages without an ID
       const textContent = await this.baseTextRenderer.render(message);

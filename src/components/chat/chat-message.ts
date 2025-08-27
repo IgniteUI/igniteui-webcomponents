@@ -1,14 +1,14 @@
 import { consume } from '@lit/context';
-import { html, LitElement, type PropertyValues } from 'lit';
-import { property, state } from 'lit/decorators.js';
-// import DOMPurify from 'dompurify';
+import { adoptStyles, html, LitElement, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
+import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcAvatarComponent from '../avatar/avatar.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
-import type { DefaultChatRenderer } from './chat-renderer.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
@@ -35,18 +35,11 @@ import type { IgcMessage } from './types.js';
  * and can be rendered with a markdown renderer if provided.
  */
 export default class IgcChatMessageComponent extends LitElement {
-  /** Tag name of the custom element. */
   public static readonly tagName = 'igc-chat-message';
-
-  /** Styles applied to the component. */
   public static override styles = [styles, shared];
 
-  /**
-   * Registers this component and its dependencies.
-   * This is used internally to set up the component definitions.
-   */
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
@@ -57,7 +50,6 @@ export default class IgcChatMessageComponent extends LitElement {
 
   /**
    * Injected chat state context. Provides message data, user info, and options.
-   * @private
    */
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
@@ -66,62 +58,134 @@ export default class IgcChatMessageComponent extends LitElement {
    * The chat message to render.
    */
   @property({ attribute: false })
-  public message: IgcMessage | undefined;
-
-  /**
-   * Sanitizes message text to prevent XSS or invalid HTML.
-   * @param text The raw message text
-   * @returns Sanitized text safe for HTML rendering
-   * @private
-   */
-  // private sanitizeMessageText(text: string): string {
-  //   return text.trim();
-  // }
+  public message?: IgcMessage;
 
   constructor() {
     super();
     addThemingController(this, all);
   }
 
-  /**
-   * The renderer instance responsible for converting message data into HTML.
-   * Typically provided through component options or chat state.
-   */
-  @state()
-  private renderer?: DefaultChatRenderer;
+  protected override firstUpdated(): void {
+    adoptPageStyles(this);
+  }
 
-  @state()
-  private renderedContent?: unknown;
-  /**
-   * Lit lifecycle method called after the component's first update.
-   * Initializes the `renderer` from chat state options if available.
-   *
-   * @param _changedProperties - The properties that changed before the update.
-   */
-  protected override async firstUpdated(
-    _changedProperties: PropertyValues
-  ): Promise<void> {
-    this.renderer = this._chatState?.chatRenderer;
-    if (this.message && this.renderer) {
-      this.renderedContent = await this.renderer?.render(this.message);
-    }
+  private showTooltip(
+    ev: PointerEvent,
+    tooltip: IgcTooltipComponent,
+    text: string
+  ) {
+    if (!tooltip) return;
+    tooltip.message = text;
+    tooltip.hideDelay = 300;
+    tooltip.show(ev.composedPath()[0] as any);
+  }
+
+  private handleMessageActionClick(event: MouseEvent) {
+    const reaction = (event.target as HTMLElement).getAttribute('name');
+    this._chatState?.emitEvent('igcMessageReact', {
+      detail: { this: this.message, reaction },
+    });
+  }
+
+  private renderHeader() {
+    return html``;
+  }
+
+  private renderText() {
+    return this.message
+      ? html`
+          ${until(this._chatState?.chatRenderer?.renderText(this.message))}
+        `
+      : nothing;
+  }
+
+  private renderActions() {
+    const _sharedTooltipRef = createRef<IgcTooltipComponent>();
+    const tooltip = _sharedTooltipRef.value as IgcTooltipComponent;
+    const isLastMessage = this.message === this._chatState?.messages.at(-1);
+    return this.message?.sender !== this._chatState?.currentUserId &&
+      this.message?.text.trim() &&
+      (!isLastMessage || !this._chatState?._isTyping)
+      ? html`<div>
+          <igc-icon-button
+            id="copy-response-button"
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(
+                ev,
+                tooltip,
+                this._chatState?.resourceStrings.reactionCopyResponse!
+              )}
+            name="copy-response"
+            collection="material"
+            variant="flat"
+            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+          ></igc-icon-button>
+          <igc-icon-button
+            id="good-response-button"
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(
+                ev,
+                tooltip,
+                this._chatState?.resourceStrings.reactionGoodResponse!
+              )}
+            name="good-response"
+            collection="material"
+            variant="flat"
+            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+          ></igc-icon-button>
+          <igc-icon-button
+            id="bad-response-button"
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(
+                ev,
+                tooltip,
+                this._chatState?.resourceStrings.reactionBadResponse!
+              )}
+            name="bad-response"
+            variant="flat"
+            collection="material"
+            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+          ></igc-icon-button>
+          <igc-icon-button
+            id="redo-button"
+            @pointerenter=${(ev: PointerEvent) =>
+              this.showTooltip(
+                ev,
+                tooltip,
+                this._chatState?.resourceStrings.reactionRedo!
+              )}
+            name="redo"
+            variant="flat"
+            collection="material"
+            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+          ></igc-icon-button>
+          <igc-tooltip
+            id="sharedTooltip"
+            ${ref(_sharedTooltipRef)}
+          ></igc-tooltip>
+        </div>`
+      : nothing;
   }
 
   /**
-   * Lit lifecycle method called after any update to the component.
-   * Triggers re-rendering when `message` or `renderer` has changed.
-   *
-   * @param changedProps - A map of changed properties and their previous values.
+   * Default message template used when no custom template is provided.
+   * Renders the message text, sanitized for security.
+   * @param message The chat message to render
+   * @returns TemplateResult containing the rendered message
    */
-  protected override async updated(
-    changedProps: Map<string, any>
-  ): Promise<void> {
-    if (changedProps.has('message') || changedProps.has('renderer')) {
-      if (this.message && this.renderer) {
-        this.renderedContent = await this.renderer?.render(this.message);
-      }
-    }
+  private renderMessage() {
+    if (!this.message) return html``;
+
+    return html`
+      ${this.renderHeader()} ${this.renderText()}
+      ${this.message.attachments?.length
+        ? html`<igc-message-attachments .message=${this.message}>
+          </igc-message-attachments>`
+        : nothing}
+      ${this.renderActions()}
+    `;
   }
+
   /**
    * Renders the chat message template.
    * - Applies 'sent' CSS class if the message sender matches current user.
@@ -134,7 +198,21 @@ export default class IgcChatMessageComponent extends LitElement {
       sent: this._chatState?.currentUserId === this.message?.sender,
     };
 
-    return html` <div part=${partMap(parts)}>${this.renderedContent}</div> `;
+    const templates = {
+      messageTemplate: () => this.renderMessage(),
+      messageAuthorTemplate: () => this.renderHeader(),
+      messageActionsTemplate: () => this.renderActions(),
+    };
+
+    return this.message && this._chatState?.chatRenderer
+      ? html`
+          <div part=${partMap(parts)}>
+            ${until(
+              this._chatState.chatRenderer.render(this.message, { templates })
+            )}
+          </div>
+        `
+      : nothing;
   }
 }
 
@@ -142,4 +220,22 @@ declare global {
   interface HTMLElementTagNameMap {
     'igc-chat-message': IgcChatMessageComponent;
   }
+}
+
+// REVIEW: Maybe put that behind a configuration flag as this is nasty.
+function adoptPageStyles(message: IgcChatMessageComponent): void {
+  const sheets: CSSStyleSheet[] = [];
+
+  for (const sheet of document.styleSheets) {
+    try {
+      const constructed = new CSSStyleSheet();
+      for (const rule of sheet.cssRules) {
+        constructed.insertRule(rule.cssText);
+      }
+      sheets.push(constructed);
+    } catch {}
+  }
+
+  const ctor = message.constructor as typeof LitElement;
+  adoptStyles(message.shadowRoot!, [...ctor.elementStyles, ...sheets]);
 }
