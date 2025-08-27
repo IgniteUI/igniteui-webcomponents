@@ -99,7 +99,7 @@ $transition-duration: .25s;
         font-size: rem(12px);
         line-height: rem(16px);
         background: initial;
-        padding-block: pad-block(rem(6px));
+        padding-block: rem(6px);
         padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
         border: none;
         grid-area: 1 / 2;

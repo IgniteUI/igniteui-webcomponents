@@ -208,8 +208,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='labelled'] [part~='input'] {
-        padding-top: pad-block(rem(20px));
-        padding-bottom: pad-block(rem(6px));
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
     }
 
     input:placeholder-shown + [part='notch'] [part='label'],
