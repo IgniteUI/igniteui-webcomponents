@@ -102,7 +102,7 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = (msg: any) => {
+const _messageHeaderTemplate = (msg: any) => {
   return msg.sender !== 'user'
     ? html`
         <div>
@@ -539,7 +539,7 @@ export const Chat_Templates: Story = {
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         templates: {
-          messageAuthorTemplate: _messageAuthorTemplate,
+          messageHeaderTemplate: _messageHeaderTemplate,
           messageActionsTemplate: _messageActionsTemplate,
           textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
           textAreaActionsTemplate: actionsTemplate,
