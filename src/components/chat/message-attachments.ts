@@ -1,9 +1,10 @@
 import { consume } from '@lit/context';
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partMap } from '../common/part-map.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
@@ -14,6 +15,7 @@ import {
   closeIcon,
   fileIcon,
   type IgcMessage,
+  type IgcMessageAttachment,
   imageIcon,
   moreIcon,
   previewIcon,
@@ -71,13 +73,101 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
+  private renderHeaderText(attachment: IgcMessageAttachment) {
+    return html`
+      ${html`${this.message?.sender !== this._chatState?.currentUserId
+          ? html`${attachment.type === 'image' ||
+            attachment.file?.type.startsWith('image/')
+              ? html`<igc-icon
+                  name="image"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`
+              : html`<igc-icon
+                  name="file"
+                  collection="material"
+                  part="attachment-icon"
+                ></igc-icon>`}`
+          : nothing} <span part="file-name">${attachment.name}</span>`}
+    `;
+  }
+
+  private handleHeaderClick(attachment: IgcMessageAttachment) {
+    this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
+  }
+  /**
+   * Default attachment header template used when no custom template is provided.
+   * Renders the attachment icon and name.
+   * @param attachment The message attachment to render
+   * @returns TemplateResult containing the rendered attachment header
+   */
+  private renderHeader(attachment: IgcMessageAttachment) {
+    return this.renderHeaderText(attachment);
+  }
+
+  /**
+   * Default attachment content template used when no custom template is provided.
+   * Renders the attachment content based on its type.
+   * @param attachment The message attachment to render
+   * @returns TemplateResult containing the rendered attachment content
+   */
+  private renderContent(attachment: IgcMessageAttachment) {
+    const ext = this._chatState?.getFileExtension(attachment.name);
+    const isImage = this._chatState?.isImageAttachment(attachment);
+    const url = isImage
+      ? this._chatState?.getURL(attachment)
+      : (this._chatState?._fileIconMap[ext!] ??
+        this._chatState?._fileIconMap['default']);
+    const partName = isImage ? 'image-attachment' : 'file-attachment';
+    return html`<img part="${partName}" src=${url!} alt=${attachment.name} />`;
+  }
+
+  private renderAttachment(attachment: IgcMessageAttachment) {
+    const isCurrentUser =
+      this.message?.sender === this._chatState?.currentUserId;
+    const attachmentParts = {
+      attachment: true,
+      sent: isCurrentUser,
+    };
+    const contentParts = {
+      'attachment-content': true,
+      sent: isCurrentUser,
+    };
+    const headerParts = {
+      'attachment-header': true,
+      sent: isCurrentUser,
+    };
+
+    const content = html`<div part=${partMap(contentParts)}>
+      ${this.renderContent(attachment)}
+    </div>`;
+    const header = html` <div
+      part=${partMap(headerParts)}
+      role="button"
+      @click=${() => this.handleHeaderClick(attachment)}
+    >
+      <div part="details">${this.renderHeader(attachment)}</div>
+    </div>`;
+
+    return html`<div part=${partMap(attachmentParts)}>
+      ${isCurrentUser ? content : nothing} ${header}
+      ${!isCurrentUser ? content : nothing}
+    </div> `;
+  }
+
+  private renderAttachments() {
+    return html`
+      ${(this.message?.attachments ?? []).map((att: IgcMessageAttachment) =>
+        this.renderAttachment(att)
+      ) || nothing}
+    `;
+  }
+
   protected override render() {
-    const templates = this._chatState?.mergedTemplates;
+    // const templates = this._chatState?.mergedTemplates;
 
     return html`
-      <div part="attachments-container">
-        ${templates?.attachmentsTemplate(this.message!, { templates })}
-      </div>
+      <div part="attachments-container">${this.renderAttachments()}</div>
     `;
   }
 }

@@ -1,12 +1,9 @@
-import { html, nothing, type TemplateResult } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
+import { nothing } from 'lit';
+import { createRef, type Ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
-import { partMap } from '../common/part-map.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
-import type IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import { DefaultChatRenderer } from './chat-renderer.js';
@@ -54,7 +51,7 @@ export class ChatState {
   /** Default time in milliseconds before dispatching stop typing event */
   private _stopTypingDelay = 3000;
 
-  private _isTyping = false;
+  public _isTyping = false;
   private _lastTyped = Date.now();
 
   private _fileIcon = new URL('./assets/file.png', import.meta.url).href;
@@ -62,356 +59,48 @@ export class ChatState {
   private _linkIcon = new URL('./assets/link.png', import.meta.url).href;
 
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
-  private readonly _attachmentsButtonInputRef = createRef<HTMLInputElement>();
-  private readonly _sharedTooltipRef = createRef<IgcTooltipComponent>();
 
   private _chatRenderer?: DefaultChatRenderer;
-  private resourceStrings = IgcChatResourceStringEN;
+  public resourceStrings = IgcChatResourceStringEN;
 
   /** Default templates of the chat components */
   private _defaultTemplates: Required<IgcChatTemplates> = {
-    attachmentTemplate: (att: IgcMessageAttachment, m: IgcMessage) =>
-      this.renderDefaultAttachmentTemplate(att, m),
+    attachmentTemplate: (_att: IgcMessageAttachment, _m: IgcMessage) => nothing,
+    // this.renderDefaultAttachmentTemplate(att, m),
     attachmentsTemplate: (
-      m: IgcMessage,
+      _m: IgcMessage,
       _ctx: { templates: Partial<IgcChatTemplates> }
-    ) => this.renderDefaultAttachmentsTemplate(m),
-    attachmentHeaderTemplate: (att: IgcMessageAttachment, msg: IgcMessage) =>
-      this.renderDefaultAttachmentHeader(att, msg),
-    attachmentContentTemplate: (att: IgcMessageAttachment) =>
-      this.renderDefaultAttachmentContent(att),
+    ) => nothing, //this.renderDefaultAttachmentsTemplate(m),
+    attachmentHeaderTemplate: (_att: IgcMessageAttachment, _msg: IgcMessage) =>
+      nothing, // this.renderDefaultAttachmentHeader(att, msg),
+    attachmentContentTemplate: (_att: IgcMessageAttachment) => nothing, // this.renderDefaultAttachmentContent(att),
     messageAuthorTemplate: () => {},
     messageTemplate: (
-      m: IgcMessage,
-      ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
-    ) => this.renderDefaultMessageTemplate(m, ctx),
-    messageActionsTemplate: (message: IgcMessage) =>
-      this.renderDefaultMessageActionsTemplate(message),
+      _m: IgcMessage,
+      _ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
+    ) => nothing, //this.renderDefaultMessageTemplate(m, ctx),
+    messageActionsTemplate: (_message: IgcMessage) => nothing,
+    // this.renderDefaultMessageActionsTemplate(message),
     suggestionPrefixTemplate: () => {},
-    typingIndicatorTemplate: () => this.renderDefaultTypingIndicator(),
-    textInputTemplate: () => this.renderDefaultTextArea(),
-    textAreaActionsTemplate: () => this.renderDefaultActionsArea(),
-    textAreaAttachmentsTemplate: (attachments: IgcMessageAttachment[]) =>
-      this.renderDefaultAttachmentsArea(attachments),
+    typingIndicatorTemplate: () => nothing, //this.renderDefaultTypingIndicator(),
+    textInputTemplate: () => nothing, //this.renderDefaultTextArea(),
+    textAreaActionsTemplate: () => nothing, //this.renderDefaultActionsArea(),
+    textAreaAttachmentsTemplate: (_attachments: IgcMessageAttachment[]) =>
+      nothing, //this.renderDefaultAttachmentsArea(attachments),
   };
 
   /** The tooltip component used for showing action tooltips. */
-  private get _sharedTooltip(): IgcTooltipComponent | undefined {
-    return this._sharedTooltipRef?.value;
-  }
+  // private get _sharedTooltip(): IgcTooltipComponent | undefined {
+  //   return this._sharedTooltipRef?.value;
+  // }
 
-  private getIconName(fileType: string | undefined): string {
+  public getIconName(fileType: string | undefined): string {
     if (fileType?.startsWith('image')) {
       return 'file-image';
     }
     return 'file-document';
   }
   //#endregion
-
-  // #region Default renderers
-
-  /**
-   * Default attachments area template used when no custom template is provided.
-   * Renders the list of input attachments as chips.
-   * @returns TemplateResult containing the attachments area
-   */
-  private renderDefaultAttachmentsArea = (
-    attachments: IgcMessageAttachment[]
-  ): TemplateResult => {
-    return html`${attachments?.map(
-      (attachment, index) => html`
-        <div part="attachment-wrapper" role="listitem">
-          <igc-chip removable @igcRemove=${() => this.removeAttachment(index)}>
-            <igc-icon
-              slot="prefix"
-              name=${this.getIconName(attachment.file?.type ?? attachment.type)}
-              collection="material"
-            ></igc-icon>
-            <span part="attachment-name">${attachment.name}</span>
-          </igc-chip>
-        </div>
-      `
-    )} `;
-  };
-
-  /**
-   * Default text area template used when no custom template is provided.
-   * Renders a text area for user input.
-   * @returns TemplateResult containing the text area
-   */
-  private renderDefaultTextArea = (): TemplateResult => {
-    return html` <igc-textarea
-      part="text-input"
-      ${ref(this._textAreaRef)}
-      .placeholder=${this.options?.inputPlaceholder}
-      resize="auto"
-      rows="1"
-      .value=${this.inputValue}
-      @igcInput=${this.handleInput}
-      @focus=${this.handleFocus}
-      @blur=${this.handleBlur}
-    ></igc-textarea>`;
-  };
-
-  /**
-   * Default file upload button template used when no custom template is provided.
-   * Renders a file input for attaching files.
-   * @returns TemplateResult containing the file upload button
-   */
-  private renderDefaultFileUploadButton = (): TemplateResult => {
-    if (this.options?.disableInputAttachments) return html``;
-    return html`
-      <label for="input_attachments" part="upload-button">
-        <igc-icon-button
-          variant="flat"
-          name="attachment"
-          collection="material"
-          @click=${() => this._attachmentsButtonInputRef?.value?.click()}
-        ></igc-icon-button>
-        <input
-          type="file"
-          id="input_attachments"
-          name="input_attachments"
-          ${ref(this._attachmentsButtonInputRef)}
-          multiple
-          accept=${ifDefined(this.options?.acceptedFiles === '' ? undefined : this.options?.acceptedFiles)}
-          @change=${this.handleFileUpload}>
-        </input>
-      </label>
-    `;
-  };
-
-  /**
-   * Default send button template used when no custom template is provided.
-   * Renders a send button that submits the current input value and attachments.
-   * @returns TemplateResult containing the send button
-   */
-  private renderDefaultSendButton = (): TemplateResult => {
-    return html` <igc-icon-button
-      aria-label="Send message"
-      name="send-message"
-      collection="material"
-      variant="contained"
-      part="send-button"
-      ?disabled=${!this.inputValue.trim() && this.inputAttachments.length === 0}
-      @click=${this.sendMessage}
-    ></igc-icon-button>`;
-  };
-
-  private renderDefaultActionsArea = () => {
-    return html` ${this.renderDefaultFileUploadButton()}
-    ${this.renderDefaultSendButton()}`;
-  };
-  /**
-   * Default typing indicator template used when no custom template is provided.
-   * Renders a simple typing indicator with three dots.
-   * @returns TemplateResult containing the typing indicator
-   */
-  private renderDefaultTypingIndicator = (): TemplateResult => {
-    return html`<div part="typing-indicator">
-      <div part="typing-dot"></div>
-      <div part="typing-dot"></div>
-      <div part="typing-dot"></div>
-    </div>`;
-  };
-
-  /**
-   * Default message template used when no custom template is provided.
-   * Renders the message text, sanitized for security.
-   * @param message The chat message to render
-   * @returns TemplateResult containing the rendered message
-   */
-  private renderDefaultMessageTemplate = (
-    m: IgcMessage,
-    ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
-  ) => {
-    const templates = { ...this._defaultTemplates, ...ctx.templates };
-    return html`
-      ${templates.messageAuthorTemplate(m) ?? nothing}
-      ${ctx?.textContent ?? m.text}
-      ${m.attachments?.length
-        ? html`<igc-message-attachments .message=${m}>
-          </igc-message-attachments>`
-        : nothing}
-      ${templates.messageActionsTemplate(m) ?? nothing}
-    `;
-  };
-
-  private renderDefaultAttachmentHeaderText(
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
-  ) {
-    return html`
-      ${html`${message.sender !== this.currentUserId
-          ? html`${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html`<igc-icon
-                  name="image"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`
-              : html`<igc-icon
-                  name="file"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`}`
-          : nothing} <span part="file-name">${attachment.name}</span>`}
-    `;
-  }
-
-  private handleHeaderClick(attachment: IgcMessageAttachment) {
-    this.emitEvent('igcAttachmentClick', { detail: attachment });
-  }
-  /**
-   * Default attachment header template used when no custom template is provided.
-   * Renders the attachment icon and name.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment header
-   */
-  private renderDefaultAttachmentHeader = (
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
-  ) => {
-    return this.renderDefaultAttachmentHeaderText(attachment, message);
-  };
-
-  /**
-   * Default attachment content template used when no custom template is provided.
-   * Renders the attachment content based on its type.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment content
-   */
-  private renderDefaultAttachmentContent = (
-    attachment: IgcMessageAttachment
-  ) => {
-    const ext = this.getFileExtension(attachment.name);
-    const isImage = this.isImageAttachment(attachment);
-    const url = isImage
-      ? this.getURL(attachment)
-      : (this._fileIconMap[ext] ?? this._fileIconMap['default']);
-    const partName = isImage ? 'image-attachment' : 'file-attachment';
-    return html`<img part="${partName}" src=${url} alt=${attachment.name} />`;
-  };
-
-  private renderDefaultMessageActionsTemplate = (
-    message: IgcMessage
-  ): unknown => {
-    const isLastMessage = message === this.messages.at(-1);
-    return message?.sender !== this.currentUserId &&
-      message?.text.trim() &&
-      (!isLastMessage || !this._isTyping)
-      ? html`<div>
-          <igc-icon-button
-            id="copy-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(ev, this.resourceStrings.reactionCopyResponse)}
-            name="copy-response"
-            collection="material"
-            variant="flat"
-            @click=${(e: MouseEvent) =>
-              this.handleMessageActionClick(e, message)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="good-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(ev, this.resourceStrings.reactionGoodResponse)}
-            name="good-response"
-            collection="material"
-            variant="flat"
-            @click=${(e: MouseEvent) =>
-              this.handleMessageActionClick(e, message)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="bad-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(ev, this.resourceStrings.reactionBadResponse)}
-            name="bad-response"
-            variant="flat"
-            collection="material"
-            @click=${(e: MouseEvent) =>
-              this.handleMessageActionClick(e, message)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="redo-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(ev, this.resourceStrings.reactionRedo)}
-            name="redo"
-            variant="flat"
-            collection="material"
-            @click=${(e: MouseEvent) =>
-              this.handleMessageActionClick(e, message)}
-          ></igc-icon-button>
-          <igc-tooltip
-            id="sharedTooltip"
-            ${ref(this._sharedTooltipRef)}
-          ></igc-tooltip>
-        </div>`
-      : nothing;
-  };
-
-  private handleMessageActionClick = (
-    event: MouseEvent,
-    message: IgcMessage
-  ): void => {
-    const reaction = (event.target as HTMLElement).getAttribute('name');
-    this.emitEvent('igcMessageReact', {
-      detail: { message, reaction },
-    });
-  };
-
-  private renderDefaultAttachmentTemplate = (
-    att: IgcMessageAttachment,
-    msg: IgcMessage
-  ) => {
-    const isCurrentUser = msg.sender === this.currentUserId;
-    const attachmentParts = {
-      attachment: true,
-      sent: isCurrentUser,
-    };
-    const contentParts = {
-      'attachment-content': true,
-      sent: isCurrentUser,
-    };
-    const headerParts = {
-      'attachment-header': true,
-      sent: isCurrentUser,
-    };
-
-    const content = html`<div part=${partMap(contentParts)}>
-      ${this.mergedTemplates.attachmentContentTemplate(att)}
-    </div>`;
-    const header = html` <div
-      part=${partMap(headerParts)}
-      role="button"
-      @click=${() => this.handleHeaderClick(att)}
-    >
-      <div part="details">
-        ${this.mergedTemplates.attachmentHeaderTemplate(att, msg)}
-      </div>
-    </div>`;
-
-    return html`<div part=${partMap(attachmentParts)}>
-      ${isCurrentUser ? content : nothing} ${header}
-      ${!isCurrentUser ? content : nothing}
-    </div> `;
-  };
-
-  private renderDefaultAttachmentsTemplate = (m: IgcMessage) => {
-    return html`
-      ${(m.attachments ?? []).map((att: IgcMessageAttachment) =>
-        this.mergedTemplates.attachmentTemplate(att, m)
-      ) || nothing}
-    `;
-  };
-
-  private showTooltip(ev: PointerEvent, text: string) {
-    if (!this._sharedTooltip) return;
-    this._sharedTooltip.message = text;
-    this._sharedTooltip.hideDelay = 300;
-    this._sharedTooltip.show(ev.composedPath()[0] as any);
-  }
-
-  // #endregion
 
   //#region Public properties
   /**
@@ -538,10 +227,6 @@ export class ChatState {
     this._defaultTemplates = { ...templates };
   }
 
-  public get mergedTemplates(): Required<IgcChatTemplates> {
-    return { ...this._defaultTemplates, ...this.options?.templates };
-  }
-
   public get chatRenderer(): DefaultChatRenderer | undefined {
     if (
       !this._chatRenderer ||
@@ -549,24 +234,13 @@ export class ChatState {
     ) {
       this._chatRenderer = new DefaultChatRenderer(
         this.options?.messageRenderer ?? new PlainTextRenderer(),
-        this.mergedTemplates
+        this.defaultTemplates
       );
       this.options?.messageRenderer?.init?.();
     }
     return this._chatRenderer;
   }
 
-  /**
-   * Handles input text changes.
-   * Updates internal inputValue and emits 'igcInputChange' event.
-   * @param e Input event from the text area
-   */
-  private handleInput = ({ detail }: CustomEvent<string>) => {
-    if (detail === this.inputValue) return;
-
-    this.inputValue = detail;
-    this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
-  };
   //#endregion
 
   /**
@@ -592,18 +266,6 @@ export class ChatState {
   public emitEvent = (name: keyof IgcChatComponentEventMap, args?: any) => {
     return this._host.emitEvent(name, args);
   };
-
-  // /**
-  //  * Handles input text changes.
-  //  * Updates internal inputValue and emits 'igcInputChange' event.
-  //  * @param e Input event from the text area
-  //  */
-  // private handleInputChange = (value: string): void => {
-  //   if (value === this.inputValue) return;
-
-  //   this.inputValue = value;
-  //   this.emitEvent('igcInputChange', { detail: { value: this.inputValue } });
-  // };
 
   //#endregion
 
@@ -676,7 +338,7 @@ export class ChatState {
     }
   }
 
-  private getURL = (attachment: IgcMessageAttachment): string => {
+  public getURL = (attachment: IgcMessageAttachment): string => {
     if (attachment.url) {
       return attachment.url;
     }
@@ -686,14 +348,14 @@ export class ChatState {
     return '';
   };
 
-  private isImageAttachment(attachment: IgcMessageAttachment): boolean {
+  public isImageAttachment(attachment: IgcMessageAttachment): boolean {
     return (
       attachment.type === 'image' ||
       !!attachment.file?.type.startsWith('image/')
     );
   }
 
-  private _fileIconMap: Record<string, string> = {
+  public _fileIconMap: Record<string, string> = {
     pdf: this._fileIcon,
     doc: this._fileIcon,
     docx: this._fileIcon,
@@ -705,7 +367,7 @@ export class ChatState {
     default: this._fileIcon, // A fallback icon
   };
 
-  private getFileExtension(fileName: string): string {
+  public getFileExtension(fileName: string): string {
     const parts = fileName.split('.');
     if (parts.length > 1) {
       return parts.pop()!.toLowerCase();
@@ -742,15 +404,7 @@ export class ChatState {
     }
   };
 
-  private handleFocus = () => {
-    this.emitEvent('igcInputFocus');
-  };
-
-  private handleBlur = () => {
-    this.emitEvent('igcInputBlur');
-  };
-
-  private sendMessage = () => {
+  public sendMessage = () => {
     if (!this.inputValue.trim() && this.inputAttachments.length === 0) return;
 
     this.addMessage({
@@ -768,21 +422,12 @@ export class ChatState {
     });
   };
 
-  private handleFileUpload = (e: Event) => {
-    const input = e.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-
-    const files = Array.from(input.files);
-    this.attachFiles(files);
-    this._host.requestUpdate();
-  };
-
   /**
    * Removes an attachment by index.
    * Emits 'igcAttachmentChange' event which can be canceled to prevent removal.
    * @param index Index of the attachment to remove
    */
-  private removeAttachment = (index: number): void => {
+  public removeAttachment = (index: number): void => {
     const allowed = this.emitEvent('igcAttachmentChange', {
       detail: this.inputAttachments.filter((_, i) => i !== index),
       cancelable: true,

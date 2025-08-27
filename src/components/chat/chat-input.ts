@@ -1,6 +1,8 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -19,6 +21,7 @@ import {
   attachmentIcon,
   fileDocumentIcon,
   fileImageIcon,
+  type IgcMessageAttachment,
   sendButtonIcon,
   starIcon,
 } from './types.js';
@@ -76,6 +79,8 @@ export default class IgcChatInputComponent extends LitElement {
 
   @query('#input_attachments')
   protected _inputAttachmentsButton!: IgcIconButtonComponent;
+  // private readonly _textAreaRef = createRef<IgcTextareaComponent>();
+  private readonly _attachmentsButtonInputRef = createRef<HTMLInputElement>();
 
   // private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
@@ -187,24 +192,131 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
+  /**
+   * Handles input text changes.
+   * Updates internal inputValue and emits 'igcInputChange' event.
+   * @param e Input event from the text area
+   */
+  private handleInput = ({ detail }: CustomEvent<string>) => {
+    if (detail === this._chatState?.inputValue) return;
+
+    this._chatState.inputValue = detail;
+    this._chatState?.emitEvent('igcInputChange', { detail: { value: detail } });
+  };
+
+  private handleFileUpload = (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    this._chatState?.attachFiles(files);
+  };
+  /**
+   * Default attachments area template used when no custom template is provided.
+   * Renders the list of input attachments as chips.
+   * @returns TemplateResult containing the attachments area
+   */
+  private renderAttachmentsArea(attachments: IgcMessageAttachment[]) {
+    return html`${attachments?.map(
+      (attachment, index) => html`
+        <div part="attachment-wrapper" role="listitem">
+          <igc-chip
+            removable
+            @igcRemove=${() => this._chatState?.removeAttachment(index)}
+          >
+            <igc-icon
+              slot="prefix"
+              name=${this._chatState?.getIconName(
+                attachment.file?.type ?? attachment.type
+              )}
+              collection="material"
+            ></igc-icon>
+            <span part="attachment-name">${attachment.name}</span>
+          </igc-chip>
+        </div>
+      `
+    )} `;
+  }
+
+  /**
+   * Default text area template used when no custom template is provided.
+   * Renders a text area for user input.
+   * @returns TemplateResult containing the text area
+   */
+  private renderTextArea() {
+    return html` <igc-textarea
+      part="text-input"
+      .placeholder=${this._chatState?.options?.inputPlaceholder}
+      resize="auto"
+      rows="1"
+      .value=${this._chatState?.inputValue}
+      @igcInput=${this.handleInput}
+      @focus=${() => this._chatState?.emitEvent('igcInputFocus')}
+      @blur=${() => this._chatState?.emitEvent('igcInputBlur')}
+    ></igc-textarea>`;
+  }
+
+  /**
+   * Default file upload button template used when no custom template is provided.
+   * Renders a file input for attaching files.
+   * @returns TemplateResult containing the file upload button
+   */
+  private renderFileUploadButton() {
+    if (this._chatState?.options?.disableInputAttachments) return html``;
+    return html`
+        <label for="input_attachments" part="upload-button">
+          <igc-icon-button
+            variant="flat"
+            name="attachment"
+            collection="material"
+            @click=${() => this._attachmentsButtonInputRef?.value?.click()}
+          ></igc-icon-button>
+          <input
+            type="file"
+            id="input_attachments"
+            name="input_attachments"
+            ${ref(this._attachmentsButtonInputRef)}
+            multiple
+            accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
+            @change=${this.handleFileUpload}>
+          </input>
+        </label>
+      `;
+  }
+
+  /**
+   * Default send button template used when no custom template is provided.
+   * Renders a send button that submits the current input value and attachments.
+   * @returns TemplateResult containing the send button
+   */
+  private renderSendButton() {
+    return html` <igc-icon-button
+      aria-label="Send message"
+      name="send-message"
+      collection="material"
+      variant="contained"
+      part="send-button"
+      ?disabled=${!this._chatState?.inputValue.trim() &&
+      this._chatState?.inputAttachments.length === 0}
+      @click=${this._chatState?.sendMessage}
+    ></igc-icon-button>`;
+  }
+
+  private renderActionsArea() {
+    return html` ${this.renderFileUploadButton()} ${this.renderSendButton()}`;
+  }
+
   protected override render() {
-    const templates = this._chatState.mergedTemplates;
     return html`
       <div part="${this.containerPart}">
         ${this._chatState.inputAttachments &&
         this._chatState.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
-              ${templates?.textAreaAttachmentsTemplate(
-                this._chatState.inputAttachments
-              )}
+              ${this.renderAttachmentsArea(this._chatState.inputAttachments)}
             </div>`
           : nothing}
-        <div part="input-wrapper">
-          ${templates?.textInputTemplate(this._chatState.inputValue ?? '')}
-        </div>
-        <div part="buttons-container">
-          ${templates?.textAreaActionsTemplate()}
-        </div>
+        <div part="input-wrapper">${this.renderTextArea()}</div>
+        <div part="buttons-container">${this.renderActionsArea()}</div>
       </div>
     `;
   }
