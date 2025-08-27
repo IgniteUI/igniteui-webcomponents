@@ -200,7 +200,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
     const templates = {
       messageTemplate: () => this.renderMessage(),
-      messageAuthorTemplate: () => this.renderHeader(),
+      messageHeaderTemplate: () => this.renderHeader(),
       messageActionsTemplate: () => this.renderActions(),
     };
 
