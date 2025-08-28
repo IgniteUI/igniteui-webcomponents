@@ -95,8 +95,8 @@ $active-border-width: rem(2px) !default;
     }
 
     [part~='labelled'] [part~='file-names'] {
-        padding-top: pad-block(rem(20px));
-        padding-bottom: pad-block(rem(6px));
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
     }
 
     [part='label'] {
