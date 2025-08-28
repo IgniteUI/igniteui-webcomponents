@@ -85,12 +85,12 @@ igc-button::part(focused):hover {
 
     [part~='indicators'],
     [part='label indicators'] {
-        margin-inline-end: pad-inline(rem(16px));
+        margin-inline-end: rem(16px);
     }
 
     [part='indicators start'],
     [part='label indicators start'] {
-        margin-inline-start: pad-inline(rem(16px));
+        margin-inline-start: rem(16px);
     }
 
     [part~='dot'] {

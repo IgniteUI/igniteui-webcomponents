@@ -24,7 +24,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: pad-block(rem(16px)) 0;
+    margin: rem(16px) 0;
     list-style: none;
     z-index: 10;
     gap: rem(8px);
@@ -35,7 +35,7 @@
 [part='label indicators start'] {
     @include type-style('caption');
 
-    margin: pad-block(rem(16px)) 0;
+    margin: rem(16px) 0;
     min-width: rem(46px);
 }
 
@@ -92,12 +92,12 @@ igc-button::part(base) {
 
     [part='navigation previous'] {
         inset-inline-start: 0;
-        margin-inline-start: pad-inline(rem(16px));
+        margin-inline-start: rem(16px);
     }
 
     [part='navigation next'] {
         inset-inline-end: 0;
-        margin-inline-end: pad-inline(rem(16px));
+        margin-inline-end: rem(16px);
     }
 
     [part='navigation next'],
@@ -121,7 +121,7 @@ igc-button::part(base) {
 :host([vertical]) {
     [part~='navigation'] {
         inset-inline-end: 0;
-        margin-inline-end: pad-inline(rem(16px));
+        margin-inline-end: rem(16px);
 
         igc-icon {
             transform: rotate(90deg);
@@ -144,7 +144,7 @@ igc-button::part(base) {
         inset-block-start: 50%;
         transform: translateY(-50%);
         margin-block: 0;
-        margin-inline-end: pad-inline(rem(29px));
+        margin-inline-end: rem(29px);
         padding: pad-block(rem(6px)) pad-inline(rem(4px));
     }
 
