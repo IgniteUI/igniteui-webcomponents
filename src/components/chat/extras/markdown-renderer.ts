@@ -1,7 +1,9 @@
 import DOMPurify from 'dompurify';
 import { html, type TemplateResult } from 'lit';
 import { Marked, Renderer } from 'marked';
-import type { ChatMessageRenderer, IgcMessage } from './types.js';
+import markedShiki from 'marked-shiki';
+import { getSingletonHighlighter } from 'shiki';
+import type { ChatMessageRenderer, IgcMessage } from '../types.js';
 
 /**
  * Options to configure the MarkdownMessageRenderer.
@@ -101,15 +103,13 @@ export class MarkdownMessageRenderer implements ChatMessageRenderer {
       return;
     }
 
-    const shiki = await import('shiki');
-    this.highlighter = await shiki.getSingletonHighlighter({
+    this.highlighter = await getSingletonHighlighter({
       themes: [this.theme],
       langs: this.langs,
     });
 
-    const markedShiki = await import('marked-shiki');
     this._marked.use(
-      markedShiki.default({
+      markedShiki({
         highlight: (code: any, lang: string) => {
           try {
             const safeLang =

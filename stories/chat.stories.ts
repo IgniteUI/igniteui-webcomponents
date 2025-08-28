@@ -3,10 +3,10 @@ import { html } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
-  MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
+import { MarkdownMessageRenderer } from 'igniteui-webcomponents/extras';
 import type {
   IgcChatTemplates,
   IgcMessage,

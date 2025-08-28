@@ -167,4 +167,3 @@ export type {
   MessageTemplate,
 } from './components/chat/types.js';
 export { PlainTextRenderer } from './components/chat/plain-text-renderer.js';
-export { MarkdownMessageRenderer } from './components/chat/markdown-renderer.js';
