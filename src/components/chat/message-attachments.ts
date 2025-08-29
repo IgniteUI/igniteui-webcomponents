@@ -20,6 +20,7 @@ import {
   moreIcon,
   previewIcon,
 } from './types.js';
+import { createAttachmentURL, getFileExtension } from './utils.js';
 
 /**
  * A component that renders message attachments within a chat.
@@ -49,7 +50,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   private _chatState?: ChatState;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcMessageAttachmentsComponent,
       IgcIconComponent,
@@ -62,7 +63,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * The array of attachments to render.
    */
   @property({ attribute: false })
-  message: IgcMessage | undefined;
+  public message?: IgcMessage;
 
   constructor() {
     super();
@@ -92,7 +93,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     `;
   }
 
-  private handleHeaderClick(attachment: IgcMessageAttachment) {
+  private _handleHeaderClick(attachment: IgcMessageAttachment): void {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
   }
   /**
@@ -112,10 +113,10 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @returns TemplateResult containing the rendered attachment content
    */
   private renderContent(attachment: IgcMessageAttachment) {
-    const ext = this._chatState?.getFileExtension(attachment.name);
+    const ext = getFileExtension(attachment.name);
     const isImage = this._chatState?.isImageAttachment(attachment);
     const url = isImage
-      ? this._chatState?.getURL(attachment)
+      ? createAttachmentURL(attachment)
       : (this._chatState?._fileIconMap[ext!] ??
         this._chatState?._fileIconMap['default']);
     const partName = isImage ? 'image-attachment' : 'file-attachment';
@@ -144,7 +145,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
-      @click=${() => this.handleHeaderClick(attachment)}
+      @click=${() => this._handleHeaderClick(attachment)}
     >
       <div part="details">${this.renderHeader(attachment)}</div>
     </div>`;
@@ -164,8 +165,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   protected override render() {
-    // const templates = this._chatState?.mergedTemplates;
-
     return html`
       <div part="attachments-container">${this.renderAttachments()}</div>
     `;
