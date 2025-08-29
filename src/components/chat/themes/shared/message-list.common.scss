@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../light/themes' as *;
-
-$theme: $material;
-
-[part='typing-dot']::after {
-    background: var-get($theme, 'progress-indicator-color');
-}
