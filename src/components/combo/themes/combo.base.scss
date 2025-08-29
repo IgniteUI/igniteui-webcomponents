@@ -73,7 +73,7 @@
 }
 
 [part='list'] {
-    min-height: rem(200px) !important;
+    min-height: calc(var(--size) * 6) !important;
     outline-style: none;
 }
 
