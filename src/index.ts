@@ -88,6 +88,29 @@ export {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from './components/common/i18n/calendar.resources.js';
+export {
+  type IResourceStrings,
+  type IActionStripResourceStrings,
+  type IBannerResourceStrings,
+  type ICalendarResourceStrings,
+  type ICarouselResourceStrings,
+  type IChipResourceStrings,
+  type IComboResourceStrings,
+  type IDatePickerResourceStrings,
+  type IDateRangePickerResourceStrings,
+  type IGridResourceStrings,
+  type IInputResourceStrings,
+  type IListResourceStrings,
+  type IPaginatorResourceStrings,
+  type IQueryBuilderResourceStrings,
+  type ITimePickerResourceStrings,
+  type ITreeResourceStrings,
+  registerI18n,
+  setCurrentI18n,
+  getCurrentI18n,
+  getCurrentResourceStrings,
+} from 'igniteui-i18n-core';
+export * from 'igniteui-i18n-core/i18n/EN';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';

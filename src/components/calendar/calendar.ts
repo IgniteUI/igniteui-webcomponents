@@ -1,3 +1,7 @@
+import {
+  getI18nManager,
+  type IResourceChangeEventArgs,
+} from 'igniteui-i18n-core';
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
@@ -18,6 +22,7 @@ import {
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
+import { i18n } from '../common/i18n/i18n.js';
 import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -112,6 +117,9 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-calendar';
   public static styles = styles;
+  private _resourceHandler: (
+    evt: CustomEvent<IResourceChangeEventArgs>
+  ) => void | undefined;
 
   /* blazorSuppress */
   public static register() {
@@ -224,7 +232,9 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public resourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings = i18n.getCurrentResourceStrings(
+    IgcCalendarResourceStringEN
+  );
 
   private _intl = createDateTimeFormatters(this.locale, {
     month: {
@@ -428,6 +438,28 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       .set(pageDownKey, this.onPageKeys.bind(this, 1))
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
+
+    this._resourceHandler = this.onResourceChange.bind(this);
+    getI18nManager().addEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+  }
+
+  public override disconnectedCallback(): void {
+    getI18nManager().removeEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+    super.disconnectedCallback();
+  }
+
+  protected onResourceChange(evt: CustomEvent<IResourceChangeEventArgs>) {
+    this.locale = evt.detail.newLocale;
+    this.resourceStrings = i18n.getCurrentResourceStrings(
+      IgcCalendarResourceStringEN,
+      false
+    );
   }
 
   protected renderNavigationButtons() {

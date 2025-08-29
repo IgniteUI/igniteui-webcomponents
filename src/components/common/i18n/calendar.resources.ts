@@ -1,3 +1,6 @@
+import { CalendarResourceStringsEN } from 'igniteui-i18n-core/i18n/EN';
+import { i18n } from './i18n.js';
+
 /* blazorSuppress */
 export interface IgcCalendarResourceStrings {
   selectMonth: string;
@@ -16,19 +19,5 @@ export interface IgcCalendarResourceStrings {
   weekLabel: string;
 }
 
-export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings = {
-  selectMonth: 'Select month',
-  selectYear: 'Select year',
-  selectDate: 'Select date',
-  selectRange: 'Select range',
-  selectedDate: 'Selected date',
-  startDate: 'Start',
-  endDate: 'End',
-  previousMonth: 'Previous month',
-  nextMonth: 'Next month',
-  previousYear: 'Previous year',
-  nextYear: 'Next year',
-  previousYears: 'Previous {0} years',
-  nextYears: 'Next {0} years',
-  weekLabel: 'Wk',
-};
+export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings =
+  i18n.convertToIgcResource(CalendarResourceStringsEN);
