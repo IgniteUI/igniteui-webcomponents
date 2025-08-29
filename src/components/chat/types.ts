@@ -66,33 +66,6 @@ export interface IgcMessageAttachment {
 }
 
 /**
- * A function type used to render a group of attachments in a chat message.
- *
- * This allows consumers to customize how message attachments are displayed
- * (e.g. rendering thumbnails, file icons, or download links).
- *
- * @param {IgcMessageAttachment[]} attachments - The list of attachments to render.
- * @returns {unknown} A custom rendered representation of the attachments.
- */
-export type AttachmentTemplate = (
-  attachments: IgcMessageAttachment[]
-) => unknown;
-
-/**
- * A function type used to render a single chat message.
- *
- * This allows consumers to fully customize the display of a message,
- * including its text, sender info, timestamp, and any attachments.
- *
- * @param {IgcMessage} message - The chat message to render.
- * @returns {unknown} A custom rendered representation of the message.
- */
-export type MessageTemplate = (
-  message: IgcMessage,
-  ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
-) => unknown;
-
-/**
  * Configuration options for customizing the behavior and appearance of the chat component.
  */
 export type IgcChatOptions = {
@@ -145,95 +118,26 @@ export type IgcChatOptions = {
    * Default is `3000`.
    */
   stopTypingDelay?: number;
-  /**
-   * A set of template override functions used to customize rendering of messages, attachments, etc.
-   */
-  templates?: Partial<IgcChatTemplates>;
 
-  messageRenderer?: ChatMessageRenderer;
+  renderers?: Partial<ChatRenderers>;
 };
 
-/**
- * A collection of template functions used to customize different parts of the chat component.
- * Each template allows you to override the rendering of a specific part of the component.
- */
-export type IgcChatTemplates = {
-  /**
-   * Template for rendering the attachments of a message.
-   */
-  attachmentsTemplate?: (
-    message: IgcMessage,
-    ctx: { templates: Partial<IgcChatTemplates> }
-  ) => unknown;
-
-  /**
-   * Template for rendering an attachment in a message.
-   * This allows customization of how each attachment is displayed.
-   */
-  attachmentTemplate?: (
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
-  ) => unknown;
-
-  /**
-   * Template for rendering a custom header above the attachment in a message.
-   */
-  attachmentHeaderTemplate?: (
-    attachment: IgcMessageAttachment,
-    message: IgcMessage
-  ) => unknown;
-
-  /**
-   * Template for rendering the main content of an attachment, such as a thumbnail or file preview.
-   */
-  attachmentContentTemplate?: (attachment: IgcMessageAttachment) => unknown;
-
-  /**
-   * Template for rendering an information about the author of a single chat message.
-   * Use this to customize message layout, formatting, or metadata.
-   */
-  messageAuthorTemplate?: (message: IgcMessage) => unknown;
-
-  /**
-   * Template for rendering a single chat message.
-   * Use this to customize message layout, formatting, or metadata.
-   */
-  messageTemplate?: MessageTemplate;
-
-  /**
-   * Template for rendering the actions available for a message (e.g. copy, like, dislike, regenerate).
-   * This allows customization of the buttons or controls shown for each message.
-   */
-  messageActionsTemplate?: (message: IgcMessage) => unknown;
-
-  /**
-   * Template used to show an indicator when the other user is typing (e.g. “User is typing...”).
-   */
-  typingIndicatorTemplate?: unknown;
-
-  /**
-   * Template for customizing the text input element (usually a `<textarea>` or `<input>`).
-   *
-   * @param text - The current value of the text input.
-   * @returns {unknown} A custom rendered representation of the text input.
-   */
-  textInputTemplate?: (text: string) => unknown;
-
-  /**
-   * Template for rendering additional controls in the message input area,
-   * such as send buttons, emoji pickers, or voice recorders.
-   */
-  textAreaActionsTemplate?: () => unknown;
-
-  /**
-   * Template for rendering attachments that are currently queued for sending (in the input area).
-   */
-  textAreaAttachmentsTemplate?: AttachmentTemplate;
-
-  /**
-   * Template for rendering the suggestion prefix.
-   */
-  suggestionPrefixTemplate?: unknown;
+export type ChatRenderers = {
+  attachment?: ChatTemplateRenderer<IgcMessageAttachment>;
+  attachmentHeader?: ChatTemplateRenderer<IgcMessageAttachment>;
+  attachmentContent?: ChatTemplateRenderer<IgcMessageAttachment>;
+  message?: ChatTemplateRenderer<IgcMessage>;
+  messageHeader?: ChatTemplateRenderer<IgcMessage>;
+  messageContent?: ChatTemplateRenderer<IgcMessage>;
+  messageAttachments?: ChatTemplateRenderer<IgcMessage>;
+  messageActions?: ChatTemplateRenderer<IgcMessage>;
+  attachments?: ChatTemplateRenderer<IgcMessageAttachment[]>;
+  typingIndicator?: ChatTemplateRenderer<void>;
+  input?: ChatTemplateRenderer<string>;
+  inputActions?: ChatTemplateRenderer<void>;
+  inputAttachments?: ChatTemplateRenderer<IgcMessageAttachment[]>;
+  fileUploadButton?: ChatTemplateRenderer<void>;
+  sendButton?: ChatTemplateRenderer<void>;
 };
 
 /**
@@ -245,29 +149,12 @@ export type IgcChatTemplates = {
  * @export
  */
 
-export interface ChatMessageRenderer {
-  /**
-   * Renders a given message.
-   * @param {IgcMessage} message The message to render.
-   * @returns {unknown} The rendered output, typically an HTMLElement, DocumentFragment, or a lit-html TemplateResult,
-   * depending on the renderer implementation.
-   */
-  render(
-    message: IgcMessage,
-    ctx?: {
-      renderText: (message: IgcMessage) => unknown;
-      templates: Partial<IgcChatTemplates>;
-    }
-  ): unknown;
-
-  /**
-   * Performs optional asynchronous initialization.
-   * This method is called before any rendering occurs and can be used to load resources
-   * like syntax highlighters or fonts.
-   * @async
-   * @returns {Promise<void>} A promise that resolves when initialization is complete.
-   */
-  init?(): Promise<void>;
+export interface ChatTemplateRenderer<T> {
+  render(ctx: {
+    param: T;
+    defaults: Partial<ChatRenderers>;
+    options?: IgcChatOptions;
+  }): unknown;
 }
 
 export const attachmentIcon =

@@ -306,14 +306,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private renderSuggestionPrefix() {
-    const defaultPrefix = html`<igc-icon
-      name="star-icon"
-      collection="material"
-    ></igc-icon>`;
     return html`<span slot="start">
-      ${this._chatState?.options?.templates?.suggestionPrefixTemplate
-        ? this._chatState.options.templates.suggestionPrefixTemplate
-        : defaultPrefix}
+      <igc-icon name="star-icon" collection="material"></igc-icon>
     </span>`;
   }
 

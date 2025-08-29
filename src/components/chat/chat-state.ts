@@ -1,4 +1,3 @@
-import { nothing } from 'lit';
 import { createRef, type Ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
@@ -6,12 +5,10 @@ import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
-import { DefaultChatRenderer } from './chat-renderer.js';
 import { PlainTextRenderer } from './plain-text-renderer.js';
 import {
   copyIcon,
   type IgcChatOptions,
-  type IgcChatTemplates,
   type IgcMessage,
   type IgcMessageAttachment,
   regenerateIcon,
@@ -33,6 +30,7 @@ export class ChatState {
   private _messages: IgcMessage[] = [];
   /** Chat options/configuration */
   private _options?: IgcChatOptions;
+
   /** List of current input attachments */
   private _inputAttachments: IgcMessageAttachment[] = [];
   /** Current input text */
@@ -60,39 +58,12 @@ export class ChatState {
 
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
-  private _chatRenderer?: DefaultChatRenderer;
+  private _textRenderer = new PlainTextRenderer();
   public resourceStrings = IgcChatResourceStringEN;
 
-  /** Default templates of the chat components */
-  private _defaultTemplates: Required<IgcChatTemplates> = {
-    attachmentTemplate: (_att: IgcMessageAttachment, _m: IgcMessage) => nothing,
-    // this.renderDefaultAttachmentTemplate(att, m),
-    attachmentsTemplate: (
-      _m: IgcMessage,
-      _ctx: { templates: Partial<IgcChatTemplates> }
-    ) => nothing, //this.renderDefaultAttachmentsTemplate(m),
-    attachmentHeaderTemplate: (_att: IgcMessageAttachment, _msg: IgcMessage) =>
-      nothing, // this.renderDefaultAttachmentHeader(att, msg),
-    attachmentContentTemplate: (_att: IgcMessageAttachment) => nothing, // this.renderDefaultAttachmentContent(att),
-    messageAuthorTemplate: () => {},
-    messageTemplate: (
-      _m: IgcMessage,
-      _ctx: { textContent: unknown; templates: Partial<IgcChatTemplates> }
-    ) => nothing, //this.renderDefaultMessageTemplate(m, ctx),
-    messageActionsTemplate: (_message: IgcMessage) => nothing,
-    // this.renderDefaultMessageActionsTemplate(message),
-    suggestionPrefixTemplate: () => {},
-    typingIndicatorTemplate: () => nothing, //this.renderDefaultTypingIndicator(),
-    textInputTemplate: () => nothing, //this.renderDefaultTextArea(),
-    textAreaActionsTemplate: () => nothing, //this.renderDefaultActionsArea(),
-    textAreaAttachmentsTemplate: (_attachments: IgcMessageAttachment[]) =>
-      nothing, //this.renderDefaultAttachmentsArea(attachments),
-  };
-
-  /** The tooltip component used for showing action tooltips. */
-  // private get _sharedTooltip(): IgcTooltipComponent | undefined {
-  //   return this._sharedTooltipRef?.value;
-  // }
+  public get textRenderer() {
+    return this._textRenderer;
+  }
 
   public getIconName(fileType: string | undefined): string {
     if (fileType?.startsWith('image')) {
@@ -215,30 +186,6 @@ export class ChatState {
     if (this._host.updateContextValue) {
       this._host.updateContextValue();
     }
-  }
-
-  /** Returns all default templates applied in the chat component. */
-  public get defaultTemplates(): Required<IgcChatTemplates> {
-    return this._defaultTemplates;
-  }
-
-  /** Sets the default templates applied in the chat component. */
-  public set defaultTemplates(templates: Required<IgcChatTemplates>) {
-    this._defaultTemplates = { ...templates };
-  }
-
-  public get chatRenderer(): DefaultChatRenderer | undefined {
-    if (
-      !this._chatRenderer ||
-      this._chatRenderer !== this.options?.messageRenderer
-    ) {
-      this._chatRenderer = new DefaultChatRenderer(
-        this.options?.messageRenderer ?? new PlainTextRenderer(),
-        this.defaultTemplates
-      );
-      this.options?.messageRenderer?.init?.();
-    }
-    return this._chatRenderer;
   }
 
   //#endregion

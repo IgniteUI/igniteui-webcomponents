@@ -97,14 +97,12 @@ export default class IgcChatMessageListComponent extends LitElement {
    * @protected
    */
   protected *renderLoadingTemplate() {
-    yield html`${this._chatState?.options?.templates?.typingIndicatorTemplate
-      ? this._chatState.options.templates.typingIndicatorTemplate
-      : html`<div part="typing-indicator">
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-          <div part="typing-dot"></div>
-        </div>`}`;
+    yield html`<div part="typing-indicator">
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+    </div>`;
   }
 
   /**
@@ -143,7 +141,15 @@ export default class IgcChatMessageListComponent extends LitElement {
            )}
           ${
             this._chatState?.options?.isTyping
-              ? this.renderLoadingTemplate()
+              ? (this._chatState?.options?.renderers?.typingIndicator?.render({
+                  param: undefined,
+                  defaults: {
+                    typingIndicator: {
+                      render: () => this.renderLoadingTemplate(),
+                    },
+                  },
+                  options: this._chatState?.options,
+                }) ?? this.renderLoadingTemplate())
               : nothing
           }
         </div>

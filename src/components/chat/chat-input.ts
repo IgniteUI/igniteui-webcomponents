@@ -19,6 +19,7 @@ import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
 import {
   attachmentIcon,
+  type ChatRenderers,
   fileDocumentIcon,
   fileImageIcon,
   type IgcMessageAttachment,
@@ -92,9 +93,20 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private containerPart = 'input-container';
 
+  private _defaults: Partial<ChatRenderers>;
+
   constructor() {
     super();
     addThemingController(this, all);
+    this._defaults = {
+      input: { render: () => this.renderTextArea() },
+      inputActions: { render: () => this.renderActionsArea() },
+      inputAttachments: {
+        render: (ctx) => this.renderAttachmentsArea(ctx.param),
+      },
+      fileUploadButton: { render: () => this.renderFileUploadButton() },
+      sendButton: { render: () => this.renderSendButton() },
+    };
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
@@ -303,7 +315,20 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private renderActionsArea() {
-    return html` ${this.renderFileUploadButton()} ${this.renderSendButton()}`;
+    return html` ${this._renderers.fileUploadButton?.render({
+      param: undefined,
+      defaults: this._defaults,
+      options: this._chatState.options,
+    })}
+    ${this._renderers.sendButton?.render({
+      param: undefined,
+      defaults: this._defaults,
+      options: this._chatState.options,
+    })}`;
+  }
+
+  private get _renderers(): Partial<ChatRenderers> {
+    return { ...this._defaults, ...this._chatState?.options?.renderers };
   }
 
   protected override render() {
@@ -312,11 +337,27 @@ export default class IgcChatInputComponent extends LitElement {
         ${this._chatState.inputAttachments &&
         this._chatState.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
-              ${this.renderAttachmentsArea(this._chatState.inputAttachments)}
+              ${this._renderers.inputAttachments?.render({
+                param: this._chatState.inputAttachments,
+                defaults: this._defaults,
+                options: this._chatState.options,
+              })}
             </div>`
           : nothing}
-        <div part="input-wrapper">${this.renderTextArea()}</div>
-        <div part="buttons-container">${this.renderActionsArea()}</div>
+        <div part="input-wrapper">
+          ${this._renderers.input?.render({
+            param: this._chatState.inputValue,
+            defaults: this._defaults,
+            options: this._chatState.options,
+          })}
+        </div>
+        <div part="buttons-container">
+          ${this._renderers.inputActions?.render({
+            param: undefined,
+            defaults: this._defaults,
+            options: this._chatState.options,
+          })}
+        </div>
       </div>
     `;
   }

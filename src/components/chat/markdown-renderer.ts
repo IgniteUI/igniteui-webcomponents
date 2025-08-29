@@ -1,7 +1,7 @@
 import DOMPurify from 'dompurify';
 import { html, type TemplateResult } from 'lit';
 import { Marked, Renderer } from 'marked';
-import type { ChatMessageRenderer, IgcMessage } from './types.js';
+import type { IgcMessage } from './types.js';
 
 /**
  * Options to configure the MarkdownMessageRenderer.
@@ -39,7 +39,7 @@ export interface MarkdownRendererOptions {
  *
  * @implements {ChatMessageRenderer}
  */
-export class MarkdownMessageRenderer implements ChatMessageRenderer {
+export class MarkdownMessageRenderer {
   private highlighter?: any;
   private theme: string;
   private langs: string[];

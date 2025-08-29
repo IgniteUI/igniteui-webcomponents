@@ -1,6 +1,7 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { until } from 'lit/directives/until.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -12,8 +13,10 @@ import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments.common.css.js';
 import {
+  type ChatRenderers,
   closeIcon,
   fileIcon,
+  type IgcChatOptions,
   type IgcMessage,
   type IgcMessageAttachment,
   imageIcon,
@@ -64,32 +67,29 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   @property({ attribute: false })
   message: IgcMessage | undefined;
 
+  private _defaults: Partial<ChatRenderers>;
+  private _renderers: Partial<ChatRenderers>;
+
   constructor() {
     super();
+    this._defaults = {
+      attachment: { render: (ctx: any) => this.renderAttachment(ctx) },
+      attachmentHeader: { render: (ctx: any) => this.renderHeader(ctx.param) },
+      attachmentContent: {
+        render: (ctx: any) => this.renderContent(ctx.param),
+      },
+    };
+
+    this._renderers = {
+      ...this._defaults,
+      ...this._chatState?.options?.renderers,
+    };
+
     registerIconFromText('close', closeIcon, 'material');
     registerIconFromText('file', fileIcon, 'material');
     registerIconFromText('image', imageIcon, 'material');
     registerIconFromText('preview', previewIcon, 'material');
     registerIconFromText('more', moreIcon, 'material');
-  }
-
-  private renderHeaderText(attachment: IgcMessageAttachment) {
-    return html`
-      ${html`${this.message?.sender !== this._chatState?.currentUserId
-          ? html`${attachment.type === 'image' ||
-            attachment.file?.type.startsWith('image/')
-              ? html`<igc-icon
-                  name="image"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`
-              : html`<igc-icon
-                  name="file"
-                  collection="material"
-                  part="attachment-icon"
-                ></igc-icon>`}`
-          : nothing} <span part="file-name">${attachment.name}</span>`}
-    `;
   }
 
   private handleHeaderClick(attachment: IgcMessageAttachment) {
@@ -102,7 +102,23 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @returns TemplateResult containing the rendered attachment header
    */
   private renderHeader(attachment: IgcMessageAttachment) {
-    return this.renderHeaderText(attachment);
+    const isCurrentUser =
+      this.message?.sender === this._chatState?.currentUserId;
+    const iconName =
+      attachment.type === 'image' || attachment.file?.type.startsWith('image/')
+        ? 'image'
+        : 'file';
+
+    return html`
+      ${!isCurrentUser
+        ? html`<igc-icon
+            name=${iconName}
+            collection="material"
+            part="attachment-icon"
+          ></igc-icon>`
+        : nothing}
+      <span part="file-name">${attachment.name}</span>
+    `;
   }
 
   /**
@@ -119,10 +135,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       : (this._chatState?._fileIconMap[ext!] ??
         this._chatState?._fileIconMap['default']);
     const partName = isImage ? 'image-attachment' : 'file-attachment';
+
     return html`<img part="${partName}" src=${url!} alt=${attachment.name} />`;
   }
 
-  private renderAttachment(attachment: IgcMessageAttachment) {
+  private renderAttachment(ctx: {
+    param: IgcMessageAttachment;
+    defaults: Partial<ChatRenderers>;
+    options?: IgcChatOptions;
+  }) {
+    const { param: attachment } = ctx;
     const isCurrentUser =
       this.message?.sender === this._chatState?.currentUserId;
     const attachmentParts = {
@@ -139,35 +161,42 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     };
 
     const content = html`<div part=${partMap(contentParts)}>
-      ${this.renderContent(attachment)}
+      ${this._renderers.attachmentContent?.render(ctx)}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
       @click=${() => this.handleHeaderClick(attachment)}
     >
-      <div part="details">${this.renderHeader(attachment)}</div>
+      <div part="details">${this._renderers.attachmentHeader?.render(ctx)}</div>
     </div>`;
 
-    return html`<div part=${partMap(attachmentParts)}>
-      ${isCurrentUser ? content : nothing} ${header}
-      ${!isCurrentUser ? content : nothing}
-    </div> `;
-  }
-
-  private renderAttachments() {
     return html`
-      ${(this.message?.attachments ?? []).map((att: IgcMessageAttachment) =>
-        this.renderAttachment(att)
-      ) || nothing}
+      <div part=${partMap(attachmentParts)}>
+        ${isCurrentUser ? content : nothing} ${header}
+        ${!isCurrentUser ? content : nothing}
+      </div>
     `;
   }
 
   protected override render() {
-    // const templates = this._chatState?.mergedTemplates;
+    if (!this.message) {
+      return nothing;
+    }
 
     return html`
-      <div part="attachments-container">${this.renderAttachments()}</div>
+      <div part="attachments-container">
+        ${(this.message.attachments ?? []).map(
+          (attachment) =>
+            html`${until(
+              this._renderers.attachment?.render({
+                param: attachment,
+                defaults: this._defaults,
+                options: this._chatState?.options!,
+              }) || nothing
+            )}`
+        )}
+      </div>
     `;
   }
 }

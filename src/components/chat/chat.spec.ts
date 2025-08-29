@@ -61,7 +61,7 @@ describe('Chat', () => {
     return html`<igc-chip><span>${attachment.name}</span></igc-chip>`;
   };
 
-  const attachmentHeaderTemplate = (attachment: any, _message: any) => {
+  const attachmentHeaderTemplate = (attachment: any) => {
     return html`<h5>Custom ${attachment.name}</h5>`;
   };
 
@@ -921,8 +921,8 @@ describe('Chat', () => {
 
     it('should render attachmentTemplate', async () => {
       chat.options = {
-        templates: {
-          attachmentTemplate: attachmentTemplate,
+        renderers: {
+          attachment: { render: (ctx) => attachmentTemplate(ctx.param) },
         },
       };
       await elementUpdated(chat);
@@ -956,10 +956,13 @@ describe('Chat', () => {
 
     it('should render attachmentHeaderTemplate, attachmentContentTemplate', async () => {
       chat.options = {
-        templates: {
-          attachmentHeaderTemplate: attachmentHeaderTemplate,
-          // attachmentActionsTemplate: attachmentActionsTemplate,
-          attachmentContentTemplate: attachmentContentTemplate,
+        renderers: {
+          attachmentHeader: {
+            render: (ctx) => attachmentHeaderTemplate(ctx.param),
+          },
+          attachmentContent: {
+            render: (ctx) => attachmentContentTemplate(ctx.param),
+          },
         },
       };
       await elementUpdated(chat);
@@ -1000,8 +1003,8 @@ describe('Chat', () => {
 
     it('should render messageTemplate', async () => {
       chat.options = {
-        templates: {
-          messageTemplate: messageTemplate,
+        renderers: {
+          message: { render: (ctx) => messageTemplate(ctx.param) },
         },
       };
       await elementUpdated(chat);
@@ -1029,8 +1032,10 @@ describe('Chat', () => {
 
     it('should render messageActionsTemplate', async () => {
       chat.options = {
-        templates: {
-          messageActionsTemplate: messageActionsTemplate,
+        renderers: {
+          messageActions: {
+            render: (ctx) => messageActionsTemplate(ctx.param),
+          },
         },
       };
       await elementUpdated(chat);
@@ -1065,12 +1070,12 @@ describe('Chat', () => {
       });
     });
 
-    it('should render typingIndicatorTemplate', async () => {
+    it('should render custom typingIndicator', async () => {
       chat.messages = [messages[0]];
       chat.options = {
         isTyping: true,
-        templates: {
-          typingIndicatorTemplate: typingIndicatorTemplate,
+        renderers: {
+          typingIndicator: { render: () => typingIndicatorTemplate },
         },
       };
       await elementUpdated(chat);
@@ -1092,10 +1097,10 @@ describe('Chat', () => {
     it('should render text area templates', async () => {
       chat.draftMessage = draftMessage;
       chat.options = {
-        templates: {
-          textInputTemplate: textInputTemplate,
-          textAreaActionsTemplate: () => textAreaActionsTemplate,
-          textAreaAttachmentsTemplate: textAreaAttachmentsTemplate,
+        renderers: {
+          input: { render: () => textInputTemplate },
+          inputActions: { render: () => textAreaActionsTemplate },
+          inputAttachments: { render: () => textAreaAttachmentsTemplate },
         },
       };
       await elementUpdated(chat);
@@ -1130,8 +1135,8 @@ describe('Chat', () => {
 
     it('should render messageAuthorTemplate', async () => {
       chat.options = {
-        templates: {
-          messageAuthorTemplate: messageAuthorTemplate,
+        renderers: {
+          messageHeader: { render: (ctx) => messageAuthorTemplate(ctx.param) },
         },
       };
       await elementUpdated(chat);

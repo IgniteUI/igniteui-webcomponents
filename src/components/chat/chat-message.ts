@@ -14,7 +14,7 @@ import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
-import type { IgcMessage } from './types.js';
+import type { ChatRenderers, IgcMessage } from './types.js';
 
 /**
  * A chat message component for displaying individual messages in `<igc-chat>`.
@@ -54,6 +54,9 @@ export default class IgcChatMessageComponent extends LitElement {
   @consume({ context: chatContext, subscribe: true })
   private _chatState?: ChatState;
 
+  private _defaults: Partial<ChatRenderers>;
+  private _renderers?: Partial<ChatRenderers>;
+
   /**
    * The chat message to render.
    */
@@ -63,108 +66,115 @@ export default class IgcChatMessageComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+    this._defaults = {
+      message: { render: () => this.renderMessage() },
+      messageHeader: { render: () => this.renderHeader() },
+      messageContent: { render: () => this.renderContent() },
+      messageAttachments: { render: () => this.renderAttachments() },
+      messageActions: { render: () => this.renderActions() },
+    };
   }
 
   protected override firstUpdated(): void {
     adoptPageStyles(this);
+    this._renderers = {
+      ...this._defaults,
+      ...this._chatState?.options?.renderers,
+    };
   }
 
-  private showTooltip(
-    ev: PointerEvent,
-    tooltip: IgcTooltipComponent,
-    text: string
-  ) {
-    if (!tooltip) return;
-    tooltip.message = text;
-    tooltip.hideDelay = 300;
-    tooltip.show(ev.composedPath()[0] as any);
-  }
-
-  private handleMessageActionClick(event: MouseEvent) {
+  private handleMessageActionClick = (event: MouseEvent) => {
     const reaction = (event.target as HTMLElement).getAttribute('name');
     this._chatState?.emitEvent('igcMessageReact', {
-      detail: { this: this.message, reaction },
+      detail: { message: this.message, reaction },
     });
-  }
+  };
 
   private renderHeader() {
-    return html``;
+    return nothing;
   }
 
-  private renderText() {
-    return this.message
-      ? html`
-          ${until(this._chatState?.chatRenderer?.renderText(this.message))}
-        `
-      : nothing;
+  private renderContent() {
+    if (!this.message || !this.message.text) return nothing;
+
+    return html` ${this._chatState?.textRenderer?.render(this.message)} `;
   }
 
   private renderActions() {
-    const _sharedTooltipRef = createRef<IgcTooltipComponent>();
-    const tooltip = _sharedTooltipRef.value as IgcTooltipComponent;
+    const isSent = this.message?.sender === this._chatState?.currentUserId;
+    const hasText = this.message?.text.trim();
+    const isTyping = this._chatState?._isTyping;
     const isLastMessage = this.message === this._chatState?.messages.at(-1);
-    return this.message?.sender !== this._chatState?.currentUserId &&
-      this.message?.text.trim() &&
-      (!isLastMessage || !this._chatState?._isTyping)
-      ? html`<div>
-          <igc-icon-button
-            id="copy-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(
-                ev,
-                tooltip,
-                this._chatState?.resourceStrings.reactionCopyResponse!
-              )}
-            name="copy-response"
-            collection="material"
-            variant="flat"
-            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="good-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(
-                ev,
-                tooltip,
-                this._chatState?.resourceStrings.reactionGoodResponse!
-              )}
-            name="good-response"
-            collection="material"
-            variant="flat"
-            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="bad-response-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(
-                ev,
-                tooltip,
-                this._chatState?.resourceStrings.reactionBadResponse!
-              )}
-            name="bad-response"
-            variant="flat"
-            collection="material"
-            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
-          ></igc-icon-button>
-          <igc-icon-button
-            id="redo-button"
-            @pointerenter=${(ev: PointerEvent) =>
-              this.showTooltip(
-                ev,
-                tooltip,
-                this._chatState?.resourceStrings.reactionRedo!
-              )}
-            name="redo"
-            variant="flat"
-            collection="material"
-            @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
-          ></igc-icon-button>
-          <igc-tooltip
-            id="sharedTooltip"
-            ${ref(_sharedTooltipRef)}
-          ></igc-tooltip>
-        </div>`
-      : nothing;
+
+    if (isSent || !hasText || (isLastMessage && isTyping)) {
+      return nothing;
+    }
+
+    const tooltipRef = createRef<IgcTooltipComponent>();
+    const showTooltip = (ev: PointerEvent, text: string) => {
+      const tooltip = tooltipRef.value as IgcTooltipComponent;
+      if (!tooltip) return;
+      tooltip.message = text;
+      tooltip.hideDelay = 300;
+      tooltip.show(ev.composedPath()[0] as any);
+    };
+
+    return html` <div>
+      <igc-icon-button
+        id="copy-response-button"
+        @pointerenter=${(ev: PointerEvent) =>
+          showTooltip(
+            ev,
+            this._chatState?.resourceStrings.reactionCopyResponse!
+          )}
+        name="copy-response"
+        collection="material"
+        variant="flat"
+        @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+      ></igc-icon-button>
+      <igc-icon-button
+        id="good-response-button"
+        @pointerenter=${(ev: PointerEvent) =>
+          showTooltip(
+            ev,
+            this._chatState?.resourceStrings.reactionGoodResponse!
+          )}
+        name="good-response"
+        collection="material"
+        variant="flat"
+        @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+      ></igc-icon-button>
+      <igc-icon-button
+        id="bad-response-button"
+        @pointerenter=${(ev: PointerEvent) =>
+          showTooltip(
+            ev,
+            this._chatState?.resourceStrings.reactionBadResponse!
+          )}
+        name="bad-response"
+        variant="flat"
+        collection="material"
+        @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+      ></igc-icon-button>
+      <igc-icon-button
+        id="redo-button"
+        @pointerenter=${(ev: PointerEvent) =>
+          showTooltip(ev, this._chatState?.resourceStrings.reactionRedo!)}
+        name="redo"
+        variant="flat"
+        collection="material"
+        @click=${(e: MouseEvent) => this.handleMessageActionClick(e)}
+      ></igc-icon-button>
+      <igc-tooltip id="sharedTooltip" ${ref(tooltipRef)}></igc-tooltip>
+    </div>`;
+  }
+
+  // Default rendering logic for attachments
+  private renderAttachments() {
+    if (!this.message?.attachments?.length) return nothing;
+    return html`<igc-message-attachments
+      .message=${this.message}
+    ></igc-message-attachments>`;
   }
 
   /**
@@ -174,14 +184,10 @@ export default class IgcChatMessageComponent extends LitElement {
    * @returns TemplateResult containing the rendered message
    */
   private renderMessage() {
-    if (!this.message) return html``;
+    if (!this.message) return nothing;
 
     return html`
-      ${this.renderHeader()} ${this.renderText()}
-      ${this.message.attachments?.length
-        ? html`<igc-message-attachments .message=${this.message}>
-          </igc-message-attachments>`
-        : nothing}
+      ${this.renderHeader()} ${this.renderContent()} ${this.renderAttachments()}
       ${this.renderActions()}
     `;
   }
@@ -193,26 +199,39 @@ export default class IgcChatMessageComponent extends LitElement {
    * - Renders attachments and custom templates if provided.
    */
   protected override render() {
+    if (!this.message) {
+      return nothing;
+    }
+
+    const isSent = this._chatState?.currentUserId === this.message.sender;
     const parts = {
       'message-container': true,
-      sent: this._chatState?.currentUserId === this.message?.sender,
+      sent: isSent,
     };
 
-    const templates = {
-      messageTemplate: () => this.renderMessage(),
-      messageAuthorTemplate: () => this.renderHeader(),
-      messageActionsTemplate: () => this.renderActions(),
+    const options = this._chatState?.options;
+    const ctx = {
+      param: this.message,
+      defaults: this._defaults,
+      options,
     };
 
-    return this.message && this._chatState?.chatRenderer
-      ? html`
-          <div part=${partMap(parts)}>
-            ${until(
-              this._chatState.chatRenderer.render(this.message, { templates })
-            )}
-          </div>
-        `
-      : nothing;
+    if (options?.renderers?.message) {
+      return html`
+        <div part=${partMap(parts)}>
+          ${until(options.renderers.message.render(ctx))}
+        </div>
+      `;
+    }
+
+    return html`
+      <div part=${partMap(parts)}>
+        ${this._renderers?.messageHeader?.render(ctx)}
+        ${this._renderers?.messageContent?.render(ctx)}
+        ${this._renderers?.messageAttachments?.render(ctx)}
+        ${this._renderers?.messageActions?.render(ctx)}
+      </div>
+    `;
   }
 }
 
