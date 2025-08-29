@@ -1,7 +1,9 @@
 import DOMPurify from 'dompurify';
 import { html, type TemplateResult } from 'lit';
 import { Marked, Renderer } from 'marked';
-import type { IgcMessage } from './types.js';
+import markedShiki from 'marked-shiki';
+import { getSingletonHighlighter } from 'shiki';
+import type { IgcMessage } from '../types.js';
 
 /**
  * Options to configure the MarkdownMessageRenderer.
@@ -37,7 +39,6 @@ export interface MarkdownRendererOptions {
  * A renderer that converts markdown chat messages to HTML using `marked`,
  * with optional syntax highlighting powered by `shiki` or a custom highlighter.
  *
- * @implements {ChatMessageRenderer}
  */
 export class MarkdownMessageRenderer {
   private highlighter?: any;
@@ -101,15 +102,13 @@ export class MarkdownMessageRenderer {
       return;
     }
 
-    const shiki = await import('shiki');
-    this.highlighter = await shiki.getSingletonHighlighter({
+    this.highlighter = await getSingletonHighlighter({
       themes: [this.theme],
       langs: this.langs,
     });
 
-    const markedShiki = await import('marked-shiki');
     this._marked.use(
-      markedShiki.default({
+      markedShiki({
         highlight: (code: any, lang: string) => {
           try {
             const safeLang =

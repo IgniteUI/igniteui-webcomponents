@@ -10,7 +10,11 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./themes/*.css": "./themes/*.css"
+    "./themes/*.css": "./themes/*.css",
+    "./extras": {
+      "types": "./extras/index.d.ts",
+      "default": "./extras/index.js"
+    }
   },
   "type": "module",
   "sideEffects": false,

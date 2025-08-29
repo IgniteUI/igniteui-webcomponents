@@ -36,7 +36,7 @@ describe('Chat', () => {
 
   const createChatComponent = () => html`<igc-chat></igc-chat>`;
 
-  const messageAuthorTemplate = (msg: any) => {
+  const messageHeaderTemplate = (msg: any) => {
     return msg.sender !== 'user' ? html`<span>AI Assistant</span>` : html``;
   };
 
@@ -157,7 +157,7 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
-  const messageReactions = `<div>
+  const messageActions = `<div>
                           <igc-icon-button
                             collection="material"
                             id="copy-response-button"
@@ -318,7 +318,7 @@ describe('Chat', () => {
             <pre part="plain-text">
               Hello! How can I help you today?
             </pre>
-            ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+            ${firstMessage?.message?.sender !== 'user' ? messageActions : ''}
         </div>`
       );
 
@@ -360,7 +360,7 @@ describe('Chat', () => {
           <pre part="plain-text">
             Hello!
           </pre>
-          ${firstMessage?.message?.sender !== 'user' ? messageReactions : ''}
+          ${firstMessage?.message?.sender !== 'user' ? messageActions : ''}
         </div>`
       );
     });
@@ -658,7 +658,7 @@ describe('Chat', () => {
                               </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
-                            ${chat.messages[index].sender !== 'user' ? messageReactions : ''}
+                            ${chat.messages[index].sender !== 'user' ? messageActions : ''}
                     </div>`
         );
 
@@ -1133,10 +1133,10 @@ describe('Chat', () => {
       );
     });
 
-    it('should render messageAuthorTemplate', async () => {
+    it('should render messageHeaderTemplate', async () => {
       chat.options = {
         renderers: {
-          messageHeader: { render: (ctx) => messageAuthorTemplate(ctx.param) },
+          messageHeader: { render: (ctx) => messageHeaderTemplate(ctx.param) },
         },
       };
       await elementUpdated(chat);
@@ -1160,7 +1160,7 @@ describe('Chat', () => {
               </pre>
               <igc-message-attachments>
               </igc-message-attachments>
-              ${!isCurrentUser ? messageReactions : ''}
+              ${!isCurrentUser ? messageActions : ''}
             </div>`
         );
       });

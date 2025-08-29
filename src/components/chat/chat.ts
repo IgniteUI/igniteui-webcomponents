@@ -40,10 +40,10 @@ export interface IgcChatComponentEventMap {
   igcMessageCreated: CustomEvent<IgcMessage>;
 
   /**
-   * Dispatched when a new chat message is created (sent).
+   * Dispatched when a message is reacted to.
    *
-   * @event igcMessageCreated
-   * @type {CustomEvent<IgcMessage>}
+   * @event igcMessageReact
+   * @type {CustomEvent<IgcMessage, string>}
    * @detail The message that was reacted to and the reaction.
    */
   igcMessageReact: CustomEvent<{ message: IgcMessage; reaction: string }>;
@@ -128,7 +128,6 @@ const Slots = setSlots(
   'suggestions-header',
   'suggestions',
   'suggestions-actions',
-  'suggestions-header',
   'suggestion',
   'empty-state'
 );
@@ -250,7 +249,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._chatState.options;
   }
 
-  /** The resource strings. */
+  /**
+   * The resource strings of the chat.
+   */
   @property({ attribute: false })
   public resourceStrings = IgcChatResourceStringEN;
 

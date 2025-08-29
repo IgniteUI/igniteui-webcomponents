@@ -15,6 +15,7 @@ import {
   thumbDownIcon,
   thumbUpIcon,
 } from './types.js';
+import { type ChatAcceptedFileTypes, parseAcceptedFileTypes } from './utils.js';
 
 /**
  * Internal state manager for the `<igc-chat>` component.
@@ -38,11 +39,7 @@ export class ChatState {
   /**
    * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
    */
-  private _acceptedTypesCache: {
-    extensions: Set<string>;
-    mimeTypes: Set<string>;
-    wildcardTypes: Set<string>;
-  } | null = null;
+  private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
   /** Default position of the suggestions */
   private _suggestionsPosition: 'below-input' | 'below-messages' =
     'below-messages';
@@ -65,15 +62,13 @@ export class ChatState {
     return this._textRenderer;
   }
 
-  public getIconName(fileType: string | undefined): string {
-    if (fileType?.startsWith('image')) {
-      return 'file-image';
-    }
-    return 'file-document';
-  }
   //#endregion
 
   //#region Public properties
+
+  public get acceptedFileTypes() {
+    return this._acceptedTypesCache;
+  }
   /**
    * Gets the list of chat messages.
    */
@@ -285,16 +280,6 @@ export class ChatState {
     }
   }
 
-  public getURL = (attachment: IgcMessageAttachment): string => {
-    if (attachment.url) {
-      return attachment.url;
-    }
-    if (attachment.file) {
-      return URL.createObjectURL(attachment.file);
-    }
-    return '';
-  };
-
   public isImageAttachment(attachment: IgcMessageAttachment): boolean {
     return (
       attachment.type === 'image' ||
@@ -313,14 +298,6 @@ export class ChatState {
     link: this._linkIcon,
     default: this._fileIcon, // A fallback icon
   };
-
-  public getFileExtension(fileName: string): string {
-    const parts = fileName.split('.');
-    if (parts.length > 1) {
-      return parts.pop()!.toLowerCase();
-    }
-    return '';
-  }
 
   public handleKeyDown = (e: KeyboardEvent) => {
     if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
@@ -410,70 +387,12 @@ export class ChatState {
    * Updates the internal cache for accepted file types.
    * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
    */
-  public updateAcceptedTypesCache = () => {
-    if (!this.options?.acceptedFiles) {
-      this._acceptedTypesCache = null;
-      return;
-    }
-
-    const types = this.options?.acceptedFiles
-      .split(',')
-      .map((type) => type.trim().toLowerCase());
-    this._acceptedTypesCache = {
-      extensions: new Set(types.filter((t) => t.startsWith('.'))),
-      mimeTypes: new Set(
-        types.filter((t) => !t.startsWith('.') && !t.endsWith('/*'))
-      ),
-      wildcardTypes: new Set(
-        types.filter((t) => t.endsWith('/*')).map((t) => t.slice(0, -2))
-      ),
-    };
-  };
-
-  /**
-   * Checks if a file's type or extension is accepted by the chat's acceptedFiles setting.
-   * @param file File object to check
-   * @param type Optional MIME type override if no file provided
-   * @returns True if accepted, false otherwise
-   */
-  public isFileTypeAccepted = (file: File, type = ''): boolean => {
-    if (!this._acceptedTypesCache) return true;
-
-    if (file === null && type === '') return false;
-
-    const fileType =
-      file != null ? file.type.toLowerCase() : type.toLowerCase();
-    const fileExtension =
-      file != null
-        ? `.${file.name.split('.').pop()?.toLowerCase()}`
-        : `.${type.split('/').pop()?.toLowerCase()}`;
-
-    // Check file extension
-    if (this._acceptedTypesCache.extensions.has(fileExtension)) {
-      return true;
-    }
-
-    // Check exact MIME type
-    if (this._acceptedTypesCache.mimeTypes.has(fileType)) {
-      return true;
-    }
-
-    // Check wildcard MIME types
-    const [fileBaseType] = fileType.split('/');
-    return this._acceptedTypesCache.wildcardTypes.has(fileBaseType);
-  };
-
-  /**
-   * Checks if a slot is empty.
-   * @param name Slot name to check
-   * @returns True if the slot has content, false otherwise
-   */
-  public hasSlotContent(name: string): boolean {
-    return (
-      this._host.renderRoot.querySelector<HTMLSlotElement>(`slot[name=${name}]`)
-        ?.childNodes.length !== 0
-    );
+  public updateAcceptedTypesCache(): void {
+    this._acceptedTypesCache = this.options?.acceptedFiles
+      ? parseAcceptedFileTypes(this.options.acceptedFiles)
+      : null;
   }
+
   //#endregion
 }
 
