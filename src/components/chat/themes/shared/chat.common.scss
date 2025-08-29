@@ -11,3 +11,7 @@ $theme: $material;
     background: var-get($theme, 'header-background');
     color: var-get($theme, 'header-color');
 }
+
+[part='typing-dot']::after {
+    background: var-get($theme, 'progress-indicator-color');
+}

@@ -286,17 +286,12 @@ describe('Chat', () => {
       );
 
       await aTimeout(500);
-      const messageList = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
-      );
-      const messageContainer = messageList?.shadowRoot?.querySelector(
+      const messageContainer = chat.shadowRoot?.querySelector(
         `div[part='message-list']`
       );
 
-      expect(messageList).shadowDom.to.equal(
-        `<div aria-label="Message list" part="message-container" role="group" tabindex="0">
-                  </div>
-                  <div part="message-list">
+      expect(messageContainer).dom.to.equal(
+        `<div part="message-list" aria-label="Message list" role="group" tabindex="0">
                    <igc-chat-message id="message-1" part="message-item" role="option">
                     </igc-chat-message>
                     <igc-chat-message id="message-2" part="message-item" role="option">
@@ -347,9 +342,9 @@ describe('Chat', () => {
       );
       await aTimeout(500);
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`);
+      const messageContainer = chat.shadowRoot?.querySelector(
+        `div[part='message-list']`
+      );
 
       expect(chat.messages.length).to.equal(1);
 
@@ -388,9 +383,9 @@ describe('Chat', () => {
 
       await aTimeout(500);
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`);
+      const messageContainer = chat.shadowRoot?.querySelector(
+        `div[part='message-list']`
+      );
 
       expect(messageContainer).not.to.be.undefined;
       expect(chat.messages.length).to.equal(3);
@@ -641,8 +636,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`)
+        ?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
@@ -833,7 +827,7 @@ describe('Chat', () => {
       )!;
 
       const messageList = chat.shadowRoot?.querySelector(
-        'igc-chat-message-list'
+        'div[part="message-list"]'
       )!;
 
       const diff =
@@ -867,13 +861,13 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
 
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`);
+      const messageContainer = chat.shadowRoot?.querySelector(
+        `div[part='message-list']`
+      );
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div part="message-list">
+        `<div part="message-list" aria-label="Message list" role="group" tabindex="0">
                 <igc-chat-message id="message-1" part="message-item" role="option">
                 </igc-chat-message>
                 <div part="typing-indicator">
@@ -929,8 +923,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`)
+        ?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
@@ -966,7 +959,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
+        ?.querySelector('div[part="message-list"]')
         ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
@@ -1007,7 +1000,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
       await aTimeout(500);
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
+        ?.querySelector('div[part="message-list"]')
         ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
@@ -1036,7 +1029,7 @@ describe('Chat', () => {
       await elementUpdated(chat);
       await aTimeout(500);
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
+        ?.querySelector('div[part="message-list"]')
         ?.shadowRoot?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
@@ -1075,7 +1068,7 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
       const messageContainer = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
+        ?.querySelector('div[part="message-list"]')
         ?.shadowRoot?.querySelector(`div[part='message-list']`);
 
       expect(chat.messages.length).to.equal(1);
@@ -1138,7 +1131,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElements = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
+        ?.querySelector('div[part="message-list"]')
         ?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
@@ -1364,11 +1357,9 @@ describe('Chat', () => {
         await elementUpdated(chat);
         await aTimeout(500);
 
-        const messageContainer = chat.shadowRoot
-          ?.querySelector('igc-chat-message-list')
-          ?.shadowRoot?.querySelector(
-            `div[part='message-container']`
-          ) as HTMLElement;
+        const messageContainer = chat.shadowRoot?.querySelector(
+          'div[part="message-list"]'
+        ) as HTMLElement;
         messageContainer.focus();
         await elementUpdated(chat);
 
@@ -1392,7 +1383,7 @@ describe('Chat', () => {
         await aTimeout(500);
 
         const messageContainer = chat.shadowRoot
-          ?.querySelector('igc-chat-message-list')
+          ?.querySelector('div[part="message-list"]')
           ?.shadowRoot?.querySelector(
             `div[part='message-container']`
           ) as HTMLElement;
@@ -1422,7 +1413,7 @@ describe('Chat', () => {
         await aTimeout(500);
 
         const messageContainer = chat.shadowRoot
-          ?.querySelector('igc-chat-message-list')
+          ?.querySelector('div[part="message-list"]')
           ?.shadowRoot?.querySelector(
             `div[part='message-container']`
           ) as HTMLElement;
@@ -1456,8 +1447,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElement = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list'`)
+        ?.querySelector(`div[part='message-list'`)
         ?.querySelector('igc-chat-message');
 
       const attachmentHeader = messageElement?.shadowRoot
@@ -1542,8 +1532,7 @@ describe('Chat', () => {
       await aTimeout(500);
 
       const messageElement = chat.shadowRoot
-        ?.querySelector('igc-chat-message-list')
-        ?.shadowRoot?.querySelector(`div[part='message-list'`)
+        ?.querySelector(`div[part='message-list'`)
         ?.querySelector('igc-chat-message');
 
       const goodResponseIcon = messageElement?.shadowRoot?.querySelector(

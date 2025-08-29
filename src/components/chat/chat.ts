@@ -1,6 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext } from '../common/context.js';
@@ -15,7 +16,7 @@ import IgcListComponent from '../list/list.js';
 import IgcListHeaderComponent from '../list/list-header.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcChatInputComponent from './chat-input.js';
-import IgcChatMessageListComponent from './chat-message-list.js';
+import IgcChatMessageComponent from './chat-message.js';
 import { createChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
@@ -173,7 +174,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     registerComponent(
       IgcChatComponent,
       IgcChatInputComponent,
-      IgcChatMessageListComponent,
+      IgcChatMessageComponent,
       IgcButtonComponent,
       IgcIconComponent,
       IgcListComponent,
@@ -262,7 +263,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public scrollToMessage(messageId: string) {
     // Find the message list component
     const messageListComponent = this.shadowRoot?.querySelector(
-      'igc-chat-message-list'
+      'div[part="message-list"]'
     );
     if (!messageListComponent) {
       return;
@@ -292,6 +293,31 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this._chatState, true);
   }
 
+  /**
+   * Scrolls to bottom unless auto-scroll is disabled.
+   */
+  protected override updated() {
+    if (!this._chatState?.options?.disableAutoScroll) {
+      this.scrollToBottom();
+    }
+  }
+
+  /**
+   * Scrolls the container to the bottom, typically called after new messages are rendered.
+   * @private
+   */
+  private async scrollToBottom() {
+    // TODO: fix
+    await this.updateComplete;
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    setTimeout(() => {
+      const container = this.shadowRoot?.host as HTMLElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  }
+
   private renderHeader() {
     const hasContent =
       this._slots.hasAssignedElements('prefix') ||
@@ -304,6 +330,52 @@ export default class IgcChatComponent extends EventEmitterMixin<
       >
       <slot name="actions" part="actions"></slot>
     </div>`;
+  }
+
+  private renderMessages() {
+    const messages = this._chatState?.messages ?? [];
+
+    return html`
+      <div
+        part="message-list"
+        aria-label="Message list"
+        role="group"
+        tabindex="0"
+      >
+        ${repeat(
+          messages,
+          (message) => message.id,
+          (message) => {
+            const messageId = `message-${message.id}`;
+            return html`
+              <igc-chat-message
+                id=${messageId}
+                role="option"
+                part="message-item"
+                .message=${message}
+                exportparts="message-container, message-text, message-attachments, message-actions,
+                    attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
+              >
+              </igc-chat-message>
+            `;
+          }
+        )}
+        ${this._chatState?.options?.isTyping
+          ? this.renderLoadingTemplate()
+          : nothing}
+      </div>
+    `;
+  }
+
+  private *renderLoadingTemplate() {
+    yield html`${this._chatState?.options?.templates?.typingIndicatorTemplate
+      ? this._chatState.options.templates.typingIndicatorTemplate
+      : html`<div part="typing-indicator">
+          <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
+          <div part="typing-dot"></div>
+        </div>`}`;
   }
 
   private renderSuggestionPrefix() {
@@ -400,26 +472,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
             ? html`<div part="empty-state">
                 <slot name="empty-state"> </slot>
               </div>`
-            : html` <igc-chat-message-list
-                part="chat-messages"
-                exportparts="
-                  message-container,
-                  message-list,
-                  message-item,
-                  message,
-                  message-text,
-                  message-attachments,
-                  message-actions,
-                  typing-indicator,
-                  attachments-container,
-                  attachment,
-                  attachment-header,
-                  attachment-content,
-                  attachment-icon,
-                  file-name,
-                  actions: attachment-actions"
-              >
-              </igc-chat-message-list>`}
+            : this.renderMessages()}
           ${hasSuggestions &&
           this._chatState.suggestionsPosition === 'below-messages'
             ? this.renderSuggestions()
