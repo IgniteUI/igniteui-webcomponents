@@ -1,0 +1,22 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/chat' as *;
+@use 'components/input/themes/light/themes' as input-theme;
+
+$base: digest-schema($light-chat);
+$material: map.merge(digest-schema($material-chat), (
+    box-background-focus: map.get(input-theme.$material, 'box-background-focus'),
+    focused-bottom-line-color: map.get(input-theme.$material, 'focused-bottom-line-color')
+));
+$bootstrap: map.merge(digest-schema($bootstrap-chat), (
+    focused-border-color: map.get(input-theme.$bootstrap, 'focused-border-color'),
+    focused-secondary-color: map.get(input-theme.$bootstrap, 'focused-secondary-color')
+));
+$fluent: map.merge(digest-schema($fluent-chat), (
+    focused-border-color: map.get(input-theme.$fluent, 'focused-border-color'),
+));
+$indigo: map.merge(digest-schema($indigo-chat), (
+    box-background-hover: map.get(input-theme.$indigo, 'box-background-hover'),
+    focused-bottom-line-color: map.get(input-theme.$indigo, 'focused-bottom-line-color'),
+    focused-text-color: map.get(input-theme.$indigo, 'focused-text-color')
+));

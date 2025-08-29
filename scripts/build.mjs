@@ -1,5 +1,5 @@
 import { exec as _exec } from 'node:child_process';
-import { copyFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -11,6 +11,7 @@ import {
 import customElements from '../custom-elements.json' with { type: 'json' };
 import report from './report.mjs';
 import { buildComponents, buildThemes } from './sass.mjs';
+import { globby } from 'globby';
 
 const exec = promisify(_exec);
 
@@ -49,12 +50,23 @@ async function runTask(tag, cmd) {
     )
   );
 
-  await runTask('Copying release files', () =>
+  await runTask('Copying release files', async () => {
+    const pngFiles = await globby('src/components/**/*.png');
+    pngFiles.forEach(
+      async (dest) =>
+        await mkdir(path.dirname(DEST_DIR(dest.replace('src', ''))), {
+          recursive: true,
+        })
+    );
+
     Promise.all([
       copyFile('scripts/_package.json', DEST_DIR('package.json')),
       ...RELEASE_FILES.map((file) => copyFile(file, DEST_DIR(file))),
-    ])
-  );
+      ...pngFiles.map((file) =>
+        copyFile(file, DEST_DIR(file.replace('src', '')))
+      ),
+    ]);
+  });
 
   await runTask('VSCode custom data + Web types', () =>
     Promise.all([

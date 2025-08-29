@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='input-container'] {
+    border: rem(1px) solid var-get($theme, 'chat-input-border');
+}
