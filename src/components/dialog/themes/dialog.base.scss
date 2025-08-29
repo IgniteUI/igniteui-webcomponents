@@ -61,7 +61,7 @@
 
 slot[name='title'] {
     &::slotted(:last-child) {
-        margin-inline-start: rem(8px);
+        margin-inline-start: pad-inline(rem(8px));
     }
 }
 

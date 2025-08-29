@@ -42,11 +42,11 @@
 [name='prefix']::slotted(*) {
     --component-size: var(--dropdown-size) !important;
 
-    margin-inline-end: pad(rem(8px));
+    margin-inline-end: pad-inline(rem(8px));
 }
 
 [name='suffix']::slotted(*) {
     --component-size: var(--dropdown-size) !important;
 
-    margin-inline-start: pad(rem(8px));
+    margin-inline-start: pad-inline(rem(8px));
 }

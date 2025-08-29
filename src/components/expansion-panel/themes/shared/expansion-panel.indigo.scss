@@ -12,7 +12,7 @@
 }
 
 [part='title']::slotted(*) {
-    margin-bottom: pad(2px);
+    margin-bottom: pad-block(2px);
 }
 
 [part='header'] {
@@ -28,9 +28,9 @@
 }
 
 :host([indicator-position='start']) [part~='indicator'] {
-    margin-inline-end: pad(8px);
+    margin-inline-end: pad-inline(8px);
 }
 
 :host([indicator-position='end']) [part~='indicator'] {
-    margin-inline-start: pad(8px);
+    margin-inline-start: pad-inline(8px);
 }

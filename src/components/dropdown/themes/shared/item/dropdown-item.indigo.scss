@@ -5,7 +5,7 @@ $theme: $indigo;
 
 :host {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
-    margin-block: rem(2px);
+    margin-block: pad-block(rem(2px));
 
     --item-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
 

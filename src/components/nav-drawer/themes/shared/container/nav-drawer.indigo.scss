@@ -11,6 +11,6 @@ $theme: $indigo;
     }
 
     [part='mini'], [part="main"] {
-        padding: rem(8px);
+        padding: pad(rem(8px));
     }
 }

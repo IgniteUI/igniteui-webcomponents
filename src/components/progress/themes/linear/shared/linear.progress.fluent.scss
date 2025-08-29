@@ -21,7 +21,7 @@ $track-color: color(gray, 200);
 :host([label-align='top-start']),
 :host([label-align='top-end']) {
     [part~='track'] {
-        margin-block-start: rem(2px);
+        margin-block-start: pad-block(rem(2px));
     }
 }
 
@@ -29,7 +29,7 @@ $track-color: color(gray, 200);
 :host([label-align='bottom-start']),
 :host([label-align='bottom-end']) {
     [part~='track'] {
-        margin-block-end: rem(2px);
+        margin-block-end: pad-block(rem(2px));
     }
 }
 

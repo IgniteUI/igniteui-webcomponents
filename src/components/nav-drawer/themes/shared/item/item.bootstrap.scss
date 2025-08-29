@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 
 [part~='base'] {
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
     gap: rem(8px);
     min-height: rem(40px);
 }

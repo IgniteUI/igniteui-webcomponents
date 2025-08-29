@@ -10,7 +10,7 @@ $theme: $fluent;
 }
 
 [part~='message'] {
-    padding: 0 rem(8px);
+    padding: 0 pad-inline(rem(8px));
 }
 
 ::slotted([slot='prefix']) {

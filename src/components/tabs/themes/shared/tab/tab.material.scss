@@ -8,7 +8,7 @@ $theme: $material;
 }
 
 [part='tab-header'] {
-    padding: rem(12px) rem(16px);
+    padding: pad-block(rem(12px)) pad-inline(rem(16px));
 }
 
 ::slotted(igc-icon) {

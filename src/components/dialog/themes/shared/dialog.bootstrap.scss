@@ -14,11 +14,11 @@ $theme: $bootstrap;
         margin: 0;
     }
 
-    padding: rem(16px);
+    padding: pad(rem(16px));
 }
 
 [part='content'] {
-    padding: rem(16px);
+    padding: pad(rem(16px));
 }
 
 [part='title'] {

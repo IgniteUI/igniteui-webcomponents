@@ -20,7 +20,7 @@ $theme: $indigo;
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
     }
 
 }
@@ -69,7 +69,7 @@ $theme: $indigo;
     transform-origin: top left;
     margin-top: 0;
     height: auto;
-    margin-block-end: rem(4px);
+    margin-block-end: pad-block(rem(4px));
 }
 
 [part~='container'] {
@@ -92,9 +92,9 @@ $theme: $indigo;
 textarea {
     @include type-style('body-2');
 
-    padding-block: rem(6px);
+    padding-block: pad-block(rem(6px));
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
-    margin-block-end: rem(1px);
+    margin-block-end: pad-block(rem(1px));
 
     &::placeholder {
         font-style: italic;

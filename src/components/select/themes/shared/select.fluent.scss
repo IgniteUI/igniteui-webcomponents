@@ -16,7 +16,7 @@ $input-theme: input-theme.$fluent;
         @include type-style('caption');
 
         color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(5px);
+        margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }

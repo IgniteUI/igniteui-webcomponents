@@ -3,7 +3,7 @@
 :host {
     @include type-style('overline');
 
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
     box-sizing: content-box;
     min-height: 16px;
 }

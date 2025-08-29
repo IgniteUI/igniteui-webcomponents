@@ -9,7 +9,7 @@ $theme: $indigo;
 
 :host button {
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding: 0 pad(3px, 5px, 7px);
+    padding: 0 pad-inline(3px, 5px, 7px);
 
     &:focus {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');

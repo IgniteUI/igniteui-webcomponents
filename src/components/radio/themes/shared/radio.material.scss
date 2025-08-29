@@ -7,7 +7,7 @@ $theme: $material;
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(8px);
+        margin-block-start: pad-block(rem(8px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }

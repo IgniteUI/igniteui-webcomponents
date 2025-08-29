@@ -3,7 +3,7 @@
 :host {
     ::slotted(label) {
         @include type-style('subtitle-1') {
-            margin-block-end: rem(16px);
+            margin-block-end: pad-block(rem(16px));
         };
     }
 }
@@ -12,7 +12,7 @@
     gap: 0;
 
     ::slotted(label) {
-        margin-block-end: rem(16px);
+        margin-block-end: pad-block(rem(16px));
     }
 }
 

@@ -15,7 +15,7 @@ $input-theme: input-theme.$bootstrap;
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
     }
 
     ::slotted([slot='suffix']),
@@ -28,7 +28,7 @@ $input-theme: input-theme.$bootstrap;
 
 [part='base'] {
     border: rem(1px) solid var(--dd-border-color);
-    padding: rem(8px) 0;
+    padding: pad-block(rem(8px)) 0;
 }
 
 :host(:not(:state(ig-invalid)):focus-within) {

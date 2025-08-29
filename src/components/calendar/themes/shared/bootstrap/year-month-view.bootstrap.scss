@@ -4,7 +4,7 @@
 $theme: $bootstrap;
 
 :host {
-    padding-block-start: rem(16px);
+    padding-block-start: pad-block(rem(16px));
 }
 
 [part~='month-inner'],

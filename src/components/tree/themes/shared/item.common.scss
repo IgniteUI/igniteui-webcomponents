@@ -54,7 +54,7 @@ $theme: $material;
 }
 
 [part~='select'] {
-    margin-inline-end: rem(8px);
+    margin-inline-end: pad-inline(rem(8px));
 }
 
 [part~='focused'] {

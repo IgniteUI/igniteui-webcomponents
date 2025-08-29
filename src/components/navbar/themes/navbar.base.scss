@@ -6,7 +6,7 @@
     width: 100%;
     min-height: rem(56px);
     max-height: rem(128px);
-    padding: 0 rem(16px);
+    padding: 0 pad-inline(rem(16px));
     font-family: var(--ig-font-family);
     z-index: 4;
 
@@ -54,7 +54,7 @@
 }
 
 [name='start']::slotted(*) {
-    margin-inline-end: rem(16px);
+    margin-inline-end: pad-inline(rem(16px));
 }
 
 ::slotted(igc-icon) {

@@ -12,7 +12,7 @@ $dropdown-theme: dropdown-theme.$fluent;
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(5px);
+        margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }

@@ -61,7 +61,7 @@ $input-theme: input-theme.$material;
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 }

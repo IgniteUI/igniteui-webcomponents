@@ -5,5 +5,5 @@ igc-checkbox {
 }
 
 [part~='select'] {
-    margin-inline: rem(10px) rem(14px);
+    margin-inline: pad-inline(rem(10px)) pad-inline(rem(14px));
 }

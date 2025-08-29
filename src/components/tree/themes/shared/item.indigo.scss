@@ -16,8 +16,8 @@ $theme: $indigo;
 
 [part~='wrapper'] {
     border-radius: rem(4px);
-    margin-block-end: rem(4px);
-    padding: 0 pad(8px, 12px, 16px);
+    margin-block-end: pad-block(rem(4px));
+    padding: 0 pad-inline(8px, 12px, 16px);
 
     &::after {
         border-radius: rem(4px);

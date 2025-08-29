@@ -12,7 +12,7 @@ $theme: $indigo;
     }
 
     igc-dialog::part(footer) {
-        padding: rem(8px) rem(16px);
+        padding: pad-block(rem(8px)) pad-inline(rem(16px));
         gap: rem(8px);
     }
 
@@ -27,7 +27,7 @@ $theme: $indigo;
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
 }
 
 :host([readonly]) {

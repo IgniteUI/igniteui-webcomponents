@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 
 :host {
-    padding: rem(16px);
+    padding: pad(rem(16px));
 
     ::slotted(igc-button),
     ::slotted(igc-icon-button) {

@@ -4,7 +4,7 @@
 $theme: $material;
 
 :host {
-    padding: rem(10px) rem(16px);
+    padding: pad-block(rem(10px)) pad-inline(rem(16px));
     color: var-get($theme, 'text-color');
     background: var-get($theme, 'background');
     box-shadow: var-get($theme, 'elevation');

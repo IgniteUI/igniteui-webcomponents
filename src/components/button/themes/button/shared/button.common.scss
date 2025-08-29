@@ -30,7 +30,7 @@ $outlined-theme: $material-outlined;
     border-radius: var-get($fab-theme, 'border-radius');
     min-height: var-get($fab-theme, 'size');
     min-width: var-get($fab-theme, 'size');
-    padding: 0 pad(6px, 10px, 14px);
+    padding: 0 pad-inline(6px, 10px, 14px);
 }
 /* stylelint-enable */
 

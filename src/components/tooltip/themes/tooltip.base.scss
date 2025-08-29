@@ -11,7 +11,7 @@
 [part="base"] {
     @include type-style('body-2');
 
-    padding: rem(4px) rem(8px);
+    padding: pad-block(rem(4px)) pad-inline(rem(8px));
     font-size: rem(10px);
     font-weight: 600;
     line-height: rem(16px);

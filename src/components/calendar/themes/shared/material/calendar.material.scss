@@ -22,21 +22,21 @@ $theme: $material;
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
-            padding-inline: rem(22px);
+            padding-inline: pad-inline(rem(22px));
         }
     }
 
     [part='days-view-container']:last-of-type:not(:only-child) {
         [part='navigation'],
         igc-days-view {
-            padding-inline-end: rem(12px);
+            padding-inline-end: pad-inline(rem(12px));
         }
     }
 
     [part='days-view-container']:first-of-type:not(:only-child) {
         [part='navigation'],
         igc-days-view {
-            padding-inline-end: rem(22px);
+            padding-inline-end: pad-inline(rem(22px));
         }
     }
 }
@@ -46,7 +46,7 @@ $theme: $material;
 }
 
 [part='header'] {
-    padding: rem(16px) rem(24px);
+    padding: pad-block(rem(16px)) pad-inline(rem(24px));
     gap: rem(28px);
 }
 
@@ -56,7 +56,7 @@ $theme: $material;
     height: rem(56px);
     color: var-get($theme, 'picker-foreground');
     background: var-get($theme, 'picker-background');
-    padding: 0 rem(24px);
+    padding: 0 pad-inline(rem(24px));
 }
 
 [part='navigation-buttons'] {

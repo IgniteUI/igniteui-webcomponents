@@ -26,7 +26,7 @@ $active-border-width: rem(2px) !default;
 
     [part~='file-names'] {
         grid-area: 1 / 3 / span 1 / span 2;
-        padding-inline: rem(4px);
+        padding-inline: pad-inline(rem(4px));
     }
 
     [part~='input'] {
