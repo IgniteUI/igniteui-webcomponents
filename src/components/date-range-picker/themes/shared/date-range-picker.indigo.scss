@@ -37,7 +37,7 @@ $theme: $indigo;
     }
 }
 
-:host(:not([readonly]):hover) {
+:host(:not([readonly],[disabled]):hover) {
     igc-input[readonly]::part(container),
     igc-date-time-input:hover::part(container) {
         background: var-get($theme, 'box-background-hover');
