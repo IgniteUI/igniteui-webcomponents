@@ -1,3 +1,4 @@
+import { getI18nManager } from 'igniteui-i18n-core';
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -9,6 +10,7 @@ import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
 } from '../common/i18n/date-range-picker.resources.js';
+import { i18n } from '../common/i18n/i18n.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { all } from './themes/ranges-themes.js';
@@ -25,6 +27,7 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
+  private _resourceHandler: () => void;
 
   /* blazorSuppress */
   public static register(): void {
@@ -54,11 +57,31 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   /** The resource strings of the date range area component. */
   @property({ attribute: false })
   public resourceStrings: IgcDateRangePickerResourceStrings =
-    IgcDateRangePickerResourceStringsEN;
+    i18n.getCurrentResourceStrings(IgcDateRangePickerResourceStringsEN);
 
   constructor() {
     super();
     addThemingController(this, all);
+    this._resourceHandler = this.onResourceChange.bind(this);
+    getI18nManager().addEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+  }
+
+  public override disconnectedCallback(): void {
+    getI18nManager().removeEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+    super.disconnectedCallback();
+  }
+
+  protected onResourceChange() {
+    this.resourceStrings = i18n.getCurrentResourceStrings(
+      IgcDateRangePickerResourceStringsEN,
+      false
+    );
   }
 
   @watch('resourceStrings')

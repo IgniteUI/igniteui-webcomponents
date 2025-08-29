@@ -1,3 +1,7 @@
+import {
+  getI18nManager,
+  type IResourceChangeEventArgs,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
@@ -31,6 +35,7 @@ import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
+import { i18n } from '../common/i18n/i18n.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -187,6 +192,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 ) {
   public static readonly tagName = 'igc-date-range-picker';
   public static styles = [styles, shared];
+  private _resourceHandler: (
+    evt: CustomEvent<IResourceChangeEventArgs>
+  ) => void;
 
   /* blazorSuppress */
   public static register(): void {
@@ -338,7 +346,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
-  public resourceStrings = IgcDateRangePickerResourceStringsEN;
+  public resourceStrings = i18n.getCurrentResourceStrings(
+    IgcDateRangePickerResourceStringsEN
+  );
 
   // #endregion
 
@@ -583,6 +593,28 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
+
+    this._resourceHandler = this.onResourceChange.bind(this);
+    getI18nManager().addEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+  }
+
+  public override disconnectedCallback(): void {
+    getI18nManager().removeEventListener(
+      'onResourceChange',
+      this._resourceHandler
+    );
+    super.disconnectedCallback();
+  }
+
+  protected onResourceChange(evt: CustomEvent<IResourceChangeEventArgs>) {
+    this.locale = evt.detail.newLocale;
+    this.resourceStrings = i18n.getCurrentResourceStrings(
+      IgcDateRangePickerResourceStringsEN,
+      false
+    );
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
