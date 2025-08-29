@@ -3,12 +3,11 @@ import { html } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
-  MarkdownMessageRenderer,
+  // MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
 import type {
-  IgcChatTemplates,
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
@@ -102,7 +101,7 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = (msg: any) => {
+const _messageAuthorTemplate = (msg: any, ctx: any) => {
   return msg.sender !== 'user'
     ? html`
         <div>
@@ -118,7 +117,7 @@ const _messageAuthorTemplate = (msg: any) => {
           >
         </div>
       `
-    : html``;
+    : ctx.defaults.messageHeader.render(ctx);
 };
 const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
@@ -169,19 +168,12 @@ const ai_chat_options = {
     'What is triskaidekaphobia?',
     'Show me very short sample typescript code',
   ],
-  templates: {
-    // messageActionsTemplate: messageActionsTemplate,
-    // typingIndicatorTemplate: _typingIndicatorTemplate,
-    // textInputTemplate: _textInputTemplate,
-    // textAreaActionsTemplate: _textAreaActionsTemplate,
-    // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
-  },
   // markdownRenderer: _customRenderer
-  messageRenderer: new MarkdownMessageRenderer({
-    // noHighlighter: true
-    // languages: ['typescript']
-    // theme: 'github-dark'
-  }),
+  // messageRenderer: new MarkdownMessageRenderer({
+  //   // noHighlighter: true
+  //   // languages: ['typescript']
+  //   // theme: 'github-dark'
+  // }),
 };
 
 const chat_options = {
@@ -195,18 +187,11 @@ const chat_options = {
   //   // languages: ['typescript']
   //   // theme: 'github-dark'
   // })
-  messageRenderer: new MarkdownMessageRenderer({
-    // noHighlighter: true
-    // languages: ['typescript']
-    // theme: 'github-dark'
-  }),
-  templates: {
-    // attachmentContentTemplate: () => html`<p>content</p>`,
-    // attachmentHeaderTemplate: () => html`<p>header</p>`
-    // messageActionsTemplate: _messageActionsTemplate,
-    // textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
-    // textAreaActionsTemplate: _textAreaActionsTemplate,
-  } as Partial<IgcChatTemplates>,
+  // messageRenderer: new MarkdownMessageRenderer({
+  //   // noHighlighter: true
+  //   // languages: ['typescript']
+  //   // theme: 'github-dark'
+  // }),
 };
 
 function handleCustomSendClick() {
@@ -526,7 +511,8 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const actionsTemplate = () => html`
+      const _actionsTemplate = (ctx) => html`
+        ${ctx.defaults.fileUploadButton.render(ctx)}
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
@@ -538,14 +524,31 @@ export const Chat_Templates: Story = {
         headerText: 'Chat',
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
-        templates: {
-          messageAuthorTemplate: _messageAuthorTemplate,
-          messageActionsTemplate: _messageActionsTemplate,
-          textAreaAttachmentsTemplate: _textAreaAttachmentsTemplate,
-          textAreaActionsTemplate: actionsTemplate,
-          suggestionPrefixTemplate: html`✨`,
+        renderers: {
+          messageHeader: {
+            render: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
+          },
+          messageContent: {
+            render: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+          },
+          messageActions: {
+            render: (ctx) => _messageActionsTemplate(ctx.param),
+          },
+          attachmentHeader: { render: () => html`` },
+          inputActions: { render: (ctx) => _actionsTemplate(ctx) },
+          inputAttachments: {
+            render: (ctx) =>
+              html`<span>Attachments:</span
+                >${ctx.defaults.inputAttachments.render(ctx)}`,
+          },
+          typingIndicator: {
+            render: (ctx) =>
+              html`<span
+                >Generating response
+                ${ctx.defaults.typingIndicator.render(ctx)}</span
+              >`,
+          },
         },
-        messageRenderer: _customRenderer,
       };
       chat.options = { ...options };
     }
