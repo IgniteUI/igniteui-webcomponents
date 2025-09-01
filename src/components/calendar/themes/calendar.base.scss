@@ -145,6 +145,10 @@
     border-radius: inherit;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+
+    &:has(> [part~='navigation']) {
+        flex-direction: column;
+    }
 }
 
 [part~='content-vertical'] {

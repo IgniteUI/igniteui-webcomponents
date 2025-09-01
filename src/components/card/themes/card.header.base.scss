@@ -17,6 +17,10 @@
     opacity: inherit;
 }
 
+::slotted(igc-avatar) {
+    --ig-size: 1;
+}
+
 header {
     display: flex;
     flex-flow: column nowrap;
