@@ -16,7 +16,7 @@ $input-theme: input-theme.$indigo;
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -36,7 +36,7 @@ $input-theme: input-theme.$indigo;
 
 [part='base'] {
     outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
-    padding: rem(3px);
+    padding: pad(rem(3px));
 }
 
 :host(:hover) {

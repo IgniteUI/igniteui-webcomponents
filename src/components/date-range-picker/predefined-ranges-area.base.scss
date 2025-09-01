@@ -5,13 +5,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: rem(8px);
+    padding: pad(rem(8px));
 }
 
 [part='ranges'] {
     display: flex;
     flex-flow: wrap;
-    padding: rem(4px);
+    padding: pad(rem(4px));
     gap: rem(8px);
     max-height: #{sizable(rem(84px), rem(96px), rem(120px))};
     overflow-y: auto;

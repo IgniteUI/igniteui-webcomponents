@@ -8,7 +8,7 @@
     }
 
     ::slotted(igc-expansion-panel[open]) {
-        margin: rem(8px) 0;
+        margin: pad-block(rem(8px)) 0;
     }
 
     ::slotted(igc-expansion-panel:first-of-type) {

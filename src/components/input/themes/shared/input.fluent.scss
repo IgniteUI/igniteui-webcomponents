@@ -88,7 +88,7 @@ $theme: $fluent;
         color: var-get($theme, 'idle-text-color');
         background: initial;
         font-size: rem(14px);
-        padding-inline: rem(8px);
+        padding-inline: pad-inline(rem(8px));
         max-height: 100%;
         border: none;
         grid-area: 1 / 2;

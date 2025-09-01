@@ -16,7 +16,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(16px);
+        margin-block-start: pad-block(rem(16px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }

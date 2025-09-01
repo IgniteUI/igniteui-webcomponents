@@ -14,7 +14,7 @@ $theme: $bootstrap;
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
     }
 
     ::slotted([slot="prefix"]),
@@ -31,7 +31,7 @@ $theme: $bootstrap;
     padding: 0;
     transform: translateY(0);
     transform-origin: top left;
-    margin-block: 0 rem(4px);
+    margin-block: 0 pad-block(rem(4px));
     height: auto;
     font-size: rem(16px);
 }
@@ -98,7 +98,7 @@ textarea {
     @include type-style('body-1');
 
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: pad-inline(rem(4px), rem(6px), rem(8px));
+    padding-block: pad-block(rem(4px), rem(6px), rem(8px));
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;

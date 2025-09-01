@@ -161,7 +161,7 @@ slot {
     justify-content: center;
     white-space: nowrap;
     margin-inline-start: -50%;
-    padding: 0 rem(2px);
+    padding: 0 pad-inline(rem(2px));
 
     &::after {
         content: '';
