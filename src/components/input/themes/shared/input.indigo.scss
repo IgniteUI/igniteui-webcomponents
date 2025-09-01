@@ -26,7 +26,7 @@ $transition-duration: .25s;
         @include type-style('caption');
 
         color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -125,8 +125,8 @@ $transition-duration: .25s;
     }
 }
 
-:host(:not([readonly]):hover),
-:host([readonly][role='combobox']:hover) {
+:host(:not([disabled],[readonly]):hover),
+:host(:not([disabled])[readonly][role='combobox']:hover) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'filled-text-hover-color');

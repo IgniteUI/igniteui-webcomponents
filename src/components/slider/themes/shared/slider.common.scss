@@ -26,7 +26,7 @@ $theme: $material;
 [part='thumb-label-inner'] {
     color: var-get($theme, 'label-text-color');
     background: var-get($theme, 'label-background-color');
-    padding: 0 rem(8px);
+    padding: 0 pad-inline(rem(8px));
 
     &::after {
         border-top: rem(10px) solid var-get($theme, 'label-background-color');

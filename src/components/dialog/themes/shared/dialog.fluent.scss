@@ -1,8 +1,8 @@
 @use 'styles/utilities' as *;
 
 [part='title'] {
-    padding: rem(24px);
-    padding-block-start: rem(16px);
+    padding: pad(rem(24px));
+    padding-block-start: pad-block(rem(16px));
 }
 
 [part='content'] {
@@ -10,11 +10,11 @@
         margin: 0;
     }
 
-    padding-inline: rem(24px);
-    padding-block: 0 rem(20px);
+    padding-inline: pad-inline(rem(24px));
+    padding-block: 0 pad-block(rem(20px));
 }
 
 [part='footer'] {
-    padding: rem(24px);
+    padding: pad(rem(24px));
     padding-block-start: 0;
 }
