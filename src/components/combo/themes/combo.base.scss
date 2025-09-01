@@ -2,6 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --item-count: 6;
+
     display: block;
     font-family: var(--ig-font-family);
 
@@ -73,7 +75,7 @@
 }
 
 [part='list'] {
-    min-height: rem(200px) !important;
+    min-height: calc(var(--size) * var(--item-count)) !important;
     outline-style: none;
 }
 
