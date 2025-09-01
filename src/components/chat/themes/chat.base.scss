@@ -29,11 +29,18 @@ $inline-inset: rem(16px);
   align-items: center;
 }
 
+[part='message-list'],
 [part='empty-state'],
 [part='suggestions-container'] {
+  display: block;
   max-width: calc(rem(760px) + $inline-inset * 2);
   width: 100%;
   padding-inline: $inline-inset;
+}
+
+[part='message-list'] {
+  padding-block: rem(16px) rem(24px);
+  gap: rem(24px);
 }
 
 [part='empty-state'] {
@@ -48,13 +55,6 @@ $inline-inset: rem(16px);
   box-shadow: var(--ig-elevation-4);
   width: 100%;
   z-index: 1;
-}
-
-[part='message-list'] {
-    display: flex;
-    flex-direction: column;
-    gap: rem(24px);
-    width: 100%;
 }
 
 [part='typing-indicator'] {
