@@ -102,7 +102,11 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _handleMessageActionClick(event: PointerEvent): void {
-    const reaction = (event.target as HTMLElement).getAttribute('name');
+    const targetButton = event.target as HTMLElement;
+    const button = targetButton.closest('igc-icon-button');
+    if (!button) return;
+
+    const reaction = button.getAttribute('name');
     this._chatState?.emitEvent('igcMessageReact', {
       detail: { message: this.message, reaction },
     });
