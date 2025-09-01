@@ -663,7 +663,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         aria-describedby="select-helper-text"
         aria-expanded=${this.open}
         exportparts="container: input, input: native-input, label, prefix, suffix"
-        tabIndex=${this.disabled ? -1 : 0}
         value=${ifDefined(value)}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}

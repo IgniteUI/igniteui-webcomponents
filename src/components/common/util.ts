@@ -1,4 +1,4 @@
-import { isServer } from 'lit';
+import { isServer, nothing } from 'lit';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
@@ -580,4 +580,14 @@ export function toMerged<
   S extends Record<PropertyKey, any>,
 >(target: T, source: S): T & S {
   return merge(structuredClone(target), source);
+}
+
+/**
+ * Similar to Lit's `ifDefined` directive except one can check `assertion`
+ * and bind a different `value` through this wrapper.
+ */
+export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
+  return assertion
+    ? (value ?? (nothing as NonNullable<T>))
+    : (nothing as NonNullable<T>);
 }
