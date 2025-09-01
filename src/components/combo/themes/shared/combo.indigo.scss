@@ -9,6 +9,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
     --combo-size: var(--component-size);
 
     igc-input::part(container) {
@@ -20,6 +21,11 @@ $dropdown-theme: dropdown-theme.$indigo;
 
         margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
+    }
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
     }
 }
 
