@@ -19,7 +19,7 @@ $dropdown-theme: dropdown-theme.$indigo;
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -49,7 +49,7 @@ $dropdown-theme: dropdown-theme.$indigo;
     background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
     outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
-    padding: rem(3px);
+    padding: pad(rem(3px));
 
     igc-input {
         --ig-theme: indigo;

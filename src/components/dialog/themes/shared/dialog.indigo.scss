@@ -8,15 +8,15 @@
 }
 
 [part='title'] {
-    padding: rem(24px) rem(24px) 0;
+    padding: pad-block(rem(24px)) pad-inline(rem(24px)) 0;
 }
 
 [part='content'] {
-    padding: rem(16px) rem(24px);
+    padding: pad-block(rem(16px)) pad-inline(rem(24px));
 }
 
 [part='footer'] {
-    padding: rem(16px) rem(24px) rem(24px);
+    padding: pad-block(rem(16px)) pad-inline(rem(24px)) pad-block(rem(24px));
     gap: rem(16px);
 }
 

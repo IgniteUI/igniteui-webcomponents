@@ -16,7 +16,7 @@ $border-size: rem(1px);
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: rem(5px);
+        margin-block-start: pad-block(rem(5px));
     }
 }
 
@@ -24,7 +24,7 @@ $border-size: rem(1px);
     @include type-style('subtitle-2') {
         --ig-subtitle-2-line-height: #{rem(16px)};
 
-        margin-block: 0 rem(5px);
+        margin-block: 0 pad-block(rem(5px));
     };
 
     display: block;
@@ -82,7 +82,7 @@ $border-size: rem(1px);
 textarea {
     @include type-style('body-2');
 
-    padding: rem(8px);
+    padding: pad(rem(8px));
 }
 
 :host([required]:not(:disabled)),

@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     position: relative;
-    padding: 0 pad(12px, 16px, 24px);
+    padding: 0 pad-inline(12px, 16px, 24px);
     cursor: pointer;
     background: inherit;
     color: inherit;
@@ -58,7 +58,7 @@
     justify-content: center;
     cursor: pointer;
     user-select: none;
-    margin-inline-end: rem(4px);
+    margin-inline-end: pad-inline(rem(4px));
     min-width: rem(24px);
 }
 
