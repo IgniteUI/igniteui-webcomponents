@@ -361,12 +361,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
           }
         )}
         ${this._chatState?.options?.isTyping
-          ? (this._chatState?.options?.renderers?.typingIndicator?.render({
+          ? (this._chatState?.options?.renderers?.typingIndicator?.({
               param: undefined,
               defaults: {
-                typingIndicator: {
-                  render: () => this.renderLoadingTemplate(),
-                },
+                typingIndicator: () => this.renderLoadingTemplate(),
               },
               options: this._chatState?.options,
             }) ?? this.renderLoadingTemplate())

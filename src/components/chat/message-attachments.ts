@@ -69,21 +69,14 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   public message?: IgcMessage;
 
   private _defaults: Partial<ChatRenderers>;
-  private _renderers: Partial<ChatRenderers>;
+  private _renderers?: Partial<ChatRenderers>;
 
   constructor() {
     super();
     this._defaults = {
-      attachment: { render: (ctx: any) => this.renderAttachment(ctx) },
-      attachmentHeader: { render: (ctx: any) => this.renderHeader(ctx.param) },
-      attachmentContent: {
-        render: (ctx: any) => this.renderContent(ctx.param),
-      },
-    };
-
-    this._renderers = {
-      ...this._defaults,
-      ...this._chatState?.options?.renderers,
+      attachment: (ctx: any) => this.renderAttachment(ctx),
+      attachmentHeader: (ctx: any) => this.renderHeader(ctx.param),
+      attachmentContent: (ctx: any) => this.renderContent(ctx.param),
     };
 
     registerIconFromText('close', closeIcon, 'material');
@@ -91,6 +84,14 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('image', imageIcon, 'material');
     registerIconFromText('preview', previewIcon, 'material');
     registerIconFromText('more', moreIcon, 'material');
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this._renderers = {
+      ...this._defaults,
+      ...this._chatState?.options?.renderers,
+    };
   }
 
   private _handleHeaderClick(attachment: IgcMessageAttachment) {
@@ -162,14 +163,14 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     };
 
     const content = html`<div part=${partMap(contentParts)}>
-      ${this._renderers.attachmentContent?.render(ctx)}
+      ${this._renderers?.attachmentContent?.(ctx)}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
       @click=${() => this._handleHeaderClick(attachment)}
     >
-      <div part="details">${this._renderers.attachmentHeader?.render(ctx)}</div>
+      <div part="details">${this._renderers?.attachmentHeader?.(ctx)}</div>
     </div>`;
 
     return html`
@@ -190,7 +191,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ${(this.message.attachments ?? []).map(
           (attachment) =>
             html`${until(
-              this._renderers.attachment?.render({
+              this._renderers?.attachment?.({
                 param: attachment,
                 defaults: this._defaults,
                 options: this._chatState?.options!,

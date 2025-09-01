@@ -164,4 +164,3 @@ export type {
   IgcMessage,
   IgcMessageAttachment,
 } from './components/chat/types.js';
-export { PlainTextRenderer } from './components/chat/plain-text-renderer.js';

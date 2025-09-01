@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
@@ -117,7 +117,7 @@ const _messageAuthorTemplate = (msg: any, ctx: any) => {
           >
         </div>
       `
-    : ctx.defaults.messageHeader.render(ctx);
+    : ctx.defaults.messageHeader(ctx);
 };
 const _messageActionsTemplate = (msg: any) => {
   return msg.sender !== 'user' && msg.text.trim()
@@ -168,12 +168,6 @@ const ai_chat_options = {
     'What is triskaidekaphobia?',
     'Show me very short sample typescript code',
   ],
-  // markdownRenderer: _customRenderer
-  // messageRenderer: new MarkdownMessageRenderer({
-  //   // noHighlighter: true
-  //   // languages: ['typescript']
-  //   // theme: 'github-dark'
-  // }),
 };
 
 const chat_options = {
@@ -182,16 +176,6 @@ const chat_options = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
-  // messageRenderer: new MarkdownMessageRenderer({
-  //   // noHighlighter: true
-  //   // languages: ['typescript']
-  //   // theme: 'github-dark'
-  // })
-  // messageRenderer: new MarkdownMessageRenderer({
-  //   // noHighlighter: true
-  //   // languages: ['typescript']
-  //   // theme: 'github-dark'
-  // }),
 };
 
 function handleCustomSendClick() {
@@ -512,7 +496,7 @@ export const Chat_Templates: Story = {
     const chat = document.querySelector('igc-chat');
     if (chat) {
       const _actionsTemplate = (ctx) => html`
-        ${ctx.defaults.fileUploadButton.render(ctx)}
+        ${ctx.defaults.fileUploadButton(ctx)}
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
@@ -525,29 +509,17 @@ export const Chat_Templates: Story = {
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         renderers: {
-          messageHeader: {
-            render: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
-          },
-          messageContent: {
-            render: (ctx) => html`${ctx.param.text.toUpperCase()}`,
-          },
-          messageActions: {
-            render: (ctx) => _messageActionsTemplate(ctx.param),
-          },
-          attachmentHeader: { render: () => html`` },
-          inputActions: { render: (ctx) => _actionsTemplate(ctx) },
-          inputAttachments: {
-            render: (ctx) =>
-              html`<span>Attachments:</span
-                >${ctx.defaults.inputAttachments.render(ctx)}`,
-          },
-          typingIndicator: {
-            render: (ctx) =>
-              html`<span
-                >Generating response
-                ${ctx.defaults.typingIndicator.render(ctx)}</span
-              >`,
-          },
+          messageHeader: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
+          messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+          messageActions: (ctx) => _messageActionsTemplate(ctx.param),
+          attachmentHeader: () => nothing,
+          inputActions: (ctx) => _actionsTemplate(ctx),
+          inputAttachments: (ctx) =>
+            html`<span>Attachments:</span>${ctx.defaults.inputAttachments(ctx)}`,
+          typingIndicator: (ctx) =>
+            html`<span
+              >Generating response ${ctx.defaults.typingIndicator(ctx)}</span
+            >`,
         },
       };
       chat.options = { ...options };

@@ -67,20 +67,24 @@ export default class IgcChatMessageComponent extends LitElement {
     super();
     addThemingController(this, all);
     this._defaults = {
-      message: { render: () => this._renderMessage() },
-      messageHeader: { render: () => this._renderHeader() },
-      messageContent: { render: () => this._renderContent() },
-      messageAttachments: { render: () => this._renderAttachments() },
-      messageActions: { render: () => this._renderActions() },
+      message: () => this._renderMessage(),
+      messageHeader: () => this._renderHeader(),
+      messageContent: () => this._renderContent(),
+      messageAttachments: () => this._renderAttachments(),
+      messageActions: () => this._renderActions(),
+    };
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this._renderers = {
+      ...this._defaults,
+      ...this._chatState?.options?.renderers,
     };
   }
 
   protected override firstUpdated(): void {
     adoptPageStyles(this);
-    this._renderers = {
-      ...this._defaults,
-      ...this._chatState?.options?.renderers,
-    };
   }
 
   private _handleMessageActionClick(event: PointerEvent): void {
@@ -97,7 +101,7 @@ export default class IgcChatMessageComponent extends LitElement {
   private _renderContent() {
     if (!this.message || !this.message.text) return nothing;
 
-    return html` ${this._chatState?.textRenderer?.render(this.message)} `;
+    return html`<pre part="plain-text">${this.message.text}</pre>`;
   }
 
   private _renderActions() {
@@ -210,17 +214,19 @@ export default class IgcChatMessageComponent extends LitElement {
     if (options?.renderers?.message) {
       return html`
         <div part=${partMap(parts)}>
-          ${until(options.renderers.message.render(ctx))}
+          ${until(options.renderers.message(ctx))}
         </div>
       `;
     }
 
+    if (!this._renderers) return nothing;
+
     return html`
       <div part=${partMap(parts)}>
-        ${this._renderers?.messageHeader?.render(ctx)}
-        ${this._renderers?.messageContent?.render(ctx)}
-        ${this._renderers?.messageAttachments?.render(ctx)}
-        ${this._renderers?.messageActions?.render(ctx)}
+        ${this._renderers.messageHeader?.(ctx)}
+        ${this._renderers.messageContent?.(ctx)}
+        ${this._renderers.messageAttachments?.(ctx)}
+        ${this._renderers.messageActions?.(ctx)}
       </div>
     `;
   }

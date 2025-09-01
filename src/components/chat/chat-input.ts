@@ -98,24 +98,31 @@ export default class IgcChatInputComponent extends LitElement {
   private containerPart = 'input-container';
 
   private _defaults: Partial<ChatRenderers>;
+  private _renderers?: Partial<ChatRenderers>;
 
   constructor() {
     super();
     addThemingController(this, all);
     this._defaults = {
-      input: { render: () => this._renderTextArea() },
-      inputActions: { render: () => this.renderActionsArea() },
-      inputAttachments: {
-        render: (ctx) => this.renderAttachmentsArea(ctx.param),
-      },
-      fileUploadButton: { render: () => this.renderFileUploadButton() },
-      sendButton: { render: () => this._renderSendButton() },
+      input: () => this._renderTextArea(),
+      inputActions: () => this.renderActionsArea(),
+      inputAttachments: (ctx) => this.renderAttachmentsArea(ctx.param),
+      fileUploadButton: () => this.renderFileUploadButton(),
+      sendButton: () => this._renderSendButton(),
     };
     registerIconFromText('attachment', attachmentIcon, 'material');
     registerIconFromText('send-message', sendButtonIcon, 'material');
     registerIconFromText('file-document', fileDocumentIcon, 'material');
     registerIconFromText('file-image', fileImageIcon, 'material');
     registerIconFromText('star-icon', starIcon, 'material');
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this._renderers = {
+      ...this._defaults,
+      ...this._chatState?.options?.renderers,
+    };
   }
 
   protected override firstUpdated() {
@@ -315,29 +322,29 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private renderActionsArea() {
-    return html` ${this._renderers.fileUploadButton?.render({
+    if (!this._renderers) return nothing;
+
+    return html` ${this._renderers.fileUploadButton?.({
       param: undefined,
       defaults: this._defaults,
       options: this._chatState.options,
     })}
-    ${this._renderers.sendButton?.render({
+    ${this._renderers.sendButton?.({
       param: undefined,
       defaults: this._defaults,
       options: this._chatState.options,
     })}`;
   }
 
-  private get _renderers(): Partial<ChatRenderers> {
-    return { ...this._defaults, ...this._chatState?.options?.renderers };
-  }
-
   protected override render() {
+    if (!this._renderers) return nothing;
+
     return html`
       <div part="${this.containerPart}">
         ${this._chatState.inputAttachments &&
         this._chatState.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
-              ${this._renderers.inputAttachments?.render({
+              ${this._renderers.inputAttachments?.({
                 param: this._chatState.inputAttachments,
                 defaults: this._defaults,
                 options: this._chatState.options,
@@ -345,14 +352,14 @@ export default class IgcChatInputComponent extends LitElement {
             </div>`
           : nothing}
         <div part="input-wrapper">
-          ${this._renderers.input?.render({
+          ${this._renderers.input?.({
             param: this._chatState.inputValue,
             defaults: this._defaults,
             options: this._chatState.options,
           })}
         </div>
         <div part="buttons-container">
-          ${this._renderers.inputActions?.render({
+          ${this._renderers.inputActions?.({
             param: undefined,
             defaults: this._defaults,
             options: this._chatState.options,

@@ -5,7 +5,6 @@ import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
-import { PlainTextRenderer } from './plain-text-renderer.js';
 import {
   copyIcon,
   type IgcChatOptions,
@@ -55,12 +54,7 @@ export class ChatState {
 
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
-  private _textRenderer = new PlainTextRenderer();
   public resourceStrings = IgcChatResourceStringEN;
-
-  public get textRenderer() {
-    return this._textRenderer;
-  }
 
   //#endregion
 

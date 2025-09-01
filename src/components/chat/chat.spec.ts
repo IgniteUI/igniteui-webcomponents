@@ -916,7 +916,7 @@ describe('Chat', () => {
     it('should render attachmentTemplate', async () => {
       chat.options = {
         renderers: {
-          attachment: { render: (ctx) => attachmentTemplate(ctx.param) },
+          attachment: (ctx) => attachmentTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
@@ -950,20 +950,15 @@ describe('Chat', () => {
     it('should render attachmentHeaderTemplate, attachmentContentTemplate', async () => {
       chat.options = {
         renderers: {
-          attachmentHeader: {
-            render: (ctx) => attachmentHeaderTemplate(ctx.param),
-          },
-          attachmentContent: {
-            render: (ctx) => attachmentContentTemplate(ctx.param),
-          },
+          attachmentHeader: (ctx) => attachmentHeaderTemplate(ctx.param),
+          attachmentContent: (ctx) => attachmentContentTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
       await aTimeout(500);
 
-      const messageElements = chat.shadowRoot
-        ?.querySelector('div[part="message-list"]')
-        ?.shadowRoot?.querySelectorAll('igc-chat-message');
+      const messageElements =
+        chat?.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
@@ -997,14 +992,13 @@ describe('Chat', () => {
     it('should render messageTemplate', async () => {
       chat.options = {
         renderers: {
-          message: { render: (ctx) => messageTemplate(ctx.param) },
+          message: (ctx) => messageTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
       await aTimeout(500);
-      const messageElements = chat.shadowRoot
-        ?.querySelector('div[part="message-list"]')
-        ?.shadowRoot?.querySelectorAll('igc-chat-message');
+      const messageElements =
+        chat.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
@@ -1026,17 +1020,13 @@ describe('Chat', () => {
     it('should render messageActionsTemplate', async () => {
       chat.options = {
         renderers: {
-          messageActions: {
-            render: (ctx) => messageActionsTemplate(ctx.param),
-          },
+          messageActions: (ctx) => messageActionsTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
       await aTimeout(500);
-      const messageElements = chat.shadowRoot
-        ?.querySelector('div[part="message-list"]')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`)
-        ?.querySelectorAll('igc-chat-message');
+      const messageElements =
+        chat.shadowRoot?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
@@ -1068,13 +1058,13 @@ describe('Chat', () => {
       chat.options = {
         isTyping: true,
         renderers: {
-          typingIndicator: { render: () => typingIndicatorTemplate },
+          typingIndicator: () => typingIndicatorTemplate,
         },
       };
       await elementUpdated(chat);
-      const messageContainer = chat.shadowRoot
-        ?.querySelector('div[part="message-list"]')
-        ?.shadowRoot?.querySelector(`div[part='message-list']`);
+      const messageContainer = chat?.shadowRoot?.querySelector(
+        `div[part='message-list']`
+      );
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
@@ -1091,9 +1081,9 @@ describe('Chat', () => {
       chat.draftMessage = draftMessage;
       chat.options = {
         renderers: {
-          input: { render: () => textInputTemplate },
-          inputActions: { render: () => textAreaActionsTemplate },
-          inputAttachments: { render: () => textAreaAttachmentsTemplate },
+          input: () => textInputTemplate,
+          inputActions: () => textAreaActionsTemplate,
+          inputAttachments: () => textAreaAttachmentsTemplate,
         },
       };
       await elementUpdated(chat);
@@ -1129,7 +1119,7 @@ describe('Chat', () => {
     it('should render messageHeaderTemplate', async () => {
       chat.options = {
         renderers: {
-          messageHeader: { render: (ctx) => messageHeaderTemplate(ctx.param) },
+          messageHeader: (ctx) => messageHeaderTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
