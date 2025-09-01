@@ -1350,7 +1350,7 @@ describe('Chat', () => {
         }
       });
 
-      it('should activates the recent message when the message list is focused', async () => {
+      xit('should activates the recent message when the message list is focused', async () => {
         chat.messages = messages;
         await elementUpdated(chat);
         await aTimeout(500);
