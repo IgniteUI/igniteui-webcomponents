@@ -98,7 +98,29 @@ export default class IgcChatInputComponent extends LitElement {
   private containerPart = 'input-container';
 
   private _defaults: Partial<ChatRenderers>;
-  private _renderers?: Partial<ChatRenderers>;
+  private _cachedRenderers?: {
+    custom: Partial<ChatRenderers>;
+    merged: Partial<ChatRenderers>;
+  };
+
+  private get _renderers() {
+    if (!this._chatState?.options?.renderers) {
+      return this._defaults;
+    }
+
+    const custom = this._chatState.options.renderers;
+    if (this._cachedRenderers?.custom === custom) {
+      return this._cachedRenderers.merged;
+    }
+
+    const merged = {
+      ...this._defaults,
+      ...custom,
+    };
+
+    this._cachedRenderers = { custom, merged };
+    return merged;
+  }
 
   constructor() {
     super();
@@ -115,14 +137,6 @@ export default class IgcChatInputComponent extends LitElement {
     registerIconFromText('file-document', fileDocumentIcon, 'material');
     registerIconFromText('file-image', fileImageIcon, 'material');
     registerIconFromText('star-icon', starIcon, 'material');
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this._renderers = {
-      ...this._defaults,
-      ...this._chatState?.options?.renderers,
-    };
   }
 
   protected override firstUpdated() {

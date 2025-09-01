@@ -69,7 +69,29 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   public message?: IgcMessage;
 
   private _defaults: Partial<ChatRenderers>;
-  private _renderers?: Partial<ChatRenderers>;
+  private _cachedRenderers?: {
+    custom: Partial<ChatRenderers>;
+    merged: Partial<ChatRenderers>;
+  };
+
+  private get _renderers() {
+    if (!this._chatState?.options?.renderers) {
+      return this._defaults;
+    }
+
+    const custom = this._chatState.options.renderers;
+    if (this._cachedRenderers?.custom === custom) {
+      return this._cachedRenderers.merged;
+    }
+
+    const merged = {
+      ...this._defaults,
+      ...custom,
+    };
+
+    this._cachedRenderers = { custom, merged };
+    return merged;
+  }
 
   constructor() {
     super();
@@ -86,17 +108,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerIconFromText('more', moreIcon, 'material');
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this._renderers = {
-      ...this._defaults,
-      ...this._chatState?.options?.renderers,
-    };
-  }
-
-  private _handleHeaderClick(attachment: IgcMessageAttachment) {
+  private _handleHeaderClick = (attachment: IgcMessageAttachment) => {
     this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
-  }
+  };
   /**
    * Default attachment header template used when no custom template is provided.
    * Renders the attachment icon and name.

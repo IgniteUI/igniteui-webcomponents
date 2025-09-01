@@ -55,7 +55,29 @@ export default class IgcChatMessageComponent extends LitElement {
   private readonly _chatState?: ChatState;
 
   private _defaults: Partial<ChatRenderers>;
-  private _renderers?: Partial<ChatRenderers>;
+  private _cachedRenderers?: {
+    custom: Partial<ChatRenderers>;
+    merged: Partial<ChatRenderers>;
+  };
+
+  private get _renderers() {
+    if (!this._chatState?.options?.renderers) {
+      return this._defaults;
+    }
+
+    const custom = this._chatState.options.renderers;
+    if (this._cachedRenderers?.custom === custom) {
+      return this._cachedRenderers.merged;
+    }
+
+    const merged = {
+      ...this._defaults,
+      ...custom,
+    };
+
+    this._cachedRenderers = { custom, merged };
+    return merged;
+  }
 
   /**
    * The chat message to render.
@@ -72,14 +94,6 @@ export default class IgcChatMessageComponent extends LitElement {
       messageContent: () => this._renderContent(),
       messageAttachments: () => this._renderAttachments(),
       messageActions: () => this._renderActions(),
-    };
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this._renderers = {
-      ...this._defaults,
-      ...this._chatState?.options?.renderers,
     };
   }
 
@@ -114,7 +128,7 @@ export default class IgcChatMessageComponent extends LitElement {
       return nothing;
     }
 
-    return html` <div>
+    return html` <div @click=${this._handleMessageActionClick}>
       <igc-icon-button
         id="copy-response-button"
         @pointerenter=${(ev: PointerEvent) =>
@@ -125,7 +139,6 @@ export default class IgcChatMessageComponent extends LitElement {
         name="copy-response"
         collection="material"
         variant="flat"
-        @click=${this._handleMessageActionClick}
       ></igc-icon-button>
       <igc-icon-button
         id="good-response-button"
@@ -137,7 +150,6 @@ export default class IgcChatMessageComponent extends LitElement {
         name="good-response"
         collection="material"
         variant="flat"
-        @click=${this._handleMessageActionClick}
       ></igc-icon-button>
       <igc-icon-button
         id="bad-response-button"
@@ -149,7 +161,6 @@ export default class IgcChatMessageComponent extends LitElement {
         name="bad-response"
         variant="flat"
         collection="material"
-        @click=${this._handleMessageActionClick}
       ></igc-icon-button>
       <igc-icon-button
         id="redo-button"
@@ -161,7 +172,6 @@ export default class IgcChatMessageComponent extends LitElement {
         name="redo"
         variant="flat"
         collection="material"
-        @click=${this._handleMessageActionClick}
       ></igc-icon-button>
     </div>`;
   }
@@ -218,8 +228,6 @@ export default class IgcChatMessageComponent extends LitElement {
         </div>
       `;
     }
-
-    if (!this._renderers) return nothing;
 
     return html`
       <div part=${partMap(parts)}>

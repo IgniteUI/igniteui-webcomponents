@@ -190,8 +190,6 @@ describe('Chat', () => {
                             variant="flat"
                           >
                           </igc-icon-button>
-                          <igc-tooltip id="sharedTooltip">
-                          </igc-tooltip>
                         </div>`;
 
   let chat: IgcChatComponent;
@@ -1068,7 +1066,12 @@ describe('Chat', () => {
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div part="message-list">
+        `<div
+        part="message-list"
+        aria-label="Message list"
+        role="group"
+        tabindex="0"
+      >
                 <igc-chat-message id="message-1" part="message-item" role="option">
                 </igc-chat-message>
                 <span>loading...</span>
@@ -1081,9 +1084,9 @@ describe('Chat', () => {
       chat.draftMessage = draftMessage;
       chat.options = {
         renderers: {
-          input: () => textInputTemplate,
+          input: (ctx) => textInputTemplate(ctx.param),
           inputActions: () => textAreaActionsTemplate,
-          inputAttachments: () => textAreaAttachmentsTemplate,
+          inputAttachments: (ctx) => textAreaAttachmentsTemplate(ctx.param),
         },
       };
       await elementUpdated(chat);
@@ -1127,7 +1130,7 @@ describe('Chat', () => {
 
       const messageElements = chat.shadowRoot
         ?.querySelector('div[part="message-list"]')
-        ?.shadowRoot?.querySelectorAll('igc-chat-message');
+        ?.querySelectorAll('igc-chat-message');
       expect(messageElements).not.to.be.undefined;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
@@ -1379,9 +1382,7 @@ describe('Chat', () => {
 
         const messageContainer = chat.shadowRoot
           ?.querySelector('div[part="message-list"]')
-          ?.shadowRoot?.querySelector(
-            `div[part='message-container']`
-          ) as HTMLElement;
+          ?.querySelector(`div[part='message-container']`) as HTMLElement;
         messageContainer.focus();
         await elementUpdated(chat);
         await nextFrame();
@@ -1409,9 +1410,7 @@ describe('Chat', () => {
 
         const messageContainer = chat.shadowRoot
           ?.querySelector('div[part="message-list"]')
-          ?.shadowRoot?.querySelector(
-            `div[part='message-container']`
-          ) as HTMLElement;
+          ?.querySelector(`div[part='message-container']`) as HTMLElement;
         messageContainer.focus();
         await elementUpdated(chat);
         await nextFrame();
