@@ -23,11 +23,12 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
+import IgcInputComponent from '../input/input.js';
 import IgcChatComponent from './chat.js';
 
 describe('Chat', () => {
   before(() => {
-    defineComponents(IgcChatComponent);
+    defineComponents(IgcChatComponent, IgcInputComponent);
   });
 
   const DIFF_OPTIONS = {
@@ -1102,7 +1103,7 @@ describe('Chat', () => {
               </div>
             </div>
             <div part="input-wrapper">
-                <igc-input placeholder="Type text here...">
+                <igc-input type="text" placeholder="Type text here...">
             </div>
             <div part="buttons-container">
               <div>
