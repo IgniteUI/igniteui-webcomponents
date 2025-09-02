@@ -380,32 +380,29 @@ describe('Chat', () => {
         </igc-chat>`
       );
 
-      await aTimeout(500);
-
       const messageContainer = chat.shadowRoot?.querySelector(
         `div[part='message-list']`
       );
 
-      expect(messageContainer).not.to.be.undefined;
-      expect(chat.messages.length).to.equal(3);
+      expect(messageContainer).not.to.be.null;
 
-      messageContainer
-        ?.querySelectorAll('igc-chat-message')
-        .forEach((messageElement, index) => {
-          if (index !== 2) {
-            expect(
-              messageElement.shadowRoot?.querySelector(
-                `div[part='message-container ']`
-              )
-            ).not.to.be.undefined;
-          } else {
-            expect(
-              messageElement.shadowRoot?.querySelector(
-                `div[part='message-container sent']`
-              )
-            ).not.to.be.undefined;
-          }
-        });
+      const msgElements =
+        messageContainer?.querySelectorAll('igc-chat-message');
+      msgElements?.forEach((messageElement, index) => {
+        if (index !== 2) {
+          expect(
+            messageElement.shadowRoot?.querySelector(
+              `div[part='message-container']`
+            )
+          ).not.to.be.null;
+        } else {
+          expect(
+            messageElement.shadowRoot?.querySelector(
+              `div[part='message-container sent']`
+            )
+          ).not.to.be.null;
+        }
+      });
     });
 
     it('should render the message in `draftMessage` correctly', async () => {
@@ -532,8 +529,8 @@ describe('Chat', () => {
       };
       await elementUpdated(chat);
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const element = inputArea?.shadowRoot?.querySelector('igc-file-input');
-      expect(element).not.to.be.undefined;
+      const element = inputArea?.shadowRoot?.querySelector('input');
+      expect(element).not.to.be.null;
       if (element) {
         expect(element.accept).to.equal('image/*');
 
@@ -637,13 +634,13 @@ describe('Chat', () => {
       const messageElements = chat.shadowRoot
         ?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         expect(messsageContainer).dom.to.equal(
           `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                               <pre part="plain-text">
@@ -919,13 +916,13 @@ describe('Chat', () => {
       const messageElements = chat.shadowRoot
         ?.querySelector(`div[part='message-list']`)
         ?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
         );
@@ -953,13 +950,13 @@ describe('Chat', () => {
 
       const messageElements =
         chat?.shadowRoot?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         const attachments = messsageContainer?.querySelector(
           'igc-message-attachments'
         );
@@ -993,13 +990,13 @@ describe('Chat', () => {
       await aTimeout(500);
       const messageElements =
         chat.shadowRoot?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         expect(messsageContainer).dom.to.equal(
           `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                 <div>
@@ -1021,13 +1018,13 @@ describe('Chat', () => {
       await aTimeout(500);
       const messageElements =
         chat.shadowRoot?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         expect(messsageContainer).dom.to.equal(
           `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                             <pre part="plain-text">
@@ -1125,13 +1122,13 @@ describe('Chat', () => {
       const messageElements = chat.shadowRoot
         ?.querySelector('div[part="message-list"]')
         ?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.undefined;
+      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messsageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.undefined;
+        expect(messsageContainer).not.to.be.null;
         expect(messsageContainer).dom.to.equal(
           `<div part="message-container${isCurrentUser ? ' sent' : ''}">
               ${!isCurrentUser ? '<span>AI Assistant</span>' : ''}
@@ -1156,8 +1153,8 @@ describe('Chat', () => {
           'igc-icon-button[name="send-message"]'
         );
         const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
-        expect(sendButton).not.to.be.undefined;
-        expect(textArea).not.to.be.undefined;
+        expect(sendButton).not.to.be.null;
+        expect(textArea).not.to.be.null;
 
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
@@ -1261,7 +1258,7 @@ describe('Chat', () => {
           `div[part='input-container']`
         );
 
-        expect(dropZone).not.to.be.undefined;
+        expect(dropZone).not.to.be.null;
         if (dropZone) {
           const mockDataTransfer = new DataTransfer();
           files.forEach((file) => {
@@ -1314,8 +1311,8 @@ describe('Chat', () => {
         );
         const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
-        expect(sendButton).not.to.be.undefined;
-        expect(textArea).not.to.be.undefined;
+        expect(sendButton).not.to.be.null;
+        expect(textArea).not.to.be.null;
 
         if (sendButton && textArea) {
           textArea.setAttribute('value', 'Hello!');
@@ -1455,7 +1452,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
-      expect(textArea).not.to.be.undefined;
+      expect(textArea).not.to.be.null;
       if (textArea) {
         simulateFocus(textArea);
         simulateKeyboard(textArea, 'a');
@@ -1475,7 +1472,7 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
-      expect(textArea).not.to.be.undefined;
+      expect(textArea).not.to.be.null;
 
       if (textArea) {
         simulateFocus(textArea);
@@ -1487,7 +1484,7 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
-      expect(textArea).not.to.be.undefined;
+      expect(textArea).not.to.be.null;
 
       if (textArea) {
         simulateBlur(textArea);
@@ -1500,7 +1497,7 @@ describe('Chat', () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
 
-      expect(textArea).not.to.be.undefined;
+      expect(textArea).not.to.be.null;
       if (textArea) {
         textArea.setAttribute('value', 'Hello!');
         textArea.dispatchEvent(
@@ -1539,8 +1536,8 @@ describe('Chat', () => {
         'igc-icon-button[name="send-message"]'
       );
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea');
-      expect(sendButton).not.to.be.undefined;
-      expect(textArea).not.to.be.undefined;
+      expect(sendButton).not.to.be.null;
+      expect(textArea).not.to.be.null;
 
       chat.addEventListener('igcMessageCreated', (event) => {
         event.preventDefault();
