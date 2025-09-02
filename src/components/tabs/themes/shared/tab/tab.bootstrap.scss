@@ -10,7 +10,7 @@ $theme: $bootstrap;
     [part='tab-header'] {
         transition: none;
         border-radius: 0;
-        padding: rem(8px) rem(16px);
+        padding: pad-block(rem(8px)) pad-inline(rem(16px));
 
         &::before {
             content: '';
