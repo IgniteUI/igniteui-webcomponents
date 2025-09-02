@@ -1,5 +1,7 @@
+import { adoptStyles, type LitElement } from 'lit';
 import { last } from '../common/util.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
+import type IgcChatMessageComponent from './chat-message.js';
 import type { IgcMessageAttachment } from './types.js';
 
 let actionsTooltip: IgcTooltipComponent;
@@ -79,4 +81,24 @@ export function showChatActionsTooltip(target: Element, message: string): void {
   }
   actionsTooltip.message = message;
   actionsTooltip.show(target);
+}
+
+// REVIEW: Maybe put that behind a configuration flag as this is nasty.
+export function chatMessageAdoptPageStyles(
+  message: IgcChatMessageComponent
+): void {
+  const sheets: CSSStyleSheet[] = [];
+
+  for (const sheet of document.styleSheets) {
+    try {
+      const constructed = new CSSStyleSheet();
+      for (const rule of sheet.cssRules) {
+        constructed.insertRule(rule.cssText);
+      }
+      sheets.push(constructed);
+    } catch {}
+  }
+
+  const ctor = message.constructor as typeof LitElement;
+  adoptStyles(message.shadowRoot!, [...ctor.elementStyles, ...sheets]);
 }
