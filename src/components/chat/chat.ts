@@ -322,7 +322,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
     const hasContent =
       this._slots.hasAssignedElements('prefix') ||
       this._slots.hasAssignedElements('title') ||
-      this._slots.hasAssignedElements('actions');
+      this._slots.hasAssignedElements('actions') ||
+      this._chatState.options?.headerText;
     return html` <div part="header" ?hidden=${!hasContent}>
       <slot name="prefix" part="prefix"></slot>
       <slot name="title" part="title"
