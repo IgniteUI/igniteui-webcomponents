@@ -30,6 +30,20 @@ const metadata: Meta<IgcChatComponent> = {
           'A chat UI component for displaying messages, attachments, and input interaction.\n\nThis component is part of the Ignite UI Web Components suite.',
       },
     },
+    actions: {
+      handles: [
+        'igcMessageCreated',
+        'igcMessageReact',
+        'igcAttachmentClick',
+        'igcAttachmentChange',
+        'igcAttachmentDrag',
+        'igcAttachmentDrop',
+        'igcTypingChange',
+        'igcInputFocus',
+        'igcInputBlur',
+        'igcInputChange',
+      ],
+    },
   },
 };
 
