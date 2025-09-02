@@ -13,7 +13,7 @@ import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments.common.css.js';
 import {
-  type ChatRenderers,
+  type ChatTemplateRenderer,
   closeIcon,
   fileIcon,
   type IgcChatOptions,
@@ -25,6 +25,11 @@ import {
 } from './types.js';
 import { createAttachmentURL, getFileExtension } from './utils.js';
 
+type DefaultAttachmentRenderers = {
+  attachment: ChatTemplateRenderer<IgcMessageAttachment>;
+  attachmentHeader: ChatTemplateRenderer<IgcMessageAttachment>;
+  attachmentContent: ChatTemplateRenderer<IgcMessageAttachment>;
+};
 /**
  * A component that renders message attachments within a chat.
  *
@@ -68,38 +73,21 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   @property({ attribute: false })
   public message?: IgcMessage;
 
-  private _defaults: Partial<ChatRenderers>;
-  private _cachedRenderers?: {
-    custom: Partial<ChatRenderers>;
-    merged: Partial<ChatRenderers>;
-  };
+  private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
+    Object.freeze({
+      attachment: (ctx: any) => this.renderAttachment(ctx),
+      attachmentHeader: (ctx: any) => this.renderHeader(ctx.param),
+      attachmentContent: (ctx: any) => this.renderContent(ctx.param),
+    });
 
-  private get _renderers() {
-    if (!this._chatState?.options?.renderers) {
-      return this._defaults;
-    }
-
-    const custom = this._chatState.options.renderers;
-    if (this._cachedRenderers?.custom === custom) {
-      return this._cachedRenderers.merged;
-    }
-
-    const merged = {
-      ...this._defaults,
-      ...custom,
-    };
-
-    this._cachedRenderers = { custom, merged };
-    return merged;
+  private _getRenderers(name: keyof DefaultAttachmentRenderers) {
+    return this._chatState?.options?.renderers
+      ? (this._chatState.options.renderers[name] ?? this._defaults[name])
+      : this._defaults[name];
   }
 
   constructor() {
     super();
-    this._defaults = {
-      attachment: (ctx: any) => this.renderAttachment(ctx),
-      attachmentHeader: (ctx: any) => this.renderHeader(ctx.param),
-      attachmentContent: (ctx: any) => this.renderContent(ctx.param),
-    };
 
     registerIconFromText('close', closeIcon, 'material');
     registerIconFromText('file', fileIcon, 'material');
@@ -157,7 +145,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private renderAttachment(ctx: {
     param: IgcMessageAttachment;
-    defaults: Partial<ChatRenderers>;
+    defaults: DefaultAttachmentRenderers;
     options?: IgcChatOptions;
   }) {
     const { param: attachment } = ctx;
@@ -177,14 +165,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     };
 
     const content = html`<div part=${partMap(contentParts)}>
-      ${this._renderers?.attachmentContent?.(ctx)}
+      ${until(this._getRenderers('attachmentContent')(ctx))}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}
       role="button"
       @click=${() => this._handleHeaderClick(attachment)}
     >
-      <div part="details">${this._renderers?.attachmentHeader?.(ctx)}</div>
+      <div part="details">
+        ${until(this._getRenderers('attachmentHeader')(ctx))}
+      </div>
     </div>`;
 
     return html`
@@ -205,7 +195,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ${(this.message.attachments ?? []).map(
           (attachment) =>
             html`${until(
-              this._renderers?.attachment?.({
+              this._getRenderers('attachment')({
                 param: attachment,
                 defaults: this._defaults,
                 options: this._chatState?.options!,
