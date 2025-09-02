@@ -432,7 +432,7 @@ describe('Chat', () => {
       const headerArea = chat.shadowRoot?.querySelector(`div[part='header']`);
 
       expect(headerArea).dom.to.equal(
-        `<div hidden="" part="header">
+        `<div part="header">
                       <slot name="prefix" part="prefix">
                       </slot>
                       <slot name="title" part="title">
