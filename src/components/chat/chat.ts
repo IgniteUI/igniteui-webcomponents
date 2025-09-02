@@ -1,5 +1,5 @@
 import { ContextProvider } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -141,6 +141,18 @@ const Slots = setSlots(
  * This component is part of the Ignite UI Web Components suite.
  *
  * @element igc-chat
+ *
+ * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
+ * @fires igcMessageReact - Dispatched when a message is reacted to.
+ * @fires igcAttachmentClick - Dispatched when a chat message attachment is clicked.
+ * @fires igcAttachmentChange - Dispatched when a message attachment is changed (e.g., updated or removed).
+ * @fires igcAttachmentDrag - Dispatched during an attachment drag operation.
+ * @fires igcAttachmentDrop - Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+ * @fires igcTypingChange - Dispatched when the typing status changes (e.g., user starts or stops typing).
+ * @fires igcInputFocus - Dispatched when the chat input field gains focus.
+ * @fires igcInputBlur - Dispatched when the chat input field loses focus.
+ * @fires igcInputChange - Dispatched when the content of the chat input changes.
+ *
  * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
  * @slot title - Slot for overriding the chat title content.
  * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
@@ -258,34 +270,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public resourceStrings = IgcChatResourceStringEN;
 
+  // REVIEW: Maybe accept an `IgcMessage` type?
   /**
    * Scrolls the view to a specific message by id.
    * @param messageId - The id of the message to scroll to
    */
-  public scrollToMessage(messageId: string) {
-    // Find the message list component
-    const messageListComponent = this.shadowRoot?.querySelector(
-      'div[part="message-list"]'
-    );
-    if (!messageListComponent) {
-      return;
+  public scrollToMessage(messageId: string): void {
+    if (!isEmpty(this.messages)) {
+      const message = this.renderRoot.querySelector(`#message-${messageId}`);
+      message?.scrollIntoView({ block: 'center', inline: 'center' });
     }
-
-    // Look for the message element inside the message list's shadow DOM
-    const messageElement = messageListComponent.shadowRoot?.querySelector(
-      `#message-${messageId}`
-    );
-
-    if (!messageElement) {
-      return;
-    }
-
-    // Scroll the message into view with smooth behavior
-    messageElement.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-      inline: 'nearest',
-    });
   }
 
   @watch('messages')
@@ -295,29 +289,25 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this._chatState, true);
   }
 
-  /**
-   * Scrolls to bottom unless auto-scroll is disabled.
-   */
-  protected override updated() {
-    if (!this._chatState?.options?.disableAutoScroll) {
-      this.scrollToBottom();
+  protected override updated(properties: PropertyValues<this>): void {
+    if (
+      properties.has('messages') &&
+      !this._chatState.options?.disableAutoScroll
+    ) {
+      this._scrollToBottom();
     }
   }
 
-  /**
-   * Scrolls the container to the bottom, typically called after new messages are rendered.
-   * @private
-   */
-  private async scrollToBottom() {
-    // TODO: fix
-    await this.updateComplete;
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    setTimeout(() => {
-      const container = this.shadowRoot?.host as HTMLElement;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }, 100);
+  private _scrollToBottom(): void {
+    if (!isEmpty(this.messages)) {
+      const lastMessage = this.renderRoot
+        .querySelectorAll(IgcChatMessageComponent.tagName)
+        .item(this.messages.length - 1);
+
+      requestAnimationFrame(() =>
+        lastMessage.scrollIntoView({ block: 'center', inline: 'center' })
+      );
+    }
   }
 
   private renderHeader() {
