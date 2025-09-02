@@ -290,14 +290,14 @@ describe('Chat', () => {
       );
 
       expect(messageContainer).dom.to.equal(
-        `<div part="message-list" aria-label="Message list" role="group" tabindex="0">
-                   <igc-chat-message id="message-1" part="message-item" role="option">
+        `<div part="message-list" tabindex="0">
+                   <igc-chat-message id="message-1" part="message-item">
                     </igc-chat-message>
-                    <igc-chat-message id="message-2" part="message-item" role="option">
+                    <igc-chat-message id="message-2" part="message-item">
                     </igc-chat-message>
-                    <igc-chat-message id="message-3" part="message-item" role="option">
+                    <igc-chat-message id="message-3" part="message-item">
                     </igc-chat-message>
-                    <igc-chat-message id="message-4" part="message-item" role="option">
+                    <igc-chat-message id="message-4" part="message-item">
                     </igc-chat-message>
                   </div>`,
         DIFF_OPTIONS
@@ -733,10 +733,7 @@ describe('Chat', () => {
 
       expect(suggestionsContainer).dom.to.equal(
         `<div part="suggestions-container">
-        <igc-list
-          aria-label="Suggestions"
-          role="list"
-        >
+        <igc-list>
           <igc-list-header part="suggestions-header">
             <span>
               Suggestions
@@ -751,7 +748,6 @@ describe('Chat', () => {
             <slot
               name="suggestion"
               part="suggestion"
-              role="listitem"
             >
               <igc-list-item>
                 <span slot="start">
@@ -769,7 +765,6 @@ describe('Chat', () => {
             <slot
               name="suggestion"
               part="suggestion"
-              role="listitem"
             >
               <igc-list-item>
                 <span slot="start">
@@ -866,8 +861,8 @@ describe('Chat', () => {
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div part="message-list" aria-label="Message list" role="group" tabindex="0">
-                <igc-chat-message id="message-1" part="message-item" role="option">
+        `<div part="message-list" tabindex="0">
+                <igc-chat-message id="message-1" part="message-item">
                 </igc-chat-message>
                 <div part="typing-indicator">
                     <div part="typing-dot">
@@ -1069,11 +1064,9 @@ describe('Chat', () => {
       expect(messageContainer).dom.to.equal(
         `<div
         part="message-list"
-        aria-label="Message list"
-        role="group"
         tabindex="0"
       >
-                <igc-chat-message id="message-1" part="message-item" role="option">
+                <igc-chat-message id="message-1" part="message-item">
                 </igc-chat-message>
                 <span>loading...</span>
             </div>`,
