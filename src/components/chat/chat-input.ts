@@ -11,6 +11,7 @@ import { chatContext } from '../common/context.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { registerIconFromText } from '../icon/icon.registry.js';
@@ -103,7 +104,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   @state()
-  private containerPart = 'input-container';
+  private _parts = { 'input-container': true, dragging: false };
 
   private readonly _defaults: Readonly<DefaultInputRenderers> = Object.freeze({
     input: () => this._renderTextArea(),
@@ -125,7 +126,6 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override firstUpdated() {
-    this.setupDragAndDrop();
     this._chatState.updateAcceptedTypesCache();
     this._chatState.textArea = this._textInputElement;
 
@@ -144,18 +144,6 @@ export default class IgcChatInputComponent extends LitElement {
     };
   }
 
-  private setupDragAndDrop() {
-    const container = this.shadowRoot?.querySelector(
-      `div[part='input-container']`
-    ) as HTMLElement;
-    if (container) {
-      container.addEventListener('dragenter', this.handleDragEnter.bind(this));
-      container.addEventListener('dragover', this.handleDragOver.bind(this));
-      container.addEventListener('dragleave', this.handleDragLeave.bind(this));
-      container.addEventListener('drop', this.handleDrop.bind(this));
-    }
-  }
-
   private _getRenderer(
     name: keyof DefaultInputRenderers
   ): ChatTemplateRenderer<any> {
@@ -170,28 +158,28 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
-  private handleDragEnter(event: DragEvent) {
+  private _handleDragEnter(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
     const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this.containerPart = `input-container ${!isEmpty(validFiles) ? ' dragging' : ''}`;
+    this._parts = { 'input-container': true, dragging: !isEmpty(validFiles) };
     this._chatState.emitEvent('igcAttachmentDrag');
   }
 
-  private handleDragOver(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  private _handleDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
-  private handleDragLeave(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  private _handleDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
 
     // Check if we're actually leaving the container
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = event.clientX;
+    const y = event.clientY;
 
     if (
       x <= rect.left ||
@@ -199,16 +187,16 @@ export default class IgcChatInputComponent extends LitElement {
       y <= rect.top ||
       y >= rect.bottom
     ) {
-      this.containerPart = 'input-container';
+      this._parts = { 'input-container': true, dragging: false };
     }
   }
 
-  private handleDrop(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.containerPart = 'input-container';
+  private _handleDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this._parts = { 'input-container': true, dragging: false };
 
-    const validFiles = getChatAcceptedFiles(e, this._acceptedTypes);
+    const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
     this._chatState.emitEvent('igcAttachmentDrop');
     this._chatState.attachFiles(validFiles);
     this.requestUpdate();
@@ -348,7 +336,13 @@ export default class IgcChatInputComponent extends LitElement {
     };
 
     return html`
-      <div part="${this.containerPart}">
+      <div
+        part=${partMap(this._parts)}
+        @dragenter=${this._handleDragEnter}
+        @dragover=${this._handleDragOver}
+        @dragleave=${this._handleDragLeave}
+        @drop=${this._handleDrop}
+      >
         ${this._chatState.inputAttachments &&
         this._chatState.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
