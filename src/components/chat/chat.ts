@@ -138,8 +138,6 @@ const Slots = setSlots(
 /**
  * A chat UI component for displaying messages, attachments, and input interaction.
  *
- * This component is part of the Ignite UI Web Components suite.
- *
  * @element igc-chat
  *
  * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
@@ -177,14 +175,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  /**
-   * Registers the chat component and its child components.
-   * Should be called once before using the component.
-   *
-   * @example
-   * IgcChatComponent.register();
-   */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcChatComponent,
       IgcChatInputComponent,
@@ -207,10 +198,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatContext,
     initialValue: this._chatState,
   });
-  constructor() {
-    super();
-    addThemingController(this, all);
-  }
 
   /**
    * The list of chat messages currently displayed.
@@ -270,7 +257,19 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public resourceStrings = IgcChatResourceStringEN;
 
-  // REVIEW: Maybe accept an `IgcMessage` type?
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
+  @watch('messages')
+  @watch('draftMessage')
+  @watch('options')
+  protected contextChanged() {
+    this._context.setValue(this._chatState, true);
+  }
+
+  // REVIEW: Maybe accept an `IgcMessage` type as well?
   /**
    * Scrolls the view to a specific message by id.
    * @param messageId - The id of the message to scroll to
@@ -282,18 +281,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  @watch('messages')
-  @watch('draftMessage')
-  @watch('options')
-  protected contextChanged() {
+  /**
+   * Updates the context value to notify all consumers that the chat state has changed.
+   * This ensures that components consuming the chat context will re-render.
+   */
+  public updateContextValue() {
     this._context.setValue(this._chatState, true);
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (
-      properties.has('messages') &&
-      !this._chatState.options?.disableAutoScroll
-    ) {
+    if (properties.has('messages') && !this._chatState.disableAutoScroll) {
       this._scrollToBottom();
     }
   }
@@ -305,27 +302,30 @@ export default class IgcChatComponent extends EventEmitterMixin<
         .item(this.messages.length - 1);
 
       requestAnimationFrame(() =>
-        lastMessage.scrollIntoView({ block: 'center', inline: 'center' })
+        lastMessage.scrollIntoView({ block: 'end', inline: 'end' })
       );
     }
   }
 
-  private renderHeader() {
+  private _renderHeader() {
     const hasContent =
       this._slots.hasAssignedElements('prefix') ||
       this._slots.hasAssignedElements('title') ||
       this._slots.hasAssignedElements('actions') ||
       this._chatState.options?.headerText;
-    return html` <div part="header" ?hidden=${!hasContent}>
-      <slot name="prefix" part="prefix"></slot>
-      <slot name="title" part="title"
-        >${this._chatState.options?.headerText}</slot
-      >
-      <slot name="actions" part="actions"></slot>
-    </div>`;
+
+    return html`
+      <div part="header" ?hidden=${!hasContent}>
+        <slot name="prefix" part="prefix"></slot>
+        <slot name="title" part="title"
+          >${this._chatState.options?.headerText}</slot
+        >
+        <slot name="actions" part="actions"></slot>
+      </div>
+    `;
   }
 
-  private renderMessages() {
+  private _renderMessages() {
     const messages = this._chatState?.messages ?? [];
 
     return html`
@@ -350,16 +350,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
           ? (this._chatState?.options?.renderers?.typingIndicator?.({
               param: undefined,
               defaults: {
-                typingIndicator: () => this.renderLoadingTemplate(),
+                typingIndicator: () => this._renderLoadingTemplate(),
               },
               options: this._chatState?.options,
-            }) ?? this.renderLoadingTemplate())
+            }) ?? this._renderLoadingTemplate())
           : nothing}
       </div>
     `;
   }
 
-  private renderLoadingTemplate() {
+  private _renderLoadingTemplate() {
     return html`
       <div part="typing-indicator">
         <div part="typing-dot"></div>
@@ -370,7 +370,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     `;
   }
 
-  private renderSuggestionPrefix() {
+  private _renderSuggestionPrefix() {
     return html`
       <span slot="start">
         <igc-icon name="star-icon" collection="material"></igc-icon>
@@ -378,7 +378,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     `;
   }
 
-  private renderSuggestions() {
+  private _renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
     const suggestions = this._chatState.options?.suggestions ?? [];
 
@@ -399,7 +399,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                     @click=${() =>
                       this._chatState?.handleSuggestionClick(suggestion)}
                   >
-                    ${this.renderSuggestionPrefix()}
+                    ${this._renderSuggestionPrefix()}
                     <span slot="title">${suggestion}</span>
                   </igc-list-item>
                 </slot>
@@ -410,14 +410,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
         </igc-list>
       </div>
     `;
-  }
-
-  /**
-   * Updates the context value to notify all consumers that the chat state has changed.
-   * This ensures that components consuming the chat context will re-render.
-   */
-  public updateContextValue() {
-    this._context.setValue(this._chatState, true);
   }
 
   private _renderEmptyState() {
@@ -432,7 +424,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     const hasMessages = !isEmpty(this.messages);
     const suggestions = isEmpty(this._chatState.options?.suggestions ?? [])
       ? nothing
-      : this.renderSuggestions();
+      : this._renderSuggestions();
 
     return html`
       <div
@@ -468,11 +460,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
           attachment-actions
         "
       >
-        ${this.renderHeader()}
+        ${this._renderHeader()}
 
         <div part="chat-wrapper">
           ${cache(
-            hasMessages ? this.renderMessages() : this._renderEmptyState()
+            hasMessages ? this._renderMessages() : this._renderEmptyState()
           )}
           ${this._chatState.suggestionsPosition === 'below-messages'
             ? suggestions
