@@ -282,14 +282,23 @@ export class ChatState {
   }
 
   public _fileIconMap: Record<string, string> = {
-    pdf: this._fileIcon,
+    css: this._fileIcon,
+    csv: this._fileIcon,
     doc: this._fileIcon,
     docx: this._fileIcon,
-    xls: this._fileIcon,
-    xlsx: this._fileIcon,
-    txt: this._fileIcon,
+    htm: this._fileIcon,
+    html: this._fileIcon,
+    js: this._fileIcon,
     json: this._jsonIcon,
-    link: this._linkIcon,
+    pdf: this._fileIcon,
+    rtf: this._fileIcon,
+    svg: this._fileIcon,
+    txt: this._fileIcon,
+    url: this._linkIcon,
+    xls: this._fileIcon,
+    xlsx: this._jsonIcon,
+    xml: this._linkIcon,
+    zip: this._fileIcon,
     default: this._fileIcon, // A fallback icon
   };
 

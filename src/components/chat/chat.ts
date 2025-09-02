@@ -1,6 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -11,6 +12,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcListHeaderComponent from '../list/list-header.js';
@@ -337,21 +339,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
     const messages = this._chatState?.messages ?? [];
 
     return html`
-      <div
-        part="message-list"
-        aria-label="Message list"
-        role="group"
-        tabindex="0"
-      >
+      <div part="message-list" tabindex="0">
         ${repeat(
           messages,
           (message) => message.id,
           (message) => {
-            const messageId = `message-${message.id}`;
             return html`
               <igc-chat-message
-                id=${messageId}
-                role="option"
+                id=${`message-${message.id}`}
                 part="message-item"
                 .message=${message}
                 exportparts="message-container, message-text, message-attachments, message-actions,
@@ -374,49 +369,57 @@ export default class IgcChatComponent extends EventEmitterMixin<
     `;
   }
 
-  private *renderLoadingTemplate() {
-    yield html`<div part="typing-indicator">
-      <div part="typing-dot"></div>
-      <div part="typing-dot"></div>
-      <div part="typing-dot"></div>
-      <div part="typing-dot"></div>
-    </div>`;
+  private renderLoadingTemplate() {
+    return html`
+      <div part="typing-indicator">
+        <div part="typing-dot"></div>
+        <div part="typing-dot"></div>
+        <div part="typing-dot"></div>
+        <div part="typing-dot"></div>
+      </div>
+    `;
   }
 
   private renderSuggestionPrefix() {
-    return html`<span slot="start">
-      <igc-icon name="star-icon" collection="material"></igc-icon>
-    </span>`;
+    return html`
+      <span slot="start">
+        <igc-icon name="star-icon" collection="material"></igc-icon>
+      </span>
+    `;
   }
 
   private renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
-    return html`<div part="suggestions-container">
-      <igc-list role="list" aria-label="Suggestions">
-        <igc-list-header part="suggestions-header">
-          <span ?hidden=${hasContent}>
-            ${this.resourceStrings.suggestionsHeader}
-          </span>
-          <slot name="suggestions-header"></slot>
-        </igc-list-header>
-        <slot name="suggestions" part="suggestions">
-          ${this._chatState.options?.suggestions?.map(
-            (suggestion) => html`
-              <slot name="suggestion" part="suggestion" role="listitem">
-                <igc-list-item
-                  @click=${() =>
-                    this._chatState?.handleSuggestionClick(suggestion)}
-                >
-                  ${this.renderSuggestionPrefix()}
-                  <span slot="title">${suggestion}</span>
-                </igc-list-item>
-              </slot>
-            `
-          )}
-        </slot>
-        <slot name="suggestions-actions" part="suggestions-actions"></slot>
-      </igc-list>
-    </div>`;
+    const suggestions = this._chatState.options?.suggestions ?? [];
+
+    return html`
+      <div part="suggestions-container">
+        <igc-list>
+          <igc-list-header part="suggestions-header">
+            <span ?hidden=${hasContent}>
+              ${this.resourceStrings.suggestionsHeader}
+            </span>
+            <slot name="suggestions-header"></slot>
+          </igc-list-header>
+          <slot name="suggestions" part="suggestions">
+            ${suggestions.map(
+              (suggestion) => html`
+                <slot name="suggestion" part="suggestion">
+                  <igc-list-item
+                    @click=${() =>
+                      this._chatState?.handleSuggestionClick(suggestion)}
+                  >
+                    ${this.renderSuggestionPrefix()}
+                    <span slot="title">${suggestion}</span>
+                  </igc-list-item>
+                </slot>
+              `
+            )}
+          </slot>
+          <slot name="suggestions-actions" part="suggestions-actions"></slot>
+        </igc-list>
+      </div>
+    `;
   }
 
   /**
@@ -427,10 +430,20 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._context.setValue(this._chatState, true);
   }
 
+  private _renderEmptyState() {
+    return html`
+      <div part="empty-state">
+        <slot name="empty-state"></slot>
+      </div>
+    `;
+  }
+
   protected override render() {
-    const hasSuggestions =
-      this._chatState.options?.suggestions &&
-      this._chatState.options.suggestions.length > 0;
+    const hasMessages = !isEmpty(this.messages);
+    const suggestions = isEmpty(this._chatState.options?.suggestions ?? [])
+      ? nothing
+      : this.renderSuggestions();
+
     return html`
       <div
         part="chat-container"
@@ -466,17 +479,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
         "
       >
         ${this.renderHeader()}
+
         <div part="chat-wrapper">
-          ${this.messages.length === 0
-            ? html`<div part="empty-state">
-                <slot name="empty-state"> </slot>
-              </div>`
-            : this.renderMessages()}
-          ${hasSuggestions &&
-          this._chatState.suggestionsPosition === 'below-messages'
-            ? this.renderSuggestions()
+          ${cache(
+            hasMessages ? this.renderMessages() : this._renderEmptyState()
+          )}
+          ${this._chatState.suggestionsPosition === 'below-messages'
+            ? suggestions
             : nothing}
         </div>
+
         <igc-chat-input
           exportparts="
               input-container,
@@ -490,9 +502,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
               send-button"
         >
         </igc-chat-input>
-        ${hasSuggestions &&
-        this._chatState.suggestionsPosition === 'below-input'
-          ? this.renderSuggestions()
+        ${this._chatState.suggestionsPosition === 'below-input'
+          ? suggestions
           : nothing}
       </div>
     `;
