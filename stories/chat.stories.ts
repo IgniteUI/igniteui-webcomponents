@@ -3,10 +3,10 @@ import { html, nothing } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcChatComponent,
-  // MarkdownMessageRenderer,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
+import { MarkdownMessageRenderer } from 'igniteui-webcomponents/extras';
 import type {
   IgcMessage,
   IgcMessageAttachment,
@@ -159,6 +159,7 @@ const _customRenderer = {
     return html`<span>${m.text.toUpperCase()}</span>`;
   },
 };
+const _markdownRenderer = new MarkdownMessageRenderer();
 
 const ai_chat_options = {
   headerText: 'Chat',
@@ -510,7 +511,8 @@ export const Chat_Templates: Story = {
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         renderers: {
           messageHeader: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
-          messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+          messageContent: (ctx) => _markdownRenderer.render(ctx.param),
+          // messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
           messageActions: (ctx) => _messageActionsTemplate(ctx.param),
           attachmentHeader: () => nothing,
           inputActions: (ctx) => _actionsTemplate(ctx),
