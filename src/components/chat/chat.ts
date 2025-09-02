@@ -482,7 +482,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
         <div part="chat-wrapper">
           ${cache(
-            hasMessages ? this.renderMessages() : this._renderEmptyState()
+            hasMessages || this._chatState?.options?.isTyping
+              ? this.renderMessages()
+              : this._renderEmptyState()
           )}
           ${this._chatState.suggestionsPosition === 'below-messages'
             ? suggestions
