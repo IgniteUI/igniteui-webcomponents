@@ -184,6 +184,9 @@ const ai_chat_options = {
     'What is triskaidekaphobia?',
     'Show me very short sample typescript code',
   ],
+  renderers: {
+    messageContent: (ctx) => _markdownRenderer.render(ctx.param),
+  },
 };
 
 const chat_options: IgcChatOptions = {
