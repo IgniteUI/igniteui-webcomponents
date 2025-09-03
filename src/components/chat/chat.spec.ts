@@ -79,10 +79,12 @@ describe('Chat', () => {
       .value=${text}
     ></igc-input>`;
 
-  const textAreaActionsTemplate = html`<div>
-    <igc-button>Upload</igc-button>
-    <igc-button>Send</igc-button>
-  </div>`;
+  const textAreaActionsTemplate = (ctx: any) =>
+    html`<div>
+      ${ctx.defaults.fileUploadButton(ctx)}
+      <igc-button>Upload</igc-button>
+      <igc-button>Send</igc-button>
+    </div>`;
 
   const textAreaAttachmentsTemplate = (attachments: any[]) => {
     return html`<div>
@@ -874,6 +876,14 @@ describe('Chat', () => {
   });
 
   describe('Slots', () => {
+    const getSlottedElements = (slotName: string) => {
+      const prefixSlot = chat.shadowRoot?.querySelector(
+        `slot[name="${slotName}"`
+      ) as HTMLSlotElement;
+      return prefixSlot?.assignedElements();
+    };
+    const suggestions = ['Login screen', 'Registration Form'];
+
     beforeEach(async () => {
       chat = await fixture<IgcChatComponent>(
         html`<igc-chat>
@@ -884,17 +894,99 @@ describe('Chat', () => {
           <div slot="actions">
             <igc-button variant="flat">?</igc-button>
           </div>
+          <span slot="empty-state">What do you want to build?</span>
+          <h3 slot="suggestions-header">Get inspired</h3>
+          <div slot="suggestions">
+            ${suggestions.map((suggestion, index) => {
+              return html`
+                <div slot="suggestion">
+                  <span>${index}. ${suggestion}</span>
+                  <igc-icon
+                    name="good-response"
+                    collection="material"
+                  ></igc-icon>
+                </div>
+              `;
+            })}
+          </div>
+          <h3 slot="suggestions-actions">Add more ...</h3>
         </igc-chat>`
       );
+
+      chat.options = { ...chat.options, suggestions };
+      await elementUpdated(chat);
     });
 
     it('should slot header prefix', () => {
-      expect(chat).shadowDom.to.equal('');
+      const slottedElements = getSlottedElements('prefix');
+      expect(slottedElements.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(
+        `<div slot="prefix">
+            <igc-button type="button" variant="flat">⋯</igc-button>
+          </div>`
+      );
     });
-    it('should slot header title', () => {});
-    it('should slot header action buttons area', () => {});
-    it('should slot message list area when there are no messages', () => {});
-    it('should slot suggestions area', () => {});
+    it('should slot header title', () => {
+      const slottedElements = getSlottedElements('title');
+      expect(slottedElements.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(`<h4 slot="title">Title</h4>`);
+    });
+    it('should slot header action buttons area', () => {
+      const slottedElements = getSlottedElements('actions');
+      expect(slottedElements.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(
+        `<div slot="actions">
+            <igc-button type="button" variant="flat">?</igc-button>
+          </div>`
+      );
+    });
+    it('should slot message list area when there are no messages', () => {
+      const slottedElements = getSlottedElements('empty-state');
+      expect(slottedElements.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(
+        `<span slot="empty-state">What do you want to build?</span>`
+      );
+    });
+    it('should slot suggestions header', async () => {
+      const slottedElements = getSlottedElements('suggestions-header');
+      expect(slottedElements?.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(
+        `<h3 slot="suggestions-header">Get inspired</h3>`
+      );
+    });
+    it('should slot suggestions area', async () => {
+      const slottedElements = getSlottedElements('suggestions');
+      expect(slottedElements?.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(`<div slot="suggestions">
+      <div slot="suggestion">
+        <span>
+          0. Login screen
+        </span>
+        <igc-icon
+          collection="material"
+          name="good-response"
+        >
+        </igc-icon>
+      </div>
+      <div slot="suggestion">
+        <span>
+          1. Registration Form
+        </span>
+        <igc-icon
+          collection="material"
+          name="good-response"
+        >
+        </igc-icon>
+      </div>
+      </div>`);
+    });
+    it('should slot suggestions actions area', async () => {
+      const slottedElements = getSlottedElements('suggestions-actions');
+      expect(slottedElements?.length).to.equal(1);
+      expect(slottedElements[0]).dom.to.equal(
+        `<h3 slot="suggestions-actions">Add more ...</h3>`
+      );
+    });
   });
 
   describe('Templates', () => {
@@ -902,7 +994,7 @@ describe('Chat', () => {
       chat.messages = [messages[1], messages[2]];
     });
 
-    it('should render attachmentTemplate', async () => {
+    it('should render attachment template', async () => {
       chat.options = {
         renderers: {
           attachment: (ctx) => attachmentTemplate(ctx.param),
@@ -936,7 +1028,7 @@ describe('Chat', () => {
       });
     });
 
-    it('should render attachmentHeaderTemplate, attachmentContentTemplate', async () => {
+    it('should render attachmentHeader template, attachmentContent template', async () => {
       chat.options = {
         renderers: {
           attachmentHeader: (ctx) => attachmentHeaderTemplate(ctx.param),
@@ -978,7 +1070,7 @@ describe('Chat', () => {
       });
     });
 
-    it('should render messageTemplate', async () => {
+    it('should render message template', async () => {
       chat.options = {
         renderers: {
           message: (ctx) => messageTemplate(ctx.param),
@@ -1001,6 +1093,33 @@ describe('Chat', () => {
                     <h5>${chat.messages[index].sender === 'user' ? 'You' : 'Bot'}: </h5>
                     <p>${(messageContainer?.querySelector('p') as HTMLElement)?.innerText}</p>
                 </div>
+            </div>`
+        );
+      });
+    });
+
+    it('should render messageContent template', async () => {
+      chat.options = {
+        renderers: {
+          messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+        },
+      };
+      await elementUpdated(chat);
+      await aTimeout(500);
+      const messageElements =
+        chat.shadowRoot?.querySelectorAll('igc-chat-message');
+      messageElements?.forEach((messageElement, index) => {
+        const isCurrentUser = chat.messages[index].sender === 'user';
+        const messageContainer = messageElement.shadowRoot?.querySelector(
+          `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
+        );
+
+        expect(messageContainer).dom.to.equal(
+          `<div part="message-container${isCurrentUser ? ' sent' : ''}">
+              ${chat.messages[index].text.toUpperCase()}
+              <igc-message-attachments>
+              </igc-message-attachments>
+              ${isCurrentUser ? '' : messageActions}
             </div>`
         );
       });
@@ -1074,7 +1193,7 @@ describe('Chat', () => {
       chat.options = {
         renderers: {
           input: (ctx) => textInputTemplate(ctx.param),
-          inputActions: () => textAreaActionsTemplate,
+          inputActions: (ctx) => textAreaActionsTemplate(ctx),
           inputAttachments: (ctx) => textAreaAttachmentsTemplate(ctx.param),
         },
       };
@@ -1095,6 +1214,24 @@ describe('Chat', () => {
             </div>
             <div part="buttons-container">
               <div>
+                <label
+                  for="input_attachments"
+                  part="upload-button"
+                >
+                  <igc-icon-button
+                    collection="material"
+                    name="attachment"
+                    type="button"
+                    variant="flat"
+                  >
+                  </igc-icon-button>
+                  <input
+                    id="input_attachments"
+                    multiple=""
+                    name="input_attachments"
+                    type="file"
+                  >
+                </label>
                 <igc-button type="button" variant="contained">Upload</igc-button>
                 <igc-button type="button" variant="contained">Send</igc-button>
               </div>
@@ -1108,7 +1245,7 @@ describe('Chat', () => {
       );
     });
 
-    it('should render messageHeaderTemplate', async () => {
+    it('should render messageHeader template', async () => {
       chat.options = {
         renderers: {
           messageHeader: (ctx) => messageHeaderTemplate(ctx.param),
@@ -1120,7 +1257,6 @@ describe('Chat', () => {
       const messageElements = chat.shadowRoot
         ?.querySelector('div[part="message-list"]')
         ?.querySelectorAll('igc-chat-message');
-      expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
         const messageContainer = messageElement.shadowRoot?.querySelector(
