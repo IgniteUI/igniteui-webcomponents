@@ -161,32 +161,32 @@ describe('Chat', () => {
   const messageActions = `<div>
                           <igc-icon-button
                             collection="material"
-                            id="copy-response-button"
-                            name="copy-response"
+                            id="copy-button"
+                            name="copy"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            id="good-response-button"
-                            name="good-response"
+                            id="like-button"
+                            name="like"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            id="bad-response-button"
-                            name="bad-response"
+                            id="dislike-button"
+                            name="dislike"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
                             collection="material"
-                            id="redo-button"
-                            name="redo"
+                            id="regenerate-button"
+                            name="regenerate"
                             type="button"
                             variant="flat"
                           >
@@ -1523,13 +1523,13 @@ describe('Chat', () => {
         ?.querySelector(`div[part='message-list'`)
         ?.querySelector('igc-chat-message');
 
-      const goodResponseIcon = messageElement?.shadowRoot?.querySelector(
-        'igc-icon-button[name="good-response"]'
+      const likeIcon = messageElement?.shadowRoot?.querySelector(
+        'igc-icon-button[name="like"]'
       ) as HTMLElement;
 
-      simulateClick(goodResponseIcon);
+      simulateClick(likeIcon);
       expect(eventSpy).calledWith('igcMessageReact', {
-        detail: { message: messages[0], reaction: 'good-response' },
+        detail: { message: messages[0], reaction: 'like' },
       });
     });
 
