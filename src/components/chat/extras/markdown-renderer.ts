@@ -15,11 +15,6 @@ export interface MarkdownRendererOptions {
   noHighlighter?: boolean;
 
   /**
-   * A custom syntax highlighter compatible with Shiki's `codeToHtml()` API.
-   */
-  highlighter?: any;
-
-  /**
    * List of programming languages to support in syntax highlighting.
    */
   languages?: string[];
@@ -37,7 +32,7 @@ export interface MarkdownRendererOptions {
 
 /**
  * A renderer that converts markdown chat messages to HTML using `marked`,
- * with optional syntax highlighting powered by `shiki` or a custom highlighter.
+ * with optional syntax highlighting powered by `shiki`.
  *
  */
 export class MarkdownMessageRenderer {
@@ -56,7 +51,6 @@ export class MarkdownMessageRenderer {
   constructor(private opts: MarkdownRendererOptions = {}) {
     this.theme = opts.theme ?? 'github-light';
     this.langs = opts.languages ?? ['javascript', 'typescript', 'html', 'css'];
-    this.highlighter = opts.highlighter;
 
     this._marked = new Marked();
     this.initMarked();
