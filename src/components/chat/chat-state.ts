@@ -189,10 +189,10 @@ export class ChatState {
    */
   constructor(chat: IgcChatComponent) {
     this._host = chat;
-    registerIconFromText('copy-response', copyIcon, 'material');
-    registerIconFromText('good-response', thumbUpIcon, 'material');
-    registerIconFromText('bad-response', thumbDownIcon, 'material');
-    registerIconFromText('redo', regenerateIcon, 'material');
+    registerIconFromText('copy', copyIcon, 'material');
+    registerIconFromText('like', thumbUpIcon, 'material');
+    registerIconFromText('dislike', thumbDownIcon, 'material');
+    registerIconFromText('regenerate', regenerateIcon, 'material');
   }
 
   //#region Event handlers

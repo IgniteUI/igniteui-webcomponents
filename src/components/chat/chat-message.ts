@@ -128,19 +128,13 @@ export default class IgcChatMessageComponent extends LitElement {
 
     return html`
       <div @click=${this._handleMessageActionClick}>
+        ${this._renderActionButton('copy', resourceStrings.reactionCopy)}
+        ${this._renderActionButton('like', resourceStrings.reactionLike)}
+        ${this._renderActionButton('dislike', resourceStrings.reactionDislike)}
         ${this._renderActionButton(
-          'copy-response',
-          resourceStrings.reactionCopyResponse
+          'regenerate',
+          resourceStrings.reactionRegenerate
         )}
-        ${this._renderActionButton(
-          'good-response',
-          resourceStrings.reactionGoodResponse
-        )}
-        ${this._renderActionButton(
-          'bad-response',
-          resourceStrings.reactionBadResponse
-        )}
-        ${this._renderActionButton('redo', resourceStrings.reactionRedo)}
       </div>
     `;
   }
