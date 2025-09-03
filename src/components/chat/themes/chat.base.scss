@@ -15,7 +15,7 @@ $inline-inset: rem(16px);
 
 [part='chat-container'] {
   display: grid;
-  grid-template-columns: 1fr minmax(#{calc(rem(760px) + $inline-inset * 2)}, auto) 1fr;
+  grid-template-columns: 1fr minmax(rem(320px), #{calc(rem(760px) + $inline-inset * 2)}) 1fr;
   grid-template-rows: auto 1fr auto;
   height: 100%;
 }
