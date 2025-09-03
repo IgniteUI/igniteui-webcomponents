@@ -63,6 +63,11 @@ export class ChatState {
   public get acceptedFileTypes() {
     return this._acceptedTypesCache;
   }
+
+  public get disableAutoScroll(): boolean {
+    return this._options?.disableAutoScroll ?? false;
+  }
+
   /**
    * Gets the list of chat messages.
    */
@@ -75,7 +80,6 @@ export class ChatState {
    */
   public set messages(value: IgcMessage[]) {
     this._messages = value;
-    this._host.requestUpdate();
   }
 
   /**

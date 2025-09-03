@@ -8,6 +8,7 @@ import {
 } from 'igniteui-webcomponents';
 import { MarkdownMessageRenderer } from 'igniteui-webcomponents/extras';
 import type {
+  IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
 } from '../src/components/chat/types.js';
@@ -27,8 +28,22 @@ const metadata: Meta<IgcChatComponent> = {
     docs: {
       description: {
         component:
-          'A chat UI component for displaying messages, attachments, and input interaction.\n\nThis component is part of the Ignite UI Web Components suite.',
+          'A chat UI component for displaying messages, attachments, and input interaction.',
       },
+    },
+    actions: {
+      handles: [
+        'igcMessageCreated',
+        'igcMessageReact',
+        'igcAttachmentClick',
+        'igcAttachmentChange',
+        'igcAttachmentDrag',
+        'igcAttachmentDrop',
+        'igcTypingChange',
+        'igcInputFocus',
+        'igcInputBlur',
+        'igcInputChange',
+      ],
     },
   },
 };
@@ -171,12 +186,15 @@ const ai_chat_options = {
   ],
 };
 
-const chat_options = {
+const chat_options: IgcChatOptions = {
   disableAutoScroll: false,
   disableInputAttachments: false,
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
+  renderers: {
+    messageContent: async (ctx) => _markdownRenderer.render(ctx.param),
+  },
 };
 
 function handleCustomSendClick() {
@@ -242,7 +260,7 @@ function handleMessageSend(e: CustomEvent) {
 
 async function showResponse(chat: any, responseParts: any) {
   for (let i = 0; i < responseParts.length; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
 
     const lastMessageIndex = chat.messages.length - 1;
     chat.messages[lastMessageIndex] = {
@@ -552,199 +570,3 @@ export const Chat_Templates: Story = {
     `;
   },
 };
-
-// #region SUPABASE
-
-// import { createClient } from '@supabase/supabase-js';
-
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-// const supabase = createClient(supabaseUrl, supabaseKey);
-
-// // load messages and attachments from supabase
-// async function fetchMessages() {
-//   const { data, error } = await supabase
-//     .from('messages')
-//     .select('id, text, sender, timestamp, attachments (id, name, type)')
-//     .order('timestamp', { ascending: true });
-
-//   if (error) {
-//     // console.log('Error fetching messages:', error);
-//     return [];
-//   }
-
-//   if (!data || data.length === 0) {
-//     return messages;
-//   }
-
-//   const mappedData = data.map((message) => ({
-//     id: message.id,
-//     text: message.text,
-//     sender: message.sender,
-//     timestamp: new Date(message.timestamp),
-//     attachments: message.attachments.map((attachment: any) => ({
-//       id: attachment.id,
-//       name: attachment.name,
-//       type: attachment.type,
-//       url: supabase.storage.from('files').getPublicUrl(attachment.name).data
-//         .publicUrl,
-//     })),
-//   }));
-//   await processMappedData(mappedData);
-//   return mappedData;
-// }
-
-// async function processMappedData(data: any) {
-//   for (const message of data) {
-//     for (const attachment of message.attachments) {
-//       if (attachment.type.startsWith('image')) {
-//         const file = await fetchAttachment(attachment.name);
-//         if (file) {
-//           attachment.file = file;
-//         }
-//       } else {
-//         attachment.file = new File([], attachment.name, {
-//           type: attachment.type,
-//         });
-//       }
-//     }
-//   }
-//   return data;
-// }
-
-// async function fetchAttachment(name: string) {
-//   const { data, error } = await supabase.storage.from('files').download(name);
-
-//   if (error) {
-//     // console.log('Error fetching attachment:', error);
-//     return null;
-//   }
-
-//   const file = new File([data], name, {
-//     type: data.type,
-//   });
-
-//   return file;
-// }
-
-// async function handleMessageCreatedSupabase(e: CustomEvent) {
-//   const newMessage = e.detail;
-//   const chat = document.querySelector('igc-chat');
-//   if (!chat) {
-//     return;
-//   }
-
-//   saveMessageToSupabase(newMessage);
-
-//   const attachments: IgcMessageAttachment[] = [];
-//   // newMessage.text.includes('picture') ||
-//   // newMessage.text.includes('image') ||
-//   // newMessage.text.includes('file')
-//   //   ? [
-//   //       {
-//   //         id: 'random_img',
-//   //         // type: newMessage.text.includes('file') ? 'file' : 'image',
-//   //         url: 'https://picsum.photos/378/395',
-//   //         name: 'random.png',
-//   //       },
-//   //     ]
-//   //   : [];
-
-//   isResponseSent = false;
-//   setTimeout(() => {
-//     // create empty response
-//     const emptyResponse = {
-//       id: Date.now().toString(),
-//       text: '',
-//       sender: 'bot',
-//       timestamp: new Date(),
-//       attachments: attachments,
-//     };
-//     chat.messages = [...chat.messages, emptyResponse];
-
-//     const responseParts = generateAIResponse(e.detail.text).split(' ');
-//     showResponse(chat, responseParts).then(() => {
-//       const lastMessageIndex = chat.messages.length - 1;
-//       const lastMessage = chat.messages[lastMessageIndex];
-//       lastMessage.attachments = attachments;
-//       saveMessageToSupabase(lastMessage);
-//       isResponseSent = true;
-//       // TODO: add attachments (if any) to the response message
-//     });
-//   }, 1000);
-// }
-
-// async function saveMessageToSupabase(message: any) {
-//   const { error } = await supabase
-//     .from('messages')
-//     .insert([
-//       {
-//         id: message.id,
-//         text: message.text,
-//         sender: message.sender,
-//         timestamp: message.timestamp,
-//       },
-//     ])
-//     .select();
-//   if (error) {
-//     // console.log('Error saving message:', error);
-//   }
-
-//   // save attachments to supabase storage
-//   if (message.attachments) {
-//     message.attachments.forEach(async (attachment: IgcMessageAttachment) => {
-//       if (!attachment.file) {
-//         return;
-//       }
-
-//       const { error } = await supabase.storage
-//         .from('files')
-//         .upload(attachment.file.name, attachment.file, {
-//           cacheControl: '3600',
-//           upsert: true,
-//         });
-//       if (error) {
-//         // console.log('Error saving attachment:', error);
-//       }
-
-//       // save attachment metadata to database
-//       const { error: attachmentError } = await supabase
-//         .from('attachments')
-//         .insert([
-//           {
-//             id: attachment.id,
-//             message_id: message.id,
-//             name: attachment.file.name,
-//             type: attachment.file.type,
-//           },
-//         ])
-//         .select();
-//       if (attachmentError) {
-//         // console.log('Error saving attachment to table "attachments":', attachmentError);
-//       }
-//     });
-//   }
-
-//   return message;
-// }
-
-// export const Supabase: Story = {
-//   play: async () => {
-//     fetchMessages().then((msgs) => {
-//       messages = msgs;
-//       const chat = document.querySelector('igc-chat');
-//       if (chat) {
-//         chat.messages = messages;
-//       }
-//     });
-//   },
-//   render: () => html`
-//     <igc-chat
-//       style="--igc-chat-height: calc(100vh - 32px);"
-//       @igcMessageCreated=${handleMessageCreatedSupabase}
-//     >
-//     </igc-chat>
-//   `,
-// };
-
-// #endregion
