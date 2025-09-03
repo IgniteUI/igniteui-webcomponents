@@ -16,7 +16,6 @@ import {
   type ChatTemplateRenderer,
   closeIcon,
   fileIcon,
-  type IgcChatOptions,
   type IgcMessage,
   type IgcMessageAttachment,
   imageIcon,
@@ -75,7 +74,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
     Object.freeze({
-      attachment: (ctx: any) => this.renderAttachment(ctx),
+      attachment: (ctx: any) => this.renderAttachment(ctx.param),
       attachmentHeader: (ctx: any) => this.renderHeader(ctx.param),
       attachmentContent: (ctx: any) => this.renderContent(ctx.param),
     });
@@ -143,12 +142,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return html`<img part="${partName}" src=${url!} alt=${attachment.name} />`;
   }
 
-  private renderAttachment(ctx: {
-    param: IgcMessageAttachment;
-    defaults: DefaultAttachmentRenderers;
-    options?: IgcChatOptions;
-  }) {
-    const { param: attachment } = ctx;
+  private renderAttachment(attachment: IgcMessageAttachment) {
     const isCurrentUser =
       this.message?.sender === this._chatState?.currentUserId;
     const attachmentParts = {
@@ -162,6 +156,12 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const headerParts = {
       'attachment-header': true,
       sent: isCurrentUser,
+    };
+
+    const ctx = {
+      param: attachment,
+      defaults: this._defaults,
+      options: this._chatState?.options,
     };
 
     const content = html`<div part=${partMap(contentParts)}>
