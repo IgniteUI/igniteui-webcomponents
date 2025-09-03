@@ -57,7 +57,7 @@ export function getChatAcceptedFiles(
 }
 
 export function getIconName(fileType?: string) {
-  return fileType?.startsWith('image') ? 'file-image' : 'file-document';
+  return fileType?.startsWith('image') ? 'attach_image' : 'attach_document';
 }
 
 export function createAttachmentURL(attachment: IgcMessageAttachment): string {

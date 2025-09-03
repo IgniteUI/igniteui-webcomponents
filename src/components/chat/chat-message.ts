@@ -128,9 +128,15 @@ export default class IgcChatMessageComponent extends LitElement {
 
     return html`
       <div @click=${this._handleMessageActionClick}>
-        ${this._renderActionButton('copy', resourceStrings.reactionCopy)}
-        ${this._renderActionButton('like', resourceStrings.reactionLike)}
-        ${this._renderActionButton('dislike', resourceStrings.reactionDislike)}
+        ${this._renderActionButton(
+          'copy_content',
+          resourceStrings.reactionCopy
+        )}
+        ${this._renderActionButton('thumb_up', resourceStrings.reactionLike)}
+        ${this._renderActionButton(
+          'thumb_down',
+          resourceStrings.reactionDislike
+        )}
         ${this._renderActionButton(
           'regenerate',
           resourceStrings.reactionRegenerate
@@ -145,7 +151,6 @@ export default class IgcChatMessageComponent extends LitElement {
         id=${`${name}-button`}
         name=${name}
         variant="flat"
-        collection="material"
         @pointerenter=${({ target }: PointerEvent) =>
           showChatActionsTooltip(target as Element, tooltipMessage)}
       ></igc-icon-button>
