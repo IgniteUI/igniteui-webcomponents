@@ -8,20 +8,14 @@ import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
-import { registerIconFromText } from '../icon/icon.registry.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments.common.css.js';
-import {
-  type ChatTemplateRenderer,
-  closeIcon,
-  fileIcon,
-  type IgcChatOptions,
-  type IgcMessage,
-  type IgcMessageAttachment,
-  imageIcon,
-  moreIcon,
-  previewIcon,
+import type {
+  ChatTemplateRenderer,
+  IgcChatOptions,
+  IgcMessage,
+  IgcMessageAttachment,
 } from './types.js';
 import { createAttachmentURL, getFileExtension } from './utils.js';
 
@@ -88,12 +82,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   constructor() {
     super();
-
-    registerIconFromText('close', closeIcon, 'material');
-    registerIconFromText('file', fileIcon, 'material');
-    registerIconFromText('image', imageIcon, 'material');
-    registerIconFromText('preview', previewIcon, 'material');
-    registerIconFromText('more', moreIcon, 'material');
   }
 
   private _handleHeaderClick = (attachment: IgcMessageAttachment) => {
@@ -110,16 +98,12 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       this.message?.sender === this._chatState?.currentUserId;
     const iconName =
       attachment.type === 'image' || attachment.file?.type.startsWith('image/')
-        ? 'image'
-        : 'file';
+        ? 'image_thumbnail'
+        : 'document_thumbnail';
 
     return html`
       ${!isCurrentUser
-        ? html`<igc-icon
-            name=${iconName}
-            collection="material"
-            part="attachment-icon"
-          ></igc-icon>`
+        ? html`<igc-icon name=${iconName} part="attachment-icon"></igc-icon>`
         : nothing}
       <span part="file-name">${attachment.name}</span>
     `;

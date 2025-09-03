@@ -14,21 +14,12 @@ import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import { registerIconFromText } from '../icon/icon.registry.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
-import {
-  attachmentIcon,
-  type ChatTemplateRenderer,
-  fileDocumentIcon,
-  fileImageIcon,
-  type IgcMessageAttachment,
-  sendButtonIcon,
-  starIcon,
-} from './types.js';
+import type { ChatTemplateRenderer, IgcMessageAttachment } from './types.js';
 import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
@@ -117,12 +108,6 @@ export default class IgcChatInputComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-
-    registerIconFromText('attachment', attachmentIcon, 'material');
-    registerIconFromText('send-message', sendButtonIcon, 'material');
-    registerIconFromText('file-document', fileDocumentIcon, 'material');
-    registerIconFromText('file-image', fileImageIcon, 'material');
-    registerIconFromText('star-icon', starIcon, 'material');
   }
 
   protected override firstUpdated() {
@@ -239,7 +224,6 @@ export default class IgcChatInputComponent extends LitElement {
             <igc-icon
               slot="prefix"
               name=${getIconName(attachment.file?.type ?? attachment.type)}
-              collection="material"
             ></igc-icon>
             <span part="attachment-name">${attachment.name}</span>
           </igc-chip>
@@ -279,8 +263,7 @@ export default class IgcChatInputComponent extends LitElement {
         <label for="input_attachments" part="upload-button">
           <igc-icon-button
             variant="flat"
-            name="attachment"
-            collection="material"
+            name="attach_file"
             @click=${() => this._attachmentsButtonInputRef?.value?.click()}
           ></igc-icon-button>
           <input
@@ -305,8 +288,7 @@ export default class IgcChatInputComponent extends LitElement {
     return html`
       <igc-icon-button
         aria-label="Send message"
-        name="send-message"
-        collection="material"
+        name="send_message"
         variant="contained"
         part="send-button"
         ?disabled=${!this._chatState?.inputValue.trim() &&

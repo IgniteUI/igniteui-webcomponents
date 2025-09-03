@@ -373,7 +373,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _renderSuggestionPrefix() {
     return html`
       <span slot="start">
-        <igc-icon name="star-icon" collection="material"></igc-icon>
+        <igc-icon name="auto_suggest"></igc-icon>
       </span>
     `;
   }

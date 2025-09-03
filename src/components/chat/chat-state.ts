@@ -1,18 +1,13 @@
 import { createRef, type Ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
-import { registerIconFromText } from '../icon/icon.registry.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
-import {
-  copyIcon,
-  type IgcChatOptions,
-  type IgcMessage,
-  type IgcMessageAttachment,
-  regenerateIcon,
-  thumbDownIcon,
-  thumbUpIcon,
+import type {
+  IgcChatOptions,
+  IgcMessage,
+  IgcMessageAttachment,
 } from './types.js';
 import { type ChatAcceptedFileTypes, parseAcceptedFileTypes } from './utils.js';
 
@@ -189,10 +184,6 @@ export class ChatState {
    */
   constructor(chat: IgcChatComponent) {
     this._host = chat;
-    registerIconFromText('copy', copyIcon, 'material');
-    registerIconFromText('like', thumbUpIcon, 'material');
-    registerIconFromText('dislike', thumbDownIcon, 'material');
-    registerIconFromText('regenerate', regenerateIcon, 'material');
   }
 
   //#region Event handlers
