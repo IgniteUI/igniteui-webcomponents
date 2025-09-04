@@ -57,7 +57,7 @@ export class I18nController<T> {
   constructor(host: I18nControllerHost, config: I18nControllerConfig) {
     this._host = host;
     this._defaultEN = config.defaultEN;
-    this._defaultResourceStrings = this._defaultEN;
+    this._defaultResourceStrings = this.getCurrentResourceStrings();
     this.registerResources(this._defaultEN, true);
 
     if (config?.onResourceChange) {
@@ -124,6 +124,9 @@ export class I18nController<T> {
         }
       } else if (coreKey?.includes('getWeekLabel')) {
         // Call core week label?
+      } else {
+        // No mapped keys, no need to convert the resources then.
+        return resourceStrings as T;
       }
     }
 

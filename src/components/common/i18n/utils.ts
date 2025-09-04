@@ -74,8 +74,8 @@ export function convertToIgcResource<T extends IResourceStrings>(inObject: T) {
 }
 
 export function convertToCoreResource<T>(inObject: T): IResourceStrings {
-  const result = {} as IResourceStrings;
-  let resourceMap = new Map<string, string | undefined>();
+  let result = {} as IResourceStrings;
+  let resourceMap: Map<string, string | undefined> | undefined;
   if (isCalendarResource(inObject as IgcCalendarResourceStrings)) {
     resourceMap = calendarResourcesMap;
   } else if (
@@ -84,12 +84,17 @@ export function convertToCoreResource<T>(inObject: T): IResourceStrings {
     resourceMap = dateRangePickerResourcesMap;
   }
 
-  for (const [key, value] of resourceMap) {
-    if (value && !value.includes('i18n/')) {
-      result[value as keyof IResourceStrings] = inObject[
-        key as keyof T
-      ] as string;
+  if (resourceMap) {
+    for (const [key, value] of resourceMap) {
+      if (value && !value.includes('i18n/')) {
+        result[value as keyof IResourceStrings] = inObject[
+          key as keyof T
+        ] as string;
+      }
     }
+  } else {
+    // If there are no available maps, assume that the input object is of `igniteui-i18n-core` type.
+    result = inObject as IResourceStrings;
   }
 
   return result;
