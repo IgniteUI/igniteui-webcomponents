@@ -25,7 +25,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources.js';
+} from '../common/i18n/EN/calendar.resources.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';

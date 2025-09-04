@@ -32,7 +32,15 @@
         }
       }
     ],
-    "types": ["mocha"]
+    "types": ["mocha"],
+    "paths": {
+      "igniteui-i18n-core": [
+        "../node_modules/igniteui-i18n-core/"
+      ],
+      "igniteui-i18n-resources": [
+        "../node_modules/igniteui-i18n-resources/"
+      ],
+    },
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.stories.ts"],
