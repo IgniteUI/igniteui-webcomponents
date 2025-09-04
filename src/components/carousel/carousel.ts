@@ -1,4 +1,8 @@
 import { ContextProvider } from '@lit/context';
+import {
+  CarouselResourceStringsEN,
+  type ICarouselResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -31,6 +35,7 @@ import {
 } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
@@ -130,6 +135,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     initial: true,
   });
 
+  private readonly _i18nController =
+    addI18nController<ICarouselResourceStrings>(this, {
+      defaultEN: CarouselResourceStringsEN,
+    });
+
   private readonly _context = new ContextProvider(this, {
     context: carouselContext,
     initialValue: this,
@@ -216,7 +226,17 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * @attr indicators-label-format
    */
   @property({ attribute: 'indicators-label-format' })
-  public indicatorsLabelFormat = 'Slide {0}';
+  public set indicatorsLabelFormat(value: string) {
+    this._indicatorsLabelFormat = value;
+  }
+
+  public get() {
+    return (
+      this._indicatorsLabelFormat ??
+      `${this.resourceStrings.carousel_slide} {0}`
+    );
+  }
+  private _indicatorsLabelFormat: string | undefined;
 
   /**
    * The format used to set the aria-label on the carousel slides and the text displayed
@@ -227,7 +247,17 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    * @attr slides-label-format
    */
   @property({ attribute: 'slides-label-format' })
-  public slidesLabelFormat = '{0} of {1}';
+  public set slidesLabelFormat(value: string) {
+    this._slidesLabelFormat = value;
+  }
+
+  public get slidesLabelFormat() {
+    return (
+      this._slidesLabelFormat ?? `{0} ${this.resourceStrings.carousel_of} {1}`
+    );
+  }
+
+  private _slidesLabelFormat: string | undefined;
 
   /**
    * The duration in milliseconds between changing the active slide.
@@ -249,6 +279,31 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'animation-type' })
   public animationType: HorizontalTransitionAnimation = 'slide';
+
+  /**
+   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: ICarouselResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): ICarouselResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   /* blazorSuppress */
   /**
@@ -722,7 +777,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._prevButtonRef)}
         type="button"
         part="navigation previous"
-        aria-label="Previous slide"
+        aria-label=${this.resourceStrings.carousel_previous_slide ??
+        'previous slide'}
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === 0}
         @click=${this._handleNavigationInteractionPrevious}
@@ -740,7 +796,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._nextButtonRef)}
         type="button"
         part="navigation next"
-        aria-label="Next slide"
+        aria-label=${this.resourceStrings.carousel_next_slide ?? 'next slide'}
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === this.total - 1}
         @click=${this._handleNavigationInteractionNext}
