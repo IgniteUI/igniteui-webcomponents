@@ -129,9 +129,9 @@ describe('Chat', () => {
       timestamp: new Date(Date.now() - 3400000),
       attachments: [
         {
-          id: 'img2',
-          name: 'img2.png',
-          url: 'https://www.infragistics.com/angular-demos/assets/images/men/2.jpg',
+          id: 'file1',
+          name: 'file1.other',
+          url: 'http://some-link-to/file1.other',
           type: 'file',
         },
       ],
@@ -163,31 +163,27 @@ describe('Chat', () => {
 
   const messageActions = `<div>
                           <igc-icon-button
-                            collection="material"
-                            id="copy-button"
-                            name="copy"
+                            id="copy_content-button"
+                            name="copy_content"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
-                            collection="material"
-                            id="like-button"
-                            name="like"
+                            id="thumb_up_inactive-button"
+                            name="thumb_up_inactive"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
-                            collection="material"
-                            id="dislike-button"
-                            name="dislike"
+                            id="thumb_down_inactive-button"
+                            name="thumb_down_inactive"
                             type="button"
                             variant="flat"
                           >
                           </igc-icon-button>
                           <igc-icon-button
-                            collection="material"
                             id="regenerate-button"
                             name="regenerate"
                             type="button"
@@ -256,10 +252,9 @@ describe('Chat', () => {
                         <label for="input_attachments" part="upload-button">
                           <igc-icon-button
                             variant="flat"
-                            name="attachment"
+                            name="attach_file"
                             type="button"
-                            collection="material"
-                          ></igc-icon-button>
+                            ></igc-icon-button>
                           <input
                             type="file"
                             id="input_attachments"
@@ -270,9 +265,8 @@ describe('Chat', () => {
                         <igc-icon-button
                           aria-label="Send message"
                           part="send-button"
-                          collection="material"
                           disabled=""
-                          name="send-message"
+                          name="send_message"
                           type="button"
                           variant="contained"
                         >
@@ -459,7 +453,7 @@ describe('Chat', () => {
     it('should enable/disable the send button properly', async () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const sendButton = inputArea?.shadowRoot?.querySelector(
-        'igc-icon-button[name="send-message"]'
+        'igc-icon-button[name="send_message"]'
       ) as HTMLButtonElement;
 
       expect(sendButton?.disabled).to.be.true;
@@ -513,9 +507,8 @@ describe('Chat', () => {
                         <igc-icon-button
                           aria-label="Send message"
                           part="send-button"
-                          collection="material"
                           disabled=""
-                          name="send-message"
+                          name="send_message"
                           type="button"
                           variant="contained"
                         >
@@ -567,8 +560,7 @@ describe('Chat', () => {
               <div part="attachment-wrapper" role="listitem">
                 <igc-chip removable="">
                   <igc-icon
-                    collection="material"
-                    name="file-document"
+                    name="attach_document"
                     slot="prefix"
                   >
                   </igc-icon>
@@ -580,8 +572,7 @@ describe('Chat', () => {
               <div part="attachment-wrapper" role="listitem">
                 <igc-chip removable="">
                   <igc-icon
-                    collection="material"
-                    name="file-image"
+                    name="attach_image"
                     slot="prefix"
                   >
                   </igc-icon>
@@ -603,9 +594,8 @@ describe('Chat', () => {
               <label for="input_attachments" part="upload-button">
                 <igc-icon-button
                   variant="flat"
-                  name="attachment"
+                  name="attach_file"
                   type="button"
-                  collection="material"
                 ></igc-icon-button>
                 <input
                   type="file"
@@ -617,8 +607,7 @@ describe('Chat', () => {
               <igc-icon-button
                 aria-label="Send message"
                 part="send-button"
-                collection="material"
-                name="send-message"
+                name="send_message"
                 type="button"
                 variant="contained"
               >
@@ -689,22 +678,21 @@ describe('Chat', () => {
                   <div part="attachment-header" role="button">
                       <div part="details">
                           <igc-icon
-                            collection="material"
-                            name="file"
+                            name="document_thumbnail"
                             part="attachment-icon"
                           >
                           </igc-icon>
                           <span part="file-name">
-                              img2.png
+                              file1.other
                           </span>
                       </div>
                   </div>
                   <div part="attachment-content">
-                    <img
-                      alt="img2.png"
+                    <igc-icon
+                      name="file_generic"
                       part="file-attachment"
-                      src="http://localhost:8000/src/components/chat/assets/file.png"
                     >
+                    </igc-icon>
                   </div>
                 </div>
               </div>`
@@ -752,8 +740,7 @@ describe('Chat', () => {
               <igc-list-item>
                 <span slot="start">
                   <igc-icon
-                    collection="material"
-                    name="star-icon"
+                    name="auto_suggest"
                   >
                   </igc-icon>
                 </span>
@@ -769,8 +756,7 @@ describe('Chat', () => {
               <igc-list-item>
                 <span slot="start">
                   <igc-icon
-                    collection="material"
-                    name="star-icon"
+                    name="auto_suggest"
                   >
                   </igc-icon>
                 </span>
@@ -901,10 +887,7 @@ describe('Chat', () => {
               return html`
                 <div slot="suggestion">
                   <span>${index}. ${suggestion}</span>
-                  <igc-icon
-                    name="good-response"
-                    collection="material"
-                  ></igc-icon>
+                  <igc-icon name="good-response"></igc-icon>
                 </div>
               `;
             })}
@@ -963,7 +946,6 @@ describe('Chat', () => {
           0. Login screen
         </span>
         <igc-icon
-          collection="material"
           name="good-response"
         >
         </igc-icon>
@@ -973,7 +955,6 @@ describe('Chat', () => {
           1. Registration Form
         </span>
         <igc-icon
-          collection="material"
           name="good-response"
         >
         </igc-icon>
@@ -1219,8 +1200,7 @@ describe('Chat', () => {
                   part="upload-button"
                 >
                   <igc-icon-button
-                    collection="material"
-                    name="attachment"
+                    name="attach_file"
                     type="button"
                     variant="flat"
                   >
@@ -1284,7 +1264,7 @@ describe('Chat', () => {
         const eventSpy = spy(chat, 'emitEvent');
         const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
         const sendButton = inputArea?.shadowRoot?.querySelector(
-          'igc-icon-button[name="send-message"]'
+          'igc-icon-button[name="send_message"]'
         )!;
         const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
         expect(sendButton).not.to.be.null;
@@ -1389,7 +1369,7 @@ describe('Chat', () => {
         await elementUpdated(inputArea!);
 
         const sendButton = inputArea?.shadowRoot?.querySelector(
-          'igc-icon-button[name="send-message"]'
+          'igc-icon-button[name="send_message"]'
         )! as IgcIconButtonComponent;
 
         expect(sendButton.disabled).to.be.true;
@@ -1654,19 +1634,19 @@ describe('Chat', () => {
         ?.querySelector('igc-chat-message');
 
       const likeIcon = messageElement?.shadowRoot?.querySelector(
-        'igc-icon-button[name="like"]'
+        'igc-icon-button[name="thumb_up_inactive"]'
       ) as HTMLElement;
 
       simulateClick(likeIcon);
       expect(eventSpy).calledWith('igcMessageReact', {
-        detail: { message: messages[0], reaction: 'like' },
+        detail: { message: messages[0], reaction: 'thumb_up_inactive' },
       });
     });
 
     it('can cancel `igcMessageCreated` event', async () => {
       const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
       const sendButton = inputArea?.shadowRoot?.querySelector(
-        'igc-icon-button[name="send-message"]'
+        'igc-icon-button[name="send_message"]'
       )!;
       const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
 
