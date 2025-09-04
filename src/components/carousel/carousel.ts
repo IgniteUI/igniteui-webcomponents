@@ -230,7 +230,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     this._indicatorsLabelFormat = value;
   }
 
-  public get() {
+  public get indicatorsLabelFormat() {
     return (
       this._indicatorsLabelFormat ??
       `${this.resourceStrings.carousel_slide} {0}`
