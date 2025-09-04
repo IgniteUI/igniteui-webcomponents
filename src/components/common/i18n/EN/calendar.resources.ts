@@ -1,5 +1,5 @@
-import { CalendarResourceStringsEN } from 'igniteui-i18n-core/i18n/EN';
-import { i18n } from './i18n.js';
+import { CalendarResourceStringsEN } from 'igniteui-i18n-core';
+import { convertToIgcResource } from '../utils.js';
 
 /* blazorSuppress */
 export interface IgcCalendarResourceStrings {
@@ -20,4 +20,4 @@ export interface IgcCalendarResourceStrings {
 }
 
 export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings =
-  i18n.convertToIgcResource(CalendarResourceStringsEN);
+  convertToIgcResource(CalendarResourceStringsEN);

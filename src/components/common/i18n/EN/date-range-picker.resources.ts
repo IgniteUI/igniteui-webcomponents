@@ -1,9 +1,9 @@
-import { DateRangePickerResourceStringsEN } from 'igniteui-i18n-core/i18n/EN';
+import { DateRangePickerResourceStringsEN } from 'igniteui-i18n-core';
+import { convertToIgcResource } from '../utils.js';
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from './calendar.resources.js';
-import { i18n } from './i18n.js';
 
 /* blazorSuppress */
 export interface IgcDateRangePickerResourceStrings
@@ -19,6 +19,6 @@ export interface IgcDateRangePickerResourceStrings
 
 export const IgcDateRangePickerResourceStringsEN: IgcDateRangePickerResourceStrings =
   {
-    ...i18n.convertToIgcResource(DateRangePickerResourceStringsEN),
+    ...convertToIgcResource(DateRangePickerResourceStringsEN),
     ...IgcCalendarResourceStringEN,
   };

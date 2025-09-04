@@ -34,3 +34,5 @@ i18nRepo
 # Development environment
 .envrc
 .direnv
+
+.vs
