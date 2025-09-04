@@ -13,7 +13,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import type { IgcDateRangePickerResourceStrings } from '../common/i18n/date-range-picker.resources.js';
+import type { IgcDateRangePickerResourceStrings } from '../common/i18n/EN/date-range-picker.resources.js';
 import {
   checkDatesEqual,
   simulateClick,

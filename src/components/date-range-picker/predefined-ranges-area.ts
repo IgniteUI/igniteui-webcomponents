@@ -1,4 +1,3 @@
-import { getI18nManager } from 'igniteui-i18n-core';
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -9,8 +8,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
-} from '../common/i18n/date-range-picker.resources.js';
-import { i18n } from '../common/i18n/i18n.js';
+} from '../common/i18n/EN/date-range-picker.resources.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { all } from './themes/ranges-themes.js';
@@ -28,6 +27,11 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
   private _resourceHandler: () => void;
+
+  private readonly _i18nController =
+    addI18nController<IgcDateRangePickerResourceStrings>(this, {
+      defaultEN: IgcDateRangePickerResourceStringsEN,
+    });
 
   /* blazorSuppress */
   public static register(): void {
@@ -56,32 +60,17 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   /** The resource strings of the date range area component. */
   @property({ attribute: false })
-  public resourceStrings: IgcDateRangePickerResourceStrings =
-    i18n.getCurrentResourceStrings(IgcDateRangePickerResourceStringsEN);
+  public set resourceStrings(value: IgcDateRangePickerResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcDateRangePickerResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   constructor() {
     super();
     addThemingController(this, all);
-    this._resourceHandler = this.onResourceChange.bind(this);
-    getI18nManager().addEventListener(
-      'onResourceChange',
-      this._resourceHandler
-    );
-  }
-
-  public override disconnectedCallback(): void {
-    getI18nManager().removeEventListener(
-      'onResourceChange',
-      this._resourceHandler
-    );
-    super.disconnectedCallback();
-  }
-
-  protected onResourceChange() {
-    this.resourceStrings = i18n.getCurrentResourceStrings(
-      IgcDateRangePickerResourceStringsEN,
-      false
-    );
   }
 
   @watch('resourceStrings')
