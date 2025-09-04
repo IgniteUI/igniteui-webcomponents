@@ -301,7 +301,19 @@ export default class IgcComboComponent<
    * @attr placeholder-search
    */
   @property({ attribute: 'placeholder-search' })
-  public placeholderSearch = 'Search';
+  public set placeholderSearch(value: string) {
+    this._placeholderSearch = value;
+  }
+
+  public get placeholderSearch() {
+    return (
+      this._placeholderSearch ??
+      this.resourceStrings.combo_filter_search_placeholder ??
+      'Search'
+    );
+  }
+
+  private _placeholderSearch: string | undefined;
 
   /**
    * Sets the open state of the component.
