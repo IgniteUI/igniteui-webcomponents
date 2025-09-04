@@ -43,10 +43,6 @@ export class ChatState {
   public _isTyping = false;
   private _lastTyped = Date.now();
 
-  private _fileIcon = new URL('./assets/file.png', import.meta.url).href;
-  private _jsonIcon = new URL('./assets/json.png', import.meta.url).href;
-  private _linkIcon = new URL('./assets/link.png', import.meta.url).href;
-
   private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
   public resourceStrings = IgcChatResourceStringEN;
@@ -277,24 +273,24 @@ export class ChatState {
   }
 
   public _fileIconMap: Record<string, string> = {
-    css: this._fileIcon,
-    csv: this._fileIcon,
-    doc: this._fileIcon,
-    docx: this._fileIcon,
-    htm: this._fileIcon,
-    html: this._fileIcon,
-    js: this._fileIcon,
-    json: this._jsonIcon,
-    pdf: this._fileIcon,
-    rtf: this._fileIcon,
-    svg: this._fileIcon,
-    txt: this._fileIcon,
-    url: this._linkIcon,
-    xls: this._fileIcon,
-    xlsx: this._jsonIcon,
-    xml: this._linkIcon,
-    zip: this._fileIcon,
-    default: this._fileIcon, // A fallback icon
+    css: 'file_generic',
+    csv: 'file_generic',
+    doc: 'file_generic',
+    docx: 'file_generic',
+    htm: 'file_generic',
+    html: 'file_generic',
+    js: 'file_generic',
+    json: 'file_json',
+    pdf: 'file_generic',
+    rtf: 'file_generic',
+    svg: 'file_generic',
+    txt: 'file_generic',
+    url: 'file_link',
+    xls: 'file_generic',
+    xlsx: 'file_json',
+    xml: 'file_link',
+    zip: 'file_generic',
+    default: 'file_generic', // A fallback icon
   };
 
   public handleKeyDown = (e: KeyboardEvent) => {

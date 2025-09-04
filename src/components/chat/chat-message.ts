@@ -132,9 +132,12 @@ export default class IgcChatMessageComponent extends LitElement {
           'copy_content',
           resourceStrings.reactionCopy
         )}
-        ${this._renderActionButton('thumb_up', resourceStrings.reactionLike)}
         ${this._renderActionButton(
-          'thumb_down',
+          'thumb_up_inactive',
+          resourceStrings.reactionLike
+        )}
+        ${this._renderActionButton(
+          'thumb_down_inactive',
           resourceStrings.reactionDislike
         )}
         ${this._renderActionButton(

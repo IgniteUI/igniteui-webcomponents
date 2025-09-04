@@ -113,13 +113,20 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   private renderContent(attachment: IgcMessageAttachment) {
     const ext = getFileExtension(attachment.name);
     const isImage = this._chatState?.isImageAttachment(attachment);
-    const url = isImage
-      ? createAttachmentURL(attachment)
-      : (this._chatState?._fileIconMap[ext!] ??
-        this._chatState?._fileIconMap['default']);
-    const partName = isImage ? 'image-attachment' : 'file-attachment';
+    const iconName =
+      this._chatState?._fileIconMap[ext!] ??
+      this._chatState?._fileIconMap['default'];
+    const image = html`<img
+      part="image-attachment"
+      src=${createAttachmentURL(attachment)}
+      alt=${attachment.name}
+    />`;
+    const icon = html`<igc-icon
+      part="file-attachment"
+      name=${iconName!}
+    ></igc-icon>`;
 
-    return html`<img part="${partName}" src=${url!} alt=${attachment.name} />`;
+    return isImage ? image : icon;
   }
 
   private renderAttachment(attachment: IgcMessageAttachment) {

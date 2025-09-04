@@ -22,3 +22,8 @@ $theme: $material;
 [part='attachment-content'] {
     border-block-start: none;
 }
+
+[part="file-attachment"] {
+    --color: var(--ig-gray-500);
+    --accent-color: var(--ig-secondary-500);
+}

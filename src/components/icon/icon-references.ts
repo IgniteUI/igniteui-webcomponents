@@ -103,9 +103,45 @@ addIcon('image_thumbnail', {
     collection: 'internal',
   },
 });
+addIcon('table_thumbnail', {
+  default: {
+    name: 'table',
+    collection: 'internal',
+  },
+});
+addIcon('layout_thumbnail', {
+  default: {
+    name: 'layout',
+    collection: 'internal',
+  },
+});
+addIcon('code_thumbnail', {
+  default: {
+    name: 'code_circle',
+    collection: 'internal',
+  },
+});
 addIcon('document_thumbnail', {
   default: {
     name: 'document_empty',
+    collection: 'internal',
+  },
+});
+addIcon('file_generic', {
+  default: {
+    name: 'file_generic',
+    collection: 'internal',
+  },
+});
+addIcon('file_json', {
+  default: {
+    name: 'file_json',
+    collection: 'internal',
+  },
+});
+addIcon('file_link', {
+  default: {
+    name: 'file_link',
     collection: 'internal',
   },
 });
@@ -121,15 +157,27 @@ addIcon('open_in_new', {
     collection: 'internal',
   },
 });
-addIcon('thumb_up', {
+addIcon('thumb_up_active', {
   default: {
-    name: 'thumb_up',
+    name: 'thumb_up_filled',
     collection: 'internal',
   },
 });
-addIcon('thumb_down', {
+addIcon('thumb_up_inactive', {
   default: {
-    name: 'thumb_down',
+    name: 'thumb_up_empty',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_down_filled', {
+  default: {
+    name: 'thumb_down_filled',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_down_inactive', {
+  default: {
+    name: 'thumb_down_empty',
     collection: 'internal',
   },
 });
