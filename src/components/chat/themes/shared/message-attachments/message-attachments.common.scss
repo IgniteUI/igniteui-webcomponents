@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../light/themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $material;
 
@@ -15,15 +15,18 @@ $theme: $material;
 }
 
 [part~='attachment-content'] {
-    // background: var-get($theme, 'file-background');
-    background: white;
+    background: var-get($theme, 'file-background');
 }
 
 [part='attachment-content'] {
     border-block-start: none;
 }
 
+[part~='attachment-icon'] {
+    color: var-get($theme, 'image-attachment-icon');
+}
+
 [part="file-attachment"] {
-    --color: var(--ig-gray-500);
-    --accent-color: var(--ig-secondary-500);
+    --color: #{var-get($theme, 'file-icon-color')};
+    --accent-color: #{var-get($theme, 'file-icon-accent-color')};
 }

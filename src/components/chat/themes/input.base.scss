@@ -14,7 +14,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-inline: rem(16px);
+    margin-inline: rem(24px);
     border-radius: rem(4px);
     padding: rem(16px);
     gap: rem(12px);
@@ -66,4 +66,10 @@ igc-textarea::part(input) {
 
 igc-icon-button {
     --ig-size: 2;
+}
+
+@container (max-width: 400px) {
+    [part~='input-container'] {
+        margin-inline: rem(12px);
+    }
 }

@@ -2,6 +2,7 @@ import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { until } from 'lit/directives/until.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -9,8 +10,9 @@ import { partMap } from '../common/part-map.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
+import { all } from './themes/attachments.js';
 import { styles } from './themes/message-attachments.base.css.js';
-import { styles as shared } from './themes/shared/message-attachments.common.css.js';
+import { styles as shared } from './themes/shared/message-attachments/message-attachments.common.css.js';
 import type {
   ChatTemplateRenderer,
   IgcMessage,
@@ -66,6 +68,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   @property({ attribute: false })
   public message?: IgcMessage;
 
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
     Object.freeze({
       attachment: (ctx: any) => this.renderAttachment(ctx.param),
@@ -93,7 +100,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       this.message?.sender === this._chatState?.currentUserId;
     const iconName =
       attachment.type === 'image' || attachment.file?.type.startsWith('image/')
-        ? 'image_thumbnail'
+        ? 'attach_image'
         : 'document_thumbnail';
 
     return html`
