@@ -20,7 +20,7 @@ import { chatMessageAdoptPageStyles, showChatActionsTooltip } from './utils.js';
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
 const DISLIKE_INACTIVE = 'thumb_down_inactive';
-const DISLIKE_ACTIVE = 'thumb_down_filled';
+const DISLIKE_ACTIVE = 'thumb_down_active';
 
 type DefaultMessageRenderers = {
   message: ChatTemplateRenderer<IgcMessage>;
