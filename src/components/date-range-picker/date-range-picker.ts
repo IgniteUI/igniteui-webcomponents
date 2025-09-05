@@ -1,7 +1,3 @@
-import {
-  getI18nManager,
-  type IResourceChangeEventArgs,
-} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
@@ -195,9 +191,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 ) {
   public static readonly tagName = 'igc-date-range-picker';
   public static styles = [styles, shared];
-  private _resourceHandler: (
-    evt: CustomEvent<IResourceChangeEventArgs>
-  ) => void;
 
   /* blazorSuppress */
   public static register(): void {
@@ -611,28 +604,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       .set([altKey, arrowDown], this.handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
-
-    this._resourceHandler = this.onResourceChange.bind(this);
-    getI18nManager().addEventListener(
-      'onResourceChange',
-      this._resourceHandler
-    );
-  }
-
-  public override disconnectedCallback(): void {
-    getI18nManager().removeEventListener(
-      'onResourceChange',
-      this._resourceHandler
-    );
-    super.disconnectedCallback();
-  }
-
-  protected onResourceChange(evt: CustomEvent<IResourceChangeEventArgs>) {
-    this.locale = evt.detail.newLocale;
-    this.resourceStrings = i18n.getCurrentResourceStrings(
-      IgcDateRangePickerResourceStringsEN,
-      false
-    );
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

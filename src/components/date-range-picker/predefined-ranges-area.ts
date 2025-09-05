@@ -26,7 +26,6 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
 export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
-  private _resourceHandler: () => void;
 
   private readonly _i18nController =
     addI18nController<IgcDateRangePickerResourceStrings>(this, {
