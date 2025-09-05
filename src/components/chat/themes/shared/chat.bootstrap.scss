@@ -11,9 +11,3 @@ $theme: $bootstrap;
 igc-list {
     border: none;
 }
-
-igc-list,
-igc-list-item:not(:hover),
-igc-list-header {
-    background: initial;
-}

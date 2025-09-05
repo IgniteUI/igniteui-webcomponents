@@ -58,6 +58,10 @@
     object-fit: cover;
 }
 
+[part~='attachment-icon'] {
+    --ig-size: 1;
+}
+
 [part='file-attachment'] {
     --size: #{rem(32px)};
 }

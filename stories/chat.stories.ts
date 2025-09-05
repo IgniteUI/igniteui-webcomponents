@@ -515,7 +515,7 @@ export const Chat_Templates: Story = {
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
-          <igc-icon-button variant="flat">...</igc-icon-button>
+          <igc-icon-button variant="flat" name="more_horiz"></igc-icon-button>
         </div>
       `;
 
