@@ -1,0 +1,13 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+[part='header'] {
+    box-shadow: none;
+    border-block-end: rem(1px) solid var-get($theme, 'header-border');
+}
+
+igc-list {
+    border: none;
+}

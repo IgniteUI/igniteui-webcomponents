@@ -63,6 +63,136 @@ addIcon('expand', {
     collection: 'internal',
   },
 });
+addIcon('attach_file', {
+  default: {
+    name: 'attach_file',
+    collection: 'internal',
+  },
+  indigo: {
+    name: 'indigo_attach_file',
+    collection: 'internal',
+  },
+});
+addIcon('attach_document', {
+  default: {
+    name: 'document_filled',
+    collection: 'internal',
+  },
+});
+addIcon('attach_image', {
+  default: {
+    name: 'document_image',
+    collection: 'internal',
+  },
+});
+addIcon('auto_suggest', {
+  default: {
+    name: 'auto_suggest',
+    collection: 'internal',
+  },
+});
+addIcon('send_message', {
+  default: {
+    name: 'send',
+    collection: 'internal',
+  },
+});
+addIcon('image_thumbnail', {
+  default: {
+    name: 'image',
+    collection: 'internal',
+  },
+});
+addIcon('table_thumbnail', {
+  default: {
+    name: 'table',
+    collection: 'internal',
+  },
+});
+addIcon('layout_thumbnail', {
+  default: {
+    name: 'layout',
+    collection: 'internal',
+  },
+});
+addIcon('code_thumbnail', {
+  default: {
+    name: 'code_circle',
+    collection: 'internal',
+  },
+});
+addIcon('document_thumbnail', {
+  default: {
+    name: 'document_empty',
+    collection: 'internal',
+  },
+});
+addIcon('file_generic', {
+  default: {
+    name: 'file_generic',
+    collection: 'internal',
+  },
+});
+addIcon('file_json', {
+  default: {
+    name: 'file_json',
+    collection: 'internal',
+  },
+});
+addIcon('file_link', {
+  default: {
+    name: 'file_link',
+    collection: 'internal',
+  },
+});
+addIcon('more_horiz', {
+  default: {
+    name: 'more_horiz',
+    collection: 'internal',
+  },
+});
+addIcon('open_in_new', {
+  default: {
+    name: 'open_in_new',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_up_active', {
+  default: {
+    name: 'thumb_up_filled',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_up_inactive', {
+  default: {
+    name: 'thumb_up_empty',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_down_active', {
+  default: {
+    name: 'thumb_down_filled',
+    collection: 'internal',
+  },
+});
+addIcon('thumb_down_inactive', {
+  default: {
+    name: 'thumb_down_empty',
+    collection: 'internal',
+  },
+});
+addIcon('regenerate', {
+  default: {
+    name: 'reload',
+    collection: 'internal',
+  },
+});
+addIcon('copy_content', {
+  default: {
+    name: 'copy',
+    collection: 'internal',
+  },
+});
 addIcon('collapse', {
   default: {
     name: 'keyboard_arrow_up',
