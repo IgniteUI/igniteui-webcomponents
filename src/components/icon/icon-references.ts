@@ -169,7 +169,7 @@ addIcon('thumb_up_inactive', {
     collection: 'internal',
   },
 });
-addIcon('thumb_down_filled', {
+addIcon('thumb_down_active', {
   default: {
     name: 'thumb_down_filled',
     collection: 'internal',
