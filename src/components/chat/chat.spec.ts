@@ -161,7 +161,7 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
-  const messageActions = `<div>
+  const messageActions = (likeButtonState = 'inactive') => `<div>
                           <igc-icon-button
                             id="copy_content-button"
                             name="copy_content"
@@ -170,8 +170,8 @@ describe('Chat', () => {
                           >
                           </igc-icon-button>
                           <igc-icon-button
-                            id="thumb_up_inactive-button"
-                            name="thumb_up_inactive"
+                            id="thumb_up_${likeButtonState}-button"
+                            name="thumb_up_${likeButtonState}"
                             type="button"
                             variant="flat"
                           >
@@ -309,7 +309,7 @@ describe('Chat', () => {
             <pre part="plain-text">
               Hello! How can I help you today?
             </pre>
-            ${firstMessage?.message?.sender !== 'user' ? messageActions : ''}
+            ${firstMessage?.message?.sender !== 'user' ? messageActions() : ''}
         </div>`
       );
 
@@ -351,7 +351,7 @@ describe('Chat', () => {
           <pre part="plain-text">
             Hello!
           </pre>
-          ${firstMessage?.message?.sender !== 'user' ? messageActions : ''}
+          ${firstMessage?.message?.sender !== 'user' ? messageActions() : ''}
         </div>`
       );
     });
@@ -640,7 +640,7 @@ describe('Chat', () => {
                               </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
-                            ${chat.messages[index].sender !== 'user' ? messageActions : ''}
+                            ${chat.messages[index].sender !== 'user' ? messageActions() : ''}
                     </div>`
         );
 
@@ -1100,7 +1100,7 @@ describe('Chat', () => {
               ${chat.messages[index].text.toUpperCase()}
               <igc-message-attachments>
               </igc-message-attachments>
-              ${isCurrentUser ? '' : messageActions}
+              ${isCurrentUser ? '' : messageActions()}
             </div>`
         );
       });
@@ -1251,7 +1251,7 @@ describe('Chat', () => {
               </pre>
               <igc-message-attachments>
               </igc-message-attachments>
-              ${!isCurrentUser ? messageActions : ''}
+              ${!isCurrentUser ? messageActions() : ''}
             </div>`
         );
       });
@@ -1373,6 +1373,62 @@ describe('Chat', () => {
         )! as IgcIconButtonComponent;
 
         expect(sendButton.disabled).to.be.true;
+      });
+
+      it('should update like button state on click', async () => {
+        chat.messages = [messages[0]];
+        await elementUpdated(chat);
+        await aTimeout(500);
+
+        const messageContainer = chat.shadowRoot?.querySelector(
+          'div[part="message-list"]'
+        ) as HTMLElement;
+        let firstMessage =
+          messageContainer?.querySelectorAll('igc-chat-message')[0];
+        expect(firstMessage).shadowDom.to.equal(
+          `<div part="message-container">
+                <pre part="plain-text">
+                  Hello! How can I help you today?
+                </pre>
+                ${firstMessage?.message?.sender !== 'user' ? messageActions() : ''}
+            </div>`
+        );
+
+        // click on like (inactive) icon
+        let likeIcon = firstMessage?.shadowRoot?.querySelector(
+          'igc-icon-button[name="thumb_up_inactive"]'
+        ) as HTMLElement;
+        simulateClick(likeIcon);
+        await elementUpdated(chat);
+
+        firstMessage =
+          messageContainer?.querySelectorAll('igc-chat-message')[0];
+        expect(firstMessage).shadowDom.to.equal(
+          `<div part="message-container">
+              <pre part="plain-text">
+                Hello! How can I help you today?
+              </pre>
+              ${firstMessage?.message?.sender !== 'user' ? messageActions('active') : ''}
+          </div>`
+        );
+
+        // click on like (active) icon
+        likeIcon = firstMessage?.shadowRoot?.querySelector(
+          'igc-icon-button[name="thumb_up_active"]'
+        ) as HTMLElement;
+        simulateClick(likeIcon);
+        await elementUpdated(chat);
+
+        firstMessage =
+          messageContainer?.querySelectorAll('igc-chat-message')[0];
+        expect(firstMessage).shadowDom.to.equal(
+          `<div part="message-container">
+              <pre part="plain-text">
+                Hello! How can I help you today?
+              </pre>
+              ${firstMessage?.message?.sender !== 'user' ? messageActions() : ''}
+          </div>`
+        );
       });
     });
 
@@ -1639,7 +1695,7 @@ describe('Chat', () => {
 
       simulateClick(likeIcon);
       expect(eventSpy).calledWith('igcMessageReact', {
-        detail: { message: messages[0], reaction: 'thumb_up_inactive' },
+        detail: { message: messages[0], reaction: 'thumb_up_active' },
       });
     });
 

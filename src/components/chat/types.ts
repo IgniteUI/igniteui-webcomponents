@@ -27,6 +27,11 @@ export interface IgcMessage {
    * such as images, files, or links.
    */
   attachments?: IgcMessageAttachment[];
+
+  /**
+   * Optional list of reactions associated with the message.
+   */
+  reactions?: string[];
 }
 
 /**

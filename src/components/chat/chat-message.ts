@@ -17,6 +17,11 @@ import { styles as shared } from './themes/shared/chat-message/chat-message.comm
 import type { ChatTemplateRenderer, IgcMessage } from './types.js';
 import { chatMessageAdoptPageStyles, showChatActionsTooltip } from './utils.js';
 
+const LIKE_INACTIVE = 'thumb_up_inactive';
+const LIKE_ACTIVE = 'thumb_up_active';
+const DISLIKE_INACTIVE = 'thumb_down_inactive';
+const DISLIKE_ACTIVE = 'thumb_down_filled';
+
 type DefaultMessageRenderers = {
   message: ChatTemplateRenderer<IgcMessage>;
   messageHeader: ChatTemplateRenderer<IgcMessage>;
@@ -99,7 +104,22 @@ export default class IgcChatMessageComponent extends LitElement {
     const button = targetButton.closest('igc-icon-button');
     if (!button) return;
 
-    const reaction = button.getAttribute('name');
+    let reaction = button.getAttribute('name');
+    if (this.message) {
+      if (reaction === LIKE_INACTIVE) {
+        reaction = LIKE_ACTIVE;
+        this.message.reactions = [reaction];
+      } else if (reaction === DISLIKE_INACTIVE) {
+        reaction = DISLIKE_ACTIVE;
+        this.message.reactions = [reaction];
+      } else if (reaction === this.message.reactions?.[0]) {
+        reaction = null;
+        this.message.reactions = [];
+      }
+
+      this.requestUpdate();
+    }
+
     this._chatState?.emitEvent('igcMessageReact', {
       detail: { message: this.message, reaction },
     });
@@ -133,11 +153,15 @@ export default class IgcChatMessageComponent extends LitElement {
           resourceStrings.reactionCopy
         )}
         ${this._renderActionButton(
-          'thumb_up_inactive',
+          this.message?.reactions?.includes(LIKE_ACTIVE)
+            ? LIKE_ACTIVE
+            : LIKE_INACTIVE,
           resourceStrings.reactionLike
         )}
         ${this._renderActionButton(
-          'thumb_down_inactive',
+          this.message?.reactions?.includes(DISLIKE_ACTIVE)
+            ? DISLIKE_ACTIVE
+            : DISLIKE_INACTIVE,
           resourceStrings.reactionDislike
         )}
         ${this._renderActionButton(
