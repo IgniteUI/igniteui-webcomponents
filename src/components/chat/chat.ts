@@ -5,7 +5,7 @@ import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { chatContext } from '../common/context.js';
+import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -19,7 +19,7 @@ import IgcListHeaderComponent from '../list/list-header.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
-import { createChatState } from './chat-state.js';
+import { ChatState } from './chat-state.js';
 import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import { all } from './themes/themes.js';
@@ -35,91 +35,51 @@ import type {
 export interface IgcChatComponentEventMap {
   /**
    * Dispatched when a new chat message is created (sent).
-   *
-   * @event igcMessageCreated
-   * @type {CustomEvent<IgcMessage>}
-   * @detail The message that was created.
    */
   igcMessageCreated: CustomEvent<IgcMessage>;
 
   /**
    * Dispatched when a message is reacted to.
-   *
-   * @event igcMessageReact
-   * @type {CustomEvent<IgcMessage, string>}
-   * @detail The message that was reacted to and the reaction.
    */
   igcMessageReact: CustomEvent<{ message: IgcMessage; reaction: string }>;
 
   /**
    * Dispatched when a chat message attachment is clicked.
-   *
-   * @event igcAttachmentClick
-   * @type {CustomEvent<IgcMessageAttachment>}
-   * @detail The attachment that was clicked.
    */
   igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
 
   /**
    * Dispatched when an attachment is changed (e.g., updated or removed).
-   *
-   * @event igcAttachmentChange
-   * @type {CustomEvent<IgcMessageAttachment>}
-   * @detail The attachment that was changed.
    */
   igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
 
   /**
    * Dispatched during an attachment drag operation.
-   *
-   * @event igcAttachmentDrag
-   * @type {CustomEvent<any>}
-   * @detail The drag event payload.
    */
-  igcAttachmentDrag: CustomEvent<any>;
+  igcAttachmentDrag: CustomEvent<void>;
 
   /**
    * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
-   *
-   * @event igcAttachmentDrop
-   * @type {CustomEvent<any>}
-   * @detail The drop event payload.
    */
-  igcAttachmentDrop: CustomEvent<any>;
+  igcAttachmentDrop: CustomEvent<void>;
 
   /**
    * Dispatched when the typing status changes (e.g., user starts or stops typing).
-   *
-   * @event igcTypingChange
-   * @type {CustomEvent<boolean>}
-   * @detail `true` if typing started, `false` if stopped.
    */
   igcTypingChange: CustomEvent<boolean>;
 
   /**
    * Dispatched when the chat input field gains focus.
-   *
-   * @event igcInputFocus
-   * @type {CustomEvent<any>}
-   * @detail Focus event payload.
    */
-  igcInputFocus: CustomEvent<any>;
+  igcInputFocus: CustomEvent<void>;
 
   /**
    * Dispatched when the chat input field loses focus.
-   *
-   * @event igcInputBlur
-   * @type {CustomEvent<any>}
-   * @detail Blur event payload.
    */
-  igcInputBlur: CustomEvent<any>;
+  igcInputBlur: CustomEvent<void>;
 
   /**
    * Dispatched when the content of the chat input changes.
-   *
-   * @event igcInputChange
-   * @type {CustomEvent<string>}
-   * @detail The current text value of the input.
    */
   igcInputChange: CustomEvent<string>;
 }
@@ -188,16 +148,33 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _chatState = createChatState(this);
+  private readonly _state = new ChatState(
+    this,
+    this._updateContext,
+    this._updateUserInputContext
+  );
 
   private readonly _slots = addSlotController(this, {
     slots: Slots,
   });
 
-  private _context = new ContextProvider(this, {
+  private readonly _context = new ContextProvider(this, {
     context: chatContext,
-    initialValue: this._chatState,
+    initialValue: this._state,
   });
+
+  private readonly _userInputContext = new ContextProvider(this, {
+    context: chatUserInputContext,
+    initialValue: this._state,
+  });
+
+  private _updateContext(): void {
+    this._context.setValue(this._state, true);
+  }
+
+  private _updateUserInputContext(): void {
+    this._userInputContext.setValue(this._state, true);
+  }
 
   /**
    * The list of chat messages currently displayed.
@@ -205,11 +182,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
    */
   @property({ attribute: false })
   public set messages(value: IgcMessage[]) {
-    this._chatState.messages = value;
+    this._state.messages = value;
   }
 
   public get messages(): IgcMessage[] {
-    return this._chatState.messages;
+    return this._state.messages;
   }
 
   /**
@@ -221,9 +198,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     text: string;
     attachments?: IgcMessageAttachment[];
   }) {
-    if (this._chatState && value) {
-      this._chatState.inputValue = value.text;
-      this._chatState.inputAttachments = value.attachments || [];
+    if (this._state && value) {
+      this._state.inputValue = value.text;
+      this._state.inputAttachments = value.attachments || [];
       this.requestUpdate();
     }
   }
@@ -233,8 +210,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
     attachments?: IgcMessageAttachment[];
   } {
     return {
-      text: this._chatState?.inputValue,
-      attachments: this._chatState?.inputAttachments,
+      text: this._state.inputValue,
+      attachments: this._state.inputAttachments,
     };
   }
 
@@ -244,11 +221,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
    */
   @property({ attribute: false })
   public set options(value: IgcChatOptions) {
-    this._chatState.options = value;
+    this._state.options = value;
   }
 
   public get options(): IgcChatOptions | undefined {
-    return this._chatState.options;
+    return this._state.options;
   }
 
   /**
@@ -266,7 +243,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @watch('draftMessage')
   @watch('options')
   protected contextChanged() {
-    this._context.setValue(this._chatState, true);
+    this._context.setValue(this._state, true);
   }
 
   // REVIEW: Maybe accept an `IgcMessage` type as well?
@@ -277,7 +254,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   public scrollToMessage(messageId: string): void {
     if (!isEmpty(this.messages)) {
       const message = this.renderRoot.querySelector(`#message-${messageId}`);
-      message?.scrollIntoView({ block: 'center', inline: 'center' });
+      message?.scrollIntoView({ block: 'end', inline: 'end' });
     }
   }
 
@@ -286,11 +263,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * This ensures that components consuming the chat context will re-render.
    */
   public updateContextValue() {
-    this._context.setValue(this._chatState, true);
+    this._context.setValue(this._state, true);
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('messages') && !this._chatState.disableAutoScroll) {
+    if (properties.has('messages') && !this._state.disableAutoScroll) {
       this._scrollToBottom();
     }
   }
@@ -312,13 +289,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
       this._slots.hasAssignedElements('prefix') ||
       this._slots.hasAssignedElements('title') ||
       this._slots.hasAssignedElements('actions') ||
-      this._chatState.options?.headerText;
+      this._state.options?.headerText;
 
     return html`
       <div part="header" ?hidden=${!hasContent}>
         <slot name="prefix" part="prefix"></slot>
         <slot name="title" part="title"
-          >${this._chatState.options?.headerText}</slot
+          >${this._state.options?.headerText}</slot
         >
         <slot name="actions" part="actions"></slot>
       </div>
@@ -326,12 +303,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderMessages() {
-    const messages = this._chatState?.messages ?? [];
-
     return html`
       <div part="message-list" tabindex="0">
         ${repeat(
-          messages,
+          this._state.messages,
           (message) => message.id,
           (message) => {
             return html`
@@ -346,13 +321,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
             `;
           }
         )}
-        ${this._chatState?.options?.isTyping
-          ? (this._chatState?.options?.renderers?.typingIndicator?.({
+        ${this._state.options?.isTyping
+          ? (this._state.options?.renderers?.typingIndicator?.({
               param: undefined,
               defaults: {
                 typingIndicator: () => this._renderLoadingTemplate(),
               },
-              options: this._chatState?.options,
+              options: this._state.options,
             }) ?? this._renderLoadingTemplate())
           : nothing}
       </div>
@@ -380,7 +355,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private _renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
-    const suggestions = this._chatState.options?.suggestions ?? [];
+    const suggestions = this._state.options?.suggestions ?? [];
 
     return html`
       <div part="suggestions-container">
@@ -397,7 +372,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 <slot name="suggestion" part="suggestion">
                   <igc-list-item
                     @click=${() =>
-                      this._chatState?.handleSuggestionClick(suggestion)}
+                      this._state?.handleSuggestionClick(suggestion)}
                   >
                     ${this._renderSuggestionPrefix()}
                     <span slot="title">${suggestion}</span>
@@ -422,7 +397,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   protected override render() {
     const hasMessages = !isEmpty(this.messages);
-    const suggestions = isEmpty(this._chatState.options?.suggestions ?? [])
+    const suggestions = isEmpty(this._state.options?.suggestions ?? [])
       ? nothing
       : this._renderSuggestions();
 
@@ -464,11 +439,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
         <div part="chat-wrapper">
           ${cache(
-            hasMessages || this._chatState?.options?.isTyping
+            hasMessages || this._state.options?.isTyping
               ? this._renderMessages()
               : this._renderEmptyState()
           )}
-          ${this._chatState.suggestionsPosition === 'below-messages'
+          ${this._state.suggestionsPosition === 'below-messages'
             ? suggestions
             : nothing}
         </div>
@@ -486,7 +461,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
               send-button"
         >
         </igc-chat-input>
-        ${this._chatState.suggestionsPosition === 'below-input'
+        ${this._state.suggestionsPosition === 'below-input'
           ? suggestions
           : nothing}
       </div>
@@ -496,7 +471,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
 declare global {
   interface HTMLElementTagNameMap {
-    /** The `<igc-chat>` custom element. */
     'igc-chat': IgcChatComponent;
   }
 }

@@ -20,5 +20,13 @@ const tileManagerContext = createContext<TileManagerContext>(
 );
 
 const chatContext = createContext<ChatState>(Symbol('chat-context'));
+const chatUserInputContext = createContext<ChatState>(
+  Symbol('chat-user-input-context')
+);
 
-export { carouselContext, tileManagerContext, chatContext };
+export {
+  carouselContext,
+  tileManagerContext,
+  chatContext,
+  chatUserInputContext,
+};

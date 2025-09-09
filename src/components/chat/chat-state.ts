@@ -1,6 +1,7 @@
 import { createRef, type Ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import { nanoid } from '../common/util.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
@@ -19,6 +20,10 @@ import { type ChatAcceptedFileTypes, parseAcceptedFileTypes } from './utils.js';
 export class ChatState {
   //#region Internal properties and state /** The host `<igc-chat>` component instance */
   private readonly _host: IgcChatComponent;
+
+  private readonly _contextUpdateFn: () => unknown;
+  private readonly _userInputContextUpdateFn: () => unknown;
+
   /** Reference to the text area input component */
   private _textArea: IgcTextareaComponent | null = null;
   /** The current list of messages */
@@ -85,11 +90,7 @@ export class ChatState {
    */
   public set options(value: IgcChatOptions) {
     this._options = value;
-    this._host.requestUpdate();
-    // Notify context consumers about the state change
-    if (this._host.updateContextValue) {
-      this._host.updateContextValue();
-    }
+    this._contextUpdateFn.call(this._host);
   }
 
   /**
@@ -146,11 +147,7 @@ export class ChatState {
    */
   public set inputAttachments(value: IgcMessageAttachment[]) {
     this._inputAttachments = value;
-    this._host.requestUpdate(); // Notify the host component to re-render
-    // Notify context consumers about the state change
-    if (this._host.updateContextValue) {
-      this._host.updateContextValue();
-    }
+    this._userInputContextUpdateFn.call(this._host);
   }
 
   /**
@@ -165,31 +162,27 @@ export class ChatState {
    */
   public set inputValue(value: string) {
     this._inputValue = value;
-    this._host.requestUpdate();
-    // Notify context consumers about the state change
-    if (this._host.updateContextValue) {
-      this._host.updateContextValue();
-    }
+    this._userInputContextUpdateFn.call(this._host);
   }
 
   //#endregion
 
-  /**
-   * Creates an instance of ChatState.
-   * @param chat The host `<igc-chat>` component.
-   */
-  constructor(chat: IgcChatComponent) {
+  constructor(
+    chat: IgcChatComponent,
+    contextUpdateFn: () => unknown,
+    userInputContextUpdateFn: () => unknown
+  ) {
     this._host = chat;
+    this._contextUpdateFn = contextUpdateFn;
+    this._userInputContextUpdateFn = userInputContextUpdateFn;
+  }
+
+  public isCurrentUserMessage(message?: IgcMessage): boolean {
+    return this.currentUserId === message?.sender;
   }
 
   //#region Event handlers
 
-  /**
-   * Emits a custom event from the host component.
-   * @param name Event name (key of IgcChatComponentEventMap)
-   * @param args Event detail or options
-   * @returns true if event was not canceled, false otherwise
-   */
   public emitEvent = (name: keyof IgcChatComponentEventMap, args?: any) => {
     return this._host.emitEvent(name, args);
   };
@@ -204,16 +197,10 @@ export class ChatState {
    * Clears input value and attachments on success.
    * @param message Partial message object with optional id, sender, timestamp
    */
-  public addMessage = (message: {
-    id?: string;
-    text: string;
-    sender?: string;
-    timestamp?: Date;
-    attachments?: IgcMessageAttachment[];
-  }): void => {
+  public addMessage(message: Partial<IgcMessage>): void {
     const newMessage: IgcMessage = {
-      id: message.id ?? Date.now().toString(),
-      text: message.text,
+      id: message.id ?? nanoid(),
+      text: message.text ?? '',
       sender: message.sender ?? this.currentUserId,
       timestamp: message.timestamp ?? new Date(),
       attachments: message.attachments || [],
@@ -228,10 +215,12 @@ export class ChatState {
       if (!this.messages.some((msg) => msg.id === newMessage.id)) {
         this.messages = [...this.messages, newMessage];
       }
+      this._host.requestUpdate('messages');
+
       this.inputValue = '';
       this.inputAttachments = [];
     }
-  };
+  }
 
   /**
    * Adds files as attachments to the input.
@@ -240,21 +229,26 @@ export class ChatState {
    */
   public attachFiles(files: File[]) {
     const newAttachments: IgcMessageAttachment[] = [];
-    let count = this.inputAttachments.length;
-    files.forEach((file) => {
-      if (this.inputAttachments.find((a) => a.name === file.name)) {
-        return;
+    const fileNames = new Set(
+      this.inputAttachments.map((attachment) => attachment.file?.name ?? '')
+    );
+
+    for (const file of files) {
+      if (fileNames.has(file.name)) {
+        continue;
       }
 
       const isImage = file.type.startsWith('image/');
+      const url = URL.createObjectURL(file);
+
       newAttachments.push({
-        id: Date.now().toString() + count++,
-        url: URL.createObjectURL(file),
+        id: nanoid(),
+        url,
         name: file.name,
-        file: file,
-        thumbnail: isImage ? URL.createObjectURL(file) : undefined,
+        file,
+        thumbnail: isImage ? url : undefined,
       });
-    });
+    }
 
     const allowed = this.emitEvent('igcAttachmentChange', {
       detail: [...this.inputAttachments, ...newAttachments],
@@ -388,8 +382,4 @@ export class ChatState {
   }
 
   //#endregion
-}
-
-export function createChatState(host: IgcChatComponent): ChatState {
-  return new ChatState(host);
 }

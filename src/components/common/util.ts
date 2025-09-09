@@ -591,3 +591,32 @@ export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
     ? (value ?? (nothing as NonNullable<T>))
     : (nothing as NonNullable<T>);
 }
+
+let pool: Uint8Array;
+let poolOffset: number;
+const urlAlphabet =
+  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
+
+function fillPool(bytes: number): void {
+  if (!pool || pool.length < bytes) {
+    pool = new Uint8Array(new ArrayBuffer(bytes * 128));
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+}
+
+export function nanoid(size = 21): string {
+  const bytes = size | 0;
+  fillPool(bytes);
+
+  let id = '';
+  for (let i = poolOffset - bytes; i < poolOffset; i++) {
+    id += urlAlphabet[pool[i] & 63];
+  }
+
+  return id;
+}

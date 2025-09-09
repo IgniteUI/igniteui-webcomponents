@@ -76,7 +76,8 @@ export function getFileExtension(name: string): string {
 export function showChatActionsTooltip(target: Element, message: string): void {
   if (!actionsTooltip) {
     actionsTooltip = document.createElement(IgcTooltipComponent.tagName);
-    actionsTooltip.hideDelay = 300;
+    actionsTooltip.hideTriggers = 'pointerleave,click,blur';
+    actionsTooltip.hideDelay = 100;
     document.body.appendChild(actionsTooltip);
   }
   actionsTooltip.message = message;

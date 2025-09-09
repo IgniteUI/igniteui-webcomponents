@@ -7,7 +7,7 @@ import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
-import { chatContext } from '../common/context.js';
+import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -76,6 +76,9 @@ export default class IgcChatInputComponent extends LitElement {
 
   @consume({ context: chatContext, subscribe: true })
   private readonly _chatState!: ChatState;
+
+  @consume({ context: chatUserInputContext, subscribe: true })
+  private readonly _userInputState!: ChatState;
 
   private get _acceptedTypes() {
     return this._chatState.acceptedFileTypes;
@@ -193,10 +196,10 @@ export default class IgcChatInputComponent extends LitElement {
    * @param e Input event from the text area
    */
   private _handleInput({ detail }: CustomEvent<string>): void {
-    if (detail === this._chatState?.inputValue) return;
+    if (detail === this._chatState.inputValue) return;
 
     this._chatState.inputValue = detail;
-    this._chatState?.emitEvent('igcInputChange', { detail: { value: detail } });
+    this._chatState.emitEvent('igcInputChange', { detail: { value: detail } });
   }
 
   private _handleFileUpload(event: Event): void {
@@ -244,7 +247,7 @@ export default class IgcChatInputComponent extends LitElement {
         placeholder=${ifDefined(this._chatState?.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
-        .value=${this._chatState?.inputValue}
+        .value=${this._userInputState?.inputValue}
         @igcInput=${this._handleInput}
         @focus=${this._handleFocusState}
         @blur=${this._handleFocusState}

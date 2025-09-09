@@ -66,17 +66,15 @@ export default class IgcChatMessageComponent extends LitElement {
    * Injected chat state context. Provides message data, user info, and options.
    */
   @consume({ context: chatContext, subscribe: true })
-  private readonly _chatState?: ChatState;
+  private readonly _state!: ChatState;
 
-  private readonly _defaults: Readonly<DefaultMessageRenderers> = Object.freeze(
-    {
-      message: () => this._renderMessage(),
-      messageHeader: () => this._renderHeader(),
-      messageContent: () => this._renderContent(),
-      messageAttachments: () => this._renderAttachments(),
-      messageActions: () => this._renderActions(),
-    }
-  );
+  private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
+    message: () => this._renderMessage(),
+    messageHeader: () => this._renderHeader(),
+    messageContent: () => this._renderContent(),
+    messageAttachments: () => this._renderAttachments(),
+    messageActions: () => this._renderActions(),
+  });
 
   /**
    * The chat message to render.
@@ -94,8 +92,8 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
-    return this._chatState?.options?.renderers
-      ? (this._chatState.options.renderers[name] ?? this._defaults[name])
+    return this._state.options?.renderers
+      ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
   }
 
@@ -120,7 +118,7 @@ export default class IgcChatMessageComponent extends LitElement {
       this.requestUpdate();
     }
 
-    this._chatState?.emitEvent('igcMessageReact', {
+    this._state.emitEvent('igcMessageReact', {
       detail: { message: this.message, reaction },
     });
   }
@@ -136,11 +134,11 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _renderActions() {
-    const isSent = this.message?.sender === this._chatState?.currentUserId;
+    const isSent = this.message?.sender === this._state.currentUserId;
     const hasText = this.message?.text.trim();
-    const isTyping = this._chatState?._isTyping;
-    const isLastMessage = this.message === this._chatState?.messages.at(-1);
-    const resourceStrings = this._chatState?.resourceStrings!;
+    const isTyping = this._state._isTyping;
+    const isLastMessage = this.message === this._state.messages.at(-1);
+    const resourceStrings = this._state.resourceStrings!;
 
     if (isSent || !hasText || (isLastMessage && isTyping)) {
       return nothing;
@@ -179,6 +177,8 @@ export default class IgcChatMessageComponent extends LitElement {
         name=${name}
         variant="flat"
         @pointerenter=${({ target }: PointerEvent) =>
+          showChatActionsTooltip(target as Element, tooltipMessage)}
+        @focus=${({ target }: FocusEvent) =>
           showChatActionsTooltip(target as Element, tooltipMessage)}
       ></igc-icon-button>
     `;
@@ -220,10 +220,10 @@ export default class IgcChatMessageComponent extends LitElement {
 
     const parts = {
       'message-container': true,
-      sent: this._chatState?.currentUserId === this.message.sender,
+      sent: this._state.isCurrentUserMessage(this.message),
     };
 
-    const options = this._chatState?.options;
+    const options = this._state.options;
     const ctx = {
       param: this.message,
       defaults: this._defaults,

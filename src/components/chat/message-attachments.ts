@@ -25,6 +25,7 @@ type DefaultAttachmentRenderers = {
   attachmentHeader: ChatTemplateRenderer<IgcMessageAttachment>;
   attachmentContent: ChatTemplateRenderer<IgcMessageAttachment>;
 };
+
 /**
  * A component that renders message attachments within a chat.
  *
@@ -46,11 +47,7 @@ type DefaultAttachmentRenderers = {
  */
 export default class IgcMessageAttachmentsComponent extends LitElement {
   public static readonly tagName = 'igc-message-attachments';
-
   public static override styles = [styles, shared];
-
-  @consume({ context: chatContext, subscribe: true })
-  private _chatState?: ChatState;
 
   /* blazorSuppress */
   public static register(): void {
@@ -61,6 +58,16 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       IgcExpansionPanelComponent
     );
   }
+
+  private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
+    Object.freeze<DefaultAttachmentRenderers>({
+      attachment: (ctx) => this._renderAttachment(ctx.param),
+      attachmentHeader: (ctx) => this.renderHeader(ctx.param),
+      attachmentContent: (ctx) => this._renderContent(ctx.param),
+    });
+
+  @consume({ context: chatContext, subscribe: true })
+  private readonly _state!: ChatState;
 
   /**
    * The array of attachments to render.
@@ -73,21 +80,14 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
-    Object.freeze({
-      attachment: (ctx: any) => this.renderAttachment(ctx.param),
-      attachmentHeader: (ctx: any) => this.renderHeader(ctx.param),
-      attachmentContent: (ctx: any) => this.renderContent(ctx.param),
-    });
-
   private _getRenderers(name: keyof DefaultAttachmentRenderers) {
-    return this._chatState?.options?.renderers
-      ? (this._chatState.options.renderers[name] ?? this._defaults[name])
+    return this._state.options?.renderers
+      ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
   }
 
   private _handleHeaderClick = (attachment: IgcMessageAttachment) => {
-    this._chatState?.emitEvent('igcAttachmentClick', { detail: attachment });
+    this._state.emitEvent('igcAttachmentClick', { detail: attachment });
   };
   /**
    * Default attachment header template used when no custom template is provided.
@@ -96,8 +96,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @returns TemplateResult containing the rendered attachment header
    */
   private renderHeader(attachment: IgcMessageAttachment) {
-    const isCurrentUser =
-      this.message?.sender === this._chatState?.currentUserId;
+    const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const iconName =
       attachment.type === 'image' || attachment.file?.type.startsWith('image/')
         ? 'attach_image'
@@ -117,12 +116,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @param attachment The message attachment to render
    * @returns TemplateResult containing the rendered attachment content
    */
-  private renderContent(attachment: IgcMessageAttachment) {
+  private _renderContent(attachment: IgcMessageAttachment) {
     const ext = getFileExtension(attachment.name);
-    const isImage = this._chatState?.isImageAttachment(attachment);
+    const isImage = this._state.isImageAttachment(attachment);
     const iconName =
-      this._chatState?._fileIconMap[ext!] ??
-      this._chatState?._fileIconMap['default'];
+      this._state._fileIconMap[ext!] ?? this._state._fileIconMap['default'];
     const image = html`<img
       part="image-attachment"
       src=${createAttachmentURL(attachment)}
@@ -136,9 +134,8 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return isImage ? image : icon;
   }
 
-  private renderAttachment(attachment: IgcMessageAttachment) {
-    const isCurrentUser =
-      this.message?.sender === this._chatState?.currentUserId;
+  private _renderAttachment(attachment: IgcMessageAttachment) {
+    const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const attachmentParts = {
       attachment: true,
       sent: isCurrentUser,
@@ -155,7 +152,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const ctx = {
       param: attachment,
       defaults: this._defaults,
-      options: this._chatState?.options,
+      options: this._state.options,
     };
 
     const content = html`<div part=${partMap(contentParts)}>
@@ -192,7 +189,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
               this._getRenderers('attachment')({
                 param: attachment,
                 defaults: this._defaults,
-                options: this._chatState?.options!,
+                options: this._state.options,
               }) || nothing
             )}`
         )}

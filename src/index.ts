@@ -160,7 +160,4 @@ export type {
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';
-export type {
-  IgcMessage,
-  IgcMessageAttachment,
-} from './components/chat/types.js';
+export type * from './components/chat/types.js';
