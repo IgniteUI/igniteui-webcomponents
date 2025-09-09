@@ -6,7 +6,7 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { MarkdownMessageRenderer } from 'igniteui-webcomponents/extras';
+import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
 import type {
   IgcChatOptions,
   IgcMessage,
@@ -174,9 +174,9 @@ const _customRenderer = {
     return html`<span>${m.text.toUpperCase()}</span>`;
   },
 };
-const _markdownRenderer = new MarkdownMessageRenderer();
+const _markdownRenderer = await createMarkdownRenderer();
 
-const ai_chat_options = {
+const ai_chat_options: IgcChatOptions = {
   headerText: 'Chat',
   inputPlaceholder: 'Type your message here...',
   suggestions: [
@@ -185,7 +185,7 @@ const ai_chat_options = {
     'Show me very short sample typescript code',
   ],
   renderers: {
-    messageContent: (ctx) => _markdownRenderer.render(ctx.param),
+    messageContent: async ({ param }) => _markdownRenderer(param),
   },
 };
 
@@ -196,7 +196,7 @@ const chat_options: IgcChatOptions = {
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
   renderers: {
-    messageContent: async (ctx) => _markdownRenderer.render(ctx.param),
+    messageContent: async (ctx) => _markdownRenderer(ctx.param),
   },
 };
 
@@ -482,6 +482,13 @@ export const Basic: Story = {
   render: () => {
     messages = initialMessages;
     return html`
+      <style>
+        .shiki {
+          code {
+            font-family: monospace;
+          }
+        }
+      </style>
       <igc-chat
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}
@@ -505,7 +512,7 @@ export const AI: Story = {
   `,
 };
 
-let options: any;
+let options: IgcChatOptions;
 export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
@@ -525,8 +532,7 @@ export const Chat_Templates: Story = {
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         renderers: {
           messageHeader: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
-          messageContent: (ctx) => _markdownRenderer.render(ctx.param),
-          // messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+          messageContent: (ctx) => _markdownRenderer(ctx.param),
           messageActions: (ctx) => _messageActionsTemplate(ctx.param),
           attachmentHeader: () => nothing,
           inputActions: (ctx) => _actionsTemplate(ctx),
