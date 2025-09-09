@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+
+:host {
+    ::part(text-input) {
+        --textarea-height: #{rem(32px)};
+    }
+}

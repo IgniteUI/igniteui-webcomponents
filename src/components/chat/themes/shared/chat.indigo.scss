@@ -3,6 +3,12 @@
 
 $theme: $indigo;
 
+:host {
+    ::part(text-input) {
+        --textarea-height: #{rem(28px)};
+    }
+}
+
 [part='header'] {
     box-shadow: none;
     border-block-end: rem(1px) solid var-get($theme, 'header-border');

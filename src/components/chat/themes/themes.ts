@@ -14,6 +14,7 @@ import { styles as materialLight } from './light/chat.material.css.js';
 // Shared Styles
 import { styles as shared } from './light/chat.shared.css.js';
 import { styles as bootstrap } from './shared/chat.bootstrap.css.js';
+import { styles as fluent } from './shared/chat.fluent.css.js';
 import { styles as indigo } from './shared/chat.indigo.css.js';
 
 const light = {
@@ -27,7 +28,7 @@ const light = {
     ${materialLight}
   `,
   fluent: css`
-    ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
     ${indigo} ${indigoLight}
@@ -45,7 +46,7 @@ const dark = {
     ${materialDark}
   `,
   fluent: css`
-    ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
     ${indigo} ${indigoDark}

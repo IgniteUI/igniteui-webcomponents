@@ -12,3 +12,8 @@ $theme: $material;
         }
     }
 }
+
+igc-textarea::part(input) {
+    margin-block-start: unset;
+    padding-block: rem(12px);
+}

@@ -3,6 +3,10 @@
 
 $theme: $fluent;
 
+igc-textarea::part(input) {
+    max-height: rem(144px);
+}
+
 [part~='dragging'] {
     igc-textarea::part(container)::before {    
         box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'focused-border-color');

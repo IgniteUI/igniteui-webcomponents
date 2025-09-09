@@ -4,7 +4,6 @@
 $theme: $indigo;
 
 igc-textarea::part(input) {
-    // maximum eight lines
     max-height: rem(140px);
 }
 
