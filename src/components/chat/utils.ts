@@ -12,6 +12,29 @@ export type ChatAcceptedFileTypes = {
   wildcardTypes: Set<string>;
 };
 
+export const ChatFileTypeIcons = new Map(
+  Object.entries({
+    css: 'file_generic',
+    csv: 'file_generic',
+    doc: 'file_generic',
+    docx: 'file_generic',
+    htm: 'file_generic',
+    html: 'file_generic',
+    js: 'file_generic',
+    json: 'file_json',
+    pdf: 'file_generic',
+    rtf: 'file_generic',
+    svg: 'file_generic',
+    txt: 'file_generic',
+    url: 'file_link',
+    xls: 'file_generic',
+    xlsx: 'file_json',
+    xml: 'file_link',
+    zip: 'file_generic',
+    default: 'file_generic',
+  })
+);
+
 export function parseAcceptedFileTypes(
   fileTypes: string
 ): ChatAcceptedFileTypes {

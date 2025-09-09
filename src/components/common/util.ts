@@ -1,4 +1,5 @@
 import { isServer, nothing } from 'lit';
+import type IgcFileInputComponent from '../file-input/file-input.js';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
@@ -619,4 +620,10 @@ export function nanoid(size = 21): string {
   }
 
   return id;
+}
+
+export function hasFiles(
+  input: HTMLInputElement | IgcFileInputComponent
+): boolean {
+  return input.files != null && input.files.length > 0;
 }

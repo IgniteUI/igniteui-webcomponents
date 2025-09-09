@@ -1,18 +1,17 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { createRef, ref } from 'lit/directives/ref.js';
 import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
-import { addKeybindings } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
+import { enterKey } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
+import { bindIf, hasFiles, isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
@@ -60,7 +59,6 @@ type DefaultInputRenderers = {
  */
 export default class IgcChatInputComponent extends LitElement {
   public static readonly tagName = 'igc-chat-input';
-
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
@@ -75,36 +73,29 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   @consume({ context: chatContext, subscribe: true })
-  private readonly _chatState!: ChatState;
+  private readonly _state!: ChatState;
 
   @consume({ context: chatUserInputContext, subscribe: true })
   private readonly _userInputState!: ChatState;
-
-  private get _acceptedTypes() {
-    return this._chatState.acceptedFileTypes;
-  }
 
   @query(IgcTextareaComponent.tagName)
   private readonly _textInputElement!: IgcTextareaComponent;
 
   @query('#input_attachments')
-  protected readonly _inputAttachmentsButton!: IgcIconButtonComponent;
-
-  private readonly _attachmentsButtonInputRef = createRef<HTMLInputElement>();
-
-  @watch('acceptedFiles', { waitUntilFirstUpdate: true })
-  protected acceptedFilesChange(): void {
-    this._chatState.updateAcceptedTypesCache();
-  }
+  protected readonly _fileInput!: HTMLInputElement;
 
   @state()
   private _parts = { 'input-container': true, dragging: false };
+
+  private get _acceptedTypes() {
+    return this._state.acceptedFileTypes;
+  }
 
   private readonly _defaults: Readonly<DefaultInputRenderers> = Object.freeze({
     input: () => this._renderTextArea(),
     inputActions: () => this.renderActionsArea(),
     inputAttachments: (ctx) => this.renderAttachmentsArea(ctx.param),
-    fileUploadButton: () => this.renderFileUploadButton(),
+    fileUploadButton: () => this._renderFileUploadButton(),
     sendButton: () => this._renderSendButton(),
   });
 
@@ -114,34 +105,36 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override firstUpdated() {
-    this._chatState.updateAcceptedTypesCache();
-    this._chatState.textArea = this._textInputElement;
-
-    // Use keybindings controller to capture all key events
-    // Custom skip function that never skips - this captures ALL key events
-    const keybindings = addKeybindings(this, {
-      skip: () => false, // Never skip any key events
-      ref: this._chatState.textAreaRef,
-    });
-
-    // Override the controller's handleEvent to capture all keys
-    // This is a more direct approach that doesn't require listing specific keys
-    keybindings.handleEvent = (event: KeyboardEvent) => {
-      // Call our handler for every key event
-      this._chatState.handleKeyDown(event);
-    };
+    this._state.updateAcceptedTypesCache();
+    this._state.textArea = this._textInputElement;
   }
 
   private _getRenderer(
     name: keyof DefaultInputRenderers
   ): ChatTemplateRenderer<any> {
-    return this._chatState?.options?.renderers
-      ? (this._chatState.options.renderers[name] ?? this._defaults[name])
+    return this._state.options?.renderers
+      ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
   }
 
+  private _handleKeydown(event: KeyboardEvent): void {
+    const isSend = event.key === enterKey && !event.shiftKey;
+
+    if (isSend) {
+      event.preventDefault();
+      this._state.sendMessage();
+    } else {
+      // TODO:
+      this._state.handleKeyDown(event);
+    }
+  }
+
+  private _handleFileInputClick(): void {
+    this._fileInput.showPicker();
+  }
+
   private _handleFocusState(event: FocusEvent): void {
-    this._chatState.emitEvent(
+    this._state.emitEvent(
       event.type === 'focus' ? 'igcInputFocus' : 'igcInputBlur'
     );
   }
@@ -152,7 +145,7 @@ export default class IgcChatInputComponent extends LitElement {
 
     const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
     this._parts = { 'input-container': true, dragging: !isEmpty(validFiles) };
-    this._chatState.emitEvent('igcAttachmentDrag');
+    this._state.emitEvent('igcAttachmentDrag');
   }
 
   private _handleDragOver(event: DragEvent): void {
@@ -185,8 +178,8 @@ export default class IgcChatInputComponent extends LitElement {
     this._parts = { 'input-container': true, dragging: false };
 
     const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
-    this._chatState.emitEvent('igcAttachmentDrop');
-    this._chatState.attachFiles(validFiles);
+    this._state.emitEvent('igcAttachmentDrop');
+    this._state.attachFiles(validFiles);
     this.requestUpdate();
   }
 
@@ -196,20 +189,18 @@ export default class IgcChatInputComponent extends LitElement {
    * @param e Input event from the text area
    */
   private _handleInput({ detail }: CustomEvent<string>): void {
-    if (detail === this._chatState.inputValue) return;
+    if (detail === this._state.inputValue) return;
 
-    this._chatState.inputValue = detail;
-    this._chatState.emitEvent('igcInputChange', { detail: { value: detail } });
+    this._state.inputValue = detail;
+    this._state.emitEvent('igcInputChange', { detail: { value: detail } });
   }
 
   private _handleFileUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
 
-    if (!input.files || input.files.length === 0) {
-      return;
+    if (hasFiles(input)) {
+      this._state.attachFiles(Array.from(input.files!));
     }
-
-    this._chatState.attachFiles(Array.from(input.files));
   }
   /**
    * Default attachments area template used when no custom template is provided.
@@ -222,7 +213,7 @@ export default class IgcChatInputComponent extends LitElement {
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
-            @igcRemove=${() => this._chatState?.removeAttachment(index)}
+            @igcRemove=${() => this._state.removeAttachment(index)}
           >
             <igc-icon
               slot="prefix"
@@ -244,11 +235,12 @@ export default class IgcChatInputComponent extends LitElement {
     return html`
       <igc-textarea
         part="text-input"
-        placeholder=${ifDefined(this._chatState?.options?.inputPlaceholder)}
+        placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
         .value=${this._userInputState?.inputValue}
         @igcInput=${this._handleInput}
+        @keydown=${this._handleKeydown}
         @focus=${this._handleFocusState}
         @blur=${this._handleFocusState}
       ></igc-textarea>
@@ -260,26 +252,31 @@ export default class IgcChatInputComponent extends LitElement {
    * Renders a file input for attaching files.
    * @returns TemplateResult containing the file upload button
    */
-  private renderFileUploadButton() {
-    if (this._chatState?.options?.disableInputAttachments) return nothing;
-    return html`
-        <label for="input_attachments" part="upload-button">
-          <igc-icon-button
-            variant="flat"
-            name="attach_file"
-            @click=${() => this._attachmentsButtonInputRef?.value?.click()}
-          ></igc-icon-button>
-          <input
-            type="file"
-            id="input_attachments"
-            name="input_attachments"
-            ${ref(this._attachmentsButtonInputRef)}
-            multiple
-            accept=${ifDefined(this._chatState?.options?.acceptedFiles === '' ? undefined : this._chatState?.options?.acceptedFiles)}
-            @change=${this._handleFileUpload}>
-          </input>
-        </label>
-      `;
+  private _renderFileUploadButton() {
+    const accepted = this._state.options?.acceptedFiles;
+    const attachmentsDisabled = this._state.options?.disableInputAttachments;
+
+    return html`${cache(
+      attachmentsDisabled
+        ? nothing
+        : html`
+            <label for="input_attachments" part="upload-button">
+              <igc-icon-button
+                variant="flat"
+                name="attach_file"
+                @click=${this._handleFileInputClick}
+              ></igc-icon-button>
+              <input
+                type="file"
+                id="input_attachments"
+                name="input_attachments"
+                multiple
+                accept=${bindIf(accepted, accepted)}
+                @change=${this._handleFileUpload}
+              />
+            </label>
+          `
+    )}`;
   }
 
   /**
@@ -288,15 +285,17 @@ export default class IgcChatInputComponent extends LitElement {
    * @returns TemplateResult containing the send button
    */
   private _renderSendButton() {
+    const enabled =
+      this._state.hasInputValue || this._state.hasInputAttachments;
+
     return html`
       <igc-icon-button
         aria-label="Send message"
         name="send_message"
         variant="contained"
         part="send-button"
-        ?disabled=${!this._chatState?.inputValue.trim() &&
-        this._chatState?.inputAttachments.length === 0}
-        @click=${this._chatState?.sendMessage}
+        ?disabled=${!enabled}
+        @click=${this._state.sendMessage}
       ></igc-icon-button>
     `;
   }
@@ -305,19 +304,19 @@ export default class IgcChatInputComponent extends LitElement {
     return html` ${this._getRenderer('fileUploadButton')({
       param: undefined,
       defaults: this._defaults,
-      options: this._chatState.options,
+      options: this._state.options,
     })}
     ${this._getRenderer('sendButton')({
       param: undefined,
       defaults: this._defaults,
-      options: this._chatState.options,
+      options: this._state.options,
     })}`;
   }
 
   protected override render() {
     const partialCtx = {
       defaults: this._defaults,
-      options: this._chatState.options,
+      options: this._state.options,
     };
 
     return html`
@@ -328,13 +327,13 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._chatState.inputAttachments &&
-        this._chatState.inputAttachments.length > 0
+        ${this._state.inputAttachments &&
+        this._state.inputAttachments.length > 0
           ? html` <div part="attachments" role="list" aria-label="Attachments">
               ${until(
                 this._getRenderer('inputAttachments')({
                   ...partialCtx,
-                  param: this._chatState.inputAttachments,
+                  param: this._state.inputAttachments,
                 })
               )}
             </div>`
@@ -343,7 +342,7 @@ export default class IgcChatInputComponent extends LitElement {
           ${until(
             this._getRenderer('input')({
               ...partialCtx,
-              param: this._chatState.inputValue,
+              param: this._state.inputValue,
             })
           )}
         </div>

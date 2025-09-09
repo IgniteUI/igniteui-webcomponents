@@ -18,7 +18,11 @@ import type {
   IgcMessage,
   IgcMessageAttachment,
 } from './types.js';
-import { createAttachmentURL, getFileExtension } from './utils.js';
+import {
+  ChatFileTypeIcons,
+  createAttachmentURL,
+  getFileExtension,
+} from './utils.js';
 
 type DefaultAttachmentRenderers = {
   attachment: ChatTemplateRenderer<IgcMessageAttachment>;
@@ -120,18 +124,17 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const ext = getFileExtension(attachment.name);
     const isImage = this._state.isImageAttachment(attachment);
     const iconName =
-      this._state._fileIconMap[ext!] ?? this._state._fileIconMap['default'];
-    const image = html`<img
-      part="image-attachment"
-      src=${createAttachmentURL(attachment)}
-      alt=${attachment.name}
-    />`;
-    const icon = html`<igc-icon
-      part="file-attachment"
-      name=${iconName!}
-    ></igc-icon>`;
+      ChatFileTypeIcons.get(ext) ?? ChatFileTypeIcons.get('default')!;
 
-    return isImage ? image : icon;
+    return isImage
+      ? html`
+          <img
+            part="image-attachment"
+            src=${createAttachmentURL(attachment)}
+            alt=${attachment.name}
+          />
+        `
+      : html`<igc-icon part="file-attachment" name=${iconName}></igc-icon>`;
   }
 
   private _renderAttachment(attachment: IgcMessageAttachment) {

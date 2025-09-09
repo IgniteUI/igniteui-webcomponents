@@ -1,7 +1,6 @@
-import { createRef, type Ref } from 'lit/directives/ref.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
-import { nanoid } from '../common/util.js';
+import { isEmpty, nanoid } from '../common/util.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
@@ -47,8 +46,6 @@ export class ChatState {
 
   public _isTyping = false;
   private _lastTyped = Date.now();
-
-  private readonly _textAreaRef = createRef<IgcTextareaComponent>();
 
   public resourceStrings = IgcChatResourceStringEN;
 
@@ -129,13 +126,6 @@ export class ChatState {
   }
 
   /**
-   * Gets the text area component.
-   */
-  public get textAreaRef(): Ref<IgcTextareaComponent> {
-    return this._textAreaRef;
-  }
-
-  /**
    * Gets the list of attachments currently attached to input.
    */
   public get inputAttachments(): IgcMessageAttachment[] {
@@ -165,6 +155,14 @@ export class ChatState {
     this._userInputContextUpdateFn.call(this._host);
   }
 
+  public get hasInputValue(): boolean {
+    return this._inputValue.trim() !== '';
+  }
+
+  public get hasInputAttachments(): boolean {
+    return !isEmpty(this._inputAttachments);
+  }
+
   //#endregion
 
   constructor(
@@ -183,9 +181,9 @@ export class ChatState {
 
   //#region Event handlers
 
-  public emitEvent = (name: keyof IgcChatComponentEventMap, args?: any) => {
+  public emitEvent(name: keyof IgcChatComponentEventMap, args?: any): boolean {
     return this._host.emitEvent(name, args);
-  };
+  }
 
   //#endregion
 
@@ -265,27 +263,6 @@ export class ChatState {
       !!attachment.file?.type.startsWith('image/')
     );
   }
-
-  public _fileIconMap: Record<string, string> = {
-    css: 'file_generic',
-    csv: 'file_generic',
-    doc: 'file_generic',
-    docx: 'file_generic',
-    htm: 'file_generic',
-    html: 'file_generic',
-    js: 'file_generic',
-    json: 'file_json',
-    pdf: 'file_generic',
-    rtf: 'file_generic',
-    svg: 'file_generic',
-    txt: 'file_generic',
-    url: 'file_link',
-    xls: 'file_generic',
-    xlsx: 'file_json',
-    xml: 'file_link',
-    zip: 'file_generic',
-    default: 'file_generic', // A fallback icon
-  };
 
   public handleKeyDown = (e: KeyboardEvent) => {
     if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
