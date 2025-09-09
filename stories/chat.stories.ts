@@ -479,13 +479,6 @@ export const Basic: Story = {
   render: () => {
     messages = initialMessages;
     return html`
-      <style>
-        .shiki {
-          code {
-            font-family: monospace;
-          }
-        }
-      </style>
       <igc-chat
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}

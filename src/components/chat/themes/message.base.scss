@@ -28,13 +28,10 @@
     }
 
     pre, code {
-      @include type-style('body-1') {
-        margin: 0;
-      };
-
       white-space: pre-wrap;
       word-wrap: break-word;
       overflow-x: auto;
+      margin-block: unset;
     }
 }
 
