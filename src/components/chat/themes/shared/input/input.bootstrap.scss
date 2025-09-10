@@ -4,7 +4,8 @@
 $theme: $bootstrap;
 
 igc-textarea::part(input) {
-    max-height: rem(166px);
+    max-height: rem(170px);
+    padding-block: rem(8px);
 }
 
 [part~='dragging'] {
