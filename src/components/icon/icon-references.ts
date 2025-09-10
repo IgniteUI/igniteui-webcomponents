@@ -133,9 +133,87 @@ addIcon('file_generic', {
     collection: 'internal',
   },
 });
+addIcon('file_css', {
+  default: {
+    name: 'file_css',
+    collection: 'internal',
+  },
+});
+addIcon('file_csv', {
+  default: {
+    name: 'file_csv',
+    collection: 'internal',
+  },
+});
+addIcon('file_doc', {
+  default: {
+    name: 'file_doc',
+    collection: 'internal',
+  },
+});
+addIcon('file_htm', {
+  default: {
+    name: 'file_htm',
+    collection: 'internal',
+  },
+});
+addIcon('file_html', {
+  default: {
+    name: 'file_html',
+    collection: 'internal',
+  },
+});
+addIcon('file_js', {
+  default: {
+    name: 'file_js',
+    collection: 'internal',
+  },
+});
 addIcon('file_json', {
   default: {
     name: 'file_json',
+    collection: 'internal',
+  },
+});
+addIcon('file_pdf', {
+  default: {
+    name: 'file_pdf',
+    collection: 'internal',
+  },
+});
+addIcon('file_rtf', {
+  default: {
+    name: 'file_rtf',
+    collection: 'internal',
+  },
+});
+addIcon('file_svg', {
+  default: {
+    name: 'file_svg',
+    collection: 'internal',
+  },
+});
+addIcon('file_txt', {
+  default: {
+    name: 'file_txt',
+    collection: 'internal',
+  },
+});
+addIcon('file_xls', {
+  default: {
+    name: 'file_xls',
+    collection: 'internal',
+  },
+});
+addIcon('file_xml', {
+  default: {
+    name: 'file_xml',
+    collection: 'internal',
+  },
+});
+addIcon('file_zip', {
+  default: {
+    name: 'file_zip',
     collection: 'internal',
   },
 });
