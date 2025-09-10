@@ -4,7 +4,8 @@
 $theme: $fluent;
 
 igc-textarea::part(input) {
-    max-height: rem(144px);
+    max-height: rem(150px);
+    padding-block: rem(11px);
 }
 
 [part~='dragging'] {

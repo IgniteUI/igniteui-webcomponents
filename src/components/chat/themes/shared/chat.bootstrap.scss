@@ -5,7 +5,7 @@ $theme: $bootstrap;
 
 :host {
     ::part(text-input) {
-        --textarea-height: #{rem(56px)};
+        --textarea-height: #{rem(38px)};
     }
 }
 
