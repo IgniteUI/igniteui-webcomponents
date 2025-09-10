@@ -24,10 +24,15 @@ import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import { all } from './themes/themes.js';
 import type {
+  ChatTemplateRenderer,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
 } from './types.js';
+
+type DefaultChatRenderers = {
+  suggestionPrefix: ChatTemplateRenderer<void>;
+};
 
 /**
  * Defines the custom events dispatched by the `<igc-chat>` component.
@@ -154,6 +159,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._updateUserInputContext
   );
 
+  private readonly _defaults = Object.freeze<DefaultChatRenderers>({
+    suggestionPrefix: () => this._renderSuggestionPrefix(),
+  });
+
   private readonly _slots = addSlotController(this, {
     slots: Slots,
   });
@@ -237,6 +246,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
   constructor() {
     super();
     addThemingController(this, all);
+  }
+
+  private _getRenderer(name: keyof DefaultChatRenderers) {
+    return this._state.options?.renderers
+      ? (this._state.options.renderers[name] ?? this._defaults[name])
+      : this._defaults[name];
   }
 
   @watch('messages')
@@ -346,11 +361,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderSuggestionPrefix() {
-    return html`
-      <span slot="start">
-        <igc-icon name="auto_suggest"></igc-icon>
-      </span>
-    `;
+    return html` <igc-icon name="auto_suggest"></igc-icon> `;
   }
 
   private _renderSuggestions() {
@@ -374,7 +385,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
                     @click=${() =>
                       this._state?.handleSuggestionClick(suggestion)}
                   >
-                    ${this._renderSuggestionPrefix()}
+                    <span slot="start">
+                      ${this._getRenderer('suggestionPrefix')({
+                        param: undefined,
+                        defaults: this._defaults,
+                        options: this._state.options,
+                      })}
+                    </span>
                     <span slot="title">${suggestion}</span>
                   </igc-list-item>
                 </slot>

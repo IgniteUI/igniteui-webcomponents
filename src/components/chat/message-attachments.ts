@@ -84,7 +84,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  private _getRenderers(name: keyof DefaultAttachmentRenderers) {
+  private _getRenderer(name: keyof DefaultAttachmentRenderers) {
     return this._state.options?.renderers
       ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
@@ -159,7 +159,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     };
 
     const content = html`<div part=${partMap(contentParts)}>
-      ${until(this._getRenderers('attachmentContent')(ctx))}
+      ${until(this._getRenderer('attachmentContent')(ctx))}
     </div>`;
     const header = html` <div
       part=${partMap(headerParts)}
@@ -167,7 +167,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       @click=${() => this._handleHeaderClick(attachment)}
     >
       <div part="details">
-        ${until(this._getRenderers('attachmentHeader')(ctx))}
+        ${until(this._getRenderer('attachmentHeader')(ctx))}
       </div>
     </div>`;
 
@@ -189,7 +189,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
         ${(this.message.attachments ?? []).map(
           (attachment) =>
             html`${until(
-              this._getRenderers('attachment')({
+              this._getRenderer('attachment')({
                 param: attachment,
                 defaults: this._defaults,
                 options: this._state.options,

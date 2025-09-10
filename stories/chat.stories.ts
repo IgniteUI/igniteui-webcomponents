@@ -146,6 +146,9 @@ const _messageActionsTemplate = (msg: any) => {
       : html``
     : html``;
 };
+const _suggestionPrefixTemplate = () => {
+  return html`✨`;
+};
 
 // const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
 // const _textInputTemplate = (text: string) =>
@@ -531,6 +534,7 @@ export const Chat_Templates: Story = {
           typingIndicator: (ctx) =>
             html`<span>Generating response</span>
               ${ctx.defaults.typingIndicator(ctx)} `,
+          suggestionPrefix: () => _suggestionPrefixTemplate(),
         },
       };
       chat.options = { ...options };

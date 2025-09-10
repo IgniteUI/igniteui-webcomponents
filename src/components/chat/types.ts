@@ -143,6 +143,7 @@ export type ChatRenderers = {
   inputAttachments?: ChatTemplateRenderer<IgcMessageAttachment[]>;
   fileUploadButton?: ChatTemplateRenderer<void>;
   sendButton?: ChatTemplateRenderer<void>;
+  suggestionPrefix?: ChatTemplateRenderer<void>;
 };
 
 export type ChatTemplateRenderer<T> = (ctx: {
