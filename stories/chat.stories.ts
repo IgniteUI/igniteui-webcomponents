@@ -2,15 +2,18 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing } from 'lit';
 import { GoogleGenAI, Modality } from '@google/genai';
 import {
+  IgcAvatarComponent,
   IgcChatComponent,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
 import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
 import type {
+  ChatRendererContext,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
+  MessageRendererContext,
 } from '../src/components/chat/types.js';
 
 const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
@@ -18,7 +21,7 @@ const ai = new GoogleGenAI({
   apiKey: googleGenAIKey,
 });
 
-defineComponents(IgcChatComponent);
+defineComponents(IgcChatComponent, IgcAvatarComponent);
 
 // region default
 const metadata: Meta<IgcChatComponent> = {
@@ -68,7 +71,7 @@ registerIcon(
   'alarm',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_alarm_24px.svg'
 );
-let messages: any[] = [];
+let messages: IgcMessage[] = [];
 const initialMessages: any[] = [
   {
     id: '1',
@@ -110,13 +113,14 @@ And some sample html:
   },
 ];
 
-// const draftMessage = { text: 'Hi' };
-
 const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = (msg: any, ctx: any) => {
+const _messageAuthorTemplate = (
+  msg: IgcMessage,
+  ctx: MessageRendererContext
+) => {
   return msg.sender !== 'user'
     ? html`
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -131,48 +135,18 @@ const _messageAuthorTemplate = (msg: any, ctx: any) => {
       `
     : ctx.defaults.messageHeader(ctx);
 };
-const _messageActionsTemplate = (msg: any) => {
-  return msg.sender !== 'user' && msg.text.trim()
-    ? isResponseSent !== false
-      ? html`
-          <div>
-            <igc-icon-button
-              name="alarm"
-              variant="flat"
-              @click=${() => alert(`Message reacted: ${msg.text}`)}
-            ></igc-icon-button>
-          </div>
-        `
-      : html``
-    : html``;
-};
-const _suggestionPrefixTemplate = () => {
-  return html`✨`;
-};
-
-// const _typingIndicatorTemplate = html`<span>LOADING...</span>`;
-// const _textInputTemplate = (text: string) =>
-//   html`<igc-input placeholder="Type text here..." .value=${text}></igc-input>`;
-// const _textAreaActionsTemplate = () =>
-//   html`<igc-button @click=${handleCustomSendClick}>Send</igc-button>`;
-const _textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
-  return html`<div>
-    ${attachments.map(
-      (attachment) =>
-        html`<a
-          href=${attachment.file
-            ? URL.createObjectURL(attachment.file)
-            : attachment.url}
-          target="_blank"
-          >${attachment.name}</a
-        >`
-    )}
-  </div>`;
-};
-const _customRenderer = {
-  render: (m: IgcMessage) => {
-    return html`<span>${m.text.toUpperCase()}</span>`;
-  },
+const _messageActionsTemplate = (msg: IgcMessage) => {
+  return msg.sender !== 'user' && msg.text.trim() && isResponseSent
+    ? html`
+        <div>
+          <igc-icon-button
+            name="alarm"
+            variant="flat"
+            @click=${() => alert(`Message reacted: ${msg.text}`)}
+          ></igc-icon-button>
+        </div>
+      `
+    : nothing;
 };
 const _markdownRenderer = await createMarkdownRenderer();
 
@@ -185,7 +159,7 @@ const ai_chat_options: IgcChatOptions = {
     'Show me very short sample typescript code',
   ],
   renderers: {
-    messageContent: async ({ param }) => _markdownRenderer(param),
+    messageContent: async ({ message }) => _markdownRenderer(message),
   },
 };
 
@@ -196,39 +170,33 @@ const chat_options: IgcChatOptions = {
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
   renderers: {
-    messageContent: async (ctx) => _markdownRenderer(ctx.param),
+    messageContent: async ({ message }) => _markdownRenderer(message),
   },
 };
 
-function handleCustomSendClick() {
-  const chat = document.querySelector('igc-chat');
-  if (!chat) {
-    return;
-  }
+function handleCustomSendClick(chat: IgcChatComponent) {
+  const now = Date.now.toString();
   const newMessage: IgcMessage = {
-    id: Date.now().toString(),
+    id: now,
     text: chat.draftMessage.text,
     sender: 'user',
     attachments: chat.draftMessage.attachments || [],
-    timestamp: new Date(),
+    timestamp: now,
   };
   chat.messages = [...chat.messages, newMessage];
   chat.draftMessage = { text: '', attachments: [] };
 }
 
-function handleMessageSend(e: CustomEvent) {
-  const newMessage = e.detail;
-  messages.push(newMessage);
-  const chat = document.querySelector('igc-chat');
-  if (!chat) {
-    return;
-  }
+function handleMessageSend(event: CustomEvent<IgcMessage>): void {
+  const chat = event.target as IgcChatComponent;
+  const message = event.detail;
+
   chat.options = { ...chat.options, suggestions: [], isTyping: true };
 
   const attachments: IgcMessageAttachment[] =
-    newMessage.text.includes('picture') ||
-    newMessage.text.includes('image') ||
-    newMessage.text.includes('file')
+    message.text.includes('picture') ||
+    message.text.includes('image') ||
+    message.text.includes('file')
       ? [
           {
             id: 'random_img',
@@ -239,39 +207,29 @@ function handleMessageSend(e: CustomEvent) {
         ]
       : [];
 
-  // create empty response
-  const emptyResponse = {
-    id: Date.now().toString(),
-    text: '',
-    sender: 'bot',
-    timestamp: new Date(),
-    attachments: attachments,
-  };
-  chat.messages = [...messages, emptyResponse];
-
   isResponseSent = false;
-  setTimeout(() => {
-    const responseParts = generateAIResponse(e.detail.text).split(' ');
-    showResponse(chat, responseParts).then(() => {
-      messages = chat.messages;
-      isResponseSent = true;
-      chat.options = { ...chat.options, suggestions: [], isTyping: false };
-      // TODO: add attachments (if any) to the response message
-    });
+  setTimeout(async () => {
+    chat.addMessage({ sender: 'bot', attachments });
+
+    await showResponse(chat, generateAIResponse(message.text).split(' '));
+
+    messages = chat.messages;
+    isResponseSent = true;
+    chat.options = { ...chat.options, suggestions: [], isTyping: false };
+    // TODO: add attachments (if any) to the response message
   }, 1000);
 }
 
-async function showResponse(chat: any, responseParts: any) {
-  for (let i = 0; i < responseParts.length; i++) {
+async function showResponse(chat: IgcChatComponent, responseParts: string[]) {
+  const lastMessage = chat.messages[chat.messages.length - 1];
+
+  for (const part of responseParts) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
-
-    const lastMessageIndex = chat.messages.length - 1;
-    chat.messages[lastMessageIndex] = {
-      ...chat.messages[lastMessageIndex],
-      text: `${chat.messages[lastMessageIndex].text} ${responseParts[i]}`,
-    };
-
-    chat.messages = [...chat.messages];
+    chat.updateMessage(
+      lastMessage,
+      { text: `${lastMessage.text} ${part}` },
+      true
+    );
   }
 }
 
@@ -323,13 +281,27 @@ function generateAIResponse(message: string): string {
   return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
 }
 
-function fileToGenerativePart(buffer, mimeType) {
-  // Convert ArrayBuffer to base64 string in the browser
-  let binary = '';
+function fileToGenerativePart(buffer: ArrayBuffer, mimeType: string) {
   const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
+
+  if ('toBase64' in bytes) {
+    return {
+      inlineData: {
+        data: (bytes as any).toBase64() as string,
+        mimeType,
+      },
+    };
+  }
+
+  // Fallback for browsers which don't support `toBase64`
+
+  let binary = '';
+  const length = bytes.byteLength;
+
+  for (let i = 0; i < length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
+
   const base64String = btoa(binary);
 
   return {
@@ -340,23 +312,21 @@ function fileToGenerativePart(buffer, mimeType) {
   };
 }
 
-async function handleAIMessageSend(e: CustomEvent) {
-  const newMessage: IgcMessage = e.detail;
-  const chat = document.querySelector('igc-chat');
-  if (!chat) {
-    return;
-  }
+async function handleAIMessageSend(event: CustomEvent<IgcMessage>) {
+  const chat = event.target as IgcChatComponent;
+  const newMessage: IgcMessage = event.detail;
 
   chat.options = { ...ai_chat_options, suggestions: [], isTyping: true };
   setTimeout(async () => {
+    const now = Date.now().toString();
     let response: any;
     let responseText = '';
     const attachments: IgcMessageAttachment[] = [];
     const botResponse: IgcMessage = {
-      id: Date.now().toString(),
+      id: now,
       text: responseText,
       sender: 'bot',
-      timestamp: new Date(),
+      timestamp: now,
     };
 
     userMessages.push({
@@ -469,15 +439,6 @@ async function handleAIMessageSend(e: CustomEvent) {
   }, 2000);
 }
 
-function handleMessageReacted(_e: CustomEvent) {
-  const chat = document.querySelector('igc-chat');
-  if (!chat) {
-    return;
-  }
-
-  // console.log(e.detail.reaction)
-}
-
 export const Basic: Story = {
   render: () => {
     messages = initialMessages;
@@ -486,7 +447,6 @@ export const Basic: Story = {
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}
         .options=${chat_options}
-        @igcMessageReact=${handleMessageReacted}
         @igcMessageCreated=${handleMessageSend}
       >
       </igc-chat>
@@ -510,11 +470,13 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const _actionsTemplate = (ctx) => html`
+      const _actionsTemplate = (ctx: ChatRendererContext) => html`
         ${ctx.defaults.fileUploadButton(ctx)}
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
-          <igc-button @click=${handleCustomSendClick}>Ask</igc-button>
+          <igc-button @click=${() => handleCustomSendClick(ctx.instance)}
+            >Ask</igc-button
+          >
           <igc-icon-button variant="flat" name="more_horiz"></igc-icon-button>
         </div>
       `;
@@ -524,17 +486,18 @@ export const Chat_Templates: Story = {
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         renderers: {
-          messageHeader: (ctx) => _messageAuthorTemplate(ctx.param, ctx),
-          messageContent: (ctx) => _markdownRenderer(ctx.param),
-          messageActions: (ctx) => _messageActionsTemplate(ctx.param),
+          messageHeader: (ctx) => _messageAuthorTemplate(ctx.message, ctx),
+          messageContent: (ctx) => _markdownRenderer(ctx.message),
+          messageActions: (ctx) => _messageActionsTemplate(ctx.message),
           attachmentHeader: () => nothing,
           inputActions: (ctx) => _actionsTemplate(ctx),
           inputAttachments: (ctx) =>
             html`<span>Attachments:</span>${ctx.defaults.inputAttachments(ctx)}`,
-          typingIndicator: (ctx) =>
-            html`<span>Generating response</span>
-              ${ctx.defaults.typingIndicator(ctx)} `,
-          suggestionPrefix: () => _suggestionPrefixTemplate(),
+          typingIndicator: (ctx) => html`
+            <span>Generating response</span>
+            ${ctx.defaults.typingIndicator(ctx)}
+          `,
+          suggestionPrefix: () => '✨',
         },
       };
       chat.options = { ...options };

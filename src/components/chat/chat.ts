@@ -7,16 +7,13 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
+import { isEmpty, last } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
-import IgcListHeaderComponent from '../list/list-header.js';
-import IgcListItemComponent from '../list/list-item.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import { ChatState } from './chat-state.js';
@@ -24,6 +21,7 @@ import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import { all } from './themes/themes.js';
 import type {
+  ChatRendererContext,
   ChatTemplateRenderer,
   IgcChatOptions,
   IgcMessage,
@@ -31,7 +29,8 @@ import type {
 } from './types.js';
 
 type DefaultChatRenderers = {
-  suggestionPrefix: ChatTemplateRenderer<void>;
+  typingIndicator: ChatTemplateRenderer<ChatRendererContext>;
+  suggestionPrefix: ChatTemplateRenderer<ChatRendererContext>;
 };
 
 /**
@@ -147,9 +146,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
       IgcChatMessageComponent,
       IgcButtonComponent,
       IgcIconComponent,
-      IgcListComponent,
-      IgcListItemComponent,
-      IgcListHeaderComponent
+      IgcListComponent
     );
   }
 
@@ -160,6 +157,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   );
 
   private readonly _defaults = Object.freeze<DefaultChatRenderers>({
+    typingIndicator: () => this._renderLoadingTemplate(),
     suggestionPrefix: () => this._renderSuggestionPrefix(),
   });
 
@@ -248,17 +246,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
     addThemingController(this, all);
   }
 
-  private _getRenderer(name: keyof DefaultChatRenderers) {
+  private _getRenderer<U extends keyof DefaultChatRenderers>(
+    name: U
+  ): DefaultChatRenderers[U] {
     return this._state.options?.renderers
       ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
-  }
-
-  @watch('messages')
-  @watch('draftMessage')
-  @watch('options')
-  protected contextChanged() {
-    this._context.setValue(this._state, true);
   }
 
   // REVIEW: Maybe accept an `IgcMessage` type as well?
@@ -273,12 +266,34 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * Updates the context value to notify all consumers that the chat state has changed.
-   * This ensures that components consuming the chat context will re-render.
-   */
-  public updateContextValue() {
-    this._context.setValue(this._state, true);
+  // REVIEW
+  public addMessage(message: Partial<IgcMessage>): IgcMessage {
+    this._state.addMessage(message);
+    return last(this.messages);
+  }
+
+  // REVIEW
+  public updateMessage(
+    message: IgcMessage,
+    data: Partial<IgcMessage>,
+    scrollIntoView = false
+  ) {
+    Object.assign(message, data);
+    const messageElement =
+      this.renderRoot.querySelector<IgcChatMessageComponent>(
+        `#message-${message.id}`
+      );
+
+    if (messageElement) {
+      messageElement.requestUpdate();
+      if (scrollIntoView) {
+        messageElement.updateComplete.then(() =>
+          messageElement.scrollIntoView({ block: 'end', inline: 'end' })
+        );
+      }
+    } else {
+      this.requestUpdate('messages');
+    }
   }
 
   protected override updated(properties: PropertyValues<this>): void {
@@ -308,7 +323,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
     return html`
       <div part="header" ?hidden=${!hasContent}>
-        <slot name="prefix" part="prefix"></slot>
+        <slot
+          name="prefix"
+          part="prefix"
+          ?hidden=${!this._slots.hasAssignedElements('prefix')}
+        ></slot>
         <slot name="title" part="title"
           >${this._state.options?.headerText}</slot
         >
@@ -318,6 +337,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderMessages() {
+    const ctx = { defaults: this._defaults, instance: this };
+
     return html`
       <div part="message-list" tabindex="0">
         ${repeat(
@@ -337,13 +358,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           }
         )}
         ${this._state.options?.isTyping
-          ? (this._state.options?.renderers?.typingIndicator?.({
-              param: undefined,
-              defaults: {
-                typingIndicator: () => this._renderLoadingTemplate(),
-              },
-              options: this._state.options,
-            }) ?? this._renderLoadingTemplate())
+          ? this._getRenderer('typingIndicator')(ctx)
           : nothing}
       </div>
     `;
@@ -361,12 +376,16 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderSuggestionPrefix() {
-    return html` <igc-icon name="auto_suggest"></igc-icon> `;
+    return html`<igc-icon name="auto_suggest"></igc-icon>`;
   }
 
   private _renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
     const suggestions = this._state.options?.suggestions ?? [];
+    const ctx = {
+      defaults: this._defaults,
+      instance: this,
+    };
 
     return html`
       <div part="suggestions-container">
@@ -386,11 +405,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                       this._state?.handleSuggestionClick(suggestion)}
                   >
                     <span slot="start">
-                      ${this._getRenderer('suggestionPrefix')({
-                        param: undefined,
-                        defaults: this._defaults,
-                        options: this._state.options,
-                      })}
+                      ${this._getRenderer('suggestionPrefix')(ctx)}
                     </span>
                     <span slot="title">${suggestion}</span>
                   </igc-list-item>

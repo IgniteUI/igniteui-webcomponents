@@ -1,19 +1,21 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
 import { all } from './themes/attachments.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments/message-attachments.common.css.js';
 import type {
+  AttachmentRendererContext,
   ChatTemplateRenderer,
   IgcMessage,
   IgcMessageAttachment,
@@ -22,12 +24,13 @@ import {
   ChatFileTypeIcons,
   createAttachmentURL,
   getFileExtension,
+  isImageAttachment,
 } from './utils.js';
 
 type DefaultAttachmentRenderers = {
-  attachment: ChatTemplateRenderer<IgcMessageAttachment>;
-  attachmentHeader: ChatTemplateRenderer<IgcMessageAttachment>;
-  attachmentContent: ChatTemplateRenderer<IgcMessageAttachment>;
+  attachment: ChatTemplateRenderer<AttachmentRendererContext>;
+  attachmentHeader: ChatTemplateRenderer<AttachmentRendererContext>;
+  attachmentContent: ChatTemplateRenderer<AttachmentRendererContext>;
 };
 
 /**
@@ -58,16 +61,15 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     registerComponent(
       IgcMessageAttachmentsComponent,
       IgcIconComponent,
-      IgcIconButtonComponent,
-      IgcExpansionPanelComponent
+      IgcIconButtonComponent
     );
   }
 
   private readonly _defaults: Readonly<DefaultAttachmentRenderers> =
     Object.freeze<DefaultAttachmentRenderers>({
-      attachment: (ctx) => this._renderAttachment(ctx.param),
-      attachmentHeader: (ctx) => this.renderHeader(ctx.param),
-      attachmentContent: (ctx) => this._renderContent(ctx.param),
+      attachment: (ctx) => this._renderAttachment(ctx.attachment),
+      attachmentHeader: (ctx) => this.renderHeader(ctx.attachment),
+      attachmentContent: (ctx) => this._renderContent(ctx.attachment),
     });
 
   @consume({ context: chatContext, subscribe: true })
@@ -101,10 +103,9 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    */
   private renderHeader(attachment: IgcMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
-    const iconName =
-      attachment.type === 'image' || attachment.file?.type.startsWith('image/')
-        ? 'attach_image'
-        : 'document_thumbnail';
+    const iconName = isImageAttachment(attachment)
+      ? 'attach_image'
+      : 'document_thumbnail';
 
     return html`
       ${!isCurrentUser
@@ -121,12 +122,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @returns TemplateResult containing the rendered attachment content
    */
   private _renderContent(attachment: IgcMessageAttachment) {
-    const ext = getFileExtension(attachment.name);
-    const isImage = this._state.isImageAttachment(attachment);
     const iconName =
-      ChatFileTypeIcons.get(ext) ?? ChatFileTypeIcons.get('default')!;
+      ChatFileTypeIcons.get(getFileExtension(attachment.name)) ??
+      ChatFileTypeIcons.get('default')!;
 
-    return isImage
+    return isImageAttachment(attachment)
       ? html`
           <img
             part="image-attachment"
@@ -152,10 +152,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       sent: isCurrentUser,
     };
 
-    const ctx = {
-      param: attachment,
+    const ctx: AttachmentRendererContext = {
+      attachment,
+      message: this.message!,
       defaults: this._defaults,
-      options: this._state.options,
+      instance: this._state.host,
     };
 
     const content = html`<div part=${partMap(contentParts)}>
@@ -180,24 +181,30 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   }
 
   protected override render() {
-    if (!this.message) {
-      return nothing;
-    }
+    const attachments = this.message?.attachments ?? [];
 
-    return html`
-      <div part="attachments-container">
-        ${(this.message.attachments ?? []).map(
-          (attachment) =>
-            html`${until(
-              this._getRenderer('attachment')({
-                param: attachment,
-                defaults: this._defaults,
-                options: this._state.options,
-              }) || nothing
-            )}`
-        )}
-      </div>
-    `;
+    return html`${cache(
+      this.message
+        ? html`
+            <div part="attachments-container">
+              ${repeat(
+                attachments,
+                (attachment) => attachment.id,
+                (attachment) => html`
+                  ${until(
+                    this._getRenderer('attachment')({
+                      attachment,
+                      message: this.message!,
+                      defaults: this._defaults,
+                      instance: this._state.host,
+                    })
+                  )}
+                `
+              )}
+            </div>
+          `
+        : nothing
+    )}`;
   }
 }
 

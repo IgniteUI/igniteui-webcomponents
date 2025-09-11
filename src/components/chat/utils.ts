@@ -76,9 +76,12 @@ export function getChatAcceptedFiles(
   event: DragEvent,
   accepted: ChatAcceptedFileTypes | null
 ): File[] {
-  return Array.from(event.dataTransfer?.files ?? []).filter((file) =>
-    isAcceptedFileType(file, accepted)
-  );
+  return Array.from(event.dataTransfer?.items ?? [])
+    .filter(
+      (item) =>
+        item.kind === 'file' && isAcceptedFileType(item.getAsFile()!, accepted)
+    )
+    .map((item) => item.getAsFile()!);
 }
 
 export function getIconName(fileType?: string) {
@@ -96,6 +99,18 @@ export function createAttachmentURL(attachment: IgcMessageAttachment): string {
 export function getFileExtension(name: string): string {
   const parts = name.split('.');
   return parts.length > 1 ? last(parts) : '';
+}
+
+export function isImageAttachment(
+  attachment: IgcMessageAttachment | File
+): boolean {
+  if (attachment instanceof File) {
+    return attachment.type.startsWith('image/');
+  }
+
+  return Boolean(
+    attachment.type === 'image' || attachment.file?.type.startsWith('image/')
+  );
 }
 
 export function showChatActionsTooltip(target: Element, message: string): void {

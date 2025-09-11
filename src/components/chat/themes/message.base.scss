@@ -7,11 +7,14 @@
     width: 100%;
 }
 
-[part~='message-container'] {  
+[part~='message-container'],
+[part='plain-text'] {  
     @include type-style('body-1') {
       margin: 0;
     };
+}
 
+[part~='message-container'] {
     display: flex;
     margin-inline-end: auto;
     flex-direction: column;
