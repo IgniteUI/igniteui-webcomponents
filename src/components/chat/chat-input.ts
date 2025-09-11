@@ -18,15 +18,20 @@ import type { ChatState } from './chat-state.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
-import type { ChatTemplateRenderer, IgcMessageAttachment } from './types.js';
+import type {
+  ChatRendererContext,
+  ChatTemplateRenderer,
+  IgcMessageAttachment,
+  InputRendererContext,
+} from './types.js';
 import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
-  input: ChatTemplateRenderer<string>;
-  inputActions: ChatTemplateRenderer<void>;
-  inputAttachments: ChatTemplateRenderer<IgcMessageAttachment[]>;
-  fileUploadButton: ChatTemplateRenderer<void>;
-  sendButton: ChatTemplateRenderer<void>;
+  input: ChatTemplateRenderer<InputRendererContext>;
+  inputActions: ChatTemplateRenderer<ChatRendererContext>;
+  inputAttachments: ChatTemplateRenderer<InputRendererContext>;
+  fileUploadButton: ChatTemplateRenderer<ChatRendererContext>;
+  sendButton: ChatTemplateRenderer<ChatRendererContext>;
 };
 /**
  * A web component that provides the input area for the `igc-chat` interface.
@@ -72,6 +77,14 @@ export default class IgcChatInputComponent extends LitElement {
     );
   }
 
+  private readonly _defaults: Readonly<DefaultInputRenderers> = Object.freeze({
+    fileUploadButton: () => this._renderFileUploadButton(),
+    input: () => this._renderTextArea(),
+    inputActions: () => this._renderActionsArea(),
+    inputAttachments: (ctx) => this._renderAttachmentsArea(ctx.attachments),
+    sendButton: () => this._renderSendButton(),
+  });
+
   @consume({ context: chatContext, subscribe: true })
   private readonly _state!: ChatState;
 
@@ -91,14 +104,6 @@ export default class IgcChatInputComponent extends LitElement {
     return this._state.acceptedFileTypes;
   }
 
-  private readonly _defaults: Readonly<DefaultInputRenderers> = Object.freeze({
-    input: () => this._renderTextArea(),
-    inputActions: () => this.renderActionsArea(),
-    inputAttachments: (ctx) => this.renderAttachmentsArea(ctx.param),
-    fileUploadButton: () => this._renderFileUploadButton(),
-    sendButton: () => this._renderSendButton(),
-  });
-
   constructor() {
     super();
     addThemingController(this, all);
@@ -109,11 +114,12 @@ export default class IgcChatInputComponent extends LitElement {
     this._state.textArea = this._textInputElement;
   }
 
-  private _getRenderer(
-    name: keyof DefaultInputRenderers
-  ): ChatTemplateRenderer<any> {
+  private _getRenderer<U extends keyof DefaultInputRenderers>(
+    name: U
+  ): DefaultInputRenderers[U] {
     return this._state.options?.renderers
-      ? (this._state.options.renderers[name] ?? this._defaults[name])
+      ? ((this._state.options.renderers[name] ??
+          this._defaults[name]) as DefaultInputRenderers[U])
       : this._defaults[name];
   }
 
@@ -207,7 +213,7 @@ export default class IgcChatInputComponent extends LitElement {
    * Renders the list of input attachments as chips.
    * @returns TemplateResult containing the attachments area
    */
-  private renderAttachmentsArea(attachments: IgcMessageAttachment[]) {
+  private _renderAttachmentsArea(attachments: IgcMessageAttachment[]) {
     return html`${attachments?.map(
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
@@ -235,6 +241,7 @@ export default class IgcChatInputComponent extends LitElement {
     return html`
       <igc-textarea
         part="text-input"
+        aria-label="Chat text input"
         placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
@@ -262,6 +269,7 @@ export default class IgcChatInputComponent extends LitElement {
         : html`
             <label for="input_attachments" part="upload-button">
               <igc-icon-button
+                aria-label="Attach files"
                 variant="flat"
                 name="attach_file"
                 @click=${this._handleFileInputClick}
@@ -270,6 +278,7 @@ export default class IgcChatInputComponent extends LitElement {
                 type="file"
                 id="input_attachments"
                 name="input_attachments"
+                aria-label="Upload button"
                 multiple
                 accept=${bindIf(accepted, accepted)}
                 @change=${this._handleFileUpload}
@@ -300,23 +309,28 @@ export default class IgcChatInputComponent extends LitElement {
     `;
   }
 
-  private renderActionsArea() {
-    return html` ${this._getRenderer('fileUploadButton')({
-      param: undefined,
+  private _renderActionsArea() {
+    const ctx: ChatRendererContext = {
       defaults: this._defaults,
-      options: this._state.options,
-    })}
-    ${this._getRenderer('sendButton')({
-      param: undefined,
-      defaults: this._defaults,
-      options: this._state.options,
-    })}`;
+      instance: this._state.host,
+    };
+
+    return html`
+      ${this._getRenderer('fileUploadButton')(ctx)}
+      ${this._getRenderer('sendButton')(ctx)}
+    `;
   }
 
   protected override render() {
-    const partialCtx = {
+    const ctx: ChatRendererContext = {
       defaults: this._defaults,
-      options: this._state.options,
+      instance: this._state.host,
+    };
+
+    const inputCtx: InputRendererContext = {
+      ...ctx,
+      attachments: this._state.inputAttachments,
+      value: this._state.inputValue,
     };
 
     return html`
@@ -327,32 +341,20 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._state.inputAttachments &&
-        this._state.inputAttachments.length > 0
-          ? html` <div part="attachments" role="list" aria-label="Attachments">
-              ${until(
-                this._getRenderer('inputAttachments')({
-                  ...partialCtx,
-                  param: this._state.inputAttachments,
-                })
-              )}
-            </div>`
+        ${this._state.hasInputAttachments
+          ? html`
+              <div part="attachments" role="list" aria-label="Attachments">
+                ${until(this._getRenderer('inputAttachments')(inputCtx))}
+              </div>
+            `
           : nothing}
+
         <div part="input-wrapper">
-          ${until(
-            this._getRenderer('input')({
-              ...partialCtx,
-              param: this._state.inputValue,
-            })
-          )}
+          ${until(this._getRenderer('input')(inputCtx))}
         </div>
+
         <div part="buttons-container">
-          ${until(
-            this._getRenderer('inputActions')({
-              ...partialCtx,
-              param: undefined,
-            })
-          )}
+          ${until(this._getRenderer('inputActions')(ctx))}
         </div>
       </div>
     `;

@@ -9,7 +9,11 @@ import type {
   IgcMessage,
   IgcMessageAttachment,
 } from './types.js';
-import { type ChatAcceptedFileTypes, parseAcceptedFileTypes } from './utils.js';
+import {
+  type ChatAcceptedFileTypes,
+  isImageAttachment,
+  parseAcceptedFileTypes,
+} from './utils.js';
 
 /**
  * Internal state manager for the `<igc-chat>` component.
@@ -52,6 +56,10 @@ export class ChatState {
   //#endregion
 
   //#region Public properties
+
+  public get host(): IgcChatComponent {
+    return this._host;
+  }
 
   public get acceptedFileTypes() {
     return this._acceptedTypesCache;
@@ -187,34 +195,39 @@ export class ChatState {
 
   //#endregion
 
+  protected _createMessage(message: Partial<IgcMessage>): IgcMessage {
+    return {
+      id: message.id ?? nanoid(),
+      text: message.text ?? '',
+      sender: message.sender ?? this.currentUserId,
+      timestamp: message.timestamp ?? Date.now().toString(),
+      attachments: message.attachments || [],
+    };
+  }
+
+  public addMessage(message: Partial<IgcMessage>) {
+    this.messages.push(this._createMessage(message));
+    this._host.requestUpdate('messages');
+  }
+
   //#region Public API
 
   /**
    * Adds a new chat message.
    * Emits 'igcMessageCreated' event which can be canceled to prevent adding.
    * Clears input value and attachments on success.
-   * @param message Partial message object with optional id, sender, timestamp
+   * @internal
    */
-  public addMessage(message: Partial<IgcMessage>): void {
-    const newMessage: IgcMessage = {
-      id: message.id ?? nanoid(),
-      text: message.text ?? '',
-      sender: message.sender ?? this.currentUserId,
-      timestamp: message.timestamp ?? new Date(),
-      attachments: message.attachments || [],
-    };
+  public addMessageWithEvent(message: Partial<IgcMessage>): void {
+    const newMessage = this._createMessage(message);
 
-    const allowed = this.emitEvent('igcMessageCreated', {
-      detail: newMessage,
-      cancelable: true,
-    });
-
-    if (allowed) {
-      if (!this.messages.some((msg) => msg.id === newMessage.id)) {
-        this.messages = [...this.messages, newMessage];
-      }
-      this._host.requestUpdate('messages');
-
+    if (
+      this._host.emitEvent('igcMessageCreated', {
+        detail: newMessage,
+        cancelable: true,
+      })
+    ) {
+      this.addMessage(newMessage);
       this.inputValue = '';
       this.inputAttachments = [];
     }
@@ -236,7 +249,6 @@ export class ChatState {
         continue;
       }
 
-      const isImage = file.type.startsWith('image/');
       const url = URL.createObjectURL(file);
 
       newAttachments.push({
@@ -244,7 +256,7 @@ export class ChatState {
         url,
         name: file.name,
         file,
-        thumbnail: isImage ? url : undefined,
+        thumbnail: isImageAttachment(file) ? url : undefined,
       });
     }
 
@@ -255,13 +267,6 @@ export class ChatState {
     if (allowed) {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
     }
-  }
-
-  public isImageAttachment(attachment: IgcMessageAttachment): boolean {
-    return (
-      attachment.type === 'image' ||
-      !!attachment.file?.type.startsWith('image/')
-    );
   }
 
   public handleKeyDown = (e: KeyboardEvent) => {
@@ -296,7 +301,7 @@ export class ChatState {
   public sendMessage = () => {
     if (!this.inputValue.trim() && this.inputAttachments.length === 0) return;
 
-    this.addMessage({
+    this.addMessageWithEvent({
       text: this.inputValue,
       attachments: this.inputAttachments,
     });
@@ -334,19 +339,11 @@ export class ChatState {
    * @param suggestion The suggestion string clicked
    */
   public handleSuggestionClick = (suggestion: string): void => {
-    this.addMessage({ text: suggestion });
+    this.addMessageWithEvent({ text: suggestion });
     if (this.textArea) {
       this.textArea.focus();
     }
   };
-
-  /**
-   * Updates the chat options partially.
-   * @param options Partial options to merge with current options
-   */
-  public updateOptions(options: Partial<IgcChatOptions>): void {
-    this.options = { ...this.options, ...options };
-  }
 
   /**
    * Updates the internal cache for accepted file types.

@@ -20,6 +20,14 @@ $theme: $indigo;
     };
 }
 
+[part='prefix'] {
+    margin-inline-end: rem(16px);
+}
+
+[part='actions'] {
+    gap: rem(8px);
+}
+
 igc-list {
   --ig-size: 2;
 }
