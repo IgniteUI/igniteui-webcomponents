@@ -220,7 +220,7 @@ describe('Chat', () => {
       expect(chat).shadowDom.to.equal(
         ` <div part="chat-container">
                     <div hidden="" part="header">
-                      <slot name="prefix" part="prefix"></slot>
+                      <slot hidden="" name="prefix" part="prefix"></slot>
                       <slot name="title" part="title"></slot>
                       <slot part="actions" name="actions"></slot>
                     </div>
@@ -427,7 +427,7 @@ describe('Chat', () => {
 
       expect(headerArea).dom.to.equal(
         `<div part="header">
-                      <slot name="prefix" part="prefix">
+                      <slot hidden="" name="prefix" part="prefix">
                       </slot>
                       <slot name="title" part="title">
                           Chat
