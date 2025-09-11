@@ -64,7 +64,8 @@ igc-textarea::part(input) {
     overflow-y: auto;
 }
 
-igc-icon-button {
+igc-icon-button,
+igc-textarea {
     --ig-size: 2;
 }
 

@@ -7,6 +7,10 @@ igc-textarea::part(input) {
     max-height: rem(140px);
 }
 
+[part~='input-container'] {
+    border-radius: rem(13px);
+}
+
 [part~='dragging'] {
     igc-textarea::part(container) {  
         background: var-get($theme, 'box-background-hover');
