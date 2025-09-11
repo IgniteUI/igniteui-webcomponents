@@ -8,6 +8,7 @@ import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
+import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
@@ -15,12 +16,18 @@ import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type { ChatTemplateRenderer, IgcMessage } from './types.js';
-import { chatMessageAdoptPageStyles, showChatActionsTooltip } from './utils.js';
+import {
+  chatMessageAdoptPageStyles,
+  showChatActionsTooltip,
+  showChatActionToast,
+} from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
 const DISLIKE_INACTIVE = 'thumb_down_inactive';
 const DISLIKE_ACTIVE = 'thumb_down_active';
+const COPY_CONTENT = 'copy_content';
+const REGENERATE = 'regenerate';
 
 type DefaultMessageRenderers = {
   message: ChatTemplateRenderer<IgcMessage>;
@@ -58,7 +65,8 @@ export default class IgcChatMessageComponent extends LitElement {
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
       IgcAvatarComponent,
-      IgcTooltipComponent
+      IgcTooltipComponent,
+      IgcToastComponent
     );
   }
 
@@ -97,26 +105,65 @@ export default class IgcChatMessageComponent extends LitElement {
       : this._defaults[name];
   }
 
+  private async _handleCopy() {
+    if (!this.message) return;
+
+    let clipboardText = this.message.text;
+
+    const resourceStrings = this._state.resourceStrings!;
+    if (this.message.attachments && !isEmpty(this.message.attachments)) {
+      const attachmentList = this.message.attachments
+        .map(
+          (att) =>
+            `${att.name ?? resourceStrings.attachmentLabel}: ${att.url ?? ''}`
+        )
+        .join('\n');
+      clipboardText += `${clipboardText ? '\n\n' : ''}${resourceStrings.attachmentsListLabel}:\n${attachmentList}`;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(clipboardText);
+        showChatActionToast(resourceStrings.messageCopied);
+      } catch (err) {
+        throw new Error(`Failed to copy message via Clipboard API: ${err}`);
+      }
+    }
+  }
+
   private _handleMessageActionClick(event: PointerEvent): void {
     const targetButton = event.target as HTMLElement;
     const button = targetButton.closest('igc-icon-button');
-    if (!button) return;
+    if (!button || !this.message) return;
 
     let reaction = button.getAttribute('name');
-    if (this.message) {
-      if (reaction === LIKE_INACTIVE) {
-        reaction = LIKE_ACTIVE;
-        this.message.reactions = [reaction];
-      } else if (reaction === DISLIKE_INACTIVE) {
-        reaction = DISLIKE_ACTIVE;
-        this.message.reactions = [reaction];
-      } else if (reaction === this.message.reactions?.[0]) {
-        reaction = null;
-        this.message.reactions = [];
-      }
 
-      this.requestUpdate();
+    switch (reaction) {
+      case LIKE_INACTIVE:
+      case LIKE_ACTIVE:
+        reaction = this.message.reactions?.includes(LIKE_ACTIVE)
+          ? LIKE_INACTIVE
+          : LIKE_ACTIVE;
+        break;
+      case DISLIKE_INACTIVE:
+      case DISLIKE_ACTIVE:
+        reaction = this.message.reactions?.includes(DISLIKE_ACTIVE)
+          ? DISLIKE_INACTIVE
+          : DISLIKE_ACTIVE;
+        break;
+      case COPY_CONTENT:
+        reaction = COPY_CONTENT;
+        this._handleCopy();
+        break;
+      case REGENERATE:
+        reaction = REGENERATE;
+        break;
+      default:
+        reaction = null;
     }
+
+    this.message.reactions = reaction ? [reaction] : [];
+    this.requestUpdate();
 
     this._state.emitEvent('igcMessageReact', {
       detail: { message: this.message, reaction },
@@ -146,10 +193,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
     return html`
       <div @click=${this._handleMessageActionClick}>
-        ${this._renderActionButton(
-          'copy_content',
-          resourceStrings.reactionCopy
-        )}
+        ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
         ${this._renderActionButton(
           this.message?.reactions?.includes(LIKE_ACTIVE)
             ? LIKE_ACTIVE
@@ -163,7 +207,7 @@ export default class IgcChatMessageComponent extends LitElement {
           resourceStrings.reactionDislike
         )}
         ${this._renderActionButton(
-          'regenerate',
+          REGENERATE,
           resourceStrings.reactionRegenerate
         )}
       </div>
