@@ -5,3 +5,13 @@
         --textarea-height: #{rem(40px)};
     }
 }
+
+[part='title'] {
+    @include type-style('subtitle-2') {
+      margin: 0;
+    };
+}
+
+[part='prefix'] {
+    margin-inline-end: rem(16px);
+}
