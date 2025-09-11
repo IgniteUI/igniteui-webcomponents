@@ -136,11 +136,13 @@ export default class IgcChatMessageComponent extends LitElement {
   private _renderActions() {
     const isSent = this.message?.sender === this._state.currentUserId;
     const hasText = this.message?.text.trim();
+    const hasAttachments =
+      this.message?.attachments && !isEmpty(this.message?.attachments);
     const isTyping = this._state._isTyping;
     const isLastMessage = this.message === this._state.messages.at(-1);
     const resourceStrings = this._state.resourceStrings!;
 
-    if (isSent || !hasText || (isLastMessage && isTyping)) {
+    if (isSent || !(hasText || hasAttachments) || (isLastMessage && isTyping)) {
       return nothing;
     }
 
