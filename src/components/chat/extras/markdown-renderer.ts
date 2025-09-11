@@ -2,8 +2,14 @@ import DOMPurify from 'dompurify';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { Marked } from 'marked';
 import markedShiki from 'marked-shiki';
-import { getSingletonHighlighter } from 'shiki';
+import { bundledThemes, createHighlighter } from 'shiki/bundle/web';
 import type { IgcMessage } from '../types.js';
+
+const DEFAULT_LANGUAGES = ['javascript', 'typescript', 'html', 'css'];
+const DEFAULT_THEME = {
+  light: 'github-light',
+  dark: 'github-dark',
+};
 
 /**
  * Options to configure the MarkdownMessageRenderer.
@@ -22,7 +28,10 @@ export interface MarkdownRendererOptions {
   /**
    * The theme used by the syntax highlighter (e.g., 'github-light').
    */
-  theme?: string;
+  theme?: {
+    light?: string;
+    dark?: string;
+  };
 
   /**
    * A custom HTML sanitization function. Defaults to DOMPurify.sanitize.
@@ -35,7 +44,7 @@ export async function createMarkdownRenderer(
 ) {
   const sanitizer = options?.sanitizer ?? DOMPurify.sanitize;
 
-  const markedInstance = new Marked({
+  const markdown = new Marked({
     breaks: true,
     gfm: true,
     extensions: [
@@ -49,23 +58,18 @@ export async function createMarkdownRenderer(
   });
 
   if (!options?.noHighlighter) {
-    const themes = [options?.theme ?? 'github-light'];
-    const langs = options?.languages
-      ? options.languages
-      : ['javascript', 'typescript', 'html', 'css'];
+    const themes = options?.theme ?? DEFAULT_THEME;
+    const langs = options?.languages ?? DEFAULT_LANGUAGES;
 
-    const shikiInstance = await getSingletonHighlighter({
-      themes,
+    const highlighter = await createHighlighter({
       langs,
+      themes: Object.keys(bundledThemes),
     });
 
-    markedInstance.use(
+    markdown.use(
       markedShiki({
         highlight(code, lang, _) {
-          return shikiInstance.codeToHtml(code, {
-            lang,
-            themes: { light: themes[0] },
-          });
+          return highlighter.codeToHtml(code, { lang, themes });
         },
       })
     );
@@ -73,7 +77,7 @@ export async function createMarkdownRenderer(
 
   return async (message: IgcMessage): Promise<unknown> => {
     return message.text
-      ? unsafeHTML(sanitizer(await markedInstance.parse(message.text)))
+      ? unsafeHTML(sanitizer(await markdown.parse(message.text)))
       : '';
   };
 }

@@ -242,6 +242,7 @@ describe('Chat', () => {
         `<div part="input-container">
                     <div part="input-wrapper">
                         <igc-textarea
+                        aria-label="Chat text input"
                         part="text-input"
                         resize="auto"
                         rows="1"
@@ -252,11 +253,13 @@ describe('Chat', () => {
                         <label for="input_attachments" part="upload-button">
                           <igc-icon-button
                             variant="flat"
+                            aria-label="Attach files"
                             name="attach_file"
                             type="button"
                             ></igc-icon-button>
                           <input
                             type="file"
+                            aria-label="Upload button"
                             id="input_attachments"
                             name="input_attachments"
                             multiple=""
@@ -497,6 +500,7 @@ describe('Chat', () => {
         `<div part="input-container">
                     <div part="input-wrapper">
                         <igc-textarea
+                        aria-label="Chat text input"
                         part="text-input"
                         resize="auto"
                         rows="1"
@@ -584,6 +588,7 @@ describe('Chat', () => {
             </div>
             <div part="input-wrapper">
               <igc-textarea
+                aria-label="Chat text input"
                 part="text-input"
                 resize="auto"
                 rows="1"
@@ -594,11 +599,13 @@ describe('Chat', () => {
               <label for="input_attachments" part="upload-button">
                 <igc-icon-button
                   variant="flat"
+                  aria-label="Attach files"
                   name="attach_file"
                   type="button"
                 ></igc-icon-button>
                 <input
                   type="file"
+                  aria-label="Upload button"
                   id="input_attachments"
                   name="input_attachments"
                   multiple=""
@@ -629,14 +636,14 @@ describe('Chat', () => {
 
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
-        const messsageContainer = messageElement.shadowRoot?.querySelector(
+        const messageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.null;
-        expect(messsageContainer).dom.to.equal(
+        expect(messageContainer).not.to.be.null;
+        expect(messageContainer).dom.to.equal(
           `<div part="message-container${isCurrentUser ? ' sent' : ''}">
                               <pre part="plain-text">
-                                ${(messsageContainer as HTMLElement)?.innerText}
+                                ${(messageContainer as HTMLElement)?.innerText}
                               </pre>
                             <igc-message-attachments>
                             </igc-message-attachments>
@@ -644,7 +651,7 @@ describe('Chat', () => {
                     </div>`
         );
 
-        const attachments = messsageContainer?.querySelector(
+        const attachments = messageContainer?.querySelector(
           'igc-message-attachments'
         );
         // Check if image attachments are rendered correctly
@@ -798,7 +805,6 @@ describe('Chat', () => {
         id: '5',
         text: 'New message',
         sender: 'user',
-        timestamp: new Date(),
       });
       await elementUpdated(chat);
 
@@ -978,7 +984,7 @@ describe('Chat', () => {
     it('should render attachment template', async () => {
       chat.options = {
         renderers: {
-          attachment: (ctx) => attachmentTemplate(ctx.param),
+          attachment: (ctx) => attachmentTemplate(ctx.attachment),
         },
       };
       await elementUpdated(chat);
@@ -990,11 +996,11 @@ describe('Chat', () => {
       expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
-        const messsageContainer = messageElement.shadowRoot?.querySelector(
+        const messageContainer = messageElement.shadowRoot?.querySelector(
           `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
         );
-        expect(messsageContainer).not.to.be.null;
-        const attachments = messsageContainer?.querySelector(
+        expect(messageContainer).not.to.be.null;
+        const attachments = messageContainer?.querySelector(
           'igc-message-attachments'
         );
         expect(attachments).shadowDom.to.equal(
@@ -1012,8 +1018,8 @@ describe('Chat', () => {
     it('should render attachmentHeader template, attachmentContent template', async () => {
       chat.options = {
         renderers: {
-          attachmentHeader: (ctx) => attachmentHeaderTemplate(ctx.param),
-          attachmentContent: (ctx) => attachmentContentTemplate(ctx.param),
+          attachmentHeader: (ctx) => attachmentHeaderTemplate(ctx.attachment),
+          attachmentContent: (ctx) => attachmentContentTemplate(ctx.attachment),
         },
       };
       await elementUpdated(chat);
@@ -1024,10 +1030,6 @@ describe('Chat', () => {
       expect(messageElements).not.to.be.null;
       messageElements?.forEach((messageElement, index) => {
         const isCurrentUser = chat.messages[index].sender === 'user';
-        // const messsageContainer = messageElement.shadowRoot?.querySelector(
-        //   `div[part='message-container${isCurrentUser ? ' sent' : ''}']`
-        // );
-        // expect(messsageContainer).not.to.be.null;
         const attachments = messageElement.shadowRoot?.querySelector(
           'igc-message-attachments'
         );
@@ -1054,7 +1056,7 @@ describe('Chat', () => {
     it('should render message template', async () => {
       chat.options = {
         renderers: {
-          message: (ctx) => messageTemplate(ctx.param),
+          message: (ctx) => messageTemplate(ctx.message),
         },
       };
       await elementUpdated(chat);
@@ -1082,7 +1084,7 @@ describe('Chat', () => {
     it('should render messageContent template', async () => {
       chat.options = {
         renderers: {
-          messageContent: (ctx) => html`${ctx.param.text.toUpperCase()}`,
+          messageContent: (ctx) => html`${ctx.message.text.toUpperCase()}`,
         },
       };
       await elementUpdated(chat);
@@ -1109,7 +1111,7 @@ describe('Chat', () => {
     it('should render messageActionsTemplate', async () => {
       chat.options = {
         renderers: {
-          messageActions: (ctx) => messageActionsTemplate(ctx.param),
+          messageActions: (ctx) => messageActionsTemplate(ctx.message),
         },
       };
       await elementUpdated(chat);
@@ -1173,9 +1175,10 @@ describe('Chat', () => {
       chat.draftMessage = draftMessage;
       chat.options = {
         renderers: {
-          input: (ctx) => textInputTemplate(ctx.param),
+          input: (ctx) => textInputTemplate(ctx.value),
           inputActions: (ctx) => textAreaActionsTemplate(ctx),
-          inputAttachments: (ctx) => textAreaAttachmentsTemplate(ctx.param),
+          inputAttachments: (ctx) =>
+            textAreaAttachmentsTemplate(ctx.attachments),
         },
       };
       await elementUpdated(chat);
@@ -1200,6 +1203,7 @@ describe('Chat', () => {
                   part="upload-button"
                 >
                   <igc-icon-button
+                    aria-label="Attach files"
                     name="attach_file"
                     type="button"
                     variant="flat"
@@ -1207,6 +1211,7 @@ describe('Chat', () => {
                   </igc-icon-button>
                   <input
                     id="input_attachments"
+                    aria-label="Upload button"
                     multiple=""
                     name="input_attachments"
                     type="file"
@@ -1228,7 +1233,7 @@ describe('Chat', () => {
     it('should render messageHeader template', async () => {
       chat.options = {
         renderers: {
-          messageHeader: (ctx) => messageHeaderTemplate(ctx.param),
+          messageHeader: (ctx) => messageHeaderTemplate(ctx.message),
         },
       };
       await elementUpdated(chat);

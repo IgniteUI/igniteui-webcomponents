@@ -1,9 +1,10 @@
 import { consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import IgcAvatarComponent from '../avatar/avatar.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
@@ -14,7 +15,11 @@ import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
-import type { ChatTemplateRenderer, IgcMessage } from './types.js';
+import type {
+  ChatTemplateRenderer,
+  IgcMessage,
+  MessageRendererContext,
+} from './types.js';
 import { chatMessageAdoptPageStyles, showChatActionsTooltip } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
@@ -23,11 +28,11 @@ const DISLIKE_INACTIVE = 'thumb_down_inactive';
 const DISLIKE_ACTIVE = 'thumb_down_active';
 
 type DefaultMessageRenderers = {
-  message: ChatTemplateRenderer<IgcMessage>;
-  messageHeader: ChatTemplateRenderer<IgcMessage>;
-  messageContent: ChatTemplateRenderer<IgcMessage>;
-  messageAttachments: ChatTemplateRenderer<IgcMessage>;
-  messageActions: ChatTemplateRenderer<IgcMessage>;
+  message: ChatTemplateRenderer<MessageRendererContext>;
+  messageHeader: ChatTemplateRenderer<MessageRendererContext>;
+  messageContent: ChatTemplateRenderer<MessageRendererContext>;
+  messageAttachments: ChatTemplateRenderer<MessageRendererContext>;
+  messageActions: ChatTemplateRenderer<MessageRendererContext>;
 };
 
 /**
@@ -57,16 +62,10 @@ export default class IgcChatMessageComponent extends LitElement {
     registerComponent(
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
-      IgcAvatarComponent,
+      IgcIconButtonComponent,
       IgcTooltipComponent
     );
   }
-
-  /**
-   * Injected chat state context. Provides message data, user info, and options.
-   */
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
 
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
     message: () => this._renderMessage(),
@@ -75,6 +74,9 @@ export default class IgcChatMessageComponent extends LitElement {
     messageAttachments: () => this._renderAttachments(),
     messageActions: () => this._renderActions(),
   });
+
+  @consume({ context: chatContext, subscribe: true })
+  private readonly _state!: ChatState;
 
   /**
    * The chat message to render.
@@ -99,7 +101,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
   private _handleMessageActionClick(event: PointerEvent): void {
     const targetButton = event.target as HTMLElement;
-    const button = targetButton.closest('igc-icon-button');
+    const button = targetButton.closest(IgcIconButtonComponent.tagName);
     if (!button) return;
 
     let reaction = button.getAttribute('name');
@@ -195,56 +197,43 @@ export default class IgcChatMessageComponent extends LitElement {
         `;
   }
 
-  /**
-   * Default message template used when no custom template is provided.
-   * Renders the message text, sanitized for security.
-   * @param message The chat message to render
-   * @returns TemplateResult containing the rendered message
-   */
   private _renderMessage() {
     return this.message
       ? html`${this._renderHeader()}${this._renderContent()}${this._renderAttachments()}${this._renderActions()}`
       : nothing;
   }
 
-  /**
-   * Renders the chat message template.
-   * - Applies 'sent' CSS class if the message sender matches current user.
-   * - Uses markdown rendering if configured.
-   * - Renders attachments and custom templates if provided.
-   */
   protected override render() {
-    if (!this.message) {
-      return nothing;
-    }
+    const ctx: MessageRendererContext = {
+      message: this.message!,
+      defaults: this._defaults,
+      instance: this._state.host,
+    };
 
     const parts = {
       'message-container': true,
       sent: this._state.isCurrentUserMessage(this.message),
     };
 
-    const options = this._state.options;
-    const ctx = {
-      param: this.message,
-      defaults: this._defaults,
-      options,
-    };
-
-    if (options?.renderers?.message) {
-      return html`
-        <div part=${partMap(parts)}>
-          ${until(options.renderers.message(ctx))}
-        </div>
-      `;
-    }
-
     return html`
-      <div part=${partMap(parts)}>
-        ${until(this._getRenderer('messageHeader')(ctx))}
-        ${until(this._getRenderer('messageContent')(ctx))}
-        ${until(this._getRenderer('messageAttachments')(ctx))}
-        ${until(this._getRenderer('messageActions')(ctx))}
-      </div>
+      ${cache(
+        this.message
+          ? html`
+              <div part=${partMap(parts)}>
+                ${cache(
+                  this._state.options?.renderers?.message
+                    ? html`${until(this._getRenderer('message')(ctx))}`
+                    : html`
+                        ${until(this._getRenderer('messageHeader')(ctx))}
+                        ${until(this._getRenderer('messageContent')(ctx))}
+                        ${until(this._getRenderer('messageAttachments')(ctx))}
+                        ${until(this._getRenderer('messageActions')(ctx))}
+                      `
+                )}
+              </div>
+            `
+          : nothing
+      )}
     `;
   }
 }
