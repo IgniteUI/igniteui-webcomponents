@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -14,6 +14,8 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isEmpty, last } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
+import IgcToastComponent from '../toast/toast.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import { ChatState } from './chat-state.js';
@@ -146,7 +148,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
       IgcChatMessageComponent,
       IgcButtonComponent,
       IgcIconComponent,
-      IgcListComponent
+      IgcListComponent,
+      IgcTooltipComponent,
+      IgcToastComponent
     );
   }
 
@@ -174,6 +178,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
     context: chatUserInputContext,
     initialValue: this._state,
   });
+
+  @query(IgcChatInputComponent.tagName)
+  private readonly _input?: IgcChatInputComponent;
 
   private _updateContext(): void {
     this._context.setValue(this._state, true);
@@ -252,6 +259,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._state.options?.renderers
       ? (this._state.options.renderers[name] ?? this._defaults[name])
       : this._defaults[name];
+  }
+
+  private _handleSuggestionClick(text: string): void {
+    this._state.addMessageWithEvent({ text });
+    this._input?.focusInput();
   }
 
   // REVIEW: Maybe accept an `IgcMessage` type as well?
@@ -398,8 +410,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
               (suggestion) => html`
                 <slot name="suggestion" part="suggestion">
                   <igc-list-item
-                    @click=${() =>
-                      this._state?.handleSuggestionClick(suggestion)}
+                    @click=${() => this._handleSuggestionClick(suggestion)}
                   >
                     <span slot="start">
                       ${this._getRenderer('suggestionPrefix')(ctx)}

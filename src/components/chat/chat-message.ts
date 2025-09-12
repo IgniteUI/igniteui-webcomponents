@@ -9,8 +9,6 @@ import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty } from '../common/util.js';
-import IgcToastComponent from '../toast/toast.js';
-import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
@@ -65,10 +63,7 @@ export default class IgcChatMessageComponent extends LitElement {
     registerComponent(
       IgcChatMessageComponent,
       IgcMessageAttachmentsComponent,
-      IgcTooltipComponent,
-      IgcToastComponent,
-      IgcIconButtonComponent,
-      IgcTooltipComponent
+      IgcIconButtonComponent
     );
   }
 
@@ -123,7 +118,7 @@ export default class IgcChatMessageComponent extends LitElement {
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(clipboardText);
-        this._state.showChatActionToast(resourceStrings.messageCopied);
+        this._state.showActionToast(resourceStrings.messageCopied);
       } catch (err) {
         throw new Error(`Failed to copy message via Clipboard API: ${err}`);
       }
@@ -222,9 +217,9 @@ export default class IgcChatMessageComponent extends LitElement {
         name=${name}
         variant="flat"
         @pointerenter=${({ target }: PointerEvent) =>
-          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showActionsTooltip(target as Element, tooltipMessage)}
         @focus=${({ target }: FocusEvent) =>
-          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showActionsTooltip(target as Element, tooltipMessage)}
       ></igc-icon-button>
     `;
   }

@@ -113,9 +113,8 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  protected override firstUpdated() {
-    this._state.updateAcceptedTypesCache();
-    this._state.textArea = this._textInputElement;
+  public focusInput(): void {
+    this._textInputElement.focus();
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -127,12 +126,32 @@ export default class IgcChatInputComponent extends LitElement {
       : this._defaults[name];
   }
 
-  private _handleKeydown(event: KeyboardEvent): void {
-    const isSend = event.key === enterKey && !event.shiftKey;
+  private async _sendMessage(): Promise<void> {
+    if (
+      !this._userInputState.hasInputValue &&
+      !this._userInputState.hasInputAttachments
+    ) {
+      return;
+    }
 
-    if (isSend) {
+    this._userInputState.addMessageWithEvent({
+      text: this._userInputState.inputValue,
+      attachments: this._userInputState.inputAttachments,
+    });
+
+    this.style.height = 'auto';
+
+    await this._userInputState.host.updateComplete;
+    this.focusInput();
+  }
+
+  private _handleKeydown(event: KeyboardEvent): void {
+    const isSendRequest =
+      event.key === enterKey.toLowerCase() && !event.shiftKey;
+
+    if (isSendRequest) {
       event.preventDefault();
-      this._state.sendMessage();
+      this._sendMessage();
     } else {
       // TODO:
       this._state.handleKeyDown(event);
@@ -199,7 +218,9 @@ export default class IgcChatInputComponent extends LitElement {
    * @param e Input event from the text area
    */
   private _handleInput({ detail }: CustomEvent<string>): void {
-    if (detail === this._state.inputValue) return;
+    if (detail === this._state.inputValue) {
+      return;
+    }
 
     this._state.inputValue = detail;
     this._state.emitEvent('igcInputChange', { detail: { value: detail } });
@@ -219,11 +240,11 @@ export default class IgcChatInputComponent extends LitElement {
    */
   private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
     return html`${attachments?.map(
-      (attachment, index) => html`
+      (attachment) => html`
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
-            @igcRemove=${() => this._state.removeAttachment(index)}
+            @igcRemove=${() => this._state.removeAttachment(attachment)}
           >
             <igc-icon
               slot="prefix"
@@ -281,6 +302,7 @@ export default class IgcChatInputComponent extends LitElement {
               <input
                 type="file"
                 id="input_attachments"
+                tabindex="-1"
                 name="input_attachments"
                 aria-label="Upload button"
                 multiple
@@ -308,7 +330,7 @@ export default class IgcChatInputComponent extends LitElement {
         variant="contained"
         part="send-button"
         ?disabled=${!enabled}
-        @click=${this._state.sendMessage}
+        @click=${this._sendMessage}
       ></igc-icon-button>
     `;
   }

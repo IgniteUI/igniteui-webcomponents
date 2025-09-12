@@ -1,7 +1,5 @@
-import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import { isEmpty, nanoid } from '../common/util.js';
-import type IgcTextareaComponent from '../textarea/textarea.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
@@ -28,9 +26,6 @@ export class ChatState {
 
   private readonly _contextUpdateFn: () => unknown;
   private readonly _userInputContextUpdateFn: () => unknown;
-
-  /** Reference to the text area input component */
-  private _textArea: IgcTextareaComponent | null = null;
 
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
@@ -100,6 +95,7 @@ export class ChatState {
    */
   public set options(value: IgcChatOptions) {
     this._options = value;
+    this._setAcceptedTypesCache();
     this._contextUpdateFn.call(this._host);
   }
 
@@ -122,20 +118,6 @@ export class ChatState {
    */
   public get stopTypingDelay(): number {
     return this._options?.stopTypingDelay ?? this._stopTypingDelay;
-  }
-
-  /**
-   * Gets the text area component.
-   */
-  public get textArea(): IgcTextareaComponent | null {
-    return this._textArea;
-  }
-
-  /**
-   * Sets the text area component.
-   */
-  public set textArea(value: IgcTextareaComponent) {
-    this._textArea = value;
   }
 
   /**
@@ -168,10 +150,18 @@ export class ChatState {
     this._userInputContextUpdateFn.call(this._host);
   }
 
+  /**
+   * Returns whether the default chat input textarea has a trimmed value payload.
+   * @internal
+   */
   public get hasInputValue(): boolean {
-    return this._inputValue.trim() !== '';
+    return !!this._inputValue.trim();
   }
 
+  /**
+   * Returns whether the default file input of the chat has any attached files.
+   * @internal
+   */
   public get hasInputAttachments(): boolean {
     return !isEmpty(this._inputAttachments);
   }
@@ -198,7 +188,10 @@ export class ChatState {
     return this._host.emitEvent(name, args);
   }
 
-  public showChatActionsTooltip(target: Element, message: string): void {
+  /**
+   * @internal
+   */
+  public showActionsTooltip(target: Element, message: string): void {
     if (!this._actionsTooltip) {
       this._actionsTooltip = document.createElement(
         IgcTooltipComponent.tagName
@@ -211,7 +204,10 @@ export class ChatState {
     this._actionsTooltip.show(target);
   }
 
-  public showChatActionToast(content: string): void {
+  /**
+   * @internal
+   */
+  public showActionToast(content: string): void {
     if (!this._actionToast) {
       this._actionToast = document.createElement(IgcToastComponent.tagName);
       this._host.renderRoot.appendChild(this._actionToast);
@@ -221,6 +217,16 @@ export class ChatState {
   }
 
   //#endregion
+
+  /**
+   * Updates the internal cache for accepted file types.
+   * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
+   */
+  private _setAcceptedTypesCache(): void {
+    this._acceptedTypesCache = this.options?.acceptedFiles
+      ? parseAcceptedFileTypes(this.options.acceptedFiles)
+      : null;
+  }
 
   protected _createMessage(message: Partial<IgcChatMessage>): IgcChatMessage {
     return {
@@ -296,18 +302,13 @@ export class ChatState {
     }
   }
 
-  public handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key.toLowerCase() === enterKey.toLowerCase() && !e.shiftKey) {
-      e.preventDefault();
-      this.sendMessage();
-    } else {
-      this._lastTyped = Date.now();
-      if (!this._isTyping) {
-        this.emitEvent('igcTypingChange', {
-          detail: { isTyping: true },
-        });
-        this._isTyping = true;
-      }
+  public handleKeyDown = (_: KeyboardEvent) => {
+    this._lastTyped = Date.now();
+    if (!this._isTyping) {
+      this.emitEvent('igcTypingChange', {
+        detail: { isTyping: true },
+      });
+      this._isTyping = true;
 
       const stopTypingDelay = this.stopTypingDelay;
       setTimeout(() => {
@@ -325,62 +326,25 @@ export class ChatState {
     }
   };
 
-  public sendMessage = () => {
-    if (!this.inputValue.trim() && this.inputAttachments.length === 0) return;
-
-    this.addMessageWithEvent({
-      text: this.inputValue,
-      attachments: this.inputAttachments,
-    });
-    this.inputValue = '';
-
-    if (this._textArea) {
-      this._textArea.style.height = 'auto';
-    }
-
-    this._host.updateComplete.then(() => {
-      this._textArea?.focus();
-    });
-  };
-
   /**
    * Removes an attachment by index.
    * Emits 'igcAttachmentChange' event which can be canceled to prevent removal.
    * @param index Index of the attachment to remove
    */
-  public removeAttachment = (index: number): void => {
-    const allowed = this.emitEvent('igcAttachmentChange', {
-      detail: this.inputAttachments.filter((_, i) => i !== index),
-      cancelable: true,
-    });
-    if (allowed) {
-      this.inputAttachments = this.inputAttachments.filter(
-        (_, i) => i !== index
-      );
+  public removeAttachment = (attachment: IgcChatMessageAttachment): void => {
+    const attachments = this.inputAttachments.filter(
+      (each) => each !== attachment
+    );
+
+    if (
+      this.emitEvent('igcAttachmentChange', {
+        detail: attachments,
+        cancelable: true,
+      })
+    ) {
+      this.inputAttachments = attachments;
     }
   };
-
-  /**
-   * Handles when a suggestion is clicked.
-   * Adds the suggestion as a new message and focuses the text area.
-   * @param suggestion The suggestion string clicked
-   */
-  public handleSuggestionClick = (suggestion: string): void => {
-    this.addMessageWithEvent({ text: suggestion });
-    if (this.textArea) {
-      this.textArea.focus();
-    }
-  };
-
-  /**
-   * Updates the internal cache for accepted file types.
-   * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
-   */
-  public updateAcceptedTypesCache(): void {
-    this._acceptedTypesCache = this.options?.acceptedFiles
-      ? parseAcceptedFileTypes(this.options.acceptedFiles)
-      : null;
-  }
 
   //#endregion
 }

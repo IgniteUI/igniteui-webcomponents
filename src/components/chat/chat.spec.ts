@@ -264,6 +264,7 @@ describe('Chat', () => {
                             ></igc-icon-button>
                           <input
                             type="file"
+                            tabindex="-1"
                             aria-label="Upload button"
                             id="input_attachments"
                             name="input_attachments"
@@ -609,6 +610,7 @@ describe('Chat', () => {
                 ></igc-icon-button>
                 <input
                   type="file"
+                  tabindex="-1"
                   aria-label="Upload button"
                   id="input_attachments"
                   name="input_attachments"
