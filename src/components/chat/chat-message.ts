@@ -19,7 +19,7 @@ import { styles as shared } from './themes/shared/chat-message/chat-message.comm
 import type {
   ChatMessageRenderContext,
   ChatTemplateRenderer,
-  IgcMessage,
+  IgcChatMessage,
 } from './types.js';
 import { chatMessageAdoptPageStyles } from './utils.js';
 
@@ -87,7 +87,7 @@ export default class IgcChatMessageComponent extends LitElement {
    * The chat message to render.
    */
   @property({ attribute: false })
-  public message?: IgcMessage;
+  public message?: IgcChatMessage;
 
   constructor() {
     super();

@@ -1,7 +1,7 @@
 import { adoptStyles, type LitElement } from 'lit';
 import { last } from '../common/util.js';
 import type IgcChatMessageComponent from './chat-message.js';
-import type { IgcMessageAttachment } from './types.js';
+import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
   extensions: Set<string>;
@@ -83,7 +83,9 @@ export function getIconName(fileType?: string) {
   return fileType?.startsWith('image') ? 'attach_image' : 'attach_document';
 }
 
-export function createAttachmentURL(attachment: IgcMessageAttachment): string {
+export function createAttachmentURL(
+  attachment: IgcChatMessageAttachment
+): string {
   if (attachment.file) {
     return URL.createObjectURL(attachment.file);
   }
@@ -97,7 +99,7 @@ export function getFileExtension(name: string): string {
 }
 
 export function isImageAttachment(
-  attachment: IgcMessageAttachment | File
+  attachment: IgcChatMessageAttachment | File
 ): boolean {
   if (attachment instanceof File) {
     return attachment.type.startsWith('image/');

@@ -17,8 +17,8 @@ import { styles as shared } from './themes/shared/message-attachments/message-at
 import type {
   ChatAttachmentRenderContext,
   ChatTemplateRenderer,
-  IgcMessage,
-  IgcMessageAttachment,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
 } from './types.js';
 import {
   ChatFileTypeIcons,
@@ -79,7 +79,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * The array of attachments to render.
    */
   @property({ attribute: false })
-  public message?: IgcMessage;
+  public message?: IgcChatMessage;
 
   constructor() {
     super();
@@ -92,7 +92,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       : this._defaults[name];
   }
 
-  private _handleHeaderClick = (attachment: IgcMessageAttachment) => {
+  private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {
     this._state.emitEvent('igcAttachmentClick', { detail: attachment });
   };
   /**
@@ -101,7 +101,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @param attachment The message attachment to render
    * @returns TemplateResult containing the rendered attachment header
    */
-  private renderHeader(attachment: IgcMessageAttachment) {
+  private renderHeader(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const iconName = isImageAttachment(attachment)
       ? 'attach_image'
@@ -121,7 +121,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
    * @param attachment The message attachment to render
    * @returns TemplateResult containing the rendered attachment content
    */
-  private _renderContent(attachment: IgcMessageAttachment) {
+  private _renderContent(attachment: IgcChatMessageAttachment) {
     const iconName =
       ChatFileTypeIcons.get(getFileExtension(attachment.name)) ??
       ChatFileTypeIcons.get('default')!;
@@ -137,7 +137,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       : html`<igc-icon part="file-attachment" name=${iconName}></igc-icon>`;
   }
 
-  private _renderAttachment(attachment: IgcMessageAttachment) {
+  private _renderAttachment(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const attachmentParts = {
       attachment: true,

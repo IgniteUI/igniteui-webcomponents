@@ -22,13 +22,15 @@ import type {
   ChatInputRenderContext,
   ChatRenderContext,
   ChatTemplateRenderer,
-  IgcMessageAttachment,
+  IgcChatMessageAttachment,
 } from './types.js';
 import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
   inputActions: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsEnd: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsStart: ChatTemplateRenderer<ChatRenderContext>;
   inputAttachments: ChatTemplateRenderer<ChatInputRenderContext>;
   fileUploadButton: ChatTemplateRenderer<ChatRenderContext>;
   sendButton: ChatTemplateRenderer<ChatRenderContext>;
@@ -81,6 +83,8 @@ export default class IgcChatInputComponent extends LitElement {
     fileUploadButton: () => this._renderFileUploadButton(),
     input: () => this._renderTextArea(),
     inputActions: () => this._renderActionsArea(),
+    inputActionsEnd: () => nothing,
+    inputActionsStart: () => nothing,
     inputAttachments: (ctx) => this._renderAttachmentsArea(ctx.attachments),
     sendButton: () => this._renderSendButton(),
   });
@@ -213,7 +217,7 @@ export default class IgcChatInputComponent extends LitElement {
    * Renders the list of input attachments as chips.
    * @returns TemplateResult containing the attachments area
    */
-  private _renderAttachmentsArea(attachments: IgcMessageAttachment[]) {
+  private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
     return html`${attachments?.map(
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
@@ -314,7 +318,9 @@ export default class IgcChatInputComponent extends LitElement {
 
     return html`
       ${this._getRenderer('fileUploadButton')(ctx)}
+      ${this._getRenderer('inputActionsStart')(ctx)}
       ${this._getRenderer('sendButton')(ctx)}
+      ${this._getRenderer('inputActionsEnd')(ctx)}
     `;
   }
 
