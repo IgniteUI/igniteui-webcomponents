@@ -193,7 +193,7 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     return html`
-      <div @click=${this._handleMessageActionClick}>
+      <div @click=${this._handleMessageActionClick} part="message-actions">
         ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
         ${this._renderActionButton(
           this.message?.reactions?.includes(LIKE_ACTIVE)
