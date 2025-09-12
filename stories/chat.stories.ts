@@ -467,9 +467,11 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const _actionsTemplate = (ctx: ChatRendererContext) => html`
+      const _actionsStartTemplate = () => html`
         <igc-icon-button variant="flat">🎤</igc-icon-button>
-        <div style="margin-inline-start: auto;">
+      `;
+      const _actionsEndTemplate = (ctx: ChatRendererContext) => html`
+        <div>
           <igc-button @click=${() => handleCustomSendClick(ctx.instance)}
             >Ask</igc-button
           >
@@ -486,7 +488,9 @@ export const Chat_Templates: Story = {
           messageContent: ({ message }) => _markdownRenderer(message),
           messageActions: _messageActionsTemplate,
           attachmentHeader: () => nothing,
-          inputActions: _actionsTemplate,
+          inputActionsStart: _actionsStartTemplate,
+          inputActionsEnd: _actionsEndTemplate,
+          sendButton: () => nothing,
           typingIndicator: () => html`<span>Generating response</span>`,
           suggestionPrefix: () => '✨',
         },

@@ -29,6 +29,8 @@ import { getChatAcceptedFiles, getIconName } from './utils.js';
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<InputRendererContext>;
   inputActions: ChatTemplateRenderer<ChatRendererContext>;
+  inputActionsEnd: ChatTemplateRenderer<ChatRendererContext>;
+  inputActionsStart: ChatTemplateRenderer<ChatRendererContext>;
   inputAttachments: ChatTemplateRenderer<InputRendererContext>;
   fileUploadButton: ChatTemplateRenderer<ChatRendererContext>;
   sendButton: ChatTemplateRenderer<ChatRendererContext>;
@@ -81,6 +83,8 @@ export default class IgcChatInputComponent extends LitElement {
     fileUploadButton: () => this._renderFileUploadButton(),
     input: () => this._renderTextArea(),
     inputActions: () => this._renderActionsArea(),
+    inputActionsEnd: () => nothing,
+    inputActionsStart: () => nothing,
     inputAttachments: (ctx) => this._renderAttachmentsArea(ctx.attachments),
     sendButton: () => this._renderSendButton(),
   });
@@ -314,7 +318,9 @@ export default class IgcChatInputComponent extends LitElement {
 
     return html`
       ${this._getRenderer('fileUploadButton')(ctx)}
+      ${this._getRenderer('inputActionsStart')(ctx)}
       ${this._getRenderer('sendButton')(ctx)}
+      ${this._getRenderer('inputActionsEnd')(ctx)}
     `;
   }
 

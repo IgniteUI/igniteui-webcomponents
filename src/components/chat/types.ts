@@ -136,6 +136,8 @@ export type ChatRenderers = {
   fileUploadButton?: ChatTemplateRenderer<ChatRendererContext>;
   input?: ChatTemplateRenderer<InputRendererContext>;
   inputActions?: ChatTemplateRenderer<ChatRendererContext>;
+  inputActionsEnd?: ChatTemplateRenderer<ChatRendererContext>;
+  inputActionsStart?: ChatTemplateRenderer<ChatRendererContext>;
   inputAttachments?: ChatTemplateRenderer<InputRendererContext>;
   message?: ChatTemplateRenderer<MessageRendererContext>;
   messageActions?: ChatTemplateRenderer<MessageRendererContext>;
