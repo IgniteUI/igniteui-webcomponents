@@ -5,7 +5,7 @@ import {
   fixture,
   nextFrame,
 } from '@open-wc/testing';
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
@@ -26,6 +26,7 @@ import {
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcChatComponent from './chat.js';
+import type { IgcMessage, IgcMessageAttachment } from './types.js';
 
 describe('Chat', () => {
   before(() => {
@@ -43,18 +44,22 @@ describe('Chat', () => {
   };
 
   const messageTemplate = (msg: any) => {
-    return html`<div>
-      <h5>${msg.sender === 'user' ? 'You' : 'Bot'}:</h5>
-      <p>${msg.text}</p>
-    </div> `;
+    return html`
+      <div>
+        <h5>${msg.sender === 'user' ? 'You' : 'Bot'}:</h5>
+        <p>${msg.text}</p>
+      </div>
+    `;
   };
 
-  const messageActionsTemplate = (msg: any) => {
+  const messageActionsTemplate = (msg: IgcMessage) => {
     return msg.sender !== 'user' && msg.text.trim()
-      ? html`<div style="float: right">
-          <igc-button name="regenerate" variant="flat">...</igc-button>
-        </div> `
-      : html``;
+      ? html`
+          <div style="float: right">
+            <igc-button name="regenerate" variant="flat">...</igc-button>
+          </div>
+        `
+      : nothing;
   };
 
   const typingIndicatorTemplate = html`<span>loading...</span>`;
@@ -68,51 +73,51 @@ describe('Chat', () => {
   };
 
   const attachmentContentTemplate = (attachment: any) => {
-    return html`<p>
-      This is a template rendered as content of ${attachment.name}
-    </p>`;
+    return html`
+      <p>This is a template rendered as content of ${attachment.name}</p>
+    `;
   };
 
-  const textInputTemplate = (text: string) =>
-    html`<igc-input
-      placeholder="Type text here..."
-      .value=${text}
-    ></igc-input>`;
+  const textInputTemplate = (text: string) => html`
+    <igc-input placeholder="Type text here..." .value=${text}></igc-input>
+  `;
 
-  const textAreaActionsTemplate = (ctx: any) =>
-    html`<div>
-      ${ctx.defaults.fileUploadButton(ctx)}
+  const textAreaActionsTemplate = () => html`
+    <div>
       <igc-button>Upload</igc-button>
       <igc-button>Send</igc-button>
-    </div>`;
+    </div>
+  `;
 
-  const textAreaAttachmentsTemplate = (attachments: any[]) => {
-    return html`<div>
-      ${attachments.map(
-        (attachment) =>
-          html`<a
-            href=${attachment.file
-              ? URL.createObjectURL(attachment.file)
-              : attachment.url}
-            target="_blank"
-            >${attachment.name}</a
-          >`
-      )}
-    </div>`;
+  const textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
+    return html`
+      <div>
+        ${attachments.map(
+          (attachment) => html`
+            <a
+              href=${attachment.file
+                ? URL.createObjectURL(attachment.file)
+                : (attachment.url ?? '')}
+              target="_blank"
+            >
+              ${attachment.name}
+            </a>
+          `
+        )}
+      </div>
+    `;
   };
 
-  const messages: any[] = [
+  const messages: IgcMessage[] = [
     {
       id: '1',
       text: 'Hello! How can I help you today?',
       sender: 'bot',
-      timestamp: new Date(Date.now() - 3600000),
     },
     {
       id: '2',
       text: 'Hello!',
       sender: 'user',
-      timestamp: new Date(Date.now() - 3500000),
       attachments: [
         {
           id: 'img1',
@@ -126,7 +131,6 @@ describe('Chat', () => {
       id: '3',
       text: 'Thank you!',
       sender: 'bot',
-      timestamp: new Date(Date.now() - 3400000),
       attachments: [
         {
           id: 'file1',
@@ -140,7 +144,6 @@ describe('Chat', () => {
       id: '4',
       text: 'Thank you too!',
       sender: 'user',
-      timestamp: new Date(Date.now() - 3300000),
     },
   ];
 
@@ -333,7 +336,6 @@ describe('Chat', () => {
           id: '1',
           text: '<script>alert("XSS")</script> Hello!',
           sender: 'bot',
-          timestamp: new Date(Date.now() - 3600000),
         },
       ];
       chat = await fixture<IgcChatComponent>(
@@ -1176,7 +1178,7 @@ describe('Chat', () => {
       chat.options = {
         renderers: {
           input: (ctx) => textInputTemplate(ctx.value),
-          inputActions: (ctx) => textAreaActionsTemplate(ctx),
+          inputActions: () => textAreaActionsTemplate(),
           inputAttachments: (ctx) =>
             textAreaAttachmentsTemplate(ctx.attachments),
         },
@@ -1198,25 +1200,6 @@ describe('Chat', () => {
             </div>
             <div part="buttons-container">
               <div>
-                <label
-                  for="input_attachments"
-                  part="upload-button"
-                >
-                  <igc-icon-button
-                    aria-label="Attach files"
-                    name="attach_file"
-                    type="button"
-                    variant="flat"
-                  >
-                  </igc-icon-button>
-                  <input
-                    id="input_attachments"
-                    aria-label="Upload button"
-                    multiple=""
-                    name="input_attachments"
-                    type="file"
-                  >
-                </label>
                 <igc-button type="button" variant="contained">Upload</igc-button>
                 <igc-button type="button" variant="contained">Send</igc-button>
               </div>
@@ -1631,7 +1614,7 @@ describe('Chat', () => {
 
       simulateClick(attachmentHeader);
       expect(eventSpy).calledWith('igcAttachmentClick', {
-        detail: { ...messages[1].attachments[0] },
+        detail: { ...messages[1].attachments?.at(0) },
       });
     });
 

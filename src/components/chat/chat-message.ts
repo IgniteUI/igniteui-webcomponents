@@ -208,7 +208,6 @@ export default class IgcChatMessageComponent extends LitElement {
   protected override render() {
     const ctx: MessageRendererContext = {
       message: this.message!,
-      defaults: this._defaults,
       instance: this._state.host,
     };
 

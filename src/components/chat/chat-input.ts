@@ -310,10 +310,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _renderActionsArea() {
-    const ctx: ChatRendererContext = {
-      defaults: this._defaults,
-      instance: this._state.host,
-    };
+    const ctx: ChatRendererContext = { instance: this._state.host };
 
     return html`
       ${this._getRenderer('fileUploadButton')(ctx)}
@@ -322,10 +319,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override render() {
-    const ctx: ChatRendererContext = {
-      defaults: this._defaults,
-      instance: this._state.host,
-    };
+    const ctx: ChatRendererContext = { instance: this._state.host };
 
     const inputCtx: InputRendererContext = {
       ...ctx,
