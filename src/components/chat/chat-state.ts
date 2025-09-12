@@ -2,6 +2,8 @@ import { enterKey } from '../common/controllers/key-bindings.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import { isEmpty, nanoid } from '../common/util.js';
 import type IgcTextareaComponent from '../textarea/textarea.js';
+import IgcToastComponent from '../toast/toast.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import type {
@@ -29,6 +31,9 @@ export class ChatState {
 
   /** Reference to the text area input component */
   private _textArea: IgcTextareaComponent | null = null;
+
+  private _actionsTooltip?: IgcTooltipComponent;
+  private _actionToast?: IgcToastComponent;
   /** The current list of messages */
   private _messages: IgcMessage[] = [];
   /** Chat options/configuration */
@@ -191,6 +196,28 @@ export class ChatState {
 
   public emitEvent(name: keyof IgcChatComponentEventMap, args?: any): boolean {
     return this._host.emitEvent(name, args);
+  }
+
+  public showChatActionsTooltip(target: Element, message: string): void {
+    if (!this._actionsTooltip) {
+      this._actionsTooltip = document.createElement(
+        IgcTooltipComponent.tagName
+      );
+      this._actionsTooltip.hideTriggers = 'pointerleave,click,blur';
+      this._actionsTooltip.hideDelay = 100;
+      this._host.renderRoot.appendChild(this._actionsTooltip);
+    }
+    this._actionsTooltip.message = message;
+    this._actionsTooltip.show(target);
+  }
+
+  public showChatActionToast(content: string): void {
+    if (!this._actionToast) {
+      this._actionToast = document.createElement(IgcToastComponent.tagName);
+      this._host.renderRoot.appendChild(this._actionToast);
+    }
+    this._actionToast.textContent = content;
+    this._actionToast.show();
   }
 
   //#endregion

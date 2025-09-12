@@ -21,11 +21,7 @@ import type {
   ChatTemplateRenderer,
   IgcMessage,
 } from './types.js';
-import {
-  chatMessageAdoptPageStyles,
-  showChatActionsTooltip,
-  showChatActionToast,
-} from './utils.js';
+import { chatMessageAdoptPageStyles } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -127,7 +123,7 @@ export default class IgcChatMessageComponent extends LitElement {
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(clipboardText);
-        showChatActionToast(resourceStrings.messageCopied);
+        this._state.showChatActionToast(resourceStrings.messageCopied);
       } catch (err) {
         throw new Error(`Failed to copy message via Clipboard API: ${err}`);
       }
@@ -138,9 +134,8 @@ export default class IgcChatMessageComponent extends LitElement {
     const targetButton = event.target as HTMLElement;
     const button = targetButton.closest(IgcIconButtonComponent.tagName);
     if (!button || !this.message) return;
-    if (!button) return;
 
-    let reaction = button.getAttribute('name');
+    let reaction = button.name;
 
     switch (reaction) {
       case LIKE_INACTIVE:
@@ -163,7 +158,7 @@ export default class IgcChatMessageComponent extends LitElement {
         reaction = REGENERATE;
         break;
       default:
-        reaction = null;
+        reaction = undefined;
     }
 
     this.message.reactions = reaction ? [reaction] : [];
@@ -227,9 +222,9 @@ export default class IgcChatMessageComponent extends LitElement {
         name=${name}
         variant="flat"
         @pointerenter=${({ target }: PointerEvent) =>
-          showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
         @focus=${({ target }: FocusEvent) =>
-          showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
       ></igc-icon-button>
     `;
   }
