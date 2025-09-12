@@ -130,38 +130,38 @@ export type IgcChatOptions = {
 };
 
 export type ChatRenderers = {
-  attachment?: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentContent?: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentHeader?: ChatTemplateRenderer<AttachmentRendererContext>;
-  fileUploadButton?: ChatTemplateRenderer<ChatRendererContext>;
-  input?: ChatTemplateRenderer<InputRendererContext>;
-  inputActions?: ChatTemplateRenderer<ChatRendererContext>;
-  inputAttachments?: ChatTemplateRenderer<InputRendererContext>;
-  message?: ChatTemplateRenderer<MessageRendererContext>;
-  messageActions?: ChatTemplateRenderer<MessageRendererContext>;
-  messageAttachments?: ChatTemplateRenderer<MessageRendererContext>;
-  messageContent?: ChatTemplateRenderer<MessageRendererContext>;
-  messageHeader?: ChatTemplateRenderer<MessageRendererContext>;
-  typingIndicator?: ChatTemplateRenderer<ChatRendererContext>;
-  sendButton?: ChatTemplateRenderer<ChatRendererContext>;
-  suggestionPrefix?: ChatTemplateRenderer<ChatRendererContext>;
+  attachment?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentContent?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentHeader?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  fileUploadButton?: ChatTemplateRenderer<ChatRenderContext>;
+  input?: ChatTemplateRenderer<ChatInputRenderContext>;
+  inputActions?: ChatTemplateRenderer<ChatRenderContext>;
+  inputAttachments?: ChatTemplateRenderer<ChatInputRenderContext>;
+  message?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageActions?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageAttachments?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageContent?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageHeader?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
+  sendButton?: ChatTemplateRenderer<ChatRenderContext>;
+  suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 };
 
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
 
-export interface ChatRendererContext {
+export interface ChatRenderContext {
   instance: IgcChatComponent;
 }
 
-export interface InputRendererContext extends ChatRendererContext {
+export interface ChatInputRenderContext extends ChatRenderContext {
   attachments: IgcMessageAttachment[];
   value: string;
 }
 
-export interface MessageRendererContext extends ChatRendererContext {
+export interface ChatMessageRenderContext extends ChatRenderContext {
   message: IgcMessage;
 }
 
-export interface AttachmentRendererContext extends MessageRendererContext {
+export interface ChatAttachmentRenderContext extends ChatMessageRenderContext {
   attachment: IgcMessageAttachment;
 }

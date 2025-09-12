@@ -15,7 +15,7 @@ import { all } from './themes/attachments.js';
 import { styles } from './themes/message-attachments.base.css.js';
 import { styles as shared } from './themes/shared/message-attachments/message-attachments.common.css.js';
 import type {
-  AttachmentRendererContext,
+  ChatAttachmentRenderContext,
   ChatTemplateRenderer,
   IgcMessage,
   IgcMessageAttachment,
@@ -28,9 +28,9 @@ import {
 } from './utils.js';
 
 type DefaultAttachmentRenderers = {
-  attachment: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentHeader: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentContent: ChatTemplateRenderer<AttachmentRendererContext>;
+  attachment: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentHeader: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentContent: ChatTemplateRenderer<ChatAttachmentRenderContext>;
 };
 
 /**
@@ -152,7 +152,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       sent: isCurrentUser,
     };
 
-    const ctx: AttachmentRendererContext = {
+    const ctx: ChatAttachmentRenderContext = {
       attachment,
       message: this.message!,
       instance: this._state.host,

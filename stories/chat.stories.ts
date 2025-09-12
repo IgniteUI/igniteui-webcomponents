@@ -9,11 +9,11 @@ import {
 } from 'igniteui-webcomponents';
 import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
 import type {
-  ChatRendererContext,
+  ChatRenderContext,
   IgcChatOptions,
   IgcMessage,
   IgcMessageAttachment,
-  MessageRendererContext,
+  ChatMessageRenderContext,
 } from '../src/components/chat/types.js';
 
 const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
@@ -117,7 +117,7 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = ({ message }: MessageRendererContext) => {
+const _messageAuthorTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user'
     ? html`
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -132,7 +132,7 @@ const _messageAuthorTemplate = ({ message }: MessageRendererContext) => {
       `
     : nothing;
 };
-const _messageActionsTemplate = ({ message }: MessageRendererContext) => {
+const _messageActionsTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user' && message.text.trim() && isResponseSent
     ? html`
         <div>
@@ -467,7 +467,7 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const _actionsTemplate = (ctx: ChatRendererContext) => html`
+      const _actionsTemplate = (ctx: ChatRenderContext) => html`
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${() => handleCustomSendClick(ctx.instance)}
