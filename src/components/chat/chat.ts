@@ -190,6 +190,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._userInputContext.setValue(this._state, true);
   }
 
+  @query('[part="typing-indicator"]')
+  private typingIndicator?: HTMLElement;
+
+  @query('[part="suggestions-container"]')
+  private suggestionsContainer?: HTMLElement;
+
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
@@ -309,21 +315,33 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('messages') && !this._state.disableAutoScroll) {
+    if (
+      (properties.has('messages') ||
+        this.typingIndicator ||
+        this.suggestionsContainer) &&
+      !this._state.disableAutoScroll
+    ) {
       this._scrollToBottom();
     }
   }
 
-  private _scrollToBottom(): void {
-    if (!isEmpty(this.messages)) {
-      const lastMessage = this.renderRoot
-        .querySelectorAll(IgcChatMessageComponent.tagName)
-        .item(this.messages.length - 1);
+  private _scrollToBottom() {
+    if (isEmpty(this.messages)) return;
 
-      requestAnimationFrame(() =>
-        lastMessage.scrollIntoView({ block: 'end', inline: 'end' })
-      );
-    }
+    const lastMessage = this.renderRoot
+      .querySelectorAll(IgcChatMessageComponent.tagName)
+      .item(this.messages.length - 1);
+
+    requestAnimationFrame(() => {
+      if (this.typingIndicator || this.suggestionsContainer) {
+        (this.typingIndicator
+          ? this.typingIndicator
+          : this.suggestionsContainer
+        )?.scrollIntoView({ block: 'end', inline: 'end' });
+      } else {
+        lastMessage.scrollIntoView({ block: 'end', inline: 'end' });
+      }
+    });
   }
 
   private _renderHeader() {
@@ -370,7 +388,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
           }
         )}
         ${this._state.options?.isTyping
-          ? this._getRenderer('typingIndicator')(ctx)
+          ? html`<div part="typing-indicator">
+              ${this._getRenderer('typingIndicator')(ctx)}
+            </div>`
           : nothing}
       </div>
     `;
@@ -378,12 +398,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private _renderLoadingTemplate() {
     return html`
-      <div part="typing-indicator">
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-      </div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
     `;
   }
 
