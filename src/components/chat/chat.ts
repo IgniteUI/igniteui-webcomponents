@@ -382,10 +382,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _renderSuggestions() {
     const hasContent = this._slots.hasAssignedElements('suggestions-header');
     const suggestions = this._state.options?.suggestions ?? [];
-    const ctx = {
-      defaults: this._defaults,
-      instance: this,
-    };
+    const ctx = { instance: this };
 
     return html`
       <div part="suggestions-container">

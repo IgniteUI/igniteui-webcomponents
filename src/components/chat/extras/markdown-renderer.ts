@@ -69,7 +69,11 @@ export async function createMarkdownRenderer(
     markdown.use(
       markedShiki({
         highlight(code, lang, _) {
-          return highlighter.codeToHtml(code, { lang, themes });
+          try {
+            return highlighter.codeToHtml(code, { lang, themes });
+          } catch {
+            return `<pre><code>${sanitizer(code)}</code></pre>`;
+          }
         },
       })
     );

@@ -150,7 +150,6 @@ export type ChatRenderers = {
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
 
 export interface ChatRendererContext {
-  defaults: ChatRenderers;
   instance: IgcChatComponent;
 }
 
