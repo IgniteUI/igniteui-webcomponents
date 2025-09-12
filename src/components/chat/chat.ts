@@ -21,16 +21,16 @@ import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import { all } from './themes/themes.js';
 import type {
-  ChatRendererContext,
+  ChatRenderContext,
   ChatTemplateRenderer,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
   IgcChatOptions,
-  IgcMessage,
-  IgcMessageAttachment,
 } from './types.js';
 
 type DefaultChatRenderers = {
-  typingIndicator: ChatTemplateRenderer<ChatRendererContext>;
-  suggestionPrefix: ChatTemplateRenderer<ChatRendererContext>;
+  typingIndicator: ChatTemplateRenderer<ChatRenderContext>;
+  suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
 };
 
 /**
@@ -40,22 +40,22 @@ export interface IgcChatComponentEventMap {
   /**
    * Dispatched when a new chat message is created (sent).
    */
-  igcMessageCreated: CustomEvent<IgcMessage>;
+  igcMessageCreated: CustomEvent<IgcChatMessage>;
 
   /**
    * Dispatched when a message is reacted to.
    */
-  igcMessageReact: CustomEvent<{ message: IgcMessage; reaction: string }>;
+  igcMessageReact: CustomEvent<{ message: IgcChatMessage; reaction: string }>;
 
   /**
    * Dispatched when a chat message attachment is clicked.
    */
-  igcAttachmentClick: CustomEvent<IgcMessageAttachment>;
+  igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
   /**
    * Dispatched when an attachment is changed (e.g., updated or removed).
    */
-  igcAttachmentChange: CustomEvent<IgcMessageAttachment>;
+  igcAttachmentChange: CustomEvent<IgcChatMessageAttachment>;
 
   /**
    * Dispatched during an attachment drag operation.
@@ -194,11 +194,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * Use this property to set or update the message history.
    */
   @property({ attribute: false })
-  public set messages(value: IgcMessage[]) {
+  public set messages(value: IgcChatMessage[]) {
     this._state.messages = value;
   }
 
-  public get messages(): IgcMessage[] {
+  public get messages(): IgcChatMessage[] {
     return this._state.messages;
   }
 
@@ -209,7 +209,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public set draftMessage(value: {
     text: string;
-    attachments?: IgcMessageAttachment[];
+    attachments?: IgcChatMessageAttachment[];
   }) {
     if (this._state && value) {
       this._state.inputValue = value.text;
@@ -220,7 +220,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   public get draftMessage(): {
     text: string;
-    attachments?: IgcMessageAttachment[];
+    attachments?: IgcChatMessageAttachment[];
   } {
     return {
       text: this._state.inputValue,
@@ -273,15 +273,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   // REVIEW
-  public addMessage(message: Partial<IgcMessage>): IgcMessage {
+  public addMessage(message: Partial<IgcChatMessage>): IgcChatMessage {
     this._state.addMessage(message);
     return last(this.messages);
   }
 
   // REVIEW
   public updateMessage(
-    message: IgcMessage,
-    data: Partial<IgcMessage>,
+    message: IgcChatMessage,
+    data: Partial<IgcChatMessage>,
     scrollIntoView = false
   ) {
     Object.assign(message, data);
@@ -368,7 +368,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 id=${`message-${message.id}`}
                 part="message-item"
                 .message=${message}
-                exportparts="message-container, message-text, message-attachments, message-actions,
+                exportparts="message-container, message-text, message-attachments, message-actions, sent,
                     attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
               >
               </igc-chat-message>
@@ -479,7 +479,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
           attachment-content,
           attachment-icon,
           file-name,
-          attachment-actions
+          attachment-actions,
+          sent
         "
       >
         ${this._renderHeader()}

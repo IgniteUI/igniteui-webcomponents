@@ -3,7 +3,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { Marked } from 'marked';
 import markedShiki from 'marked-shiki';
 import { bundledThemes, createHighlighter } from 'shiki/bundle/web';
-import type { IgcMessage } from '../types.js';
+import type { IgcChatMessage } from '../types.js';
 
 const DEFAULT_LANGUAGES = ['javascript', 'typescript', 'html', 'css'];
 const DEFAULT_THEME = {
@@ -79,7 +79,7 @@ export async function createMarkdownRenderer(
     );
   }
 
-  return async (message: IgcMessage): Promise<unknown> => {
+  return async (message: IgcChatMessage): Promise<unknown> => {
     return message.text
       ? unsafeHTML(sanitizer(await markdown.parse(message.text)))
       : '';

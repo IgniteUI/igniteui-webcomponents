@@ -9,11 +9,11 @@ import {
 } from 'igniteui-webcomponents';
 import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
 import type {
-  ChatRendererContext,
+  ChatRenderContext,
   IgcChatOptions,
-  IgcMessage,
-  IgcMessageAttachment,
-  MessageRendererContext,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
+  ChatMessageRenderContext,
 } from '../src/components/chat/types.js';
 
 const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
@@ -71,7 +71,7 @@ registerIcon(
   'alarm',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_alarm_24px.svg'
 );
-let messages: IgcMessage[] = [];
+let messages: IgcChatMessage[] = [];
 const initialMessages: any[] = [
   {
     id: '1',
@@ -117,7 +117,7 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = ({ message }: MessageRendererContext) => {
+const _messageAuthorTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user'
     ? html`
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -132,7 +132,7 @@ const _messageAuthorTemplate = ({ message }: MessageRendererContext) => {
       `
     : nothing;
 };
-const _messageActionsTemplate = ({ message }: MessageRendererContext) => {
+const _messageActionsTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user' && message.text.trim() && isResponseSent
     ? html`
         <div>
@@ -173,7 +173,7 @@ const chat_options: IgcChatOptions = {
 
 function handleCustomSendClick(chat: IgcChatComponent) {
   const now = Date.now.toString();
-  const newMessage: IgcMessage = {
+  const newMessage: IgcChatMessage = {
     id: now,
     text: chat.draftMessage.text,
     sender: 'user',
@@ -184,13 +184,13 @@ function handleCustomSendClick(chat: IgcChatComponent) {
   chat.draftMessage = { text: '', attachments: [] };
 }
 
-function handleMessageSend(event: CustomEvent<IgcMessage>): void {
+function handleMessageSend(event: CustomEvent<IgcChatMessage>): void {
   const chat = event.target as IgcChatComponent;
   const message = event.detail;
 
   chat.options = { ...chat.options, suggestions: [], isTyping: true };
 
-  const attachments: IgcMessageAttachment[] =
+  const attachments: IgcChatMessageAttachment[] =
     message.text.includes('picture') ||
     message.text.includes('image') ||
     message.text.includes('file')
@@ -309,17 +309,17 @@ function fileToGenerativePart(buffer: ArrayBuffer, mimeType: string) {
   };
 }
 
-async function handleAIMessageSend(event: CustomEvent<IgcMessage>) {
+async function handleAIMessageSend(event: CustomEvent<IgcChatMessage>) {
   const chat = event.target as IgcChatComponent;
-  const newMessage: IgcMessage = event.detail;
+  const newMessage: IgcChatMessage = event.detail;
 
   chat.options = { ...ai_chat_options, suggestions: [], isTyping: true };
   setTimeout(async () => {
     const now = Date.now().toString();
     let response: any;
     let responseText = '';
-    const attachments: IgcMessageAttachment[] = [];
-    const botResponse: IgcMessage = {
+    const attachments: IgcChatMessageAttachment[] = [];
+    const botResponse: IgcChatMessage = {
       id: now,
       text: responseText,
       sender: 'bot',
@@ -369,7 +369,7 @@ async function handleAIMessageSend(event: CustomEvent<IgcMessage>) {
           const file = new File([blob], 'generated_image.png', {
             type: type,
           });
-          const attachment: IgcMessageAttachment = {
+          const attachment: IgcChatMessageAttachment = {
             id: Date.now().toString(),
             name: 'generated_image.png',
             type: 'image',
@@ -467,9 +467,11 @@ export const Chat_Templates: Story = {
   play: async () => {
     const chat = document.querySelector('igc-chat');
     if (chat) {
-      const _actionsTemplate = (ctx: ChatRendererContext) => html`
+      const _actionsStartTemplate = () => html`
         <igc-icon-button variant="flat">🎤</igc-icon-button>
-        <div style="margin-inline-start: auto;">
+      `;
+      const _actionsEndTemplate = (ctx: ChatRenderContext) => html`
+        <div>
           <igc-button @click=${() => handleCustomSendClick(ctx.instance)}
             >Ask</igc-button
           >
@@ -486,7 +488,9 @@ export const Chat_Templates: Story = {
           messageContent: ({ message }) => _markdownRenderer(message),
           messageActions: _messageActionsTemplate,
           attachmentHeader: () => nothing,
-          inputActions: _actionsTemplate,
+          inputActionsStart: _actionsStartTemplate,
+          inputActionsEnd: _actionsEndTemplate,
+          sendButton: () => nothing,
           typingIndicator: () => html`<span>Generating response</span>`,
           suggestionPrefix: () => '✨',
         },

@@ -3,7 +3,7 @@ import type IgcChatComponent from './chat.js';
 /**
  * Represents a single chat message in the conversation.
  */
-export interface IgcMessage {
+export interface IgcChatMessage {
   /**
    * A unique identifier for the message.
    */
@@ -28,7 +28,7 @@ export interface IgcMessage {
    * Optional list of attachments associated with the message,
    * such as images, files, or links.
    */
-  attachments?: IgcMessageAttachment[];
+  attachments?: IgcChatMessageAttachment[];
 
   /**
    * Optional list of reactions associated with the message.
@@ -39,7 +39,7 @@ export interface IgcMessage {
 /**
  * Represents an attachment associated with a chat message.
  */
-export interface IgcMessageAttachment {
+export interface IgcChatMessageAttachment {
   /**
    * A unique identifier for the attachment.
    */
@@ -130,38 +130,40 @@ export type IgcChatOptions = {
 };
 
 export type ChatRenderers = {
-  attachment?: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentContent?: ChatTemplateRenderer<AttachmentRendererContext>;
-  attachmentHeader?: ChatTemplateRenderer<AttachmentRendererContext>;
-  fileUploadButton?: ChatTemplateRenderer<ChatRendererContext>;
-  input?: ChatTemplateRenderer<InputRendererContext>;
-  inputActions?: ChatTemplateRenderer<ChatRendererContext>;
-  inputAttachments?: ChatTemplateRenderer<InputRendererContext>;
-  message?: ChatTemplateRenderer<MessageRendererContext>;
-  messageActions?: ChatTemplateRenderer<MessageRendererContext>;
-  messageAttachments?: ChatTemplateRenderer<MessageRendererContext>;
-  messageContent?: ChatTemplateRenderer<MessageRendererContext>;
-  messageHeader?: ChatTemplateRenderer<MessageRendererContext>;
-  typingIndicator?: ChatTemplateRenderer<ChatRendererContext>;
-  sendButton?: ChatTemplateRenderer<ChatRendererContext>;
-  suggestionPrefix?: ChatTemplateRenderer<ChatRendererContext>;
+  attachment?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentContent?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  attachmentHeader?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  fileUploadButton?: ChatTemplateRenderer<ChatRenderContext>;
+  input?: ChatTemplateRenderer<ChatInputRenderContext>;
+  inputActions?: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsEnd?: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsStart?: ChatTemplateRenderer<ChatRenderContext>;
+  inputAttachments?: ChatTemplateRenderer<ChatInputRenderContext>;
+  message?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageActions?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageAttachments?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageContent?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageHeader?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
+  sendButton?: ChatTemplateRenderer<ChatRenderContext>;
+  suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 };
 
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
 
-export interface ChatRendererContext {
+export interface ChatRenderContext {
   instance: IgcChatComponent;
 }
 
-export interface InputRendererContext extends ChatRendererContext {
-  attachments: IgcMessageAttachment[];
+export interface ChatInputRenderContext extends ChatRenderContext {
+  attachments: IgcChatMessageAttachment[];
   value: string;
 }
 
-export interface MessageRendererContext extends ChatRendererContext {
-  message: IgcMessage;
+export interface ChatMessageRenderContext extends ChatRenderContext {
+  message: IgcChatMessage;
 }
 
-export interface AttachmentRendererContext extends MessageRendererContext {
-  attachment: IgcMessageAttachment;
+export interface ChatAttachmentRenderContext extends ChatMessageRenderContext {
+  attachment: IgcChatMessageAttachment;
 }

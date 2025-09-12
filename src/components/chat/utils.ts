@@ -1,12 +1,7 @@
 import { adoptStyles, type LitElement } from 'lit';
 import { last } from '../common/util.js';
-import IgcToastComponent from '../toast/toast.js';
-import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatMessageComponent from './chat-message.js';
-import type { IgcMessageAttachment } from './types.js';
-
-let actionsTooltip: IgcTooltipComponent;
-let actionToast: IgcToastComponent;
+import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
   extensions: Set<string>;
@@ -88,7 +83,9 @@ export function getIconName(fileType?: string) {
   return fileType?.startsWith('image') ? 'attach_image' : 'attach_document';
 }
 
-export function createAttachmentURL(attachment: IgcMessageAttachment): string {
+export function createAttachmentURL(
+  attachment: IgcChatMessageAttachment
+): string {
   if (attachment.file) {
     return URL.createObjectURL(attachment.file);
   }
@@ -102,7 +99,7 @@ export function getFileExtension(name: string): string {
 }
 
 export function isImageAttachment(
-  attachment: IgcMessageAttachment | File
+  attachment: IgcChatMessageAttachment | File
 ): boolean {
   if (attachment instanceof File) {
     return attachment.type.startsWith('image/');
@@ -111,26 +108,6 @@ export function isImageAttachment(
   return Boolean(
     attachment.type === 'image' || attachment.file?.type.startsWith('image/')
   );
-}
-
-export function showChatActionsTooltip(target: Element, message: string): void {
-  if (!actionsTooltip) {
-    actionsTooltip = document.createElement(IgcTooltipComponent.tagName);
-    actionsTooltip.hideTriggers = 'pointerleave,click,blur';
-    actionsTooltip.hideDelay = 100;
-    document.body.appendChild(actionsTooltip);
-  }
-  actionsTooltip.message = message;
-  actionsTooltip.show(target);
-}
-
-export function showChatActionToast(content: string): void {
-  if (!actionToast) {
-    actionToast = document.createElement(IgcToastComponent.tagName);
-    document.body.appendChild(actionToast);
-  }
-  actionToast.textContent = content;
-  actionToast.show();
 }
 
 // REVIEW: Maybe put that behind a configuration flag as this is nasty.

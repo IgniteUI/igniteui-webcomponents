@@ -17,15 +17,11 @@ import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type {
+  ChatMessageRenderContext,
   ChatTemplateRenderer,
-  IgcMessage,
-  MessageRendererContext,
+  IgcChatMessage,
 } from './types.js';
-import {
-  chatMessageAdoptPageStyles,
-  showChatActionsTooltip,
-  showChatActionToast,
-} from './utils.js';
+import { chatMessageAdoptPageStyles } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -35,11 +31,11 @@ const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
 
 type DefaultMessageRenderers = {
-  message: ChatTemplateRenderer<MessageRendererContext>;
-  messageHeader: ChatTemplateRenderer<MessageRendererContext>;
-  messageContent: ChatTemplateRenderer<MessageRendererContext>;
-  messageAttachments: ChatTemplateRenderer<MessageRendererContext>;
-  messageActions: ChatTemplateRenderer<MessageRendererContext>;
+  message: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageContent: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageAttachments: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageActions: ChatTemplateRenderer<ChatMessageRenderContext>;
 };
 
 /**
@@ -91,7 +87,7 @@ export default class IgcChatMessageComponent extends LitElement {
    * The chat message to render.
    */
   @property({ attribute: false })
-  public message?: IgcMessage;
+  public message?: IgcChatMessage;
 
   constructor() {
     super();
@@ -127,7 +123,7 @@ export default class IgcChatMessageComponent extends LitElement {
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(clipboardText);
-        showChatActionToast(resourceStrings.messageCopied);
+        this._state.showChatActionToast(resourceStrings.messageCopied);
       } catch (err) {
         throw new Error(`Failed to copy message via Clipboard API: ${err}`);
       }
@@ -138,9 +134,8 @@ export default class IgcChatMessageComponent extends LitElement {
     const targetButton = event.target as HTMLElement;
     const button = targetButton.closest(IgcIconButtonComponent.tagName);
     if (!button || !this.message) return;
-    if (!button) return;
 
-    let reaction = button.getAttribute('name');
+    let reaction = button.name;
 
     switch (reaction) {
       case LIKE_INACTIVE:
@@ -163,7 +158,7 @@ export default class IgcChatMessageComponent extends LitElement {
         reaction = REGENERATE;
         break;
       default:
-        reaction = null;
+        reaction = undefined;
     }
 
     this.message.reactions = reaction ? [reaction] : [];
@@ -198,7 +193,7 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     return html`
-      <div @click=${this._handleMessageActionClick}>
+      <div @click=${this._handleMessageActionClick} part="message-actions">
         ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
         ${this._renderActionButton(
           this.message?.reactions?.includes(LIKE_ACTIVE)
@@ -227,9 +222,9 @@ export default class IgcChatMessageComponent extends LitElement {
         name=${name}
         variant="flat"
         @pointerenter=${({ target }: PointerEvent) =>
-          showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
         @focus=${({ target }: FocusEvent) =>
-          showChatActionsTooltip(target as Element, tooltipMessage)}
+          this._state.showChatActionsTooltip(target as Element, tooltipMessage)}
       ></igc-icon-button>
     `;
   }
@@ -252,7 +247,7 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   protected override render() {
-    const ctx: MessageRendererContext = {
+    const ctx: ChatMessageRenderContext = {
       message: this.message!,
       instance: this._state.host,
     };
