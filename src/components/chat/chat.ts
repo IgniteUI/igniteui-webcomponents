@@ -302,16 +302,40 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  private _scrollToBottom(): void {
-    if (!isEmpty(this.messages)) {
+  private _scrollToBottom() {
+    if (isEmpty(this.messages)) return;
+
+    requestAnimationFrame(() => {
+      const typingIndicator = this.renderRoot.querySelector(
+        '[part="typing-indicator"]'
+      );
+
+      if (typingIndicator) {
+        requestAnimationFrame(() =>
+          typingIndicator.scrollIntoView({ block: 'end', inline: 'end' })
+        );
+        return;
+      }
+
+      if (this._state.options?.suggestionsPosition !== 'below-input') {
+        const suggestionsContainer = this.renderRoot.querySelector(
+          '[part="suggestions-container"]'
+        );
+        if (suggestionsContainer) {
+          requestAnimationFrame(() =>
+            suggestionsContainer.scrollIntoView({ block: 'end', inline: 'end' })
+          );
+          return;
+        }
+      }
+
       const lastMessage = this.renderRoot
         .querySelectorAll(IgcChatMessageComponent.tagName)
         .item(this.messages.length - 1);
-
       requestAnimationFrame(() =>
         lastMessage.scrollIntoView({ block: 'end', inline: 'end' })
       );
-    }
+    });
   }
 
   private _renderHeader() {
@@ -358,7 +382,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
           }
         )}
         ${this._state.options?.isTyping
-          ? this._getRenderer('typingIndicator')(ctx)
+          ? html`<div part="typing-indicator">
+              ${this._getRenderer('typingIndicator')(ctx)}
+            </div>`
           : nothing}
       </div>
     `;
@@ -366,12 +392,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   private _renderLoadingTemplate() {
     return html`
-      <div part="typing-indicator">
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-        <div part="typing-dot"></div>
-      </div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
     `;
   }
 
