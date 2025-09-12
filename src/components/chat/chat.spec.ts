@@ -26,7 +26,7 @@ import {
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcChatComponent from './chat.js';
-import type { IgcMessage, IgcMessageAttachment } from './types.js';
+import type { IgcChatMessage, IgcChatMessageAttachment } from './types.js';
 
 describe('Chat', () => {
   before(() => {
@@ -52,7 +52,7 @@ describe('Chat', () => {
     `;
   };
 
-  const messageActionsTemplate = (msg: IgcMessage) => {
+  const messageActionsTemplate = (msg: IgcChatMessage) => {
     return msg.sender !== 'user' && msg.text.trim()
       ? html`
           <div style="float: right">
@@ -89,7 +89,9 @@ describe('Chat', () => {
     </div>
   `;
 
-  const textAreaAttachmentsTemplate = (attachments: IgcMessageAttachment[]) => {
+  const textAreaAttachmentsTemplate = (
+    attachments: IgcChatMessageAttachment[]
+  ) => {
     return html`
       <div>
         ${attachments.map(
@@ -108,7 +110,7 @@ describe('Chat', () => {
     `;
   };
 
-  const messages: IgcMessage[] = [
+  const messages: IgcChatMessage[] = [
     {
       id: '1',
       text: 'Hello! How can I help you today?',

@@ -22,7 +22,7 @@ import type {
   ChatInputRenderContext,
   ChatRenderContext,
   ChatTemplateRenderer,
-  IgcMessageAttachment,
+  IgcChatMessageAttachment,
 } from './types.js';
 import { getChatAcceptedFiles, getIconName } from './utils.js';
 
@@ -217,7 +217,7 @@ export default class IgcChatInputComponent extends LitElement {
    * Renders the list of input attachments as chips.
    * @returns TemplateResult containing the attachments area
    */
-  private _renderAttachmentsArea(attachments: IgcMessageAttachment[]) {
+  private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
     return html`${attachments?.map(
       (attachment, index) => html`
         <div part="attachment-wrapper" role="listitem">
