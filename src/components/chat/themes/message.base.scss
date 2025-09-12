@@ -16,7 +16,6 @@
 
 [part~='message-container'] {
     display: flex;
-    margin-inline-end: auto;
     flex-direction: column;
     gap: rem(16px);
 
@@ -35,6 +34,14 @@
       overflow-wrap: break-word;
       overflow-x: auto;
       margin-block: unset;
+    }
+
+    pre.shiki {
+        padding: rem(16px);
+        border-radius: rem(4px);
+        max-height: rem(320px);
+        max-width: rem(680px);
+        overflow-y: auto;
     }
 }
 
