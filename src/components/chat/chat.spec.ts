@@ -6,7 +6,7 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { html, nothing } from 'lit';
-import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
   arrowDown,
@@ -1417,6 +1417,26 @@ describe('Chat', () => {
               ${firstMessage?.message?.sender !== 'user' ? messageActions() : ''}
           </div>`
         );
+      });
+
+      it('should handle the copy action properly', async () => {
+        const clipboardWriteText = stub(
+          navigator.clipboard,
+          'writeText'
+        ).resolves();
+        chat.messages = [messages[0]];
+        await elementUpdated(chat);
+
+        expect(clipboardWriteText.called).to.be.false;
+        const firstMessage =
+          chat.shadowRoot?.querySelectorAll('igc-chat-message')[0];
+        // click on copy icon
+        const copyIcon = firstMessage?.shadowRoot?.querySelector(
+          'igc-icon-button[name="copy_content"]'
+        ) as HTMLElement;
+        simulateClick(copyIcon);
+        await elementUpdated(chat);
+        expect(clipboardWriteText.called).to.be.true;
       });
     });
 

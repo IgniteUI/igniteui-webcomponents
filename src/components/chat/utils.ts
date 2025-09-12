@@ -1,10 +1,12 @@
 import { adoptStyles, type LitElement } from 'lit';
 import { last } from '../common/util.js';
+import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatMessageComponent from './chat-message.js';
 import type { IgcMessageAttachment } from './types.js';
 
 let actionsTooltip: IgcTooltipComponent;
+let actionToast: IgcToastComponent;
 
 export type ChatAcceptedFileTypes = {
   extensions: Set<string>;
@@ -120,6 +122,15 @@ export function showChatActionsTooltip(target: Element, message: string): void {
   }
   actionsTooltip.message = message;
   actionsTooltip.show(target);
+}
+
+export function showChatActionToast(content: string): void {
+  if (!actionToast) {
+    actionToast = document.createElement(IgcToastComponent.tagName);
+    document.body.appendChild(actionToast);
+  }
+  actionToast.textContent = content;
+  actionToast.show();
 }
 
 // REVIEW: Maybe put that behind a configuration flag as this is nasty.

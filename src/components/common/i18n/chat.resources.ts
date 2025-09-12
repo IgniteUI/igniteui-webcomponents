@@ -5,6 +5,9 @@ export interface IgcChatResourceStrings {
   reactionLike: string;
   reactionDislike: string;
   reactionRegenerate: string;
+  attachmentLabel: string;
+  attachmentsListLabel: string;
+  messageCopied: string;
 }
 
 export const IgcChatResourceStringEN: IgcChatResourceStrings = {
@@ -13,4 +16,7 @@ export const IgcChatResourceStringEN: IgcChatResourceStrings = {
   reactionLike: 'Like',
   reactionDislike: 'Dislike',
   reactionRegenerate: 'Regenerate',
+  attachmentLabel: 'Attachment',
+  attachmentsListLabel: 'Attachments',
+  messageCopied: 'Message copied to clipboard',
 };
