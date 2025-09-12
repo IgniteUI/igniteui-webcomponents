@@ -155,7 +155,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     const ctx: AttachmentRendererContext = {
       attachment,
       message: this.message!,
-      defaults: this._defaults,
       instance: this._state.host,
     };
 
@@ -195,7 +194,6 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                     this._getRenderer('attachment')({
                       attachment,
                       message: this.message!,
-                      defaults: this._defaults,
                       instance: this._state.host,
                     })
                   )}

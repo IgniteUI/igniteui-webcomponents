@@ -117,11 +117,8 @@ const userMessages: any[] = [];
 
 let isResponseSent: boolean;
 
-const _messageAuthorTemplate = (
-  msg: IgcMessage,
-  ctx: MessageRendererContext
-) => {
-  return msg.sender !== 'user'
+const _messageAuthorTemplate = ({ message }: MessageRendererContext) => {
+  return message.sender !== 'user'
     ? html`
         <div style="display: flex; align-items: center; gap: 8px;">
           <igc-avatar
@@ -133,16 +130,16 @@ const _messageAuthorTemplate = (
           <span style="color: #c00000; font-weight: bold;">AI Assistant</span>
         </div>
       `
-    : ctx.defaults.messageHeader(ctx);
+    : nothing;
 };
-const _messageActionsTemplate = (msg: IgcMessage) => {
-  return msg.sender !== 'user' && msg.text.trim() && isResponseSent
+const _messageActionsTemplate = ({ message }: MessageRendererContext) => {
+  return message.sender !== 'user' && message.text.trim() && isResponseSent
     ? html`
         <div>
           <igc-icon-button
             name="alarm"
             variant="flat"
-            @click=${() => alert(`Message reacted: ${msg.text}`)}
+            @click=${() => alert(`Message reacted: ${message.text}`)}
           ></igc-icon-button>
         </div>
       `
@@ -471,7 +468,6 @@ export const Chat_Templates: Story = {
     const chat = document.querySelector('igc-chat');
     if (chat) {
       const _actionsTemplate = (ctx: ChatRendererContext) => html`
-        ${ctx.defaults.fileUploadButton(ctx)}
         <igc-icon-button variant="flat">🎤</igc-icon-button>
         <div style="margin-inline-start: auto;">
           <igc-button @click=${() => handleCustomSendClick(ctx.instance)}
@@ -486,17 +482,12 @@ export const Chat_Templates: Story = {
         inputPlaceholder: 'Type your message here...',
         suggestions: ['Hello', 'Hi', 'Generate an image!'],
         renderers: {
-          messageHeader: (ctx) => _messageAuthorTemplate(ctx.message, ctx),
-          messageContent: (ctx) => _markdownRenderer(ctx.message),
-          messageActions: (ctx) => _messageActionsTemplate(ctx.message),
+          messageHeader: _messageAuthorTemplate,
+          messageContent: ({ message }) => _markdownRenderer(message),
+          messageActions: _messageActionsTemplate,
           attachmentHeader: () => nothing,
-          inputActions: (ctx) => _actionsTemplate(ctx),
-          inputAttachments: (ctx) =>
-            html`<span>Attachments:</span>${ctx.defaults.inputAttachments(ctx)}`,
-          typingIndicator: (ctx) => html`
-            <span>Generating response</span>
-            ${ctx.defaults.typingIndicator(ctx)}
-          `,
+          inputActions: _actionsTemplate,
+          typingIndicator: () => html`<span>Generating response</span>`,
           suggestionPrefix: () => '✨',
         },
       };
