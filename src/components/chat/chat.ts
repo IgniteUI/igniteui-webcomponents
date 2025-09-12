@@ -1,6 +1,6 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -183,6 +183,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._userInputContext.setValue(this._state, true);
   }
 
+  @query('[part="typing-indicator"]')
+  private typingIndicator?: HTMLElement;
+
+  @query('[part="suggestions-container"]')
+  private suggestionsContainer?: HTMLElement;
+
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
@@ -297,7 +303,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('messages') && !this._state.disableAutoScroll) {
+    if (
+      (properties.has('messages') ||
+        this.typingIndicator ||
+        this.suggestionsContainer) &&
+      !this._state.disableAutoScroll
+    ) {
       this._scrollToBottom();
     }
   }
@@ -305,36 +316,19 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _scrollToBottom() {
     if (isEmpty(this.messages)) return;
 
+    const lastMessage = this.renderRoot
+      .querySelectorAll(IgcChatMessageComponent.tagName)
+      .item(this.messages.length - 1);
+
     requestAnimationFrame(() => {
-      const typingIndicator = this.renderRoot.querySelector(
-        '[part="typing-indicator"]'
-      );
-
-      if (typingIndicator) {
-        requestAnimationFrame(() =>
-          typingIndicator.scrollIntoView({ block: 'end', inline: 'end' })
-        );
-        return;
+      if (this.typingIndicator || this.suggestionsContainer) {
+        (this.typingIndicator
+          ? this.typingIndicator
+          : this.suggestionsContainer
+        )?.scrollIntoView({ block: 'end', inline: 'end' });
+      } else {
+        lastMessage.scrollIntoView({ block: 'end', inline: 'end' });
       }
-
-      if (this._state.options?.suggestionsPosition !== 'below-input') {
-        const suggestionsContainer = this.renderRoot.querySelector(
-          '[part="suggestions-container"]'
-        );
-        if (suggestionsContainer) {
-          requestAnimationFrame(() =>
-            suggestionsContainer.scrollIntoView({ block: 'end', inline: 'end' })
-          );
-          return;
-        }
-      }
-
-      const lastMessage = this.renderRoot
-        .querySelectorAll(IgcChatMessageComponent.tagName)
-        .item(this.messages.length - 1);
-      requestAnimationFrame(() =>
-        lastMessage.scrollIntoView({ block: 'end', inline: 'end' })
-      );
     });
   }
 
