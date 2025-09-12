@@ -164,7 +164,9 @@ describe('Chat', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
-  const messageActions = (likeButtonState = 'inactive') => `<div>
+  const messageActions = (
+    likeButtonState = 'inactive'
+  ) => `<div part="message-actions">
                           <igc-icon-button
                             id="copy_content-button"
                             name="copy_content"
