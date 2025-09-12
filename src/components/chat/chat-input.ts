@@ -19,21 +19,21 @@ import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
 import type {
-  ChatRendererContext,
+  ChatInputRenderContext,
+  ChatRenderContext,
   ChatTemplateRenderer,
   IgcMessageAttachment,
-  InputRendererContext,
 } from './types.js';
 import { getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
-  input: ChatTemplateRenderer<InputRendererContext>;
-  inputActions: ChatTemplateRenderer<ChatRendererContext>;
-  inputActionsEnd: ChatTemplateRenderer<ChatRendererContext>;
-  inputActionsStart: ChatTemplateRenderer<ChatRendererContext>;
-  inputAttachments: ChatTemplateRenderer<InputRendererContext>;
-  fileUploadButton: ChatTemplateRenderer<ChatRendererContext>;
-  sendButton: ChatTemplateRenderer<ChatRendererContext>;
+  input: ChatTemplateRenderer<ChatInputRenderContext>;
+  inputActions: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsEnd: ChatTemplateRenderer<ChatRenderContext>;
+  inputActionsStart: ChatTemplateRenderer<ChatRenderContext>;
+  inputAttachments: ChatTemplateRenderer<ChatInputRenderContext>;
+  fileUploadButton: ChatTemplateRenderer<ChatRenderContext>;
+  sendButton: ChatTemplateRenderer<ChatRenderContext>;
 };
 /**
  * A web component that provides the input area for the `igc-chat` interface.
@@ -314,7 +314,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _renderActionsArea() {
-    const ctx: ChatRendererContext = { instance: this._state.host };
+    const ctx: ChatRenderContext = { instance: this._state.host };
 
     return html`
       ${this._getRenderer('fileUploadButton')(ctx)}
@@ -325,9 +325,9 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   protected override render() {
-    const ctx: ChatRendererContext = { instance: this._state.host };
+    const ctx: ChatRenderContext = { instance: this._state.host };
 
-    const inputCtx: InputRendererContext = {
+    const inputCtx: ChatInputRenderContext = {
       ...ctx,
       attachments: this._state.inputAttachments,
       value: this._state.inputValue,

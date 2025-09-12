@@ -21,7 +21,7 @@ import { styles } from './themes/chat.base.css.js';
 import { styles as shared } from './themes/shared/chat.common.css.js';
 import { all } from './themes/themes.js';
 import type {
-  ChatRendererContext,
+  ChatRenderContext,
   ChatTemplateRenderer,
   IgcChatOptions,
   IgcMessage,
@@ -29,8 +29,8 @@ import type {
 } from './types.js';
 
 type DefaultChatRenderers = {
-  typingIndicator: ChatTemplateRenderer<ChatRendererContext>;
-  suggestionPrefix: ChatTemplateRenderer<ChatRendererContext>;
+  typingIndicator: ChatTemplateRenderer<ChatRenderContext>;
+  suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
 };
 
 /**

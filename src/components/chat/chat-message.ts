@@ -17,9 +17,9 @@ import { styles } from './themes/message.base.css.js';
 import { all } from './themes/message.js';
 import { styles as shared } from './themes/shared/chat-message/chat-message.common.css.js';
 import type {
+  ChatMessageRenderContext,
   ChatTemplateRenderer,
   IgcMessage,
-  MessageRendererContext,
 } from './types.js';
 import { chatMessageAdoptPageStyles } from './utils.js';
 
@@ -31,11 +31,11 @@ const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
 
 type DefaultMessageRenderers = {
-  message: ChatTemplateRenderer<MessageRendererContext>;
-  messageHeader: ChatTemplateRenderer<MessageRendererContext>;
-  messageContent: ChatTemplateRenderer<MessageRendererContext>;
-  messageAttachments: ChatTemplateRenderer<MessageRendererContext>;
-  messageActions: ChatTemplateRenderer<MessageRendererContext>;
+  message: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageContent: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageAttachments: ChatTemplateRenderer<ChatMessageRenderContext>;
+  messageActions: ChatTemplateRenderer<ChatMessageRenderContext>;
 };
 
 /**
@@ -247,7 +247,7 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   protected override render() {
-    const ctx: MessageRendererContext = {
+    const ctx: ChatMessageRenderContext = {
       message: this.message!,
       instance: this._state.host,
     };
