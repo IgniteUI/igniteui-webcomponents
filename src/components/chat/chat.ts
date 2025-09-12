@@ -182,6 +182,12 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @query(IgcChatInputComponent.tagName)
   private readonly _input?: IgcChatInputComponent;
 
+  @query('[part="typing-indicator"]')
+  private readonly _typingIndicator?: HTMLElement;
+
+  @query('[part="suggestions-container"]')
+  private readonly _suggestionsContainer?: HTMLElement;
+
   private _updateContext(): void {
     this._context.setValue(this._state, true);
   }
@@ -189,12 +195,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   private _updateUserInputContext(): void {
     this._userInputContext.setValue(this._state, true);
   }
-
-  @query('[part="typing-indicator"]')
-  private typingIndicator?: HTMLElement;
-
-  @query('[part="suggestions-container"]')
-  private suggestionsContainer?: HTMLElement;
 
   /**
    * The list of chat messages currently displayed.
@@ -317,8 +317,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
   protected override updated(properties: PropertyValues<this>): void {
     if (
       (properties.has('messages') ||
-        this.typingIndicator ||
-        this.suggestionsContainer) &&
+        this._typingIndicator ||
+        this._suggestionsContainer) &&
       !this._state.disableAutoScroll
     ) {
       this._scrollToBottom();
@@ -332,15 +332,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
       .querySelectorAll(IgcChatMessageComponent.tagName)
       .item(this.messages.length - 1);
 
+    const scrollTarget =
+      this._typingIndicator ?? this._suggestionsContainer ?? lastMessage;
+
     requestAnimationFrame(() => {
-      if (this.typingIndicator || this.suggestionsContainer) {
-        (this.typingIndicator
-          ? this.typingIndicator
-          : this.suggestionsContainer
-        )?.scrollIntoView({ block: 'end', inline: 'end' });
-      } else {
-        lastMessage.scrollIntoView({ block: 'end', inline: 'end' });
-      }
+      scrollTarget?.scrollIntoView({ block: 'end', inline: 'end' });
     });
   }
 
