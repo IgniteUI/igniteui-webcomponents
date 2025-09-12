@@ -1167,14 +1167,13 @@ describe('Chat', () => {
 
       expect(chat.messages.length).to.equal(1);
       expect(messageContainer).dom.to.equal(
-        `<div
-        part="message-list"
-        tabindex="0"
-      >
-                <igc-chat-message id="message-1" part="message-item">
-                </igc-chat-message>
-                <span>loading...</span>
-            </div>`,
+        `<div part="message-list" tabindex="0">
+          <igc-chat-message id="message-1" part="message-item">
+          </igc-chat-message>
+          <div part="typing-indicator">
+            <span>loading...</span>
+          </div>
+        </div>`,
         DIFF_OPTIONS
       );
     });
