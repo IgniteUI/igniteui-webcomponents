@@ -1,5 +1,6 @@
 import {
   getCurrentI18n,
+  getDisplayNamesFormatter,
   getI18nManager,
   type IResourceChangeEventArgs,
   type IResourceStrings,
@@ -123,7 +124,10 @@ export class I18nController<T> implements ReactiveController {
             this._defaultEN[igcKey as keyof T];
         }
       } else if (coreKey?.includes('getWeekLabel')) {
-        // Call core week label?
+        const weekLabel = getDisplayNamesFormatter().getWeekLabel(this.locale, {
+          style: 'short',
+        });
+        normalizedResourceStrings[igcKey as keyof T] = weekLabel as T[keyof T];
       } else {
         // No mapped keys, no need to convert the resources then.
         return resourceStrings as T;

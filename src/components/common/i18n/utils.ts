@@ -65,7 +65,7 @@ export function convertToIgcResource<T extends IResourceStrings>(inObject: T) {
   }
 
   for (const [key, value] of resourceMap) {
-    if (value && !value.includes('i18n/')) {
+    if (value) {
       result[key] = inObject[value as keyof IResourceStrings];
     }
   }
@@ -86,7 +86,7 @@ export function convertToCoreResource<T>(inObject: T): IResourceStrings {
 
   if (resourceMap) {
     for (const [key, value] of resourceMap) {
-      if (value && !value.includes('i18n/')) {
+      if (value) {
         result[value as keyof IResourceStrings] = inObject[
           key as keyof T
         ] as string;
