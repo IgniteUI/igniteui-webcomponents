@@ -4,7 +4,7 @@ import {
   type IResourceChangeEventArgs,
   type IResourceStrings,
 } from 'igniteui-i18n-core';
-import type { ReactiveControllerHost } from 'lit';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
   calendarResourcesMap,
   convertToCoreResource,
@@ -21,7 +21,7 @@ type I18nControllerConfig = {
   onResourceChange?: (evt: CustomEvent<IResourceChangeEventArgs>) => void;
 };
 
-export class I18nController<T> {
+export class I18nController<T> implements ReactiveController {
   /** Set custom locale that overrides the global one. */
   public set locale(value: string) {
     this._locale = value;
