@@ -1,19 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../light/themes' as light;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-chat');
-
-    igc-chat-message::part(message-container) {
-        --shiki-purple: #b392f0;
-        --shiki-navy: #e1e4e8;
-        --shiki-dark-blue: #9ecbff;
-        --shiki-red: #f97583;
-        --shiki-blue: #79bbff;
-        --shiki-green: #85e89d;
-        --shiki-orange: #ffab70;
-    }
+    @include css-vars-from-theme(diff($base, $theme), 'ig-chat');
 }

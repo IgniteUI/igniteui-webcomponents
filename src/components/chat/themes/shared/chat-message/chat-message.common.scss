@@ -22,8 +22,8 @@ $theme: $material;
 
     // override shiki styles
     pre.shiki {
-        background-color: var-get($theme, 'background') !important;
-        border: rem(1px) solid var-get($theme, 'image-border');
+        background-color: var-get($theme, 'code-background') !important;
+        border: rem(1px) solid var-get($theme, 'code-border');
     }
 }
 
