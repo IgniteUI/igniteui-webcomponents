@@ -127,7 +127,24 @@ export type IgcChatOptions = {
   stopTypingDelay?: number;
 
   /**
-   * If `true`, the component will attempt to adopt styles from the host element's document root.
+   * A boolean flag that, when `true`, enables a **quick and dirty workaround** for styling
+   * components rendered within the Shadow DOM, from custom message renderers, by allowing them
+   * to inherit styles from the document's root. This can be useful for developers who prefer not to handle
+   * Shadow DOM encapsulation, but it is **not the recommended approach**.
+   *
+   * It is highly advised to use standard Web Component styling methods first, in this order:
+   *
+   * 1.  **CSS Variables and Parts API**: Use the exposed `::part` API with custom CSS variables to style
+   * your content in your custom renderers.
+   *
+   * 2.  **`link` elements**: For larger style sheets, link them directly within the Shadow DOM to maintain
+   * encapsulation.
+   *
+   * 3.  **Inline `<style>` tags**: Use these for small, self-contained styles within a template.
+   *
+   * This property should be used as a **last resort** as it can lead to **style leakage**, where
+   * global styles unexpectedly bleed into the component, breaking encapsulation and causing
+   * unpredictable visual issues.
    */
   adoptRootStyles?: boolean;
 
