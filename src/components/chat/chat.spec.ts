@@ -1,4 +1,4 @@
-import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
+import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
@@ -121,7 +121,7 @@ describe('Chat', () => {
 
   beforeEach(async () => {
     chat = await fixture<IgcChatComponent>(html`<igc-chat></igc-chat>`);
-    clock = useFakeTimers({ toFake: ['setInterval'] });
+    clock = useFakeTimers({ toFake: ['setTimeout'] });
   });
 
   afterEach(() => {
@@ -215,31 +215,31 @@ describe('Chat', () => {
     });
 
     it('should enable/disable the send button properly', async () => {
-      const { input } = getChatDOM(chat);
+      const { textarea, sendButton, fileInput } = getChatDOM(chat).input;
 
-      expect(input.sendButton.disabled).to.be.true;
+      expect(sendButton.disabled).to.be.true;
 
       // When there is a text in the text area, the send button should be enabled
       let value = 'Hello!';
-      input.textarea.value = value;
-      input.textarea.emitEvent('igcInput', { detail: value });
+      textarea.value = value;
+      textarea.emitEvent('igcInput', { detail: value });
       await elementUpdated(chat);
 
-      expect(input.sendButton.disabled).to.be.false;
+      expect(sendButton.disabled).to.be.false;
 
       // When there is no text in the text area, the send button should be disabled
       value = '';
-      input.textarea.value = value;
-      input.textarea.emitEvent('igcInput', { detail: value });
+      textarea.value = value;
+      textarea.emitEvent('igcInput', { detail: value });
       await elementUpdated(chat);
 
-      expect(input.sendButton.disabled).to.be.true;
+      expect(sendButton.disabled).to.be.true;
 
       // When there are attachments, the send button should be enabled regardless of the text area content
-      simulateFileUpload(input.fileInput, files);
+      simulateFileUpload(fileInput, files);
       await elementUpdated(chat);
 
-      expect(input.sendButton.disabled).to.be.false;
+      expect(sendButton.disabled).to.be.false;
     });
 
     it('should not render attachment button if `disableInputAttachments` is true', async () => {
@@ -579,33 +579,22 @@ describe('Chat', () => {
         },
       };
       await elementUpdated(chat);
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
 
-      expect(inputArea).shadowDom.to.equal(
-        `<div part="input-container">
-          <div aria-label="Attachments" part="attachments" role="list">
-              <div>
-                <a href=${draftMessage.attachments[0].url} target="_blank">
-                  ${draftMessage.attachments[0].name}
-                </a>
-              </div>
-            </div>
-            <div part="input-wrapper">
-                <igc-input type="text" placeholder="Type text here...">
-            </div>
-            <div part="buttons-container">
-              <div>
-                <igc-button type="button" variant="contained">Upload</igc-button>
-                <igc-button type="button" variant="contained">Send</igc-button>
-              </div>
-            </div>
-          </div>
-          `
-      );
+      const { self: inputArea, sendButton, fileInput } = getChatDOM(chat).input;
 
-      expect(inputArea?.shadowRoot?.querySelector('igc-input')?.value).to.equal(
+      expect(inputArea.renderRoot.querySelector('igc-input')?.value).to.equal(
         draftMessage.text
       );
+      expect(inputArea.renderRoot.querySelector('a')?.href).to.equal(
+        draftMessage.attachments[0].url
+      );
+
+      expect(sendButton).to.be.null;
+      expect(fileInput).to.be.null;
+      var buttons = inputArea.renderRoot.querySelectorAll(
+        'igc-button[variant="contained"]'
+      );
+      expect(buttons.length).to.equal(2);
     });
 
     it('should render messageHeader template', async () => {
@@ -629,29 +618,25 @@ describe('Chat', () => {
     describe('Click', () => {
       it('should update messages properly on send button click', async () => {
         const eventSpy = spy(chat, 'emitEvent');
-        const textArea = getChatDOM(chat).input.textarea;
-        textArea.setAttribute('value', 'Hello!');
-        textArea.dispatchEvent(
+        const { textarea, sendButton } = getChatDOM(chat).input!;
+        textarea.setAttribute('value', 'Hello!');
+        textarea.dispatchEvent(
           new CustomEvent('igcInput', { detail: 'Hello!' })
         );
         await elementUpdated(chat);
 
-        const sendButton = getChatDOM(chat).input.sendButton;
         simulateClick(sendButton);
         await elementUpdated(chat);
 
         expect(eventSpy).calledWith('igcMessageCreated');
-        const eventArgs = eventSpy.getCall(1).args[1]?.detail;
-        const args =
-          eventArgs && typeof eventArgs === 'object'
-            ? { ...eventArgs, text: 'Hello!', sender: 'user' }
-            : { text: 'Hello!', sender: 'user' };
+        const eventArgs = eventSpy.getCall(1).args[1]?.detail as IgcChatMessage;
+        const args = { ...eventArgs, text: 'Hello!', sender: 'user' };
         expect(eventArgs).to.deep.equal(args);
         expect(chat.messages.length).to.equal(1);
         expect(chat.messages[0].text).to.equal('Hello!');
         expect(chat.messages[0].sender).to.equal('user');
         // The focus should be on the input area after send button is clicked
-        expect(isFocused(textArea)).to.be.true;
+        expect(isFocused(textarea)).to.be.true;
       });
 
       it('should update messages properly on suggestion chip click', async () => {
@@ -711,18 +696,17 @@ describe('Chat', () => {
 
       it('should disable send button on removing all attachments', async () => {
         const inputArea = getChatDOM(chat).input!;
-        const fileInput = inputArea.fileInput;
+        const { fileInput, sendButton } = inputArea;
 
         simulateFileUpload(fileInput, files);
         await elementUpdated(chat);
-        await elementUpdated(inputArea.self);
 
         const attachments = inputArea.chips;
         simulateClick(attachments[1].renderRoot.querySelector('igc-icon')!);
         simulateClick(attachments[0].renderRoot.querySelector('igc-icon')!);
         await elementUpdated(inputArea.self);
 
-        expect(inputArea.sendButton.disabled).to.be.true;
+        expect(sendButton.disabled).to.be.true;
       });
 
       it('should update like button state on click', async () => {
@@ -888,21 +872,15 @@ describe('Chat', () => {
     });
   });
 
-  describe.skip('Events', () => {
+  describe('Events', () => {
     it('emits igcAttachmentClick', async () => {
       const eventSpy = spy(chat, 'emitEvent');
       chat.messages = [messages[1]];
       await elementUpdated(chat);
 
-      const messageElement = chat.shadowRoot
-        ?.querySelector(`div[part='message-list'`)
-        ?.querySelector('igc-chat-message');
-
-      const attachmentHeader = messageElement?.shadowRoot
-        ?.querySelector('igc-message-attachments')
-        ?.shadowRoot?.querySelector(
-          `div[part='attachment-header sent']`
-        ) as HTMLElement;
+      const messageElement = getChatDOM(chat).messages[0];
+      const attachment = getChatMessageDOM(messageElement).attachments[0];
+      const attachmentHeader = getChatAttachmentDOM(attachment).header;
 
       simulateClick(attachmentHeader);
       expect(eventSpy).calledWith('igcAttachmentClick', {
@@ -912,44 +890,43 @@ describe('Chat', () => {
 
     it('emits igcTypingChange', async () => {
       const eventSpy = spy(chat, 'emitEvent');
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
+      const textArea = getChatDOM(chat).input.textarea!;
 
       simulateFocus(textArea);
       simulateKeyboard(textArea, 'a');
-      expect(eventSpy).calledWith('igcTypingChange', {
-        detail: { isTyping: true },
+      await elementUpdated(chat);
+
+      expect(eventSpy).calledWith('igcTypingChange');
+      expect(eventSpy.getCall(1).args[1]?.detail).to.deep.equal({
+        isTyping: true,
       });
 
-      aTimeout(3000).then(() => {
-        expect(eventSpy).calledWith('igcTypingChange', {
-          detail: { isTyping: false },
-        });
+      clock.tick(3000);
+      await elementUpdated(chat);
+
+      expect(eventSpy).calledWith('igcTypingChange');
+      expect(eventSpy.getCall(2).args[1]?.detail).to.deep.equal({
+        isTyping: false,
       });
     });
 
     it('emits igcInputFocus', async () => {
       const eventSpy = spy(chat, 'emitEvent');
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
 
-      simulateFocus(textArea);
+      simulateFocus(getChatDOM(chat).input.textarea);
       expect(eventSpy).calledWith('igcInputFocus');
     });
 
     it('emits igcInputBlur', async () => {
       const eventSpy = spy(chat, 'emitEvent');
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
 
-      simulateBlur(textArea);
+      simulateBlur(getChatDOM(chat).input.textarea);
       expect(eventSpy).calledWith('igcInputBlur');
     });
 
     it('emits igcInputChange', async () => {
       const eventSpy = spy(chat, 'emitEvent');
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
+      const textArea = getChatDOM(chat).input.textarea!;
 
       textArea.setAttribute('value', 'Hello!');
       textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
@@ -964,13 +941,9 @@ describe('Chat', () => {
       chat.messages = [messages[0]];
       await elementUpdated(chat);
 
-      const messageElement = chat.shadowRoot
-        ?.querySelector(`div[part='message-list'`)
-        ?.querySelector('igc-chat-message');
-
-      const likeIcon = messageElement?.shadowRoot?.querySelector(
-        'igc-icon-button[name="thumb_up_inactive"]'
-      ) as HTMLElement;
+      const messageElement = getChatDOM(chat).messages[0];
+      const likeIcon =
+        getChatMessageDOM(messageElement).defaultActionButtons[1];
 
       simulateClick(likeIcon);
       expect(eventSpy).calledWith('igcMessageReact', {
@@ -979,42 +952,34 @@ describe('Chat', () => {
     });
 
     it('can cancel `igcMessageCreated` event', async () => {
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const sendButton = inputArea?.shadowRoot?.querySelector(
-        'igc-icon-button[name="send_message"]'
-      )!;
-      const textArea = inputArea?.shadowRoot?.querySelector('igc-textarea')!;
+      const inputArea = getChatDOM(chat).input;
+      const { sendButton, textarea } = inputArea;
 
       chat.addEventListener('igcMessageCreated', (event) => {
         event.preventDefault();
       });
 
-      textArea.setAttribute('value', 'Hello!');
-      textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
+      textarea.setAttribute('value', 'Hello!');
+      textarea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
       await elementUpdated(chat);
       simulateClick(sendButton);
       await elementUpdated(chat);
-      await clock.tickAsync(500);
 
       expect(chat.messages.length).to.equal(0);
     });
 
     it('can cancel `igcAttachmentChange` event', async () => {
-      const inputArea = chat.shadowRoot?.querySelector('igc-chat-input');
-      const fileInput = inputArea?.shadowRoot?.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
+      const inputArea = getChatDOM(chat).input!;
+      const fileInput = inputArea.fileInput;
 
-      chat.addEventListener('igcAttachmentChange', (event) => {
+      chat.addEventListener('igcAttachmentAdded', (event) => {
         event.preventDefault();
       });
 
       simulateFileUpload(fileInput, files);
       await elementUpdated(chat);
 
-      expect(
-        inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
-      ).to.equal(0);
+      expect(inputArea?.chips.length).to.equal(0);
     });
   });
 
