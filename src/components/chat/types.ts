@@ -126,50 +126,160 @@ export type IgcChatOptions = {
    */
   stopTypingDelay?: number;
 
+  /**
+   * If `true`, the component will attempt to adopt styles from the host element's document root.
+   */
+  adoptRootStyles?: boolean;
+
+  /**
+   * An object containing a collection of custom renderers for different parts of the chat UI.
+   */
   renderers?: ChatRenderers;
 };
 
+/**
+ * Represents a user's reaction to a specific chat message.
+ */
 export interface IgcChatMessageReaction {
+  /**
+   * The chat message that the reaction is associated with.
+   */
   message: IgcChatMessage;
+  /**
+   * The string representation of the reaction, such as an emoji or a string;
+   */
   reaction: string;
 }
 
+/**
+ * A collection of optional rendering functions that allow for custom UI rendering.
+ * Each property is a function that takes a context object and returns a template result.
+ */
 export interface ChatRenderers {
+  /**
+   * Custom renderer for a single chat message attachment.
+   */
   attachment?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  /**
+   * Custom renderer for the content of an attachment.
+   */
   attachmentContent?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  /**
+   * Custom renderer for the header of an attachment.
+   */
   attachmentHeader?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
+  /**
+   * Custom renderer for the file upload button in the input area.
+   */
   fileUploadButton?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the main chat input field.
+   */
   input?: ChatTemplateRenderer<ChatInputRenderContext>;
+  /**
+   * Custom renderer for the actions container within the input area.
+   */
   inputActions?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the actions at the end of the input area.
+   */
   inputActionsEnd?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the actions at the start of the input area.
+   */
   inputActionsStart?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the attachment previews within the input field.
+   */
   inputAttachments?: ChatTemplateRenderer<ChatInputRenderContext>;
+  /**
+   * Custom renderer for an entire chat message bubble.
+   */
   message?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  /**
+   * Custom renderer for message-specific actions (e.g., reply or delete buttons).
+   */
   messageActions?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  /**
+   * Custom renderer for the attachments associated with a message.
+   */
   messageAttachments?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  /**
+   * Custom renderer for the main text and content of a message.
+   */
   messageContent?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  /**
+   * Custom renderer for the header of a message, including sender and timestamp.
+   */
   messageHeader?: ChatTemplateRenderer<ChatMessageRenderContext>;
+  /**
+   * Custom renderer for the "is typing" indicator.
+   */
   typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the message send button.
+   */
   sendButton?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the prefix text shown before suggestions.
+   */
   suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 }
 
+/**
+ * A generic type for a function that serves as a custom renderer.
+ * It takes a context object of type T and returns a template result.
+ */
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
+
+/**
+ * A string literal type defining the two possible positions for chat suggestions.
+ */
 export type ChatSuggestionsPosition = 'below-input' | 'below-messages';
 
+/**
+ * The base context object passed to custom renderer functions, containing the chat component instance.
+ */
 export interface ChatRenderContext {
+  /**
+   * The instance of the IgcChatComponent.
+   */
   instance: IgcChatComponent;
 }
 
+/**
+ * The context object for renderers that deal with the chat input area.
+ * It extends the base context with input-specific properties.
+ */
 export interface ChatInputRenderContext extends ChatRenderContext {
+  /**
+   * The list of attachments currently in the input area.
+   */
   attachments: IgcChatMessageAttachment[];
+  /**
+   * The current value of the input field.
+   */
   value: string;
 }
 
+/**
+ * The context object for renderers that deal with a specific chat message.
+ * It extends the base context with the message data.
+ */
 export interface ChatMessageRenderContext extends ChatRenderContext {
+  /**
+   * The specific chat message being rendered.
+   */
   message: IgcChatMessage;
 }
 
+/**
+ * The context object for renderers that deal with a specific attachment within a message.
+ * It extends the message context with the attachment data.
+ */
 export interface ChatAttachmentRenderContext extends ChatMessageRenderContext {
+  /**
+   * The specific attachment being rendered.
+   */
   attachment: IgcChatMessageAttachment;
 }

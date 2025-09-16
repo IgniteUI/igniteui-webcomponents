@@ -88,7 +88,9 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   protected override firstUpdated(): void {
-    chatMessageAdoptPageStyles(this);
+    if (this._state.options?.adoptRootStyles) {
+      chatMessageAdoptPageStyles(this);
+    }
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
