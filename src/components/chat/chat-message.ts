@@ -29,19 +29,18 @@ const COPY_CONTENT = 'copy_content';
 const REGENERATE = 'regenerate';
 
 type DefaultMessageRenderers = {
-  message: ChatTemplateRenderer<ChatMessageRenderContext>;
   messageHeader: ChatTemplateRenderer<ChatMessageRenderContext>;
   messageContent: ChatTemplateRenderer<ChatMessageRenderContext>;
   messageAttachments: ChatTemplateRenderer<ChatMessageRenderContext>;
   messageActions: ChatTemplateRenderer<ChatMessageRenderContext>;
 };
 
+/* blazorSuppress */
 /**
  * A chat message component for displaying individual messages in `<igc-chat>`.
  *
  * @element igc-chat-message
  *
- * @fires igcMessageReact - Fired when a message is reacted to.
  *
  * This component renders a single chat message including:
  * - Message text (sanitized)
@@ -68,7 +67,6 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
-    message: () => this._renderMessage(),
     messageHeader: () => this._renderHeader(),
     messageContent: () => this._renderContent(),
     messageAttachments: () => this._renderAttachments(),
@@ -82,7 +80,7 @@ export default class IgcChatMessageComponent extends LitElement {
    * The chat message to render.
    */
   @property({ attribute: false })
-  public message?: IgcChatMessage;
+  public message!: IgcChatMessage;
 
   constructor() {
     super();
@@ -99,36 +97,38 @@ export default class IgcChatMessageComponent extends LitElement {
       : this._defaults[name];
   }
 
-  private async _handleCopy() {
-    if (!this.message) return;
+  private async _handleCopy(): Promise<void> {
+    const text = this.message.text;
+    const separator = text ? '\n\n' : '';
+    const attachments = this.message.attachments ?? [];
+    const { attachmentLabel, attachmentsListLabel, messageCopied } =
+      this._state.resourceStrings!;
 
-    let clipboardText = this.message.text;
+    const attachmentsText = isEmpty(attachments)
+      ? ''
+      : attachments
+          .map(({ name, url }) => `${name ?? attachmentLabel}: ${url ?? ''}`)
+          .join('\n');
 
-    const resourceStrings = this._state.resourceStrings!;
-    if (this.message.attachments && !isEmpty(this.message.attachments)) {
-      const attachmentList = this.message.attachments
-        .map(
-          (att) =>
-            `${att.name ?? resourceStrings.attachmentLabel}: ${att.url ?? ''}`
-        )
-        .join('\n');
-      clipboardText += `${clipboardText ? '\n\n' : ''}${resourceStrings.attachmentsListLabel}:\n${attachmentList}`;
-    }
+    const payload = attachmentsText
+      ? `${text}${separator}${attachmentsListLabel}:\n${attachmentsText}`
+      : text;
 
-    if (navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(clipboardText);
-        this._state.showActionToast(resourceStrings.messageCopied);
-      } catch (err) {
-        throw new Error(`Failed to copy message via Clipboard API: ${err}`);
-      }
+    try {
+      await navigator.clipboard.writeText(payload);
+      this._state.showActionToast(messageCopied);
+    } catch (err) {
+      throw new Error(`Failed to copy message: ${err}`);
     }
   }
 
   private _handleMessageActionClick(event: PointerEvent): void {
     const targetButton = event.target as HTMLElement;
     const button = targetButton.closest(IgcIconButtonComponent.tagName);
-    if (!button || !this.message) return;
+
+    if (!button) {
+      return;
+    }
 
     let reaction = button.name;
 
@@ -153,15 +153,12 @@ export default class IgcChatMessageComponent extends LitElement {
         reaction = REGENERATE;
         break;
       default:
-        reaction = undefined;
+        reaction = '';
     }
 
     this.message.reactions = reaction ? [reaction] : [];
+    this._state.emitMessageReaction({ message: this.message, reaction });
     this.requestUpdate();
-
-    this._state.emitEvent('igcMessageReact', {
-      detail: { message: this.message, reaction },
-    });
   }
 
   private _renderHeader() {
@@ -169,16 +166,13 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _renderContent() {
-    return this.message?.text
-      ? html`<pre part="plain-text">${this.message.text}</pre>`
-      : nothing;
+    return html`${this.message.text}`;
   }
 
   private _renderActions() {
-    const isSent = this.message?.sender === this._state.currentUserId;
-    const hasText = this.message?.text.trim();
-    const hasAttachments =
-      this.message?.attachments && !isEmpty(this.message?.attachments);
+    const isSent = this.message.sender === this._state.currentUserId;
+    const hasText = this.message.text.trim();
+    const hasAttachments = !isEmpty(this.message.attachments ?? []);
     const isTyping = this._state._isTyping;
     const isLastMessage = this.message === this._state.messages.at(-1);
     const resourceStrings = this._state.resourceStrings!;
@@ -188,25 +182,23 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     return html`
-      <div @click=${this._handleMessageActionClick} part="message-actions">
-        ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
-        ${this._renderActionButton(
-          this.message?.reactions?.includes(LIKE_ACTIVE)
-            ? LIKE_ACTIVE
-            : LIKE_INACTIVE,
-          resourceStrings.reactionLike
-        )}
-        ${this._renderActionButton(
-          this.message?.reactions?.includes(DISLIKE_ACTIVE)
-            ? DISLIKE_ACTIVE
-            : DISLIKE_INACTIVE,
-          resourceStrings.reactionDislike
-        )}
-        ${this._renderActionButton(
-          REGENERATE,
-          resourceStrings.reactionRegenerate
-        )}
-      </div>
+      ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
+      ${this._renderActionButton(
+        this.message.reactions?.includes(LIKE_ACTIVE)
+          ? LIKE_ACTIVE
+          : LIKE_INACTIVE,
+        resourceStrings.reactionLike
+      )}
+      ${this._renderActionButton(
+        this.message.reactions?.includes(DISLIKE_ACTIVE)
+          ? DISLIKE_ACTIVE
+          : DISLIKE_INACTIVE,
+        resourceStrings.reactionDislike
+      )}
+      ${this._renderActionButton(
+        REGENERATE,
+        resourceStrings.reactionRegenerate
+      )}
     `;
   }
 
@@ -224,9 +216,8 @@ export default class IgcChatMessageComponent extends LitElement {
     `;
   }
 
-  // Default rendering logic for attachments
   private _renderAttachments() {
-    return isEmpty(this.message?.attachments ?? [])
+    return isEmpty(this.message.attachments ?? [])
       ? nothing
       : html`
           <igc-message-attachments
@@ -236,14 +227,31 @@ export default class IgcChatMessageComponent extends LitElement {
   }
 
   private _renderMessage() {
-    return this.message
-      ? html`${this._renderHeader()}${this._renderContent()}${this._renderAttachments()}${this._renderActions()}`
-      : nothing;
+    const ctx: ChatMessageRenderContext = {
+      message: this.message,
+      instance: this._state.host,
+    };
+
+    return html`
+      <div part="message-header">
+        ${until(this._getRenderer('messageHeader')(ctx))}
+      </div>
+      <div part="plain-text">
+        ${until(this._getRenderer('messageContent')(ctx))}
+      </div>
+      <div part="message-attachments">
+        ${until(this._getRenderer('messageAttachments')(ctx))}
+      </div>
+      <div part="message-actions" @click=${this._handleMessageActionClick}>
+        ${until(this._getRenderer('messageActions')(ctx))}
+      </div>
+    `;
   }
 
   protected override render() {
+    const messageRenderer = this._state.options?.renderers?.message;
     const ctx: ChatMessageRenderContext = {
-      message: this.message!,
+      message: this.message,
       instance: this._state.host,
     };
 
@@ -258,14 +266,7 @@ export default class IgcChatMessageComponent extends LitElement {
           ? html`
               <div part=${partMap(parts)}>
                 ${cache(
-                  this._state.options?.renderers?.message
-                    ? html`${until(this._getRenderer('message')(ctx))}`
-                    : html`
-                        ${until(this._getRenderer('messageHeader')(ctx))}
-                        ${until(this._getRenderer('messageContent')(ctx))}
-                        ${until(this._getRenderer('messageAttachments')(ctx))}
-                        ${until(this._getRenderer('messageActions')(ctx))}
-                      `
+                  messageRenderer ? messageRenderer(ctx) : this._renderMessage()
                 )}
               </div>
             `

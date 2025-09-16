@@ -27,6 +27,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
   IgcChatMessageAttachment,
+  IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
 
@@ -47,7 +48,7 @@ export interface IgcChatComponentEventMap {
   /**
    * Dispatched when a message is reacted to.
    */
-  igcMessageReact: CustomEvent<{ message: IgcChatMessage; reaction: string }>;
+  igcMessageReact: CustomEvent<IgcChatMessageReaction>;
 
   /**
    * Dispatched when a chat message attachment is clicked.
@@ -325,8 +326,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  private _scrollToBottom() {
-    if (isEmpty(this.messages)) return;
+  private _scrollToBottom(): void {
+    if (isEmpty(this.messages)) {
+      return;
+    }
 
     const lastMessage = this.renderRoot
       .querySelectorAll(IgcChatMessageComponent.tagName)
@@ -363,7 +366,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderMessages() {
-    const ctx = { defaults: this._defaults, instance: this };
+    const ctx = { instance: this };
 
     return html`
       <div part="message-list" tabindex="0">
@@ -384,9 +387,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
           }
         )}
         ${this._state.options?.isTyping
-          ? html`<div part="typing-indicator">
-              ${this._getRenderer('typingIndicator')(ctx)}
-            </div>`
+          ? html`
+              <div part="typing-indicator">
+                ${this._getRenderer('typingIndicator')(ctx)}
+              </div>
+            `
           : nothing}
       </div>
     `;

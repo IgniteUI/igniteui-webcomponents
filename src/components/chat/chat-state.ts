@@ -5,8 +5,10 @@ import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
 import type { IgcChatComponentEventMap } from './chat.js';
 import type {
+  ChatSuggestionsPosition,
   IgcChatMessage,
   IgcChatMessageAttachment,
+  IgcChatMessageReaction,
   IgcChatOptions,
 } from './types.js';
 import {
@@ -29,6 +31,7 @@ export class ChatState {
 
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
+
   /** The current list of messages */
   private _messages: IgcChatMessage[] = [];
   /** Chat options/configuration */
@@ -42,11 +45,6 @@ export class ChatState {
    * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
-  /** Default position of the suggestions */
-  private _suggestionsPosition: 'below-input' | 'below-messages' =
-    'below-messages';
-  /** Default time in milliseconds before dispatching stop typing event */
-  private _stopTypingDelay = 3000;
 
   public _isTyping = false;
   private _lastTyped = Date.now();
@@ -61,7 +59,7 @@ export class ChatState {
     return this._host;
   }
 
-  public get acceptedFileTypes() {
+  public get acceptedFileTypes(): ChatAcceptedFileTypes | null {
     return this._acceptedTypesCache;
   }
 
@@ -109,15 +107,15 @@ export class ChatState {
   /**
    * Gets the current suggestionsPosition from options or returns the default value 'below-messages'.
    */
-  public get suggestionsPosition(): string {
-    return this._options?.suggestionsPosition ?? this._suggestionsPosition;
+  public get suggestionsPosition(): ChatSuggestionsPosition {
+    return this._options?.suggestionsPosition ?? 'below-messages';
   }
 
   /**
    * Gets the current stopTypingDelay from options or returns the default value `3000`.
    */
   public get stopTypingDelay(): number {
-    return this._options?.stopTypingDelay ?? this._stopTypingDelay;
+    return this._options?.stopTypingDelay ?? 3000;
   }
 
   /**
@@ -188,6 +186,27 @@ export class ChatState {
     return this._host.emitEvent(name, args);
   }
 
+  /** @internal */
+  public emitMessageCreated(message: IgcChatMessage): boolean {
+    return this._host.emitEvent('igcMessageCreated', {
+      detail: message,
+      cancelable: true,
+    });
+  }
+
+  /** @internal */
+  public emitAttachmentChange(attachment: IgcChatMessageAttachment): boolean {
+    return this._host.emitEvent('igcAttachmentChange', {
+      detail: attachment,
+      cancelable: true,
+    });
+  }
+
+  /** @internal */
+  public emitMessageReaction(reaction: IgcChatMessageReaction): boolean {
+    return this._host.emitEvent('igcMessageReact', { detail: reaction });
+  }
+
   /**
    * @internal
    */
@@ -210,6 +229,7 @@ export class ChatState {
   public showActionToast(content: string): void {
     if (!this._actionToast) {
       this._actionToast = document.createElement(IgcToastComponent.tagName);
+      this._actionToast.displayTime = 3000;
       this._host.renderRoot.appendChild(this._actionToast);
     }
     this._actionToast.textContent = content;
@@ -254,12 +274,7 @@ export class ChatState {
   public addMessageWithEvent(message: Partial<IgcChatMessage>): void {
     const newMessage = this._createMessage(message);
 
-    if (
-      this._host.emitEvent('igcMessageCreated', {
-        detail: newMessage,
-        cancelable: true,
-      })
-    ) {
+    if (this.emitMessageCreated(newMessage)) {
       this.addMessage(newMessage);
       this.inputValue = '';
       this.inputAttachments = [];
@@ -270,6 +285,7 @@ export class ChatState {
    * Adds files as attachments to the input.
    * Emits 'igcAttachmentChange' event which can be canceled to prevent adding.
    * @param files Array of File objects to attach
+   * @internal
    */
   public attachFiles(files: File[]) {
     const newAttachments: IgcChatMessageAttachment[] = [];
@@ -283,14 +299,17 @@ export class ChatState {
       }
 
       const url = URL.createObjectURL(file);
-
-      newAttachments.push({
+      const attachment: IgcChatMessageAttachment = {
         id: nanoid(),
         url,
         name: file.name,
         file,
-        thumbnail: isImageAttachment(file) ? url : undefined,
-      });
+      };
+
+      if (isImageAttachment(file)) {
+        attachment.thumbnail = url;
+      }
+      newAttachments.push(attachment);
     }
 
     const allowed = this.emitEvent('igcAttachmentChange', {
@@ -323,26 +342,6 @@ export class ChatState {
           this._isTyping = false;
         }
       }, stopTypingDelay);
-    }
-  };
-
-  /**
-   * Removes an attachment by index.
-   * Emits 'igcAttachmentChange' event which can be canceled to prevent removal.
-   * @param index Index of the attachment to remove
-   */
-  public removeAttachment = (attachment: IgcChatMessageAttachment): void => {
-    const attachments = this.inputAttachments.filter(
-      (each) => each !== attachment
-    );
-
-    if (
-      this.emitEvent('igcAttachmentChange', {
-        detail: attachments,
-        cancelable: true,
-      })
-    ) {
-      this.inputAttachments = attachments;
     }
   };
 

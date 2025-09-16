@@ -119,17 +119,22 @@ export type IgcChatOptions = {
    *
    * Default is `"below-messages"`.
    */
-  suggestionsPosition?: 'below-input' | 'below-messages';
+  suggestionsPosition?: ChatSuggestionsPosition;
   /**
    * Time in milliseconds to wait before dispatching a stop typing event.
    * Default is `3000`.
    */
   stopTypingDelay?: number;
 
-  renderers?: Partial<ChatRenderers>;
+  renderers?: ChatRenderers;
 };
 
-export type ChatRenderers = {
+export interface IgcChatMessageReaction {
+  message: IgcChatMessage;
+  reaction: string;
+}
+
+export interface ChatRenderers {
   attachment?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
   attachmentContent?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
   attachmentHeader?: ChatTemplateRenderer<ChatAttachmentRenderContext>;
@@ -147,9 +152,10 @@ export type ChatRenderers = {
   typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
   sendButton?: ChatTemplateRenderer<ChatRenderContext>;
   suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
-};
+}
 
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
+export type ChatSuggestionsPosition = 'below-input' | 'below-messages';
 
 export interface ChatRenderContext {
   instance: IgcChatComponent;

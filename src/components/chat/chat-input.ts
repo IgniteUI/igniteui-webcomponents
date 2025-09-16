@@ -35,6 +35,8 @@ type DefaultInputRenderers = {
   fileUploadButton: ChatTemplateRenderer<ChatRenderContext>;
   sendButton: ChatTemplateRenderer<ChatRenderContext>;
 };
+
+/* blazorSuppress */
 /**
  * A web component that provides the input area for the `igc-chat` interface.
  *
@@ -113,6 +115,7 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all);
   }
 
+  /** @internal */
   public focusInput(): void {
     this._textInputElement.focus();
   }
@@ -145,9 +148,19 @@ export default class IgcChatInputComponent extends LitElement {
     this.focusInput();
   }
 
+  private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
+    const current = this._userInputState.inputAttachments;
+
+    if (this._state.emitAttachmentChange(attachment)) {
+      this._state.inputAttachments = current.toSpliced(
+        current.indexOf(attachment),
+        1
+      );
+    }
+  }
+
   private _handleKeydown(event: KeyboardEvent): void {
-    const isSendRequest =
-      event.key === enterKey.toLowerCase() && !event.shiftKey;
+    const isSendRequest = event.key === enterKey && !event.shiftKey;
 
     if (isSendRequest) {
       event.preventDefault();
@@ -212,16 +225,7 @@ export default class IgcChatInputComponent extends LitElement {
     this.requestUpdate();
   }
 
-  /**
-   * Handles input text changes.
-   * Updates internal inputValue and emits 'igcInputChange' event.
-   * @param e Input event from the text area
-   */
   private _handleInput({ detail }: CustomEvent<string>): void {
-    if (detail === this._state.inputValue) {
-      return;
-    }
-
     this._state.inputValue = detail;
     this._state.emitEvent('igcInputChange', { detail: { value: detail } });
   }
@@ -244,7 +248,7 @@ export default class IgcChatInputComponent extends LitElement {
         <div part="attachment-wrapper" role="listitem">
           <igc-chip
             removable
-            @igcRemove=${() => this._state.removeAttachment(attachment)}
+            @igcRemove=${() => this._handleAttachmentRemoved(attachment)}
           >
             <igc-icon
               slot="prefix"
@@ -279,11 +283,6 @@ export default class IgcChatInputComponent extends LitElement {
     `;
   }
 
-  /**
-   * Default file upload button template used when no custom template is provided.
-   * Renders a file input for attaching files.
-   * @returns TemplateResult containing the file upload button
-   */
   private _renderFileUploadButton() {
     const accepted = this._state.options?.acceptedFiles;
     const attachmentsDisabled = this._state.options?.disableInputAttachments;
@@ -314,11 +313,6 @@ export default class IgcChatInputComponent extends LitElement {
     )}`;
   }
 
-  /**
-   * Default send button template used when no custom template is provided.
-   * Renders a send button that submits the current input value and attachments.
-   * @returns TemplateResult containing the send button
-   */
   private _renderSendButton() {
     const enabled =
       this._state.hasInputValue || this._state.hasInputAttachments;
