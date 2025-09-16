@@ -145,6 +145,9 @@ export type IgcChatOptions = {
    * This property should be used as a **last resort** as it can lead to **style leakage**, where
    * global styles unexpectedly bleed into the component, breaking encapsulation and causing
    * unpredictable visual issues.
+   *
+   * **WARNING**: This is a once time shot. Changing this property in runtime won't reflect
+   * its value.
    */
   adoptRootStyles?: boolean;
 
