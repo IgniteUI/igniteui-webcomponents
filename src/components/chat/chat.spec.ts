@@ -645,7 +645,6 @@ describe('Chat', () => {
         await elementUpdated(chat);
         simulateClick(sendButton);
         await elementUpdated(chat);
-        await aTimeout(500);
 
         expect(eventSpy).calledWith('igcMessageCreated');
         const eventArgs = eventSpy.getCall(1).args[1]?.detail;
@@ -702,7 +701,6 @@ describe('Chat', () => {
         ) as HTMLInputElement;
         simulateFileUpload(fileInput, files);
         await elementUpdated(chat);
-        await aTimeout(500);
 
         expect(
           inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
@@ -746,7 +744,6 @@ describe('Chat', () => {
       it('should update like button state on click', async () => {
         chat.messages = [messages[0]];
         await elementUpdated(chat);
-        await aTimeout(500);
 
         const messageContainer = chat.shadowRoot?.querySelector(
           'div[part="message-list"]'
@@ -919,7 +916,6 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       chat.messages = [messages[1]];
       await elementUpdated(chat);
-      await aTimeout(500);
 
       const messageElement = chat.shadowRoot
         ?.querySelector(`div[part='message-list'`)
@@ -990,7 +986,6 @@ describe('Chat', () => {
       const eventSpy = spy(chat, 'emitEvent');
       chat.messages = [messages[0]];
       await elementUpdated(chat);
-      await aTimeout(500);
 
       const messageElement = chat.shadowRoot
         ?.querySelector(`div[part='message-list'`)
@@ -1039,7 +1034,6 @@ describe('Chat', () => {
 
       simulateFileUpload(fileInput, files);
       await elementUpdated(chat);
-      aTimeout(500);
 
       expect(
         inputArea?.shadowRoot?.querySelectorAll('igc-chip').length
