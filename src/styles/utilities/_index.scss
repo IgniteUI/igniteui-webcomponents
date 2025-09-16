@@ -1,4 +1,11 @@
 @forward 'mixins';
 @forward 'functions';
-@forward 'igniteui-theming' hide color, contrast-color;
+@forward 'igniteui-theming/sass/color/functions' hide color, contrast-color;
+@forward 'igniteui-theming/sass/color/mixins';
+@forward 'igniteui-theming/sass/elevations';
+@forward 'igniteui-theming/sass/typography/functions';
+@forward 'igniteui-theming/sass/typography/mixins';
+@forward 'igniteui-theming/sass/themes/functions';
+@forward 'igniteui-theming/sass/themes/mixins';
+@forward 'igniteui-theming/sass/utils';
 @forward 'overwrites';
