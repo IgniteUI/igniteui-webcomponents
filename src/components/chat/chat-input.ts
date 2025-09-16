@@ -160,7 +160,8 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
-    const isSendRequest = event.key === enterKey && !event.shiftKey;
+    const isSendRequest =
+      event.key.toLowerCase() === enterKey.toLowerCase() && !event.shiftKey;
 
     if (isSendRequest) {
       event.preventDefault();
