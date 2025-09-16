@@ -102,7 +102,6 @@ textarea {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
-    font-size: pad(rem(14px), rem(16px), rem(20px));
     transition: box-shadow .15s ease-out, border .15s ease-out;
 }
 
