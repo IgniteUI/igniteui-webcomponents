@@ -1017,6 +1017,65 @@ describe('Chat', () => {
       ).to.equal(0);
     });
   });
+
+  describe('adoptRootStyles behavior', () => {
+    const customStyles = 'custom-background';
+
+    beforeEach(async () => {
+      const styles = document.createElement('style');
+      styles.setAttribute('id', 'adopt-styles-test');
+      styles.innerHTML = `
+        .custom-background {
+          background-color: rgb(255, 0, 0);
+        }
+      `;
+      document.head.append(styles);
+    });
+
+    it('correctly applies `adoptRootStyles` when set', async () => {
+      chat.options = {
+        adoptRootStyles: true,
+        renderers: {
+          messageContent: ({ message }) =>
+            html`<div class=${customStyles}>${message.text}</div>`,
+        },
+      };
+      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+
+      await elementUpdated(chat);
+
+      const { messages } = getChatDOM(chat);
+      expect(
+        getComputedStyle(
+          getChatMessageDOM(first(messages)).content.querySelector(
+            `.${customStyles}`
+          )!
+        ).backgroundColor
+      ).equal('rgb(255, 0, 0)');
+    });
+
+    it('skips `adoptRootStyles` when not set', async () => {
+      chat.options = {
+        renderers: {
+          messageContent: ({ message }) =>
+            html`<div class=${customStyles}>${message.text}</div>`,
+        },
+      };
+
+      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+
+      await elementUpdated(chat);
+
+      const { messages } = getChatDOM(chat);
+      expect(
+        getComputedStyle(
+          getChatMessageDOM(first(messages)).content.querySelector(
+            `.${customStyles}`
+          )!
+        ).backgroundColor
+      ).not.equal('rgb(255, 0, 0)');
+    });
+  });
 });
 
 /** Returns an object containing the shadow DOM structure of a chat component. */
