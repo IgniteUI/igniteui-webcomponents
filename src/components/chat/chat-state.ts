@@ -195,8 +195,18 @@ export class ChatState {
   }
 
   /** @internal */
-  public emitAttachmentChange(attachment: IgcChatMessageAttachment): boolean {
-    return this._host.emitEvent('igcAttachmentChange', {
+  public emitAttachmentsAdded(
+    attachments: IgcChatMessageAttachment[]
+  ): boolean {
+    return this._host.emitEvent('igcAttachmentAdded', {
+      detail: attachments,
+      cancelable: true,
+    });
+  }
+
+  /** @internal */
+  public emitAttachmentRemoved(attachment: IgcChatMessageAttachment): boolean {
+    return this._host.emitEvent('igcAttachmentRemoved', {
       detail: attachment,
       cancelable: true,
     });
@@ -287,7 +297,7 @@ export class ChatState {
    * @param files Array of File objects to attach
    * @internal
    */
-  public attachFiles(files: File[]) {
+  public attachFilesWithEvent(files: File[]): void {
     const newAttachments: IgcChatMessageAttachment[] = [];
     const fileNames = new Set(
       this.inputAttachments.map((attachment) => attachment.file?.name ?? '')
@@ -312,11 +322,7 @@ export class ChatState {
       newAttachments.push(attachment);
     }
 
-    const allowed = this.emitEvent('igcAttachmentChange', {
-      detail: [...this.inputAttachments, ...newAttachments],
-      cancelable: true,
-    });
-    if (allowed) {
+    if (this.emitAttachmentsAdded(newAttachments)) {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
     }
   }

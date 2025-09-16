@@ -151,7 +151,7 @@ export default class IgcChatInputComponent extends LitElement {
   private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
     const current = this._userInputState.inputAttachments;
 
-    if (this._state.emitAttachmentChange(attachment)) {
+    if (this._state.emitAttachmentRemoved(attachment)) {
       this._state.inputAttachments = current.toSpliced(
         current.indexOf(attachment),
         1
@@ -221,7 +221,7 @@ export default class IgcChatInputComponent extends LitElement {
 
     const validFiles = getChatAcceptedFiles(event, this._acceptedTypes);
     this._state.emitEvent('igcAttachmentDrop');
-    this._state.attachFiles(validFiles);
+    this._state.attachFilesWithEvent(validFiles);
     this.requestUpdate();
   }
 
@@ -234,7 +234,7 @@ export default class IgcChatInputComponent extends LitElement {
     const input = event.target as HTMLInputElement;
 
     if (hasFiles(input)) {
-      this._state.attachFiles(Array.from(input.files!));
+      this._state.attachFilesWithEvent(Array.from(input.files!));
     }
   }
   /**

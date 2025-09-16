@@ -56,9 +56,15 @@ export interface IgcChatComponentEventMap {
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
   /**
-   * Dispatched when an attachment is changed (e.g., updated or removed).
+   * Dispatched when attachment(s) are added either through drag & drop or through
+   * the default file input.
    */
-  igcAttachmentChange: CustomEvent<IgcChatMessageAttachment>;
+  igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
+
+  /**
+   * Dispatched when an attachment is removed by the user.
+   */
+  igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
 
   /**
    * Dispatched during an attachment drag operation.
@@ -110,7 +116,8 @@ const Slots = setSlots(
  * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
  * @fires igcMessageReact - Dispatched when a message is reacted to.
  * @fires igcAttachmentClick - Dispatched when a chat message attachment is clicked.
- * @fires igcAttachmentChange - Dispatched when a message attachment is changed (e.g., updated or removed).
+ * @fires igcAttachmentAdded - Dispatched when attachment(s) are added either through drag & drop or through the default file input.
+ * @fires igcAttachmentRemoved - Dispatched when an attachment is removed by the user.
  * @fires igcAttachmentDrag - Dispatched during an attachment drag operation.
  * @fires igcAttachmentDrop - Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
  * @fires igcTypingChange - Dispatched when the typing status changes (e.g., user starts or stops typing).
