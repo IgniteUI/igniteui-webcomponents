@@ -17,7 +17,6 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcCalendarResourceStringEN } from '../common/i18n/calendar.resources.js';
 import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -219,12 +218,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
     { month: 'long', weekday: 'narrow' };
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public resourceStrings = IgcCalendarResourceStringEN;
 
   private _intl = createDateTimeFormatters(this.locale, {
     month: {
