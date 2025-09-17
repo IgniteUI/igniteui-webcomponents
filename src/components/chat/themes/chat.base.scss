@@ -25,7 +25,7 @@ $inline-inset: rem(24px);
     height: 100%;
 }
 
-[part='chat-wrapper'] {
+[part='message-area-container'] {
     display: grid;
     grid-template-columns: subgrid;
     overflow: hidden auto;

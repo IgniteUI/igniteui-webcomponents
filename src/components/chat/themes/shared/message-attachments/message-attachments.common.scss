@@ -26,7 +26,7 @@ $theme: $material;
     color: var-get($theme, 'image-attachment-icon');
 }
 
-[part="file-attachment"] {
+[part="file-attachment-icon"] {
     --color: #{var-get($theme, 'file-icon-color')};
     --accent-color: #{var-get($theme, 'file-icon-accent-color')};
 }

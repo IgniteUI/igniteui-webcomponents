@@ -441,6 +441,15 @@ export const Basic: Story = {
   render: () => {
     messages = initialMessages;
     return html`
+      <style>
+        igc-chat::part(typing-dot) {
+          background: var(--igc-background, #f00);
+          border: solid 1px var(--igc-background, #f00);
+          border-radius: 8px;
+          color: var(--igc-color, #932424);
+          width: 12px;
+        }
+      </style>
       <igc-chat
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}

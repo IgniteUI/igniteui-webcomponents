@@ -60,7 +60,7 @@ type DefaultInputRenderers = {
  * @csspart input-container - Container for the input section
  * @csspart input-wrapper - Wrapper around the text input
  * @csspart text-input - The `<igc-textarea>` component
- * @csspart buttons-container - Container for file upload/send buttons
+ * @csspart actions-container - Container for file upload/send buttons
  * @csspart send-button - The send icon button
  * @csspart attachments - Container for rendering attachments
  * @csspart attachment-wrapper - Wrapper for individual attachment
@@ -252,6 +252,7 @@ export default class IgcChatInputComponent extends LitElement {
             @igcRemove=${() => this._handleAttachmentRemoved(attachment)}
           >
             <igc-icon
+              part="attachment-icon"
               slot="prefix"
               name=${getIconName(attachment.file?.type ?? attachment.type)}
             ></igc-icon>
@@ -292,7 +293,7 @@ export default class IgcChatInputComponent extends LitElement {
       attachmentsDisabled
         ? nothing
         : html`
-            <label for="input_attachments" part="upload-button">
+            <label for="input_attachments" part="file-upload">
               <igc-icon-button
                 aria-label="Attach files"
                 variant="flat"
@@ -334,13 +335,13 @@ export default class IgcChatInputComponent extends LitElement {
     const ctx: ChatRenderContext = { instance: this._state.host };
 
     return trimmedHtml`
-      <div part="file-upload">
+      <div part="file-upload-container">
         ${this._getRenderer('fileUploadButton')(ctx)}
       </div>
       <div part="input-actions-start">
         ${this._getRenderer('inputActionsStart')(ctx)}
       </div>
-      <div part="send-button">${this._getRenderer('sendButton')(ctx)}</div>
+      <div part="send-button-container">${this._getRenderer('sendButton')(ctx)}</div>
       <div part="input-actions-end">
         ${this._getRenderer('inputActionsEnd')(ctx)}
       </div>
@@ -376,7 +377,7 @@ export default class IgcChatInputComponent extends LitElement {
           ${until(this._getRenderer('input')(inputCtx))}
         </div>
 
-        <div part="buttons-container">
+        <div part="actions-container">
           ${until(this._getRenderer('inputActions')(ctx))}
         </div>
       </div>

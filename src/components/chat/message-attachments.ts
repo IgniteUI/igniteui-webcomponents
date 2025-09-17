@@ -130,12 +130,15 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     return isImageAttachment(attachment)
       ? html`
           <img
-            part="image-attachment"
+            part="image-attachment-icon"
             src=${createAttachmentURL(attachment)}
             alt=${attachment.name}
           />
         `
-      : html`<igc-icon part="file-attachment" name=${iconName}></igc-icon>`;
+      : html`<igc-icon
+          part="file-attachment-icon"
+          name=${iconName}
+        ></igc-icon>`;
   }
 
   private _renderAttachment(attachment: IgcChatMessageAttachment) {

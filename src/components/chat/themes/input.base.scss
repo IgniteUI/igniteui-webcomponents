@@ -20,16 +20,16 @@
     gap: rem(12px);
 }
 
-[part='buttons-container'] {
+[part='actions-container'] {
     display: flex;
     align-items: center;
 }
 
-[part='send-button'] {
+[part='send-button-container'] {
     margin-inline-start: auto;
 }
 
-[part='upload-button'] {
+[part='file-upload-container'] {
     position: relative;
     display: inline-block;
 

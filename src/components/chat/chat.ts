@@ -134,11 +134,52 @@ const Slots = setSlots(
  * @slot suggestion - Slot for rendering a single suggestion item.
  * @slot empty-state - Slot shown when there are no messages.
  *
- * @csspart header - Styles the header container.
- * @csspart prefix - Styles the element before the title (e.g., avatar).
+ * @csspart chat-container - Styles the main chat container.
+ * @csspart header - Styles the chat header container.
+ * @csspart prefix - Styles the element before the chat title (e.g., avatar).
  * @csspart title - Styles the chat header title.
- * @csspart suggestions - Styles the suggestion container.
+ *
+ * @csspart message-area-container - Styles the container holding the messages and (optional) suggestions.
+ * @csspart message-list - Styles the message list container.
+ * @csspart message-item - Styles each message wrapper.
+ * @csspart typing-indicator - Styles the typing indicator container.
+ * @csspart typing-dot - Styles individual typing indicator dots.
+ *
+ * @csspart suggestions-container - Styles the container holding all suggestions.
+ * @csspart suggestions-header - Styles the suggestions header.
  * @csspart suggestion - Styles each suggestion item.
+ * @csspart suggestion-prefix - Styles the icon or prefix in a suggestion.
+ * @csspart suggestion-title - Styles the text/title of a suggestion.
+ *
+ * @csspart empty-state - Styles the empty state container when there are no messages.
+ *
+ * @csspart input-area-container - Styles the wrapper around the chat input area.
+ * @csspart input-container - Styles the main input container.
+ * @csspart input-attachments-container - Styles the container for attachments in the input.
+ * @csspart input-attachment-container - Styles a single attachment in the input area.
+ * @csspart input-attachment-name - Styles the file name of an attachment.
+ * @csspart input-attachment-icon - Styles the icon of an attachment.
+ * @csspart text-input - Styles the text input field for typing messages.
+ * @csspart input-actions-container - Styles the container for input actions.
+ * @csspart input-actions-start - Styles the group of actions at the start of the input after the default file upload.
+ * @csspart input-actions-end - Styles the group of actions at the end of the input.
+ * @csspart file-upload-container - Styles the container for the file upload input.
+ * @csspart file-upload - Styles the file upload input itself.
+ * @csspart send-button-container - Styles the container around the send button.
+ * @csspart send-button - Styles the send button.
+ *
+ * @csspart message-container - Styles the container of a single message.
+ * @csspart message-list (forwarded) - Styles the internal list of messages.
+ * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
+ * @csspart message-content - Styles the text content of a message.
+ * @csspart message-attachments-container - Styles the container for message attachments.
+ * @csspart message-attachment - Styles a single message attachment.
+ * @csspart message-actions-container - Styles the container holding message actions.
+ * @csspart message-sent - Styles messages marked as sent by the current user.
+ * @csspart attachment-header - Styles the header of an attachment block.
+ * @csspart attachment-content - Styles the content of an attachment block.
+ * @csspart attachment-icon - Styles the icon of an attachment.
+ * @csspart file-name - Styles the file name shown in an attachment.
  */
 export default class IgcChatComponent extends EventEmitterMixin<
   IgcChatComponentEventMap,
@@ -329,13 +370,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
       <div part="header" ?hidden=${!hasContent}>
         <slot
           name="prefix"
-          part="prefix"
           ?hidden=${!this._slots.hasAssignedElements('prefix')}
         ></slot>
-        <slot name="title" part="title"
-          >${this._state.options?.headerText}</slot
-        >
-        <slot name="actions" part="actions"></slot>
+        <slot name="title">${this._state.options?.headerText}</slot>
+        <slot name="actions"></slot>
       </div>
     `;
   }
@@ -354,8 +392,20 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 id=${`message-${message.id}`}
                 part="message-item"
                 .message=${message}
-                exportparts="message-container, message-text, message-attachments-container, message-attachment, message-actions, sent,
-                    attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
+                exportparts="
+                  message-container,
+                  message-list,
+                  message-header,
+                  plain-text: message-content,
+                  message-attachments: message-attachments-container,
+                  attachment: message-attachment,
+                  message-actions: message-actions-container,
+                  sent: message-sent,
+                  attachment-header,
+                  attachment-content,
+                  attachment-icon,
+                  file-name,
+                "
               >
               </igc-chat-message>
             `;
@@ -399,23 +449,26 @@ export default class IgcChatComponent extends EventEmitterMixin<
             </span>
             <slot name="suggestions-header"></slot>
           </igc-list-header>
-          <slot name="suggestions" part="suggestions">
+          <slot name="suggestions">
             ${suggestions.map(
               (suggestion) => html`
-                <slot name="suggestion" part="suggestion">
+                <slot name="suggestion">
                   <igc-list-item
+                    part="suggestion"
                     @click=${() => this._handleSuggestionClick(suggestion)}
                   >
-                    <span slot="start">
+                    <span slot="start" part="suggestion-prefix">
                       ${this._getRenderer('suggestionPrefix')(ctx)}
                     </span>
-                    <span slot="title">${suggestion}</span>
+                    <span slot="title" part="suggestion-title"
+                      >${suggestion}</span
+                    >
                   </igc-list-item>
                 </slot>
               `
             )}
           </slot>
-          <slot name="suggestions-actions" part="suggestions-actions"></slot>
+          <slot name="suggestions-actions"></slot>
         </igc-list>
       </div>
     `;
@@ -436,48 +489,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
       : this._renderSuggestions();
 
     return html`
-      <div
-        part="chat-container"
-        exportparts="
-          chat-container,
-          header,
-          prefix,
-          title,
-          actions,
-          chat-wrapper,
-          chat-messages,
-          empty-state,
-          suggestions-container,
-          suggestions-header,
-          suggestions,
-          suggestions-actions,
-          suggestion,
-          message-container,
-          message-list,
-          message-item,
-          message,
-          message-text,
-          message-attachment,
-          message-attachments-container,
-          message-actions,
-          typing-indicator,
-          attachments-container,
-          attachment,
-          attachment-header,
-          attachment-content,
-          attachment-icon,
-          file-name,
-          attachment-actions,
-          sent,
-          file-upload,
-          input-actions-start,
-          input-actions-end,
-          send-button
-        "
-      >
+      <div part="chat-container">
         ${this._renderHeader()}
 
-        <div part="chat-wrapper">
+        <div part="message-area-container">
           ${cache(
             hasMessages || this._state.options?.isTyping
               ? this._renderMessages()
@@ -490,14 +505,19 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
         <igc-chat-input
           exportparts="
-              input-container,
-              input-wrapper,
+              input-container: input-area-container,
+              input-wrapper: input-container,
               attachments: input-attachments-container,
-              attachments-wrapper: input-attachment,
+              attachment-wrapper: input-attachment-container,
               attachment-name: input-attachment-name,
+              attachment-icon: input-attachment-icon,
               text-input,
-              buttons-container: input-buttons-container,
-              upload-button,
+              actions-container: input-actions-container,
+              input-actions-start,
+              input-actions-end,
+              file-upload-container,
+              file-upload,
+              send-button-container,
               send-button"
         >
         </igc-chat-input>

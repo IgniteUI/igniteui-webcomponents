@@ -224,6 +224,12 @@ export default class IgcChatMessageComponent extends LitElement {
       : html`
           <igc-message-attachments
             .message=${this.message}
+            exportparts="
+              attachment,
+              attachment-header,
+              attachment-icon,
+              file-name,
+              attachment-content"
           ></igc-message-attachments>
         `;
   }
@@ -266,10 +272,7 @@ export default class IgcChatMessageComponent extends LitElement {
       ${cache(
         this.message
           ? html`
-              <div
-                part=${partMap(parts)}
-                exportparts="attachment: message-attachment, attachments-container: message-attachments-container"
-              >
+              <div part=${partMap(parts)}>
                 ${cache(
                   messageRenderer
                     ? until(messageRenderer(ctx))

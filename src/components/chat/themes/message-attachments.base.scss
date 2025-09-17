@@ -51,7 +51,7 @@
     aspect-ratio: 1;
 }
 
-[part='image-attachment'] {
+[part='image-attachment-icon'] {
     width: 100%;
     height: 100%;
     border-radius: inherit;
@@ -62,7 +62,7 @@
     --ig-size: 1;
 }
 
-[part='file-attachment'] {
+[part='file-attachment-icon'] {
     --size: #{rem(32px)};
 }
 
