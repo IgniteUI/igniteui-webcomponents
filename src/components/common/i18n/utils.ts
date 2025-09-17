@@ -6,6 +6,19 @@ import type {
 import type { IgcCalendarResourceStrings } from './EN/calendar.resources.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
 
+export const validationResourcesKeys = {
+  minLength: 'min_length_validation_error',
+  maxLength: 'max_length_validation_error',
+  required: 'required_validation_error',
+  pattern: 'pattern_validation_error',
+  mask: 'mask_validation_error',
+  min: 'min_validation_error',
+  max: 'max_validation_error',
+  email: 'email_validation_error',
+  url: 'url_validation_error',
+  disabledDate: 'disabled_date_validation_error',
+};
+
 export const calendarResourcesMap = new Map<string, string | undefined>([
   ['selectMonth', 'calendar_select_month'],
   ['selectYear', 'calendar_select_year'],
