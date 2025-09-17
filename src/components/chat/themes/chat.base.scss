@@ -32,6 +32,7 @@ $inline-inset: rem(24px);
     grid-column: 1 / -1;
     grid-template-rows: 1fr auto;
     align-items: start;
+    grid-row: 2;
 }
 
 [part='message-list'],
@@ -118,6 +119,10 @@ $inline-inset: rem(24px);
 [part='prefix'] {
     display: block;
     margin-inline-end: rem(32px);
+}
+
+igc-chat-input {
+    grid-row: 3;
 }
 
 igc-list {

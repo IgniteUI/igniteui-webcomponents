@@ -38,6 +38,14 @@
     }
 }
 
+[part~='message-header'],
+[part~='message-attachments'],
+[part~='message-actions'] {
+    &:empty {
+      display: none;
+    }
+}
+
 [part~='sent'] {
     margin-inline-start: auto;
     margin-inline-end: unset;
