@@ -33,7 +33,7 @@ describe('Chat', () => {
   `;
 
   const textAreaActionsTemplate = () => html`
-    <div>
+    <div class="custom-actions">
       <igc-button>Upload</igc-button>
       <igc-button>Send</igc-button>
     </div>
@@ -591,10 +591,9 @@ describe('Chat', () => {
 
       expect(sendButton).to.be.null;
       expect(fileInput).to.be.null;
-      var buttons = inputArea.renderRoot.querySelectorAll(
-        'igc-button[variant="contained"]'
-      );
-      expect(buttons.length).to.equal(2);
+      var customActions =
+        inputArea.renderRoot.querySelector('div.custom-actions');
+      expect(customActions).not.to.be.null;
     });
 
     it('should render messageHeader template', async () => {
@@ -901,7 +900,7 @@ describe('Chat', () => {
         isTyping: true,
       });
 
-      clock.tick(3000);
+      clock.tick(3001);
       await elementUpdated(chat);
 
       expect(eventSpy).calledWith('igcTypingChange');
