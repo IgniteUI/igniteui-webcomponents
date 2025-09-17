@@ -139,10 +139,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
 
   private _renderAttachment(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
-    const attachmentParts = {
-      attachment: true,
-      sent: isCurrentUser,
-    };
+
     const contentParts = {
       'attachment-content': true,
       sent: isCurrentUser,
@@ -172,16 +169,18 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     </div>`;
 
     return html`
-      <div part=${partMap(attachmentParts)}>
-        ${isCurrentUser ? content : nothing} ${header}
-        ${!isCurrentUser ? content : nothing}
-      </div>
+      ${isCurrentUser ? content : nothing} ${header}
+      ${!isCurrentUser ? content : nothing}
     `;
   }
 
   protected override render() {
     const attachments = this.message?.attachments ?? [];
-
+    const isCurrentUser = this._state.isCurrentUserMessage(this.message);
+    const attachmentParts = {
+      attachment: true,
+      sent: isCurrentUser,
+    };
     return html`${cache(
       this.message
         ? html`
@@ -190,13 +189,15 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
                 attachments,
                 (attachment) => attachment.id,
                 (attachment) => html`
-                  ${until(
-                    this._getRenderer('attachment')({
-                      attachment,
-                      message: this.message!,
-                      instance: this._state.host,
-                    })
-                  )}
+                  <div part="${partMap(attachmentParts)}">
+                    ${until(
+                      this._getRenderer('attachment')({
+                        attachment,
+                        message: this.message!,
+                        instance: this._state.host,
+                      })
+                    )}
+                  </div>
                 `
               )}
             </div>

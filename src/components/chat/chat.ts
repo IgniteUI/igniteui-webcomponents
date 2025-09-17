@@ -386,8 +386,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 id=${`message-${message.id}`}
                 part="message-item"
                 .message=${message}
-                exportparts="message-container, message-text, message-attachments, message-actions, sent,
-                    attachments-container, attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
+                exportparts="message-container, message-text, message-attachments-container, message-attachment, message-actions, sent,
+                    attachment, attachment-header, attachment-content, attachment-icon, file-name, actions: attachment-actions"
               >
               </igc-chat-message>
             `;
@@ -489,7 +489,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
           message-item,
           message,
           message-text,
-          message-attachments,
+          message-attachment,
+          message-attachments-container,
           message-actions,
           typing-indicator,
           attachments-container,
@@ -499,7 +500,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
           attachment-icon,
           file-name,
           attachment-actions,
-          sent
+          sent,
+          file-upload,
+          input-actions-start,
+          input-actions-end,
+          send-button
         "
       >
         ${this._renderHeader()}

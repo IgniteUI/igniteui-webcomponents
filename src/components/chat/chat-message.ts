@@ -266,7 +266,10 @@ export default class IgcChatMessageComponent extends LitElement {
       ${cache(
         this.message
           ? html`
-              <div part=${partMap(parts)}>
+              <div
+                part=${partMap(parts)}
+                exportparts="attachment: message-attachment, attachments-container: message-attachments-container"
+              >
                 ${cache(
                   messageRenderer ? messageRenderer(ctx) : this._renderMessage()
                 )}

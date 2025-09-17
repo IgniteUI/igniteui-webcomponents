@@ -334,10 +334,16 @@ export default class IgcChatInputComponent extends LitElement {
     const ctx: ChatRenderContext = { instance: this._state.host };
 
     return html`
-      ${this._getRenderer('fileUploadButton')(ctx)}
-      ${this._getRenderer('inputActionsStart')(ctx)}
-      ${this._getRenderer('sendButton')(ctx)}
-      ${this._getRenderer('inputActionsEnd')(ctx)}
+      <div part="file-upload">
+        ${this._getRenderer('fileUploadButton')(ctx)}
+      </div>
+      <div part="input-actions-start">
+        ${this._getRenderer('inputActionsStart')(ctx)}
+      </div>
+      <div part="send-button">${this._getRenderer('sendButton')(ctx)}</div>
+      <div part="input-actions-end">
+        ${this._getRenderer('inputActionsEnd')(ctx)}
+      </div>
     `;
   }
 
