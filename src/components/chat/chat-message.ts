@@ -8,7 +8,7 @@ import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
+import { isEmpty, trimmedHtml } from '../common/util.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
@@ -234,7 +234,7 @@ export default class IgcChatMessageComponent extends LitElement {
       instance: this._state.host,
     };
 
-    return html`
+    return trimmedHtml`
       <div part="message-header">
         ${until(this._getRenderer('messageHeader')(ctx))}
       </div>
@@ -271,7 +271,9 @@ export default class IgcChatMessageComponent extends LitElement {
                 exportparts="attachment: message-attachment, attachments-container: message-attachments-container"
               >
                 ${cache(
-                  messageRenderer ? messageRenderer(ctx) : this._renderMessage()
+                  messageRenderer
+                    ? until(messageRenderer(ctx))
+                    : this._renderMessage()
                 )}
               </div>
             `

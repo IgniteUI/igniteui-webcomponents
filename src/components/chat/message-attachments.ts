@@ -9,6 +9,7 @@ import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
+import { trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
 import { all } from './themes/attachments.js';
@@ -188,7 +189,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
               ${repeat(
                 attachments,
                 (attachment) => attachment.id,
-                (attachment) => html`
+                (attachment) => trimmedHtml`
                   <div part="${partMap(attachmentParts)}">
                     ${until(
                       this._getRenderer('attachment')({

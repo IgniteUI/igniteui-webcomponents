@@ -207,7 +207,10 @@ function handleMessageSend(event: CustomEvent<IgcChatMessage>): void {
 
   isResponseSent = false;
   setTimeout(async () => {
-    chat.addMessage({ sender: 'bot', attachments });
+    chat.messages = [
+      ...chat.messages,
+      { id: crypto.randomUUID(), text: '', sender: 'bot', attachments },
+    ];
 
     await showResponse(chat, generateAIResponse(message.text).split(' '));
 
@@ -223,11 +226,8 @@ async function showResponse(chat: IgcChatComponent, responseParts: string[]) {
 
   for (const part of responseParts) {
     await new Promise((resolve) => requestAnimationFrame(resolve));
-    chat.updateMessage(
-      lastMessage,
-      { text: `${lastMessage.text} ${part}` },
-      true
-    );
+    lastMessage.text = `${lastMessage.text} ${part}`;
+    chat.messages = [...chat.messages];
   }
 }
 

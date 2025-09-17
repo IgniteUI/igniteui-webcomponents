@@ -11,7 +11,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty, last } from '../common/util.js';
+import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
@@ -280,45 +280,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._input?.focusInput();
   }
 
-  // REVIEW: Maybe accept an `IgcMessage` type as well?
   /**
    * Scrolls the view to a specific message by id.
-   * @param messageId - The id of the message to scroll to
    */
   public scrollToMessage(messageId: string): void {
     if (!isEmpty(this.messages)) {
       const message = this.renderRoot.querySelector(`#message-${messageId}`);
       message?.scrollIntoView({ block: 'end', inline: 'end' });
-    }
-  }
-
-  // REVIEW
-  public addMessage(message: Partial<IgcChatMessage>): IgcChatMessage {
-    this._state.addMessage(message);
-    return last(this.messages);
-  }
-
-  // REVIEW
-  public updateMessage(
-    message: IgcChatMessage,
-    data: Partial<IgcChatMessage>,
-    scrollIntoView = false
-  ) {
-    Object.assign(message, data);
-    const messageElement =
-      this.renderRoot.querySelector<IgcChatMessageComponent>(
-        `#message-${message.id}`
-      );
-
-    if (messageElement) {
-      messageElement.requestUpdate();
-      if (scrollIntoView) {
-        messageElement.updateComplete.then(() =>
-          messageElement.scrollIntoView({ block: 'end', inline: 'end' })
-        );
-      }
-    } else {
-      this.requestUpdate('messages');
     }
   }
 

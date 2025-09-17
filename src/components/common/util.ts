@@ -1,4 +1,4 @@
-import { isServer, nothing } from 'lit';
+import { html, isServer, nothing, type TemplateResult } from 'lit';
 import type IgcFileInputComponent from '../file-input/file-input.js';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
@@ -626,4 +626,22 @@ export function hasFiles(
   input: HTMLInputElement | IgcFileInputComponent
 ): boolean {
   return input.files != null && input.files.length > 0;
+}
+
+const trimmedCache = new WeakMap<TemplateStringsArray, TemplateStringsArray>();
+
+/** @internal */
+export function trimmedHtml(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): TemplateResult {
+  if (!trimmedCache.has(strings)) {
+    const trimmedStrings = strings.map((s) => s.trim().replaceAll('\n', ''));
+    trimmedCache.set(
+      strings,
+      Object.assign([...trimmedStrings], { raw: [...strings.raw] })
+    );
+  }
+
+  return html(trimmedCache.get(strings)!, ...values);
 }

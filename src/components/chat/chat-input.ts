@@ -11,7 +11,7 @@ import { chatContext, chatUserInputContext } from '../common/context.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, hasFiles, isEmpty } from '../common/util.js';
+import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
@@ -333,7 +333,7 @@ export default class IgcChatInputComponent extends LitElement {
   private _renderActionsArea() {
     const ctx: ChatRenderContext = { instance: this._state.host };
 
-    return html`
+    return trimmedHtml`
       <div part="file-upload">
         ${this._getRenderer('fileUploadButton')(ctx)}
       </div>
