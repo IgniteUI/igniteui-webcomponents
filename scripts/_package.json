@@ -86,7 +86,7 @@
     "lit": "^3.3.0"
   },
   "peerDependencies": {
-    "dompurify": "^3.2.",
+    "dompurify": "^3.2.0",
     "marked": "^16.3.0",
     "marked-shiki": "^1.2.0",
     "shiki": "^3.12.0"
