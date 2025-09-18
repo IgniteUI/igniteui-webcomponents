@@ -294,7 +294,6 @@ export class ChatState {
   /**
    * Adds files as attachments to the input.
    * Emits 'igcAttachmentChange' event which can be canceled to prevent adding.
-   * @param files Array of File objects to attach
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {

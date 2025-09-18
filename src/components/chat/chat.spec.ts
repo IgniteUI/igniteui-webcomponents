@@ -1,6 +1,6 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, waitUntil } from '@open-wc/testing';
 import { html, nothing } from 'lit';
-import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+import { spy, stub } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { enterKey } from '../common/controllers/key-bindings.js';
@@ -117,15 +117,9 @@ describe('Chat', () => {
   ];
 
   let chat: IgcChatComponent;
-  let clock: SinonFakeTimers;
 
   beforeEach(async () => {
     chat = await fixture<IgcChatComponent>(html`<igc-chat></igc-chat>`);
-    clock = useFakeTimers({ toFake: ['setTimeout'] });
-  });
-
-  afterEach(() => {
-    clock.restore();
   });
 
   describe('Initialization', () => {
@@ -889,24 +883,21 @@ describe('Chat', () => {
 
     it('emits igcTypingChange', async () => {
       const eventSpy = spy(chat, 'emitEvent');
-      const textArea = getChatDOM(chat).input.textarea!;
+      const textArea = getChatDOM(chat).input.textarea;
 
-      simulateFocus(textArea);
+      chat.options = { stopTypingDelay: 100 };
       simulateKeyboard(textArea, 'a');
       await elementUpdated(chat);
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.getCall(1).args[1]?.detail).to.deep.equal({
-        isTyping: true,
-      });
+      expect(eventSpy.firstCall.args[1]?.detail).to.eql({ isTyping: true });
 
-      clock.tick(3001);
-      await elementUpdated(chat);
+      eventSpy.resetHistory();
+
+      await waitUntil(() => eventSpy.calledWith('igcTypingChange'));
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.getCall(2).args[1]?.detail).to.deep.equal({
-        isTyping: false,
-      });
+      expect(eventSpy.firstCall.args[1]?.detail).to.eql({ isTyping: false });
     });
 
     it('emits igcInputFocus', async () => {
